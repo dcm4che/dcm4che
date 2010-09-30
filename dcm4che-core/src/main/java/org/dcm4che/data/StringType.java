@@ -1,8 +1,18 @@
 package org.dcm4che.data;
 
 enum StringType {
-    ASCII,
+    ASCII {
+        @Override
+        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
+            return SpecificCharacterSet.DEFAULT;
+        }
+    },
     UI {
+        @Override
+        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
+            return SpecificCharacterSet.DEFAULT;
+        }
+
         @Override
         public String substring(String s, int beginIndex, int endIndex) {
             while (beginIndex < endIndex && s.charAt(endIndex - 1) <= ' ')
@@ -10,16 +20,17 @@ enum StringType {
             return s.substring(beginIndex, endIndex);
         }
     },
-    STRING {
+    STRING,
+    PN {
         @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return cs;
+        protected String codeExtensionDelimiters() {
+            return "^=\\";
         }
     },
     TEXT {
         @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return cs;
+        protected String codeExtensionDelimiters() {
+            return "\n\f\r";
         }
 
         @Override
@@ -44,7 +55,11 @@ enum StringType {
     public static String[] EMPTY_STRINGS = {};
 
     protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-        return SpecificCharacterSet.DEFAULT;
+        return cs;
+    }
+
+    protected String codeExtensionDelimiters() {
+        return "\\";
     }
 
     public String first(String s) {
@@ -70,7 +85,7 @@ enum StringType {
     }
 
     public byte[] toBytes(String s, SpecificCharacterSet cs) {
-        return cs(cs).encode(s);
+        return cs(cs).encode(s, codeExtensionDelimiters());
     }
 
     public String toString(byte[] bytearr, SpecificCharacterSet cs) {

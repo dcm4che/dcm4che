@@ -18,12 +18,12 @@ public class PersonNameTest {
 
     @Test
     public void testValueOf2() {
-        PersonName pn = PersonName.valueOf("Hong^Gildong=洪^吉洞=릊^길동");
+        PersonName pn = PersonName.valueOf("Hong^Gildong=洪^吉洞=홍^길동");
         assertEquals("Hong", pn.get(PersonName.ALPHABETIC, PersonName.FAMILY_NAME));
         assertEquals("Gildong", pn.get(PersonName.ALPHABETIC, PersonName.GIVEN_NAME));
         assertEquals("洪", pn.get(PersonName.IDEOGRAPHIC, PersonName.FAMILY_NAME));
         assertEquals("吉洞", pn.get(PersonName.IDEOGRAPHIC, PersonName.GIVEN_NAME));
-        assertEquals("릊", pn.get(PersonName.PHONETIC, PersonName.FAMILY_NAME));
+        assertEquals("홍", pn.get(PersonName.PHONETIC, PersonName.FAMILY_NAME));
         assertEquals("길동", pn.get(PersonName.PHONETIC, PersonName.GIVEN_NAME));
     }
 

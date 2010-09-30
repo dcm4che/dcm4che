@@ -112,7 +112,7 @@ public enum VR {
     OB(('O' << 8) + 'B', 12, BinaryType.BYTE, null),
     OF(('O' << 8) + 'F', 12, BinaryType.FLOAT, null),
     OW(('O' << 8) + 'W', 12, BinaryType.USHORT, null),
-    PN(('P' << 8) + 'N', 8, null, StringType.STRING),
+    PN(('P' << 8) + 'N', 8, null, StringType.PN),
     SH(('S' << 8) + 'H', 8, null, StringType.STRING),
     SL(('S' << 8) + 'L', 8, BinaryType.INT, null),
     SQ(('S' << 8) + 'Q', 12, null, null) {

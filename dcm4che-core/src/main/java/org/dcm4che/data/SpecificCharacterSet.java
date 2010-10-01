@@ -189,7 +189,7 @@ public class SpecificCharacterSet {
                         if (next == cur) {
                             // component could not be encoded with any of the
                             // specified character sets, encode it with the
-                            // initial character set, including the default
+                            // initial character set, using the default
                             // replacement of the character set decoder
                             // for characters which cannot be encoded
                             if (!codecs[cur].containsASCII())

@@ -151,7 +151,11 @@ public class SpecificCharacterSet {
             Encoder enc1 = encoder(encoder1, codecs[0]);
             byte[] buf = new byte[strlen];
             ByteBuffer bb = ByteBuffer.wrap(buf);
+            // try to encode whole string value with character set specified
+            // by value1 of (0008,0005) Specific Character Set
             if (!enc1.encode(cb, bb, false, CodingErrorAction.REPORT)) {
+                // split whole string value according VR specific delimiters
+                // and try to encode each component separately
                 Encoder[] encs = new Encoder[codecs.length];
                 encs[0] = enc1;
                 encs[1] = encoder(encoder2, codecs[1]);
@@ -162,24 +166,37 @@ public class SpecificCharacterSet {
                 int cur = 0;
                 while (comps.hasMoreTokens()) {
                     String comp = comps.nextToken();
-                    if (comp.length() == 1 // isDelimiter
+                    if (comp.length() == 1 // if delimiter
                             && delimiters.indexOf(comp.charAt(0)) >= 0) {
+                        // switch to initial character set, if current active
+                        // character set does not contain ASCII
                         if (!codecs[cur].containsASCII())
-                            codecs[0].putESCSeq0(bb);
+                            Encoder.escSeq(bb, codecs[0].getEscSeq0());
                         bb.put((byte) comp.charAt(0));
                         cur = 0;
                         continue;
                     }
                     cb = CharBuffer.wrap(comp.toCharArray());
+                    // try to encode component with current active character set
                     if (encs[cur].encode(cb, bb, false,
                             CodingErrorAction.REPORT))
                         continue;
                     int next = cur;
+                    // try to encode component with other character sets
+                    // specified by values of (0008,0005) Specific Character Set
                     do {
                         next = (next + 1) % encs.length;
                         if (next == cur) {
-                            encs[cur].encode(cb, bb, false,
+                            // component could not be encoded with any of the
+                            // specified character sets, encode it with the
+                            // initial character set, including the default
+                            // replacement of the character set decoder
+                            // for characters which cannot be encoded
+                            if (!codecs[cur].containsASCII())
+                                Encoder.escSeq(bb, codecs[0].getEscSeq0());
+                            encs[0].encode(cb, bb, false,
                                     CodingErrorAction.REPLACE);
+                            next = 0;
                             break;
                         }
                         if (encs[next] == null)
@@ -189,7 +206,7 @@ public class SpecificCharacterSet {
                     cur = next;
                 }
                 if (!codecs[cur].containsASCII())
-                    codecs[0].putESCSeq0(bb);
+                    Encoder.escSeq(bb, codecs[0].getEscSeq0());
             }
             return Arrays.copyOf(buf, bb.position());
         }
@@ -207,7 +224,7 @@ public class SpecificCharacterSet {
                         sb.append(codec.decode(b, off, cur - off));
                     }
                     cur += 3;
-                    switch ((b[cur - 2] << 8) | b[cur - 1]) {
+                    switch (((b[cur - 2] & 255) << 8) + (b[cur - 1] & 255)) {
                     case 0x2428:
                         if (b[cur++] == 0x44) {
                             codec = Codec.ISO_IR_159;
@@ -290,7 +307,6 @@ public class SpecificCharacterSet {
             }
             return sb.toString();
         }
-
     }
 
     private enum Codec {
@@ -342,21 +358,12 @@ public class SpecificCharacterSet {
             return escSeq0 >= 0;
         }
 
-        public void putESCSeq0(ByteBuffer bb) {
-            putESCSeq(bb, escSeq0);
+        public int getEscSeq0() {
+            return escSeq0;
         }
 
-        public void putESCSeq1(ByteBuffer bb) {
-            putESCSeq(bb, escSeq1);
-        }
-
-        private static void putESCSeq(ByteBuffer bb, int seq) {
-            bb.put((byte) 0x1b);
-            int b3 = seq >> 16;
-            if (b3 != 0)
-                bb.put((byte) b3);
-            bb.put((byte) (seq >> 8));
-            bb.put((byte) seq);
+        public int getEscSeq1() {
+            return escSeq1;
         }
 
     }
@@ -379,7 +386,7 @@ public class SpecificCharacterSet {
             int bbmark = bb.position();
             try {
                 if (escSeq)
-                    codec.putESCSeq1(bb);
+                    escSeq(bb, codec.getEscSeq1());
                 CoderResult cr = encoder.encode(cb, bb, true);
                 if (!cr.isUnderflow())
                     cr.throwException();
@@ -393,5 +400,15 @@ public class SpecificCharacterSet {
             }
             return true;
         }
+
+        private static void escSeq(ByteBuffer bb, int seq) {
+            bb.put((byte) 0x1b);
+            int b1 = seq >> 16;
+            if (b1 != 0)
+                bb.put((byte) b1);
+            bb.put((byte) (seq >> 8));
+            bb.put((byte) seq);
+        }
     }
+
 }

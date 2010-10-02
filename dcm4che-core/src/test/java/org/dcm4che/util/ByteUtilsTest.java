@@ -69,16 +69,14 @@ public class ByteUtilsTest {
 
     @Test
     public void testBytesToFloatBE() {
-        assertEquals(Math.PI,
-                ByteUtils.bytesToFloatBE(FLOAT_PI_BE, 0),
-                Math.abs(Math.PI - (float) Math.PI));
+        assertEquals((float) Math.PI,
+                ByteUtils.bytesToFloatBE(FLOAT_PI_BE, 0), 0);
     }
 
     @Test
     public void testBytesToFloatLE() {
-        assertEquals(Math.PI,
-                ByteUtils.bytesToFloatLE(FLOAT_PI_LE, 0),
-                Math.abs(Math.PI - (float) Math.PI));
+        assertEquals((float) Math.PI,
+                ByteUtils.bytesToFloatLE(FLOAT_PI_LE, 0), 0);
     }
 
     @Test

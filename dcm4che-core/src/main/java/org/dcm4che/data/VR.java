@@ -2,12 +2,12 @@ package org.dcm4che.data;
 
 
 public enum VR {
-    AE(('A' << 8) + 'E', 8, null, StringType.ASCII),
-    AS(('A' << 8) + 'S', 8, null, StringType.ASCII),
-    AT(('A' << 8) + 'T', 8, BinaryType.TAG, null),
-    CS(('C' << 8) + 'S', 8, null, StringType.ASCII),
-    DA(('D' << 8) + 'A', 8, null, StringType.ASCII),
-    DS(('D' << 8) + 'S', 8, null, StringType.ASCII) {
+    AE(0x4145, 8, null, StringType.ASCII),
+    AS(0x4153, 8, null, StringType.ASCII),
+    AT(0x4154, 8, BinaryType.TAG, null),
+    CS(0x4353, 8, null, StringType.ASCII),
+    DA(0x4441, 8, null, StringType.ASCII),
+    DS(0x4453, 8, null, StringType.ASCII) {
 
         @Override
         public float toFloat(String s) {
@@ -68,10 +68,10 @@ public enum VR {
         }
 
     },
-    DT(('D' << 8) + 'T', 8, null, StringType.ASCII),
-    FD(('F' << 8) + 'D', 8, BinaryType.DOUBLE, null),
-    FL(('F' << 8) + 'L', 8, BinaryType.FLOAT, null),
-    IS(('I' << 8) + 'S', 8, null, StringType.ASCII){
+    DT(0x4454, 8, null, StringType.ASCII),
+    FD(0x4644, 8, BinaryType.DOUBLE, null),
+    FL(0x464c, 8, BinaryType.FLOAT, null),
+    IS(0x4953, 8, null, StringType.ASCII){
 
         @Override
         public int toInt(String s) {
@@ -107,28 +107,28 @@ public enum VR {
         }
 
     },
-    LO(('L' << 8) + 'O', 8, null, StringType.STRING),
-    LT(('L' << 8) + 'T', 8, null, StringType.TEXT),
-    OB(('O' << 8) + 'B', 12, BinaryType.BYTE, null),
-    OF(('O' << 8) + 'F', 12, BinaryType.FLOAT, null),
-    OW(('O' << 8) + 'W', 12, BinaryType.USHORT, null),
-    PN(('P' << 8) + 'N', 8, null, StringType.PN),
-    SH(('S' << 8) + 'H', 8, null, StringType.STRING),
-    SL(('S' << 8) + 'L', 8, BinaryType.INT, null),
-    SQ(('S' << 8) + 'Q', 12, null, null) {
+    LO(0x4c4f, 8, null, StringType.STRING),
+    LT(0x4c54, 8, null, StringType.TEXT),
+    OB(0x4f42, 12, BinaryType.BYTE, null),
+    OF(0x4f46, 12, BinaryType.FLOAT, null),
+    OW(0x4f57, 12, BinaryType.USHORT, null),
+    PN(0x504e, 8, null, StringType.PN),
+    SH(0x5348, 8, null, StringType.STRING),
+    SL(0x534c, 8, BinaryType.INT, null),
+    SQ(0x5351, 12, null, null) {
         @Override
         public Object toValue(byte[] value) {
             throw new UnsupportedOperationException("VR:" + this);
         }
     },
-    SS(('S' << 8) + 'S', 8, BinaryType.SHORT,null),
-    ST(('S' << 8) + 'T', 8, null, StringType.TEXT),
-    TM(('T' << 8) + 'M', 8, null, StringType.ASCII),
-    UI(('U' << 8) + 'I', 8, null, StringType.UI),
-    UL(('U' << 8) + 'L', 8, BinaryType.INT, null),
-    UN(('U' << 8) + 'N', 12, null, null),
-    US(('U' << 8) + 'S', 8, BinaryType.USHORT, null),
-    UT(('U' << 8) + 'T', 12, null, StringType.TEXT);
+    SS(0x5353, 8, BinaryType.SHORT,null),
+    ST(0x5354, 8, null, StringType.TEXT),
+    TM(0x544d, 8, null, StringType.ASCII),
+    UI(0x5549, 8, null, StringType.UI),
+    UL(0x554c, 8, BinaryType.INT, null),
+    UN(0x554e, 12, null, null),
+    US(0x5553, 8, BinaryType.USHORT, null),
+    UT(0x5554, 12, null, StringType.TEXT);
 
     private final int code;
     private final int headerLength;
@@ -152,59 +152,59 @@ public enum VR {
 
     public static VR valueOf(int code) {
         switch (code) {
-        case ('A' << 8) + 'E':
+        case 0x4145:
             return AE;
-        case ('A' << 8) + 'S':
+        case 0x4153:
             return AS;
-        case ('A' << 8) + 'T':
+        case 0x4154:
             return AT;
-        case ('C' << 8) + 'S':
+        case 0x4353:
             return CS;
-        case ('D' << 8) + 'A':
+        case 0x4441:
             return DA;
-        case ('D' << 8) + 'S':
+        case 0x4453:
             return DS;
-        case ('D' << 8) + 'T':
+        case 0x4454:
             return DT;
-        case ('F' << 8) + 'D':
+        case 0x4644:
             return FD;
-        case ('F' << 8) + 'L':
+        case 0x464c:
             return FL;
-        case ('I' << 8) + 'S':
+        case 0x4953:
             return IS;
-        case ('L' << 8) + 'O':
+        case 0x4c4f:
             return LO;
-        case ('L' << 8) + 'T':
+        case 0x4c54:
             return LT;
-        case ('O' << 8) + 'B':
+        case 0x4f42:
             return OB;
-        case ('O' << 8) + 'F':
+        case 0x4f46:
             return OF;
-        case ('O' << 8) + 'W':
+        case 0x4f57:
             return OW;
-        case ('P' << 8) + 'N':
+        case 0x504e:
             return PN;
-        case ('S' << 8) + 'H':
+        case 0x5348:
             return SH;
-        case ('S' << 8) + 'L':
+        case 0x534c:
             return SL;
-        case ('S' << 8) + 'Q':
+        case 0x5351:
             return SQ;
-        case ('S' << 8) + 'S':
+        case 0x5353:
             return SS;
-        case ('S' << 8) + 'T':
+        case 0x5354:
             return ST;
-        case ('T' << 8) + 'M':
+        case 0x544d:
             return TM;
-        case ('U' << 8) + 'I':
+        case 0x5549:
             return UI;
-        case ('U' << 8) + 'L':
+        case 0x554c:
             return UL;
-        case ('U' << 8) + 'N':
+        case 0x554e:
             return UN;
-        case ('U' << 8) + 'S':
+        case 0x5553:
             return US;
-        case ('U' << 8) + 'T':
+        case 0x5554:
             return UT;
         }
         throw new IllegalArgumentException(
@@ -315,12 +315,12 @@ public enum VR {
         return binaryType.bytesToDouble(value, 0, bigEndian);
     }
 
-    public void checkStringType() {
+    void checkStringType() {
         if (stringType == null)
             throw new UnsupportedOperationException("VR:" + this);
     }
 
-    public void checkBinaryType() {
+    void checkBinaryType() {
         if (binaryType == null)
             throw new UnsupportedOperationException("VR:" + this);
     }

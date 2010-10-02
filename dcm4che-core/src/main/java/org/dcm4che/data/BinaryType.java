@@ -427,7 +427,7 @@ enum BinaryType {
 
         double[] doubles = new double[len / numBytes];
         for (int i = 0, off = 0; i < doubles.length; i++, off += numBytes)
-            doubles[i] = bytesToFloatBE(bytes, off);
+            doubles[i] = bytesToDoubleBE(bytes, off);
         return doubles;
     }
 

@@ -49,7 +49,7 @@ public enum VR {
             String[] ss = new String[floats.length];
             for (int i = 0; i < floats.length; i++)
                 ss[i] = Float.toString(floats[i]);
-            return toValue(ss);
+            return stringType.join(ss);
         }
 
         @Override
@@ -61,10 +61,10 @@ public enum VR {
         public Object toValue(double[] doubles, boolean bigEndian) {
             if (doubles == null || doubles.length == 0)
                 return null;
-            String[] strings = new String[doubles.length];
+            String[] ss = new String[doubles.length];
             for (int i = 0; i < doubles.length; i++)
-                strings[i] = Float.toString((float) doubles[i]);
-            return toValue(strings);
+                ss[i] = Float.toString((float) doubles[i]);
+            return stringType.join(ss);
         }
 
     },
@@ -103,7 +103,7 @@ public enum VR {
             String[] ss = new String[ints.length];
             for (int i = 0; i < ints.length; i++)
                 ss[i] = Integer.toString(ints[i]);
-            return toValue(ss);
+            return stringType.join(ss);
         }
 
     },
@@ -111,7 +111,7 @@ public enum VR {
     LT(0x4c54, 8, null, StringType.TEXT),
     OB(0x4f42, 12, BinaryType.BYTE, null),
     OF(0x4f46, 12, BinaryType.FLOAT, null),
-    OW(0x4f57, 12, BinaryType.USHORT, null),
+    OW(0x4f57, 12, BinaryType.SHORT, null),
     PN(0x504e, 8, null, StringType.PN),
     SH(0x5348, 8, null, StringType.STRING),
     SL(0x534c, 8, BinaryType.INT, null),
@@ -120,7 +120,18 @@ public enum VR {
         public Object toValue(byte[] value) {
             throw new UnsupportedOperationException("VR:" + this);
         }
-    },
+
+        @Override
+        public Object toValue(String val, boolean bigEndian) {
+            throw new UnsupportedOperationException("VR:" + this);
+        }
+
+        @Override
+        public Object toValue(String[] val, boolean bigEndian) {
+            throw new UnsupportedOperationException("VR:" + this);
+           
+        }
+   },
     SS(0x5353, 8, BinaryType.SHORT,null),
     ST(0x5354, 8, null, StringType.TEXT),
     TM(0x544d, 8, null, StringType.ASCII),
@@ -130,10 +141,10 @@ public enum VR {
     US(0x5553, 8, BinaryType.USHORT, null),
     UT(0x5554, 12, null, StringType.TEXT);
 
-    private final int code;
-    private final int headerLength;
-    private final BinaryType binaryType;
-    private final StringType stringType;
+    protected final int code;
+    protected final int headerLength;
+    protected final BinaryType binaryType;
+    protected final StringType stringType;
 
     VR(int code, int headerLength, BinaryType binaryType, StringType stringType) {
         this.code = code;
@@ -226,9 +237,19 @@ public enum VR {
         return stringType.first(s);
     }
 
+    public String firstBinaryValueAsString(byte[] value, boolean bigEndian) {
+        checkBinaryType();
+        return binaryType.bytesToString(value, 0, bigEndian);
+    }
+
     public String[] splitStringValue(String s) {
         checkStringType();
         return stringType.split(s);
+    }
+
+    public String[] binaryValueAsStrings(byte[] value, boolean bigEndian) {
+        checkBinaryType();
+        return binaryType.bytesToStrings(value, bigEndian);
     }
 
     public byte[] toBytes(int i, boolean bigEndian) {
@@ -315,6 +336,14 @@ public enum VR {
         return binaryType.bytesToDouble(value, 0, bigEndian);
     }
 
+    boolean isStringType() {
+        return stringType != null;
+    }
+
+    boolean isBinaryType() {
+        return binaryType != null;
+    }
+
     void checkStringType() {
         if (stringType == null)
             throw new UnsupportedOperationException("VR:" + this);
@@ -331,17 +360,19 @@ public enum VR {
         return val;
     }
 
-    public Object toValue(String val) {
-        checkStringType();
+    public Object toValue(String val, boolean bigEndian) {
         if (val == null || val.length() == 0)
             return null;
+        if (isBinaryType())
+            return binaryType.stringToBytes(val, bigEndian);
         return val;
     }
 
-    public Object toValue(String[] val) {
-        checkStringType();
+    public Object toValue(String[] val, boolean bigEndian) {
         if (val == null || val.length == 0)
             return null;
+        if (isBinaryType())
+            return binaryType.stringsToBytes(val, bigEndian);
         return stringType.join(val);
     }
 
@@ -380,5 +411,4 @@ public enum VR {
             return null;
         return binaryType.doublesToBytes(val, bigEndian);
     }
-
 }

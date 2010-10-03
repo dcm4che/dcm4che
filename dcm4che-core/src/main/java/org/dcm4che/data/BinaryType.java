@@ -6,12 +6,12 @@ enum BinaryType {
     BYTE(1) {
         @Override
         protected int bytesToIntBE(byte[] bytes, int off) {
-            return bytes[off] & 255;
+            return bytes[off];
         }
 
         @Override
         protected int bytesToIntLE(byte[] bytes, int off) {
-            return bytes[off] & 255;
+            return bytes[off];
         }
 
         @Override
@@ -30,6 +30,7 @@ enum BinaryType {
         public byte[] toggleEndian(byte[] bytes) {
             return bytes ;
         }
+
     },
     USHORT(2) {
         @Override
@@ -56,6 +57,7 @@ enum BinaryType {
         public byte[] toggleEndian(byte[] bytes) {
             return ByteUtils.swapShorts(bytes) ;
         }
+
     },
     SHORT(2) {
         @Override
@@ -82,6 +84,7 @@ enum BinaryType {
         public byte[] toggleEndian(byte[] bytes) {
             return ByteUtils.swapShorts(bytes) ;
         }
+
     },
     INT(4) {
         @Override
@@ -157,6 +160,16 @@ enum BinaryType {
         }
 
         @Override
+        protected String bytesToStringBE(byte[] bytes, int off) {
+           return Float.toString(ByteUtils.bytesToFloatBE(bytes, off));
+        }
+
+        @Override
+        protected String bytesToStringLE(byte[] bytes, int off) {
+            return Float.toString(ByteUtils.bytesToFloatLE(bytes, off));
+        }
+
+        @Override
         protected byte[] floatToBytesBE(float f, byte[] bytes, int off) {
             return ByteUtils.floatToBytesBE(f, bytes, off);
         }
@@ -174,6 +187,16 @@ enum BinaryType {
         @Override
         protected byte[] doubleToBytesLE(double d, byte[] bytes, int off) {
             return ByteUtils.floatToBytesLE((float) d, bytes, off);
+        }
+
+        @Override
+        protected byte[] stringToBytesBE(String s, byte[] bytes, int off) {
+            return ByteUtils.floatToBytesBE(Float.parseFloat(s), bytes, off);
+        }
+
+        @Override
+        protected byte[] stringToBytesLE(String s, byte[] bytes, int off) {
+            return ByteUtils.floatToBytesLE(Float.parseFloat(s), bytes, off);
         }
 
         @Override
@@ -195,6 +218,16 @@ enum BinaryType {
         @Override
         protected double bytesToDoubleBE(byte[] bytes, int off) {
             return ByteUtils.bytesToDoubleBE(bytes, off);
+        }
+
+        @Override
+        protected String bytesToStringBE(byte[] bytes, int off) {
+           return Double.toString(ByteUtils.bytesToDoubleBE(bytes, off));
+        }
+
+        @Override
+        protected String bytesToStringLE(byte[] bytes, int off) {
+            return Double.toString(ByteUtils.bytesToDoubleLE(bytes, off));
         }
 
         @Override
@@ -223,6 +256,16 @@ enum BinaryType {
         }
 
         @Override
+        protected byte[] stringToBytesBE(String s, byte[] bytes, int off) {
+            return ByteUtils.doubleToBytesBE(Double.parseDouble(s), bytes, off);
+        }
+
+        @Override
+        protected byte[] stringToBytesLE(String s, byte[] bytes, int off) {
+            return ByteUtils.doubleToBytesLE(Double.parseDouble(s), bytes, off);
+        }
+
+        @Override
         public byte[] toggleEndian(byte[] bytes) {
             return ByteUtils.swapLongs(bytes);
         }
@@ -232,6 +275,7 @@ enum BinaryType {
     public static int[] EMPTY_INTS = {};
     public static float[] EMPTY_FLOATS = {};
     public static double[] EMPTY_DOUBLES = {};
+    public static String[] EMPTY_STRING = {};
 
     private final int numBytes;
 
@@ -265,6 +309,17 @@ enum BinaryType {
     public double[] bytesToDoubles(byte[] bytes, boolean bigEndian) {
         return bigEndian ? bytesToDoublesBE(bytes)
                          : bytesToDoublesLE(bytes);
+    }
+
+    public String bytesToString(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToStringBE(bytes, off)
+                         : bytesToStringLE(bytes, off);
+    }
+
+
+    public String[] bytesToStrings(byte[] bytes, boolean bigEndian) {
+        return bigEndian ? bytesToStringsBE(bytes)
+                         : bytesToStringsLE(bytes);
     }
 
     public byte[] intToBytes(int val, boolean bigEndian) {
@@ -312,6 +367,20 @@ enum BinaryType {
                          : doublesToBytesLE(doubles);
     }
 
+    public byte[] stringToBytes(String s, boolean bigEndian) {
+        return stringToBytes(s, new byte[numBytes], 0, bigEndian);
+   }
+
+    public byte[] stringToBytes(String s, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? stringToBytesBE(s, bytes, off)
+                         : stringToBytesLE(s, bytes, off);
+    }
+
+    public byte[] stringsToBytes(String[] ss, boolean bigEndian) {
+        return bigEndian ? stringsToBytesBE(ss) : stringsToBytesLE(ss);
+    }
+
     public abstract byte[] toggleEndian(byte[] bytes);
 
     protected int bytesToIntBE(byte[] bytes, int off) {
@@ -338,6 +407,14 @@ enum BinaryType {
         throw new UnsupportedOperationException();
     }
 
+    protected String bytesToStringBE(byte[] bytes, int off) {
+        return Integer.toString(bytesToIntBE(bytes, off));
+    }
+
+    protected String bytesToStringLE(byte[] bytes, int off) {
+        return Integer.toString(bytesToIntLE(bytes, off));
+    }
+
     protected byte[] intToBytesBE(int val, byte[] bytes, int off) {
         throw new UnsupportedOperationException();
     }
@@ -360,6 +437,14 @@ enum BinaryType {
 
     protected byte[] doubleToBytesLE(double val, byte[] bytes, int off) {
         throw new UnsupportedOperationException();
+    }
+
+    protected byte[] stringToBytesBE(String s, byte[] bytes, int off) {
+        return intToBytesBE(VR.IS.toInt(s), bytes, off);
+    }
+
+    protected byte[] stringToBytesLE(String s, byte[] bytes, int off) {
+        return intToBytesLE(VR.IS.toInt(s), bytes, off);
     }
 
     private void checkLength(int len) {
@@ -443,6 +528,30 @@ enum BinaryType {
         return doubles ;
     }
 
+    private String[] bytesToStringsBE(byte[] bytes) {
+        int len = bytes.length;
+        if (len == 0)
+            return EMPTY_STRING;
+
+        checkLength(len);
+        String[] strings = new String[len / numBytes];
+        for (int i = 0, off = 0; i < strings.length; i++, off += numBytes)
+            strings[i] = bytesToStringBE(bytes, off);
+        return strings;
+    }
+
+    private String[] bytesToStringsLE(byte[] bytes) {
+        int len = bytes.length;
+        if (len == 0)
+            return EMPTY_STRING;
+
+        checkLength(len);
+        String[] strings = new String[len / numBytes];
+        for (int i = 0, off = 0; i < strings.length; i++, off += numBytes)
+            strings[i] = bytesToStringLE(bytes, off);
+        return strings;
+    }
+
     private byte[] intsToBytesBE(int[] ints) {
         if (ints.length == 0)
             return EMPTY_BYTES;
@@ -502,4 +611,25 @@ enum BinaryType {
             doubleToBytesLE(doubles[i], bytes, off);
         return bytes ;
     }
+
+    private byte[] stringsToBytesBE(String[] ss) {
+        if (ss.length == 0)
+            return EMPTY_BYTES;
+
+        byte[] bytes = new byte[ss.length * numBytes];
+        for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
+            stringToBytesBE(ss[i], bytes, off);
+        return bytes;
+    }
+
+    private byte[] stringsToBytesLE(String[] ss) {
+        if (ss.length == 0)
+            return EMPTY_BYTES;
+
+        byte[] bytes = new byte[ss.length * numBytes];
+        for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
+            stringToBytesLE(ss[i], bytes, off);
+        return bytes;
+    }
+
 }

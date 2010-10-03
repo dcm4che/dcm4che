@@ -22,14 +22,17 @@ public class VRTest {
     private static final byte[] DOUBLE_FLOAT_PI_LE = { 0, 0, 0, 96, -5, 33, 9, 64 };
     private static final byte[] DOUBLE_FLOAT_PI_BE = { 64, 9, 33, -5, 96, 0, 0, 0 };
     private static final int[] INT_123 = { -123 };
-    private static final int[] UINT_123 = { -123 & 255};
     private static final int[] INT_12345 = { -12345 };
-    private static final int[] UINT_12345 = { -12345 & 0xffff };
+    private static final int[] UINT_12345 = { 53191 };
     private static final float[] FLOAT_PI = { (float) Math.PI };
     private static final double[] DOUBLE_PI = { Math.PI };
     private static final double[] DOUBLE_FLOAT_PI = { (float) Math.PI };
-    private static final String STRING_PI = "" + (float) Math.PI;
+    private static final String STRING_PI = Double.toString(Math.PI);
+    private static final String STRING_FLOAT_PI = Float.toString((float) Math.PI);
+    private static final String[] STRING_FLOAT_PI_A = { STRING_FLOAT_PI };
     private static final String STRING_12345 = "-12345";
+    private static final String STRING_123 = "-123";
+    private static final String STRING_53191 = "53191";
     private static final String IMAGE_TYPE = "ORIGINAL\\PRIMARY\\AXIAL";
     private static final String[] IMAGE_TYPE_VALUES =
             { "ORIGINAL","PRIMARY", "AXIAL" };
@@ -76,6 +79,28 @@ public class VRTest {
     }
 
     @Test
+    public void testFirstBinaryValueAsString() {
+        assertEquals(STRING_123, VR.OB.firstBinaryValueAsString(BYTE_123, false));
+        assertEquals(STRING_123, VR.OB.firstBinaryValueAsString(BYTE_123, true));
+        assertEquals(STRING_12345, VR.SS.firstBinaryValueAsString(SHORT_12345_LE, false));
+        assertEquals(STRING_12345, VR.SS.firstBinaryValueAsString(SHORT_12345_BE, true));
+        assertEquals(STRING_53191, VR.US.firstBinaryValueAsString(SHORT_12345_LE, false));
+        assertEquals(STRING_53191, VR.US.firstBinaryValueAsString(SHORT_12345_BE, true));
+        assertEquals(STRING_12345, VR.OW.firstBinaryValueAsString(SHORT_12345_LE, false));
+        assertEquals(STRING_12345, VR.OW.firstBinaryValueAsString(SHORT_12345_BE, true));
+        assertEquals(STRING_12345, VR.SL.firstBinaryValueAsString(INT_12345_LE, false));
+        assertEquals(STRING_12345, VR.SL.firstBinaryValueAsString(INT_12345_BE, true));
+        assertEquals(STRING_12345, VR.UL.firstBinaryValueAsString(INT_12345_LE, false));
+        assertEquals(STRING_12345, VR.UL.firstBinaryValueAsString(INT_12345_BE, true));
+        assertEquals(STRING_FLOAT_PI, VR.FL.firstBinaryValueAsString(FLOAT_PI_LE, false));
+        assertEquals(STRING_FLOAT_PI, VR.FL.firstBinaryValueAsString(FLOAT_PI_BE, true));
+        assertEquals(STRING_FLOAT_PI, VR.OF.firstBinaryValueAsString(FLOAT_PI_LE, false));
+        assertEquals(STRING_FLOAT_PI, VR.OF.firstBinaryValueAsString(FLOAT_PI_BE, true));
+        assertEquals(STRING_PI, VR.FD.firstBinaryValueAsString(DOUBLE_PI_LE, false));
+        assertEquals(STRING_PI, VR.FD.firstBinaryValueAsString(DOUBLE_PI_BE, true));
+    }
+
+   @Test
     public void testSplitStringValue() {
         assertArrayEquals(IMAGE_TYPE_VALUES, VR.CS.splitStringValue(IMAGE_TYPE));
     }
@@ -156,14 +181,14 @@ public class VRTest {
 
     @Test
     public void testToIntByteArrayBoolean() {
-        assertEquals(-123 & 255, VR.OB.toInt(BYTE_123, false));
-        assertEquals(-123 & 255, VR.OB.toInt(BYTE_123, true));
+        assertEquals(-123, VR.OB.toInt(BYTE_123, false));
+        assertEquals(-123, VR.OB.toInt(BYTE_123, true));
         assertEquals(-12345, VR.SS.toInt(SHORT_12345_LE, false));
         assertEquals(-12345, VR.SS.toInt(SHORT_12345_BE, true));
-        assertEquals(-12345 & 0xffff, VR.US.toInt(SHORT_12345_LE, false));
-        assertEquals(-12345 & 0xffff, VR.US.toInt(SHORT_12345_BE, true));
-        assertEquals(-12345 & 0xffff, VR.OW.toInt(SHORT_12345_LE, false));
-        assertEquals(-12345 & 0xffff, VR.OW.toInt(SHORT_12345_BE, true));
+        assertEquals(53191, VR.US.toInt(SHORT_12345_LE, false));
+        assertEquals(53191, VR.US.toInt(SHORT_12345_BE, true));
+        assertEquals(-12345, VR.OW.toInt(SHORT_12345_LE, false));
+        assertEquals(-12345, VR.OW.toInt(SHORT_12345_BE, true));
         assertEquals(-12345, VR.SL.toInt(INT_12345_LE, false));
         assertEquals(-12345, VR.SL.toInt(INT_12345_BE, true));
         assertEquals(-12345, VR.UL.toInt(INT_12345_LE, false));
@@ -172,14 +197,14 @@ public class VRTest {
 
     @Test
     public void testToIntsByteArrayBoolean() {
-        assertArrayEquals(UINT_123, VR.OB.toInts(BYTE_123, false));
-        assertArrayEquals(UINT_123, VR.OB.toInts(BYTE_123, true));
+        assertArrayEquals(INT_123, VR.OB.toInts(BYTE_123, false));
+        assertArrayEquals(INT_123, VR.OB.toInts(BYTE_123, true));
         assertArrayEquals(INT_12345, VR.SS.toInts(SHORT_12345_LE, false));
         assertArrayEquals(INT_12345, VR.SS.toInts(SHORT_12345_BE, true));
         assertArrayEquals(UINT_12345, VR.US.toInts(SHORT_12345_LE, false));
         assertArrayEquals(UINT_12345, VR.US.toInts(SHORT_12345_BE, true));
-        assertArrayEquals(UINT_12345, VR.OW.toInts(SHORT_12345_LE, false));
-        assertArrayEquals(UINT_12345, VR.OW.toInts(SHORT_12345_BE, true));
+        assertArrayEquals(INT_12345, VR.OW.toInts(SHORT_12345_LE, false));
+        assertArrayEquals(INT_12345, VR.OW.toInts(SHORT_12345_BE, true));
         assertArrayEquals(INT_12345, VR.SL.toInts(INT_12345_LE, false));
         assertArrayEquals(INT_12345, VR.SL.toInts(INT_12345_BE, true));
         assertArrayEquals(INT_12345, VR.UL.toInts(INT_12345_LE, false));
@@ -218,17 +243,17 @@ public class VRTest {
 
     @Test
     public void testToFloatString() {
-        assertEquals((float) Math.PI, VR.DS.toFloat(STRING_PI), 0);
+        assertEquals((float) Math.PI, VR.DS.toFloat(STRING_FLOAT_PI), 0);
     }
 
     @Test
     public void testToFloatsString() {
-        assertArrayEquals(FLOAT_PI, VR.DS.toFloats(STRING_PI), 0);
+        assertArrayEquals(FLOAT_PI, VR.DS.toFloats(STRING_FLOAT_PI), 0);
     }
 
     @Test
     public void testToDoubleString() {
-        assertEquals((float) Math.PI, VR.DS.toDouble(STRING_PI), 0);
+        assertEquals((float) Math.PI, VR.DS.toDouble(STRING_FLOAT_PI), 0);
     }
 
     @Test
@@ -243,7 +268,7 @@ public class VRTest {
 
     @Test
     public void testToDoublesString() {
-        assertArrayEquals(DOUBLE_FLOAT_PI, VR.DS.toDoubles(STRING_PI), 0);
+        assertArrayEquals(DOUBLE_FLOAT_PI, VR.DS.toDoubles(STRING_FLOAT_PI), 0);
     }
 
     @Test
@@ -269,18 +294,43 @@ public class VRTest {
 
     @Test
     public void testToValueString() {
-        assertEquals(STRING_PI, VR.DS.toValue(STRING_PI));
-        assertNull(VR.DS.toValue(""));
+        assertArrayEquals(BYTE_123, (byte[]) VR.OB.toValue(STRING_123, false));
+        assertArrayEquals(BYTE_123, (byte[]) VR.OB.toValue(STRING_123, true));
+        assertArrayEquals(SHORT_12345_LE, (byte[]) VR.SS.toValue(STRING_12345, false));
+        assertArrayEquals(SHORT_12345_BE, (byte[]) VR.SS.toValue(STRING_12345, true));
+        assertArrayEquals(SHORT_12345_LE, (byte[]) VR.US.toValue(STRING_53191, false));
+        assertArrayEquals(SHORT_12345_BE, (byte[]) VR.US.toValue(STRING_53191, true));
+        assertArrayEquals(SHORT_12345_LE, (byte[]) VR.OW.toValue(STRING_12345, false));
+        assertArrayEquals(SHORT_12345_BE, (byte[]) VR.OW.toValue(STRING_12345, true));
+        assertArrayEquals(INT_12345_LE, (byte[]) VR.SL.toValue(STRING_12345, false));
+        assertArrayEquals(INT_12345_BE, (byte[]) VR.SL.toValue(STRING_12345, true));
+        assertArrayEquals(INT_12345_LE, (byte[]) VR.UL.toValue(STRING_12345, false));
+        assertArrayEquals(INT_12345_BE, (byte[]) VR.UL.toValue(STRING_12345, true));
+        assertArrayEquals(FLOAT_PI_LE, (byte[]) VR.FL.toValue(STRING_FLOAT_PI, false));
+        assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.FL.toValue(STRING_FLOAT_PI, true));
+        assertArrayEquals(FLOAT_PI_LE, (byte[]) VR.OF.toValue(STRING_FLOAT_PI, false));
+        assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue(STRING_FLOAT_PI, true));
+        assertArrayEquals(DOUBLE_PI_LE, (byte[]) VR.FD.toValue(STRING_PI, false));
+        assertArrayEquals(DOUBLE_PI_BE, (byte[]) VR.FD.toValue(STRING_PI, true));
+        assertEquals(STRING_12345, VR.IS.toValue(STRING_12345, false));
+        assertEquals(STRING_12345, VR.IS.toValue(STRING_12345, true));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(STRING_FLOAT_PI, false));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(STRING_FLOAT_PI, true));
+        assertNull(VR.DS.toValue("", false));
+        assertNull(VR.DS.toValue("", true));
     }
 
     @Test (expected=UnsupportedOperationException.class)
     public void testToValueStringSQ() {
-        VR.SQ.toValue(STRING_PI);
+        VR.SQ.toValue(STRING_FLOAT_PI, false);
     }
 
     @Test
     public void testToValueStringArray() {
-        assertEquals(IMAGE_TYPE, VR.CS.toValue(IMAGE_TYPE_VALUES));
+        assertEquals(IMAGE_TYPE, VR.CS.toValue(IMAGE_TYPE_VALUES, false));
+        assertEquals(IMAGE_TYPE, VR.CS.toValue(IMAGE_TYPE_VALUES, true));
+        assertArrayEquals(FLOAT_PI_LE, (byte[]) VR.OF.toValue(STRING_FLOAT_PI_A, false));
+        assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue(STRING_FLOAT_PI_A, true));
     }
 
     @Test
@@ -296,7 +346,7 @@ public class VRTest {
         assertArrayEquals(INT_12345_LE, (byte[]) VR.SL.toValue(-12345, false));
         assertArrayEquals(INT_12345_BE, (byte[]) VR.SL.toValue(-12345, true));
         assertArrayEquals(INT_12345_LE,(byte[])  VR.UL.toValue(-12345, false));
-        assertArrayEquals(INT_12345_LE,(byte[])  VR.UL.toValue(-12345, false));
+        assertArrayEquals(INT_12345_BE,(byte[])  VR.UL.toValue(-12345, true));
         assertEquals(STRING_12345, VR.IS.toValue(-12345, false));
         assertEquals(STRING_12345, VR.IS.toValue(-12345, true));
     }
@@ -314,7 +364,7 @@ public class VRTest {
         assertArrayEquals(INT_12345_LE, (byte[]) VR.SL.toValue(INT_12345, false));
         assertArrayEquals(INT_12345_BE, (byte[]) VR.SL.toValue(INT_12345, true));
         assertArrayEquals(INT_12345_LE,(byte[])  VR.UL.toValue(INT_12345, false));
-        assertArrayEquals(INT_12345_LE,(byte[])  VR.UL.toValue(INT_12345, false));
+        assertArrayEquals(INT_12345_BE,(byte[])  VR.UL.toValue(INT_12345, true));
         assertEquals(STRING_12345, VR.IS.toValue(INT_12345, false));
         assertEquals(STRING_12345, VR.IS.toValue(INT_12345, true));
     }
@@ -327,8 +377,8 @@ public class VRTest {
         assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue((float) Math.PI, true));
         assertArrayEquals(DOUBLE_FLOAT_PI_LE, (byte[]) VR.FD.toValue((float) Math.PI, false));
         assertArrayEquals(DOUBLE_FLOAT_PI_BE, (byte[]) VR.FD.toValue((float) Math.PI, true));
-        assertEquals(STRING_PI, VR.DS.toValue((float) Math.PI, false));
-        assertEquals(STRING_PI, VR.DS.toValue((float) Math.PI, true));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue((float) Math.PI, false));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue((float) Math.PI, true));
      }
 
     @Test
@@ -339,8 +389,8 @@ public class VRTest {
         assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue(FLOAT_PI, true));
         assertArrayEquals(DOUBLE_FLOAT_PI_LE, (byte[]) VR.FD.toValue(FLOAT_PI, false));
         assertArrayEquals(DOUBLE_FLOAT_PI_BE, (byte[]) VR.FD.toValue(FLOAT_PI, true));
-        assertEquals(STRING_PI, VR.DS.toValue(FLOAT_PI, false));
-        assertEquals(STRING_PI, VR.DS.toValue(FLOAT_PI, true));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(FLOAT_PI, false));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(FLOAT_PI, true));
     }
 
     @Test
@@ -351,8 +401,8 @@ public class VRTest {
         assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue(Math.PI, true));
         assertArrayEquals(DOUBLE_PI_LE, (byte[]) VR.FD.toValue(Math.PI, false));
         assertArrayEquals(DOUBLE_PI_BE, (byte[]) VR.FD.toValue(Math.PI, true));
-        assertEquals(STRING_PI, VR.DS.toValue(Math.PI, false));
-        assertEquals(STRING_PI, VR.DS.toValue(Math.PI, true));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(Math.PI, false));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(Math.PI, true));
     }
 
     @Test
@@ -363,8 +413,8 @@ public class VRTest {
         assertArrayEquals(FLOAT_PI_BE, (byte[]) VR.OF.toValue(DOUBLE_PI, true));
         assertArrayEquals(DOUBLE_PI_LE, (byte[]) VR.FD.toValue(DOUBLE_PI, false));
         assertArrayEquals(DOUBLE_PI_BE, (byte[]) VR.FD.toValue(DOUBLE_PI, true));
-        assertEquals(STRING_PI, VR.DS.toValue(DOUBLE_PI, false));
-        assertEquals(STRING_PI, VR.DS.toValue(DOUBLE_PI, true));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(DOUBLE_PI, false));
+        assertEquals(STRING_FLOAT_PI, VR.DS.toValue(DOUBLE_PI, true));
     }
 
 }

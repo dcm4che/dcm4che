@@ -128,7 +128,8 @@ public class Attributes {
         if (index < 0)
             return defVal;
 
-        return groups[index].getString(cs(groupNumber), tag, privateCreator, defVal);
+        return groups[index].getString(cs(groupNumber), bigEndian(groupNumber),
+                tag, privateCreator, defVal);
     }
 
     public String[] getStrings(int tag, String privateCreator) {
@@ -137,7 +138,8 @@ public class Attributes {
         if (index < 0)
             return null;
 
-        return groups[index].getStrings(cs(groupNumber), tag, privateCreator);
+        return groups[index].getStrings(cs(groupNumber), bigEndian(groupNumber),
+                tag, privateCreator);
     }
 
     public int getInt(int tag, String privateCreator, int defVal) {
@@ -210,8 +212,8 @@ public class Attributes {
 
     public void putString(int tag, String privateCreator, VR vr, String val) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putString(cs(groupNumber), tag, privateCreator, vr,
-                val);
+        getOrCreateGroup(groupNumber).putString(cs(groupNumber),
+                bigEndian(groupNumber), tag, privateCreator, vr, val);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -219,28 +221,28 @@ public class Attributes {
     public void putStrings(int tag, String privateCreator, VR vr,
             String... value) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putStrings(cs(groupNumber), tag, privateCreator, vr,
-                value);
+        getOrCreateGroup(groupNumber).putStrings(cs(groupNumber),
+                bigEndian(groupNumber), tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
 
     public void putInt(int tag, String privateCreator, VR vr, int value) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putInt(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
-                vr, value);
+        getOrCreateGroup(groupNumber).putInt(cs(groupNumber),
+                bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putInts(int tag, String privateCreator, VR vr, int... value) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putInts(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
-                vr, value);
+        getOrCreateGroup(groupNumber).putInts(cs(groupNumber),
+                bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putFloat(int tag, String privateCreator, VR vr, float value) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
-                vr, value);
+        getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), 
+                bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putFloats(int tag, String privateCreator, VR vr, float... value) {

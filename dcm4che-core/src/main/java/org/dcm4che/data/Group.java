@@ -95,6 +95,10 @@ class Group {
         if (index < 0)
             return null;
 
+        VR vr = vrs[index];
+        if (vr == VR.SQ)
+            throw new UnsupportedOperationException("VR: "+vr);
+
         Object value = values[index];
         if (value == null)
             return BinaryType.EMPTY_BYTES;
@@ -102,7 +106,6 @@ class Group {
         if (value instanceof byte[])
             return (byte[]) value;
 
-        VR vr = vrs[index];
         if (value instanceof String)
             return vr.toBytes((String) value, cs);
 
@@ -110,8 +113,8 @@ class Group {
                 "Cannot convert " + value + " to byte[]");
     }
 
-    public String getString(SpecificCharacterSet cs, int tag,
-            String privateCreator, String defVal) {
+    public String getString(SpecificCharacterSet cs, boolean bigEndian,
+            int tag, String privateCreator, String defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
             return defVal;
@@ -121,13 +124,16 @@ class Group {
             return defVal;
 
         VR vr = vrs[index];
-        vr.checkStringType();
+        if (vr == VR.SQ)
+            throw new UnsupportedOperationException("VR: "+vr);
 
         Object value = values[index];
         if (value == null)
             return defVal;
 
-        return vr.firstStringValue(toString(value, index, vr, cs));
+         return vr.isBinaryType() 
+                 ? vr.firstBinaryValueAsString((byte[]) value, bigEndian)
+                 : vr.firstStringValue(toString(value, index, vr, cs));
     }
 
     private String toString(Object value, int index, VR vr,
@@ -139,8 +145,8 @@ class Group {
         return s;
     }
 
-    public String[] getStrings(SpecificCharacterSet cs, int tag,
-            String privateCreator) {
+    public String[] getStrings(SpecificCharacterSet cs, boolean bigEndian,
+            int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
             return null;
@@ -150,14 +156,17 @@ class Group {
             return null;
 
         VR vr = vrs[index];
-        vr.checkStringType();
+        if (vr == VR.SQ)
+            throw new UnsupportedOperationException("VR: "+vr);
 
         Object value = values[index];
         if (value == null)
             return StringType.EMPTY_STRINGS;
 
-        return vr.splitStringValue(toString(value, index, vr, cs));
-    }
+        return vr.isBinaryType() 
+                ? vr.binaryValueAsStrings((byte[]) value, bigEndian)
+                : vr.splitStringValue(toString(value, index, vr, cs));
+     }
 
     public int getInt(SpecificCharacterSet cs, boolean bigEndian,
             int tag, String privateCreator, int defVal) {
@@ -351,14 +360,14 @@ class Group {
         put(cs, tag, privateCreator, vr, vr.toValue(value));
     }
 
-    public void putString(SpecificCharacterSet cs, int tag,
+    public void putString(SpecificCharacterSet cs, boolean bigEndian, int tag,
             String privateCreator, VR vr, String s) {
-        put(cs, tag, privateCreator, vr, vr.toValue(s));
+        put(cs, tag, privateCreator, vr, vr.toValue(s, bigEndian));
     }
 
-    public void putStrings(SpecificCharacterSet cs, int tag,
+    public void putStrings(SpecificCharacterSet cs, boolean bigEndian, int tag,
             String privateCreator, VR vr, String... ss) {
-        put(cs, tag, privateCreator, vr, vr.toValue(ss));
+        put(cs, tag, privateCreator, vr, vr.toValue(ss, bigEndian));
     }
 
     public void putInt(SpecificCharacterSet cs, boolean bigEndian,
@@ -441,11 +450,11 @@ class Group {
                     groupNumber, elTag));
 
         for (int creatorTag = 0x10; creatorTag <= 0xff; creatorTag++) {
-            String s = getString(cs, creatorTag, null, null);
+            String s = getString(cs, false, creatorTag, null, null);
             if (s == null) {
                 if (!reservePrivateBlock)
                     return 0;
-                putString(cs, creatorTag, null, VR.LO, privateCreator);
+                putString(cs, false, creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | elTag;
             }
             if (privateCreator.equals(s))

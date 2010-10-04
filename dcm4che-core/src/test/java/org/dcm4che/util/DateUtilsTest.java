@@ -16,85 +16,86 @@ public class DateUtilsTest {
     private final long HOUR = 60 * MINUTE;
     private final long DAY = 24 * HOUR;
     private final long YEAR = 365 * DAY;
-
+    private TimeZone tz;
+    
     @Before
     public void setUp() throws Exception {
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT+2"));
+        tz = DateUtils.timeZone("+0200");
     }
 
     @Test
     public void testFormatDA() {
-        assertEquals("19700101", DateUtils.formatDA(new Date(0)));
+        assertEquals("19700101", DateUtils.formatDA(tz, new Date(0)));
     }
 
     @Test
     public void testFormatTM() {
-        assertEquals("020000.000", DateUtils.formatTM(new Date(0)));
+        assertEquals("020000.000", DateUtils.formatTM(tz, new Date(0)));
     }
 
     @Test
     public void testFormatDT() {
-        assertEquals("19700101020000.000", DateUtils.formatDT(new Date(0)));
+        assertEquals("19700101020000.000", DateUtils.formatDT(tz, new Date(0)));
     }
 
     @Test
     public void testFormatDTwithTZ() {
         assertEquals("19700101020000.000+0200",
-                DateUtils.formatDT(new Date(0), Calendar.MILLISECOND, true));
+                DateUtils.formatDT(tz, new Date(0), Calendar.MILLISECOND, true));
     }
 
     @Test
     public void testParseDA() {
         assertEquals(-2 * HOUR,
-                DateUtils.parseDA("19700101").getTime());
+                DateUtils.parseDA(tz, "19700101").getTime());
     }
 
     @Test
     public void testParseDAacrnema() {
         assertEquals(-2 * HOUR,
-                DateUtils.parseDA("1970.01.01").getTime());
+                DateUtils.parseDA(tz, "1970.01.01").getTime());
     }
 
     @Test
     public void testParseDAceil() {
         assertEquals(DAY - 2 * HOUR - 1,
-                DateUtils.parseDA("19700101", true).getTime());
+                DateUtils.parseDA(tz, "19700101", true).getTime());
     }
 
     @Test
     public void testParseTM() {
         assertEquals(0,
-                DateUtils.parseTM("020000.000").getTime());
+                DateUtils.parseTM(tz, "020000.000").getTime());
     }
 
     @Test
     public void testParseTMacrnema() {
         assertEquals(0,
-                DateUtils.parseTM("02:00:00").getTime());
+                DateUtils.parseTM(tz, "02:00:00").getTime());
     }
 
     @Test
     public void testParseTMceil() {
         assertEquals(MINUTE - 1,
-                DateUtils.parseTM("0200", true).getTime());
+                DateUtils.parseTM(tz, "0200", true).getTime());
     }
 
     @Test
     public void testParseDT() {
         assertEquals(0,
-                DateUtils.parseDT("19700101020000.000").getTime());
+                DateUtils.parseDT(tz, "19700101020000.000").getTime());
     }
 
     @Test
     public void testParseWithTZ() {
         assertEquals(2 * HOUR,
-                DateUtils.parseDT("19700101020000.000+0000").getTime());
+                DateUtils.parseDT(tz, "19700101020000.000+0000").getTime());
     }
 
     @Test
     public void testParseDTceil() {
         assertEquals(YEAR - 2 * HOUR - 1,
-                DateUtils.parseDT("1970", true).getTime());
+                DateUtils.parseDT(tz, "1970", true).getTime());
     }
 
 }

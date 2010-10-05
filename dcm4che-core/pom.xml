@@ -10,8 +10,7 @@
   <artifactId>dcm4che-core</artifactId>
   <name>dcm4che DICOM toolkit core module</name>
   <version>3.0.0-SNAPSHOT</version>
-  <description>Implements DICOM Data Structures and Encoding
-</description>
+  <description>Implements DICOM Data Structures and Encoding</description>
   <build>
     <resources>
       <resource>
@@ -61,6 +60,19 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
+              <dir>src/main/xml</dir>
+              <includes>
+                <include>part6.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/uids.xsl</stylesheet>
+              <fileMappers>
+                <fileMapper
+                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>uids.xml</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
               <dir>target/generated-resources/xml/xslt</dir>
               <includes>
                 <include>elements.xml</include>
@@ -99,6 +111,34 @@
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>StandardElementDictionary.java</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>target/generated-resources/xml/xslt</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/UIDNames.properties.xsl</stylesheet>
+              <outputDir>target/generated-resources/org/dcm4che/data</outputDir>
+              <fileMappers>
+                <fileMapper
+                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>UIDNames.properties</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>target/generated-resources/xml/xslt</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/UID.java.xsl</stylesheet>
+              <outputDir>target/generated-java/org/dcm4che/data</outputDir>
+              <fileMappers>
+                <fileMapper
+                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>UID.java</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

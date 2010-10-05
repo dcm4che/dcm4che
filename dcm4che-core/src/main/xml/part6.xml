@@ -61283,7 +61283,7 @@
                <para>1.2.840.10008.1.2.4.92</para>
             </entry>
             <entry>
-               <para>JPEG 2000 Part 2 Multi-component  Image Compression (Lossless Only)</para>
+               <para>JPEG 2000 Part 2 Multi-component Image Compression (Lossless Only)</para>
             </entry>
             <entry>
                <para>Transfer Syntax</para>
@@ -61297,7 +61297,7 @@
                <para>1.2.840.10008.1.2.4.93</para>
             </entry>
             <entry>
-               <para>JPEG 2000 Part 2 Multi-component  Image Compression</para>
+               <para>JPEG 2000 Part 2 Multi-component Image Compression</para>
             </entry>
             <entry>
                <para>Transfer Syntax</para>
@@ -61378,13 +61378,13 @@
          </row>
          <row>
             <entry>
-               <para>1.2.840.10008.1.2.6.1        </para>
+               <para>1.2.840.10008.1.2.6.1</para>
             </entry>
             <entry>
-               <para>RFC 2557 MIME encapsulation        </para>
+               <para>RFC 2557 MIME encapsulation</para>
             </entry>
             <entry>
-               <para>Transfer Syntax        </para>
+               <para>Transfer Syntax</para>
             </entry>
             <entry>
                <para>PS 3.10</para>
@@ -61398,7 +61398,7 @@
                <para>XML Encoding</para>
             </entry>
             <entry>
-               <para>Transfer Syntax        </para>
+               <para>Transfer Syntax</para>
             </entry>
             <entry>
                <para>PS 3.10</para>
@@ -62418,7 +62418,7 @@
                <para>1.2.840.10008.5.1.1.29</para>
             </entry>
             <entry>
-               <para>Hardcopy  Grayscale Image Storage SOP Class (Retired)</para>
+               <para>Hardcopy Grayscale Image Storage SOP Class (Retired)</para>
             </entry>
             <entry>
                <para>SOP Class</para>
@@ -62698,7 +62698,7 @@
                <para>1.2.840.10008.5.1.4.1.1.5</para>
             </entry>
             <entry>
-               <para>Nuclear Medicine Image  Storage (Retired)</para>
+               <para>Nuclear Medicine Image Storage (Retired)</para>
             </entry>
             <entry>
                <para>SOP Class</para>
@@ -64070,7 +64070,7 @@
                <para>1.2.840.10008.5.1.4.1.2.3.1</para>
             </entry>
             <entry>
-               <para>Patient/Study Only Query/Retrieve Information Model  - FIND (Retired)</para>
+               <para>Patient/Study Only Query/Retrieve Information Model - FIND (Retired)</para>
             </entry>
             <entry>
                <para>SOP Class</para>
@@ -64084,7 +64084,7 @@
                <para>1.2.840.10008.5.1.4.1.2.3.2</para>
             </entry>
             <entry>
-               <para>Patient/Study Only Query/Retrieve Information Model  - MOVE (Retired)</para>
+               <para>Patient/Study Only Query/Retrieve Information Model - MOVE (Retired)</para>
             </entry>
             <entry>
                <para>SOP Class</para>
@@ -64098,7 +64098,7 @@
                <para>1.2.840.10008.5.1.4.1.2.3.3</para>
             </entry>
             <entry>
-               <para>Patient/Study Only Query/Retrieve Information Model  - GET (Retired)</para>
+               <para>Patient/Study Only Query/Retrieve Information Model - GET (Retired)</para>
             </entry>
             <entry>
                <para>SOP Class</para>

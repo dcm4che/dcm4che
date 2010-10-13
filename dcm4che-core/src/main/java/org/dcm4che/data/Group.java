@@ -5,13 +5,15 @@ import java.util.Arrays;
 class Group {
 
     private final int groupNumber;
+    private boolean bigEndian;
     private int[] elementNumbers;
     private VR[] vrs;
     private Object[] values;
     private int size;
 
-    Group(int groupNumber, int capacity) {
+    Group(int groupNumber, boolean bigEndian, int capacity) {
         this.groupNumber = groupNumber;
+        this.bigEndian = bigEndian;
         elementNumbers = new int[capacity];
         vrs = new VR[capacity];
         values = new Object[capacity];
@@ -19,6 +21,18 @@ class Group {
 
     public final int getGroupNumber() {
         return groupNumber;
+    }
+
+    public final boolean getBigEndian() {
+        return bigEndian;
+    }
+
+    public void setBigEndian(boolean bigEndian) {
+        if (this.bigEndian != bigEndian) {
+            for (int i = 0; i < size; i++)
+                vrs[i].toggleEndian(values[i]);
+            this.bigEndian = bigEndian;
+        }
     }
 
     public String toString() {
@@ -113,7 +127,7 @@ class Group {
                 "Cannot convert " + value + " to byte[]");
     }
 
-    public String getString(SpecificCharacterSet cs, boolean bigEndian,
+    public String getString(SpecificCharacterSet cs,
             int tag, String privateCreator, String defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -145,7 +159,7 @@ class Group {
         return s;
     }
 
-    public String[] getStrings(SpecificCharacterSet cs, boolean bigEndian,
+    public String[] getStrings(SpecificCharacterSet cs,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -168,7 +182,7 @@ class Group {
                 : vr.splitStringValue(toString(value, index, vr, cs));
      }
 
-    public int getInt(SpecificCharacterSet cs, boolean bigEndian,
+    public int getInt(SpecificCharacterSet cs,
             int tag, String privateCreator, int defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -190,7 +204,7 @@ class Group {
                            : vr.toInt((byte[]) value, bigEndian);
     }
 
-    public int[] getInts(SpecificCharacterSet cs, boolean bigEndian,
+    public int[] getInts(SpecificCharacterSet cs,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -212,7 +226,7 @@ class Group {
                            : vr.toInts((byte[]) value, bigEndian);
     }
 
-    public float getFloat(SpecificCharacterSet cs, boolean bigEndian,
+    public float getFloat(SpecificCharacterSet cs,
             int tag, String privateCreator, float defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -234,7 +248,7 @@ class Group {
                            : vr.toFloat((byte[]) value, bigEndian);
     }
 
-    public float[] getFloats(SpecificCharacterSet cs, boolean bigEndian,
+    public float[] getFloats(SpecificCharacterSet cs,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -269,7 +283,7 @@ class Group {
     }
 
 
-    public double getDouble(SpecificCharacterSet cs, boolean bigEndian,
+    public double getDouble(SpecificCharacterSet cs,
             int tag, String privateCreator, double defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -291,7 +305,7 @@ class Group {
                            : vr.toDouble((byte[]) value, bigEndian);
     }
 
-    public double[] getDoubles(SpecificCharacterSet cs, boolean bigEndian,
+    public double[] getDoubles(SpecificCharacterSet cs,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
         if (elTag == 0)
@@ -377,42 +391,42 @@ class Group {
         put(cs, tag, privateCreator, vr, vr.toValue(value));
     }
 
-    public void putString(SpecificCharacterSet cs, boolean bigEndian, int tag,
+    public void putString(SpecificCharacterSet cs, int tag,
             String privateCreator, VR vr, String s) {
         put(cs, tag, privateCreator, vr, vr.toValue(s, bigEndian));
     }
 
-    public void putStrings(SpecificCharacterSet cs, boolean bigEndian, int tag,
+    public void putStrings(SpecificCharacterSet cs, int tag,
             String privateCreator, VR vr, String... ss) {
         put(cs, tag, privateCreator, vr, vr.toValue(ss, bigEndian));
     }
 
-    public void putInt(SpecificCharacterSet cs, boolean bigEndian,
+    public void putInt(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, int i) {
         put(cs, tag, privateCreator, vr, vr.toValue(i, bigEndian));
     }
 
-    public void putInts(SpecificCharacterSet cs, boolean bigEndian,
+    public void putInts(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, int... intattr) {
         put(cs, tag, privateCreator, vr, vr.toValue(intattr, bigEndian));
     }
 
-    public void putFloat(SpecificCharacterSet cs, boolean bigEndian,
+    public void putFloat(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, float f) {
         put(cs, tag, privateCreator, vr, vr.toValue(f, bigEndian));
     }
 
-    public void putFloats(SpecificCharacterSet cs, boolean bigEndian,
+    public void putFloats(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, float[] floatarr) {
         put(cs, tag, privateCreator, vr, vr.toValue(floatarr, bigEndian));
     }
 
-    public void putDouble(SpecificCharacterSet cs, boolean bigEndian,
+    public void putDouble(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, double d) {
         put(cs, tag, privateCreator, vr, vr.toValue(d, bigEndian));
     }
 
-    public void putDoubles(SpecificCharacterSet cs, boolean bigEndian,
+    public void putDoubles(SpecificCharacterSet cs,
             int tag, String privateCreator, VR vr, double[] doublearr) {
         put(cs, tag, privateCreator, vr, vr.toValue(doublearr, bigEndian));
     }
@@ -474,11 +488,11 @@ class Group {
                     groupNumber, elTag));
 
         for (int creatorTag = 0x10; creatorTag <= 0xff; creatorTag++) {
-            String s = getString(cs, false, creatorTag, null, null);
+            String s = getString(cs, creatorTag, null, null);
             if (s == null) {
                 if (!reservePrivateBlock)
                     return 0;
-                putString(cs, false, creatorTag, null, VR.LO, privateCreator);
+                putString(cs, creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | elTag;
             }
             if (privateCreator.equals(s))
@@ -490,6 +504,6 @@ class Group {
 
     public String getPrivateCreator(SpecificCharacterSet cs, int tag) {
         int creatorTag = (tag >>> 16) & 0xff;
-        return getString(cs, false, creatorTag, null, null);
+        return getString(cs, creatorTag, null, null);
     }
 }

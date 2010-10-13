@@ -32,7 +32,17 @@ public class Attributes {
         this.parent = parent;
     }
 
-   public boolean isEmpty() {
+    public Attributes setBigEndian(boolean bigEndian) {
+        for (int i = 0; i < groupsSize; i++) {
+            Group group = groups[i];
+            if (group.getGroupNumber() > 2)
+                group.setBigEndian(bigEndian);
+        }
+        this.bigEndian = bigEndian;
+        return this;
+    }
+
+    public boolean isEmpty() {
         if (groupsSize == 0)
             return true;
 
@@ -141,7 +151,7 @@ public class Attributes {
         if (index < 0)
             return defVal;
 
-        return groups[index].getString(cs(groupNumber), bigEndian(groupNumber),
+        return groups[index].getString(cs(groupNumber),
                 tag, privateCreator, defVal);
     }
 
@@ -151,7 +161,7 @@ public class Attributes {
         if (index < 0)
             return null;
 
-        return groups[index].getStrings(cs(groupNumber), bigEndian(groupNumber),
+        return groups[index].getStrings(cs(groupNumber),
                 tag, privateCreator);
     }
 
@@ -161,7 +171,7 @@ public class Attributes {
         if (index < 0)
             return defVal;
 
-        return groups[index].getInt(cs(groupNumber), bigEndian(groupNumber), tag,
+        return groups[index].getInt(cs(groupNumber), tag,
                 privateCreator, defVal);
     }
 
@@ -171,7 +181,7 @@ public class Attributes {
         if (index < 0)
             return null;
 
-        return groups[index].getInts(cs(groupNumber), bigEndian(groupNumber), tag,
+        return groups[index].getInts(cs(groupNumber), tag,
                 privateCreator);
     }
 
@@ -195,10 +205,6 @@ public class Attributes {
 
     private SpecificCharacterSet cs(int groupNumber) {
         return groupNumber < 8 ? SpecificCharacterSet.DEFAULT : dscs();
-    }
-
-    private boolean bigEndian(int groupNumber) {
-        return bigEndian && groupNumber > 2;
     }
 
     private SpecificCharacterSet dscs() {
@@ -235,7 +241,7 @@ public class Attributes {
     public void putString(int tag, String privateCreator, VR vr, String val) {
         int groupNumber = tag >>> 16;
         getOrCreateGroup(groupNumber).putString(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, val);
+                tag, privateCreator, vr, val);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -244,7 +250,7 @@ public class Attributes {
             String... value) {
         int groupNumber = tag >>> 16;
         getOrCreateGroup(groupNumber).putStrings(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -252,24 +258,24 @@ public class Attributes {
     public void putInt(int tag, String privateCreator, VR vr, int value) {
         int groupNumber = tag >>> 16;
         getOrCreateGroup(groupNumber).putInt(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putInts(int tag, String privateCreator, VR vr, int... value) {
         int groupNumber = tag >>> 16;
         getOrCreateGroup(groupNumber).putInts(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putFloat(int tag, String privateCreator, VR vr, float value) {
         int groupNumber = tag >>> 16;
         getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), 
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putFloats(int tag, String privateCreator, VR vr, float... value) {
         int groupNumber = tag >>> 16;
-        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
+        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), tag, privateCreator,
                 vr, value);
     }
 
@@ -314,7 +320,8 @@ public class Attributes {
         int numMoved = groupsSize - index;
         if (numMoved > 0)
             System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = new Group(groupNumber, initialElementsPerGroupCapacity);
+        groups[index] = new Group(groupNumber, bigEndian && groupNumber > 2,
+                initialElementsPerGroupCapacity);
         groupsSize++;
         return groups[index];
     }

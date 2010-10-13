@@ -25,11 +25,16 @@ public class Attributes {
         this.initialElementsPerGroupCapacity = initialElementsPerGroupCapacity;
     }
 
-    void setParent(Attributes parent) {
+    boolean hasParent() {
+        return parent != null;
+    }
+
+    Attributes setParent(Attributes parent) {
         if (parent != null && this.parent != null)
             throw new IllegalStateException(
                     "Item already contained by Sequence");
         this.parent = parent;
+        return this;
     }
 
     public Attributes setBigEndian(boolean bigEndian) {

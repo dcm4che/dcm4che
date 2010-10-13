@@ -40,6 +40,12 @@ class Group {
             vrs = Arrays.copyOf(vrs, size);
             values = Arrays.copyOf(values, size);
         }
+        for (Object value : values) {
+            if (value instanceof Sequence)
+                ((Sequence) value).trimToSize();
+            else if (value instanceof Fragments)
+                ((Fragments) value).trimToSize();
+        }
     }
 
     private void ensureCapacity(int minCapacity) {
@@ -357,6 +363,10 @@ class Group {
         if (index < 0)
             return false;
 
+        Object value = values[index];
+        if (value instanceof Sequence)
+            ((Sequence) value).clear();
+
         int numMoved = size - index - 1;
         if (numMoved > 0) {
             System.arraycopy(elementNumbers, index+1, elementNumbers, index, numMoved);
@@ -426,8 +436,8 @@ class Group {
 
     public Fragments putFragments(SpecificCharacterSet cs, int tag,
             String privateCreator, VR vr, int initialCapacity) {
-        Fragments fragments = new Fragments(vr, initialCapacity);
-        put(cs, tag, privateCreator, fragments.vr(), fragments);
+        Fragments fragments = new Fragments(initialCapacity);
+        put(cs, tag, privateCreator, vr, fragments);
         return fragments;
     }
 

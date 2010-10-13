@@ -304,7 +304,7 @@ public class DicomInputStream extends FilterInputStream
             if (tag == Tag.Item) {
                 if (seq == null)
                     seq = attrs.putSequence(seqtag, null, 1);
-                seq.addItem(readAttributes(length, false));
+                seq.add(readAttributes(length, false));
             } else if (undeflen && tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
@@ -330,7 +330,7 @@ public class DicomInputStream extends FilterInputStream
                 readFully(value);
                 if (attrs.isBigEndian() != bigEndian)
                     vr.toggleEndian(value);
-                frags.addFragment(value);
+                frags.add(value);
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);

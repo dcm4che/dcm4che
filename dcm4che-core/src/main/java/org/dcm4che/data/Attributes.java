@@ -32,6 +32,18 @@ public class Attributes {
         this.parent = parent;
     }
 
+    public Attributes setBigEndian(boolean bigEndian) {
+        if (groupsSize > 0 && groups[groupsSize-1].getGroupNumber() > 2)
+            throw new IllegalStateException(
+                    "Contains elements with group number > 2");
+        this.bigEndian = bigEndian;
+        return this;
+    }
+
+   public boolean isBigEndian() {
+       return bigEndian;
+   }
+
    public boolean isEmpty() {
         if (groupsSize == 0)
             return true;

@@ -171,7 +171,7 @@ class Group {
     public int getInt(SpecificCharacterSet cs, boolean bigEndian,
             int tag, String privateCreator, int defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return defVal;
 
         int index = indexOf(elTag);
@@ -477,7 +477,7 @@ class Group {
             String s = getString(cs, false, creatorTag, null, null);
             if (s == null) {
                 if (!reservePrivateBlock)
-                    return 0;
+                    return -1;
                 putString(cs, false, creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | elTag;
             }

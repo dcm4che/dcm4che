@@ -1,5 +1,8 @@
 package org.dcm4che.data;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public enum VR {
     AE(0x4145, 8, null, StringType.ASCII),
@@ -137,9 +140,11 @@ public enum VR {
     TM(0x544d, 8, null, StringType.ASCII),
     UI(0x5549, 8, null, StringType.UI),
     UL(0x554c, 8, BinaryType.INT, null),
-    UN(0x554e, 12, null, null),
+    UN(0x554e, 12, BinaryType.BYTE, null),
     US(0x5553, 8, BinaryType.USHORT, null),
     UT(0x5554, 12, null, StringType.TEXT);
+
+    private static Logger LOG = LoggerFactory.getLogger(VR.class);
 
     protected final int code;
     protected final int headerLength;
@@ -218,8 +223,9 @@ public enum VR {
         case 0x5554:
             return UT;
         }
-        throw new IllegalArgumentException(
-                String.format("Illegal VR code: %04XH", code));
+        LOG.warn("Unrecogniced VR code: {0}H - treat as UN",
+                Integer.toHexString(code));
+        return UN;
     }
 
     public byte[] toBytes(String value, SpecificCharacterSet cs) {

@@ -37,8 +37,6 @@ public class DicomInputStream extends FilterInputStream
     private byte[] preamble;
     private boolean bigEndian;
     private boolean explicitVR;
-    private boolean fmi;
-    private long fmiEndPos = -1L;
     private long pos;
     private long tagPos;
     private long markPos;
@@ -66,12 +64,13 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void switchTransferSyntax(String tsuid) {
-        fmi = false;
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate))
             super.in = new InflaterInputStream(super.in, new Inflater(true));
+        if (attrs != null)
+            attrs.setBigEndian(bigEndian);
     }
 
     private void switchTransferSyntaxUID() {
@@ -93,25 +92,37 @@ public class DicomInputStream extends FilterInputStream
         if (buf[0] == 'D' && buf[1] == 'I'
                 && buf[2] == 'C' && buf[3] == 'M') {
             preamble = b128;
-            fmi = true;
             bigEndian = false;
             explicitVR = true;
             return;
         }
-        boolean be = false;
-        int tag = ByteUtils.bytesToTagLE(b128, 0);
-        VR vr = ElementDictionary.vrOf(ByteUtils.bytesToTagLE(b128, 0), null);
-        if (vr == VR.UN) {
-            be = true;
-            tag = ByteUtils.bytesToTagBE(b128, 0);
-            vr = ElementDictionary.vrOf(tag, null);
-            if (vr == VR.UN)
-                throw new DicomStreamException("Not a DICOM stream");
-        }
-        fmi = (tag >>> 16) == 2;
-        bigEndian = be;
-        explicitVR = ByteUtils.bytesToVR(b128, 8) == vr.code();
+        if (!guessTransferSyntax(b128, false)
+                && !guessTransferSyntax(b128, true))
+            throw new DicomStreamException("Not a DICOM Stream");
         reset();
+    }
+
+    private boolean guessTransferSyntax(byte[] b128, boolean bigEndian) {
+        int tag1 = ByteUtils.bytesToTag(b128, 0, bigEndian);
+        VR vr = ElementDictionary.vrOf(tag1, null);
+        if (vr == VR.UN)
+            return false;
+        if (ByteUtils.bytesToVR(b128, 4) == vr.code()) {
+            this.bigEndian = bigEndian;
+            explicitVR = true;
+            return true;
+        }
+        int len = ByteUtils.bytesToInt(b128, 4, bigEndian);
+        if (len < 0 || len > 116)
+            return false;
+        int tag2 = ByteUtils.bytesToTag(b128, len + 8, bigEndian);
+        int diff = tag2 - tag1;
+        if (diff > 0 && diff < 0x00010000) {
+            this.bigEndian = bigEndian;
+            explicitVR = false;
+            return true;
+        }
+        return false;
     }
 
     public byte[] getPreamble() {
@@ -212,11 +223,15 @@ public class DicomInputStream extends FilterInputStream
 
     private Attributes readAttributes(int len, boolean stopAfterFmi)
             throws IOException {
-        Attributes prevAttrs = this.attrs;
-        this.attrs = new Attributes();
+        Attributes parentAttrs = this.attrs;
+        this.attrs = new Attributes().setBigEndian(
+                parentAttrs == null ? bigEndian : parentAttrs.isBigEndian());
         try {
             long endPos =  pos + (len & 0xffffffffL);
+            long fmiEndPos = -1L;
             boolean undeflen = len == -1;
+            boolean first = true;
+            boolean expect0002xxxx = false;
             while (undeflen || this.pos < endPos) {
                 mark(12);
                 try {
@@ -226,12 +241,13 @@ public class DicomInputStream extends FilterInputStream
                         break;
                     throw e;
                 }
-                if (fmi && (tag >>> 16) != 2) {
+                if (expect0002xxxx && (tag >>> 16) != 2) {
                     LOG.warn(MISSING_FMI_LENGTH);
                     reset();
                     if (stopAfterFmi)
                         return attrs;
                     switchTransferSyntaxUID();
+                    expect0002xxxx = false;
                     continue;
                 }
                 if (vr == null) {
@@ -259,27 +275,35 @@ public class DicomInputStream extends FilterInputStream
                     if (!handler.readValue(this))
                         break;
                 }
-                if (fmi && pos == fmiEndPos) {
+                if (first && parentAttrs == null && (tag >>> 16) == 2) {
+                    expect0002xxxx = true;
+                    if (tag == Tag.FileMetaInformationGroupLength)
+                        fmiEndPos = pos + attrs.getInt(
+                                Tag.FileMetaInformationGroupLength, null, 0);
+                } else if (expect0002xxxx && pos == fmiEndPos)  {
                     if (stopAfterFmi)
                         return attrs;
                     switchTransferSyntaxUID();
+                    expect0002xxxx = false;
                 }
+                first = false;
             }
             return attrs;
         } finally {
-            this.attrs = prevAttrs;
+            this.attrs = parentAttrs;
         }
     }
 
     private void readSequence(int len) throws IOException {
         Sequence seq = null;
+        int seqtag = tag;
         long endPos =  pos + (len & 0xffffffffL);
         boolean undeflen = len == -1;
         while (undeflen || pos < endPos) {
             readHeader();
             if (tag == Tag.Item) {
                 if (seq == null)
-                    seq = attrs.putSequence(tag, null, 1);
+                    seq = attrs.putSequence(seqtag, null, 1);
                 seq.addItem(readAttributes(length, false));
             } else if (undeflen && tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
@@ -290,18 +314,22 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         if (seq == null)
-            attrs.putNull(tag, null, VR.SQ);
+            attrs.putNull(seqtag, null, VR.SQ);
     }
 
     private void readFragments() throws IOException {
         Fragments frags = null;
+        int fragtag = tag;
+        VR fragvr = vr;
         while (true) {
             readHeader();
             if (tag == Tag.Item) {
                 if (frags == null)
-                    frags = attrs.putFragments(tag, null, vr, 2);
+                    frags = attrs.putFragments(fragtag, null, fragvr, 2);
                 byte[] value = new byte[length];
                 readFully(value);
+                if (attrs.isBigEndian() != bigEndian)
+                    vr.toggleEndian(value);
                 frags.addFragment(value);
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
@@ -312,7 +340,7 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         if (frags == null)
-            attrs.putNull(tag, null, vr);
+            attrs.putNull(fragtag, null, fragvr);
     }
 
     private void skipAttribute(String message) throws IOException {
@@ -341,11 +369,9 @@ public class DicomInputStream extends FilterInputStream
         } else {
             byte[] value = new byte[length];
             readFully(value);
-            if ((tag & 0x0000FFFF) != 0)
-                attrs.putBytes(tag, null, vr, value);
-            else if (fmi) {
-                fmiEndPos = pos + ByteUtils.bytesToInt(value, 0, bigEndian);
-            }
+            if (attrs.isBigEndian() != bigEndian)
+                vr.toggleEndian(value);
+            attrs.putBytes(tag, null, vr, value);
         }
     }
 

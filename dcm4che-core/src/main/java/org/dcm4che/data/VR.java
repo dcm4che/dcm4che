@@ -416,9 +416,4 @@ public enum VR {
         if (isBinaryType())
             binaryType.toggleEndian(value);
     }
-
-    public void toggleEndian(Object value) {
-        if (value instanceof byte[])
-            toggleEndian((byte[]) value);
-    }
 }

@@ -213,7 +213,7 @@ public class DicomInputStream extends FilterInputStream
     private Attributes readAttributes(int len, boolean stopAfterFmi)
             throws IOException {
         Attributes prevAttrs = this.attrs;
-        this.attrs = new Attributes().setBigEndian(bigEndian);
+        this.attrs = new Attributes();
         try {
             long endPos =  pos + (len & 0xffffffffL);
             boolean undeflen = len == -1;

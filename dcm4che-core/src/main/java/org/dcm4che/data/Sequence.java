@@ -15,6 +15,13 @@ public class Sequence extends ArrayList<Attributes> {
     }
 
     @Override
+    public void trimToSize() {
+         super.trimToSize();
+         for (Attributes attrs: this)
+             attrs.trimToSize();
+    }
+
+    @Override
     public boolean add(Attributes attrs) {
         return super.add(attrs.setParent(parent));
     }

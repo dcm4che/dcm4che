@@ -2,6 +2,15 @@ package org.dcm4che.util;
 
 public class ByteUtils {
 
+    public static int bytesToVR(byte[] bytes, int off) {
+        return bytesToUShortBE(bytes, off);
+    }
+
+    public static int bytesToUShort(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToUShortBE(bytes, off)
+                         : bytesToUShortLE(bytes, off);
+    }
+
     public static int bytesToUShortBE(byte[] bytes, int off) {
         return ((bytes[off] & 255) << 8) + (bytes[off + 1] & 255);
     }
@@ -18,6 +27,10 @@ public class ByteUtils {
         return (bytes[off + 1] << 8)  + (bytes[off] & 255);
     }
 
+    public static int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToIntBE(bytes, off) : bytesToIntLE(bytes, off);
+    }
+
     public static int bytesToIntBE(byte[] bytes, int off) {
         return (bytes[off] << 24) + ((bytes[off + 1] & 255) << 16)
                 + ((bytes[off + 2] & 255) << 8) + (bytes[off + 3] & 255);
@@ -26,6 +39,10 @@ public class ByteUtils {
     public static int bytesToIntLE(byte[] bytes, int off) {
         return (bytes[off + 3] << 24) + ((bytes[off + 2] & 255) << 16)
                 + ((bytes[off + 1] & 255) << 8) + (bytes[off] & 255);
+    }
+
+    public static int bytesToTag(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToTagBE(bytes, off) : bytesToTagLE(bytes, off);
     }
 
     public static int bytesToTagBE(byte[] bytes, int off) {

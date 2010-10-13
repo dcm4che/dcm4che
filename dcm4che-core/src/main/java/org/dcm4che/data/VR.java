@@ -411,4 +411,9 @@ public enum VR {
             return null;
         return binaryType.doublesToBytes(val, bigEndian);
     }
+
+    public void toggleEndian(byte[] value) {
+        if (isBinaryType())
+            binaryType.toggleEndian(value);
+    }
 }

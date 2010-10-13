@@ -330,6 +330,23 @@ class Group {
         return (Sequence) values[index];
     }
 
+    public Fragments getFragments(SpecificCharacterSet cs, int tag,
+            String privateCreator) {
+        int elTag = elTag(cs, privateCreator, tag, false);
+        if (elTag == 0)
+            return null;
+
+        int index = indexOf(elTag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value == null || value instanceof Fragments)
+            return (Fragments) value;
+
+        return (Fragments) value;
+    }
+
     public boolean remove(int tag, String privateCreator,
             SpecificCharacterSet cs) {
         int elTag = elTag(cs, privateCreator, tag, false);
@@ -407,6 +424,13 @@ class Group {
         return seq;
     }
 
+    public Fragments putFragments(SpecificCharacterSet cs, int tag,
+            String privateCreator, VR vr, int initialCapacity) {
+        Fragments fragments = new Fragments(vr, initialCapacity);
+        put(cs, tag, privateCreator, fragments.vr(), fragments);
+        return fragments;
+    }
+
     private void put(SpecificCharacterSet cs, int tag,
             String privateCreator, VR vr, Object value) {
         int elTag = elTag(cs, privateCreator, tag, true);
@@ -462,5 +486,10 @@ class Group {
         }
         throw new IllegalStateException(String.format(
                 "No unreserved block in group (%04X,eeee) left.", groupNumber));
+    }
+
+    public String getPrivateCreator(SpecificCharacterSet cs, int tag) {
+        int creatorTag = (tag >>> 16) & 0xff;
+        return getString(cs, false, creatorTag, null, null);
     }
 }

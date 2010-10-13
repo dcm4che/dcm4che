@@ -9,7 +9,7 @@ public class TagUtils {
 
     public static String toString(int tag) {
         char[] s = {
-                HEX_DIGITS[(tag >>> 28) & 0xF],
+                HEX_DIGITS[(tag >>> 28)],
                 HEX_DIGITS[(tag >>> 24) & 0xF],
                 HEX_DIGITS[(tag >>> 20) & 0xF],
                 HEX_DIGITS[(tag >>> 16) & 0xF],
@@ -20,4 +20,20 @@ public class TagUtils {
         return new String(s);
     }
 
+    public static String toPrompt(int tag) {
+        char[] s = {
+                '(',
+                HEX_DIGITS[(tag >>> 28)],
+                HEX_DIGITS[(tag >>> 24) & 0xF],
+                HEX_DIGITS[(tag >>> 20) & 0xF],
+                HEX_DIGITS[(tag >>> 16) & 0xF],
+                ',',
+                HEX_DIGITS[(tag >>> 12) & 0xF],
+                HEX_DIGITS[(tag >>> 8) & 0xF],
+                HEX_DIGITS[(tag >>> 4) & 0xF],
+                HEX_DIGITS[(tag >>> 0) & 0xF],
+                ')'};
+        return new String(s);
+    }
 }
+

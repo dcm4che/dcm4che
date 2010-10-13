@@ -56,6 +56,7 @@ public class VRTest {
     @Test
     public void testHeaderLength() {
         assertEquals(8, VR.AE.headerLength());
+        assertEquals(12, VR.SQ.headerLength());
     }
 
     @Test

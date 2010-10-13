@@ -27,8 +27,8 @@ public class Sequence {
     public void ensureCapacity(int minCapacity) {
         int oldCapacity = items.length;
         if (minCapacity > oldCapacity)
-            items = Arrays.copyOf(items,
-                    Math.max(minCapacity, (oldCapacity * 3)/2 + 1));
+            items = Arrays.copyOf(items,  Math.max(minCapacity,
+                    oldCapacity == 1 ? 10 : (oldCapacity * 3)/2 + 1));
     }
 
     public final int size() {

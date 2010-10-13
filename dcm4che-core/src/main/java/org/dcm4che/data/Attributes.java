@@ -32,7 +32,7 @@ public class Attributes {
         this.parent = parent;
     }
 
-    public boolean isEmpty() {
+   public boolean isEmpty() {
         if (groupsSize == 0)
             return true;
 
@@ -113,6 +113,19 @@ public class Attributes {
                 privateCreator);
     }
 
+    public VR vrOf(int tag) {
+        return ElementDictionary.vrOf(tag, getPrivateCreator(tag));
+    }
+
+    public String getPrivateCreator(int tag) {
+        int groupNumber = tag >>> 16;
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getPrivateCreator(cs(groupNumber), tag);
+    }
+
     public byte[] getBytes(int tag, String privateCreator) {
         int groupNumber = tag >>> 16;
         int index = indexOf(groupNumber);
@@ -169,6 +182,15 @@ public class Attributes {
             return null;
 
         return groups[index].getSequence(cs(groupNumber), tag, privateCreator);
+    }
+
+    public Fragments getFragments(int tag, String privateCreator) {
+        int groupNumber = tag >>> 16;
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getFragments(cs(groupNumber), tag, privateCreator);
     }
 
     private SpecificCharacterSet cs(int groupNumber) {
@@ -256,6 +278,13 @@ public class Attributes {
         int groupNumber = tag >>> 16;
         return getOrCreateGroup(groupNumber).putSequence(cs(groupNumber), tag,
                 privateCreator, this, initialCapacity);
+    }
+
+    public Fragments putFragments(int tag, String privateCreator, VR vr,
+            int initialCapacity) {
+        int groupNumber = tag >>> 16;
+        return getOrCreateGroup(groupNumber).putFragments(cs(groupNumber), tag,
+                privateCreator, vr, initialCapacity);
     }
 
     private void initSpecificCharacterSet() {

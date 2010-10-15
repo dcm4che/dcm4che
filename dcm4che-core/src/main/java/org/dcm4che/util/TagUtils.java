@@ -35,5 +35,17 @@ public class TagUtils {
                 ')'};
         return new String(s);
     }
+
+    public static int groupNumber(int tag) {
+        return tag >>> 16;
+    }
+
+    public static int elementNumber(int tag) {
+        return tag & 0xFFFF;
+    }
+
+    public static boolean isGroupLength(int tag) {
+        return elementNumber(tag) == 0;
+    }
 }
 

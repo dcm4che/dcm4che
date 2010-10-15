@@ -15,13 +15,6 @@ public class Sequence extends ArrayList<Attributes> {
     }
 
     @Override
-    public void trimToSize() {
-         super.trimToSize();
-         for (Attributes attrs: this)
-             attrs.trimToSize();
-    }
-
-    @Override
     public boolean add(Attributes attrs) {
         return super.add(attrs.setParent(parent));
     }
@@ -39,7 +32,7 @@ public class Sequence extends ArrayList<Attributes> {
 
     private void setParent(Collection<? extends Attributes> c) {
         for (Attributes attrs : c)
-            if (attrs.hasParent())
+            if (!attrs.isRoot())
                 throw new IllegalStateException(
                     "Item already contained by Sequence");
         for (Attributes attrs : c)

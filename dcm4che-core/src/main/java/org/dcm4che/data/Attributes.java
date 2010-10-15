@@ -25,8 +25,8 @@ public class Attributes {
         this.initialElementsPerGroupCapacity = initialElementsPerGroupCapacity;
     }
 
-    boolean hasParent() {
-        return parent != null;
+    public boolean isRoot() {
+        return parent == null;
     }
 
     Attributes setParent(Attributes parent) {
@@ -37,7 +37,7 @@ public class Attributes {
         return this;
     }
 
-    public Attributes setBigEndian(boolean bigEndian) {
+    public Attributes bigEndian(boolean bigEndian) {
         if (groupsSize > 0 && groups[groupsSize-1].getGroupNumber() > 2)
             throw new IllegalStateException(
                     "Contains elements with group number > 2");
@@ -45,7 +45,7 @@ public class Attributes {
         return this;
     }
 
-   public boolean isBigEndian() {
+   public boolean bigEndian() {
        return bigEndian;
    }
 

@@ -167,7 +167,9 @@ public class DicomInputStream extends FilterInputStream
     private Attributes readAttributes(int len, boolean stopAfterFmi)
         throws IOException {
 
-        Attributes attrs = new Attributes().bigEndian(bigEndian);
+        Attributes attrs = new Attributes();
+        attrs.bigEndian(bigEndian);
+        attrs.setPosition(pos);
         long endPos =  pos + (len & 0xffffffffL);
         boolean undeflen = len == -1;
         boolean fmi = false;

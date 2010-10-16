@@ -10,6 +10,7 @@ public class Attributes {
     private final int initialElementsPerGroupCapacity;
     private SpecificCharacterSet cs;
     private boolean bigEndian;
+    private long position = -1L;
 
     public Attributes() {
         this(10, 10);
@@ -35,6 +36,14 @@ public class Attributes {
                     "Item already contained by Sequence");
         this.parent = parent;
         return this;
+    }
+
+    public long getPosition() {
+        return position;
+    }
+
+    public void setPosition(long position) {
+        this.position = position;
     }
 
     public Attributes bigEndian(boolean bigEndian) {

@@ -3,7 +3,7 @@ package org.dcm4che.dict.siemens;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.VR;
 
-public class CSAHeaderElementDictionary extends ElementDictionary {
+public class SiemensCSAHeader extends ElementDictionary {
 
     /** (0029,xx08) VR=CS VM=1 CSA Image Header Type */
     public static final int CSAImageHeaderType = 0x00290008;
@@ -23,8 +23,8 @@ public class CSAHeaderElementDictionary extends ElementDictionary {
     /** (0029,xx20) VR=OB VM=1 CSA Series Header Info */
     public static final int CSASeriesHeaderInfo = 0x00290020;
 
-    public CSAHeaderElementDictionary() {
-        super("SIEMENS CSA HEADER", CSAHeaderElementDictionary.class);
+    public SiemensCSAHeader() {
+        super("SIEMENS CSA HEADER", SiemensCSAHeader.class);
     }
 
     @Override

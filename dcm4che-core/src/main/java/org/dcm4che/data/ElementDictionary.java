@@ -34,12 +34,12 @@ public abstract class ElementDictionary {
         return getElementDictionary(privateCreator).vrOf(tag);
     }
 
-    public static String nameOf(int tag, String privateCreator) {
-        return getElementDictionary(privateCreator).nameOf(tag);
+    public static String keywordOf(int tag, String privateCreator) {
+        return getElementDictionary(privateCreator).keywordOf(tag);
     }
 
-    public static int tagForName(String name, String privateCreatorID) {
-        return getElementDictionary(privateCreatorID).tagForName(name);
+    public static int tagForKeyword(String keyword, String privateCreatorID) {
+        return getElementDictionary(privateCreatorID).tagForKeyword(keyword);
     }
 
     public final String getPrivateCreator() {
@@ -48,9 +48,9 @@ public abstract class ElementDictionary {
 
     public abstract VR vrOf(int tag);
 
-    public abstract String nameOf(int tag);
+    public abstract String keywordOf(int tag);
 
-    public int tagForName(String keyword) {
+    public int tagForKeyword(String keyword) {
         if (tagClass != null)
             try {
                 return tagClass.getField(keyword).getInt(null);

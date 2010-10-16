@@ -290,7 +290,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void skipAttribute(String message) throws IOException {
         LOG.warn(message,
-                 new Object[] { TagUtils.toPrompt(tag), length, tagPos });
+                 new Object[] { TagUtils.toString(tag), length, tagPos });
         skip(length);
     }
 

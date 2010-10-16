@@ -7,7 +7,7 @@ public class TagUtils {
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
-    public static String toString(int tag) {
+    public static String toHexString(int tag) {
         char[] s = {
                 HEX_DIGITS[(tag >>> 28)],
                 HEX_DIGITS[(tag >>> 24) & 0xF],
@@ -20,7 +20,7 @@ public class TagUtils {
         return new String(s);
     }
 
-    public static String toPrompt(int tag) {
+    public static String toString(int tag) {
         char[] s = {
                 '(',
                 HEX_DIGITS[(tag >>> 28)],

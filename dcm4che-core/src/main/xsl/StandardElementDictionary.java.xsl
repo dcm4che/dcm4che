@@ -5,47 +5,18 @@
   <xsl:template match="/elements">
     <xsl:text>package org.dcm4che.data;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
-import org.dcm4che.util.TagUtils;
-
 public class StandardElementDictionary extends ElementDictionary {
 
     public static final ElementDictionary INSTANCE =
             new StandardElementDictionary();
-
-    private final ResourceBundle attributeNames = ResourceBundle.getBundle(
-            "org.dcm4che.data.StandardAttributeNames");
 
     private StandardElementDictionary() {
         super(null, Tag.class);
     }
 
     @Override
-    public String nameOf(int tag) {
-        if ((tag &amp; 0x0000FFFF) == 0) {
-            if (tag > 0x00020000)
-                return attributeNames.getString("GroupLength");
-        } else if ((tag &amp; 0x00010000) != 0)
-            return  attributeNames.getString(
-                    ((tag &amp; 0x0000FF00) == 0) ? "PrivateCreator"
-                                              : "PrivateAttribute");
-        else if ((tag &amp; 0xFFFFFF00) == Tag.SourceImageIDs)
-            tag = Tag.SourceImageIDs;
-        else {
-            int tmp = tag &amp; 0xFFE00000;
-            if (tmp == 0x50000000 || tmp == 0x60000000)
-                tag &amp;= 0xFFE0FFFF;
-            else if ((tag &amp; 0xFF000000) == 0x7F000000 
-                    &amp;&amp; (tag &amp; 0xFFFF0000) != 0x7FE00000)
-                tag &amp;= 0xFF00FFFF;
-        }
-        try {
-            return attributeNames.getString(TagUtils.toString(tag));
-        } catch (MissingResourceException e) {
-            return attributeNames.getString("UnknownAttribute");
-        }
+    public String keywordOf(int tag) {
+        return Keyword.valueOf(tag);
     }
 
     @Override

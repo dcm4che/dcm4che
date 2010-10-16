@@ -28,22 +28,22 @@ public class CSAHeaderElementDictionary extends ElementDictionary {
     }
 
     @Override
-    public String nameOf(int tag) {
+    public String keywordOf(int tag) {
         switch (tag & 0xFFFF00FF) {
         case CSAImageHeaderType:
-            return "CSA Image Header Type";
+            return "CSAImageHeaderType";
         case CSAImageHeaderVersion:
-            return "CSA Image Header Version";
+            return "CSAImageHeaderVersion";
         case CSAImageHeaderInfo:
-            return "CSA Image Header Info";
+            return "CSAImageHeaderInfo";
         case CSASeriesHeaderVersion:
-            return "CSA Series Header Version";
+            return "CSASeriesHeaderVersion";
         case CSASeriesHeaderType:
-            return "CSA Series Header Type";
+            return "CSASeriesHeaderType";
         case CSASeriesHeaderInfo:
-            return "CSA Series Header Info";
+            return "CSASeriesHeaderInfo";
         }
-        return "Unknown Attribute";
+        return null;
     }
 
     @Override

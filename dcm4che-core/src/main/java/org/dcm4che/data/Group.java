@@ -154,7 +154,7 @@ class Group {
     public String[] getStrings(SpecificCharacterSet cs, boolean bigEndian,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag == -1)
             return null;
 
         int index = indexOf(elTag);

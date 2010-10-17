@@ -21,7 +21,7 @@ public class Keyword {
     <xsl:apply-templates 
       select="element[@keyword!='' and not(starts-with(@tag,'(0028,04x'))]" />
     <xsl:text>        }
-        return null;
+        return "";
     }
 
 }

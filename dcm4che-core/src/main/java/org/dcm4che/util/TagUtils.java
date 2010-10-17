@@ -47,5 +47,11 @@ public class TagUtils {
     public static boolean isGroupLength(int tag) {
         return elementNumber(tag) == 0;
     }
+
+    public static boolean isPrivateCreator(int tag) {
+        return (tag & 0x00010000) != 0
+            && (tag & 0x0000FF00) == 0
+            && (tag & 0x000000FF) != 0;
+    }
 }
 

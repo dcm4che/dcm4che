@@ -2,6 +2,8 @@ package org.dcm4che.data;
 
 import java.util.Arrays;
 
+import org.dcm4che.util.TagUtils;
+
 public class Attributes {
 
     private Attributes parent;
@@ -26,8 +28,16 @@ public class Attributes {
         this.initialElementsPerGroupCapacity = initialElementsPerGroupCapacity;
     }
 
-    public boolean isRoot() {
+    public final boolean isRoot() {
         return parent == null;
+    }
+
+    public final int getLevel() {
+        return isRoot() ? 0 : 1 + parent.getLevel();
+    }
+
+    public final Attributes getParrent() {
+        return parent;
     }
 
     Attributes setParent(Attributes parent) {
@@ -38,11 +48,11 @@ public class Attributes {
         return this;
     }
 
-    public long getPosition() {
+    public final long getPosition() {
         return position;
     }
 
-    public void setPosition(long position) {
+    public final void setPosition(long position) {
         this.position = position;
     }
 
@@ -126,14 +136,14 @@ public class Attributes {
     }
 
     public boolean contains(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         return index >= 0 && groups[index].contains(cs(groupNumber), tag,
                 privateCreator);
     }
 
     public boolean containsValue(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         return index >= 0 && groups[index].containsValue(cs(groupNumber), tag,
                 privateCreator);
@@ -144,7 +154,10 @@ public class Attributes {
     }
 
     public String getPrivateCreator(int tag) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
+        if ((groupNumber & 1) == 0)
+            return null;
+
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -153,7 +166,7 @@ public class Attributes {
     }
 
     public byte[] getBytes(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -162,7 +175,7 @@ public class Attributes {
     }
 
     public String getString(int tag, String privateCreator, String defVal) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
@@ -172,7 +185,7 @@ public class Attributes {
     }
 
     public String[] getStrings(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -182,7 +195,7 @@ public class Attributes {
     }
 
     public int getInt(int tag, String privateCreator, int defVal) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
@@ -192,7 +205,7 @@ public class Attributes {
     }
 
     public int[] getInts(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -202,7 +215,7 @@ public class Attributes {
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -211,7 +224,7 @@ public class Attributes {
     }
 
     public Fragments getFragments(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -233,7 +246,7 @@ public class Attributes {
     }
 
     public boolean remove(int tag, String privateCreator) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return false;
@@ -244,14 +257,14 @@ public class Attributes {
     }
 
     public void putNull(int tag, String privateCreator, VR vr) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putNull(cs(groupNumber), tag, privateCreator, vr);
         if (tag == Tag.SpecificCharacterSet)
             cs = null;
     }
 
     public void putBytes(int tag, String privateCreator, VR vr, byte[] value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putBytes(cs(groupNumber), tag, privateCreator, vr,
                 value);
         if (tag == Tag.SpecificCharacterSet)
@@ -259,7 +272,7 @@ public class Attributes {
     }
 
     public void putString(int tag, String privateCreator, VR vr, String val) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putString(cs(groupNumber),
                 bigEndian(groupNumber), tag, privateCreator, vr, val);
         if (tag == Tag.SpecificCharacterSet)
@@ -268,7 +281,7 @@ public class Attributes {
 
     public void putStrings(int tag, String privateCreator, VR vr,
             String... value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putStrings(cs(groupNumber),
                 bigEndian(groupNumber), tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
@@ -276,39 +289,39 @@ public class Attributes {
     }
 
     public void putInt(int tag, String privateCreator, VR vr, int value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putInt(cs(groupNumber),
                 bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putInts(int tag, String privateCreator, VR vr, int... value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putInts(cs(groupNumber),
                 bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putFloat(int tag, String privateCreator, VR vr, float value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), 
                 bigEndian(groupNumber), tag, privateCreator, vr, value);
     }
 
     public void putFloats(int tag, String privateCreator, VR vr, float... value) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
                 vr, value);
     }
 
     public Sequence putSequence(int tag, String privateCreator,
             int initialCapacity) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         return getOrCreateGroup(groupNumber).putSequence(cs(groupNumber), tag,
                 privateCreator, this, initialCapacity);
     }
 
     public Fragments putFragments(int tag, String privateCreator, VR vr,
             int initialCapacity) {
-        int groupNumber = tag >>> 16;
+        int groupNumber = TagUtils.groupNumber(tag);
         return getOrCreateGroup(groupNumber).putFragments(cs(groupNumber), tag,
                 privateCreator, vr, initialCapacity);
     }

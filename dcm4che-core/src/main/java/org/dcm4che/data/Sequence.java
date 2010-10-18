@@ -14,6 +14,13 @@ public class Sequence extends ArrayList<Attributes> {
         this.parent = parent;
     }
 
+    public void trimToSize(boolean recursive) {
+        super.trimToSize();
+        if (recursive)
+            for (Attributes attrs: this)
+                attrs.trimToSize(recursive);
+    }
+
     @Override
     public boolean add(Attributes attrs) {
         return super.add(attrs.setParent(parent));
@@ -70,4 +77,5 @@ public class Sequence extends ArrayList<Attributes> {
     public Attributes set(int index, Attributes attrs) {
         return super.set(index, attrs.setParent(parent));
     }
+
 }

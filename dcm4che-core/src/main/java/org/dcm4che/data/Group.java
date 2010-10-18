@@ -37,19 +37,20 @@ class Group {
         return size;
     }
 
-    public void trimToSize() {
+    public void trimToSize(boolean recursive) {
         int oldCapacity = elementNumbers.length;
         if (size < oldCapacity) {
             elementNumbers = Arrays.copyOf(elementNumbers, size);
             vrs = Arrays.copyOf(vrs, size);
             values = Arrays.copyOf(values, size);
         }
-        for (Object value : values) {
-            if (value instanceof Sequence)
-                ((Sequence) value).trimToSize();
-            else if (value instanceof Fragments)
-                ((Fragments) value).trimToSize();
-        }
+        if (recursive)
+            for (Object value : values) {
+                if (value instanceof Sequence) {
+                    ((Sequence) value).trimToSize(recursive);
+                } else if (value instanceof Fragments)
+                    ((Fragments) value).trimToSize();
+            }
     }
 
     private void ensureCapacity(int minCapacity) {

@@ -76,12 +76,16 @@ public class Attributes {
     }
 
     public void trimToSize() {
+        trimToSize(false);
+    }
+
+    public void trimToSize(boolean recursive) {
         int oldCapacity = groups.length;
         int newCount = 0;
         for (int i = 0; i < groupsSize; i++) {
             Group group = groups[i];
             if (!group.isEmpty()) {
-                group.trimToSize();
+                group.trimToSize(recursive);
                 newCount++;
             }
         }

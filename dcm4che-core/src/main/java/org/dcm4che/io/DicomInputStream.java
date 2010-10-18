@@ -5,8 +5,6 @@ import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 

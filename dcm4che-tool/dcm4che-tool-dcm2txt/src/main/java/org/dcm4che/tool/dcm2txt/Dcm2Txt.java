@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Formatter;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -35,7 +34,7 @@ public class Dcm2Txt implements DicomInputHandler {
     private static final String EXAMPLE = null;
 
     /** default number of characters per line */
-    public static final int DEFAULT_WIDTH = 74;
+    public static final int DEFAULT_WIDTH = 79;
 
     private int width = DEFAULT_WIDTH;
     private boolean first = true;
@@ -110,14 +109,14 @@ public class Dcm2Txt implements DicomInputHandler {
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Fragments frags, VR vr,
-            boolean bigEndian) throws IOException {
+    public boolean readValue(DicomInputStream dis, Fragments frags)
+            throws IOException {
         StringBuilder line = new StringBuilder(width);
         appendHeader(line, dis);
-        boolean appendFragment = appendFragment(line, dis, vr);
+        boolean appendFragment = appendFragment(line, dis, frags.vr());
         appendKeyword(line, dis.tag(), null);
         System.out.println(line);
-        return appendFragment || dis.readValue(dis, frags, vr, bigEndian);
+        return appendFragment || dis.readValue(dis, frags);
     }
 
     private boolean appendFragment(StringBuilder line, DicomInputStream dis,
@@ -136,7 +135,7 @@ public class Dcm2Txt implements DicomInputHandler {
             return;
         
         StringBuilder line = new StringBuilder(width);
-        line.append("0000000:");
+        line.append("0:");
         append(line, VR.OB.binaryValueAsStrings(preamble, false));
         System.out.println(line);
     }
@@ -144,16 +143,12 @@ public class Dcm2Txt implements DicomInputHandler {
     private StringBuilder appendHeader(StringBuilder line,
             DicomInputStream dis) {
         int tag = dis.tag();
-        VR vr = dis.vr();
-        Formatter formatter = new Formatter(line);
-        formatter.format("%07d: ",
-                dis.getPosition() - (vr == null ? 8 : vr.headerLength()));
+        line.append(dis.getTagPosition()).append(": ");
         int level = dis.level();
         while (level-- > 0)
             line.append('>');
-        formatter.format("(%04X,%04X) ",
-                         TagUtils.groupNumber(tag),
-                         TagUtils.elementNumber(tag));
+        line.append(TagUtils.toString(tag)).append(' ');
+        VR vr = dis.vr();
         if (vr != null)
             line.append(vr).append(' ');
 

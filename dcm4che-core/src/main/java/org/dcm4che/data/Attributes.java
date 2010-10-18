@@ -1,5 +1,6 @@
 package org.dcm4che.data;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.dcm4che.util.TagUtils;
@@ -11,7 +12,6 @@ public class Attributes {
     private int groupsSize;
     private final int initialElementsPerGroupCapacity;
     private SpecificCharacterSet cs;
-    private boolean bigEndian;
     private long position = -1L;
 
     public Attributes() {
@@ -55,18 +55,6 @@ public class Attributes {
     public final void setPosition(long position) {
         this.position = position;
     }
-
-    public Attributes bigEndian(boolean bigEndian) {
-        if (groupsSize > 0 && groups[groupsSize-1].getGroupNumber() > 2)
-            throw new IllegalStateException(
-                    "Contains elements with group number > 2");
-        this.bigEndian = bigEndian;
-        return this;
-    }
-
-   public boolean bigEndian() {
-       return bigEndian;
-   }
 
    public boolean isEmpty() {
         if (groupsSize == 0)
@@ -149,15 +137,11 @@ public class Attributes {
                 privateCreator);
     }
 
-    public VR vrOf(int tag) {
-        return ElementDictionary.vrOf(tag, getPrivateCreator(tag));
-    }
-
     public String getPrivateCreator(int tag) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        if ((groupNumber & 1) == 0)
+        if (!TagUtils.isPrivateTag(tag))
             return null;
 
+        int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
@@ -165,13 +149,13 @@ public class Attributes {
         return groups[index].getPrivateCreator(cs(groupNumber), tag);
     }
 
-    public byte[] getBytes(int tag, String privateCreator) {
+    public ByteBuffer getByteBuffer(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getBytes(cs(groupNumber), tag, privateCreator);
+        return groups[index].getByteBuffer(cs(groupNumber), tag, privateCreator);
     }
 
     public String getString(int tag, String privateCreator, String defVal) {
@@ -180,7 +164,7 @@ public class Attributes {
         if (index < 0)
             return defVal;
 
-        return groups[index].getString(cs(groupNumber), bigEndian(groupNumber),
+        return groups[index].getString(cs(groupNumber),
                 tag, privateCreator, defVal);
     }
 
@@ -190,7 +174,7 @@ public class Attributes {
         if (index < 0)
             return null;
 
-        return groups[index].getStrings(cs(groupNumber), bigEndian(groupNumber),
+        return groups[index].getStrings(cs(groupNumber),
                 tag, privateCreator);
     }
 
@@ -200,7 +184,7 @@ public class Attributes {
         if (index < 0)
             return defVal;
 
-        return groups[index].getInt(cs(groupNumber), bigEndian(groupNumber), tag,
+        return groups[index].getInt(cs(groupNumber), tag,
                 privateCreator, defVal);
     }
 
@@ -210,7 +194,7 @@ public class Attributes {
         if (index < 0)
             return null;
 
-        return groups[index].getInts(cs(groupNumber), bigEndian(groupNumber), tag,
+        return groups[index].getInts(cs(groupNumber), tag,
                 privateCreator);
     }
 
@@ -236,10 +220,6 @@ public class Attributes {
         return groupNumber < 8 ? SpecificCharacterSet.DEFAULT : dscs();
     }
 
-    private boolean bigEndian(int groupNumber) {
-        return bigEndian && groupNumber > 2;
-    }
-
     private SpecificCharacterSet dscs() {
         return cs != null ? cs : parent != null ? parent.dscs()
                 : SpecificCharacterSet.DEFAULT;
@@ -258,15 +238,18 @@ public class Attributes {
 
     public void putNull(int tag, String privateCreator, VR vr) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putNull(cs(groupNumber), tag, privateCreator, vr);
+        getOrCreateGroup(groupNumber).putNull(cs(groupNumber), tag,
+                privateCreator, vr);
         if (tag == Tag.SpecificCharacterSet)
             cs = null;
     }
 
-    public void putBytes(int tag, String privateCreator, VR vr, byte[] value) {
+    public void putBytes(int tag, String privateCreator, VR vr, byte[] value,
+            boolean bigEndian) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putBytes(cs(groupNumber), tag, privateCreator, vr,
-                value);
+        getOrCreateGroup(groupNumber, bigEndian)
+                .putBytes(cs(groupNumber), tag, privateCreator, vr, value,
+                        bigEndian);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -274,7 +257,7 @@ public class Attributes {
     public void putString(int tag, String privateCreator, VR vr, String val) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putString(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, val);
+                tag, privateCreator, vr, val);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -283,7 +266,7 @@ public class Attributes {
             String... value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putStrings(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -291,24 +274,24 @@ public class Attributes {
     public void putInt(int tag, String privateCreator, VR vr, int value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putInt(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putInts(int tag, String privateCreator, VR vr, int... value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putInts(cs(groupNumber),
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putFloat(int tag, String privateCreator, VR vr, float value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), 
-                bigEndian(groupNumber), tag, privateCreator, vr, value);
+                tag, privateCreator, vr, value);
     }
 
     public void putFloats(int tag, String privateCreator, VR vr, float... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), bigEndian(groupNumber), tag, privateCreator,
+        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), tag, privateCreator,
                 vr, value);
     }
 
@@ -320,10 +303,10 @@ public class Attributes {
     }
 
     public Fragments putFragments(int tag, String privateCreator, VR vr,
-            int initialCapacity) {
+            boolean bigEndian, int initialCapacity) {
         int groupNumber = TagUtils.groupNumber(tag);
         return getOrCreateGroup(groupNumber).putFragments(cs(groupNumber), tag,
-                privateCreator, vr, initialCapacity);
+                privateCreator, vr, bigEndian, initialCapacity);
     }
 
     private void initSpecificCharacterSet() {
@@ -334,6 +317,10 @@ public class Attributes {
     }
 
     private Group getOrCreateGroup(int groupNumber) {
+        return getOrCreateGroup(groupNumber, false);
+    }
+
+    private Group getOrCreateGroup(int groupNumber, boolean bigEndian) {
         int index = groupsSize;
         if (index != 0) {
             Group lastGroup = groups[index - 1];
@@ -353,7 +340,8 @@ public class Attributes {
         int numMoved = groupsSize - index;
         if (numMoved > 0)
             System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = new Group(groupNumber, initialElementsPerGroupCapacity);
+        groups[index] = new Group(groupNumber, bigEndian,
+                initialElementsPerGroupCapacity);
         groupsSize++;
         return groups[index];
     }

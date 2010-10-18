@@ -53,5 +53,10 @@ public class TagUtils {
             && (tag & 0x0000FF00) == 0
             && (tag & 0x000000FF) != 0;
     }
+
+    public static boolean isPrivateTag(int tag) {
+        return (tag & 0x00010000) != 0
+            && (tag & 0x0000FF00) != 0;
+    }
 }
 

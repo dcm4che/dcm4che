@@ -5,6 +5,8 @@ import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -40,6 +42,7 @@ public class DicomInputStream extends FilterInputStream
         "Deflated DICOM Stream with ZLIB Header";
 
     private static final int ZLIB_HEADER = 0x789c;
+    private static byte[] EMPTY_BYTES = {};
 
     private byte[] preamble;
     private boolean bigEndian;
@@ -98,6 +101,10 @@ public class DicomInputStream extends FilterInputStream
 
     public final long getPosition() {
         return pos;
+    }
+
+    public long getTagPosition() {
+        return tagPos;
     }
 
     public final boolean bigEndian() {
@@ -202,7 +209,6 @@ public class DicomInputStream extends FilterInputStream
         throws IOException {
 
         Attributes attrs = new Attributes();
-        attrs.bigEndian(bigEndian);
         attrs.setPosition(pos);
         long endPos =  pos + (len & 0xffffffffL);
         long fmiEndPos = -1L;
@@ -237,7 +243,9 @@ public class DicomInputStream extends FilterInputStream
                 if (vr == VR.UN) {
                     bigEndian = false;
                     explicitVR = false;
-                    if ((vr = attrs.vrOf(tag)) == VR.UN && length == -1)
+                    vr = ElementDictionary.vrOf(tag,
+                            attrs.getPrivateCreator(tag));
+                    if (vr == VR.UN && length == -1)
                         vr = VR.SQ; // assumes UN with undefined length are SQ,
                                     // will fail on UN fragments!
                 }
@@ -280,7 +288,7 @@ public class DicomInputStream extends FilterInputStream
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
         } else {
-            readValue(length, attrs, tag, vr);
+            attrs.putBytes(tag, null, vr, readValue(length), bigEndian);
         }
         return true;
     }
@@ -306,12 +314,12 @@ public class DicomInputStream extends FilterInputStream
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Fragments frags, VR vr,
-            boolean bigEndian) throws IOException {
+    public boolean readValue(DicomInputStream dis, Fragments frags)
+            throws IOException {
         checkIsThis(dis);
         if (this.vr == null) {
             if (tag == Tag.Item) {
-                frags.add(readValue(length, vr, bigEndian));
+                frags.add(readValue(length));
                 return true;
             }
             if (tag == Tag.SequenceDelimitationItem) {
@@ -364,42 +372,22 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void readFragments(Attributes attrs, int tag, VR vr)
-        throws IOException {
-
-        Fragments frags = attrs.putFragments(tag, null, vr, 10);
-        readFragments(frags, vr, attrs.bigEndian());
+            throws IOException {
+        Fragments frags = attrs.putFragments(tag, null, vr, bigEndian, 10);
+        do {
+            readHeader();
+        } while (handler.readValue(this, frags));
         if (frags.isEmpty())
             attrs.putNull(tag, null, vr);
         else
             frags.trimToSize();
     }
 
-    private void readFragments(Fragments frags, VR vr, boolean bigEndian)
-        throws IOException {
-
-        do {
-            readHeader();
-        } while (handler.readValue(this, frags, vr, bigEndian));
-    }
-
-    private void readValue(int len, Attributes attrs, int tag, VR vr)
-        throws IOException {
-
+    private byte[] readValue(int len) throws IOException {
         if (len == 0)
-            attrs.putNull(tag, null, vr);
-        else {
-            byte[] value = readValue(len, vr, attrs.bigEndian());
-            attrs.putBytes(tag, null, vr, value);
-        }
-    }
-
-    private byte[] readValue(int len, VR vr, boolean bigEndian)
-        throws IOException {
-
+            return EMPTY_BYTES;
         byte[] value = new byte[len];
         readFully(value);
-        if (bigEndian != this.bigEndian)
-            vr.toggleEndian(value);
         return value;
     }
 
@@ -435,7 +423,6 @@ public class DicomInputStream extends FilterInputStream
             tsuid = UID.ExplicitVRLittleEndian;
         }
         switchTransferSyntax(tsuid);
-        attrs.bigEndian(bigEndian);
     }
 
     private void guessTransferSyntax() throws IOException {

@@ -4,10 +4,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import org.dcm4che.util.TagUtils;
+
 class Group {
 
     private final int groupNumber;
-    private final boolean bigEndian;
+    private boolean bigEndian;
     private int[] elementNumbers;
     private VR[] vrs;
     private Object[] values;
@@ -23,6 +25,21 @@ class Group {
 
     public final int getGroupNumber() {
         return groupNumber;
+    }
+
+    public final boolean bigEndian() {
+        return bigEndian;
+    }
+
+    public void bigEndian(boolean bigEndian) {
+        if (this.bigEndian != bigEndian) {
+            for (int i = 0; i < size; i++) {
+                Object value = values[i];
+                if (value instanceof byte[])
+                    vrs[i].toggleEndian((byte[]) value);
+            }
+            this.bigEndian = bigEndian;
+        }
     }
 
     public String toString() {
@@ -491,29 +508,68 @@ class Group {
                     "Cannot specify privateCreator != null with Standard Attribute (%04X,%04X)!",
                     groupNumber, elTag));
 
-        if ((elTag & 0xff00) != 0)
-            throw new IllegalArgumentException(String.format(
-                    "Element number of private Attribute (%04X,%04X) exeeds 255!",
-                    groupNumber, elTag));
-
         for (int creatorTag = 0x10; creatorTag <= 0xff; creatorTag++) {
             int index = indexOf(creatorTag);
             if (index < 0) {
                 if (!reservePrivateBlock)
                     return -1;
                 putString(cs, creatorTag, null, VR.LO, privateCreator);
-                return (creatorTag << 8) | elTag;
+                return (creatorTag << 8) | (elTag & 0xff);
             }
-            if (privateCreator.equals(toString(values, index, VR.LO, cs)))
-                return (creatorTag << 8) | elTag;
+            if (privateCreator.equals(toString(values[index], index, VR.LO, cs)))
+                return (creatorTag << 8) | (elTag & 0xff);
         }
         throw new IllegalStateException(String.format(
                 "No unreserved block in group (%04X,eeee) left.", groupNumber));
     }
 
     public String getPrivateCreator(SpecificCharacterSet cs, int tag) {
-        int creatorTag = (tag >>> 16) & 0xff;
+        int creatorTag = (tag >>> 8) & 0xff;
         int index = indexOf(creatorTag);
         return (index < 0) ? null : toString(values[index], index, VR.LO, cs);
+    }
+
+    public void putAll(SpecificCharacterSet cs, Attributes parent,
+            Group srcGroup) {
+        bigEndian(srcGroup.bigEndian);
+        int[] elTags = srcGroup.elementNumbers;
+        VR[] srcVRs = srcGroup.vrs;
+        Object[] srcValues = srcGroup.values;
+        int otherGroupSize = srcGroup.size;
+        if ((groupNumber & 1) == 0) {
+            for (int i = 0; i < otherGroupSize; i++) {
+                int elTag = elTags[i];
+                put(elTag, srcVRs[i], cloneItems(srcValues[i], parent));
+                if (TagUtils.toTag(groupNumber, elTag)
+                        == Tag.SpecificCharacterSet)
+                    parent.initSpecificCharacterSet();
+            }
+        } else {
+            int i = 0;
+            // skip private creators
+            while (i < otherGroupSize && elTags[i] < 0xff)
+                i++;
+            for (; i < otherGroupSize; i++) {
+                int elTag = elTags[i];
+                String privateCreator = srcGroup.getPrivateCreator(cs, elTag);
+                put(cs, elTag, privateCreator, srcVRs[i],
+                        cloneItems(srcValues[i], parent));
+            }
+        }
+    }
+
+    private Object cloneItems(Object value, Attributes parent) {
+        if (value instanceof Sequence)
+            return clone((Sequence) value, parent);
+        if (value instanceof Fragments)
+            return ((Fragments) value).clone();
+        return value;
+    }
+
+    private Sequence clone(Sequence srcSeq, Attributes parent) {
+        Sequence dstSeq = new Sequence(parent, srcSeq.size());
+        for (Attributes src : srcSeq)
+            dstSeq.add(new Attributes(src));
+        return dstSeq ;
     }
 }

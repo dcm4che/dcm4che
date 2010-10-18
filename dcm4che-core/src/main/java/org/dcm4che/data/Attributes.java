@@ -28,6 +28,11 @@ public class Attributes {
         this.initialElementsPerGroupCapacity = initialElementsPerGroupCapacity;
     }
 
+    public Attributes(Attributes other) {
+        this(other.groupsSize);
+        putAll(other);
+    }
+
     public final boolean isRoot() {
         return parent == null;
     }
@@ -251,7 +256,7 @@ public class Attributes {
     public void putBytes(int tag, String privateCreator, VR vr, byte[] value,
             boolean bigEndian) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber, bigEndian)
+        getOrCreateGroup(groupNumber, bigEndian, initialElementsPerGroupCapacity)
                 .putBytes(cs(groupNumber), tag, privateCreator, vr, value,
                         bigEndian);
         if (tag == Tag.SpecificCharacterSet)
@@ -314,7 +319,18 @@ public class Attributes {
                 privateCreator, vr, bigEndian, initialCapacity);
     }
 
-    private void initSpecificCharacterSet() {
+    public void putAll(Attributes other) {
+        Group[] srcGroups = other.groups;
+        int srcGroupSize = other.groupsSize;
+        for (int i = 0; i < srcGroupSize; i++) {
+            Group srcGroup = srcGroups[i];
+            int groupNumber = srcGroup.getGroupNumber();
+            getOrCreateGroup(groupNumber, srcGroup.bigEndian(), srcGroupSize)
+                    .putAll(cs(groupNumber), this, srcGroup);
+        }
+    }
+
+    void initSpecificCharacterSet() {
         cs = null;
         String[] codes = getStrings(Tag.SpecificCharacterSet, null);
         if (codes != null)
@@ -322,10 +338,12 @@ public class Attributes {
     }
 
     private Group getOrCreateGroup(int groupNumber) {
-        return getOrCreateGroup(groupNumber, false);
+        return getOrCreateGroup(groupNumber, false,
+                initialElementsPerGroupCapacity);
     }
 
-    private Group getOrCreateGroup(int groupNumber, boolean bigEndian) {
+    private Group getOrCreateGroup(int groupNumber, boolean bigEndian,
+            int capacity) {
         int index = groupsSize;
         if (index != 0) {
             Group lastGroup = groups[index - 1];
@@ -345,8 +363,7 @@ public class Attributes {
         int numMoved = groupsSize - index;
         if (numMoved > 0)
             System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = new Group(groupNumber, bigEndian,
-                initialElementsPerGroupCapacity);
+        groups[index] = new Group(groupNumber, bigEndian, capacity);
         groupsSize++;
         return groups[index];
     }

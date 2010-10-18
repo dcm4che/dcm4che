@@ -5,6 +5,8 @@ import org.dcm4che.data.VR;
 
 public class SiemensCSAHeader extends ElementDictionary {
 
+    public static final String PrivateCreator = "SIEMENS CSA HEADER";
+
     /** (0029,xx08) VR=CS VM=1 CSA Image Header Type */
     public static final int CSAImageHeaderType = 0x00290008;
 
@@ -24,7 +26,7 @@ public class SiemensCSAHeader extends ElementDictionary {
     public static final int CSASeriesHeaderInfo = 0x00290020;
 
     public SiemensCSAHeader() {
-        super("SIEMENS CSA HEADER", SiemensCSAHeader.class);
+        super(PrivateCreator, SiemensCSAHeader.class);
     }
 
     @Override

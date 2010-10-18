@@ -256,8 +256,8 @@ public class Attributes {
 
     public void putString(int tag, String privateCreator, VR vr, String val) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putString(cs(groupNumber),
-                tag, privateCreator, vr, val);
+        getOrCreateGroup(groupNumber).putString(cs(groupNumber), tag,
+                privateCreator, vr, val);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -265,34 +265,35 @@ public class Attributes {
     public void putStrings(int tag, String privateCreator, VR vr,
             String... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putStrings(cs(groupNumber),
-                tag, privateCreator, vr, value);
+        getOrCreateGroup(groupNumber).putStrings(cs(groupNumber), tag,
+                privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
 
     public void putInt(int tag, String privateCreator, VR vr, int value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putInt(cs(groupNumber),
-                tag, privateCreator, vr, value);
+        getOrCreateGroup(groupNumber).putInt(cs(groupNumber), tag,
+                privateCreator, vr, value);
     }
 
     public void putInts(int tag, String privateCreator, VR vr, int... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putInts(cs(groupNumber),
-                tag, privateCreator, vr, value);
+        getOrCreateGroup(groupNumber).putInts(cs(groupNumber), tag,
+                privateCreator, vr, value);
     }
 
     public void putFloat(int tag, String privateCreator, VR vr, float value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), 
-                tag, privateCreator, vr, value);
+        getOrCreateGroup(groupNumber).putFloat(cs(groupNumber), tag,
+                privateCreator, vr, value);
     }
 
-    public void putFloats(int tag, String privateCreator, VR vr, float... value) {
+    public void putFloats(int tag, String privateCreator, VR vr,
+            float... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), tag, privateCreator,
-                vr, value);
+        getOrCreateGroup(groupNumber).putFloats(cs(groupNumber), tag,
+                privateCreator, vr, value);
     }
 
     public Sequence putSequence(int tag, String privateCreator,

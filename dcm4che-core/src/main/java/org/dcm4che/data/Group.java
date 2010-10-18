@@ -70,7 +70,7 @@ class Group {
     public boolean contains(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return false;
 
         return indexOf(elTag) >= 0;
@@ -79,7 +79,7 @@ class Group {
     public boolean containsValue(SpecificCharacterSet cs,
             int tag, String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return false;
 
         int index = indexOf(elTag);
@@ -99,7 +99,7 @@ class Group {
     public ByteBuffer getByteBuffer(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -129,7 +129,7 @@ class Group {
     public String getString(SpecificCharacterSet cs, int tag,
             String privateCreator, String defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return defVal;
 
         int index = indexOf(elTag);
@@ -206,7 +206,7 @@ class Group {
     public int[] getInts(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -228,7 +228,7 @@ class Group {
     public float getFloat(SpecificCharacterSet cs,
             int tag, String privateCreator, float defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return defVal;
 
         int index = indexOf(elTag);
@@ -250,7 +250,7 @@ class Group {
     public float[] getFloats(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -285,7 +285,7 @@ class Group {
     public double getDouble(SpecificCharacterSet cs, int tag,
             String privateCreator, double defVal) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return defVal;
 
         int index = indexOf(elTag);
@@ -307,7 +307,7 @@ class Group {
     public double[] getDoubles(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -329,7 +329,7 @@ class Group {
     public Sequence getSequence(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -346,7 +346,7 @@ class Group {
     public Fragments getFragments(SpecificCharacterSet cs, int tag,
             String privateCreator) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return null;
 
         int index = indexOf(elTag);
@@ -363,7 +363,7 @@ class Group {
     public boolean remove(int tag, String privateCreator,
             SpecificCharacterSet cs) {
         int elTag = elTag(cs, privateCreator, tag, false);
-        if (elTag == 0)
+        if (elTag < 0)
             return false;
 
         int index = indexOf(elTag);
@@ -453,7 +453,10 @@ class Group {
 
     private void put(SpecificCharacterSet cs, int tag,
             String privateCreator, VR vr, Object value) {
-        int elTag = elTag(cs, privateCreator, tag, true);
+        put(elTag(cs, privateCreator, tag, true), vr, value);
+    }
+
+    private void put(int elTag, VR vr, Object value) {
         int index = size;
         if (size != 0 && elTag <= elementNumbers[size-1]) {
             index = indexOf(elTag);
@@ -494,14 +497,14 @@ class Group {
                     groupNumber, elTag));
 
         for (int creatorTag = 0x10; creatorTag <= 0xff; creatorTag++) {
-            String s = getString(cs, creatorTag, null, null);
-            if (s == null) {
+            int index = indexOf(creatorTag);
+            if (index < 0) {
                 if (!reservePrivateBlock)
                     return -1;
                 putString(cs, creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | elTag;
             }
-            if (privateCreator.equals(s))
+            if (privateCreator.equals(toString(values, index, VR.LO, cs)))
                 return (creatorTag << 8) | elTag;
         }
         throw new IllegalStateException(String.format(
@@ -510,6 +513,7 @@ class Group {
 
     public String getPrivateCreator(SpecificCharacterSet cs, int tag) {
         int creatorTag = (tag >>> 16) & 0xff;
-        return getString(cs, creatorTag, null, null);
+        int index = indexOf(creatorTag);
+        return (index < 0) ? null : toString(values[index], index, VR.LO, cs);
     }
 }

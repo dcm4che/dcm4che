@@ -372,9 +372,11 @@ public class DicomInputStream extends FilterInputStream
     private void readFragments(Attributes attrs, int tag, VR vr)
             throws IOException {
         Fragments frags = attrs.putFragments(tag, null, vr, bigEndian, 10);
+        level++;
         do {
             readHeader();
         } while (handler.readValue(this, frags));
+        level--;
         if (frags.isEmpty())
             attrs.putNull(tag, null, vr);
         else

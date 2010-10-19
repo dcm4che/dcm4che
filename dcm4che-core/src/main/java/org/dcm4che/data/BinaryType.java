@@ -298,6 +298,26 @@ enum BinaryType {
         return strings;
     }
 
+    public void prompt(byte[] bytes, boolean bigEndian, int maxChars,
+            StringBuilder sb) {
+        int remaining = maxChars;
+        for (int i = bytes.length / numBytes, off = 0; i-- > 0; 
+                off += numBytes) {
+            String s = bytesToString(bytes, off, bigEndian);
+            remaining -= s.length();
+            if (remaining < (i > 0 ? 4 : 0)) {
+                sb.append("...");
+                return;
+            }
+            sb.append(s);
+            if (i > 0) {
+                sb.append('\\');
+                remaining--;
+            }
+        }
+        
+    }
+
     public byte[] intsToBytes(int[] ints, boolean bigEndian) {
         if (ints.length == 0)
             return EMPTY_BYTES;

@@ -30,4 +30,9 @@ public class Fragments extends ArrayList<byte[]> {
                 .order(bigEndian ? ByteOrder.BIG_ENDIAN
                                   : ByteOrder.LITTLE_ENDIAN);
     }
+
+    @Override
+    public String toString() {
+        return "" + size() + " Fragments";
+    }
 }

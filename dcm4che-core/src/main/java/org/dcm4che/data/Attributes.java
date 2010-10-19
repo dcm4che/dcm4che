@@ -7,6 +7,8 @@ import org.dcm4che.util.TagUtils;
 
 public class Attributes {
 
+    public static final int PROMPT_LINES = 20;
+
     private Attributes parent;
     private Group[] groups;
     private int groupsSize;
@@ -350,5 +352,24 @@ public class Attributes {
         groups[index] = Group.create(this, groupNumber, bigEndian, capacity);
         groupsSize++;
         return groups[index];
+    }
+
+    @Override
+    public String toString() {
+        return promptAttributes(
+                new StringBuilder(PROMPT_LINES * (Group.PROMPT_WIDTH + 1) + 4))
+                .toString();
+    }
+
+    private StringBuilder promptAttributes(StringBuilder sb) {
+        int remaining = PROMPT_LINES;
+        for (int i = 0; i < groupsSize; i++) {
+            groups[i].promptAttributes(remaining, sb);
+            if ((remaining -= groups[i].size()) < 0) {
+                sb.append("...\n");
+                break;
+            }
+        }
+        return sb;
     }
 }

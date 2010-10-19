@@ -8,6 +8,8 @@ import org.dcm4che.util.TagUtils;
 
 class Group {
 
+    public static final int PROMPT_WIDTH = 78;
+    
     private final Attributes parent;
     private final int grTag;
     private boolean bigEndian;
@@ -70,8 +72,50 @@ class Group {
         }
     }
 
+    @Override
     public String toString() {
-        return String.format("(%04X,eeee)[%d]", grTag, size);
+        return promptAttributes(size, 
+                new StringBuilder(size * (PROMPT_WIDTH+1))).toString();
+    }
+
+    public StringBuilder promptAttributes(int maxLines, StringBuilder sb) {
+        for (int i = 0, n = Math.min(size, maxLines); i < n; i++)
+            promptAttribute(i, -1, PROMPT_WIDTH, sb).append('\n');
+        return sb;
+    }
+
+    private StringBuilder promptAttribute(int index, int vallen, int maxChars,
+            StringBuilder sb) {
+        int maxLength = sb.length() + maxChars;
+        int tag = TagUtils.toTag(grTag, elTags[index]);
+        VR vr = vrs[index];
+        Object value = values[index];
+        sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" #");
+        if (value == null) {
+            sb.append("0");
+        } else if (value instanceof Sequence || value instanceof Fragments) {
+            sb.append(vallen).append(' ').append(value);
+        } else if (value instanceof String) {
+            String s = (String) value;
+            sb.append(vallen < 0 ? s.length() : vallen).append(' ');
+            prompt((String) value, maxLength - sb.length(), sb);
+        } else {
+            byte[] b = (byte[]) value;
+            sb.append(b.length).append(' ');
+            if (vr.isBinaryType()) {
+                vr.prompt(b, bigEndian, maxLength - sb.length(), sb);
+            } else {
+                prompt(vr.toString(b, cs()), maxLength - sb.length(), sb);
+            }
+        }
+        return sb;
+    }
+
+    private void prompt(String s, int maxChars, StringBuilder sb) {
+        if (s.length() > maxChars)
+            sb.append(s.substring(0, maxChars - 3)).append("...");
+        else
+            sb.append(s);
     }
 
     public final boolean isEmpty() {
@@ -191,14 +235,13 @@ class Group {
 
          return vr.isBinaryType() 
                  ? vr.firstBinaryValueAsString((byte[]) value, bigEndian)
-                 : vr.firstStringValue(toString(value, index, vr, cs()));
+                 : vr.firstStringValue(toString(value, index, vr));
     }
 
-    private String toString(Object value, int index, VR vr,
-            SpecificCharacterSet cs) {
+    private String toString(Object value, int index, VR vr) {
         if (value instanceof String)
             return (String) value;
-        String s = vr.toString((byte[]) value, cs);
+        String s = vr.toString((byte[]) value, cs());
         values[index] = s;
         return s;
     }
@@ -222,7 +265,7 @@ class Group {
 
         return vr.isBinaryType() 
                 ? vr.binaryValueAsStrings((byte[]) value, bigEndian)
-                : vr.splitStringValue(toString(value, index, vr, cs()));
+                : vr.splitStringValue(toString(value, index, vr));
      }
 
     public int getInt(int tag, String privateCreator, int defVal) {
@@ -242,7 +285,7 @@ class Group {
         if (value == null)
             return defVal;
 
-        return vr == VR.IS ? vr.toInt(toString(value, index, vr, cs()))
+        return vr == VR.IS ? vr.toInt(toString(value, index, vr))
                            : vr.toInt((byte[]) value, bigEndian);
     }
 
@@ -263,7 +306,7 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_INTS;
 
-        return vr == VR.IS ? vr.toInts(toString(value, index, vr, cs()))
+        return vr == VR.IS ? vr.toInts(toString(value, index, vr))
                            : vr.toInts((byte[]) value, bigEndian);
     }
 
@@ -284,7 +327,7 @@ class Group {
         if (value == null)
             return defVal;
 
-        return vr == VR.DS ? vr.toFloat(toString(value, index, vr, cs()))
+        return vr == VR.DS ? vr.toFloat(toString(value, index, vr))
                            : vr.toFloat((byte[]) value, bigEndian);
     }
 
@@ -305,19 +348,7 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_FLOATS;
 
-        if (vr == VR.DS) {
-            String s;
-            if (value instanceof String)
-                s = (String) value;
-            else
-                values[index] = s = vr.toString((byte[]) value, cs());
-            String[] ss = vr.splitStringValue(s);
-            float[] floatarr = new float[ss.length];
-            for (int i = 0; i < ss.length; i++)
-                floatarr[i] = Float.parseFloat(ss[i]);
-            return floatarr;
-        }
-        return vr == VR.DS ? vr.toFloats(toString(value, index, vr, cs()))
+        return vr == VR.DS ? vr.toFloats(toString(value, index, vr))
                            : vr.toFloats((byte[]) value, bigEndian);
     }
 
@@ -338,7 +369,7 @@ class Group {
         if (value == null)
             return defVal;
 
-        return vr == VR.DS ? vr.toDouble(toString(value, index, vr, cs()))
+        return vr == VR.DS ? vr.toDouble(toString(value, index, vr))
                            : vr.toDouble((byte[]) value, bigEndian);
     }
 
@@ -359,7 +390,7 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_DOUBLES;
 
-        return vr == VR.DS ? vr.toDoubles(toString(value, index, vr, cs()))
+        return vr == VR.DS ? vr.toDoubles(toString(value, index, vr))
                            : vr.toDoubles((byte[]) value, bigEndian);
     }
 
@@ -516,7 +547,6 @@ class Group {
                     "Cannot specify privateCreator != null with Standard Attribute (%04X,%04X)!",
                     grTag, elTag));
 
-        SpecificCharacterSet cs = cs();
         for (int creatorTag = 0x10; creatorTag <= 0xff; creatorTag++) {
             int index = indexOf(creatorTag);
             if (index < 0) {
@@ -525,8 +555,7 @@ class Group {
                 putString(creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | (elTag & 0xff);
             }
-            if (privateCreator.equals(
-                    toString(values[index], index, VR.LO, cs)))
+            if (privateCreator.equals(toString(values[index], index, VR.LO)))
                 return (creatorTag << 8) | (elTag & 0xff);
         }
         throw new IllegalStateException(String.format(
@@ -537,7 +566,7 @@ class Group {
         int creatorTag = (tag >>> 8) & 0xff;
         int index = indexOf(creatorTag);
         return (index < 0) ? null 
-                : toString(values[index], index, VR.LO, cs());
+                : toString(values[index], index, VR.LO);
     }
 
     public void putAll(Group srcGroup) {

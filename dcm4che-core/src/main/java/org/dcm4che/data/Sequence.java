@@ -78,4 +78,8 @@ public class Sequence extends ArrayList<Attributes> {
         return super.set(index, attrs.setParent(parent));
     }
 
+    @Override
+    public String toString() {
+        return "" + size() + " Items";
+    }
 }

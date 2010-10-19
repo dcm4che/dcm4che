@@ -422,4 +422,11 @@ public enum VR {
         if (isBinaryType())
             binaryType.toggleEndian(value);
     }
+
+    public StringBuilder prompt(byte[] value, boolean bigEndian, int maxChars,
+            StringBuilder sb) {
+        checkBinaryType();
+        binaryType.prompt(value, bigEndian, maxChars, sb);
+        return sb;
+    }
 }

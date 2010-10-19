@@ -143,7 +143,8 @@ public class Dcm2Txt implements DicomInputHandler {
         
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
-        vr.prompt(b, dis.bigEndian(), maxChars, line);
+        line.append(' ');
+        vr.prompt(b, dis.bigEndian(), maxChars - 1, line);
         return true;
     }
 

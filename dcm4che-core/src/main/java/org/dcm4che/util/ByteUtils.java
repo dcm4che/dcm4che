@@ -19,6 +19,11 @@ public class ByteUtils {
         return ((bytes[off + 1] & 255) << 8) + (bytes[off] & 255);
     }
 
+    public static int bytesToShort(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToShortBE(bytes, off)
+                         : bytesToShortLE(bytes, off);
+    }
+
     public static int bytesToShortBE(byte[] bytes, int off) {
         return (bytes[off] << 8) + (bytes[off + 1] & 255);
     }
@@ -54,12 +59,22 @@ public class ByteUtils {
                 + ((bytes[off + 3] & 255) << 8) + (bytes[off + 2] & 255);
     }
 
+    public static float bytesToFloat(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToFloatBE(bytes, off)
+                         : bytesToFloatLE(bytes, off);
+    }
+
     public static float bytesToFloatBE(byte[] bytes, int off) {
         return Float.intBitsToFloat(bytesToIntBE(bytes, off));
     }
 
     public static float bytesToFloatLE(byte[] bytes, int off) {
         return Float.intBitsToFloat(bytesToIntLE(bytes, off));
+    }
+
+    public static double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToDoubleBE(bytes, off)
+                         : bytesToDoubleLE(bytes, off);
     }
 
     public static double bytesToDoubleBE(byte[] bytes, int off) {
@@ -86,6 +101,12 @@ public class ByteUtils {
         return Double.longBitsToDouble(l);
     }
 
+    public static byte[] shortToBytes(int i, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? shortToBytesBE(i, bytes, off)
+                         : shortToBytesLE(i, bytes, off);
+    }
+
     public static byte[] shortToBytesBE(int i, byte[] bytes, int off) {
         bytes[off] = (byte) (i >> 8);
         bytes[off + 1] = (byte) i;
@@ -96,6 +117,12 @@ public class ByteUtils {
         bytes[off + 1] = (byte) (i >> 8);
         bytes[off] = (byte) i;
         return bytes;
+    }
+
+    public static byte[] intToBytes(int i, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? intToBytesBE(i, bytes, off)
+                         : intToBytesLE(i, bytes, off);
     }
 
     public static byte[] intToBytesBE(int i, byte[] bytes, int off) {
@@ -114,6 +141,12 @@ public class ByteUtils {
         return bytes;
     }
 
+    public static byte[] tagToBytes(int i, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? tagToBytesBE(i, bytes, off)
+                         : tagToBytesLE(i, bytes, off);
+    }
+
     public static byte[] tagToBytesBE(int i, byte[] bytes, int off) {
         return intToBytesBE(i, bytes, off);
     }
@@ -126,12 +159,24 @@ public class ByteUtils {
         return bytes;
     }
 
-    public static byte[] floatToBytesBE(float f, byte[] bytes, int off) {
+    public static byte[] floatToBytes(float f, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? floatToBytesBE(f, bytes, off)
+                         : floatToBytesLE(f, bytes, off);
+    }
+
+   public static byte[] floatToBytesBE(float f, byte[] bytes, int off) {
         return intToBytesBE(Float.floatToIntBits(f), bytes, off);
     }
 
     public static byte[] floatToBytesLE(float f, byte[] bytes, int off) {
         return intToBytesLE(Float.floatToIntBits(f), bytes, off);
+    }
+
+    public static byte[] doubleToBytes(double d, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? doubleToBytesBE(d, bytes, off)
+                         : doubleToBytesLE(d, bytes, off);
     }
 
     public static byte[] doubleToBytesBE(double d, byte[] bytes, int off) {

@@ -7,7 +7,7 @@ import org.dcm4che.util.TagUtils;
 
 public class Attributes {
 
-    public static final int PROMPT_LINES = 20;
+    private static final int TO_STRING_LIMIT = 20;
 
     private Attributes parent;
     private Group[] groups;
@@ -356,15 +356,20 @@ public class Attributes {
 
     @Override
     public String toString() {
-        return promptAttributes(
-                new StringBuilder(PROMPT_LINES * (Group.PROMPT_WIDTH + 1) + 4))
+        return toString(TO_STRING_LIMIT, Group.TO_STRING_WIDTH);
+    }
+    
+    public String toString(int limit, int maxWidth) {
+        return promptAttributes(limit, maxWidth,
+                new StringBuilder(limit * (maxWidth + 1) + 4))
                 .toString();
     }
 
-    private StringBuilder promptAttributes(StringBuilder sb) {
-        int remaining = PROMPT_LINES;
+    public StringBuilder promptAttributes(int limit, int maxWidth,
+            StringBuilder sb) {
+        int remaining = limit;
         for (int i = 0; i < groupsSize; i++) {
-            groups[i].promptAttributes(remaining, sb);
+            groups[i].promptAttributes(remaining, maxWidth, sb);
             if ((remaining -= groups[i].size()) < 0) {
                 sb.append("...\n");
                 break;
@@ -372,4 +377,16 @@ public class Attributes {
         }
         return sb;
     }
-}
+
+    public StringBuilder promptAttribute(int tag, String privateCreator,
+            int vallen, int maxWidth, StringBuilder sb) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return sb;
+
+        return groups[index].promptAttribute(tag, privateCreator, vallen,
+                maxWidth, sb);
+    }
+
+ }

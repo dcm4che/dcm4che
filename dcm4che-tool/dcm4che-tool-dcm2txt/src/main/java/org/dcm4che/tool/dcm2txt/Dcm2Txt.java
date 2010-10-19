@@ -34,10 +34,20 @@ public class Dcm2Txt implements DicomInputHandler {
     private static final String EXAMPLE = null;
 
     /** default number of characters per line */
-    public static final int DEFAULT_WIDTH = 79;
+    private static final int DEFAULT_WIDTH = 78;
 
     private int width = DEFAULT_WIDTH;
     private boolean first = true;
+
+    public final int getWidth() {
+        return width;
+    }
+
+    public final void setWidth(int width) {
+        if (width < 40)
+            throw new IllegalArgumentException();
+        this.width = width;
+    }
 
     public void parse(InputStream is) throws IOException {
         DicomInputStream dis = new DicomInputStream(is);
@@ -52,25 +62,20 @@ public class Dcm2Txt implements DicomInputHandler {
             promptPreamble(dis.getPreamble());
             first = false;
         }
-        int tag = dis.tag();
-        StringBuilder line = new StringBuilder(width);
-        appendHeader(line, dis);
-        boolean appendValue = appendValue(line, dis, attrs);
-        appendKeyword(line, tag, attrs.getPrivateCreator(tag));
-        System.out.println(line);
-        return appendValue || dis.readValue(dis, attrs);
-    }
-
-    private boolean appendValue(StringBuilder line, DicomInputStream dis,
-            Attributes attrs) throws IOException {
+        StringBuilder line = new StringBuilder(width + 30);
+        appendPrefix(dis, line);
         VR vr = dis.vr();
-        int length = dis.length();
-        if (vr == null || vr == VR.SQ || length == -1)
-            return false;
-
+        int vallen = dis.length();
+        if (vr == null || vr == VR.SQ || vallen == -1) {
+            appendHeader(dis, line);
+            appendKeyword(dis, line);
+            System.out.println(line);
+            return dis.readValue(dis, attrs);
+        }
         int tag = dis.tag();
         dis.readValue(dis, attrs);
-        append(line, attrs.getStrings(tag, null));
+        attrs.promptAttribute(tag, null, vallen, width - line.length(), line);
+        System.out.println(line);
         switch (tag) {
         case Tag.FileMetaInformationGroupLength:
         case Tag.TransferSyntaxUID:
@@ -83,27 +88,13 @@ public class Dcm2Txt implements DicomInputHandler {
         return true;
     }
 
-    private void append(StringBuilder line, String[] values) {
-        line.append(" [");
-        for (int i = 0; i < values.length; i++) {
-            if (i > 0)
-                line.append('\\');
-            line.append(values[i]);
-            if (line.length() + 1 > width) {
-                line.setLength(width - 3);
-                line.append("..");
-                break;
-            }
-        }
-        line.append(']');
-    }
-
     @Override
     public boolean readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
         StringBuilder line = new StringBuilder(width);
-        appendHeader(line, dis);
-        appendKeyword(line, dis.tag(), null);
+        appendPrefix(dis, line);
+        appendHeader(dis, line);
+        appendKeyword(dis, line);
         System.out.println(line);
         return dis.readValue(dis, seq);
     }
@@ -111,22 +102,48 @@ public class Dcm2Txt implements DicomInputHandler {
     @Override
     public boolean readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
-        StringBuilder line = new StringBuilder(width);
-        appendHeader(line, dis);
-        boolean appendFragment = appendFragment(line, dis, frags.vr());
-        appendKeyword(line, dis.tag(), null);
+        StringBuilder line = new StringBuilder(width + 20);
+        appendPrefix(dis, line);
+        appendHeader(dis, line);
+        boolean appendFragment = appendFragment(line, dis, frags.vr(),
+                width - line.length());
+        appendKeyword(dis, line);
         System.out.println(line);
         return appendFragment || dis.readValue(dis, frags);
     }
 
+    private void appendPrefix(DicomInputStream dis, StringBuilder line) {
+        line.append(dis.getTagPosition()).append(": ");
+        int level = dis.level();
+        while (level-- > 0)
+            line.append('>');
+    }
+
+    private void appendHeader(DicomInputStream dis, StringBuilder line) {
+        line.append(TagUtils.toString(dis.tag())).append(' ');
+        VR vr = dis.vr();
+        if (vr != null)
+            line.append(vr).append(' ');
+        line.append('#').append(dis.length());
+    }
+
+    private void appendKeyword(DicomInputStream dis, StringBuilder line) {
+        if (line.length() + 8 < width) {
+            line.append(" //");
+            line.append(ElementDictionary.keywordOf(dis.tag(), null));
+            if (line.length() > width)
+                line.setLength(width);
+        }
+    }
+
     private boolean appendFragment(StringBuilder line, DicomInputStream dis,
-            VR vr) throws IOException {
+            VR vr, int maxChars) throws IOException {
         if (dis.tag() != Tag.Item)
             return false;
         
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
-        append(line, vr.binaryValueAsStrings(b, dis.bigEndian()));
+        vr.prompt(b, dis.bigEndian(), maxChars, line);
         return true;
     }
 
@@ -135,43 +152,26 @@ public class Dcm2Txt implements DicomInputHandler {
             return;
         
         StringBuilder line = new StringBuilder(width);
-        line.append("0:");
-        append(line, VR.OB.binaryValueAsStrings(preamble, false));
+        line.append("0: ");
+        VR.OB.prompt(preamble, false, width - 3, line);
         System.out.println(line);
     }
 
-    private StringBuilder appendHeader(StringBuilder line,
-            DicomInputStream dis) {
-        int tag = dis.tag();
-        line.append(dis.getTagPosition()).append(": ");
-        int level = dis.level();
-        while (level-- > 0)
-            line.append('>');
-        line.append(TagUtils.toString(tag)).append(' ');
-        VR vr = dis.vr();
-        if (vr != null)
-            line.append(vr).append(' ');
-
-        line.append('#').append(dis.length());
-        return line;
-    }
-
-    private StringBuilder appendKeyword(StringBuilder line, int tag,
-            String privateCreator) {
-        if (line.length() + 1 < width) {
-            line.append(' ');
-            line.append(ElementDictionary.keywordOf(tag, privateCreator));
-            if (line.length() > width)
-                line.setLength(width);
-        }
-        return line;
-    }
-
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             if (cl != null) {
                 Dcm2Txt dcm2txt = new Dcm2Txt();
+                if (cl.hasOption("w")) {
+                    String s = cl.getOptionValue("w");
+                    try {
+                        dcm2txt.setWidth(Integer.parseInt(s));
+                    } catch (IllegalArgumentException e) {
+                        throw new ParseException(
+                                "Illegal line length: " + s);
+                    }
+                }
                 InputStream is = inputStream(cl.getArgList());
                 try {
                     dcm2txt.parse(is);
@@ -201,6 +201,12 @@ public class Dcm2Txt implements DicomInputHandler {
             throws ParseException{
         Options options = new Options();
         options.addOption(OptionBuilder
+                .withLongOpt("width")
+                .hasArg()
+                .withArgName("col")
+                .withDescription("set line length; default: 78")
+                .create("w"));
+        options.addOption(OptionBuilder
                 .withLongOpt("help")
                 .withDescription("display this help and exit")
                 .create());
@@ -213,12 +219,12 @@ public class Dcm2Txt implements DicomInputHandler {
         if (cl.hasOption("help")) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, options, EXAMPLE);
-            cl = null;
+            return null;
         }
         if (cl.hasOption("version")) {
             System.out.println("dcm2txt " + 
                     Dcm2Txt.class.getPackage().getImplementationVersion());
-            cl = null;
+            return null;
         }
         return cl;
     }

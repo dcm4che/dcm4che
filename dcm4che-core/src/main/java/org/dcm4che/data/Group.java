@@ -8,7 +8,7 @@ import org.dcm4che.util.TagUtils;
 
 class Group {
 
-    public static final int PROMPT_WIDTH = 78;
+    public static final int TO_STRING_WIDTH = 78;
     
     private final Attributes parent;
     private final int grTag;
@@ -74,20 +74,35 @@ class Group {
 
     @Override
     public String toString() {
-        return promptAttributes(size, 
-                new StringBuilder(size * (PROMPT_WIDTH+1))).toString();
+        return promptAttributes(size, TO_STRING_WIDTH,
+                new StringBuilder(size * (TO_STRING_WIDTH + 1))).toString();
     }
 
-    public StringBuilder promptAttributes(int maxLines, StringBuilder sb) {
-        for (int i = 0, n = Math.min(size, maxLines); i < n; i++)
-            promptAttribute(i, -1, PROMPT_WIDTH, sb).append('\n');
+    public StringBuilder promptAttributes(int lines, int maxWidth,
+            StringBuilder sb) {
+        for (int i = 0, n = Math.min(size, lines); i < n; i++)
+            promptAttribute(i, -1, maxWidth, sb).append('\n');
         return sb;
+    }
+
+    public StringBuilder promptAttribute(int tag, String privateCreator,
+            int vallen, int maxWidth, StringBuilder sb) {
+        int elTag = elTag(privateCreator, tag, false);
+        if (elTag < 0)
+            return sb;
+
+        int index = indexOf(elTag);
+        if (index < 0)
+            return sb;
+        
+        return promptAttribute(index, vallen, maxWidth, sb);
     }
 
     private StringBuilder promptAttribute(int index, int vallen, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
-        int tag = TagUtils.toTag(grTag, elTags[index]);
+        int elTag = elTags[index];
+        int tag = TagUtils.toTag(grTag, elTag);
         VR vr = vrs[index];
         Object value = values[index];
         sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" #");
@@ -108,14 +123,25 @@ class Group {
                 prompt(vr.toString(b, cs()), maxLength - sb.length(), sb);
             }
         }
+        int remaining = maxLength - sb.length() - 3;
+        if (remaining > 4) {
+            String keyword =
+                    ElementDictionary.keywordOf(tag, getPrivateCreator(elTag));
+            sb.append(" //").append(
+                    keyword.length() > remaining 
+                            ? keyword.substring(0, remaining)
+                            : keyword);
+        }
         return sb;
     }
 
     private void prompt(String s, int maxChars, StringBuilder sb) {
-        if (s.length() > maxChars)
-            sb.append(s.substring(0, maxChars - 3)).append("...");
+        String trim = s.trim();
+        if (trim.length() > maxChars)
+            sb.append(trim.substring(0, Math.max(0, maxChars - 3)))
+                .append("...");
         else
-            sb.append(s);
+            sb.append(trim);
     }
 
     public final boolean isEmpty() {
@@ -563,6 +589,9 @@ class Group {
     }
 
     public String getPrivateCreator(int tag) {
+        if ((grTag & 1) == 0)
+            return null;
+
         int creatorTag = (tag >>> 8) & 0xff;
         int index = indexOf(creatorTag);
         return (index < 0) ? null 

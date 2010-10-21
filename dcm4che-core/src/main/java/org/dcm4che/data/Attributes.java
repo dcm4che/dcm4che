@@ -1,6 +1,5 @@
 package org.dcm4che.data;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.dcm4che.util.TagUtils;
@@ -15,6 +14,8 @@ public class Attributes {
     private final int initialGroupCapacity;
     private SpecificCharacterSet cs;
     private long position = -1L;
+
+    private boolean bigEndian;
 
     public Attributes() {
         this(10, 10);
@@ -42,7 +43,20 @@ public class Attributes {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
 
-    public final Attributes getParrent() {
+    public final boolean bigEndian() {
+        return bigEndian;
+    }
+
+    public final void bigEndian(boolean bigEndian) {
+        if (this.bigEndian != bigEndian) {
+            for (int i = 0; i < groupsSize; i++)
+                groups[i].toggleEndian();
+
+            this.bigEndian = bigEndian;
+        }
+    }
+
+    public final Attributes getParent() {
         return parent;
     }
 
@@ -157,13 +171,13 @@ public class Attributes {
         return groups[index].getPrivateCreator(tag);
     }
 
-    public ByteBuffer getByteBuffer(int tag, String privateCreator) {
+    public byte[] getBytes(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getByteBuffer(tag, privateCreator);
+        return groups[index].getBytes(tag, privateCreator);
     }
 
     public String getString(int tag, String privateCreator, String defVal) {
@@ -247,7 +261,7 @@ public class Attributes {
     public void putBytes(int tag, String privateCreator, VR vr, byte[] value,
             boolean bigEndian) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber, bigEndian, initialGroupCapacity)
+        getOrCreateGroup(groupNumber, initialGroupCapacity)
                 .putBytes(tag, privateCreator, vr, value, bigEndian);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
@@ -306,13 +320,13 @@ public class Attributes {
     }
 
     public void putAll(Attributes other) {
+        other.bigEndian(bigEndian);
         Group[] srcGroups = other.groups;
         int srcGroupSize = other.groupsSize;
         for (int i = 0; i < srcGroupSize; i++) {
             Group srcGroup = srcGroups[i];
             int groupNumber = srcGroup.getGroupNumber();
-            getOrCreateGroup(groupNumber, srcGroup.bigEndian(), srcGroupSize)
-                    .putAll(srcGroup);
+            getOrCreateGroup(groupNumber, srcGroupSize).putAll(srcGroup);
         }
     }
 
@@ -324,12 +338,10 @@ public class Attributes {
     }
 
     private Group getOrCreateGroup(int groupNumber) {
-        return getOrCreateGroup(groupNumber, false,
-                initialGroupCapacity);
+        return getOrCreateGroup(groupNumber, initialGroupCapacity);
     }
 
-    private Group getOrCreateGroup(int groupNumber, boolean bigEndian,
-            int capacity) {
+    private Group getOrCreateGroup(int groupNumber, int capacity) {
         int index = groupsSize;
         if (index != 0) {
             Group lastGroup = groups[index - 1];
@@ -349,7 +361,7 @@ public class Attributes {
         int numMoved = groupsSize - index;
         if (numMoved > 0)
             System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = Group.create(this, groupNumber, bigEndian, capacity);
+        groups[index] = Group.create(this, groupNumber, capacity);
         groupsSize++;
         return groups[index];
     }

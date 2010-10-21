@@ -1,7 +1,5 @@
 package org.dcm4che.data;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 
 public class Fragments extends ArrayList<byte[]> {
@@ -23,12 +21,6 @@ public class Fragments extends ArrayList<byte[]> {
 
     public final boolean bigEndian() {
         return bigEndian;
-    }
-
-    public ByteBuffer getByteBuffer(int index) {
-        return ByteBuffer.wrap(get(index))
-                .order(bigEndian ? ByteOrder.BIG_ENDIAN
-                                  : ByteOrder.LITTLE_ENDIAN);
     }
 
     @Override

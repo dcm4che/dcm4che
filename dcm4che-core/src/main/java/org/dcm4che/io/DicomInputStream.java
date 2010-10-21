@@ -207,6 +207,7 @@ public class DicomInputStream extends FilterInputStream
         throws IOException {
 
         Attributes attrs = new Attributes();
+        attrs.bigEndian(bigEndian);
         attrs.setPosition(pos);
         long endPos =  pos + (len & 0xffffffffL);
         long fmiEndPos = -1L;
@@ -227,7 +228,7 @@ public class DicomInputStream extends FilterInputStream
                 reset();
                 if (stopAfterFmi)
                     break;
-                switchTransferSyntaxUID(attrs);
+                switchTransferSyntax(attrs);
                 fmi = false;
                 continue;
             }
@@ -260,7 +261,7 @@ public class DicomInputStream extends FilterInputStream
                 } else if (pos == fmiEndPos)  {
                     if (stopAfterFmi)
                         break;
-                    switchTransferSyntaxUID(attrs);
+                    switchTransferSyntax(attrs);
                     fmi = false;
                 }
             }
@@ -415,7 +416,7 @@ public class DicomInputStream extends FilterInputStream
         return ByteUtils.bytesToUShortBE(buf, 0) == ZLIB_HEADER;
     }
 
-    private void switchTransferSyntaxUID(Attributes attrs) throws IOException {
+    private void switchTransferSyntax(Attributes attrs) throws IOException {
         String tsuid = attrs.getString(
                 Tag.TransferSyntaxUID, null, null);
         if (tsuid == null) {
@@ -423,6 +424,7 @@ public class DicomInputStream extends FilterInputStream
             tsuid = UID.ExplicitVRLittleEndian;
         }
         switchTransferSyntax(tsuid);
+        attrs.bigEndian(bigEndian);
     }
 
     private void guessTransferSyntax() throws IOException {

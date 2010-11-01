@@ -34,21 +34,11 @@ enum StringType {
         }
 
         @Override
-        public String first(String s) {
+        protected Object split(String s) {
             int endIndex = s.length();
             while (endIndex > 0 && s.charAt(endIndex - 1) == ' ')
                 endIndex--;
             return s.substring(0, endIndex);
-        }
-
-        @Override
-        public String[] split(String s) {
-            return new String[] { first(s) };
-        }
-
-        @Override
-        public String join(String[] strings) {
-            throw new UnsupportedOperationException();
         }
     };
 
@@ -62,34 +52,32 @@ enum StringType {
         return "\\";
     }
 
-    public String first(String s) {
-        int delimPos1 = s.indexOf('\\');
-        return substring(s, 0,
-                delimPos1 < 0 ? s.length() : delimPos1);
-    }
-
-    public String[] split(String s) {
+    protected Object split(String s) {
         int count = 1;
         int delimPos = -1;
         while ((delimPos = s.indexOf('\\', delimPos+1)) >= 0)
             count++;
 
-        String[] strings = new String[count];
+        if (count == 1)
+            return substring(s, 0, s.length());
+
+        String[] ss = new String[count];
         int delimPos2 = s.length();
         while (--count >= 0) {
             delimPos = s.lastIndexOf('\\', delimPos2-1);
-            strings[count] = substring(s, delimPos+1, delimPos2);
+            ss[count] = substring(s, delimPos+1, delimPos2);
             delimPos2 = delimPos;
         }
-        return strings;
+        return ss;
     }
 
     public byte[] toBytes(String s, SpecificCharacterSet cs) {
         return cs(cs).encode(s, codeExtensionDelimiters());
     }
 
-    public String toString(byte[] bytearr, SpecificCharacterSet cs) {
-        return cs(cs).decode(bytearr);
+
+    public byte[] toBytes(String[] ss, SpecificCharacterSet cs) {
+        return toBytes(join(ss), cs);
     }
 
     protected String substring(String s, int beginIndex, int endIndex) {
@@ -100,7 +88,7 @@ enum StringType {
         return s.substring(beginIndex, endIndex);
     }
 
-    public String join(String[] strings) {
+    private String join(String[] strings) {
         if (strings.length == 0)
             return null;
         
@@ -121,6 +109,14 @@ enum StringType {
                 sb.append(s);
         }
         return sb.toString();
+    }
+
+    public Object toStrings(byte[] b, SpecificCharacterSet cs) {
+        return split(cs(cs).decode(b));
+    }
+
+    public String toString(byte[] b, SpecificCharacterSet cs) {
+        return cs(cs).decode(b);
     }
 
 }

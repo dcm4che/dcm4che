@@ -64,17 +64,23 @@ public class Dcm2Txt implements DicomInputHandler {
         }
         StringBuilder line = new StringBuilder(width + 30);
         appendPrefix(dis, line);
+        appendHeader(dis, line);
         VR vr = dis.vr();
         int vallen = dis.length();
         if (vr == null || vr == VR.SQ || vallen == -1) {
-            appendHeader(dis, line);
             appendKeyword(dis, line);
             System.out.println(line);
             return dis.readValue(dis, attrs);
         }
         int tag = dis.tag();
         dis.readValue(dis, attrs);
-        attrs.promptAttribute(tag, null, vallen, width - line.length(), line);
+        line.append(" [");
+        if (vr.promptBytes(attrs.getBytes(tag, null),
+                dis.bigEndian(), attrs.getSpecificCharacterSet(),
+                width - line.length() - 1, line)) {
+            line.append(']');
+            appendKeyword(dis, line);
+        }
         System.out.println(line);
         switch (tag) {
         case Tag.FileMetaInformationGroupLength:
@@ -105,9 +111,7 @@ public class Dcm2Txt implements DicomInputHandler {
         StringBuilder line = new StringBuilder(width + 20);
         appendPrefix(dis, line);
         appendHeader(dis, line);
-        boolean appendFragment = appendFragment(line, dis, frags.vr(),
-                width - line.length());
-        appendKeyword(dis, line);
+        boolean appendFragment = appendFragment(line, dis, frags.vr());
         System.out.println(line);
         return appendFragment || dis.readValue(dis, frags);
     }
@@ -128,23 +132,25 @@ public class Dcm2Txt implements DicomInputHandler {
     }
 
     private void appendKeyword(DicomInputStream dis, StringBuilder line) {
-        if (line.length() + 8 < width) {
-            line.append(" //");
-            line.append(ElementDictionary.keywordOf(dis.tag(), null));
-            if (line.length() > width)
-                line.setLength(width);
-        }
+        line.append(" ");
+        line.append(ElementDictionary.keywordOf(dis.tag(), null));
+        if (line.length() > width)
+            line.setLength(width);
     }
 
     private boolean appendFragment(StringBuilder line, DicomInputStream dis,
-            VR vr, int maxChars) throws IOException {
+            VR vr) throws IOException {
         if (dis.tag() != Tag.Item)
             return false;
         
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
-        line.append(' ');
-        vr.prompt(b, dis.bigEndian(), maxChars - 1, line);
+        line.append(" [");
+        if (vr.promptBytes(b, dis.bigEndian(), null, 
+                width - line.length() - 1, line)) {
+            line.append(']');
+            appendKeyword(dis, line);
+        }
         return true;
     }
 
@@ -153,8 +159,9 @@ public class Dcm2Txt implements DicomInputHandler {
             return;
         
         StringBuilder line = new StringBuilder(width);
-        line.append("0: ");
-        VR.OB.prompt(preamble, false, width - 3, line);
+        line.append("0: [");
+        if (VR.OB.promptBytes(preamble, false, null, width - 5, line))
+            line.append(']');
         System.out.println(line);
     }
 

@@ -5,174 +5,192 @@ import org.dcm4che.util.ByteUtils;
 enum BinaryType {
     BYTE(1) {
         @Override
-        public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
-            return bytes[off];
+        public int bytesToInt(byte[] b, int off, boolean bigEndian) {
+            return b[off];
         }
 
         @Override
-        public byte[] intToBytes(int i, byte[] bytes, int off,
-                boolean bigEndian) {
-            bytes[off] = (byte) i;
-            return bytes;
+        public byte[] intToBytes(int i, byte[] b, int off, boolean bigEndian) {
+            b[off] = (byte) i;
+            return b;
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return bytes ;
+        public byte[] toggleEndian(byte[] b) {
+            return b ;
         }
 
     },
     USHORT(2) {
         @Override
-        public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToUShort(bytes, off, bigEndian);
+        public int bytesToInt(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToUShort(b, off, bigEndian);
         }
 
         @Override
-        public byte[] intToBytes(int i, byte[] bytes, int off,
+        public byte[] intToBytes(int i, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.shortToBytes(i, bytes, off, bigEndian);
+            return ByteUtils.shortToBytes(i, b, off, bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapShorts(bytes) ;
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapShorts(b) ;
         }
 
     },
     SHORT(2) {
         @Override
-        public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToShort(bytes, off, bigEndian);
+        public int bytesToInt(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToShort(b, off, bigEndian);
         }
 
         @Override
-        public byte[] intToBytes(int i, byte[] bytes, int off,
+        public byte[] intToBytes(int i, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.shortToBytes(i, bytes, off, bigEndian);
+            return ByteUtils.shortToBytes(i, b, off, bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapShorts(bytes) ;
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapShorts(b) ;
         }
 
     },
     INT(4) {
         @Override
-        public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToInt(bytes, off, bigEndian);
+        public int bytesToInt(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToInt(b, off, bigEndian);
         }
 
         @Override
-        public byte[] intToBytes(int i, byte[] bytes, int off,
+        public byte[] intToBytes(int i, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.intToBytes(i, bytes, off, bigEndian);
+            return ByteUtils.intToBytes(i, b, off, bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapInts(bytes) ;
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapInts(b) ;
         }
     },
     TAG(4) {
         @Override
-        public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToTag(bytes, off, bigEndian);
+        public int bytesToInt(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToTag(b, off, bigEndian);
         }
 
         @Override
-        public byte[] intToBytes(int i, byte[] bytes, int off,
-                boolean bigEndian) {
-            return ByteUtils.tagToBytes(i, bytes, off, bigEndian);
+        public byte[] intToBytes(int i, byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.tagToBytes(i, b, off, bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapShorts(bytes) ;
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapShorts(b) ;
         }
     },
     FLOAT(4) {
         @Override
-        public float bytesToFloat(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToFloat(bytes, off, bigEndian);
+        public float bytesToFloat(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToFloat(b, off, bigEndian);
         }
 
         @Override
-        public double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
-            return bytesToFloat(bytes, off, bigEndian);
+        public double bytesToDouble(byte[] b, int off, boolean bigEndian) {
+            return bytesToFloat(b, off, bigEndian);
         }
 
         @Override
-        public String bytesToString(byte[] bytes, int off, boolean bigEndian) {
-           return Float.toString(
-                   ByteUtils.bytesToFloat(bytes, off, bigEndian));
+        public String bytesToString(byte[] b, int off, boolean bigEndian) {
+           return Float.toString(ByteUtils.bytesToFloat(b, off, bigEndian));
         }
 
         @Override
-        public byte[] floatToBytes(float f, byte[] bytes, int off,
+        public byte[] floatToBytes(float f, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.floatToBytes(f, bytes, off, bigEndian);
+            return ByteUtils.floatToBytes(f, b, off, bigEndian);
         }
 
         @Override
-        public byte[] doubleToBytes(double d, byte[] bytes, int off,
+        public byte[] doubleToBytes(double d, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.floatToBytes((float) d, bytes, off, bigEndian);
+            return ByteUtils.floatToBytes((float) d, b, off, bigEndian);
         }
 
         @Override
-        public byte[] stringToBytes(String s, byte[] bytes, int off,
+        public byte[] stringToBytes(String s, byte[] b, int off,
                 boolean bigEndian) {
             return ByteUtils.floatToBytes(
-                    Float.parseFloat(s), bytes, off, bigEndian);
+                    Float.parseFloat(s), b, off, bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapInts(bytes);
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapInts(b);
         }
+
+        @Override
+        public void checkSupportInts(VR vr) {
+            throw vr.unsupported();
+        }
+
+        @Override
+        public void checkSupportDoubles(VR vr) {}
+
+        @Override
+        public void checkSupportFloats(VR vr) {}
     },
     DOUBLE(8) {
         @Override
-        public float bytesToFloat(byte[] bytes, int off, boolean bigEndian) {
-            return (float) ByteUtils.bytesToDouble(bytes, off, bigEndian);
+        public float bytesToFloat(byte[] b, int off, boolean bigEndian) {
+            return (float) ByteUtils.bytesToDouble(b, off, bigEndian);
         }
 
         @Override
-        public double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
-            return ByteUtils.bytesToDouble(bytes, off, bigEndian);
+        public double bytesToDouble(byte[] b, int off, boolean bigEndian) {
+            return ByteUtils.bytesToDouble(b, off, bigEndian);
         }
 
         @Override
-        public String bytesToString(byte[] bytes, int off, boolean bigEndian) {
-           return Double.toString(
-                   ByteUtils.bytesToDouble(bytes, off, bigEndian));
+        public String bytesToString(byte[] b, int off, boolean bigEndian) {
+           return Double.toString(ByteUtils.bytesToDouble(b, off, bigEndian));
         }
 
         @Override
-        public byte[] floatToBytes(float f, byte[] bytes, int off,
+        public byte[] floatToBytes(float f, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.doubleToBytes(f, bytes, off, bigEndian);
+            return ByteUtils.doubleToBytes(f, b, off, bigEndian);
         }
 
         @Override
-        public byte[] doubleToBytes(double d, byte[] bytes, int off,
+        public byte[] doubleToBytes(double d, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.doubleToBytes(d, bytes, off, bigEndian);
+            return ByteUtils.doubleToBytes(d, b, off, bigEndian);
         }
 
         @Override
-        public byte[] stringToBytes(String s, byte[] bytes, int off,
+        public byte[] stringToBytes(String s, byte[] b, int off,
                 boolean bigEndian) {
-            return ByteUtils.doubleToBytes(Double.parseDouble(s), bytes, off, 
+            return ByteUtils.doubleToBytes(Double.parseDouble(s), b, off,
                     bigEndian);
         }
 
         @Override
-        public byte[] toggleEndian(byte[] bytes) {
-            return ByteUtils.swapLongs(bytes);
+        public byte[] toggleEndian(byte[] b) {
+            return ByteUtils.swapLongs(b);
         }
+
+        @Override
+        public void checkSupportInts(VR vr) {
+            throw vr.unsupported();
+        }
+
+        @Override
+        public void checkSupportDoubles(VR vr) {}
+
+        @Override
+        public void checkSupportFloats(VR vr) {}
     };
     
     public static byte[] EMPTY_BYTES = {};
@@ -203,42 +221,42 @@ enum BinaryType {
         return stringToBytes(s, new byte[numBytes], 0, bigEndian);
     }
 
-    public abstract byte[] toggleEndian(byte[] bytes);
+    public abstract byte[] toggleEndian(byte[] b);
 
-    public int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
+    public int bytesToInt(byte[] b, int off, boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public float bytesToFloat(byte[] bytes, int off, boolean bigEndian) {
+    public float bytesToFloat(byte[] b, int off, boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
+    public double bytesToDouble(byte[] b, int off, boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public String bytesToString(byte[] bytes, int off, boolean bigEndian) {
-        return Integer.toString(bytesToInt(bytes, off, bigEndian));
+    public String bytesToString(byte[] b, int off, boolean bigEndian) {
+        return Integer.toString(bytesToInt(b, off, bigEndian));
     }
 
-    public byte[] intToBytes(int val, byte[] bytes, int off,
+    public byte[] intToBytes(int val, byte[] b, int off,
             boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] floatToBytes(float val, byte[] bytes, int off,
+    public byte[] floatToBytes(float val, byte[] b, int off,
             boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] doubleToBytes(double val, byte[] bytes, int off,
+    public byte[] doubleToBytes(double val, byte[] b, int off,
             boolean bigEndian) {
         throw new UnsupportedOperationException();
     }
 
-    public byte[] stringToBytes(String s, byte[] bytes, int off,
+    public byte[] stringToBytes(String s, byte[] b, int off,
             boolean bigEndian) {
-        return intToBytes(VR.IS.toInt(s), bytes, off, bigEndian);
+        return intToBytes(VR.IS.parseInt(s), b, off, bigEndian);
     }
 
     private void checkLength(int len) {
@@ -250,112 +268,114 @@ enum BinaryType {
             throw new IllegalArgumentException("length: " + len);
     }
 
-    public int[] bytesToInts(byte[] bytes, boolean bigEndian) {
-        int len = bytes.length;
+    public int[] bytesToInts(byte[] b, boolean bigEndian) {
+        int len = b.length;
         checkLength(len);
         if (len == 0)
             return EMPTY_INTS;
 
         int[] ints = new int[len / numBytes];
         for (int i = 0, off = 0; i < ints.length; i++, off += numBytes)
-            ints[i] = bytesToInt(bytes, off, bigEndian);
+            ints[i] = bytesToInt(b, off, bigEndian);
         return ints ;
     }
 
-    public float[] bytesToFloats(byte[] bytes, boolean bigEndian) {
-        int len = bytes.length;
+    public float[] bytesToFloats(byte[] b, boolean bigEndian) {
+        int len = b.length;
         checkLength(len);
         if (len == 0)
             return EMPTY_FLOATS;
 
         float[] floats = new float[len / numBytes];
         for (int i = 0, off = 0; i < floats.length; i++, off += numBytes)
-            floats[i] = bytesToFloat(bytes, off, bigEndian);
+            floats[i] = bytesToFloat(b, off, bigEndian);
         return floats;
     }
 
-    public double[] bytesToDoubles(byte[] bytes, boolean bigEndian) {
-        int len = bytes.length;
+    public double[] bytesToDoubles(byte[] b, boolean bigEndian) {
+        int len = b.length;
         checkLength(len);
-        if (len == 0)
-            return EMPTY_DOUBLES;
-
         double[] doubles = new double[len / numBytes];
         for (int i = 0, off = 0; i < doubles.length; i++, off += numBytes)
-            doubles[i] = bytesToDouble(bytes, off, bigEndian);
+            doubles[i] = bytesToDouble(b, off, bigEndian);
         return doubles;
     }
 
-    public String[] bytesToStrings(byte[] bytes, boolean bigEndian) {
-        int len = bytes.length;
-        if (len == 0)
-            return EMPTY_STRING;
-
+    public Object bytesToStrings(byte[] b, boolean bigEndian) {
+        int len = b.length;
         checkLength(len);
-        String[] strings = new String[len / numBytes];
-        for (int i = 0, off = 0; i < strings.length; i++, off += numBytes)
-            strings[i] = bytesToString(bytes, off, bigEndian);
-        return strings;
+        if (len == numBytes)
+            return bytesToString(b, 0, bigEndian);
+
+        String[] ss = new String[len / numBytes];
+        for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
+            ss[i] = bytesToString(b, off, bigEndian);
+        return ss;
     }
 
-    public void prompt(byte[] bytes, boolean bigEndian, int maxChars,
+    public boolean prompt(byte[] b, boolean bigEndian, int maxChars,
             StringBuilder sb) {
-        int remaining = maxChars;
-        for (int i = bytes.length / numBytes, off = 0; i-- > 0; 
+        int maxLength = sb.length() + maxChars;
+        for (int i = b.length / numBytes, off = 0; i-- > 0; 
                 off += numBytes) {
-            String s = bytesToString(bytes, off, bigEndian);
-            remaining -= s.length();
-            if (remaining < (i > 0 ? 4 : 0)) {
-                sb.append("...");
-                return;
-            }
+            String s = bytesToString(b, off, bigEndian);
+            if (sb.length() + s.length() > maxLength)
+                return false;
             sb.append(s);
-            if (i > 0) {
+            if (i > 0)
                 sb.append('\\');
-                remaining--;
-            }
         }
-        
+        return true;
     }
 
     public byte[] intsToBytes(int[] ints, boolean bigEndian) {
         if (ints.length == 0)
             return EMPTY_BYTES;
 
-        byte[] bytes = new byte[ints.length * numBytes];
+        byte[] b = new byte[ints.length * numBytes];
         for (int i = 0, off = 0; i < ints.length; i++, off += numBytes)
-            intToBytes(ints[i], bytes, off, bigEndian);
-        return bytes ;
+            intToBytes(ints[i], b, off, bigEndian);
+        return b ;
     }
 
     public byte[] floatsToBytes(float[] floats, boolean bigEndian) {
         if (floats.length == 0)
             return EMPTY_BYTES;
 
-        byte[] bytes = new byte[floats.length * numBytes];
+        byte[] b = new byte[floats.length * numBytes];
         for (int i = 0, off = 0; i < floats.length; i++, off += numBytes)
-            floatToBytes(floats[i], bytes, off, bigEndian);
-        return bytes ;
+            floatToBytes(floats[i], b, off, bigEndian);
+        return b ;
     }
 
     public byte[] doublesToBytes(double[] doubles, boolean bigEndian) {
         if (doubles.length == 0)
             return EMPTY_BYTES;
 
-        byte[] bytes = new byte[doubles.length * numBytes];
+        byte[] b = new byte[doubles.length * numBytes];
         for (int i = 0, off = 0; i < doubles.length; i++, off += numBytes)
-            doubleToBytes(doubles[i], bytes, off, bigEndian);
-        return bytes ;
+            doubleToBytes(doubles[i], b, off, bigEndian);
+        return b ;
     }
 
     public byte[] stringsToBytes(String[] ss, boolean bigEndian) {
         if (ss.length == 0)
             return EMPTY_BYTES;
 
-        byte[] bytes = new byte[ss.length * numBytes];
+        byte[] b = new byte[ss.length * numBytes];
         for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
-            stringToBytes(ss[i], bytes, off, bigEndian);
-        return bytes;
+            stringToBytes(ss[i], b, off, bigEndian);
+        return b;
+    }
+
+    public void checkSupportInts(VR vr) {}
+
+    public void checkSupportFloats(VR vr) {
+        throw vr.unsupported();
+    }
+
+    public void checkSupportDoubles(VR vr) {
+        throw vr.unsupported();
     }
 
 }

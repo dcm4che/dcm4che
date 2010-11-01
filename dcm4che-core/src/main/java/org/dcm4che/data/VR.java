@@ -13,63 +13,54 @@ public enum VR {
     DS(0x4453, 8, null, StringType.ASCII) {
 
         @Override
-        public float toFloat(String s) {
-            return Float.parseFloat(s);
+        void checkSupportFloats() { }
+
+        @Override
+        void checkSupportDoubles() { }
+
+        @Override
+        protected byte[] floatsToBytes(float[] floats, boolean bigEndian) {
+            String s = Float.toString(floats[0]);
+            if (floats.length > 1) {
+                StringBuilder sb = new StringBuilder(floats.length << 4);
+                sb.append(s);
+                for (int i = 1; i < floats.length; i++)
+                    sb.append('\\').append(floats[i]);
+                s = sb.toString();
+            }
+            return SpecificCharacterSet.DEFAULT.encode(s, null);
         }
 
         @Override
-        public float[] toFloats(String s) {
-            String[] strings = splitStringValue(s);
-            float[] floats = new float[strings.length];
-            for (int i = 0; i < strings.length; i++)
-                floats[i] = Float.parseFloat(strings[i]);
-            return floats;
+        protected byte[] doublesToBytes(double[] doubles, boolean bigEndian) {
+            String s = Double.toString(doubles[0]);
+            if (doubles.length > 1) {
+                StringBuilder sb = new StringBuilder(doubles.length << 4);
+                sb.append(s);
+                for (int i = 1; i < doubles.length; i++)
+                    sb.append('\\').append(doubles[i]);
+                s = sb.toString();
+            }
+            return SpecificCharacterSet.DEFAULT.encode(s, null);
         }
 
         @Override
-        public double toDouble(String s) {
-            return Float.parseFloat(s);
+        protected float[] bytesToFloats(byte[] b, boolean bigEndian,
+                SpecificCharacterSet cs) {
+            Object o = stringType.toStrings(b, cs);
+            return (o instanceof String) 
+                    ? stringToFloats((String) o)
+                    : stringsToFloats((String[]) o);
         }
 
         @Override
-        public double[] toDoubles(String s) {
-            String[] strings = splitStringValue(s);
-            double[] doubles = new double[strings.length];
-            for (int i = 0; i < strings.length; i++)
-                doubles[i] = Float.parseFloat(strings[i]);
-            return doubles;
+        protected double[] bytesToDoubles(byte[] b, boolean bigEndian,
+                SpecificCharacterSet cs) {
+            Object o = stringType.toStrings(b, cs);
+            return (o instanceof String) 
+                    ? stringToDoubles((String) o)
+                    : stringsToDoubles((String[]) o);
         }
-
-        @Override
-        public Object toValue(float f, boolean bigEndian) {
-            return Float.toString(f);
-        }
-
-        @Override
-        public Object toValue(float[] floats, boolean bigEndian) {
-            if (floats == null || floats.length == 0)
-                return null;
-            String[] ss = new String[floats.length];
-            for (int i = 0; i < floats.length; i++)
-                ss[i] = Float.toString(floats[i]);
-            return stringType.join(ss);
-        }
-
-        @Override
-        public Object toValue(double d, boolean bigEndian) {
-            return Float.toString((float) d);
-        }
-
-        @Override
-        public Object toValue(double[] doubles, boolean bigEndian) {
-            if (doubles == null || doubles.length == 0)
-                return null;
-            String[] ss = new String[doubles.length];
-            for (int i = 0; i < doubles.length; i++)
-                ss[i] = Float.toString((float) doubles[i]);
-            return stringType.join(ss);
-        }
-
     },
     DT(0x4454, 8, null, StringType.ASCII),
     FD(0x4644, 8, BinaryType.DOUBLE, null),
@@ -77,38 +68,29 @@ public enum VR {
     IS(0x4953, 8, null, StringType.ASCII){
 
         @Override
-        public int toInt(String s) {
-            return parseInt(firstStringValue(s));
+        void checkSupportInts() { }
+
+        @Override
+        protected byte[] intsToBytes(int[] ints, boolean bigEndian) {
+            String s = Integer.toString(ints[0]);
+            if (ints.length > 1) {
+                StringBuilder sb = new StringBuilder(ints.length << 4);
+                sb.append(s);
+                for (int i = 1; i < ints.length; i++)
+                    sb.append('\\').append(ints[i]);
+                s = sb.toString();
+            }
+            return SpecificCharacterSet.DEFAULT.encode(s, null);
         }
 
         @Override
-        public int[] toInts(String s) {
-            String[] strings = splitStringValue(s);
-            int[] ints = new int[strings.length];
-            for (int i = 0; i < strings.length; i++)
-                ints[i] = parseInt(strings[i]);
-            return ints;
+        protected int[] bytesToInts(byte[] b, boolean bigEndian,
+                SpecificCharacterSet cs) {
+            Object o = stringType.toStrings(b, cs);
+            return (o instanceof String) 
+                    ? stringToInts((String) o)
+                    : stringsToInts((String[]) o);
         }
-
-        private int parseInt(String s) {
-            return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
-        }
-
-        @Override
-        public Object toValue(int i, boolean bigEndian) {
-            return Integer.toString(i);
-        }
-
-        @Override
-        public Object toValue(int[] ints, boolean bigEndian) {
-            if (ints == null || ints.length == 0)
-                return null;
-            String[] ss = new String[ints.length];
-            for (int i = 0; i < ints.length; i++)
-                ss[i] = Integer.toString(ints[i]);
-            return stringType.join(ss);
-        }
-
     },
     LO(0x4c4f, 8, null, StringType.STRING),
     LT(0x4c54, 8, null, StringType.TEXT),
@@ -118,23 +100,23 @@ public enum VR {
     PN(0x504e, 8, null, StringType.PN),
     SH(0x5348, 8, null, StringType.STRING),
     SL(0x534c, 8, BinaryType.INT, null),
-    SQ(0x5351, 12, null, null) {
+    SQ(0x5351, 12, null, null){
+
         @Override
-        public Object toValue(byte[] value) {
-            throw new UnsupportedOperationException("VR:" + this);
+        void checkSupportBytes() {
+            throw unsupported();
         }
 
         @Override
-        public Object toValue(String val, boolean bigEndian) {
-            throw new UnsupportedOperationException("VR:" + this);
+        void checkSupportString() {
+            throw unsupported();
         }
 
         @Override
-        public Object toValue(String[] val, boolean bigEndian) {
-            throw new UnsupportedOperationException("VR:" + this);
-           
+        void checkSupportStrings() {
+            throw unsupported();
         }
-   },
+    },
     SS(0x5353, 8, BinaryType.SHORT,null),
     ST(0x5354, 8, null, StringType.TEXT),
     TM(0x544d, 8, null, StringType.ASCII),
@@ -228,205 +210,360 @@ public enum VR {
         return UN;
     }
 
-    public byte[] toBytes(String value, SpecificCharacterSet cs) {
-        checkStringType();
-        return stringType.toBytes(value, cs);
+    byte[] toBytes(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+        if (val instanceof byte[])
+            return (byte[]) val;
+
+        if (val instanceof String)
+            return stringToBytes((String) val, bigEndian, cs);
+
+        if (val instanceof String[])
+            return stringsToBytes((String[]) val, bigEndian, cs);
+
+        if (val instanceof int[])
+            return intsToBytes((int[]) val, bigEndian);
+
+        if (val instanceof float[])
+            return floatsToBytes((float[]) val, bigEndian);
+
+        if (val instanceof double[])
+            return doublesToBytes((double[]) val, bigEndian);
+
+        throw unsupported();
     }
 
-    public String toString(byte[] value, SpecificCharacterSet cs) {
-        checkStringType();
-        return stringType.toString(value, cs);
+    private byte[] stringToBytes(String s, boolean bigEndian,
+            SpecificCharacterSet cs) {
+        return isBinaryType()
+                ? binaryType.stringToBytes(s, bigEndian)
+                : stringType.toBytes(s, cs);
     }
 
-    public String firstStringValue(String s) {
-        checkStringType();
-        return stringType.first(s);
+    private byte[] stringsToBytes(String[] ss, boolean bigEndian,
+            SpecificCharacterSet cs) {
+        return isBinaryType()
+                ? binaryType.stringsToBytes(ss, bigEndian)
+                : stringType.toBytes(ss, cs);
     }
 
-    public String firstBinaryValueAsString(byte[] value, boolean bigEndian) {
+    protected byte[] intsToBytes(int[] ints, boolean bigEndian) {
+        return binaryType.intsToBytes(ints, bigEndian);
+    }
+
+    protected byte[] floatsToBytes(float[] floats, boolean bigEndian) {
+        return binaryType.floatsToBytes(floats, bigEndian);
+    }
+
+    protected byte[] doublesToBytes(double[] doubles, boolean bigEndian) {
+        return binaryType.doublesToBytes(doubles, bigEndian);
+    }
+
+    Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+        if (val instanceof String || val instanceof String[])
+            return val;
+
+        if (val instanceof byte[])
+            return bytesToString((byte[]) val, bigEndian, cs);
+
+        if (val instanceof int[])
+            return intsToString((int[]) val);
+
+        if (val instanceof float[])
+            return floatsToString((float[]) val);
+
+        if (val instanceof double[])
+            return doublesToString((double[]) val);
+
+        throw unsupported();
+    }
+
+    private Object bytesToString(byte[] b, boolean bigEndian,
+            SpecificCharacterSet cs) {
+        return isBinaryType()
+            ? binaryType.bytesToStrings(b, bigEndian)
+            : stringType.toStrings(b, cs);
+    }
+
+    private Object intsToString(int[] ints) {
+        if (ints.length == 1)
+            return Integer.toString(ints[0]);
+
+        String[] ss = new String[ints.length];
+        for (int i = 0; i < ints.length; i++)
+            ss[i] = Integer.toString(ints[i]);
+        return null;
+    }
+
+    private Object floatsToString(float[] floats) {
+        if (floats.length == 1)
+            return Float.toString(floats[0]);
+
+        String[] ss = new String[floats.length];
+        for (int i = 0; i < floats.length; i++)
+            ss[i] = Float.toString(floats[i]);
+        return null;
+    }
+
+    private Object doublesToString(double[] doubles) {
+        if (doubles.length == 1)
+            return Double.toString(doubles[0]);
+
+        String[] ss = new String[doubles.length];
+        for (int i = 0; i < doubles.length; i++)
+            ss[i] = Double.toString(doubles[i]);
+        return null;
+    }
+
+    int[] toInts(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+        if (val instanceof int[])
+            return (int[]) val;
+
+        if (val instanceof byte[])
+            return bytesToInts((byte[]) val, bigEndian, cs);
+
+        if (val instanceof String)
+            return stringToInts((String) val);
+
+        if (val instanceof String[])
+            return stringsToInts((String[]) val);
+
+        throw unsupported();
+    }
+
+    protected int[] bytesToInts(byte[] b, boolean bigEndian,
+            SpecificCharacterSet cs) {
+        return binaryType.bytesToInts(b, bigEndian);
+    }
+
+    protected int[] stringToInts(String s) {
+        return new int[]{ parseInt(s) };
+    }
+
+    protected int[] stringsToInts(String[] ss) {
+        int[] ints = new int[ss.length];
+        for (int i = 0; i < ss.length; i++)
+            ints[i] = parseInt(ss[i]);
+        return ints;
+    }
+
+    float[] toFloats(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+        if (val instanceof float[])
+            return (float[]) val;
+
+        if (val instanceof double[])
+            return doublesToFloats((double[]) val);
+
+        if (val instanceof byte[])
+            return bytesToFloats((byte[]) val, bigEndian, cs);
+
+        if (val instanceof String)
+            return stringToFloats((String) val);
+
+        if (val instanceof String[])
+            return stringsToFloats((String[]) val);
+
+        throw unsupported();
+    }
+
+    private float[] doublesToFloats(double[] doubles) {
+        float[] floats = new float[doubles.length];
+        for (int i = 0; i < doubles.length; i++)
+            floats[i] = (float) doubles[i];
+        return floats ;
+    }
+
+    protected float[] bytesToFloats(byte[] b, boolean bigEndian,
+            SpecificCharacterSet cs) {
         checkBinaryType();
-        return binaryType.bytesToString(value, 0, bigEndian);
+        return binaryType.bytesToFloats(b, bigEndian);
     }
 
-    public String[] splitStringValue(String s) {
-        checkStringType();
-        return stringType.split(s);
+    protected float[] stringToFloats(String s) {
+        return new float[] { Float.parseFloat(s) };
     }
 
-    public String[] binaryValueAsStrings(byte[] value, boolean bigEndian) {
+    protected float[] stringsToFloats(String[] ss) {
+        float[] floats = new float[ss.length];
+        for (int i = 0; i < ss.length; i++)
+            floats[i] = Float.parseFloat(ss[i]);
+        return floats;
+    }
+
+    double[] toDoubles(Object val, boolean bigEndian,
+            SpecificCharacterSet cs) {
+        if (val instanceof double[])
+            return (double[]) val;
+
+        if (val instanceof float[])
+            return floatsToDoubles((float[]) val);
+
+        if (val instanceof byte[])
+            return bytesToDoubles((byte[]) val, bigEndian, cs);
+
+        if (val instanceof String)
+            return stringToDoubles((String) val);
+
+        if (val instanceof String[])
+            return stringsToDoubles((String[]) val);
+
+        throw unsupported();
+    }
+
+    private double[] floatsToDoubles(float[] floats) {
+        double[] doubles = new double[floats.length];
+        for (int i = 0; i < floats.length; i++)
+            doubles[i] = floats[i];
+        return doubles ;
+    }
+
+    protected double[] bytesToDoubles(byte[] b, boolean bigEndian,
+            SpecificCharacterSet cs) {
         checkBinaryType();
-        return binaryType.bytesToStrings(value, bigEndian);
+        return binaryType.bytesToDoubles(b, bigEndian);
     }
 
-    public byte[] toBytes(int i, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.intToBytes(i, bigEndian);
+    protected double[] stringToDoubles(String s) {
+        return new double[] { Double.parseDouble(s) };
     }
 
-    public byte[] toBytes(int[] intarr, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.intsToBytes(intarr, bigEndian);
+    protected double[] stringsToDoubles(String[] ss) {
+        double[] doubles = new double[ss.length];
+        for (int i = 0; i < ss.length; i++)
+            doubles[i] = Double.parseDouble(ss[i]);
+        return doubles;
     }
 
-    public byte[] toBytes(float f, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.floatToBytes(f, bigEndian);
-    }
-
-    public byte[] toBytes(float[] floatarr, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.floatsToBytes(floatarr, bigEndian);
-    }
-
-    public byte[] toBytes(double d, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.doubleToBytes(d, bigEndian);
-    }
-
-    public byte[] toBytes(double[] doublearr, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.doublesToBytes(doublearr, bigEndian);
-    }
-
-    public int toInt(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToInt(value, 0, bigEndian);
-    }
-
-    public int[] toInts(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToInts(value, bigEndian);
-    }
-
-    public int toInt(String s) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public int[] toInts(String s) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public float toFloat(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToFloat(value, 0, bigEndian);
-    }
-
-    public float[] toFloats(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToFloats(value, bigEndian);
-    }
-
-    public float toFloat(String string) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public float[] toFloats(String string) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public double toDouble(String string) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public double[] toDoubles(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToDoubles(value, bigEndian);
-    }
-
-    public double[] toDoubles(String string) {
-        throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    public double toDouble(byte[] value, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.bytesToDouble(value, 0, bigEndian);
-    }
-
-    boolean isStringType() {
-        return stringType != null;
-    }
-
-    boolean isBinaryType() {
+    private boolean isBinaryType() {
         return binaryType != null;
     }
 
-    void checkStringType() {
-        if (stringType == null)
-            throw new UnsupportedOperationException("VR:" + this);
-    }
-
-    void checkBinaryType() {
+    private void checkBinaryType() {
         if (binaryType == null)
-            throw new UnsupportedOperationException("VR:" + this);
+            throw unsupported();
     }
 
-    public Object toValue(byte[] val) {
-        if (val == null || val.length == 0)
-            return null;
-        return val;
-    }
-
-    public Object toValue(String val, boolean bigEndian) {
-        if (val == null || val.length() == 0)
-            return null;
+    void toggleEndian(byte[] b) {
         if (isBinaryType())
-            return binaryType.stringToBytes(val, bigEndian);
-        return val;
+            binaryType.toggleEndian(b);
     }
 
-    public Object toValue(String[] val, boolean bigEndian) {
-        if (val == null || val.length == 0)
-            return null;
-        if (isBinaryType())
-            return binaryType.stringsToBytes(val, bigEndian);
-        return stringType.join(val);
+    UnsupportedOperationException unsupported() {
+        return new UnsupportedOperationException("VR:" + this);
     }
 
-    public Object toValue(int val, boolean bigEndian) {
+    void checkSupportBytes() { }
+    void checkSupportString() { }
+    void checkSupportStrings() { }
+    void checkSupportInts() {
         checkBinaryType();
-        return binaryType.intToBytes(val, bigEndian);
+        binaryType.checkSupportInts(this);
     }
-
-    public Object toValue(int[] val, boolean bigEndian) {
+    void checkSupportFloats() {
         checkBinaryType();
-        if (val == null || val.length == 0)
-            return null;
-        return binaryType.intsToBytes(val, bigEndian);
+        binaryType.checkSupportFloats(this);
     }
-
-    public Object toValue(float f, boolean bigEndian) {
+    void checkSupportDoubles() {
         checkBinaryType();
-        return binaryType.floatToBytes(f, bigEndian);
+        binaryType.checkSupportDoubles(this);
     }
 
-    public Object toValue(float[] val, boolean bigEndian) {
-        checkBinaryType();
-        if (val == null || val.length == 0)
-            return null;
-        return binaryType.floatsToBytes(val, bigEndian);
+    int parseInt(String s) {
+        return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
     }
 
-    public Object toValue(double d, boolean bigEndian) {
-        checkBinaryType();
-        return binaryType.doubleToBytes(d, bigEndian);
+    public boolean promptValue(Object val, boolean bigEndian,
+            SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
+        if (val == null)
+            return true;
+        if (val instanceof byte[])
+            return promptBytes((byte[]) val, bigEndian, cs, maxChars, sb);
+        if (val instanceof String)
+            return promptString((String) val, maxChars, sb);
+        if (val instanceof String[])
+            return promptStrings((String[]) val, maxChars, sb);
+        if (val instanceof int[])
+            return promptInts((int[]) val, maxChars, sb);
+        if (val instanceof float[])
+            return promptFloats((float[]) val, maxChars, sb);
+        if (val instanceof double[])
+            return promptDoubles((double[]) val, maxChars, sb);
+         
+        sb.append(val);
+        return true;
     }
 
-    public Object toValue(double[] val, boolean bigEndian) {
-        checkBinaryType();
-        if (val == null || val.length == 0)
-            return null;
-        return binaryType.doublesToBytes(val, bigEndian);
+    public boolean promptBytes(byte[] b, boolean bigEndian,
+            SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
+        return isBinaryType()
+            ? binaryType.prompt(b, bigEndian, maxChars, sb)
+            : promptString(stringType.toString(b, cs), maxChars, sb);
+
+   }
+
+    private boolean promptString(String s, int maxChars, StringBuilder sb) {
+        int maxLength = sb.length() + maxChars;
+        sb.append(s.trim());
+        if (sb.length() > maxLength) {
+            sb.setLength(maxLength);
+            return false;
+        }
+        return true;
     }
 
-    public void toggleEndian(byte[] value) {
-        if (isBinaryType())
-            binaryType.toggleEndian(value);
+    private boolean promptStrings(String[] ss, int maxChars, StringBuilder sb) {
+        int maxLength = sb.length() + maxChars;
+        for (int i = 0; i < ss.length; i++) {
+            if (i > 0)
+                sb.append('\\');
+            String s = ss[i];
+            if (s != null) {
+                if (sb.length() + s.length() > maxLength)
+                    return false;
+                sb.append(s);
+            }
+        }
+        return true;
     }
 
-    public StringBuilder prompt(byte[] value, boolean bigEndian, int maxChars,
+    private boolean promptInts(int[] ints, int maxChars, StringBuilder sb) {
+        int maxLength = sb.length() + maxChars;
+        for (int i = 0; i < ints.length; i++) {
+            if (i > 0)
+                sb.append('\\');
+            String s = Integer.toString(ints[i]);
+            if (sb.length() + s.length() > maxLength)
+                return false;
+            sb.append(s);
+        }
+        return true;
+    }
+
+    private boolean promptFloats(float[] floats, int maxChars,
             StringBuilder sb) {
-        checkBinaryType();
-        binaryType.prompt(value, bigEndian, maxChars, sb);
-        return sb;
+        int maxLength = sb.length() + maxChars;
+        for (int i = 0; i < floats.length; i++) {
+            if (i > 0)
+                sb.append('\\');
+            String s = Float.toString(floats[i]);
+            if (sb.length() + s.length() > maxLength)
+                return false;
+            sb.append(s);
+        }
+        return true;
     }
+
+    private boolean promptDoubles(double[] doubles, int maxChars,
+            StringBuilder sb) {
+        int maxLength = sb.length() + maxChars;
+        for (int i = 0; i < doubles.length; i++) {
+            if (i > 0)
+                sb.append('\\');
+            String s = Double.toString(doubles[i]);
+            if (sb.length() + s.length() + 1 > maxLength)
+                return false;
+            sb.append(s);
+        }
+        return true;
+    }
+
 }

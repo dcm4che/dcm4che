@@ -27,13 +27,13 @@ public class DicomInputStreamTest {
     public void testPart10BigEndian() throws Exception {
         Attributes attrs = 
                 readFromResource("US-RGB-8-epicard");
-        assertEquals(3, attrs.getInt(Tag.SamplesPerPixel, null, 0));
+        assertEquals(3, attrs.getInt(Tag.SamplesPerPixel, null, 0, 0));
     }
 
     @Test
     public void testImplicitVR() throws Exception {
         Attributes attrs = readFromResource("OT-PAL-8-face");
-        assertEquals(1, attrs.getInt(Tag.SamplesPerPixel, null, 0));
+        assertEquals(1, attrs.getInt(Tag.SamplesPerPixel, null, 0, 0));
     }
 
     private static Attributes readFromResource(String name) throws Exception {

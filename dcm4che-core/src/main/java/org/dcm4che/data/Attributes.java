@@ -180,13 +180,15 @@ public class Attributes {
         return groups[index].getBytes(tag, privateCreator);
     }
 
-    public String getString(int tag, String privateCreator, String defVal) {
+    public String getString(int tag, String privateCreator, int valueIndex,
+            String defVal) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index].getString(tag, privateCreator, defVal);
+        return groups[index]
+                      .getString(tag, privateCreator, valueIndex, defVal);
     }
 
     public String[] getStrings(int tag, String privateCreator) {
@@ -198,13 +200,14 @@ public class Attributes {
         return groups[index].getStrings(tag, privateCreator);
     }
 
-    public int getInt(int tag, String privateCreator, int defVal) {
+    public int getInt(int tag, String privateCreator, int valueIndex,
+            int defVal) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index].getInt(tag, privateCreator, defVal);
+        return groups[index].getInt(tag, privateCreator, valueIndex, defVal);
     }
 
     public int[] getInts(int tag, String privateCreator) {
@@ -214,6 +217,44 @@ public class Attributes {
             return null;
 
         return groups[index].getInts(tag, privateCreator);
+    }
+
+    public float getFloat(int tag, String privateCreator, int valueIndex,
+            float defVal) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return defVal;
+
+        return groups[index].getFloat(tag, privateCreator, valueIndex, defVal);
+    }
+
+    public float[] getFloats(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getFloats(tag, privateCreator);
+    }
+
+    public double getDouble(int tag, String privateCreator, int valueIndex,
+            double defVal) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return defVal;
+
+        return groups[index].getDouble(tag, privateCreator, valueIndex, defVal);
+    }
+
+    public double[] getDoubles(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getDoubles(tag, privateCreator);
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
@@ -274,34 +315,24 @@ public class Attributes {
             initSpecificCharacterSet();
     }
 
-    public void putStrings(int tag, String privateCreator, VR vr,
+    public void putString(int tag, String privateCreator, VR vr,
             String... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putStrings(tag, privateCreator, vr,
+        getOrCreateGroup(groupNumber).putString(tag, privateCreator, vr,
                 value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
 
-    public void putInt(int tag, String privateCreator, VR vr, int value) {
+    public void putInt(int tag, String privateCreator, VR vr, int... value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber).putInt(tag, privateCreator, vr, value);
     }
 
-    public void putInts(int tag, String privateCreator, VR vr, int... value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putInts(tag, privateCreator, vr, value);
-    }
-
-    public void putFloat(int tag, String privateCreator, VR vr, float value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putFloat(tag, privateCreator, vr, value);
-    }
-
-    public void putFloats(int tag, String privateCreator, VR vr,
+    public void putFloat(int tag, String privateCreator, VR vr,
             float... value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        getOrCreateGroup(groupNumber).putFloats(tag, privateCreator, vr,
+        getOrCreateGroup(groupNumber).putFloat(tag, privateCreator, vr,
                 value);
     }
 
@@ -388,17 +419,6 @@ public class Attributes {
             }
         }
         return sb;
-    }
-
-    public StringBuilder promptAttribute(int tag, String privateCreator,
-            int vallen, int maxWidth, StringBuilder sb) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        if (index < 0)
-            return sb;
-
-        return groups[index].promptAttribute(tag, privateCreator, vallen,
-                maxWidth, sb);
     }
 
  }

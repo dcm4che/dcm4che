@@ -15,10 +15,15 @@ class Group {
     private Object[] values;
     private int size;
 
-    private static final class LittleEndian extends Group {
+    private static final class LittleEndianDefaultCharset extends Group {
 
-        LittleEndian(Attributes parent, int groupNumber, int capacity) {
+        LittleEndianDefaultCharset(Attributes parent, int groupNumber, int capacity) {
             super(parent, groupNumber, capacity);
+        }
+
+        @Override
+        protected SpecificCharacterSet cs() {
+            return SpecificCharacterSet.DEFAULT;
         }
 
         @Override
@@ -34,7 +39,7 @@ class Group {
 
     static Group create(Attributes parent, int groupNumber, int capacity) {
         return groupNumber <= 2 
-                ? new LittleEndian(parent, groupNumber, capacity)
+                ? new LittleEndianDefaultCharset(parent, groupNumber, capacity)
                 : new Group(parent, groupNumber, capacity);
     }
 
@@ -46,7 +51,7 @@ class Group {
         this.values = new Object[capacity];
     }
 
-    private SpecificCharacterSet cs() {
+    protected SpecificCharacterSet cs() {
         return parent.getSpecificCharacterSet();
     }
 
@@ -76,67 +81,26 @@ class Group {
     public StringBuilder promptAttributes(int lines, int maxWidth,
             StringBuilder sb) {
         for (int i = 0, n = Math.min(size, lines); i < n; i++)
-            promptAttribute(i, -1, maxWidth, sb).append('\n');
+            promptAttribute(i, maxWidth, sb).append('\n');
         return sb;
     }
 
-    public StringBuilder promptAttribute(int tag, String privateCreator,
-            int vallen, int maxWidth, StringBuilder sb) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return sb;
-
-        int index = indexOf(elTag);
-        if (index < 0)
-            return sb;
-        
-        return promptAttribute(index, vallen, maxWidth, sb);
-    }
-
-    private StringBuilder promptAttribute(int index, int vallen, int maxChars,
+    private StringBuilder promptAttribute(int index, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         int elTag = elTags[index];
         int tag = TagUtils.toTag(grTag, elTag);
         VR vr = vrs[index];
         Object value = values[index];
-        sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" #");
-        if (value == null) {
-            sb.append("0");
-        } else if (value instanceof Sequence || value instanceof Fragments) {
-            sb.append(vallen).append(' ').append(value);
-        } else if (value instanceof String) {
-            String s = (String) value;
-            sb.append(vallen < 0 ? s.length() : vallen).append(' ');
-            prompt((String) value, maxLength - sb.length(), sb);
-        } else {
-            byte[] b = (byte[]) value;
-            sb.append(b.length).append(' ');
-            if (vr.isBinaryType()) {
-                vr.prompt(b, bigEndian(), maxLength - sb.length(), sb);
-            } else {
-                prompt(vr.toString(b, cs()), maxLength - sb.length(), sb);
-            }
-        }
-        int remaining = maxLength - sb.length() - 3;
-        if (remaining > 4) {
-            String keyword =
-                    ElementDictionary.keywordOf(tag, getPrivateCreator(elTag));
-            sb.append(" //").append(
-                    keyword.length() > remaining 
-                            ? keyword.substring(0, remaining)
-                            : keyword);
+        sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
+        if (vr.promptValue(value, bigEndian(), cs(),
+                maxLength - sb.length() - 1, sb)) {
+            sb.append("] ").append(ElementDictionary.keywordOf(
+                        tag, getPrivateCreator(elTag)));
+            if (sb.length() > maxLength)
+                sb.setLength(maxLength);
         }
         return sb;
-    }
-
-    private void prompt(String s, int maxChars, StringBuilder sb) {
-        String trim = s.trim();
-        if (trim.length() > maxChars)
-            sb.append(trim.substring(0, Math.max(0, maxChars - 3)))
-                .append("...");
-        else
-            sb.append(trim);
     }
 
     public final boolean isEmpty() {
@@ -215,26 +179,18 @@ class Group {
         if (index < 0)
             return null;
 
-        VR vr = vrs[index];
-        if (vr == VR.SQ)
-            throw new UnsupportedOperationException("VR: "+vr);
-
         Object value = values[index];
-        byte[] bytes;
         if (value == null)
-            bytes = BinaryType.EMPTY_BYTES;
-        else if (value instanceof byte[])
-            bytes = (byte[]) value;
-        else if (value instanceof String)
-            bytes = vr.toBytes((String) value, cs());
-        else
-            throw new UnsupportedOperationException(
-                    "Cannot convert " + value + " to byte[]");
-        return bytes;
+            return BinaryType.EMPTY_BYTES;
+
+        if (value instanceof byte[])
+            return (byte[]) value;
+
+        return vrs[index].toBytes(values[index], bigEndian(), cs());
     }
 
-    public String getString(int tag,
-            String privateCreator, String defVal) {
+    public String getString(int tag, String privateCreator, int valueIndex, 
+            String defVal) {
         int elTag = elTag(privateCreator, tag, false);
         if (elTag < 0)
             return defVal;
@@ -243,25 +199,25 @@ class Group {
         if (index < 0)
             return defVal;
 
-        VR vr = vrs[index];
-        if (vr == VR.SQ)
-            throw new UnsupportedOperationException("VR: "+vr);
-
         Object value = values[index];
         if (value == null)
             return defVal;
 
-         return vr.isBinaryType() 
-                 ? vr.firstBinaryValueAsString((byte[]) value, bigEndian())
-                 : vr.firstStringValue(toString(value, index, vr));
+        return getString(index, valueIndex, defVal);
     }
 
-    private String toString(Object value, int index, VR vr) {
+    private String getString(int index, int valueIndex, String defVal) {
+        Object value = values[index];
+        if (!(value instanceof String || value instanceof String[])) {
+            value = vrs[index].toStrings(value, bigEndian(), cs());
+            values[index] = value;
+        }
+
         if (value instanceof String)
-            return (String) value;
-        String s = vr.toString((byte[]) value, cs());
-        values[index] = s;
-        return s;
+            return valueIndex == 0 ? (String) value : defVal;
+
+        String[] ss = (String[]) value;
+        return valueIndex < ss.length ? ss[valueIndex] : defVal;
     }
 
     public String[] getStrings(int tag, String privateCreator) {
@@ -273,20 +229,22 @@ class Group {
         if (index < 0)
             return null;
 
-        VR vr = vrs[index];
-        if (vr == VR.SQ)
-            throw new UnsupportedOperationException("VR: "+vr);
-
         Object value = values[index];
         if (value == null)
             return StringType.EMPTY_STRINGS;
 
-        return vr.isBinaryType() 
-                ? vr.binaryValueAsStrings((byte[]) value, bigEndian())
-                : vr.splitStringValue(toString(value, index, vr));
-     }
+        if (!(value instanceof String || value instanceof String[])) {
+            value = vrs[index].toStrings(value, bigEndian(), cs());
+            values[index] = value;
+        }
 
-    public int getInt(int tag, String privateCreator, int defVal) {
+        return (value instanceof String)
+                ? new String[] {(String) value}
+                : (String[]) value;
+    }
+
+    public int getInt(int tag, String privateCreator, int valueIndex,
+            int defVal) {
         int elTag = elTag(privateCreator, tag, false);
         if (elTag < 0)
             return defVal;
@@ -295,16 +253,19 @@ class Group {
         if (index < 0)
             return defVal;
 
-        VR vr = vrs[index];
-        if (vr != VR.IS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return defVal;
+        
+        int[] ints;
+        if (value instanceof int[])
+            ints = (int[]) value;
+        else {
+            ints = vrs[index].toInts(value, bigEndian(), cs());
+            values[index] = ints;
+        }
 
-        return vr == VR.IS ? vr.toInt(toString(value, index, vr))
-                           : vr.toInt((byte[]) value, bigEndian());
+        return valueIndex < ints.length ? ints[valueIndex] : defVal;
     }
 
     public int[] getInts(int tag, String privateCreator) {
@@ -316,19 +277,21 @@ class Group {
         if (index < 0)
             return null;
 
-        VR vr = vrs[index];
-        if (vr != VR.IS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return BinaryType.EMPTY_INTS;
 
-        return vr == VR.IS ? vr.toInts(toString(value, index, vr))
-                           : vr.toInts((byte[]) value, bigEndian());
+        if (value instanceof int[])
+            return (int[]) value;
+
+        int[] ints = vrs[index].toInts(value, bigEndian(), cs());
+        values[index] = ints;
+
+        return ints;
     }
 
-    public float getFloat(int tag, String privateCreator, float defVal) {
+    public float getFloat(int tag, String privateCreator, int valueIndex,
+            float defVal) {
         int elTag = elTag(privateCreator, tag, false);
         if (elTag < 0)
             return defVal;
@@ -337,16 +300,19 @@ class Group {
         if (index < 0)
             return defVal;
 
-        VR vr = vrs[index];
-        if (vr != VR.DS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return defVal;
 
-        return vr == VR.DS ? vr.toFloat(toString(value, index, vr))
-                           : vr.toFloat((byte[]) value, bigEndian());
+        float[] floats;
+        if (value instanceof float[])
+            floats = (float[]) value;
+        else {
+            floats = vrs[index].toFloats(value, bigEndian(), cs());
+            values[index] = floats;
+        }
+
+        return valueIndex < floats.length ? floats[valueIndex] : defVal;
     }
 
     public float[] getFloats(int tag, String privateCreator) {
@@ -358,19 +324,21 @@ class Group {
         if (index < 0)
             return null;
 
-        VR vr = vrs[index];
-        if (vr != VR.DS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return BinaryType.EMPTY_FLOATS;
 
-        return vr == VR.DS ? vr.toFloats(toString(value, index, vr))
-                           : vr.toFloats((byte[]) value, bigEndian());
+        if (value instanceof float[])
+            return (float[]) value;
+
+        float[] floats = vrs[index].toFloats(value, bigEndian(), cs());
+        values[index] = floats;
+
+        return floats;
     }
 
-    public double getDouble(int tag, String privateCreator, double defVal) {
+    public double getDouble(int tag, String privateCreator, int valueIndex,
+            double defVal) {
         int elTag = elTag(privateCreator, tag, false);
         if (elTag < 0)
             return defVal;
@@ -379,16 +347,19 @@ class Group {
         if (index < 0)
             return defVal;
 
-        VR vr = vrs[index];
-        if (vr != VR.DS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return defVal;
 
-        return vr == VR.DS ? vr.toDouble(toString(value, index, vr))
-                           : vr.toDouble((byte[]) value, bigEndian());
+        double[] doubles;
+        if (value instanceof double[])
+            doubles = (double[]) value;
+        else {
+            doubles = vrs[index].toDoubles(value, bigEndian(), cs());
+            values[index] = doubles;
+        }
+
+        return valueIndex < doubles.length ? doubles[valueIndex] : defVal;
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
@@ -400,16 +371,17 @@ class Group {
         if (index < 0)
             return null;
 
-        VR vr = vrs[index];
-        if (vr != VR.DS)
-            vr.checkBinaryType();
-
         Object value = values[index];
         if (value == null)
             return BinaryType.EMPTY_DOUBLES;
 
-        return vr == VR.DS ? vr.toDoubles(toString(value, index, vr))
-                           : vr.toDoubles((byte[]) value, bigEndian());
+        if (value instanceof double[])
+            return (double[]) value;
+
+        double[] doubles = vrs[index].toDoubles(value, bigEndian(), cs());
+        values[index] = doubles;
+
+        return doubles;
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
@@ -471,45 +443,70 @@ class Group {
         put(tag, privateCreator, vr,null);
     }
 
-    public void putBytes(int tag, String privateCreator, VR vr, byte[] val,
+    public void putBytes(int tag, String privateCreator, VR vr, byte[] b,
             boolean bigEndian) {
+        vr.checkSupportBytes();
         if (this.bigEndian() != bigEndian)
-            vr.toggleEndian(val);
-        put(tag, privateCreator, vr, vr.toValue(val));
+            vr.toggleEndian(b);
+        put(tag, privateCreator, vr, nullifyEmptyBytes(b));
     }
 
-    public void putString(int tag, String privateCreator, VR vr, String val) {
-        put(tag, privateCreator, vr, vr.toValue(val, bigEndian()));
+    public void putString(int tag, String privateCreator, VR vr, String s) {
+        vr.checkSupportString();
+        put(tag, privateCreator, vr, nullifyEmptyString(s));
     }
 
-    public void putStrings(int tag, String privateCreator, VR vr,
-            String... vals) {
-        put(tag, privateCreator, vr, vr.toValue(vals, bigEndian()));
+    public void putString(int tag, String privateCreator, VR vr,
+            String... ss) {
+        vr.checkSupportStrings();
+        put(tag, privateCreator, vr, nullifyEmptyStrings(ss));
     }
 
-    public void putInt(int tag, String privateCreator, VR vr, int val) {
-        put(tag, privateCreator, vr, vr.toValue(val, bigEndian()));
+    public void putInt(int tag, String privateCreator, VR vr, int... ints) {
+        vr.checkSupportInts();
+        put(tag, privateCreator, vr, nullifyEmptyInts(ints));
     }
 
-    public void putInts(int tag, String privateCreator, VR vr, int... vals) {
-        put(tag, privateCreator, vr, vr.toValue(vals, bigEndian()));
+    public void putFloat(int tag, String privateCreator, VR vr,
+            float... floats) {
+        vr.checkSupportFloats();
+        put(tag, privateCreator, vr, nullifyEmptyFloats(floats));
     }
 
-    public void putFloat(int tag, String privateCreator, VR vr, float val) {
-        put(tag, privateCreator, vr, vr.toValue(val, bigEndian()));
+    public void putDouble(int tag, String privateCreator, VR vr,
+            double[] doubles) {
+        vr.checkSupportDoubles();
+        put(tag, privateCreator, vr, nullifyEmptyDoubles(doubles));
     }
 
-    public void putFloats(int tag, String privateCreator, VR vr, float[] vals) {
-        put(tag, privateCreator, vr, vr.toValue(vals, bigEndian()));
+    private byte[] nullifyEmptyBytes(byte[] b) {
+        return b == null || b.length == 0 ? null : b;
     }
 
-    public void putDouble(int tag, String privateCreator, VR vr, double val) {
-        put(tag, privateCreator, vr, vr.toValue(val, bigEndian()));
+    private String nullifyEmptyString(String s) {
+        return s == null || s.length() == 0 ? null : s;
     }
 
-    public void putDoubles(int tag, String privateCreator, VR vr,
-            double[] vals) {
-        put(tag, privateCreator, vr, vr.toValue(vals, bigEndian()));
+    private Object nullifyEmptyStrings(String[] ss) {
+        if (ss == null || ss.length == 0)
+            return null;
+        for (int i = 0; i < ss.length; i++)
+            ss[i] = nullifyEmptyString(ss[i]);
+        if (ss.length == 1)
+            return ss[0];
+        return ss;
+    }
+
+    private Object nullifyEmptyInts(int[] ints) {
+        return ints == null || ints.length == 0 ? null : ints;
+    }
+
+    private Object nullifyEmptyFloats(float[] floats) {
+        return floats == null || floats.length == 0 ? null : floats;
+    }
+
+    private Object nullifyEmptyDoubles(double[] doubles) {
+        return doubles == null || doubles.length == 0 ? null : doubles;
     }
 
     public Sequence putSequence(int tag, String privateCreator,
@@ -573,7 +570,7 @@ class Group {
                 putString(creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | (elTag & 0xff);
             }
-            if (privateCreator.equals(toString(values[index], index, VR.LO)))
+            if (privateCreator.equals(getString(index, 0, null)))
                 return (creatorTag << 8) | (elTag & 0xff);
         }
         throw new IllegalStateException(String.format(
@@ -586,8 +583,10 @@ class Group {
 
         int creatorTag = (tag >>> 8) & 0xff;
         int index = indexOf(creatorTag);
-        return (index < 0) ? null 
-                : toString(values[index], index, VR.LO);
+        if (index < 0)
+            return null;
+        
+        return getString(index, 0, null);
     }
 
     public void putAll(Group srcGroup) {

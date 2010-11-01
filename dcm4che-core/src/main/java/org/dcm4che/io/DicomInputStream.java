@@ -257,7 +257,7 @@ public class DicomInputStream extends FilterInputStream
             if (fmi) {
                 if (tag == Tag.FileMetaInformationGroupLength) {
                     fmiEndPos = pos + attrs.getInt(
-                            Tag.FileMetaInformationGroupLength, null, 0);
+                            Tag.FileMetaInformationGroupLength, null, 0, 0);
                 } else if (pos == fmiEndPos)  {
                     if (stopAfterFmi)
                         break;
@@ -418,7 +418,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void switchTransferSyntax(Attributes attrs) throws IOException {
         String tsuid = attrs.getString(
-                Tag.TransferSyntaxUID, null, null);
+                Tag.TransferSyntaxUID, null, 0, null);
         if (tsuid == null) {
             LOG.warn(MISSING_TRANSFER_SYNTAX);
             tsuid = UID.ExplicitVRLittleEndian;

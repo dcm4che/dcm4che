@@ -42,9 +42,9 @@ public class ElementDictionaryTest {
         "OverlayData"
     };
 
-    private static final String PRIVATE_CREATOR = "SIEMENS CSA HEADER";
+    private static final String SIEMENS_CSA_HEADER = "SIEMENS CSA HEADER";
 
-    private static final int[] PRIVATE_TAGS = {
+    private static final int[] SIEMENS_CSA_HEADER_TAGS = {
         0x00290008,
         0x00290009,
         0x00290010,
@@ -53,7 +53,7 @@ public class ElementDictionaryTest {
         0x00290020
     };
 
-    private static final VR[] PRIVATE_VRS = {
+    private static final VR[] SIEMENS_CSA_HEADER_VRS = {
         VR.CS,
         VR.LO,
         VR.OB,
@@ -62,13 +62,33 @@ public class ElementDictionaryTest {
         VR.OB
     };
 
-    private static final String[] PRIVATE_KEYWORDS = {
+    private static final String[] SIEMENS_CSA_HEADER_KEYWORDS = {
         "CSAImageHeaderType",
         "CSAImageHeaderVersion",
         "CSAImageHeaderInfo",
         "CSASeriesHeaderType",
         "CSASeriesHeaderVersion",
         "CSASeriesHeaderInfo"
+    };
+
+    private static final String SIEMENS_CSA_NON_IMAGE = "SIEMENS CSA NON-IMAGE";
+
+    private static final int[] SIEMENS_CSA_NON_IMAGE_TAGS = {
+        0x00290008,
+        0x00290009,
+        0x00290010,
+    };
+
+    private static final VR[] SIEMENS_CSA_NON_IMAGE_VRS = {
+        VR.CS,
+        VR.LO,
+        VR.OB,
+    };
+
+    private static final String[] SIEMENS_CSA_NON_IMAGE_KEYWORDS = {
+        "CSADataType",
+        "CSADataVersion",
+        "CSADataInfo",
     };
 
     @Test
@@ -93,24 +113,41 @@ public class ElementDictionaryTest {
 
     @Test
     public void testPrivateVrOf() {
-        for (int i = 0; i < PRIVATE_TAGS.length; i++)
-            assertEquals(PRIVATE_VRS[i],
-                    ElementDictionary.vrOf(PRIVATE_TAGS[i], PRIVATE_CREATOR));
+        for (int i = 0; i < SIEMENS_CSA_HEADER_TAGS.length; i++)
+            assertEquals(SIEMENS_CSA_HEADER_VRS[i],
+                    ElementDictionary.vrOf(SIEMENS_CSA_HEADER_TAGS[i],
+                            SIEMENS_CSA_HEADER));
+        for (int i = 0; i < SIEMENS_CSA_NON_IMAGE_TAGS.length; i++)
+            assertEquals(SIEMENS_CSA_NON_IMAGE_VRS[i],
+                    ElementDictionary.vrOf(SIEMENS_CSA_NON_IMAGE_TAGS[i],
+                            SIEMENS_CSA_NON_IMAGE));
     }
 
     @Test
     public void testPrivateKeywordOf() {
-        for (int i = 0; i < PRIVATE_TAGS.length; i++)
-            assertEquals(PRIVATE_KEYWORDS[i],
-                         ElementDictionary.keywordOf(PRIVATE_TAGS[i], 
-                                                     PRIVATE_CREATOR));
+        for (int i = 0; i < SIEMENS_CSA_HEADER_TAGS.length; i++)
+            assertEquals(SIEMENS_CSA_HEADER_KEYWORDS[i],
+                         ElementDictionary.keywordOf(
+                                 SIEMENS_CSA_HEADER_TAGS[i], 
+                                 SIEMENS_CSA_HEADER));
+        for (int i = 0; i < SIEMENS_CSA_NON_IMAGE_TAGS.length; i++)
+            assertEquals(SIEMENS_CSA_NON_IMAGE_KEYWORDS[i],
+                         ElementDictionary.keywordOf(
+                                 SIEMENS_CSA_NON_IMAGE_TAGS[i], 
+                                 SIEMENS_CSA_NON_IMAGE));
     }
 
     @Test
     public void tagPrivateForKeyword() {
-        for (int i = 0; i < PRIVATE_KEYWORDS.length; i++)
-            assertEquals(PRIVATE_TAGS[i],
-                         ElementDictionary.tagForKeyword(PRIVATE_KEYWORDS[i],
-                                                         PRIVATE_CREATOR));
+        for (int i = 0; i < SIEMENS_CSA_HEADER_KEYWORDS.length; i++)
+            assertEquals(SIEMENS_CSA_HEADER_TAGS[i],
+                         ElementDictionary.tagForKeyword(
+                                 SIEMENS_CSA_HEADER_KEYWORDS[i],
+                                 SIEMENS_CSA_HEADER));
+        for (int i = 0; i < SIEMENS_CSA_NON_IMAGE_KEYWORDS.length; i++)
+            assertEquals(SIEMENS_CSA_NON_IMAGE_TAGS[i],
+                         ElementDictionary.tagForKeyword(
+                                 SIEMENS_CSA_NON_IMAGE_KEYWORDS[i],
+                                 SIEMENS_CSA_NON_IMAGE));
     }
 }

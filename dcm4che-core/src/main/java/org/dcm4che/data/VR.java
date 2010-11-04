@@ -16,11 +16,8 @@ public enum VR {
         void checkSupportFloats() { }
 
         @Override
-        void checkSupportDoubles() { }
-
-        @Override
         protected byte[] floatsToBytes(float[] floats, boolean bigEndian) {
-            String s = Float.toString(floats[0]);
+            String s = formatDS(floats[0]);
             if (floats.length > 1) {
                 StringBuilder sb = new StringBuilder(floats.length << 4);
                 sb.append(s);
@@ -33,7 +30,7 @@ public enum VR {
 
         @Override
         protected byte[] doublesToBytes(double[] doubles, boolean bigEndian) {
-            String s = Double.toString(doubles[0]);
+            String s = formatDS(doubles[0]);
             if (doubles.length > 1) {
                 StringBuilder sb = new StringBuilder(doubles.length << 4);
                 sb.append(s);
@@ -45,27 +42,43 @@ public enum VR {
         }
 
         @Override
-        protected float[] bytesToFloats(byte[] b, boolean bigEndian,
-                SpecificCharacterSet cs) {
-            Object o = stringType.toStrings(b, cs);
+        protected float[] bytesToFloats(byte[] b, boolean bigEndian) {
+            Object o = stringType.toStrings(b, null);
             return (o instanceof String) 
                     ? stringToFloats((String) o)
                     : stringsToFloats((String[]) o);
         }
 
         @Override
-        protected double[] bytesToDoubles(byte[] b, boolean bigEndian,
-                SpecificCharacterSet cs) {
-            Object o = stringType.toStrings(b, cs);
+        protected double[] bytesToDoubles(byte[] b, boolean bigEndian) {
+            Object o = stringType.toStrings(b, null);
             return (o instanceof String) 
                     ? stringToDoubles((String) o)
                     : stringsToDoubles((String[]) o);
         }
     },
     DT(0x4454, 8, null, StringType.ASCII),
-    FD(0x4644, 8, BinaryType.DOUBLE, null),
-    FL(0x464c, 8, BinaryType.FLOAT, null),
-    IS(0x4953, 8, null, StringType.ASCII){
+    FD(0x4644, 8, BinaryType.DOUBLE, null) {
+
+        @Override
+        void checkSupportInts() {
+            throw unsupported();
+        }
+
+        @Override
+        void checkSupportFloats() {}
+    },
+    FL(0x464c, 8, BinaryType.FLOAT, null) {
+
+        @Override
+        void checkSupportInts() {
+            throw unsupported();
+        }
+
+        @Override
+        void checkSupportFloats() {}
+    },
+    IS(0x4953, 8, null, StringType.ASCII) {
 
         @Override
         void checkSupportInts() { }
@@ -84,18 +97,32 @@ public enum VR {
         }
 
         @Override
-        protected int[] bytesToInts(byte[] b, boolean bigEndian,
-                SpecificCharacterSet cs) {
-            Object o = stringType.toStrings(b, cs);
+        protected int[] bytesToInts(byte[] b, boolean bigEndian) {
+            Object o = stringType.toStrings(b, null);
             return (o instanceof String) 
                     ? stringToInts((String) o)
                     : stringsToInts((String[]) o);
         }
     },
     LO(0x4c4f, 8, null, StringType.STRING),
-    LT(0x4c54, 8, null, StringType.TEXT),
+    LT(0x4c54, 8, null, StringType.TEXT) {
+
+        @Override
+        void checkSupportStrings() {
+            throw unsupported();
+        }
+    },
     OB(0x4f42, 12, BinaryType.BYTE, null),
-    OF(0x4f46, 12, BinaryType.FLOAT, null),
+    OF(0x4f46, 12, BinaryType.FLOAT, null) {
+
+        @Override
+        void checkSupportInts() {
+            throw unsupported();
+        }
+
+        @Override
+        void checkSupportFloats() {}
+    },
     OW(0x4f57, 12, BinaryType.SHORT, null),
     PN(0x504e, 8, null, StringType.PN),
     SH(0x5348, 8, null, StringType.STRING),
@@ -118,13 +145,25 @@ public enum VR {
         }
     },
     SS(0x5353, 8, BinaryType.SHORT,null),
-    ST(0x5354, 8, null, StringType.TEXT),
+    ST(0x5354, 8, null, StringType.TEXT) {
+
+        @Override
+        void checkSupportStrings() {
+            throw unsupported();
+        }
+    },
     TM(0x544d, 8, null, StringType.ASCII),
     UI(0x5549, 8, null, StringType.UI),
     UL(0x554c, 8, BinaryType.INT, null),
     UN(0x554e, 12, BinaryType.BYTE, null),
     US(0x5553, 8, BinaryType.USHORT, null),
-    UT(0x5554, 12, null, StringType.TEXT);
+    UT(0x5554, 12, null, StringType.TEXT) {
+
+        @Override
+        void checkSupportStrings() {
+            throw unsupported();
+        }
+    };
 
     private static Logger LOG = LoggerFactory.getLogger(VR.class);
 
@@ -291,35 +330,35 @@ public enum VR {
         String[] ss = new String[ints.length];
         for (int i = 0; i < ints.length; i++)
             ss[i] = Integer.toString(ints[i]);
-        return null;
+        return ss;
     }
 
     private Object floatsToString(float[] floats) {
         if (floats.length == 1)
-            return Float.toString(floats[0]);
+            return formatDS(floats[0]);
 
         String[] ss = new String[floats.length];
         for (int i = 0; i < floats.length; i++)
-            ss[i] = Float.toString(floats[i]);
-        return null;
+            ss[i] = formatDS(floats[i]);
+        return ss;
     }
 
     private Object doublesToString(double[] doubles) {
         if (doubles.length == 1)
-            return Double.toString(doubles[0]);
+            return formatDS(doubles[0]);
 
         String[] ss = new String[doubles.length];
         for (int i = 0; i < doubles.length; i++)
-            ss[i] = Double.toString(doubles[i]);
-        return null;
+            ss[i] = formatDS(doubles[i]);
+        return ss;
     }
 
-    int[] toInts(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+    int[] toInts(Object val, boolean bigEndian) {
         if (val instanceof int[])
             return (int[]) val;
 
         if (val instanceof byte[])
-            return bytesToInts((byte[]) val, bigEndian, cs);
+            return bytesToInts((byte[]) val, bigEndian);
 
         if (val instanceof String)
             return stringToInts((String) val);
@@ -330,23 +369,25 @@ public enum VR {
         throw unsupported();
     }
 
-    protected int[] bytesToInts(byte[] b, boolean bigEndian,
-            SpecificCharacterSet cs) {
+    protected int[] bytesToInts(byte[] b, boolean bigEndian) {
+        checkSupportInts();
         return binaryType.bytesToInts(b, bigEndian);
     }
 
     protected int[] stringToInts(String s) {
-        return new int[]{ parseInt(s) };
+        checkSupportInts();
+        return new int[]{ parseIS(s) };
     }
 
     protected int[] stringsToInts(String[] ss) {
+        checkSupportInts();
         int[] ints = new int[ss.length];
         for (int i = 0; i < ss.length; i++)
-            ints[i] = parseInt(ss[i]);
+            ints[i] = parseIS(ss[i]);
         return ints;
     }
 
-    float[] toFloats(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+    float[] toFloats(Object val, boolean bigEndian) {
         if (val instanceof float[])
             return (float[]) val;
 
@@ -354,7 +395,7 @@ public enum VR {
             return doublesToFloats((double[]) val);
 
         if (val instanceof byte[])
-            return bytesToFloats((byte[]) val, bigEndian, cs);
+            return bytesToFloats((byte[]) val, bigEndian);
 
         if (val instanceof String)
             return stringToFloats((String) val);
@@ -372,25 +413,25 @@ public enum VR {
         return floats ;
     }
 
-    protected float[] bytesToFloats(byte[] b, boolean bigEndian,
-            SpecificCharacterSet cs) {
-        checkBinaryType();
+    protected float[] bytesToFloats(byte[] b, boolean bigEndian) {
+        checkSupportFloats();
         return binaryType.bytesToFloats(b, bigEndian);
     }
 
     protected float[] stringToFloats(String s) {
+        checkSupportFloats();
         return new float[] { Float.parseFloat(s) };
     }
 
     protected float[] stringsToFloats(String[] ss) {
+        checkSupportFloats();
         float[] floats = new float[ss.length];
         for (int i = 0; i < ss.length; i++)
             floats[i] = Float.parseFloat(ss[i]);
         return floats;
     }
 
-    double[] toDoubles(Object val, boolean bigEndian,
-            SpecificCharacterSet cs) {
+    double[] toDoubles(Object val, boolean bigEndian) {
         if (val instanceof double[])
             return (double[]) val;
 
@@ -398,7 +439,7 @@ public enum VR {
             return floatsToDoubles((float[]) val);
 
         if (val instanceof byte[])
-            return bytesToDoubles((byte[]) val, bigEndian, cs);
+            return bytesToDoubles((byte[]) val, bigEndian);
 
         if (val instanceof String)
             return stringToDoubles((String) val);
@@ -416,17 +457,18 @@ public enum VR {
         return doubles ;
     }
 
-    protected double[] bytesToDoubles(byte[] b, boolean bigEndian,
-            SpecificCharacterSet cs) {
-        checkBinaryType();
+    protected double[] bytesToDoubles(byte[] b, boolean bigEndian) {
+        checkSupportFloats();
         return binaryType.bytesToDoubles(b, bigEndian);
     }
 
     protected double[] stringToDoubles(String s) {
+        checkSupportFloats();
         return new double[] { Double.parseDouble(s) };
     }
 
     protected double[] stringsToDoubles(String[] ss) {
+        checkSupportFloats();
         double[] doubles = new double[ss.length];
         for (int i = 0; i < ss.length; i++)
             doubles[i] = Double.parseDouble(ss[i]);
@@ -435,11 +477,6 @@ public enum VR {
 
     private boolean isBinaryType() {
         return binaryType != null;
-    }
-
-    private void checkBinaryType() {
-        if (binaryType == null)
-            throw unsupported();
     }
 
     void toggleEndian(byte[] b) {
@@ -452,23 +489,51 @@ public enum VR {
     }
 
     void checkSupportBytes() { }
+
     void checkSupportString() { }
+
     void checkSupportStrings() { }
+
     void checkSupportInts() {
-        checkBinaryType();
-        binaryType.checkSupportInts(this);
-    }
-    void checkSupportFloats() {
-        checkBinaryType();
-        binaryType.checkSupportFloats(this);
-    }
-    void checkSupportDoubles() {
-        checkBinaryType();
-        binaryType.checkSupportDoubles(this);
+        if (binaryType == null)
+            throw unsupported();
     }
 
-    int parseInt(String s) {
+    void checkSupportFloats() {
+        throw unsupported();
+    }
+
+    static int parseIS(String s) {
         return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
+    }
+
+    static String formatDS(double d) {
+        String s = Double.toString(d);
+        int l = s.length();
+        if (s.startsWith(".0", l-2))
+            return s.substring(0, l-2);
+        int skip = l - 16;
+        int e = s.indexOf('E', l-5);
+        return e < 0 ? (skip > 0 ? s.substring(0, 16) : s)
+                : s.startsWith(".0", e-2) ? cut(s, e-2, e)
+                : skip > 0 ? cut(s, e-skip, e) : s;
+    }
+
+    static String formatDS(float f) {
+        String s = Float.toString(f);
+        int l = s.length();
+        if (s.startsWith(".0", l-2))
+            return s.substring(0, l-2);
+        int e = s.indexOf('E', l-5);
+        return e > 0 && s.startsWith(".0", e-2) ? cut(s, e-2, e)  : s;
+    }
+
+    static String cut(String s, int begin, int end) {
+        int l = s.length();
+        char[] ch = new char[l-(end-begin)];
+        s.getChars(0, begin, ch, 0);
+        s.getChars(end, l, ch, begin);
+        return new String(ch);
     }
 
     public boolean promptValue(Object val, boolean bigEndian,
@@ -500,7 +565,8 @@ public enum VR {
 
    }
 
-    private boolean promptString(String s, int maxChars, StringBuilder sb) {
+    private static boolean promptString(String s, int maxChars, 
+            StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         sb.append(s.trim());
         if (sb.length() > maxLength) {
@@ -510,7 +576,8 @@ public enum VR {
         return true;
     }
 
-    private boolean promptStrings(String[] ss, int maxChars, StringBuilder sb) {
+    private static boolean promptStrings(String[] ss, int maxChars,
+            StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < ss.length; i++) {
             if (i > 0)
@@ -525,7 +592,8 @@ public enum VR {
         return true;
     }
 
-    private boolean promptInts(int[] ints, int maxChars, StringBuilder sb) {
+    private static boolean promptInts(int[] ints, int maxChars,
+            StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < ints.length; i++) {
             if (i > 0)
@@ -538,13 +606,13 @@ public enum VR {
         return true;
     }
 
-    private boolean promptFloats(float[] floats, int maxChars,
+    private static boolean promptFloats(float[] floats, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < floats.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = Float.toString(floats[i]);
+            String s = formatDS(floats[i]);
             if (sb.length() + s.length() > maxLength)
                 return false;
             sb.append(s);
@@ -552,13 +620,13 @@ public enum VR {
         return true;
     }
 
-    private boolean promptDoubles(double[] doubles, int maxChars,
+    private static boolean promptDoubles(double[] doubles, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < doubles.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = Double.toString(doubles[i]);
+            String s = formatDS(doubles[i]);
             if (sb.length() + s.length() + 1 > maxLength)
                 return false;
             sb.append(s);

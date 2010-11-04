@@ -261,7 +261,7 @@ class Group {
         if (value instanceof int[])
             ints = (int[]) value;
         else {
-            ints = vrs[index].toInts(value, bigEndian(), cs());
+            ints = vrs[index].toInts(value, bigEndian());
             values[index] = ints;
         }
 
@@ -284,7 +284,7 @@ class Group {
         if (value instanceof int[])
             return (int[]) value;
 
-        int[] ints = vrs[index].toInts(value, bigEndian(), cs());
+        int[] ints = vrs[index].toInts(value, bigEndian());
         values[index] = ints;
 
         return ints;
@@ -308,7 +308,7 @@ class Group {
         if (value instanceof float[])
             floats = (float[]) value;
         else {
-            floats = vrs[index].toFloats(value, bigEndian(), cs());
+            floats = vrs[index].toFloats(value, bigEndian());
             values[index] = floats;
         }
 
@@ -331,7 +331,7 @@ class Group {
         if (value instanceof float[])
             return (float[]) value;
 
-        float[] floats = vrs[index].toFloats(value, bigEndian(), cs());
+        float[] floats = vrs[index].toFloats(value, bigEndian());
         values[index] = floats;
 
         return floats;
@@ -355,7 +355,7 @@ class Group {
         if (value instanceof double[])
             doubles = (double[]) value;
         else {
-            doubles = vrs[index].toDoubles(value, bigEndian(), cs());
+            doubles = vrs[index].toDoubles(value, bigEndian());
             values[index] = doubles;
         }
 
@@ -378,7 +378,7 @@ class Group {
         if (value instanceof double[])
             return (double[]) value;
 
-        double[] doubles = vrs[index].toDoubles(value, bigEndian(), cs());
+        double[] doubles = vrs[index].toDoubles(value, bigEndian());
         values[index] = doubles;
 
         return doubles;
@@ -392,10 +392,6 @@ class Group {
         int index = indexOf(elTag);
         if (index < 0)
             return null;
-
-        VR vr = vrs[index];
-        if (vr != VR.SQ)
-            throw new UnsupportedOperationException("VR: "+vr);
 
         return (Sequence) values[index];
     }
@@ -475,7 +471,7 @@ class Group {
 
     public void putDouble(int tag, String privateCreator, VR vr,
             double[] doubles) {
-        vr.checkSupportDoubles();
+        vr.checkSupportFloats();
         put(tag, privateCreator, vr, nullifyEmptyDoubles(doubles));
     }
 

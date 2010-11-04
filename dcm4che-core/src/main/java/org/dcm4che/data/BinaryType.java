@@ -103,7 +103,7 @@ enum BinaryType {
 
         @Override
         public String bytesToString(byte[] b, int off, boolean bigEndian) {
-           return Float.toString(ByteUtils.bytesToFloat(b, off, bigEndian));
+           return VR.formatDS(ByteUtils.bytesToFloat(b, off, bigEndian));
         }
 
         @Override
@@ -129,17 +129,6 @@ enum BinaryType {
         public byte[] toggleEndian(byte[] b) {
             return ByteUtils.swapInts(b);
         }
-
-        @Override
-        public void checkSupportInts(VR vr) {
-            throw vr.unsupported();
-        }
-
-        @Override
-        public void checkSupportDoubles(VR vr) {}
-
-        @Override
-        public void checkSupportFloats(VR vr) {}
     },
     DOUBLE(8) {
         @Override
@@ -154,7 +143,7 @@ enum BinaryType {
 
         @Override
         public String bytesToString(byte[] b, int off, boolean bigEndian) {
-           return Double.toString(ByteUtils.bytesToDouble(b, off, bigEndian));
+           return VR.formatDS(ByteUtils.bytesToDouble(b, off, bigEndian));
         }
 
         @Override
@@ -180,17 +169,6 @@ enum BinaryType {
         public byte[] toggleEndian(byte[] b) {
             return ByteUtils.swapLongs(b);
         }
-
-        @Override
-        public void checkSupportInts(VR vr) {
-            throw vr.unsupported();
-        }
-
-        @Override
-        public void checkSupportDoubles(VR vr) {}
-
-        @Override
-        public void checkSupportFloats(VR vr) {}
     };
     
     public static byte[] EMPTY_BYTES = {};
@@ -256,7 +234,7 @@ enum BinaryType {
 
     public byte[] stringToBytes(String s, byte[] b, int off,
             boolean bigEndian) {
-        return intToBytes(VR.IS.parseInt(s), b, off, bigEndian);
+        return intToBytes(VR.parseIS(s), b, off, bigEndian);
     }
 
     private void checkLength(int len) {
@@ -366,16 +344,6 @@ enum BinaryType {
         for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
             stringToBytes(ss[i], b, off, bigEndian);
         return b;
-    }
-
-    public void checkSupportInts(VR vr) {}
-
-    public void checkSupportFloats(VR vr) {
-        throw vr.unsupported();
-    }
-
-    public void checkSupportDoubles(VR vr) {
-        throw vr.unsupported();
     }
 
 }

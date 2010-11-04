@@ -2,173 +2,475 @@ package org.dcm4che.data;
 
 import static org.junit.Assert.*;
 
-import org.junit.Before;
+import org.dcm4che.util.ByteUtils;
 import org.junit.Test;
 
 public class VRTest {
 
-    private static final byte[] BYTE_123 = { -123 };
-    private static final byte[] SHORT_12345_BE = { -49, -57 };
-    private static final byte[] SHORT_12345_LE = { -57, -49 };
-    private static final byte[] INT_12345_BE = { -1, -1, -49, -57 };
-    private static final byte[] INT_12345_LE = { -57, -49, -1, -1 };
-    private static final byte[] FLOAT_PI_LE = { -37, 15, 73, 64 };
-    private static final byte[] FLOAT_PI_BE = { 64, 73, 15, -37 };
-    private static final byte[] DOUBLE_PI_LE = { 24, 45, 68, 84, -5, 33, 9, 64 };
-    private static final byte[] DOUBLE_PI_BE = { 64, 9, 33, -5, 84, 68, 45, 24 };
-    private static final byte[] DOUBLE_FLOAT_PI_LE = { 0, 0, 0, 96, -5, 33, 9, 64 };
-    private static final byte[] DOUBLE_FLOAT_PI_BE = { 64, 9, 33, -5, 96, 0, 0, 0 };
-    private static final int[] INT_123 = { -123 };
-    private static final int[] INT_12345 = { -12345 };
-    private static final int[] UINT_12345 = { 53191 };
-    private static final float[] FLOAT_PI = { (float) Math.PI };
-    private static final double[] DOUBLE_PI = { Math.PI };
-    private static final double[] DOUBLE_FLOAT_PI = { (float) Math.PI };
-    private static final String STRING_PI = Double.toString(Math.PI);
-    private static final String STRING_FLOAT_PI = Float.toString((float) Math.PI);
-    private static final String STRING_12345 = "-12345";
-    private static final String STRING_123 = "-123";
-    private static final String STRING_53191 = "53191";
-    private static final String IMAGE_TYPE = "ORIGINAL\\PRIMARY\\AXIAL";
-    private static final String[] IMAGE_TYPE_VALUES =
-            { "ORIGINAL","PRIMARY", "AXIAL" };
-    private static final byte[] IMAGE_TYPE_BYTES = {
-            'O', 'R', 'I', 'G', 'I', 'N', 'A', 'L', '\\',
-            'P', 'R', 'I', 'M', 'A', 'R', 'Y', '\\',
-            'A', 'X', 'I', 'A', 'L' };
+    private static final SpecificCharacterSet CS =
+            SpecificCharacterSet.DEFAULT;
 
-    private SpecificCharacterSet cs;
+    private static final byte[] DCM4CHEE_AS_AE = 
+            { 'D', 'C', 'M', '4', 'C', 'H', 'E', 'E' };
 
-    @Before
-    public void setUp() {
-        cs = SpecificCharacterSet.valueOf(new String[] { "ISO_IR 100" });
+    private static final int[] INTS = { 0, 1, -2 };
+    private static final int[] UINTS = { 0, 1, -2 & 0xffff };
+    private static final String[] INTS_AS_STRINGS = { "0", "1", "-2" };
+    private static final byte[] INTS_AS_IS =
+            { '0', '\\' , '1', '\\', '-', '2'};
+    private static final byte[] INTS_AS_OB = { 0, 1, -2 };
+    private static final byte[] INTS_AS_SS = { 0, 0, 1, 0, -2, -1 };
+    private static final byte[] INTS_AS_SS_BE = { 0, 0, 0, 1, -1, -2 };
+    private static final byte[] INTS_AS_SL =
+            { 0, 0, 0, 0, 1, 0, 0, 0, -2, -1, -1, -1 };
+    private static final byte[] INTS_AS_SL_BE =
+            { 0, 0, 0, 0, 0, 0, 0, 1, -1, -1, -1, -2 };
+
+    private static final int[] TAGS = { Tag.PatientID, Tag.StudyID };
+    private static final byte[] TAGS_AS_AT =
+            { 0x10, 0x00, 0x20, 0x00, 0x20, 0x00, 0x10, 0x00 };
+    private static final byte[] TAGS_AS_AT_BE =
+            { 0x00, 0x10, 0x00, 0x20, 0x00, 0x20, 0x00, 0x10 };
+
+    private static final float[] FLOATS = { 0, 0.12f };
+    private static final String[] FLOATS_AS_STRINGS = { "0", "0.12" };
+    private static final byte[] FLOATS_AS_DS =
+            { '0', '\\' , '0', '.', '1', '2'};
+    private static final byte[] FLOATS_AS_FL = new byte[8];
+    private static final byte[] FLOATS_AS_FL_BE = new byte[8];
+    private static final byte[] FLOATS_AS_FD = new byte[16];
+
+    private static final double[] DOUBLES = { 0, 0.12 };
+    private static final double[] DOUBLES_AS_FLOAT = { 0, (float) 0.12 };
+    private static final byte[] DOUBLES_AS_FL = new byte[8];
+    private static final byte[] DOUBLES_AS_FD = new byte[16];
+    private static final byte[] DOUBLES_AS_FD_BE = new byte[16];
+    static {
+        ByteUtils.floatToBytesLE(FLOATS[0], FLOATS_AS_FL, 0);
+        ByteUtils.floatToBytesLE(FLOATS[1], FLOATS_AS_FL, 4);
+        ByteUtils.floatToBytesBE(FLOATS[0], FLOATS_AS_FL_BE, 0);
+        ByteUtils.floatToBytesBE(FLOATS[1], FLOATS_AS_FL_BE, 4);
+        ByteUtils.doubleToBytesLE(FLOATS[0], FLOATS_AS_FD, 0);
+        ByteUtils.doubleToBytesLE(FLOATS[1], FLOATS_AS_FD, 8);
+        ByteUtils.floatToBytesLE((float) DOUBLES[0], DOUBLES_AS_FL, 0);
+        ByteUtils.floatToBytesLE((float) DOUBLES[1], DOUBLES_AS_FL, 4);
+        ByteUtils.doubleToBytesLE(DOUBLES[0], DOUBLES_AS_FD, 0);
+        ByteUtils.doubleToBytesLE(DOUBLES[1], DOUBLES_AS_FD, 8);
+        ByteUtils.doubleToBytesBE(DOUBLES[0], DOUBLES_AS_FD_BE, 0);
+        ByteUtils.doubleToBytesBE(DOUBLES[1], DOUBLES_AS_FD_BE, 8);
     }
+
+    private static final Sequence SEQUENCE = new Sequence(null, 0);
+    private static final Fragments FRAGMENTS = new Fragments(VR.OB, false, 0);
 
     @Test
     public void testCode() {
         assertEquals(0x4145, VR.AE.code());
+        assertEquals(0x4153, VR.AS.code());
+        assertEquals(0x4154, VR.AT.code());
+        assertEquals(0x4353, VR.CS.code());
+        assertEquals(0x4441, VR.DA.code());
+        assertEquals(0x4453, VR.DS.code());
+        assertEquals(0x4454, VR.DT.code());
+        assertEquals(0x4644, VR.FD.code());
+        assertEquals(0x464c, VR.FL.code());
+        assertEquals(0x4953, VR.IS.code());
+        assertEquals(0x4c4f, VR.LO.code());
+        assertEquals(0x4c54, VR.LT.code());
+        assertEquals(0x4f42, VR.OB.code());
+        assertEquals(0x4f46, VR.OF.code());
+        assertEquals(0x4f57, VR.OW.code());
+        assertEquals(0x504e, VR.PN.code());
+        assertEquals(0x5348, VR.SH.code());
+        assertEquals(0x534c, VR.SL.code());
+        assertEquals(0x5351, VR.SQ.code());
+        assertEquals(0x5353, VR.SS.code());
+        assertEquals(0x5354, VR.ST.code());
+        assertEquals(0x544d, VR.TM.code());
+        assertEquals(0x5549, VR.UI.code());
+        assertEquals(0x554c, VR.UL.code());
+        assertEquals(0x554e, VR.UN.code());
+        assertEquals(0x5553, VR.US.code());
+        assertEquals(0x5554, VR.UT.code());
     }
 
     @Test
     public void testHeaderLength() {
         assertEquals(8, VR.AE.headerLength());
+        assertEquals(8, VR.AS.headerLength());
+        assertEquals(8, VR.AT.headerLength());
+        assertEquals(8, VR.CS.headerLength());
+        assertEquals(8, VR.DA.headerLength());
+        assertEquals(8, VR.DS.headerLength());
+        assertEquals(8, VR.DT.headerLength());
+        assertEquals(8, VR.FD.headerLength());
+        assertEquals(8, VR.FL.headerLength());
+        assertEquals(8, VR.IS.headerLength());
+        assertEquals(8, VR.LO.headerLength());
+        assertEquals(8, VR.LT.headerLength());
+        assertEquals(12, VR.OB.headerLength());
+        assertEquals(12, VR.OF.headerLength());
+        assertEquals(12, VR.OW.headerLength());
+        assertEquals(8, VR.PN.headerLength());
+        assertEquals(8, VR.SH.headerLength());
+        assertEquals(8, VR.SL.headerLength());
         assertEquals(12, VR.SQ.headerLength());
+        assertEquals(8, VR.SS.headerLength());
+        assertEquals(8, VR.ST.headerLength());
+        assertEquals(8, VR.TM.headerLength());
+        assertEquals(8, VR.UI.headerLength());
+        assertEquals(8, VR.UL.headerLength());
+        assertEquals(12, VR.UN.headerLength());
+        assertEquals(8, VR.US.headerLength());
+        assertEquals(12, VR.UT.headerLength());
     }
 
     @Test
     public void testValueOf() {
         assertEquals(VR.AE, VR.valueOf(0x4145));
+        assertEquals(VR.AS, VR.valueOf(0x4153));
+        assertEquals(VR.AT, VR.valueOf(0x4154));
+        assertEquals(VR.CS, VR.valueOf(0x4353));
+        assertEquals(VR.DA, VR.valueOf(0x4441));
+        assertEquals(VR.DS, VR.valueOf(0x4453));
+        assertEquals(VR.DT, VR.valueOf(0x4454));
+        assertEquals(VR.FD, VR.valueOf(0x4644));
+        assertEquals(VR.FL, VR.valueOf(0x464c));
+        assertEquals(VR.IS, VR.valueOf(0x4953));
+        assertEquals(VR.LO, VR.valueOf(0x4c4f));
+        assertEquals(VR.LT, VR.valueOf(0x4c54));
+        assertEquals(VR.OB, VR.valueOf(0x4f42));
+        assertEquals(VR.OF, VR.valueOf(0x4f46));
+        assertEquals(VR.OW, VR.valueOf(0x4f57));
+        assertEquals(VR.PN, VR.valueOf(0x504e));
+        assertEquals(VR.SH, VR.valueOf(0x5348));
+        assertEquals(VR.SL, VR.valueOf(0x534c));
+        assertEquals(VR.SQ, VR.valueOf(0x5351));
+        assertEquals(VR.SS, VR.valueOf(0x5353));
+        assertEquals(VR.ST, VR.valueOf(0x5354));
+        assertEquals(VR.TM, VR.valueOf(0x544d));
+        assertEquals(VR.UI, VR.valueOf(0x5549));
+        assertEquals(VR.UL, VR.valueOf(0x554c));
+        assertEquals(VR.UN, VR.valueOf(0x554e));
+        assertEquals(VR.US, VR.valueOf(0x5553));
+        assertEquals(VR.UT, VR.valueOf(0x5554));
     }
 
     @Test
-    public void testStringsToBytes() {
-        assertArrayEquals(IMAGE_TYPE_BYTES,
-                VR.CS.toBytes(IMAGE_TYPE, false, cs));
+    public void testToBytes() {
+        assertArrayEquals(DCM4CHEE_AS_AE,
+                VR.AE.toBytes("DCM4CHEE", false, CS));
+        assertArrayEquals(INTS_AS_IS,
+                VR.IS.toBytes(INTS_AS_STRINGS, false, CS));
+        assertArrayEquals(TAGS_AS_AT, VR.AT.toBytes(TAGS, false, CS));
+        assertArrayEquals(INTS_AS_IS, VR.IS.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_OB, VR.OB.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_SS, VR.OW.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_SL, VR.SL.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_SS, VR.SS.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_SL, VR.UL.toBytes(INTS, false, CS));
+        assertArrayEquals(INTS_AS_SS, VR.US.toBytes(INTS, false, CS));
+        assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(FLOATS, false, CS));
+        assertArrayEquals(FLOATS_AS_FL, VR.FL.toBytes(FLOATS, false, CS));
+        assertArrayEquals(FLOATS_AS_FD, VR.FD.toBytes(FLOATS, false, CS));
+        assertArrayEquals(FLOATS_AS_FL, VR.OF.toBytes(FLOATS, false, CS));
+        assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(DOUBLES, false, CS));
+        assertArrayEquals(DOUBLES_AS_FL, VR.FL.toBytes(DOUBLES, false, CS));
+        assertArrayEquals(DOUBLES_AS_FD, VR.FD.toBytes(DOUBLES, false, CS));
+        assertArrayEquals(DOUBLES_AS_FL, VR.OF.toBytes(DOUBLES, false, CS));
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSequenceToBytes() {
+        VR.SQ.toBytes(SEQUENCE, false, CS);
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testFragmentsToBytes() {
+        VR.OB.toBytes(FRAGMENTS, false, CS);
     }
 
     @Test
-    public void testBytesToStrings() {
-        assertArrayEquals(IMAGE_TYPE_VALUES, 
-                (String[]) VR.CS.toStrings(IMAGE_TYPE_BYTES, false, cs));
-        assertEquals(STRING_123, VR.OB.toStrings(BYTE_123, false, cs));
-        assertEquals(STRING_123, VR.OB.toStrings(BYTE_123, true, cs));
-        assertEquals(STRING_12345, VR.SS.toStrings(SHORT_12345_LE, false, cs));
-        assertEquals(STRING_12345, VR.SS.toStrings(SHORT_12345_BE, true, cs));
-        assertEquals(STRING_53191, VR.US.toStrings(SHORT_12345_LE, false, cs));
-        assertEquals(STRING_53191, VR.US.toStrings(SHORT_12345_BE, true, cs));
-        assertEquals(STRING_12345, VR.OW.toStrings(SHORT_12345_LE, false, cs));
-        assertEquals(STRING_12345, VR.OW.toStrings(SHORT_12345_BE, true, cs));
-        assertEquals(STRING_12345, VR.SL.toStrings(INT_12345_LE, false, cs));
-        assertEquals(STRING_12345, VR.SL.toStrings(INT_12345_BE, true, cs));
-        assertEquals(STRING_12345, VR.UL.toStrings(INT_12345_LE, false, cs));
-        assertEquals(STRING_12345, VR.UL.toStrings(INT_12345_BE, true, cs));
-        assertEquals(STRING_FLOAT_PI, VR.FL.toStrings(FLOAT_PI_LE, false, cs));
-        assertEquals(STRING_FLOAT_PI, VR.FL.toStrings(FLOAT_PI_BE, true, cs));
-        assertEquals(STRING_FLOAT_PI, VR.OF.toStrings(FLOAT_PI_LE, false, cs));
-        assertEquals(STRING_FLOAT_PI, VR.OF.toStrings(FLOAT_PI_BE, true, cs));
-        assertEquals(STRING_PI, VR.FD.toStrings(DOUBLE_PI_LE, false, cs));
-        assertEquals(STRING_PI, VR.FD.toStrings(DOUBLE_PI_BE, true, cs));
+    public void testToStrings() {
+        assertEquals("DCM4CHEE",
+                VR.AE.toStrings(DCM4CHEE_AS_AE, false, CS));
+        assertArrayEquals(INTS_AS_STRINGS,
+                (String[]) VR.IS.toStrings(INTS, false, CS));
+        assertArrayEquals(FLOATS_AS_STRINGS,
+                (String[]) VR.DS.toStrings(FLOATS, false, CS));
+        assertArrayEquals(FLOATS_AS_STRINGS,
+                (String[]) VR.DS.toStrings(DOUBLES, false, CS));
     }
 
-    @Test
-    public void testIntsToBytes() {
-        assertArrayEquals(BYTE_123, VR.OB.toBytes(INT_123, false, cs));
-        assertArrayEquals(BYTE_123, VR.OB.toBytes(INT_123, true, cs));
-        assertArrayEquals(SHORT_12345_LE, VR.SS.toBytes(INT_12345, false, cs));
-        assertArrayEquals(SHORT_12345_BE, VR.SS.toBytes(INT_12345, true, cs));
-        assertArrayEquals(SHORT_12345_LE, VR.US.toBytes(INT_12345, false, cs));
-        assertArrayEquals(SHORT_12345_BE, VR.US.toBytes(INT_12345, true, cs));
-        assertArrayEquals(SHORT_12345_LE, VR.OW.toBytes(INT_12345, false, cs));
-        assertArrayEquals(SHORT_12345_BE, VR.OW.toBytes(INT_12345, true, cs));
-        assertArrayEquals(INT_12345_LE, VR.SL.toBytes(INT_12345, false, cs));
-        assertArrayEquals(INT_12345_BE, VR.SL.toBytes(INT_12345, true, cs));
-        assertArrayEquals(INT_12345_LE, VR.UL.toBytes(INT_12345, false, cs));
-        assertArrayEquals(INT_12345_BE, VR.UL.toBytes(INT_12345, true, cs));
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSequenceToString() {
+        VR.SQ.toStrings(SEQUENCE, false, CS);
     }
 
-    @Test
-    public void testFloatsToBytes() {
-        assertArrayEquals(FLOAT_PI_LE, VR.FL.toBytes(FLOAT_PI, false, cs));
-        assertArrayEquals(FLOAT_PI_BE, VR.FL.toBytes(FLOAT_PI, true, cs));
-        assertArrayEquals(FLOAT_PI_LE, VR.OF.toBytes(FLOAT_PI, false, cs));
-        assertArrayEquals(FLOAT_PI_BE, VR.OF.toBytes(FLOAT_PI, true, cs));
-        assertArrayEquals(DOUBLE_FLOAT_PI_LE, VR.FD.toBytes(FLOAT_PI, false, cs));
-        assertArrayEquals(DOUBLE_FLOAT_PI_BE, VR.FD.toBytes(FLOAT_PI, true, cs));
-    }
-
-    @Test
-    public void testDoublesToBytes() {
-        assertArrayEquals(FLOAT_PI_LE, VR.FL.toBytes(DOUBLE_PI, false, cs));
-        assertArrayEquals(FLOAT_PI_BE, VR.FL.toBytes(DOUBLE_PI, true, cs));
-        assertArrayEquals(FLOAT_PI_LE, VR.OF.toBytes(DOUBLE_PI, false, cs));
-        assertArrayEquals(FLOAT_PI_BE, VR.OF.toBytes(DOUBLE_PI, true, cs));
-        assertArrayEquals(DOUBLE_PI_LE, VR.FD.toBytes(DOUBLE_PI, false, cs));
-        assertArrayEquals(DOUBLE_PI_BE, VR.FD.toBytes(DOUBLE_PI, true, cs));
-    }
-
-    @Test
-    public void testBytesToInts() {
-        assertArrayEquals(INT_123, VR.OB.toInts(BYTE_123, false, cs));
-        assertArrayEquals(INT_123, VR.OB.toInts(BYTE_123, true, cs));
-        assertArrayEquals(INT_12345, VR.SS.toInts(SHORT_12345_LE, false, cs));
-        assertArrayEquals(INT_12345, VR.SS.toInts(SHORT_12345_BE, true, cs));
-        assertArrayEquals(UINT_12345, VR.US.toInts(SHORT_12345_LE, false, cs));
-        assertArrayEquals(UINT_12345, VR.US.toInts(SHORT_12345_BE, true, cs));
-        assertArrayEquals(INT_12345, VR.OW.toInts(SHORT_12345_LE, false, cs));
-        assertArrayEquals(INT_12345, VR.OW.toInts(SHORT_12345_BE, true, cs));
-        assertArrayEquals(INT_12345, VR.SL.toInts(INT_12345_LE, false, cs));
-        assertArrayEquals(INT_12345, VR.SL.toInts(INT_12345_BE, true, cs));
-        assertArrayEquals(INT_12345, VR.UL.toInts(INT_12345_LE, false, cs));
-        assertArrayEquals(INT_12345, VR.UL.toInts(INT_12345_BE, true, cs));
-    }
-
-    @Test
-    public void testStringToInts() {
-        assertArrayEquals(INT_12345, VR.IS.toInts(STRING_12345, false, cs));
-    }
-
-    @Test
-    public void testBytesToFloats() {
-        assertArrayEquals(FLOAT_PI, VR.FL.toFloats(FLOAT_PI_LE, false, cs), 0);
-        assertArrayEquals(FLOAT_PI, VR.FL.toFloats(FLOAT_PI_BE, true, cs), 0);
-        assertArrayEquals(FLOAT_PI, VR.OF.toFloats(FLOAT_PI_LE, false, cs), 0);
-        assertArrayEquals(FLOAT_PI, VR.OF.toFloats(FLOAT_PI_BE, true, cs), 0);
-        assertArrayEquals(FLOAT_PI, VR.FD.toFloats(DOUBLE_PI_LE, false, cs), 0);
-        assertArrayEquals(FLOAT_PI, VR.FD.toFloats(DOUBLE_PI_BE, true, cs), 0);
-    }
-
-    @Test
-    public void testStringToFloats() {
-        assertArrayEquals(FLOAT_PI, VR.DS.toFloats(STRING_FLOAT_PI, false, cs), 0);
+    @Test(expected=UnsupportedOperationException.class)
+    public void testFragmentsToString() {
+        VR.OB.toStrings(FRAGMENTS, false, CS);
     }
 
    @Test
-    public void testBytesToDoubles() {
-        assertArrayEquals(DOUBLE_FLOAT_PI, VR.FL.toDoubles(FLOAT_PI_LE, false, cs), 0);
-        assertArrayEquals(DOUBLE_FLOAT_PI, VR.FL.toDoubles(FLOAT_PI_BE, true, cs), 0);
-        assertArrayEquals(DOUBLE_FLOAT_PI, VR.OF.toDoubles(FLOAT_PI_LE, false, cs), 0);
-        assertArrayEquals(DOUBLE_FLOAT_PI, VR.OF.toDoubles(FLOAT_PI_BE, true, cs), 0);
-        assertArrayEquals(DOUBLE_PI, VR.FD.toDoubles(DOUBLE_PI_LE, false, cs), 0);
-        assertArrayEquals(DOUBLE_PI, VR.FD.toDoubles(DOUBLE_PI_BE, true, cs), 0);
+    public void testToInts() {
+       assertArrayEquals(INTS, VR.IS.toInts(INTS_AS_IS, false));
+       assertArrayEquals(INTS, VR.OB.toInts(INTS_AS_OB, false));
+       assertArrayEquals(INTS, VR.OW.toInts(INTS_AS_SS, false));
+       assertArrayEquals(INTS, VR.SL.toInts(INTS_AS_SL, false));
+       assertArrayEquals(INTS, VR.SS.toInts(INTS_AS_SS, false));
+       assertArrayEquals(INTS, VR.UL.toInts(INTS_AS_SL, false));
+       assertArrayEquals(UINTS, VR.US.toInts(INTS_AS_SS, false));
+       assertArrayEquals(INTS, VR.IS.toInts(INTS_AS_STRINGS, false));
+       assertArrayEquals(new int[] { INTS[2] },
+               VR.IS.toInts(INTS_AS_STRINGS[2], false));
     }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testFloatsToInts() {
+       VR.FL.toInts(FLOATS, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testDoublesToInts() {
+       VR.FD.toInts(DOUBLES, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testDSToInts() {
+       VR.DS.toInts(FLOATS_AS_DS, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testDSToInts2() {
+       VR.DS.toInts(FLOATS_AS_STRINGS, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testFLToInts() {
+       VR.FL.toInts(FLOATS_AS_FL, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testOFToInts() {
+       VR.OF.toInts(DOUBLES_AS_FL, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testSequenceToInts() {
+       VR.SQ.toInts(SEQUENCE, false);
+   }
+
+   @Test(expected=UnsupportedOperationException.class)
+   public void testFragmentsToInts() {
+       VR.OB.toInts(FRAGMENTS, false);
+   }
+
+    @Test
+    public void testToFloats() {
+        assertArrayEquals(FLOATS, VR.DS.toFloats(FLOATS_AS_DS, false), 0);
+        assertArrayEquals(FLOATS, VR.FL.toFloats(FLOATS_AS_FL, false), 0);
+        assertArrayEquals(FLOATS, VR.FD.toFloats(FLOATS_AS_FD, false), 0);
+        assertArrayEquals(FLOATS, VR.OF.toFloats(FLOATS_AS_FL, false), 0);
+        assertArrayEquals(FLOATS, VR.DS.toFloats(FLOATS_AS_STRINGS, false), 0);
+        assertArrayEquals(new float[] { FLOATS[1] },
+                VR.DS.toFloats(FLOATS_AS_STRINGS[1], false), 0);
+    }
+
+    @Test
+    public void testToDoubles() {
+        assertArrayEquals(DOUBLES, VR.DS.toDoubles(FLOATS_AS_DS, false), 0);
+        assertArrayEquals(DOUBLES_AS_FLOAT,
+                VR.FL.toDoubles(DOUBLES_AS_FL, false), 0);
+        assertArrayEquals(DOUBLES, VR.FD.toDoubles(DOUBLES_AS_FD, false), 0);
+        assertArrayEquals(DOUBLES_AS_FLOAT,
+                VR.OF.toDoubles(DOUBLES_AS_FL, false), 0);
+        assertArrayEquals(DOUBLES,
+                VR.DS.toDoubles(FLOATS_AS_STRINGS, false), 0);
+        assertArrayEquals(new double[] { DOUBLES[1] },
+                VR.DS.toDoubles(FLOATS_AS_STRINGS[1], false), 0);
+        assertArrayEquals(DOUBLES, VR.DS.toDoubles(FLOATS_AS_DS, false), 0);
+    }
+
+    @Test
+    public void testToggleEndian() {
+        byte[] b = DCM4CHEE_AS_AE.clone();
+        VR.AE.toggleEndian(b);
+        assertArrayEquals(DCM4CHEE_AS_AE, b);
+        b = INTS_AS_OB.clone();
+        VR.OB.toggleEndian(b);
+        assertArrayEquals(INTS_AS_OB, b);
+        b = INTS_AS_SS.clone();
+        VR.SS.toggleEndian(b);
+        assertArrayEquals(INTS_AS_SS_BE, b);
+        b = INTS_AS_SL.clone();
+        VR.SL.toggleEndian(b);
+        assertArrayEquals(INTS_AS_SL_BE, b);
+        b = TAGS_AS_AT.clone();
+        VR.AT.toggleEndian(b);
+        assertArrayEquals(TAGS_AS_AT_BE, b);
+    }
+
+    @Test
+    public void testCheckSupportBytes() {
+        VR.AE.checkSupportBytes();
+        VR.AS.checkSupportBytes();
+        VR.AT.checkSupportBytes();
+        VR.CS.checkSupportBytes();
+        VR.DA.checkSupportBytes();
+        VR.DS.checkSupportBytes();
+        VR.DT.checkSupportBytes();
+        VR.FD.checkSupportBytes();
+        VR.FL.checkSupportBytes();
+        VR.IS.checkSupportBytes();
+        VR.LO.checkSupportBytes();
+        VR.LT.checkSupportBytes();
+        VR.OB.checkSupportBytes();
+        VR.OF.checkSupportBytes();
+        VR.OW.checkSupportBytes();
+        VR.PN.checkSupportBytes();
+        VR.SH.checkSupportBytes();
+        VR.SL.checkSupportBytes();
+        VR.SS.checkSupportBytes();
+        VR.ST.checkSupportBytes();
+        VR.TM.checkSupportBytes();
+        VR.UI.checkSupportBytes();
+        VR.UL.checkSupportBytes();
+        VR.UN.checkSupportBytes();
+        VR.US.checkSupportBytes();
+        VR.UT.checkSupportBytes();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSQCheckSupportBytes() {
+        VR.SQ.checkSupportBytes();
+    }
+
+    @Test
+    public void testCheckSupportString() {
+        VR.AE.checkSupportString();
+        VR.AS.checkSupportString();
+        VR.AT.checkSupportString();
+        VR.CS.checkSupportString();
+        VR.DA.checkSupportString();
+        VR.DS.checkSupportString();
+        VR.DT.checkSupportString();
+        VR.FD.checkSupportString();
+        VR.FL.checkSupportString();
+        VR.IS.checkSupportString();
+        VR.LO.checkSupportString();
+        VR.LT.checkSupportString();
+        VR.OB.checkSupportString();
+        VR.OF.checkSupportString();
+        VR.OW.checkSupportString();
+        VR.PN.checkSupportString();
+        VR.SH.checkSupportString();
+        VR.SL.checkSupportString();
+        VR.SS.checkSupportString();
+        VR.ST.checkSupportString();
+        VR.TM.checkSupportString();
+        VR.UI.checkSupportString();
+        VR.UL.checkSupportString();
+        VR.UN.checkSupportString();
+        VR.US.checkSupportString();
+        VR.UT.checkSupportString();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSQCheckSupportString() {
+        VR.SQ.checkSupportString();
+    }
+
+    @Test
+    public void testCheckSupportStrings() {
+        VR.AE.checkSupportStrings();
+        VR.AS.checkSupportStrings();
+        VR.AT.checkSupportStrings();
+        VR.CS.checkSupportStrings();
+        VR.DA.checkSupportStrings();
+        VR.DS.checkSupportStrings();
+        VR.DT.checkSupportStrings();
+        VR.FD.checkSupportStrings();
+        VR.FL.checkSupportStrings();
+        VR.IS.checkSupportStrings();
+        VR.LO.checkSupportStrings();
+        VR.OB.checkSupportStrings();
+        VR.OF.checkSupportStrings();
+        VR.OW.checkSupportStrings();
+        VR.PN.checkSupportStrings();
+        VR.SH.checkSupportStrings();
+        VR.SL.checkSupportStrings();
+        VR.SS.checkSupportStrings();
+        VR.TM.checkSupportStrings();
+        VR.UI.checkSupportStrings();
+        VR.UL.checkSupportStrings();
+        VR.UN.checkSupportStrings();
+        VR.US.checkSupportStrings();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSQCheckSupportStrings() {
+        VR.SQ.checkSupportStrings();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testLTCheckSupportStrings() {
+        VR.LT.checkSupportStrings();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSTCheckSupportStrings() {
+        VR.ST.checkSupportStrings();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testUTCheckSupportStrings() {
+        VR.UT.checkSupportStrings();
+    }
+
+    @Test
+    public void testCheckSupportInts() {
+        VR.AT.checkSupportInts();
+        VR.IS.checkSupportInts();
+        VR.OB.checkSupportInts();
+        VR.OW.checkSupportInts();
+        VR.SL.checkSupportInts();
+        VR.SS.checkSupportInts();
+        VR.UL.checkSupportInts();
+        VR.US.checkSupportInts();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testSQCheckSupportInts() {
+        VR.SQ.checkSupportInts();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testAECheckSupportInts() {
+        VR.AE.checkSupportInts();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testFDCheckSupportInts() {
+        VR.FD.checkSupportInts();
+    }
+
+    @Test
+    public void testCheckSupportFloats() {
+        VR.DS.checkSupportFloats();
+        VR.FD.checkSupportFloats();
+        VR.FL.checkSupportFloats();
+        VR.OF.checkSupportFloats();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testISCheckSupportFloats() {
+        VR.IS.checkSupportFloats();
+    }
+
+    @Test(expected=UnsupportedOperationException.class)
+    public void testOWCheckSupportFloats() {
+        VR.OW.checkSupportFloats();
+    }
+
 }

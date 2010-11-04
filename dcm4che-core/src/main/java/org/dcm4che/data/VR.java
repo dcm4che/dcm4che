@@ -570,7 +570,7 @@ public enum VR {
         int maxLength = sb.length() + maxChars;
         sb.append(s.trim());
         if (sb.length() > maxLength) {
-            sb.setLength(maxLength);
+            sb.setLength(maxLength+1);
             return false;
         }
         return true;

@@ -296,10 +296,11 @@ enum BinaryType {
         int maxLength = sb.length() + maxChars;
         for (int i = b.length / numBytes, off = 0; i-- > 0; 
                 off += numBytes) {
-            String s = bytesToString(b, off, bigEndian);
-            if (sb.length() + s.length() > maxLength)
+            sb.append(bytesToString(b, off, bigEndian));
+            if (sb.length() > maxLength) {
+                sb.setLength(maxLength+1);
                 return false;
-            sb.append(s);
+            }
             if (i > 0)
                 sb.append('\\');
         }

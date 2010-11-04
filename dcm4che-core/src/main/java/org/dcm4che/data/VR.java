@@ -582,11 +582,10 @@ public enum VR {
         for (int i = 0; i < ss.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = ss[i];
-            if (s != null) {
-                if (sb.length() + s.length() > maxLength)
-                    return false;
-                sb.append(s);
+            sb.append(ss[i]);
+            if (sb.length() > maxLength) {
+                sb.setLength(maxLength+1);
+                return false;
             }
         }
         return true;
@@ -598,10 +597,11 @@ public enum VR {
         for (int i = 0; i < ints.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = Integer.toString(ints[i]);
-            if (sb.length() + s.length() > maxLength)
+            sb.append(ints[i]);
+            if (sb.length() > maxLength) {
+                sb.setLength(maxLength+1);
                 return false;
-            sb.append(s);
+            }
         }
         return true;
     }
@@ -612,10 +612,11 @@ public enum VR {
         for (int i = 0; i < floats.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = formatDS(floats[i]);
-            if (sb.length() + s.length() > maxLength)
+            sb.append(formatDS(floats[i]));
+            if (sb.length() > maxLength) {
+                sb.setLength(maxLength+1);
                 return false;
-            sb.append(s);
+            }
         }
         return true;
     }
@@ -626,10 +627,11 @@ public enum VR {
         for (int i = 0; i < doubles.length; i++) {
             if (i > 0)
                 sb.append('\\');
-            String s = formatDS(doubles[i]);
-            if (sb.length() + s.length() + 1 > maxLength)
+            sb.append(formatDS(doubles[i]));
+            if (sb.length() > maxLength) {
+                sb.setLength(maxLength+1);
                 return false;
-            sb.append(s);
+            }
         }
         return true;
     }

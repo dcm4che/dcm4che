@@ -398,14 +398,14 @@ class Group {
         return (Fragments) value;
     }
 
-    public boolean remove(int tag, String privateCreator) {
+    public Object remove(int tag, String privateCreator) {
         int elTag = elTag(privateCreator, tag, false);
         if (elTag < 0)
-            return false;
+            return null;
 
         int index = indexOf(elTag);
         if (index < 0)
-            return false;
+            return null;
 
         Object value = values[index];
         if (value instanceof Sequence)
@@ -418,44 +418,44 @@ class Group {
             System.arraycopy(values, index+1, values, index, numMoved);
         }
         values[--size] = null;
-        return true;
+        return value;
     }
 
-    public void putNull(int tag, String privateCreator, VR vr) {
-        put(tag, privateCreator, vr,null);
+    public Object setNull(int tag, String privateCreator, VR vr) {
+        return set(tag, privateCreator, vr,null);
     }
 
-    public void putBytes(int tag, String privateCreator, VR vr, byte[] b) {
+    public Object setBytes(int tag, String privateCreator, VR vr, byte[] b) {
         vr.checkSupportBytes();
-        put(tag, privateCreator, vr, nullifyEmptyBytes(b));
+        return set(tag, privateCreator, vr, nullifyEmptyBytes(b));
     }
 
-    public void putString(int tag, String privateCreator, VR vr, String s) {
+    public Object setString(int tag, String privateCreator, VR vr, String s) {
         vr.checkSupportString();
-        put(tag, privateCreator, vr, nullifyEmptyString(s));
+        return set(tag, privateCreator, vr, nullifyEmptyString(s));
     }
 
-    public void putString(int tag, String privateCreator, VR vr,
+    public Object setString(int tag, String privateCreator, VR vr,
             String... ss) {
         vr.checkSupportStrings();
-        put(tag, privateCreator, vr, nullifyEmptyStrings(ss));
+        return set(tag, privateCreator, vr, nullifyEmptyStrings(ss));
     }
 
-    public void putInt(int tag, String privateCreator, VR vr, int... ints) {
+    public Object setInt(int tag, String privateCreator, VR vr, int... ints) {
         vr.checkSupportInts();
-        put(tag, privateCreator, vr, nullifyEmptyInts(ints));
+        return set(tag, privateCreator, vr, nullifyEmptyInts(ints));
     }
 
-    public void putFloat(int tag, String privateCreator, VR vr,
+    public Object setFloat(int tag, String privateCreator, VR vr,
             float... floats) {
         vr.checkSupportFloats();
-        put(tag, privateCreator, vr, nullifyEmptyFloats(floats));
+        return set(tag, privateCreator, vr, nullifyEmptyFloats(floats));
     }
 
-    public void putDouble(int tag, String privateCreator, VR vr,
+    public Object setDouble(int tag, String privateCreator, VR vr,
             double[] doubles) {
         vr.checkSupportFloats();
-        put(tag, privateCreator, vr, nullifyEmptyDoubles(doubles));
+        return set(tag, privateCreator, vr, nullifyEmptyDoubles(doubles));
     }
 
     private byte[] nullifyEmptyBytes(byte[] b) {
@@ -488,32 +488,33 @@ class Group {
         return doubles == null || doubles.length == 0 ? null : doubles;
     }
 
-    public Sequence putSequence(int tag, String privateCreator,
+    public Sequence newSequence(int tag, String privateCreator,
             int initialCapacity) {
         Sequence seq = new Sequence(parent, initialCapacity);
-        put(tag, privateCreator, VR.SQ, seq);
+        set(tag, privateCreator, VR.SQ, seq);
         return seq;
     }
 
-    public Fragments putFragments(int tag, String privateCreator, VR vr,
+    public Fragments newFragments(int tag, String privateCreator, VR vr,
             boolean bigEndian, int initialCapacity) {
         Fragments fragments = new Fragments(vr, bigEndian, initialCapacity);
-        put(tag, privateCreator, vr, fragments);
+        set(tag, privateCreator, vr, fragments);
         return fragments;
     }
 
-    private void put(int tag, String privateCreator, VR vr, Object value) {
-        put(elTag(privateCreator, tag, true), vr, value);
+    private Object set(int tag, String privateCreator, VR vr, Object value) {
+        return set(elTag(privateCreator, tag, true), vr, value);
     }
 
-    private void put(int elTag, VR vr, Object value) {
+    private Object set(int elTag, VR vr, Object value) {
         int index = size;
         if (size != 0 && elTag <= elTags[size-1]) {
             index = indexOf(elTag);
             if (index >= 0) {
+                Object oldValue = values[index];
                 vrs[index] = vr;
                 values[index] = value;
-                return;
+                return oldValue;
             }
             index = -index-1;
         }
@@ -528,6 +529,7 @@ class Group {
         vrs[index] = vr;
         values[index] = value;
         size++;
+        return null;
     }
 
     private int elTag(String privateCreator, int tag,
@@ -546,7 +548,7 @@ class Group {
             if (index < 0) {
                 if (!reservePrivateBlock)
                     return -1;
-                putString(creatorTag, null, VR.LO, privateCreator);
+                setString(creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | (elTag & 0xff);
             }
             if (privateCreator.equals(getString(index, 0, null)))
@@ -568,7 +570,7 @@ class Group {
         return getString(index, 0, null);
     }
 
-    public void putAll(Group srcGroup) {
+    public void addAll(Group srcGroup) {
         boolean toogleEndian = bigEndian() != srcGroup.bigEndian();
         int[] elTags = srcGroup.elTags;
         VR[] srcVRs = srcGroup.vrs;
@@ -578,7 +580,7 @@ class Group {
             for (int i = 0; i < otherGroupSize; i++) {
                 int elTag = elTags[i];
                 VR vr = srcVRs[i];
-                put(elTag, vr, copyValue(vr, toogleEndian, srcValues[i]));
+                set(elTag, vr, copyValue(vr, toogleEndian, srcValues[i]));
                 if (TagUtils.toTag(grTag, elTag)
                         == Tag.SpecificCharacterSet)
                     parent.initSpecificCharacterSet();
@@ -592,7 +594,7 @@ class Group {
                 int elTag = elTags[i];
                 VR vr = srcVRs[i];
                 String privateCreator = srcGroup.getPrivateCreator(elTag);
-                put(elTag, privateCreator, vr,
+                set(elTag, privateCreator, vr,
                         copyValue(vr, toogleEndian, srcValues[i]));
             }
         }

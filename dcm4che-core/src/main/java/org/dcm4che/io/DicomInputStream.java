@@ -290,7 +290,7 @@ public class DicomInputStream extends FilterInputStream
             byte[] b = readValue(length);
             if (bigEndian != attrs.bigEndian())
                 vr.toggleEndian(b, false);
-            attrs.putBytes(tag, null, vr, b);
+            attrs.setBytes(tag, null, vr, b);
         }
         return true;
     }
@@ -350,12 +350,12 @@ public class DicomInputStream extends FilterInputStream
         throws IOException {
 
         if (len == 0)
-            attrs.putNull(tag, null, VR.SQ);
+            attrs.setNull(tag, null, VR.SQ);
         else {
-            Sequence seq = attrs.putSequence(tag, null, 10);
+            Sequence seq = attrs.newSequence(tag, null, 10);
             readSequence(len, seq);
             if (seq.isEmpty())
-                attrs.putNull(tag, null, VR.SQ);
+                attrs.setNull(tag, null, VR.SQ);
             else
                 seq.trimToSize();
         }
@@ -376,14 +376,14 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int tag, VR vr)
             throws IOException {
-        Fragments frags = attrs.putFragments(tag, null, vr, bigEndian, 10);
+        Fragments frags = attrs.newFragments(tag, null, vr, bigEndian, 10);
         level++;
         do {
             readHeader();
         } while (handler.readValue(this, frags));
         level--;
         if (frags.isEmpty())
-            attrs.putNull(tag, null, vr);
+            attrs.setNull(tag, null, vr);
         else
             frags.trimToSize();
     }

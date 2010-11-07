@@ -294,21 +294,12 @@ public class VRTest {
 
     @Test
     public void testToggleEndian() {
-        byte[] b = DCM4CHEE_AS_AE.clone();
-        VR.AE.toggleEndian(b);
-        assertArrayEquals(DCM4CHEE_AS_AE, b);
-        b = INTS_AS_OB.clone();
-        VR.OB.toggleEndian(b);
-        assertArrayEquals(INTS_AS_OB, b);
-        b = INTS_AS_SS.clone();
-        VR.SS.toggleEndian(b);
-        assertArrayEquals(INTS_AS_SS_BE, b);
-        b = INTS_AS_SL.clone();
-        VR.SL.toggleEndian(b);
-        assertArrayEquals(INTS_AS_SL_BE, b);
-        b = TAGS_AS_AT.clone();
-        VR.AT.toggleEndian(b);
-        assertArrayEquals(TAGS_AS_AT_BE, b);
+        assertArrayEquals(DCM4CHEE_AS_AE,
+                VR.AE.toggleEndian(DCM4CHEE_AS_AE, true));
+        assertArrayEquals(INTS_AS_OB, VR.OB.toggleEndian(INTS_AS_OB, true));
+        assertArrayEquals(INTS_AS_SS_BE, VR.SS.toggleEndian(INTS_AS_SS, true));
+        assertArrayEquals(INTS_AS_SL_BE, VR.SL.toggleEndian(INTS_AS_SL, true));
+        assertArrayEquals(TAGS_AS_AT_BE, VR.AT.toggleEndian(TAGS_AS_AT, true));
     }
 
     @Test

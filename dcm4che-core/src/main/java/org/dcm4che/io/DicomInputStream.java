@@ -287,7 +287,10 @@ public class DicomInputStream extends FilterInputStream
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
         } else {
-            attrs.putBytes(tag, null, vr, readValue(length), bigEndian);
+            byte[] b = readValue(length);
+            if (bigEndian != attrs.bigEndian())
+                vr.toggleEndian(b, false);
+            attrs.putBytes(tag, null, vr, b);
         }
         return true;
     }
@@ -318,6 +321,7 @@ public class DicomInputStream extends FilterInputStream
         checkIsThis(dis);
         if (this.vr == null) {
             if (tag == Tag.Item) {
+                assert bigEndian == frags.bigEndian();
                 frags.add(readValue(length));
                 return true;
             }

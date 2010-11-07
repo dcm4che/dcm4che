@@ -32,6 +32,7 @@ public class Attributes {
 
     public Attributes(Attributes other) {
         this(other.groupsSize);
+        bigEndian(other.bigEndian);
         putAll(other);
     }
 
@@ -49,9 +50,9 @@ public class Attributes {
 
     public final void bigEndian(boolean bigEndian) {
         if (this.bigEndian != bigEndian) {
-            for (int i = 0; i < groupsSize; i++)
-                groups[i].toggleEndian();
-
+            if (groupsSize > 0
+                    && groups[groupsSize-1].getGroupNumber() > 2)
+                throw new IllegalStateException();
             this.bigEndian = bigEndian;
         }
     }
@@ -299,11 +300,10 @@ public class Attributes {
             cs = null;
     }
 
-    public void putBytes(int tag, String privateCreator, VR vr, byte[] value,
-            boolean bigEndian) {
+    public void putBytes(int tag, String privateCreator, VR vr, byte[] value) {
         int groupNumber = TagUtils.groupNumber(tag);
         getOrCreateGroup(groupNumber, initialGroupCapacity)
-                .putBytes(tag, privateCreator, vr, value, bigEndian);
+                .putBytes(tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
     }
@@ -351,7 +351,6 @@ public class Attributes {
     }
 
     public void putAll(Attributes other) {
-        other.bigEndian(bigEndian);
         Group[] srcGroups = other.groups;
         int srcGroupSize = other.groupsSize;
         for (int i = 0; i < srcGroupSize; i++) {

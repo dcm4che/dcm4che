@@ -479,9 +479,8 @@ public enum VR {
         return binaryType != null;
     }
 
-    void toggleEndian(byte[] b) {
-        if (isBinaryType())
-            binaryType.toggleEndian(b);
+    public byte[] toggleEndian(byte[] b, boolean preserve) {
+        return isBinaryType() ? binaryType.toggleEndian(b, preserve) : b;
     }
 
     UnsupportedOperationException unsupported() {

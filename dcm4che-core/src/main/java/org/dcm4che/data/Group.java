@@ -30,11 +30,6 @@ class Group {
         protected boolean bigEndian() {
             return false;
         }
-
-        @Override
-        public void toggleEndian() {
-            // NO OP
-        }
     }
 
     static Group create(Attributes parent, int groupNumber, int capacity) {
@@ -57,15 +52,6 @@ class Group {
 
     protected boolean bigEndian() {
         return parent.bigEndian();
-    }
-
-    public void toggleEndian() {
-        for (int i = 0; i < size; i++) {
-            Object value = values[i];
-            if (value instanceof byte[]) {
-                vrs[i].toggleEndian((byte[]) value );
-            }
-        }
     }
 
     public final int getGroupNumber() {
@@ -439,11 +425,8 @@ class Group {
         put(tag, privateCreator, vr,null);
     }
 
-    public void putBytes(int tag, String privateCreator, VR vr, byte[] b,
-            boolean bigEndian) {
+    public void putBytes(int tag, String privateCreator, VR vr, byte[] b) {
         vr.checkSupportBytes();
-        if (this.bigEndian() != bigEndian)
-            vr.toggleEndian(b);
         put(tag, privateCreator, vr, nullifyEmptyBytes(b));
     }
 
@@ -586,6 +569,7 @@ class Group {
     }
 
     public void putAll(Group srcGroup) {
+        boolean toogleEndian = bigEndian() != srcGroup.bigEndian();
         int[] elTags = srcGroup.elTags;
         VR[] srcVRs = srcGroup.vrs;
         Object[] srcValues = srcGroup.values;
@@ -593,7 +577,8 @@ class Group {
         if ((grTag & 1) == 0) {
             for (int i = 0; i < otherGroupSize; i++) {
                 int elTag = elTags[i];
-                put(elTag, srcVRs[i], cloneItems(srcValues[i]));
+                VR vr = srcVRs[i];
+                put(elTag, vr, copyValue(vr, toogleEndian, srcValues[i]));
                 if (TagUtils.toTag(grTag, elTag)
                         == Tag.SpecificCharacterSet)
                     parent.initSpecificCharacterSet();
@@ -605,18 +590,21 @@ class Group {
                 i++;
             for (; i < otherGroupSize; i++) {
                 int elTag = elTags[i];
+                VR vr = srcVRs[i];
                 String privateCreator = srcGroup.getPrivateCreator(elTag);
-                put(elTag, privateCreator, srcVRs[i],
-                        cloneItems(srcValues[i]));
+                put(elTag, privateCreator, vr,
+                        copyValue(vr, toogleEndian, srcValues[i]));
             }
         }
     }
 
-    private Object cloneItems(Object value) {
+    private Object copyValue(VR vr, boolean toogleEndian, Object value) {
         if (value instanceof Sequence)
             return clone((Sequence) value);
         if (value instanceof Fragments)
             return ((Fragments) value).clone();
+        if (toogleEndian && value instanceof byte[])
+            return vr.toggleEndian((byte[]) value, true);
         return value;
     }
 

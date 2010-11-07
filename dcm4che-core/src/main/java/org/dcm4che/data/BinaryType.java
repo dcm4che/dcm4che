@@ -16,7 +16,7 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
             return b ;
         }
 
@@ -34,8 +34,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapShorts(b) ;
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
         }
 
     },
@@ -52,8 +52,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapShorts(b) ;
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
         }
 
     },
@@ -70,8 +70,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapInts(b) ;
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapInts(preserve ? b.clone() : b) ;
         }
     },
     TAG(4) {
@@ -86,8 +86,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapShorts(b) ;
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
         }
     },
     FLOAT(4) {
@@ -126,8 +126,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapInts(b);
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapInts(preserve ? b.clone() : b);
         }
     },
     DOUBLE(8) {
@@ -166,8 +166,8 @@ enum BinaryType {
         }
 
         @Override
-        public byte[] toggleEndian(byte[] b) {
-            return ByteUtils.swapLongs(b);
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapLongs(preserve ? b.clone() : b);
         }
     };
     
@@ -199,7 +199,7 @@ enum BinaryType {
         return stringToBytes(s, new byte[numBytes], 0, bigEndian);
     }
 
-    public abstract byte[] toggleEndian(byte[] b);
+    public abstract byte[] toggleEndian(byte[] b, boolean preserve);
 
     public int bytesToInt(byte[] b, int off, boolean bigEndian) {
         throw new UnsupportedOperationException();

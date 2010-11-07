@@ -60,18 +60,18 @@ class Group {
 
     @Override
     public String toString() {
-        return promptAttributes(size, TO_STRING_WIDTH,
+        return toStringBuilder(size, TO_STRING_WIDTH,
                 new StringBuilder(size * (TO_STRING_WIDTH + 1))).toString();
     }
 
-    public StringBuilder promptAttributes(int lines, int maxWidth,
+    public StringBuilder toStringBuilder(int lines, int maxWidth,
             StringBuilder sb) {
         for (int i = 0, n = Math.min(size, lines); i < n; i++)
-            promptAttribute(i, maxWidth, sb).append('\n');
+            appendAttribute(i, maxWidth, sb).append('\n');
         return sb;
     }
 
-    private StringBuilder promptAttribute(int index, int maxChars,
+    private StringBuilder appendAttribute(int index, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         int elTag = elTags[index];
@@ -79,7 +79,7 @@ class Group {
         VR vr = vrs[index];
         Object value = values[index];
         sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
-        if (vr.promptValue(value, bigEndian(), cs(),
+        if (vr.toStringBuilder(value, bigEndian(), cs(),
                 maxLength - sb.length() - 1, sb)) {
             sb.append("] ").append(ElementDictionary.keywordOf(
                         tag, getPrivateCreator(elTag)));

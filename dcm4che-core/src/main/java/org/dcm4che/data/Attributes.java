@@ -402,16 +402,20 @@ public class Attributes {
     }
     
     public String toString(int limit, int maxWidth) {
-        return promptAttributes(limit, maxWidth,
-                new StringBuilder(limit * (maxWidth + 1) + 4))
+        return toStringBuilder(limit, maxWidth,
+                new StringBuilder(Math.max(limit, size()) * (maxWidth + 1) + 4))
                 .toString();
     }
 
-    public StringBuilder promptAttributes(int limit, int maxWidth,
+    public StringBuilder toStringBuilder(StringBuilder sb) {
+        return toStringBuilder(TO_STRING_LIMIT, Group.TO_STRING_WIDTH, sb);
+    }
+
+    public StringBuilder toStringBuilder(int limit, int maxWidth,
             StringBuilder sb) {
         int remaining = limit;
         for (int i = 0; i < groupsSize; i++) {
-            groups[i].promptAttributes(remaining, maxWidth, sb);
+            groups[i].toStringBuilder(remaining, maxWidth, sb);
             if ((remaining -= groups[i].size()) < 0) {
                 sb.append("...\n");
                 break;

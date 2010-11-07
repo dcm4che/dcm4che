@@ -535,36 +535,36 @@ public enum VR {
         return new String(ch);
     }
 
-    public boolean promptValue(Object val, boolean bigEndian,
+    public boolean toStringBuilder(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         if (val == null)
             return true;
         if (val instanceof byte[])
-            return promptBytes((byte[]) val, bigEndian, cs, maxChars, sb);
+            return toStringBuilder((byte[]) val, bigEndian, cs, maxChars, sb);
         if (val instanceof String)
-            return promptString((String) val, maxChars, sb);
+            return toStringBuilder((String) val, maxChars, sb);
         if (val instanceof String[])
-            return promptStrings((String[]) val, maxChars, sb);
+            return toStringBuilder((String[]) val, maxChars, sb);
         if (val instanceof int[])
-            return promptInts((int[]) val, maxChars, sb);
+            return toStringBuilder((int[]) val, maxChars, sb);
         if (val instanceof float[])
-            return promptFloats((float[]) val, maxChars, sb);
+            return toStringBuilder((float[]) val, maxChars, sb);
         if (val instanceof double[])
-            return promptDoubles((double[]) val, maxChars, sb);
+            return toStringBuilder((double[]) val, maxChars, sb);
          
         sb.append(val);
         return true;
     }
 
-    public boolean promptBytes(byte[] b, boolean bigEndian,
+    public boolean toStringBuilder(byte[] b, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         return isBinaryType()
             ? binaryType.prompt(b, bigEndian, maxChars, sb)
-            : promptString(stringType.toString(b, cs), maxChars, sb);
+            : toStringBuilder(stringType.toString(b, cs), maxChars, sb);
 
    }
 
-    private static boolean promptString(String s, int maxChars, 
+    private static boolean toStringBuilder(String s, int maxChars, 
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         sb.append(s.trim());
@@ -575,7 +575,7 @@ public enum VR {
         return true;
     }
 
-    private static boolean promptStrings(String[] ss, int maxChars,
+    private static boolean toStringBuilder(String[] ss, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < ss.length; i++) {
@@ -590,7 +590,7 @@ public enum VR {
         return true;
     }
 
-    private static boolean promptInts(int[] ints, int maxChars,
+    private static boolean toStringBuilder(int[] ints, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < ints.length; i++) {
@@ -605,7 +605,7 @@ public enum VR {
         return true;
     }
 
-    private static boolean promptFloats(float[] floats, int maxChars,
+    private static boolean toStringBuilder(float[] floats, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < floats.length; i++) {
@@ -620,7 +620,7 @@ public enum VR {
         return true;
     }
 
-    private static boolean promptDoubles(double[] doubles, int maxChars,
+    private static boolean toStringBuilder(double[] doubles, int maxChars,
             StringBuilder sb) {
         int maxLength = sb.length() + maxChars;
         for (int i = 0; i < doubles.length; i++) {

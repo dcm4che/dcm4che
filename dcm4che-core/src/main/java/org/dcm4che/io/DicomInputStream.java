@@ -215,7 +215,6 @@ public class DicomInputStream extends FilterInputStream
         attrs.bigEndian(bigEndian);
         attrs.setPosition(pos);
         long endPos =  pos + (len & 0xffffffffL);
-//        long fmiEndPos = -1L;
         boolean undeflen = len == -1;
         boolean fmi = false;
         boolean first = true;
@@ -290,13 +289,12 @@ public class DicomInputStream extends FilterInputStream
             readFragments(attrs, tag, vr);
         } else {
             byte[] b = readValue(length);
-            if (tag == Tag.FileMetaInformationGroupLength)
-                setFileMetaInformationGroupLength(b);
-            else if (!TagUtils.isGroupLength(tag)) {
+            if (!TagUtils.isGroupLength(tag)) {
                 if (bigEndian != attrs.bigEndian())
                     vr.toggleEndian(b, false);
                 attrs.setBytes(tag, null, vr, b);
-            }
+            } else if (tag == Tag.FileMetaInformationGroupLength)
+                setFileMetaInformationGroupLength(b);
         }
         return true;
     }

@@ -123,26 +123,12 @@ class Group {
         }
     }
 
-    private int indexOf(int elTag) {
-        return Arrays.binarySearch(elTags, 0, size, elTag);
+    public boolean contains(int tag, String privateCreator) {
+        return indexOf(tag, privateCreator) >= 0;
     }
 
-    public boolean contains(int tag,
-            String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return false;
-
-        return indexOf(elTag) >= 0;
-    }
-
-    public boolean containsValue(int tag,
-            String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return false;
-
-        int index = indexOf(elTag);
+    public boolean containsValue(int tag, String privateCreator) {
+        int index = indexOf(tag, privateCreator);
         return index >= 0 && !isEmpty(values[index]);
     }
 
@@ -157,13 +143,9 @@ class Group {
     }
 
     public byte[] getBytes(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return  parent.getBytesFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null)
@@ -177,13 +159,10 @@ class Group {
 
     public String getString(int tag, String privateCreator, int valueIndex, 
             String defVal) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return defVal;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return defVal;
+            return parent.getStringFromDefaults(tag, privateCreator,
+                    valueIndex, defVal);
 
         Object value = values[index];
         if (value == null)
@@ -207,13 +186,9 @@ class Group {
     }
 
     public String[] getStrings(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag == -1)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getStringsFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null)
@@ -231,13 +206,10 @@ class Group {
 
     public int getInt(int tag, String privateCreator, int valueIndex,
             int defVal) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return defVal;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return defVal;
+            return parent.getIntFromDefaults(tag, privateCreator, valueIndex,
+                    defVal);
 
         Object value = values[index];
         if (value == null)
@@ -255,13 +227,9 @@ class Group {
     }
 
     public int[] getInts(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getIntsFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null)
@@ -278,13 +246,10 @@ class Group {
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
             float defVal) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return defVal;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return defVal;
+            return parent.getFloatFromDefaults(tag, privateCreator, valueIndex,
+                    defVal);
 
         Object value = values[index];
         if (value == null)
@@ -302,13 +267,9 @@ class Group {
     }
 
     public float[] getFloats(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getFloatsFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null)
@@ -325,13 +286,10 @@ class Group {
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
             double defVal) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return defVal;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return defVal;
+            return parent.getDoubleFromDefaults(tag, privateCreator,
+                    valueIndex, defVal);
 
         Object value = values[index];
         if (value == null)
@@ -349,13 +307,9 @@ class Group {
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getDoublesFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null)
@@ -371,25 +325,17 @@ class Group {
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getSequenceFromDefaults(tag, privateCreator);
 
         return (Sequence) values[index];
     }
 
     public Fragments getFragments(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return null;
+            return parent.getFragmentsFromDefaults(tag, privateCreator);
 
         Object value = values[index];
         if (value == null || value instanceof Fragments)
@@ -399,11 +345,7 @@ class Group {
     }
 
     public Object remove(int tag, String privateCreator) {
-        int elTag = elTag(privateCreator, tag, false);
-        if (elTag < 0)
-            return null;
-
-        int index = indexOf(elTag);
+        int index = indexOf(tag, privateCreator);
         if (index < 0)
             return null;
 
@@ -503,21 +445,18 @@ class Group {
     }
 
     private Object set(int tag, String privateCreator, VR vr, Object value) {
-        return set(elTag(privateCreator, tag, true), vr, value);
+        return set(elTag(tag, privateCreator, true), vr, value);
     }
 
     private Object set(int elTag, VR vr, Object value) {
-        int index = size;
-        if (size != 0 && elTag <= elTags[size-1]) {
-            index = indexOf(elTag);
-            if (index >= 0) {
-                Object oldValue = values[index];
-                vrs[index] = vr;
-                values[index] = value;
-                return oldValue;
-            }
-            index = -index-1;
+        int index = indexForInsertOf(elTag);
+        if (index >= 0) {
+            Object oldValue = values[index];
+            vrs[index] = vr;
+            values[index] = value;
+            return oldValue;
         }
+        index = -index-1;
         ensureCapacity(size+1);
         int numMoved = size - index;
         if (numMoved > 0) {
@@ -532,7 +471,23 @@ class Group {
         return null;
     }
 
-    private int elTag(String privateCreator, int tag,
+    private int indexOf(int tag, String privateCreator) {
+        int elTag = elTag(tag, privateCreator, false);
+        return elTag < 0 ? Integer.MIN_VALUE : indexOf(elTag);
+    }
+
+    private int indexForInsertOf(int elTag) {
+        int size = this.size;
+        return size == 0 ? -1
+                : elTags[size-1] < elTag ? -(size+1)
+                        : Arrays.binarySearch(elTags, 0, size, elTag);
+    }
+
+    private int indexOf(int elTag) {
+        return Arrays.binarySearch(elTags, 0, size, elTag);
+    }
+
+    private int elTag(int tag, String privateCreator,
             boolean reservePrivateBlock) {
         int elTag = tag & 0xffff;
         if (privateCreator == null)

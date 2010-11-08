@@ -46,6 +46,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean bigEndian;
     private boolean explicitVR;
     private long pos;
+    private long fmiEndPos = -1L;
     private long tagPos;
     private long markPos;
     private int level;
@@ -75,6 +76,10 @@ public class DicomInputStream extends FilterInputStream
         if (handler == null)
             throw new NullPointerException("handler");
         this.handler = handler;
+    }
+
+    public final void setFileMetaInformationGroupLength(byte[] val) {
+        fmiEndPos = pos + ByteUtils.bytesToInt(val, 0, bigEndian);
     }
 
     public final byte[] getPreamble() {
@@ -210,7 +215,7 @@ public class DicomInputStream extends FilterInputStream
         attrs.bigEndian(bigEndian);
         attrs.setPosition(pos);
         long endPos =  pos + (len & 0xffffffffL);
-        long fmiEndPos = -1L;
+//        long fmiEndPos = -1L;
         boolean undeflen = len == -1;
         boolean fmi = false;
         boolean first = true;
@@ -255,10 +260,7 @@ public class DicomInputStream extends FilterInputStream
                 explicitVR = prevExplicitVR;
             }
             if (fmi) {
-                if (tag == Tag.FileMetaInformationGroupLength) {
-                    fmiEndPos = pos + attrs.getInt(
-                            Tag.FileMetaInformationGroupLength, null, 0, 0);
-                } else if (pos == fmiEndPos)  {
+                if (pos == fmiEndPos)  {
                     if (stopAfterFmi)
                         break;
                     switchTransferSyntax(attrs);
@@ -288,9 +290,13 @@ public class DicomInputStream extends FilterInputStream
             readFragments(attrs, tag, vr);
         } else {
             byte[] b = readValue(length);
-            if (bigEndian != attrs.bigEndian())
-                vr.toggleEndian(b, false);
-            attrs.setBytes(tag, null, vr, b);
+            if (tag == Tag.FileMetaInformationGroupLength)
+                setFileMetaInformationGroupLength(b);
+            else if (!TagUtils.isGroupLength(tag)) {
+                if (bigEndian != attrs.bigEndian())
+                    vr.toggleEndian(b, false);
+                attrs.setBytes(tag, null, vr, b);
+            }
         }
         return true;
     }

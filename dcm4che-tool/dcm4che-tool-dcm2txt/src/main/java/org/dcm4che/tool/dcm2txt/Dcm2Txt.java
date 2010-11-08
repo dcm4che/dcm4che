@@ -73,24 +73,22 @@ public class Dcm2Txt implements DicomInputHandler {
             return dis.readValue(dis, attrs);
         }
         int tag = dis.tag();
-        dis.readValue(dis, attrs);
+        byte[] b = new byte[dis.length()];
+        dis.readFully(b);
         line.append(" [");
-        if (vr.toStringBuilder(attrs.getBytes(tag, null),
-                dis.bigEndian(), attrs.getSpecificCharacterSet(),
+        if (vr.toStringBuilder(b, dis.bigEndian(),
+                attrs.getSpecificCharacterSet(),
                 width - line.length() - 1, line)) {
             line.append(']');
             appendKeyword(dis, line);
         }
         System.out.println(line);
-        switch (tag) {
-        case Tag.FileMetaInformationGroupLength:
-        case Tag.TransferSyntaxUID:
-        case Tag.SpecificCharacterSet:
-            break;
-        default:
-            if (!TagUtils.isPrivateCreator(tag))
-                attrs.remove(tag, null);
-        }
+        if (tag == Tag.FileMetaInformationGroupLength)
+            dis.setFileMetaInformationGroupLength(b);
+        else if (tag == Tag.TransferSyntaxUID
+                || tag == Tag.SpecificCharacterSet
+                || TagUtils.isPrivateCreator(tag))
+            attrs.setBytes(tag, null, vr, b);
         return true;
     }
 

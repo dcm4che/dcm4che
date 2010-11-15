@@ -33,7 +33,6 @@ public class DicomInputStreamTest {
     @Test
     public void testImplicitVR() throws Exception {
         Attributes attrs = readFromResource("OT-PAL-8-face");
-        attrs.toString();
         assertEquals(1, attrs.getInt(Tag.SamplesPerPixel, null, 0, 0));
     }
 

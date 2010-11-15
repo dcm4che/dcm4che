@@ -7,6 +7,7 @@ import org.dcm4che.util.TagUtils;
 class Group {
 
     public static final int TO_STRING_WIDTH = 78;
+    public static final int INIT_CAPACITY = 10;
     
     private final Attributes parent;
     private final int grTag;

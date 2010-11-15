@@ -6,29 +6,24 @@ import org.dcm4che.util.TagUtils;
 
 public class Attributes {
 
-    private static final int TO_STRING_LIMIT = 20;
+    private static final int TO_STRING_LIMIT = 50;
+    public static final int INIT_CAPACITY = 10;
 
     private Attributes parent;
     private Attributes defaults;
     private Group[] groups;
     private int groupsSize;
-    private final int initialGroupCapacity;
     private SpecificCharacterSet cs;
     private long position = -1L;
 
     private boolean bigEndian;
 
     public Attributes() {
-        this(10, 10);
+        this(INIT_CAPACITY);
     }
 
     public Attributes(int initialCapacity) {
-        this(initialCapacity, 10);
-    }
-
-    public Attributes(int initialCapacity, int initialGroupCapacity) {
         this.groups = new Group[initialCapacity];
-        this.initialGroupCapacity = initialGroupCapacity;
     }
 
     public Attributes(Attributes other) {
@@ -382,7 +377,7 @@ public class Attributes {
     public Object setBytes(int tag, String privateCreator, VR vr,
             byte[] value) {
         int groupNumber = TagUtils.groupNumber(tag);
-        Object oldValue = getOrCreateGroup(groupNumber, initialGroupCapacity)
+        Object oldValue = getOrCreateGroup(groupNumber)
                 .setBytes(tag, privateCreator, vr, value);
         if (tag == Tag.SpecificCharacterSet)
             initSpecificCharacterSet();
@@ -455,7 +450,7 @@ public class Attributes {
     }
 
     private Group getOrCreateGroup(int groupNumber) {
-        return getOrCreateGroup(groupNumber, initialGroupCapacity);
+        return getOrCreateGroup(groupNumber, Group.INIT_CAPACITY);
     }
 
     private Group getOrCreateGroup(int groupNumber, int capacity) {

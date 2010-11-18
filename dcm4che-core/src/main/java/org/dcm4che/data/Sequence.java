@@ -14,6 +14,10 @@ public class Sequence extends ArrayList<Attributes> {
         this.parent = parent;
     }
 
+    public final Attributes getParent() {
+        return parent;
+    }
+
     public void trimToSize(boolean recursive) {
         super.trimToSize();
         if (recursive)

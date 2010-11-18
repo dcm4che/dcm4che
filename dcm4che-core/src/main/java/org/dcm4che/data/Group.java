@@ -16,30 +16,7 @@ class Group {
     private Object[] values;
     private int size;
 
-    private static final class LittleEndianDefaultCharset extends Group {
-
-        LittleEndianDefaultCharset(Attributes parent, int groupNumber, int capacity) {
-            super(parent, groupNumber, capacity);
-        }
-
-        @Override
-        protected SpecificCharacterSet cs() {
-            return SpecificCharacterSet.DEFAULT;
-        }
-
-        @Override
-        protected boolean bigEndian() {
-            return false;
-        }
-    }
-
-    static Group create(Attributes parent, int groupNumber, int capacity) {
-        return groupNumber <= 2 
-                ? new LittleEndianDefaultCharset(parent, groupNumber, capacity)
-                : new Group(parent, groupNumber, capacity);
-    }
-
-    private Group(Attributes parent, int grTag, int capacity) {
+    public Group(Attributes parent, int grTag, int capacity) {
         this.parent = parent;
         this.grTag = grTag;
         this.elTags = new int[capacity];
@@ -526,8 +503,7 @@ class Group {
         return getString(index, 0, null);
     }
 
-    public void addAll(Group srcGroup) {
-        boolean toogleEndian = bigEndian() != srcGroup.bigEndian();
+    public void addAll(Group srcGroup, boolean toogleEndian) {
         int[] elTags = srcGroup.elTags;
         VR[] srcVRs = srcGroup.vrs;
         Object[] srcValues = srcGroup.values;
@@ -560,7 +536,7 @@ class Group {
         if (value instanceof Sequence)
             return clone((Sequence) value);
         if (value instanceof Fragments)
-            return ((Fragments) value).clone();
+            return clone((Fragments) value, toogleEndian);
         if (toogleEndian && value instanceof byte[])
             return vr.toggleEndian((byte[]) value, true);
         return value;
@@ -569,7 +545,16 @@ class Group {
     private Sequence clone(Sequence srcSeq) {
         Sequence dstSeq = new Sequence(parent, srcSeq.size());
         for (Attributes src : srcSeq)
-            dstSeq.add(new Attributes(src));
+            dstSeq.add(new Attributes(parent.bigEndian(), src));
         return dstSeq ;
     }
+
+    private Fragments clone(Fragments src, boolean toogleEndian) {
+        VR vr = src.vr();
+        Fragments dst = new Fragments(vr, parent.bigEndian(), src.size());
+        for (byte[] b : src)
+            dst.add(toogleEndian ? vr.toggleEndian(b, true) : b);
+        return dst ;
+    }
+    
 }

@@ -40,7 +40,7 @@ public class DicomInputStreamTest {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         DicomInputStream in = new DicomInputStream(cl.getResourceAsStream(name));
         try {
-            return in.readAttributes(-1);
+            return in.readDataset(-1);
         } finally {
             in.close();
         }

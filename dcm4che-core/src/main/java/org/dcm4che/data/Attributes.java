@@ -13,22 +13,30 @@ public class Attributes {
     private Attributes defaults;
     private Group[] groups;
     private int groupsSize;
-    private SpecificCharacterSet cs;
+    private SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
     private long position = -1L;
 
-    private boolean bigEndian;
+    private final boolean bigEndian;
 
     public Attributes() {
-        this(INIT_CAPACITY);
+        this(false, INIT_CAPACITY);
+    }
+
+    public Attributes(boolean bigEndian) {
+        this(bigEndian, INIT_CAPACITY);
     }
 
     public Attributes(int initialCapacity) {
+        this(false, initialCapacity);
+    }
+
+    public Attributes(boolean bigEndian, int initialCapacity) {
+        this.bigEndian = bigEndian;
         this.groups = new Group[initialCapacity];
     }
 
-    public Attributes(Attributes other) {
-        this(other.groupsSize);
-        bigEndian(other.bigEndian);
+    public Attributes(boolean bigEndian, Attributes other) {
+        this(bigEndian, other.groupsSize);
         addAll(other);
     }
 
@@ -44,23 +52,19 @@ public class Attributes {
         return bigEndian;
     }
 
-    public final void bigEndian(boolean bigEndian) {
-        if (this.bigEndian != bigEndian) {
-            if (groupsSize > 0
-                    && groups[groupsSize-1].getGroupNumber() > 2)
-                throw new IllegalStateException();
-            this.bigEndian = bigEndian;
-        }
-    }
-
     public final Attributes getParent() {
         return parent;
     }
 
     Attributes setParent(Attributes parent) {
-        if (parent != null && this.parent != null)
-            throw new IllegalStateException(
+        if (parent != null) {
+            if (parent.bigEndian != bigEndian)
+                throw new IllegalArgumentException(
+                    "Endian of Item must match Endian of parent Data Set");
+            if (this.parent != null)
+                throw new IllegalArgumentException(
                     "Item already contained by Sequence");
+        }
         this.parent = parent;
         return this;
     }
@@ -70,8 +74,14 @@ public class Attributes {
     }
 
     public final void setDefaults(Attributes defaults) {
-        if (defaults != null && defaults.parent != parent)
-            throw new IllegalArgumentException("Defaults must have same parent");
+        if (defaults != null) {
+            if (defaults.bigEndian != bigEndian)
+                throw new IllegalArgumentException(
+                        "Endian of Defaults must match Endian of Data Set");
+            if (defaults.parent != parent)
+                throw new IllegalArgumentException(
+                        "Defaults must have same parent");
+        }
         this.defaults = defaults;
     }
 
@@ -433,12 +443,14 @@ public class Attributes {
     }
 
     public void addAll(Attributes other) {
+        boolean toggleEndian = bigEndian != other.bigEndian;
         Group[] srcGroups = other.groups;
         int srcGroupSize = other.groupsSize;
         for (int i = 0; i < srcGroupSize; i++) {
             Group srcGroup = srcGroups[i];
             int groupNumber = srcGroup.getGroupNumber();
-            getOrCreateGroup(groupNumber, srcGroupSize).addAll(srcGroup);
+            getOrCreateGroup(groupNumber, srcGroupSize)
+                    .addAll(srcGroup, toggleEndian);
         }
     }
 
@@ -473,7 +485,7 @@ public class Attributes {
         int numMoved = groupsSize - index;
         if (numMoved > 0)
             System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = Group.create(this, groupNumber, capacity);
+        groups[index] = new Group(this, groupNumber, capacity);
         groupsSize++;
         return groups[index];
     }

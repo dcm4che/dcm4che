@@ -43,6 +43,7 @@ public class DicomInputStream extends FilterInputStream
     private static byte[] EMPTY_BYTES = {};
 
     private byte[] preamble;
+    private Attributes fileMetaInformation;
     private boolean bigEndian;
     private boolean explicitVR;
     private long pos;
@@ -83,7 +84,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final byte[] getPreamble() {
-        return preamble != null ? preamble.clone() : null;
+        return preamble;
+    }
+
+    public final Attributes getFileMetaInformation() {
+        return fileMetaInformation;
     }
 
     public final int level() {
@@ -200,25 +205,44 @@ public class DicomInputStream extends FilterInputStream
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
     }
 
-    public Attributes readAttributes(int len) throws IOException {
-        return readAttributes(len, false);
+    public void readAttributes(Attributes attrs, int len) throws IOException {
+        readAttributes(attrs, len, false);
     }
 
-    public Attributes readFileMetaInformation() throws IOException {
-        return readAttributes(-1, true);
+    public Attributes readCommand(int len) throws IOException {
+        if (bigEndian || explicitVR)
+            throw new IllegalStateException(
+                    "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
+        Attributes attrs = new Attributes(1);
+        readAttributes(attrs, len, false);
+        return attrs;
     }
 
-    private Attributes readAttributes(int len, boolean stopAfterFmi)
-        throws IOException {
+    public Attributes readDataset(int len) throws IOException {
+        Attributes attrs = new Attributes(bigEndian);
+        readAttributes(attrs, len, false);
+        return attrs;
+    }
 
-        Attributes attrs = new Attributes();
-        attrs.bigEndian(bigEndian);
-        attrs.setPosition(pos);
+    private void readFileMetaInformation() throws IOException {
+        Attributes attrs = new Attributes(bigEndian, 1);
+        readAttributes(attrs, -1, true);
+        String tsuid = attrs.getString(
+                Tag.TransferSyntaxUID, null, 0, null);
+        if (tsuid == null) {
+            LOG.warn(MISSING_TRANSFER_SYNTAX);
+            tsuid = UID.ExplicitVRLittleEndian;
+        }
+        fileMetaInformation = attrs;
+        switchTransferSyntax(tsuid);
+    }
+
+    private void readAttributes(Attributes attrs, int len,
+            boolean fmi) throws IOException {
         long endPos =  pos + (len & 0xffffffffL);
         boolean undeflen = len == -1;
-        boolean fmi = false;
-        boolean first = true;
-        while (undeflen || this.pos < endPos) {
+        while (fmi ? this.pos != fmiEndPos
+                : (undeflen || this.pos < endPos)) {
             mark(12);
             try {
                 readHeader();
@@ -230,15 +254,7 @@ public class DicomInputStream extends FilterInputStream
             if (fmi && TagUtils.groupNumber(tag) != 2) {
                 LOG.warn(MISSING_FMI_LENGTH);
                 reset();
-                if (stopAfterFmi)
-                    break;
-                switchTransferSyntax(attrs);
-                fmi = false;
-                continue;
-            }
-            if (first) {
-                fmi = TagUtils.groupNumber(tag) == 2;
-                first = false;
+                break;
             }
             boolean prevBigEndian = bigEndian;
             boolean prevExplicitVR = explicitVR;
@@ -258,17 +274,10 @@ public class DicomInputStream extends FilterInputStream
                 bigEndian = prevBigEndian;
                 explicitVR = prevExplicitVR;
             }
-            if (fmi) {
-                if (pos == fmiEndPos)  {
-                    if (stopAfterFmi)
-                        break;
-                    switchTransferSyntax(attrs);
-                    fmi = false;
-                }
-            }
+            if (fmi && pos == fmiEndPos)
+                break;
         }
         attrs.trimToSize();
-        return attrs;
     }
 
     @Override
@@ -306,7 +315,9 @@ public class DicomInputStream extends FilterInputStream
         checkIsThis(dis);
         if (vr == null) {
             if (tag == Tag.Item) {
-                seq.add(readAttributes(length));
+                Attributes attrs = new Attributes(seq.getParent().bigEndian());
+                seq.add(attrs);
+                readAttributes(attrs, length);
                 return true;
             }
             if (tag == Tag.SequenceDelimitationItem) {
@@ -325,8 +336,10 @@ public class DicomInputStream extends FilterInputStream
         checkIsThis(dis);
         if (this.vr == null) {
             if (tag == Tag.Item) {
-                assert bigEndian == frags.bigEndian();
-                frags.add(readValue(length));
+                byte[] b = readValue(length);
+                if (bigEndian != frags.bigEndian())
+                    vr.toggleEndian(b, false);
+                frags.add(b);
                 return true;
             }
             if (tag == Tag.SequenceDelimitationItem) {
@@ -380,7 +393,8 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int tag, VR vr)
             throws IOException {
-        Fragments frags = attrs.newFragments(tag, null, vr, bigEndian, 10);
+        Fragments frags =
+                attrs.newFragments(tag, null, vr, attrs.bigEndian(), 10);
         level++;
         do {
             readHeader();
@@ -424,17 +438,6 @@ public class DicomInputStream extends FilterInputStream
         return ByteUtils.bytesToUShortBE(buf, 0) == ZLIB_HEADER;
     }
 
-    private void switchTransferSyntax(Attributes attrs) throws IOException {
-        String tsuid = attrs.getString(
-                Tag.TransferSyntaxUID, null, 0, null);
-        if (tsuid == null) {
-            LOG.warn(MISSING_TRANSFER_SYNTAX);
-            tsuid = UID.ExplicitVRLittleEndian;
-        }
-        switchTransferSyntax(tsuid);
-        attrs.bigEndian(bigEndian);
-    }
-
     private void guessTransferSyntax() throws IOException {
         byte[] b128 = new byte[128];
         byte[] buf = buffer;
@@ -447,6 +450,7 @@ public class DicomInputStream extends FilterInputStream
             if (!markSupported()) {
                 bigEndian = false;
                 explicitVR = true;
+                readFileMetaInformation();
                 return;
             }
             mark(128);
@@ -456,6 +460,9 @@ public class DicomInputStream extends FilterInputStream
                 && !guessTransferSyntax(b128, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
+        if (TagUtils.groupNumber(ByteUtils.bytesToTag(b128, 0, bigEndian))
+                == 2)
+            readFileMetaInformation();
     }
 
     private boolean guessTransferSyntax(byte[] b128, boolean bigEndian) {

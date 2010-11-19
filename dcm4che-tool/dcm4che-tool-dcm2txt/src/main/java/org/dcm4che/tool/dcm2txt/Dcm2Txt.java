@@ -52,7 +52,7 @@ public class Dcm2Txt implements DicomInputHandler {
     public void parse(InputStream is) throws IOException {
         DicomInputStream dis = new DicomInputStream(is);
         dis.setDicomInputHandler(this);
-        dis.readAttributes(-1);
+        dis.readDataset(-1);
     }
 
     @Override

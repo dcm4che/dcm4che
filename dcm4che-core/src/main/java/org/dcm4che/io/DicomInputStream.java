@@ -44,6 +44,7 @@ public class DicomInputStream extends FilterInputStream
 
     private byte[] preamble;
     private Attributes fileMetaInformation;
+    private boolean hasfmi;
     private boolean bigEndian;
     private boolean explicitVR;
     private long pos;
@@ -87,7 +88,8 @@ public class DicomInputStream extends FilterInputStream
         return preamble;
     }
 
-    public final Attributes getFileMetaInformation() {
+    public Attributes getFileMetaInformation() throws IOException {
+        readFileMetaInformation();
         return fileMetaInformation;
     }
 
@@ -219,12 +221,18 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public Attributes readDataset(int len) throws IOException {
+        readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian);
         readAttributes(attrs, len, false);
         return attrs;
     }
 
-    private void readFileMetaInformation() throws IOException {
+    public void readFileMetaInformation() throws IOException {
+        if (!hasfmi)
+            return;  // No File Meta Information
+        if (fileMetaInformation != null)
+            return;  // already read
+
         Attributes attrs = new Attributes(bigEndian, 1);
         readAttributes(attrs, -1, true);
         String tsuid = attrs.getString(
@@ -448,9 +456,9 @@ public class DicomInputStream extends FilterInputStream
                 && buf[2] == 'C' && buf[3] == 'M') {
             preamble = b128.clone();
             if (!markSupported()) {
+                hasfmi = true;
                 bigEndian = false;
                 explicitVR = true;
-                readFileMetaInformation();
                 return;
             }
             mark(128);
@@ -460,9 +468,8 @@ public class DicomInputStream extends FilterInputStream
                 && !guessTransferSyntax(b128, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
-        if (TagUtils.groupNumber(ByteUtils.bytesToTag(b128, 0, bigEndian))
-                == 2)
-            readFileMetaInformation();
+        hasfmi = TagUtils.groupNumber(ByteUtils.bytesToTag(b128, 0, bigEndian))
+                == 2;
     }
 
     private boolean guessTransferSyntax(byte[] b128, boolean bigEndian) {

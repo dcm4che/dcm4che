@@ -123,7 +123,7 @@ class Group {
     public byte[] getBytes(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return  parent.getBytesFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null)
@@ -139,8 +139,7 @@ class Group {
             String defVal) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getStringFromDefaults(tag, privateCreator,
-                    valueIndex, defVal);
+            return defVal;
 
         Object value = values[index];
         if (value == null)
@@ -166,7 +165,7 @@ class Group {
     public String[] getStrings(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getStringsFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null)
@@ -186,8 +185,7 @@ class Group {
             int defVal) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getIntFromDefaults(tag, privateCreator, valueIndex,
-                    defVal);
+            return defVal;
 
         Object value = values[index];
         if (value == null)
@@ -207,7 +205,7 @@ class Group {
     public int[] getInts(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getIntsFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null)
@@ -226,8 +224,7 @@ class Group {
             float defVal) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getFloatFromDefaults(tag, privateCreator, valueIndex,
-                    defVal);
+            return defVal;
 
         Object value = values[index];
         if (value == null)
@@ -247,7 +244,7 @@ class Group {
     public float[] getFloats(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getFloatsFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null)
@@ -266,8 +263,7 @@ class Group {
             double defVal) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getDoubleFromDefaults(tag, privateCreator,
-                    valueIndex, defVal);
+            return defVal;
 
         Object value = values[index];
         if (value == null)
@@ -287,7 +283,7 @@ class Group {
     public double[] getDoubles(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getDoublesFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null)
@@ -305,7 +301,7 @@ class Group {
     public Sequence getSequence(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getSequenceFromDefaults(tag, privateCreator);
+            return null;
 
         return (Sequence) values[index];
     }
@@ -313,7 +309,7 @@ class Group {
     public Fragments getFragments(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
-            return parent.getFragmentsFromDefaults(tag, privateCreator);
+            return null;
 
         Object value = values[index];
         if (value == null || value instanceof Fragments)

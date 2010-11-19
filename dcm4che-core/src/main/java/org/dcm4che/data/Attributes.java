@@ -10,7 +10,6 @@ public class Attributes {
     public static final int INIT_CAPACITY = 10;
 
     private Attributes parent;
-    private Attributes defaults;
     private Group[] groups;
     private int groupsSize;
     private SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
@@ -67,22 +66,6 @@ public class Attributes {
         }
         this.parent = parent;
         return this;
-    }
-
-    public final Attributes getDefaults() {
-        return defaults;
-    }
-
-    public final void setDefaults(Attributes defaults) {
-        if (defaults != null) {
-            if (defaults.bigEndian != bigEndian)
-                throw new IllegalArgumentException(
-                        "Endian of Defaults must match Endian of Data Set");
-            if (defaults.parent != parent)
-                throw new IllegalArgumentException(
-                        "Defaults must have same parent");
-        }
-        this.defaults = defaults;
     }
 
     public final long getPosition() {
@@ -184,15 +167,9 @@ public class Attributes {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getBytesFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getBytes(tag, privateCreator);
-    }
-
-    byte[] getBytesFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getBytes(tag, privateCreator)
-                : null;
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
@@ -200,33 +177,19 @@ public class Attributes {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getStringFromDefaults(tag, privateCreator, valueIndex,
-                    defVal);
+            return defVal;
 
         return groups[index]
                       .getString(tag, privateCreator, valueIndex, defVal);
-    }
-
-    String getStringFromDefaults(int tag, String privateCreator,
-            int valueIndex, String defVal) {
-        return defaults != null
-                ? defaults.getString(tag, privateCreator, valueIndex, defVal)
-                : defVal;
     }
 
     public String[] getStrings(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getStringsFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getStrings(tag, privateCreator);
-    }
-
-    String[] getStringsFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getStrings(tag, privateCreator)
-                : null;
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
@@ -234,31 +197,18 @@ public class Attributes {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getIntFromDefaults(tag, privateCreator, valueIndex, defVal);
+            return defVal;
 
         return groups[index].getInt(tag, privateCreator, valueIndex, defVal);
-    }
-
-    int getIntFromDefaults(int tag, String privateCreator,
-            int valueIndex, int defVal) {
-        return defaults != null
-                ? defaults.getInt(tag, privateCreator, valueIndex, defVal)
-                : defVal;
     }
 
     public int[] getInts(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getIntsFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getInts(tag, privateCreator);
-    }
-
-    int[] getIntsFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getInts(tag, privateCreator)
-                : null;
     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
@@ -266,32 +216,18 @@ public class Attributes {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getFloatFromDefaults(tag, privateCreator, valueIndex,
-                    defVal);
+            return defVal;
 
         return groups[index].getFloat(tag, privateCreator, valueIndex, defVal);
-    }
-
-    float getFloatFromDefaults(int tag, String privateCreator, int valueIndex,
-            float defVal) {
-        return defaults != null
-                ? defaults.getFloat(tag, privateCreator, valueIndex, defVal)
-                : defVal;
     }
 
     public float[] getFloats(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getFloatsFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getFloats(tag, privateCreator);
-    }
-
-    float[] getFloatsFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getFloats(tag, privateCreator)
-                : null;
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
@@ -299,63 +235,37 @@ public class Attributes {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getDoubleFromDefaults(tag, privateCreator, valueIndex,
-                    defVal);
+            return defVal;
 
         return groups[index].getDouble(tag, privateCreator, valueIndex,
                 defVal);
-    }
-
-    double getDoubleFromDefaults(int tag, String privateCreator,
-            int valueIndex, double defVal) {
-        return defaults != null
-                ? defaults.getDouble(tag, privateCreator, valueIndex, defVal)
-                : defVal;
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getDoublesFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getDoubles(tag, privateCreator);
-    }
-
-    double[] getDoublesFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getDoubles(tag, privateCreator)
-                : null;
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getSequenceFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getSequence(tag, privateCreator);
-    }
-
-    Sequence getSequenceFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getSequence(tag, privateCreator)
-                : null;
     }
 
     public Fragments getFragments(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
-            return getFragmentsFromDefaults(tag, privateCreator);
+            return null;
 
         return groups[index].getFragments(tag, privateCreator);
-    }
-
-    Fragments getFragmentsFromDefaults(int tag, String privateCreator) {
-        return defaults != null
-                ? defaults.getFragments(tag, privateCreator)
-                : null;
     }
 
      public SpecificCharacterSet getSpecificCharacterSet() {

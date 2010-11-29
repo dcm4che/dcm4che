@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 
 
 public enum VR {
-    AE(0x4145, 8, null, StringType.ASCII),
-    AS(0x4153, 8, null, StringType.ASCII),
-    AT(0x4154, 8, BinaryType.TAG, null),
-    CS(0x4353, 8, null, StringType.ASCII),
-    DA(0x4441, 8, null, StringType.ASCII),
-    DS(0x4453, 8, null, StringType.ASCII) {
+    AE(0x4145, 8, ' ', null, StringType.ASCII),
+    AS(0x4153, 8, ' ', null, StringType.ASCII),
+    AT(0x4154, 8, 0, BinaryType.TAG, null),
+    CS(0x4353, 8, ' ', null, StringType.ASCII),
+    DA(0x4441, 8, ' ', null, StringType.ASCII),
+    DS(0x4453, 8, ' ', null, StringType.ASCII) {
 
         @Override
         void checkSupportFloats() { }
@@ -57,8 +57,8 @@ public enum VR {
                     : stringsToDoubles((String[]) o);
         }
     },
-    DT(0x4454, 8, null, StringType.ASCII),
-    FD(0x4644, 8, BinaryType.DOUBLE, null) {
+    DT(0x4454, 8, ' ', null, StringType.ASCII),
+    FD(0x4644, 8, 0, BinaryType.DOUBLE, null) {
 
         @Override
         void checkSupportInts() {
@@ -68,7 +68,7 @@ public enum VR {
         @Override
         void checkSupportFloats() {}
     },
-    FL(0x464c, 8, BinaryType.FLOAT, null) {
+    FL(0x464c, 8, 0, BinaryType.FLOAT, null) {
 
         @Override
         void checkSupportInts() {
@@ -78,7 +78,7 @@ public enum VR {
         @Override
         void checkSupportFloats() {}
     },
-    IS(0x4953, 8, null, StringType.ASCII) {
+    IS(0x4953, 8, ' ', null, StringType.ASCII) {
 
         @Override
         void checkSupportInts() { }
@@ -104,16 +104,16 @@ public enum VR {
                     : stringsToInts((String[]) o);
         }
     },
-    LO(0x4c4f, 8, null, StringType.STRING),
-    LT(0x4c54, 8, null, StringType.TEXT) {
+    LO(0x4c4f, 8, ' ', null, StringType.STRING),
+    LT(0x4c54, 8, ' ', null, StringType.TEXT) {
 
         @Override
         void checkSupportStrings() {
             throw unsupported();
         }
     },
-    OB(0x4f42, 12, BinaryType.BYTE, null),
-    OF(0x4f46, 12, BinaryType.FLOAT, null) {
+    OB(0x4f42, 12, 0, BinaryType.BYTE, null),
+    OF(0x4f46, 12, 0, BinaryType.FLOAT, null) {
 
         @Override
         void checkSupportInts() {
@@ -123,11 +123,11 @@ public enum VR {
         @Override
         void checkSupportFloats() {}
     },
-    OW(0x4f57, 12, BinaryType.SHORT, null),
-    PN(0x504e, 8, null, StringType.PN),
-    SH(0x5348, 8, null, StringType.STRING),
-    SL(0x534c, 8, BinaryType.INT, null),
-    SQ(0x5351, 12, null, null){
+    OW(0x4f57, 12, 0, BinaryType.SHORT, null),
+    PN(0x504e, 8, ' ', null, StringType.PN),
+    SH(0x5348, 8, ' ', null, StringType.STRING),
+    SL(0x534c, 8, 0, BinaryType.INT, null),
+    SQ(0x5351, 12, 0, null, null){
 
         @Override
         void checkSupportBytes() {
@@ -144,20 +144,20 @@ public enum VR {
             throw unsupported();
         }
     },
-    SS(0x5353, 8, BinaryType.SHORT,null),
-    ST(0x5354, 8, null, StringType.TEXT) {
+    SS(0x5353, 8, 0, BinaryType.SHORT,null),
+    ST(0x5354, 8, ' ', null, StringType.TEXT) {
 
         @Override
         void checkSupportStrings() {
             throw unsupported();
         }
     },
-    TM(0x544d, 8, null, StringType.ASCII),
-    UI(0x5549, 8, null, StringType.UI),
-    UL(0x554c, 8, BinaryType.INT, null),
-    UN(0x554e, 12, BinaryType.BYTE, null),
-    US(0x5553, 8, BinaryType.USHORT, null),
-    UT(0x5554, 12, null, StringType.TEXT) {
+    TM(0x544d, 8, ' ', null, StringType.ASCII),
+    UI(0x5549, 8, 0, null, StringType.UI),
+    UL(0x554c, 8, 0, BinaryType.INT, null),
+    UN(0x554e, 12, 0, BinaryType.BYTE, null),
+    US(0x5553, 8, 0, BinaryType.USHORT, null),
+    UT(0x5554, 12, ' ', null, StringType.TEXT) {
 
         @Override
         void checkSupportStrings() {
@@ -169,12 +169,15 @@ public enum VR {
 
     protected final int code;
     protected final int headerLength;
+    protected final int paddingByte;
     protected final BinaryType binaryType;
     protected final StringType stringType;
 
-    VR(int code, int headerLength, BinaryType binaryType, StringType stringType) {
+    VR(int code, int headerLength, int paddingByte, BinaryType binaryType,
+            StringType stringType) {
         this.code = code;
         this.headerLength = headerLength;
+        this.paddingByte = paddingByte;
         this.binaryType = binaryType;
         this.stringType = stringType;
     }
@@ -633,6 +636,10 @@ public enum VR {
             }
         }
         return true;
+    }
+
+    public int paddingByte() {
+        return paddingByte;
     }
 
 }

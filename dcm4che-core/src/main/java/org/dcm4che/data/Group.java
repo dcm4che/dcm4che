@@ -1,7 +1,9 @@
 package org.dcm4che.data;
 
+import java.io.IOException;
 import java.util.Arrays;
 
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.TagUtils;
 
 class Group {
@@ -15,6 +17,7 @@ class Group {
     private VR[] vrs;
     private Object[] values;
     private int size;
+    private int length;
 
     public Group(Attributes parent, int grTag, int capacity) {
         this.parent = parent;
@@ -34,6 +37,65 @@ class Group {
 
     public final int getGroupNumber() {
         return grTag;
+    }
+
+    public final int getLength() {
+        return length;
+    }
+
+    public int calcLength(boolean explicitVR, EncodeOptions encOpts) {
+        if (isEmpty())
+            return length = 0;
+
+        int len = encOpts.isGroupLength() ? 12 : 0;
+        VR vr;
+        Object val;
+        for (int i = 0; i < size; i++) {
+            vr = vrs[i];
+            val = values[i];
+            len += explicitVR ? vr.headerLength() : 8;
+            if (val == null) {
+                if (vr == VR.SQ && encOpts.isUndefEmptySequenceLength())
+                    len += 8;
+            } else if (val instanceof Sequence) {
+                Sequence sq = (Sequence) val;
+                len += sq.calcLength(explicitVR, encOpts);
+                if (sq.isEmpty() ? encOpts.isUndefEmptySequenceLength()
+                                 : encOpts.isUndefSequenceLength())
+                    len += 8;
+            } else if (val instanceof Fragments) {
+                    len += ((Fragments) val).calcLength() + 8;
+            } else {
+                if (!(val instanceof byte[]))
+                    val = vr.toBytes(val, bigEndian(), cs());
+                len += (((byte[]) val).length + 1) & ~1;
+            }
+        }
+        return length = len;
+    }
+
+    public void writeTo(DicomOutputStream dos, EncodeOptions encOpts)
+            throws IOException {
+        if (isEmpty())
+            return;
+
+        if (encOpts.isGroupLength())
+            dos.writeGroupLength(TagUtils.toTag(grTag, 0), length - 12);
+        for (int i = 0; i < size; i++) {
+            int tag = TagUtils.toTag(grTag, elTags[i]);
+            VR vr = vrs[i];
+            Object val = values[i];
+            if (vr == VR.SQ)
+                dos.writeSequence(tag, (Sequence) val, encOpts);
+            else if (val == null) 
+                dos.writeHeader(tag, vr, 0);
+            else if (val instanceof Fragments)
+                dos.writeFragments(tag, (Fragments) val);
+            else 
+                dos.writeAttribute(tag, vr, 
+                        (val instanceof byte[]) ? (byte[]) val 
+                                : vr.toBytes(val, bigEndian(), cs()));
+        }
     }
 
     @Override
@@ -552,5 +614,4 @@ class Group {
             dst.add(toogleEndian ? vr.toggleEndian(b, true) : b);
         return dst ;
     }
-    
 }

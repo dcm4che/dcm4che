@@ -1,19 +1,23 @@
 package org.dcm4che.data;
 
+import java.io.IOException;
 import java.util.Arrays;
 
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.TagUtils;
 
 public class Attributes {
 
     private static final int TO_STRING_LIMIT = 50;
     public static final int INIT_CAPACITY = 10;
+    private static final byte[] FMI_VERS = { 0, 1 };
 
     private Attributes parent;
     private Group[] groups;
     private int groupsSize;
     private SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
     private long position = -1L;
+    private int length;
 
     private final boolean bigEndian;
 
@@ -53,6 +57,10 @@ public class Attributes {
 
     public final Attributes getParent() {
         return parent;
+    }
+
+    public final int getLength() {
+        return length;
     }
 
     Attributes setParent(Attributes parent) {
@@ -427,4 +435,32 @@ public class Attributes {
         return sb;
     }
 
+    public int calcLength(boolean explicitVR, EncodeOptions encOpts) {
+        int len = 0;
+        for (int i = 0; i < groupsSize; i++)
+            len += groups[i].calcLength(explicitVR, encOpts);
+        length = len;
+        return len;
+    }
+
+    public void writeTo(DicomOutputStream dos, EncodeOptions encOpts)
+            throws IOException {
+        for (int i = 0; i < groupsSize; i++)
+            groups[i].writeTo(dos, encOpts);
+    }
+
+    public Attributes createFileMetaInformation(String tsuid) {
+        String cuid = getString(Tag.SOPClassUID, null, 0, null);
+        String iuid = getString(Tag.SOPInstanceUID, null, 0, null);
+        Attributes fmi = new Attributes(1);
+        fmi.setBytes(Tag.FileMetaInformationVersion, null, VR.OB, FMI_VERS);
+        fmi.setString(Tag.MediaStorageSOPClassUID, null, VR.UI, cuid);
+        fmi.setString(Tag.MediaStorageSOPInstanceUID, null, VR.UI, iuid);
+        fmi.setString(Tag.TransferSyntaxUID, null, VR.UI, tsuid);
+        fmi.setString(Tag.ImplementationClassUID, null, VR.UI,
+                Implementation.getClassUID());
+        fmi.setString(Tag.ImplementationVersionName, null, VR.SH,
+                Implementation.getVersionName());
+        return fmi;
+    }
  }

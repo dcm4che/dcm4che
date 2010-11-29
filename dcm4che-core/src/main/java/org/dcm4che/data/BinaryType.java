@@ -20,6 +20,10 @@ enum BinaryType {
             return b ;
         }
 
+        @Override
+        public int paddingByte(VR vr) {
+            return 0;
+        }
     },
     USHORT(2) {
         @Override
@@ -345,6 +349,10 @@ enum BinaryType {
         for (int i = 0, off = 0; i < ss.length; i++, off += numBytes)
             stringToBytes(ss[i], b, off, bigEndian);
         return b;
+    }
+
+    public int paddingByte(VR vr) {
+        throw vr.unsupported();
     }
 
 }

@@ -3,11 +3,13 @@ package org.dcm4che.data;
 import java.util.ArrayList;
 import java.util.Collection;
 
+
 public class Sequence extends ArrayList<Attributes> {
 
     private static final long serialVersionUID = 7062970085409148066L;
 
     private final Attributes parent;
+    private int length;
 
     Sequence(Attributes parent, int initialCapacity) {
         super(initialCapacity);
@@ -16,6 +18,10 @@ public class Sequence extends ArrayList<Attributes> {
 
     public final Attributes getParent() {
         return parent;
+    }
+
+    public final int getLength() {
+        return length;
     }
 
     public void trimToSize(boolean recursive) {
@@ -85,5 +91,22 @@ public class Sequence extends ArrayList<Attributes> {
     @Override
     public String toString() {
         return "" + size() + " Items";
+    }
+
+    int calcLength(boolean explicitVR, EncodeOptions encOpts) {
+        int len = 0;
+        for (Attributes item : this) {
+            len += 8;
+            if (item.isEmpty()) {
+                if (encOpts.isUndefEmptyItemLength())
+                    len += 8;
+            } else {
+                len += item.calcLength(explicitVR, encOpts);
+                if (encOpts.isUndefItemLength())
+                    len += 8;
+            }
+        }
+        length = len;
+        return len;
     }
 }

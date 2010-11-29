@@ -23,6 +23,16 @@ public class Fragments extends ArrayList<byte[]> {
         return bigEndian;
     }
 
+    public int calcLength() {
+        int len = 0;
+        for (byte[] b : this) {
+            len += 8;
+            if (b != null)
+                len += (b.length + 1) & ~1;
+        }
+        return len;
+    }
+
     @Override
     public String toString() {
         return "" + size() + " Fragments";

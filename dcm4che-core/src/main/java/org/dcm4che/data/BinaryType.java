@@ -250,6 +250,15 @@ enum BinaryType {
             throw new IllegalArgumentException("length: " + len);
     }
 
+    public String bytesToString(byte[] b, boolean bigEndian, int valueIndex,
+            String defVal) {
+        int len = b.length;
+        int off = valueIndex * numBytes;
+        return off + numBytes <= len
+                ? bytesToString(b, off, bigEndian)
+                : defVal;
+    }
+
     public int bytesToInt(byte[] b, boolean bigEndian, int valueIndex,
             int defVal) {
         int len = b.length;

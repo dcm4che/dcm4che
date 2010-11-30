@@ -330,12 +330,37 @@ public enum VR {
         throw unsupported();
     }
 
+    String toString(Object val, boolean bigEndian, SpecificCharacterSet cs,
+            int valueIndex, String defVal) {
+
+        if (val instanceof String)
+            return valueIndex == 0 ? (String) val : defVal;
+
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            return valueIndex < ss.length ? ss[valueIndex] : defVal;
+        }
+
+        if (val instanceof byte[])
+            return toString((byte[]) val, bigEndian, cs, valueIndex, defVal);
+
+        throw unsupported();
+    }
+
+    String toString(byte[] b, boolean bigEndian, SpecificCharacterSet cs,
+            int valueIndex, String defVal) {
+        return isBinaryType()
+                ? binaryType.bytesToString(b, bigEndian, valueIndex, defVal)
+                : toString(stringType.toStrings(b, cs), bigEndian, cs,
+                        valueIndex, defVal);
+    }
+
     private Object toStrings(byte[] b, boolean bigEndian,
             SpecificCharacterSet cs) {
         return isBinaryType()
-            ? binaryType.bytesToStrings(b, bigEndian)
-            : stringType.toStrings(b, cs);
-    }
+                ? binaryType.bytesToStrings(b, bigEndian)
+                : stringType.toStrings(b, cs);
+        }
 
     int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
         checkSupportInts();

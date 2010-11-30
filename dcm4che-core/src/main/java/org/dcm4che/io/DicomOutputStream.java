@@ -77,10 +77,12 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         if (fmi != null)
             writeFileMetaInformation(fmi);
-        Attributes attrs = new Attributes(bigEndian, dataset);
-        if (encOpts.needCalcLength())
-            attrs.calcLength(explicitVR, encOpts);
-        attrs.writeTo(this, encOpts);
+        boolean needCalcLength = encOpts.needCalcLength();
+        if (needCalcLength || dataset.bigEndian() != bigEndian)
+            dataset = new Attributes(bigEndian, dataset);
+        if (needCalcLength)
+            dataset.calcLength(explicitVR, encOpts);
+        dataset.writeTo(this, encOpts);
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {

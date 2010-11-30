@@ -67,7 +67,7 @@ class Group {
                     len += ((Fragments) val).calcLength() + 8;
             } else {
                 if (!(val instanceof byte[]))
-                    val = vr.toBytes(val, bigEndian(), cs());
+                    values[i] = val = vr.toBytes(val, bigEndian(), cs());
                 len += (((byte[]) val).length + 1) & ~1;
             }
         }
@@ -207,19 +207,18 @@ class Group {
         if (value == null)
             return defVal;
 
-        return getString(index, valueIndex, defVal);
+        VR vr = vrs[index];
+        return getString(vr.isStringType()
+                    ? valueToStrings(index) 
+                    : vr.toStrings(value, bigEndian(), cs()),
+                valueIndex, defVal);
     }
 
-    private String getString(int index, int valueIndex, String defVal) {
-        Object value = values[index];
-        if (!(value instanceof String || value instanceof String[])) {
-            value = vrs[index].toStrings(value, bigEndian(), cs());
-            values[index] = value;
-        }
-
+    private static String getString(Object value, int valueIndex,
+            String defVal) {
         if (value instanceof String)
             return valueIndex == 0 ? (String) value : defVal;
-
+        
         String[] ss = (String[]) value;
         return valueIndex < ss.length ? ss[valueIndex] : defVal;
     }
@@ -233,14 +232,15 @@ class Group {
         if (value == null)
             return StringType.EMPTY_STRINGS;
 
-        if (!(value instanceof String || value instanceof String[])) {
-            value = vrs[index].toStrings(value, bigEndian(), cs());
-            values[index] = value;
-        }
+        VR vr = vrs[index];
+        return toStrings(vr.isStringType() ? valueToStrings(index) 
+                                 : vr.toStrings(value, bigEndian(), cs()));
+    }
 
-        return (value instanceof String)
-                ? new String[] {(String) value}
-                : (String[]) value;
+    private static String[] toStrings(Object val) {
+        return (val instanceof String) 
+                ? new String[] { (String) val } 
+                : (String[]) val;
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
@@ -253,15 +253,19 @@ class Group {
         if (value == null)
             return defVal;
         
-        int[] ints;
-        if (value instanceof int[])
-            ints = (int[]) value;
-        else {
-            ints = vrs[index].toInts(value, bigEndian());
-            values[index] = ints;
-        }
+        VR vr = vrs[index];
+        if (vr == VR.IS)
+            value = valueToStrings(index);
 
-        return valueIndex < ints.length ? ints[valueIndex] : defVal;
+        return vr.toInt(value, bigEndian(), valueIndex, defVal);
+    }
+
+    private Object valueToStrings(int index) {
+        Object value = values[index];
+        if (!(value instanceof String || value instanceof String[]))
+            values[index] = value =
+                vrs[index].toStrings(value, bigEndian(), cs());
+        return value;
     }
 
     public int[] getInts(int tag, String privateCreator) {
@@ -273,14 +277,12 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_INTS;
 
-        if (value instanceof int[])
-            return (int[]) value;
+        VR vr = vrs[index];
+        if (vr == VR.IS)
+            value = valueToStrings(index);
 
-        int[] ints = vrs[index].toInts(value, bigEndian());
-        values[index] = ints;
-
-        return ints;
-    }
+        return vr.toInts(value, bigEndian());
+     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
             float defVal) {
@@ -292,15 +294,11 @@ class Group {
         if (value == null)
             return defVal;
 
-        float[] floats;
-        if (value instanceof float[])
-            floats = (float[]) value;
-        else {
-            floats = vrs[index].toFloats(value, bigEndian());
-            values[index] = floats;
-        }
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = valueToStrings(index);
 
-        return valueIndex < floats.length ? floats[valueIndex] : defVal;
+        return vr.toFloat(value, bigEndian(), valueIndex, defVal);
     }
 
     public float[] getFloats(int tag, String privateCreator) {
@@ -312,13 +310,11 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_FLOATS;
 
-        if (value instanceof float[])
-            return (float[]) value;
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = valueToStrings(index);
 
-        float[] floats = vrs[index].toFloats(value, bigEndian());
-        values[index] = floats;
-
-        return floats;
+        return vr.toFloats(value, bigEndian());
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
@@ -331,15 +327,11 @@ class Group {
         if (value == null)
             return defVal;
 
-        double[] doubles;
-        if (value instanceof double[])
-            doubles = (double[]) value;
-        else {
-            doubles = vrs[index].toDoubles(value, bigEndian());
-            values[index] = doubles;
-        }
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = valueToStrings(index);
 
-        return valueIndex < doubles.length ? doubles[valueIndex] : defVal;
+        return vr.toDouble(value, bigEndian(), valueIndex, defVal);
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
@@ -351,13 +343,11 @@ class Group {
         if (value == null)
             return BinaryType.EMPTY_DOUBLES;
 
-        if (value instanceof double[])
-            return (double[]) value;
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = valueToStrings(index);
 
-        double[] doubles = vrs[index].toDoubles(value, bigEndian());
-        values[index] = doubles;
-
-        return doubles;
+        return vr.toDoubles(value, bigEndian());
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
@@ -400,70 +390,34 @@ class Group {
     }
 
     public Object setNull(int tag, String privateCreator, VR vr) {
-        return set(tag, privateCreator, vr,null);
+        return set(tag, privateCreator, vr, null);
     }
 
     public Object setBytes(int tag, String privateCreator, VR vr, byte[] b) {
-        vr.checkSupportBytes();
-        return set(tag, privateCreator, vr, nullifyEmptyBytes(b));
+        return set(tag, privateCreator, vr, vr.toValue(b));
     }
 
     public Object setString(int tag, String privateCreator, VR vr, String s) {
-        vr.checkSupportString();
-        return set(tag, privateCreator, vr, nullifyEmptyString(s));
+        return set(tag, privateCreator, vr, vr.toValue(s, bigEndian()));
     }
 
     public Object setString(int tag, String privateCreator, VR vr,
             String... ss) {
-        vr.checkSupportStrings();
-        return set(tag, privateCreator, vr, nullifyEmptyStrings(ss));
+        return set(tag, privateCreator, vr, vr.toValue(ss, bigEndian()));
     }
 
     public Object setInt(int tag, String privateCreator, VR vr, int... ints) {
-        vr.checkSupportInts();
-        return set(tag, privateCreator, vr, nullifyEmptyInts(ints));
+        return set(tag, privateCreator, vr, vr.toValue(ints, bigEndian()));
     }
 
     public Object setFloat(int tag, String privateCreator, VR vr,
             float... floats) {
-        vr.checkSupportFloats();
-        return set(tag, privateCreator, vr, nullifyEmptyFloats(floats));
+        return set(tag, privateCreator, vr, vr.toValue(floats, bigEndian()));
     }
 
     public Object setDouble(int tag, String privateCreator, VR vr,
             double[] doubles) {
-        vr.checkSupportFloats();
-        return set(tag, privateCreator, vr, nullifyEmptyDoubles(doubles));
-    }
-
-    private byte[] nullifyEmptyBytes(byte[] b) {
-        return b == null || b.length == 0 ? null : b;
-    }
-
-    private String nullifyEmptyString(String s) {
-        return s == null || s.length() == 0 ? null : s;
-    }
-
-    private Object nullifyEmptyStrings(String[] ss) {
-        if (ss == null || ss.length == 0)
-            return null;
-        for (int i = 0; i < ss.length; i++)
-            ss[i] = nullifyEmptyString(ss[i]);
-        if (ss.length == 1)
-            return ss[0];
-        return ss;
-    }
-
-    private Object nullifyEmptyInts(int[] ints) {
-        return ints == null || ints.length == 0 ? null : ints;
-    }
-
-    private Object nullifyEmptyFloats(float[] floats) {
-        return floats == null || floats.length == 0 ? null : floats;
-    }
-
-    private Object nullifyEmptyDoubles(double[] doubles) {
-        return doubles == null || doubles.length == 0 ? null : doubles;
+        return set(tag, privateCreator, vr, vr.toValue(doubles, bigEndian()));
     }
 
     public Sequence newSequence(int tag, String privateCreator,
@@ -542,7 +496,8 @@ class Group {
                 setString(creatorTag, null, VR.LO, privateCreator);
                 return (creatorTag << 8) | (elTag & 0xff);
             }
-            if (privateCreator.equals(getString(index, 0, null)))
+            if (privateCreator.equals(
+                    getString(valueToStrings(index), 0, null)))
                 return (creatorTag << 8) | (elTag & 0xff);
         }
         throw new IllegalStateException(String.format(
@@ -558,7 +513,7 @@ class Group {
         if (index < 0)
             return null;
         
-        return getString(index, 0, null);
+        return getString(valueToStrings(index), 0, null);
     }
 
     public void addAll(Group srcGroup, boolean toogleEndian) {

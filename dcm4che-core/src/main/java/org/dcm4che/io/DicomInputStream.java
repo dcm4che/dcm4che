@@ -235,13 +235,14 @@ public class DicomInputStream extends FilterInputStream
 
         Attributes attrs = new Attributes(bigEndian, 1);
         readAttributes(attrs, -1, true);
+        fileMetaInformation = attrs;
+
         String tsuid = attrs.getString(
                 Tag.TransferSyntaxUID, null, 0, null);
         if (tsuid == null) {
             LOG.warn(MISSING_TRANSFER_SYNTAX);
             tsuid = UID.ExplicitVRLittleEndian;
         }
-        fileMetaInformation = attrs;
         switchTransferSyntax(tsuid);
     }
 

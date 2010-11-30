@@ -250,6 +250,13 @@ enum BinaryType {
             throw new IllegalArgumentException("length: " + len);
     }
 
+    public int bytesToInt(byte[] b, boolean bigEndian, int valueIndex,
+            int defVal) {
+        int len = b.length;
+        int off = valueIndex * numBytes;
+        return off + numBytes <= len ? bytesToInt(b, off, bigEndian) : defVal;
+    }
+
     public int[] bytesToInts(byte[] b, boolean bigEndian) {
         int len = b.length;
         checkLength(len);
@@ -262,6 +269,13 @@ enum BinaryType {
         return ints ;
     }
 
+    public float bytesToFloat(byte[] b, boolean bigEndian, int valueIndex,
+            float defVal) {
+        int len = b.length;
+        int off = valueIndex * numBytes;
+        return off + numBytes <= len ? bytesToFloat(b, off, bigEndian) : defVal;
+    }
+
     public float[] bytesToFloats(byte[] b, boolean bigEndian) {
         int len = b.length;
         checkLength(len);
@@ -272,6 +286,13 @@ enum BinaryType {
         for (int i = 0, off = 0; i < floats.length; i++, off += numBytes)
             floats[i] = bytesToFloat(b, off, bigEndian);
         return floats;
+    }
+
+    public double bytesToDouble(byte[] b, boolean bigEndian, int valueIndex,
+            double defVal) {
+        int len = b.length;
+        int off = valueIndex * numBytes;
+        return off + numBytes <= len ? bytesToDouble(b, off, bigEndian) : defVal;
     }
 
     public double[] bytesToDoubles(byte[] b, boolean bigEndian) {

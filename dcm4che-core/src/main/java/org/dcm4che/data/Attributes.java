@@ -1,25 +1,31 @@
 package org.dcm4che.data;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 
+import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.TagUtils;
 
-public class Attributes {
+public class Attributes implements Serializable {
 
+    private static final long serialVersionUID = 5458387005121933754L;
+
+    private static final int INIT_CAPACITY = 10;
     private static final int TO_STRING_LIMIT = 50;
-    public static final int INIT_CAPACITY = 10;
     private static final byte[] FMI_VERS = { 0, 1 };
 
-    private Attributes parent;
-    private Group[] groups;
-    private int groupsSize;
-    private SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
-    private long position = -1L;
-    private int length;
+    private transient Attributes parent;
+    private transient Group[] groups;
+    private transient int groupsSize;
+    private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
+    private transient long position = -1L;
+    private transient int length;
 
-    private final boolean bigEndian;
+    private transient final boolean bigEndian;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -463,4 +469,21 @@ public class Attributes {
                 Implementation.getVersionName());
         return fmi;
     }
- }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeInt(groupsSize);
+        DicomOutputStream dout = new DicomOutputStream(out,
+                UID.ExplicitVRLittleEndian);
+        dout.writeDataset(null, this);
+        dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
+    }
+
+    private void readObject(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        this.groups = new Group[in.readInt()];
+        DicomInputStream din = new DicomInputStream(in,
+                UID.ExplicitVRLittleEndian);
+        din.readAttributes(this, -1);
+    }
+
+}

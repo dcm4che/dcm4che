@@ -480,6 +480,8 @@ public class Attributes implements Serializable {
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
+        this.position = -1L;
+        this.length = -1;
         this.bigEndian = in.readBoolean();
         this.groups = new Group[in.readInt()];
         DicomInputStream din = new DicomInputStream(in, true, bigEndian);

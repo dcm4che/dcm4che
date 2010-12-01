@@ -58,6 +58,13 @@ public class DicomInputStream extends FilterInputStream
     private DicomInputHandler handler = this;
     private final byte[] buffer = new byte[8];
 
+    public DicomInputStream(InputStream in, boolean explicitVR,
+            boolean bigEndian) throws IOException {
+        super(in);
+        this.explicitVR = explicitVR;
+        this.bigEndian = bigEndian;
+    }
+
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
         super(in);
         switchTransferSyntax(tsuid);

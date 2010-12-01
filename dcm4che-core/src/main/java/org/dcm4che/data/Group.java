@@ -153,6 +153,48 @@ class Group {
             }
     }
 
+    public void internalizeStringValues(boolean decode) {
+        Object value;
+        VR vr;
+        for (int i = 0; i < values.length; i++) {
+            if ((value = values[i]) == null)
+                continue;
+            if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value)
+                    item.internalizeStringValues(decode);
+            } else if ((vr = vrs[i]).isStringType()) {
+                if (value instanceof byte[]) {
+                    if (!decode)
+                        continue;
+                    value = vr.toStrings((byte[]) value, bigEndian(), cs());
+                }
+                if (value instanceof String)
+                    values[i] = ((String) value).intern();
+                else {
+                    String[] ss = (String[]) value;
+                    for (int j = 0; j < ss.length; j++)
+                        ss[j] = ss[j].intern();
+                }
+            }
+        }
+    }
+
+    public void decodeStringValues() {
+        Object value;
+        VR vr;
+        for (int i = 0; i < values.length; i++) {
+            if ((value = values[i]) == null)
+                continue;
+            if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value)
+                    item.decodeStringValues();
+            } else if ((vr = vrs[i]).isStringType())
+                if (value instanceof byte[])
+                    values[i] =
+                        vr.toStrings((byte[]) value, bigEndian(), cs());
+        }
+    }
+
     private void ensureCapacity(int minCapacity) {
         int oldCapacity = elTags.length;
         if (minCapacity > oldCapacity) {
@@ -209,7 +251,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr.isStringType())
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toString(value, bigEndian(), cs(), valueIndex, defVal);
     }
@@ -224,7 +266,7 @@ class Group {
             return StringType.EMPTY_STRINGS;
 
         VR vr = vrs[index];
-        return toStrings(vr.isStringType() ? valueAsString(index) 
+        return toStrings(vr.isStringType() ? decodeStringValue(index) 
                                  : vr.toStrings(value, bigEndian(), cs()));
     }
 
@@ -246,16 +288,16 @@ class Group {
         
         VR vr = vrs[index];
         if (vr == VR.IS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toInt(value, bigEndian(), valueIndex, defVal);
     }
 
-    private Object valueAsString(int index) {
+    private Object decodeStringValue(int index) {
         Object value = values[index];
-        if (!(value instanceof String || value instanceof String[]))
+        if (value instanceof byte[])
             values[index] = value =
-                vrs[index].toStrings(value, bigEndian(), cs());
+                vrs[index].toStrings((byte[]) value, bigEndian(), cs());
         return value;
     }
 
@@ -270,7 +312,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr == VR.IS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toInts(value, bigEndian());
      }
@@ -287,7 +329,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr == VR.DS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toFloat(value, bigEndian(), valueIndex, defVal);
     }
@@ -303,7 +345,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr == VR.DS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toFloats(value, bigEndian());
     }
@@ -320,7 +362,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr == VR.DS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toDouble(value, bigEndian(), valueIndex, defVal);
     }
@@ -336,7 +378,7 @@ class Group {
 
         VR vr = vrs[index];
         if (vr == VR.DS)
-            value = valueAsString(index);
+            value = decodeStringValue(index);
 
         return vr.toDoubles(value, bigEndian());
     }
@@ -488,7 +530,7 @@ class Group {
                 return (creatorTag << 8) | (elTag & 0xff);
             }
             if (privateCreator.equals(VR.LO.toString(
-                            valueAsString(index), false, null, 0, null)))
+                            decodeStringValue(index), false, null, 0, null)))
                 return (creatorTag << 8) | (elTag & 0xff);
         }
         throw new IllegalStateException(String.format(
@@ -504,7 +546,7 @@ class Group {
         if (index < 0)
             return null;
         
-        return VR.LO.toString(valueAsString(index), false, null, 0, null);
+        return VR.LO.toString(decodeStringValue(index), false, null, 0, null);
     }
 
     public void addAll(Group srcGroup, boolean toogleEndian) {

@@ -180,7 +180,20 @@ public class ByteUtils {
     }
 
     public static byte[] doubleToBytesBE(double d, byte[] bytes, int off) {
-        long l = Double.doubleToLongBits(d);
+        return longToBytesBE(Double.doubleToLongBits(d), bytes, off);
+    }
+
+    public static byte[] doubleToBytesLE(double d, byte[] bytes, int off) {
+        return longToBytesLE(Double.doubleToLongBits(d), bytes, off);
+    }
+
+    public static byte[] longToBytes(long l, byte[] bytes, int off,
+            boolean bigEndian) {
+        return bigEndian ? longToBytesBE(l, bytes, off)
+                         : longToBytesLE(l, bytes, off);
+    }
+
+    public static byte[] longToBytesBE(long l, byte[] bytes, int off) {
         bytes[off] = (byte) (l >> 56);
         bytes[off + 1] = (byte) (l >> 48);
         bytes[off + 2] = (byte) (l >> 40);
@@ -192,8 +205,7 @@ public class ByteUtils {
         return bytes;
     }
 
-    public static byte[] doubleToBytesLE(double d, byte[] bytes, int off) {
-        long l = Double.doubleToLongBits(d);
+    public static byte[] longToBytesLE(long l, byte[] bytes, int off) {
         bytes[off + 7] = (byte) (l >> 56);
         bytes[off + 6] = (byte) (l >> 48);
         bytes[off + 5] = (byte) (l >> 40);

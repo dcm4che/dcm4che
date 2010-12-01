@@ -5,9 +5,20 @@
   <xsl:template match="/uids">
     <xsl:text>package org.dcm4che.data;
 
+import java.math.BigInteger;
 import java.util.ResourceBundle;
+import java.util.UUID;
+
+import org.dcm4che.util.ByteUtils;
 
 public class UID {
+
+    /**
+     * UID root for UUIDs (Universally Unique Identifiers) generated in
+     * accordance with Rec. ITU-T X.667 | ISO/IEC 9834-8.
+     * @see &lt;a href="http://www.oid-info.com/get/2.25">OID repository {joint-iso-itu-t(2) uuid(25)}$lt;/a>
+     */
+    private static final String UUID_ROOT = "2.25";
 
     private static final ResourceBundle rb = 
             ResourceBundle.getBundle("org.dcm4che.data.UIDNames");
@@ -26,6 +37,25 @@ public class UID {
         } catch (Exception e) {
             throw new IllegalArgumentException(keyword);
         }
+    }
+
+    public static String createUID() {
+        return createUID(UUID_ROOT);
+    }
+
+    public static String createUID(String root) {
+        byte[] b17 = new byte[17];
+        UUID uuid = UUID.randomUUID();
+        ByteUtils.longToBytesBE(uuid.getMostSignificantBits(), b17, 1);
+        ByteUtils.longToBytesBE(uuid.getLeastSignificantBits(), b17, 9);
+        String uuidStr = new BigInteger(b17).toString();
+        int rootlen = root.length();
+        int uuidlen = uuidStr.length();
+        char[] cs = new char[rootlen + uuidlen + 1];
+        root.getChars(0, rootlen, cs, 0);
+        cs[rootlen] = '.';
+        uuidStr.getChars(0, uuidlen, cs, rootlen + 1);
+        return new String(cs);
     }
 </xsl:text>
     <xsl:apply-templates select="uid" />

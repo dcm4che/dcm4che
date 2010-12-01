@@ -29,6 +29,13 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private final byte[] buf = new byte[12];
 
+    public DicomOutputStream(OutputStream out, boolean explicitVR,
+            boolean bigEndian) throws IOException {
+        super(out);
+        this.explicitVR = explicitVR;
+        this.bigEndian = bigEndian;
+    }
+
     public DicomOutputStream(OutputStream out, String tsuid)
             throws IOException {
         super(out);

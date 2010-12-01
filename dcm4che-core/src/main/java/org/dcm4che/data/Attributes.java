@@ -23,9 +23,9 @@ public class Attributes implements Serializable {
     private transient int groupsSize;
     private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
     private transient long position = -1L;
-    private transient int length;
+    private transient int length = -1;
 
-    private transient final boolean bigEndian;
+    private transient boolean bigEndian;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -471,18 +471,18 @@ public class Attributes implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeBoolean(bigEndian);
         out.writeInt(groupsSize);
-        DicomOutputStream dout = new DicomOutputStream(out,
-                UID.ExplicitVRLittleEndian);
+        DicomOutputStream dout = new DicomOutputStream(out, true, bigEndian);
         dout.writeDataset(null, this);
         dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
     }
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
+        this.bigEndian = in.readBoolean();
         this.groups = new Group[in.readInt()];
-        DicomInputStream din = new DicomInputStream(in,
-                UID.ExplicitVRLittleEndian);
+        DicomInputStream din = new DicomInputStream(in, true, bigEndian);
         din.readAttributes(this, -1);
     }
 

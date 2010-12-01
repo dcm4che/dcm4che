@@ -355,8 +355,7 @@ public enum VR {
                         valueIndex, defVal);
     }
 
-    private Object toStrings(byte[] b, boolean bigEndian,
-            SpecificCharacterSet cs) {
+    Object toStrings(byte[] b, boolean bigEndian, SpecificCharacterSet cs) {
         return isBinaryType()
                 ? binaryType.bytesToStrings(b, bigEndian)
                 : stringType.toStrings(b, cs);

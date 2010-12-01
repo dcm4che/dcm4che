@@ -127,6 +127,16 @@ public class Attributes implements Serializable {
         }
     }
 
+    public void internalizeStringValues(boolean decode) {
+        for (int i = 0; i < groupsSize; i++)
+            groups[i].internalizeStringValues(decode);
+    }
+
+    public void decodeStringValues() {
+        for (int i = 0; i < groupsSize; i++)
+            groups[i].decodeStringValues();
+    }
+
     private void ensureCapacity(int minCapacity) {
         int oldCapacity = groups.length;
         if (minCapacity > oldCapacity)

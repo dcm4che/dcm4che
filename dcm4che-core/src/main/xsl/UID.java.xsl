@@ -8,6 +8,7 @@
 import java.math.BigInteger;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.dcm4che.util.ByteUtils;
 
@@ -19,6 +20,9 @@ public class UID {
      * @see &lt;a href="http://www.oid-info.com/get/2.25">OID repository {joint-iso-itu-t(2) uuid(25)}$lt;/a>
      */
     private static final String UUID_ROOT = "2.25";
+
+    private static final Pattern PATTERN =
+            Pattern.compile("[12]((\\.0)|(\\.[1-9]\\d*))+");
 
     private static final ResourceBundle rb = 
             ResourceBundle.getBundle("org.dcm4che.data.UIDNames");
@@ -39,11 +43,23 @@ public class UID {
         }
     }
 
+    public static boolean isValid(String uid) {
+        return uid.length() &lt;= 64 &amp;&amp; PATTERN.matcher(uid).matches();
+    }
+
     public static String createUID() {
-        return createUID(UUID_ROOT);
+        return doCreateUID(UUID_ROOT);
     }
 
     public static String createUID(String root) {
+        if (root.length() > 24)
+            throw new IllegalArgumentException(root + " exeeds 24 characters");
+        if (!isValid(root))
+            throw new IllegalArgumentException(root);
+        return doCreateUID(root);
+    }
+
+    private static String doCreateUID(String root) {
         byte[] b17 = new byte[17];
         UUID uuid = UUID.randomUUID();
         ByteUtils.longToBytesBE(uuid.getMostSignificantBits(), b17, 1);

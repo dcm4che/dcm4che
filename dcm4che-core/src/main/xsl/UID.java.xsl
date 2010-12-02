@@ -53,7 +53,7 @@ public class UID {
 
     public static String createUID(String root) {
         if (root.length() > 24)
-            throw new IllegalArgumentException(root + " exeeds 24 characters");
+            throw new IllegalArgumentException("root length > 24");
         if (!isValid(root))
             throw new IllegalArgumentException(root);
         return doCreateUID(root);

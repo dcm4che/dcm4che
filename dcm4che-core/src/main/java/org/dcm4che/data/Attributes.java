@@ -163,149 +163,233 @@ public class Attributes implements Serializable {
         return -(low + 1);
     }
 
-    public boolean contains(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        return index >= 0 && groups[index].contains(tag, privateCreator);
+    public Attributes getNestedDataset(ItemPointer... itemPointers) {
+        Attributes item = this;
+        for (ItemPointer ip : itemPointers) {
+            Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
+            if (sq == null || ip.itemIndex >= sq.size())
+                return null;
+            item = sq.get(ip.itemIndex);
+        }
+        return item;
     }
 
-    public boolean containsValue(int tag, String privateCreator) {
+    public boolean contains(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return false;
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        return index >= 0 && groups[index].containsValue(tag, privateCreator);
+        int index = attrs.indexOf(groupNumber);
+        return index >= 0 && attrs.groups[index].contains(tag, privateCreator);
     }
 
-    public String getPrivateCreator(int tag) {
+    public boolean containsValue(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return false;
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = attrs.indexOf(groupNumber);
+        return index >= 0 
+                && attrs.groups[index].containsValue(tag, privateCreator);
+    }
+
+    public String getPrivateCreator(int tag, ItemPointer... itemPointers) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
 
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getPrivateCreator(tag);
+        return attrs.groups[index].getPrivateCreator(tag);
     }
 
-    public byte[] getBytes(int tag, String privateCreator) {
+    public byte[] getBytes(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getBytes(tag, privateCreator);
+        return attrs.groups[index].getBytes(tag, privateCreator);
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
-            String defVal) {
+            String defVal, ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return defVal;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index]
+        return attrs.groups[index]
                       .getString(tag, privateCreator, valueIndex, defVal);
     }
 
-    public String[] getStrings(int tag, String privateCreator) {
+    public String[] getStrings(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getStrings(tag, privateCreator);
+        return attrs.groups[index].getStrings(tag, privateCreator);
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
-            int defVal) {
+            int defVal, ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return defVal;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index].getInt(tag, privateCreator, valueIndex, defVal);
+        return attrs.groups[index]
+                            .getInt(tag, privateCreator, valueIndex, defVal);
     }
 
-    public int[] getInts(int tag, String privateCreator) {
+    public int[] getInts(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getInts(tag, privateCreator);
+        return attrs.groups[index].getInts(tag, privateCreator);
     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
-            float defVal) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+            float defVal, ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return defVal;
+
+       int groupNumber = TagUtils.groupNumber(tag);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index].getFloat(tag, privateCreator, valueIndex, defVal);
+        return attrs.groups[index]
+                            .getFloat(tag, privateCreator, valueIndex, defVal);
     }
 
-    public float[] getFloats(int tag, String privateCreator) {
+    public float[] getFloats(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getFloats(tag, privateCreator);
+        return attrs.groups[index].getFloats(tag, privateCreator);
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
-            double defVal) {
+            double defVal, ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return defVal;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return groups[index].getDouble(tag, privateCreator, valueIndex,
+        return attrs.groups[index].getDouble(tag, privateCreator, valueIndex,
                 defVal);
     }
 
-    public double[] getDoubles(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+    public double[] getDoubles(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
+       int groupNumber = TagUtils.groupNumber(tag);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getDoubles(tag, privateCreator);
+        return attrs.groups[index].getDoubles(tag, privateCreator);
     }
 
-    public Sequence getSequence(int tag, String privateCreator) {
+    public Sequence getSequence(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getSequence(tag, privateCreator);
+        return attrs.groups[index].getSequence(tag, privateCreator);
     }
 
-    public Fragments getFragments(int tag, String privateCreator) {
+    public Fragments getFragments(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return null;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return groups[index].getFragments(tag, privateCreator);
+        return attrs.groups[index].getFragments(tag, privateCreator);
     }
 
      public SpecificCharacterSet getSpecificCharacterSet() {
         return cs != null ? cs 
                 : parent != null ? parent.getSpecificCharacterSet()
                         : SpecificCharacterSet.DEFAULT;
-    }
+     }
 
-    public Object remove(int tag, String privateCreator) {
+    public Object remove(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Attributes attrs = getNestedDataset(itemPointers);
+        if (attrs == null)
+            return false;
+
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int index = attrs.indexOf(groupNumber);
         if (index < 0)
             return false;
-        Object oldValue = groups[index].remove(tag, privateCreator);
+
+        Object oldValue =  attrs.groups[index].remove(tag, privateCreator);
         if (tag == Tag.SpecificCharacterSet)
             cs = null;
+
         return oldValue;
     }
 

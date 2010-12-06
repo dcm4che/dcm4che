@@ -5,12 +5,14 @@ import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
+import org.dcm4che.data.ItemPointer;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
@@ -51,12 +53,13 @@ public class DicomInputStream extends FilterInputStream
     private long fmiEndPos = -1L;
     private long tagPos;
     private long markPos;
-    private int level;
     private int tag;
     private VR vr;
     private int length;
     private DicomInputHandler handler = this;
     private final byte[] buffer = new byte[8];
+    private final LinkedList<ItemPointer> itemPointers = 
+            new LinkedList<ItemPointer>();
 
     public DicomInputStream(InputStream in, boolean explicitVR,
             boolean bigEndian) throws IOException {
@@ -101,7 +104,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final int level() {
-        return level;
+        return itemPointers.size();
+    }
+
+    public final LinkedList<ItemPointer> getItemPointers() {
+        return itemPointers;
     }
 
     public final int tag() {
@@ -386,7 +393,7 @@ public class DicomInputStream extends FilterInputStream
             attrs.setNull(tag, null, VR.SQ);
         else {
             Sequence seq = attrs.newSequence(tag, null, 10);
-            readSequence(len, seq);
+            readSequence(tag, len, seq);
             if (seq.isEmpty())
                 attrs.setNull(tag, null, VR.SQ);
             else
@@ -394,28 +401,33 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private void readSequence(int len, Sequence seq) throws IOException {
+    private void readSequence(int tag, int len, Sequence seq)
+            throws IOException {
         if (len == 0)
             return;
 
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
-        level++;
-        do {
+        boolean quit = false;
+        while (!quit && (undefLen || pos < endPos)) {
+            itemPointers.add(new ItemPointer(tag, null, seq.size()));
             readHeader();
-        } while (handler.readValue(this, seq) && (undefLen || pos < endPos));
-        level--;
+            quit = !handler.readValue(this, seq);
+            itemPointers.removeLast();
+        }
     }
 
     private void readFragments(Attributes attrs, int tag, VR vr)
             throws IOException {
         Fragments frags =
                 attrs.newFragments(tag, null, vr, attrs.bigEndian(), 10);
-        level++;
-        do {
+        boolean quit = false;
+        while (!quit) {
+            itemPointers.add(new ItemPointer(tag, null, frags.size()));
             readHeader();
-        } while (handler.readValue(this, frags));
-        level--;
+            quit = !handler.readValue(this, frags);
+            itemPointers.removeLast();
+        }
         if (frags.isEmpty())
             attrs.setNull(tag, null, vr);
         else

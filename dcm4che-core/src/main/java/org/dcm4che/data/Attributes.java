@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
@@ -163,7 +164,7 @@ public class Attributes implements Serializable {
         return -(low + 1);
     }
 
-    public Attributes getNestedDataset(ItemPointer... itemPointers) {
+    public Attributes getNestedDataset(List<ItemPointer> itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
             Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
@@ -174,199 +175,227 @@ public class Attributes implements Serializable {
         return item;
     }
 
-    public boolean contains(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return false;
+    public boolean contains(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        return index >= 0 && attrs.groups[index].contains(tag, privateCreator);
+        int index = indexOf(groupNumber);
+        return index >= 0 && groups[index].contains(tag, privateCreator);
+    }
+
+    public boolean contains(int tag, String privateCreator,
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null && item.contains(tag, privateCreator);
+    }
+
+    public boolean containsValue(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        return index >= 0 && groups[index].containsValue(tag, privateCreator);
     }
 
     public boolean containsValue(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return false;
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        return index >= 0 
-                && attrs.groups[index].containsValue(tag, privateCreator);
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null && item.containsValue(tag, privateCreator);
     }
 
-    public String getPrivateCreator(int tag, ItemPointer... itemPointers) {
+    public String getPrivateCreator(int tag) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
 
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
-
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return attrs.groups[index].getPrivateCreator(tag);
+        return groups[index].getPrivateCreator(tag);
+    }
+
+    public String getPrivateCreator(int tag, List<ItemPointer> itemPointers) {
+        if (!TagUtils.isPrivateTag(tag))
+            return null;
+
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getPrivateCreator(tag) : null;
+    }
+
+    public byte[] getBytes(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getBytes(tag, privateCreator);
     }
 
     public byte[] getBytes(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
-
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        if (index < 0)
-            return null;
-
-        return attrs.groups[index].getBytes(tag, privateCreator);
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getBytes(tag, privateCreator) : null;
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
-            String defVal, ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return defVal;
-
+            String defVal) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return attrs.groups[index]
+        return groups[index]
                       .getString(tag, privateCreator, valueIndex, defVal);
     }
 
-    public String[] getStrings(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
+    public String getString(int tag, String privateCreator, int valueIndex,
+            String defVal, List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getString(tag, privateCreator, valueIndex, defVal)
+                : defVal;
+    }
 
+    public String[] getStrings(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return attrs.groups[index].getStrings(tag, privateCreator);
+        return groups[index].getStrings(tag, privateCreator);
+    }
+
+    public String[] getStrings(int tag, String privateCreator,
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getStrings(tag, privateCreator) : null;
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
-            int defVal, ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return defVal;
-
+            int defVal) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return attrs.groups[index]
-                            .getInt(tag, privateCreator, valueIndex, defVal);
+        return groups[index].getInt(tag, privateCreator, valueIndex, defVal);
+    }
+
+    public int getInt(int tag, String privateCreator, int valueIndex,
+            int defVal, List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getInt(tag, privateCreator, valueIndex, defVal)
+                : defVal;
+    }
+
+    public int[] getInts(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getInts(tag, privateCreator);
     }
 
     public int[] getInts(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
-
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        if (index < 0)
-            return null;
-
-        return attrs.groups[index].getInts(tag, privateCreator);
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getInts(tag, privateCreator) : null;
     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
-            float defVal, ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return defVal;
-
-       int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+            float defVal) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return attrs.groups[index]
-                            .getFloat(tag, privateCreator, valueIndex, defVal);
+        return groups[index].getFloat(tag, privateCreator, valueIndex, defVal);
+    }
+
+    public float getFloat(int tag, String privateCreator, int valueIndex,
+            float defVal, List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getFloat(tag, privateCreator, valueIndex, defVal)
+                : defVal;
+    }
+
+    public float[] getFloats(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getFloats(tag, privateCreator);
     }
 
     public float[] getFloats(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
-
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        if (index < 0)
-            return null;
-
-        return attrs.groups[index].getFloats(tag, privateCreator);
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getFloats(tag, privateCreator) : null;
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
-            double defVal, ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return defVal;
-
+            double defVal) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return defVal;
 
-        return attrs.groups[index].getDouble(tag, privateCreator, valueIndex,
+        return groups[index].getDouble(tag, privateCreator, valueIndex,
                 defVal);
     }
 
-    public double[] getDoubles(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
+    public double getDouble(int tag, String privateCreator, int valueIndex,
+            double defVal, List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getDouble(tag, privateCreator, valueIndex, defVal)
+                : defVal;
+    }
 
-       int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+    public double[] getDoubles(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return attrs.groups[index].getDoubles(tag, privateCreator);
+        return groups[index].getDoubles(tag, privateCreator);
+    }
+
+    public double[] getDoubles(int tag, String privateCreator,
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getDoubles(tag, privateCreator) : null;
+    }
+
+    public Sequence getSequence(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getSequence(tag, privateCreator);
     }
 
     public Sequence getSequence(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getSequence(tag, privateCreator) : null;
+    }
 
+    public Fragments getFragments(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return null;
 
-        return attrs.groups[index].getSequence(tag, privateCreator);
+        return groups[index].getFragments(tag, privateCreator);
     }
 
     public Fragments getFragments(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return null;
-
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
-        if (index < 0)
-            return null;
-
-        return attrs.groups[index].getFragments(tag, privateCreator);
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getFragments(tag, privateCreator) : null;
     }
 
      public SpecificCharacterSet getSpecificCharacterSet() {
@@ -375,22 +404,23 @@ public class Attributes implements Serializable {
                         : SpecificCharacterSet.DEFAULT;
      }
 
-    public Object remove(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes attrs = getNestedDataset(itemPointers);
-        if (attrs == null)
-            return false;
-
+    public Object remove(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
-        int index = attrs.indexOf(groupNumber);
+        int index = indexOf(groupNumber);
         if (index < 0)
             return false;
 
-        Object oldValue =  attrs.groups[index].remove(tag, privateCreator);
+        Object oldValue =  groups[index].remove(tag, privateCreator);
         if (tag == Tag.SpecificCharacterSet)
             cs = null;
 
         return oldValue;
+    }
+
+    public Object remove(int tag, String privateCreator,
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.remove(tag, privateCreator) : null;
     }
 
     public Object setNull(int tag, String privateCreator, VR vr) {

@@ -2,6 +2,9 @@ package org.dcm4che.io;
 
 import java.io.BufferedInputStream;
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +13,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.ItemPointer;
@@ -42,13 +46,18 @@ public class DicomInputStream extends FilterInputStream
         "Deflated DICOM Stream with ZLIB Header";
 
     private static final int ZLIB_HEADER = 0x789c;
+
     private static byte[] EMPTY_BYTES = {};
 
+    private String uri;
+    private String tsuid;
     private byte[] preamble;
     private Attributes fileMetaInformation;
     private boolean hasfmi;
     private boolean bigEndian;
     private boolean explicitVR;
+    private boolean excludeBulkData;
+    private boolean includeBulkDataLocator;
     private long pos;
     private long fmiEndPos = -1L;
     private long tagPos;
@@ -57,9 +66,30 @@ public class DicomInputStream extends FilterInputStream
     private VR vr;
     private int length;
     private DicomInputHandler handler = this;
+    private Attributes bulkData;
     private final byte[] buffer = new byte[8];
     private final LinkedList<ItemPointer> itemPointers = 
             new LinkedList<ItemPointer>();
+
+    private String tempFilePrefix = "blk";
+    private String tempFileSuffix;
+    private File tempDirectory;
+
+    public static Attributes defaultBulkData() {
+        Attributes wfsqitem = new Attributes(1);
+        wfsqitem.setNull(Tag.WaveformData, null, VR.OB);
+        wfsqitem.trimToSize(false);
+        Attributes bulkData = new Attributes(6);
+        bulkData.setNull(Tag.PixelDataProviderURL, null, VR.UT);
+        bulkData.setNull(Tag.AudioSampleData, null, VR.OB);
+        bulkData.setNull(Tag.CurveData, null, VR.OB);
+        bulkData.newSequence(Tag.WaveformSequence, null, 1).add(wfsqitem);
+        bulkData.setNull(Tag.SpectroscopyData, null, VR.OF);
+        bulkData.setNull(Tag.OverlayData, null, VR.OB);
+        bulkData.setNull(Tag.PixelData, null, VR.UT);
+        bulkData.trimToSize(false);
+        return bulkData;
+    }
 
     public DicomInputStream(InputStream in, boolean explicitVR,
             boolean bigEndian) throws IOException {
@@ -78,10 +108,71 @@ public class DicomInputStream extends FilterInputStream
         guessTransferSyntax();
     }
 
+    public DicomInputStream(File file) throws IOException {
+        super(new FileInputStream(file));
+        uri = file.toURI().toString();
+    }
+
     private static BufferedInputStream buffer(InputStream in) {
         return (in instanceof BufferedInputStream) 
                 ? (BufferedInputStream) in
                 : new BufferedInputStream(in);
+    }
+
+    public final String getURI() {
+        return uri;
+    }
+
+    public final void setURI(String uri) {
+        this.uri = uri;
+    }
+
+    public final boolean isExcludeBulkData() {
+        return excludeBulkData;
+    }
+
+    public final void setExcludeBulkData(boolean excludeBulkData) {
+        this.excludeBulkData = excludeBulkData;
+    }
+
+    public final boolean isIncludeBulkDataLocator() {
+        return includeBulkDataLocator;
+    }
+
+    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
+        this.includeBulkDataLocator = includeBulkDataLocator;
+    }
+
+    public final String getTempFilePrefix() {
+        return tempFilePrefix;
+    }
+
+    public final void setTempFilePrefix(String tempFilePrefix) {
+        this.tempFilePrefix = tempFilePrefix;
+    }
+
+    public final String getTempFileSuffix() {
+        return tempFileSuffix;
+    }
+
+    public final void setTempFileSuffix(String tempFileSuffix) {
+        this.tempFileSuffix = tempFileSuffix;
+    }
+
+    public final File getTempDirectory() {
+        return tempDirectory;
+    }
+
+    public final void setTempDirectory(File tempDirectory) {
+        this.tempDirectory = tempDirectory;
+    }
+
+    public final Attributes getBulkData() {
+        return bulkData;
+    }
+
+    public final void setBulkData(Attributes bulkData) {
+        this.bulkData = bulkData;
     }
 
     public final void setDicomInputHandler(DicomInputHandler handler) {
@@ -179,12 +270,21 @@ public class DicomInputStream extends FilterInputStream
         return skip;
     }
 
-    public final void readFully(byte b[]) throws IOException {
+    public void skipFully(long n) throws IOException {
+        long remaining = n;
+        while (remaining > 0) {
+            long count = skip(remaining);
+            if (count <= 0)
+                throw new EOFException();
+            remaining -= count;
+        }
+    }
+
+    public void readFully(byte b[]) throws IOException {
         readFully(b, 0, b.length);
     }
 
-    public final void readFully(byte b[], int off, int len)
-            throws IOException {
+    public void readFully(byte b[], int off, int len) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
         int n = 0;
@@ -319,6 +419,14 @@ public class DicomInputStream extends FilterInputStream
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
+        } else if ((excludeBulkData || includeBulkDataLocator) 
+                && isBulkData(attrs)){
+            if (excludeBulkData) {
+                skipFully(length);
+            } else {
+                attrs.setBulkDataLocator(tag, null, vr,
+                        createBulkDataLocator());
+            }
         } else {
             byte[] b = readValue(length);
             if (!TagUtils.isGroupLength(tag)) {
@@ -329,6 +437,46 @@ public class DicomInputStream extends FilterInputStream
                 setFileMetaInformationGroupLength(b);
         }
         return true;
+    }
+
+    private BulkDataLocator createBulkDataLocator() throws IOException {
+            BulkDataLocator locator;
+        if (uri != null) {
+            locator = new BulkDataLocator(uri, tsuid, pos, length, false);
+            skipFully(length);
+        } else {
+            File tempfile = File.createTempFile(tempFilePrefix,
+                    tempFileSuffix, tempDirectory);
+            tempfile.deleteOnExit();
+            byte[] b = readValue(length);
+            FileOutputStream tempout = new FileOutputStream(tempfile);
+            try {
+                tempout.write(b);
+            } finally {
+                tempout.close();
+            }
+            locator = new BulkDataLocator(tempfile.toURI().toString(), tsuid,
+                    0, length, true);
+        }
+        return locator;
+    }
+
+    private boolean isBulkData(Attributes attrs) {
+        int grtag = TagUtils.groupNumber(tag);
+        if (grtag < 8)
+            return false;
+        if (bulkData == null)
+            bulkData = DicomInputStream.defaultBulkData();
+        Attributes item = bulkData;
+        for (ItemPointer ip : itemPointers) {
+            Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
+            if (sq == null)
+                return false;
+            item = sq.get(0);
+        }
+        int tag0 = ((grtag &= 0xff00) == 0x5000 || grtag == 0x6000)
+                ? tag & 0xff00ffff : tag;
+        return item.contains(tag0, attrs.getPrivateCreator(tag));
     }
 
     @Override
@@ -393,7 +541,7 @@ public class DicomInputStream extends FilterInputStream
             attrs.setNull(tag, null, VR.SQ);
         else {
             Sequence seq = attrs.newSequence(tag, null, 10);
-            readSequence(tag, len, seq);
+            readSequence(tag, attrs.getPrivateCreator(tag), len, seq);
             if (seq.isEmpty())
                 attrs.setNull(tag, null, VR.SQ);
             else
@@ -401,8 +549,8 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private void readSequence(int tag, int len, Sequence seq)
-            throws IOException {
+    private void readSequence(int tag, String privateCreator, int len,
+            Sequence seq) throws IOException {
         if (len == 0)
             return;
 
@@ -410,7 +558,7 @@ public class DicomInputStream extends FilterInputStream
         long endPos = pos + (len & 0xffffffffL);
         boolean quit = false;
         while (!quit && (undefLen || pos < endPos)) {
-            itemPointers.add(new ItemPointer(tag, null, seq.size()));
+            itemPointers.add(new ItemPointer(tag, privateCreator, seq.size()));
             readHeader();
             quit = !handler.readValue(this, seq);
             itemPointers.removeLast();
@@ -443,6 +591,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {
+        this.tsuid = tsuid;
         bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
@@ -477,6 +626,7 @@ public class DicomInputStream extends FilterInputStream
             preamble = b128.clone();
             if (!markSupported()) {
                 hasfmi = true;
+                tsuid = UID.ExplicitVRLittleEndian;
                 bigEndian = false;
                 explicitVR = true;
                 return;
@@ -498,6 +648,8 @@ public class DicomInputStream extends FilterInputStream
         if (vr == VR.UN)
             return false;
         if (ByteUtils.bytesToVR(b128, 4) == vr.code()) {
+            this.tsuid = bigEndian ? UID.ExplicitVRBigEndian 
+                                   : UID.ExplicitVRLittleEndian;
             this.bigEndian = bigEndian;
             this.explicitVR = true;
             return true;
@@ -509,6 +661,8 @@ public class DicomInputStream extends FilterInputStream
         if (TagUtils.groupNumber(tag1) == TagUtils.groupNumber(tag2) &&
             tag1 < tag2) {
 
+            this.tsuid = bigEndian ? "1.2.840.113619.5.2"
+                                   : UID.ImplicitVRLittleEndian;
             this.bigEndian = bigEndian;
             this.explicitVR = false;
             return true;

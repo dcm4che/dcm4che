@@ -476,6 +476,14 @@ public class Attributes implements Serializable {
                 .setFloat(tag, privateCreator, vr, value);
     }
 
+    public Object setBulkDataLocator(int tag, String privateCreator, VR vr,
+            BulkDataLocator bulkDataLocator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        return getOrCreateGroup(groupNumber)
+                .set(tag, privateCreator, vr, bulkDataLocator);
+        
+    }
+
     public Sequence newSequence(int tag, String privateCreator,
             int initialCapacity) {
         int groupNumber = TagUtils.groupNumber(tag);

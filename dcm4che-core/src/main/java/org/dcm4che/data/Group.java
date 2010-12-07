@@ -467,7 +467,7 @@ class Group {
         return fragments;
     }
 
-    private Object set(int tag, String privateCreator, VR vr, Object value) {
+    public Object set(int tag, String privateCreator, VR vr, Object value) {
         return set(elTag(tag, privateCreator, true), vr, value);
     }
 

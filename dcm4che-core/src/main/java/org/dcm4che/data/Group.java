@@ -65,6 +65,8 @@ class Group {
                     len += 8;
             } else if (val instanceof Fragments) {
                     len += ((Fragments) val).calcLength() + 8;
+            } else if (val instanceof BulkDataLocator){
+                len += (((BulkDataLocator[]) val).length + 1) & ~1;
             } else {
                 if (!(val instanceof byte[]))
                     values[i] = val = vr.toBytes(val, bigEndian(), cs());

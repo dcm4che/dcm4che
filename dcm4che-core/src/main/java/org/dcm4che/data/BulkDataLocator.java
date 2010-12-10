@@ -1,7 +1,11 @@
 package org.dcm4che.data;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+
 
 public class BulkDataLocator {
 
@@ -13,8 +17,11 @@ public class BulkDataLocator {
 
     public BulkDataLocator(String uri, String transferSyntax, long position,
             int length, boolean deleteOnFinalize) {
-        if (uri == null)
-            throw new NullPointerException("uri");
+        try {
+            new URI(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("uri: " + uri);
+        }
         if (transferSyntax == null)
             throw new NullPointerException("transferSyntax");
         this.uri = uri;
@@ -34,5 +41,13 @@ public class BulkDataLocator {
                 + ", tsuid=" + transferSyntax
                 + ", pos=" + position
                 + ", len=" + length + "]";
+    }
+
+    public InputStream openStream() throws IOException {
+        try {
+            return new URI(uri).toURL().openStream();
+        } catch (URISyntaxException e) {
+            throw new AssertionError(e);
+        }
     }
 }

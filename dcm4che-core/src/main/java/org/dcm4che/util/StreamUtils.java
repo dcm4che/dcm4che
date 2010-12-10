@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dcm4che.data.VR;
-
 public class StreamUtils {
     
     private static final int COPY_BUFFER_SIZE = 2048;
@@ -86,8 +84,8 @@ public class StreamUtils {
         }
     }
 
-    public void copy(InputStream in, OutputStream out, int len, int swapBytes)
-            throws IOException {
+    public static void copy(InputStream in, OutputStream out, int len,
+            int swapBytes) throws IOException {
         copy(in, out, len, swapBytes,
                 new byte[Math.min(len, COPY_BUFFER_SIZE)]);
     }

@@ -110,7 +110,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(File file) throws IOException {
-        super(new FileInputStream(file));
+        this(new FileInputStream(file));
         uri = file.toURI().toString();
     }
 

@@ -2,7 +2,7 @@ package org.dcm4che.data;
 
 import java.util.ArrayList;
 
-public class Fragments extends ArrayList<byte[]> {
+public class Fragments extends ArrayList<Object> {
 
     private static final long serialVersionUID = -6667210062541083610L;
 
@@ -25,10 +25,13 @@ public class Fragments extends ArrayList<byte[]> {
 
     public int calcLength() {
         int len = 0;
-        for (byte[] b : this) {
+        for (Object o : this) {
             len += 8;
-            if (b != null)
-                len += (b.length + 1) & ~1;
+            if (o != null)
+                len += (((o instanceof BulkDataLocator) 
+                            ? ((BulkDataLocator) o).length 
+                            : ((byte[]) o).length)
+                        + 1) & ~1;
         }
         return len;
     }

@@ -91,7 +91,9 @@ class Group {
                 dos.writeHeader(tag, vr, 0);
             else if (val instanceof Fragments)
                 dos.writeFragments(tag, (Fragments) val);
-            else 
+            else if (val instanceof BulkDataLocator)
+                dos.writeAttribute(tag, vr, (BulkDataLocator) val);
+            else
                 dos.writeAttribute(tag, vr, 
                         (val instanceof byte[]) ? (byte[]) val 
                                 : vr.toBytes(val, bigEndian(), cs()));
@@ -598,8 +600,10 @@ class Group {
     private Fragments clone(Fragments src, boolean toogleEndian) {
         VR vr = src.vr();
         Fragments dst = new Fragments(vr, parent.bigEndian(), src.size());
-        for (byte[] b : src)
-            dst.add(toogleEndian ? vr.toggleEndian(b, true) : b);
+        for (Object o : src)
+            dst.add((toogleEndian && o instanceof byte[])
+                    ? vr.toggleEndian((byte[]) o, true)
+                    : o);
         return dst ;
     }
 }

@@ -1,5 +1,7 @@
 package org.dcm4che.util;
 
+import org.dcm4che.data.Tag;
+
 public class TagUtils {
 
     private static char[] HEX_DIGITS = {
@@ -61,6 +63,12 @@ public class TagUtils {
 
     public static int toTag(int groupNumber, int elementNumber) {
         return groupNumber << 16 | elementNumber;
+    }
+
+    public static boolean isItem(int tag) {
+        return tag == Tag.Item
+            || tag == Tag.ItemDelimitationItem
+            || tag == Tag.SequenceDelimitationItem;
     }
 }
 

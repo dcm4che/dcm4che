@@ -1,12 +1,17 @@
 package org.dcm4che.io;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.EncodeOptions;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
@@ -14,6 +19,8 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.util.ByteUtils;
+import org.dcm4che.util.StreamUtils;
+import org.dcm4che.util.TagUtils;
 
 public class DicomOutputStream extends FilterOutputStream {
 
@@ -40,6 +47,10 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         super(out);
         switchTransferSyntax(tsuid);
+    }
+
+    public DicomOutputStream(File file) throws IOException {
+        this(new BufferedOutputStream(new FileOutputStream(file)), true, false);
     }
 
     public final void setPreamble(byte[] preamble) {
@@ -106,7 +117,7 @@ public class DicomOutputStream extends FilterOutputStream {
         byte[] b = buf;
         ByteUtils.tagToBytes(tag, b, 0, bigEndian);
         int headerLen;
-        if (vr != null && explicitVR) {
+        if (!TagUtils.isItem(tag) && explicitVR) {
             ByteUtils.shortToBytesBE(vr.code(), b, 4);
             if ((headerLen = vr.headerLength()) == 8) {
                 ByteUtils.shortToBytes(len, b, 6, bigEndian);
@@ -130,7 +141,32 @@ public class DicomOutputStream extends FilterOutputStream {
         writeHeader(tag, vr, val.length + padlen);
         out.write(val);
         if (padlen > 0)
-            out.write(vr != null ? vr.paddingByte() : 0);
+            out.write(vr.paddingByte());
+    }
+
+    public void writeAttribute(int tag, VR vr, BulkDataLocator val)
+            throws IOException {
+        if (val == null) {
+            writeHeader(tag, vr, 0);
+            return;
+        }
+        int swapBytes = vr.numEndianBytes();
+        int padlen = val.length & 1;
+        writeHeader(tag, vr, val.length + padlen);
+        InputStream in = val.openStream();
+        try {
+            StreamUtils.skipFully(in, val.position);
+            if (swapBytes != 1 
+                    && (val.transferSyntax.equals(UID.ExplicitVRBigEndian)
+                            ? !bigEndian : bigEndian))
+                StreamUtils.copy(in, this, val.length, swapBytes);
+            else
+                StreamUtils.copy(in, this, val.length);
+        } finally {
+            in.close();
+        }
+        if (padlen > 0)
+            out.write(vr.paddingByte());
     }
 
     public void writeGroupLength(int tag, int len) throws IOException {
@@ -189,8 +225,11 @@ public class DicomOutputStream extends FilterOutputStream {
     public void writeFragments(int tag, Fragments frags)
             throws IOException {
         writeHeader(tag, frags.vr(), -1);
-        for (byte[] b : frags)
-            writeAttribute(Tag.Item, null, b);
+        for (Object o : frags)
+            if (o instanceof BulkDataLocator)
+                writeAttribute(Tag.Item, frags.vr(), (BulkDataLocator) o);
+            else
+                writeAttribute(Tag.Item, frags.vr(), (byte[]) o);
         writeHeader(Tag.SequenceDelimitationItem, null, 0);
     }
 }

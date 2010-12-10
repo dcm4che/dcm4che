@@ -22,6 +22,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.util.ByteUtils;
+import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,13 +272,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public void skipFully(long n) throws IOException {
-        long remaining = n;
-        while (remaining > 0) {
-            long count = skip(remaining);
-            if (count <= 0)
-                throw new EOFException();
-            remaining -= count;
-        }
+        StreamUtils.skipFully(this, n);
     }
 
     public void readFully(byte b[]) throws IOException {
@@ -285,15 +280,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public void readFully(byte b[], int off, int len) throws IOException {
-        if (len < 0)
-            throw new IndexOutOfBoundsException();
-        int n = 0;
-        while (n < len) {
-            int count = read(b, off + n, len - n);
-            if (count < 0)
-                throw new EOFException();
-            n += count;
-        }
+        StreamUtils.readFully(this, b, off, len);
     }
 
     public final void readHeader() throws IOException {
@@ -448,10 +435,9 @@ public class DicomInputStream extends FilterInputStream
             File tempfile = File.createTempFile(tempFilePrefix,
                     tempFileSuffix, tempDirectory);
             tempfile.deleteOnExit();
-            byte[] b = readValue(length);
             FileOutputStream tempout = new FileOutputStream(tempfile);
             try {
-                tempout.write(b);
+                StreamUtils.copy(this, tempout, length);
             } finally {
                 tempout.close();
             }

@@ -154,19 +154,22 @@ public class ByteUtilsTest {
     @Test
     public void testSwapShorts() {
         assertArrayEquals(TAG_PIXEL_DATA_LE ,
-                ByteUtils.swapShorts(TAG_PIXEL_DATA_BE.clone()));
+                ByteUtils.swapShorts(TAG_PIXEL_DATA_BE.clone(), 0,
+                        TAG_PIXEL_DATA_BE.length));
     }
 
     @Test
     public void testSwapInts() {
         assertArrayEquals(FLOAT_PI_LE ,
-                ByteUtils.swapInts(FLOAT_PI_BE.clone()));
+                ByteUtils.swapInts(FLOAT_PI_BE.clone(), 0,
+                        FLOAT_PI_BE.length));
     }
 
     @Test
     public void testSwapLongs() {
         assertArrayEquals(DOUBLE_PI_LE ,
-                ByteUtils.swapLongs(DOUBLE_PI_BE.clone()));
+                ByteUtils.swapLongs(DOUBLE_PI_BE.clone(), 0,
+                        DOUBLE_PI_BE.length));
     }
 
 }

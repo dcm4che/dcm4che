@@ -409,6 +409,10 @@ public enum VR {
         return isBinaryType() ? binaryType.toggleEndian(b, preserve) : b;
     }
 
+    public int numEndianBytes() {
+        return isBinaryType() ? binaryType.numBytes() : 1;
+    }
+
     UnsupportedOperationException unsupported() {
         return new UnsupportedOperationException("VR:" + this);
     }

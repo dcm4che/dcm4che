@@ -39,7 +39,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
         }
 
     },
@@ -57,7 +57,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
         }
 
     },
@@ -75,7 +75,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapInts(preserve ? b.clone() : b) ;
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
         }
     },
     TAG(4) {
@@ -91,7 +91,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapShorts(preserve ? b.clone() : b) ;
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
         }
     },
     FLOAT(4) {
@@ -131,7 +131,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapInts(preserve ? b.clone() : b);
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
         }
     },
     DOUBLE(8) {
@@ -171,7 +171,7 @@ enum BinaryType {
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
-            return ByteUtils.swapLongs(preserve ? b.clone() : b);
+            return ByteUtils.swapLongs(preserve ? b.clone() : b, 0, b.length);
         }
     };
     
@@ -185,6 +185,10 @@ enum BinaryType {
 
     private BinaryType(int numBytes) {
         this.numBytes = numBytes;
+    }
+
+    public final int numBytes() {
+        return numBytes;
     }
 
     public byte[] intToBytes(int val, boolean bigEndian) {

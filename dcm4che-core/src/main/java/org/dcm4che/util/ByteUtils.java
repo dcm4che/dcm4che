@@ -217,34 +217,31 @@ public class ByteUtils {
         return bytes;
     }
 
-    public static byte[] swapShorts(byte[] bytes) {
-        int len = bytes.length;
+    public static byte[] swapShorts(byte b[], int off, int len) {
         checkLength(len, 2);
-        for (int off = 0; off < len; off += 2)
-            swap(bytes, off, off+1);
-        return bytes;
+        for (int i = off, n = off + len; i < n; i += 2)
+            swap(b, i, i+1);
+        return b;
     }
 
-    public static byte[] swapInts(byte[] bytes) {
-        int len = bytes.length;
+    public static byte[] swapInts(byte b[], int off, int len) {
         checkLength(len, 4);
-        for (int off = 0; off < len; off += 4) {
-            swap(bytes, off, off+3);
-            swap(bytes, off+1, off+2);
+        for (int i = off, n = off + len; i < n; i += 4) {
+            swap(b, i, i+3);
+            swap(b, i+1, i+2);
         }
-        return bytes;
+        return b;
     }
 
-    public static byte[] swapLongs(byte[] bytes) {
-        int len = bytes.length;
+    public static byte[] swapLongs(byte b[], int off, int len) {
         checkLength(len, 8);
-        for (int off = 0; off < len; off += 8) {
-            swap(bytes, off, off+7);
-            swap(bytes, off+1, off+6);
-            swap(bytes, off+2, off+5);
-            swap(bytes, off+3, off+4);
+        for (int i = off, n = off + len; i < n; i += 8) {
+            swap(b, i, i+7);
+            swap(b, i+1, i+6);
+            swap(b, i+2, i+5);
+            swap(b, i+3, i+4);
         }
-        return bytes;
+        return b;
     }
 
     private static void checkLength(int len, int numBytes) {

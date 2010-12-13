@@ -234,7 +234,7 @@ public class Attributes implements Serializable {
         return item != null ? item.getValue(tag, privateCreator) : null;
     }
 
-    public byte[] getBytes(int tag, String privateCreator) {
+    public byte[] getBytes(int tag, String privateCreator) throws IOException {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);
         if (index < 0)
@@ -244,7 +244,7 @@ public class Attributes implements Serializable {
     }
 
     public byte[] getBytes(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+            List<ItemPointer> itemPointers) throws IOException {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getBytes(tag, privateCreator) : null;
     }

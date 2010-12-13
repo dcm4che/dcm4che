@@ -1,9 +1,11 @@
 package org.dcm4che.data;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 
 class Group {
@@ -236,7 +238,7 @@ class Group {
         return values[index];
     }
 
-    public byte[] getBytes(int tag, String privateCreator) {
+    public byte[] getBytes(int tag, String privateCreator) throws IOException {
         int index = indexOf(tag, privateCreator);
         if (index < 0)
             return null;
@@ -247,6 +249,22 @@ class Group {
 
         if (value instanceof byte[])
             return (byte[]) value;
+
+        if (value instanceof BulkDataLocator) {
+            BulkDataLocator bdl = (BulkDataLocator) value;
+            if (bdl.length == 0)
+                return BinaryType.EMPTY_BYTES;
+
+            InputStream in = bdl.openStream();
+            try {
+                StreamUtils.skipFully(in, bdl.position);
+                byte[] b = new byte[bdl.length];
+                StreamUtils.readFully(in, b, 0, b.length);
+                return b;
+            } finally {
+                in.close();
+            }
+        }
 
         return vrs[index].toBytes(values[index], bigEndian(), cs());
     }

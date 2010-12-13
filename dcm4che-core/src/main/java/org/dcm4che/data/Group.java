@@ -228,6 +228,14 @@ class Group {
         return false;
     }
 
+    public Object getValue(int tag, String privateCreator) {
+        int index = indexOf(tag, privateCreator);
+        if (index < 0)
+            return null;
+
+        return values[index];
+    }
+
     public byte[] getBytes(int tag, String privateCreator) {
         int index = indexOf(tag, privateCreator);
         if (index < 0)

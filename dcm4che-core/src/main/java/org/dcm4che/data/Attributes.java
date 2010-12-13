@@ -219,6 +219,21 @@ public class Attributes implements Serializable {
         return item != null ? item.getPrivateCreator(tag) : null;
     }
 
+    public Object getValue(int tag, String privateCreator) {
+        int groupNumber = TagUtils.groupNumber(tag);
+        int index = indexOf(groupNumber);
+        if (index < 0)
+            return null;
+
+        return groups[index].getValue(tag, privateCreator);
+    }
+
+    public Object getValue(int tag, String privateCreator,
+            List<ItemPointer> itemPointers) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getValue(tag, privateCreator) : null;
+    }
+
     public byte[] getBytes(int tag, String privateCreator) {
         int groupNumber = TagUtils.groupNumber(tag);
         int index = indexOf(groupNumber);

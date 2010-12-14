@@ -70,7 +70,7 @@ public class DicomInputStream extends FilterInputStream
     private int length;
     private DicomInputHandler handler = this;
     private Attributes bulkData;
-    private final byte[] buffer = new byte[8];
+    private final byte[] buffer = new byte[12];
     private final LinkedList<ItemPointer> itemPointers = 
             new LinkedList<ItemPointer>();
 
@@ -291,7 +291,19 @@ public class DicomInputStream extends FilterInputStream
         StreamUtils.readFully(this, b, off, len);
     }
 
-    public final void readHeader() throws IOException {
+    @SuppressWarnings("deprecation")
+    private String readASCII() throws IOException {
+        int ch1 = read();
+        int ch2 = read();
+        if ((ch1 | ch2) < 0)
+            throw new EOFException();
+        int len = (ch1 << 8) + ch2;
+        byte[] b = new byte[len];
+        StreamUtils.readFully(this, b, 0, len);
+        return new String(b, 0);
+    }
+
+    public void readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
         readFully(buf, 0, 8);
@@ -414,6 +426,8 @@ public class DicomInputStream extends FilterInputStream
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
+        } else if (length == -3) {
+            attrs.setBulkDataLocator(tag, null, vr, readBulkDataLocator());
         } else if ((excludeBulkData || includeBulkDataLocator) 
                 && isBulkData(attrs)){
             if (excludeBulkData) {
@@ -432,6 +446,16 @@ public class DicomInputStream extends FilterInputStream
                 setFileMetaInformationGroupLength(b);
         }
         return true;
+    }
+
+    private BulkDataLocator readBulkDataLocator() throws IOException {
+        byte[] b = buffer;
+        StreamUtils.readFully(this, b, 0, 12);
+        int len = ByteUtils.bytesToIntBE(b, 0);
+        long position = ByteUtils.bytesToLongBE(b, 4);
+        String uri = readASCII();
+        String tsuid = readASCII();
+        return new BulkDataLocator(uri, tsuid, position, len, false);
     }
 
     private BulkDataLocator createBulkDataLocator() throws IOException {
@@ -501,10 +525,14 @@ public class DicomInputStream extends FilterInputStream
         checkIsThis(dis);
         if (this.vr == null) {
             if (tag == Tag.Item) {
-                byte[] b = readValue(length);
-                if (bigEndian != frags.bigEndian())
-                    vr.toggleEndian(b, false);
-                frags.add(b);
+                if (length == -3) {
+                    frags.add(readBulkDataLocator());
+                } else {
+                    byte[] b = readValue(length);
+                    if (bigEndian != frags.bigEndian())
+                        vr.toggleEndian(b, false);
+                    frags.add(b);
+                }
                 return true;
             }
             if (tag == Tag.SequenceDelimitationItem) {

@@ -7,6 +7,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
@@ -33,6 +34,8 @@ public class DicomOutputStream extends FilterOutputStream {
     private boolean explicitVR;
 
     private boolean bigEndian;
+
+    private boolean includeBulkDataLocator;
 
     private final byte[] buf = new byte[12];
 
@@ -64,6 +67,14 @@ public class DicomOutputStream extends FilterOutputStream {
         if (encOpts == null)
             throw new NullPointerException();
         this.encOpts = encOpts;
+    }
+
+    public final boolean isIncludeBulkDataLocator() {
+        return includeBulkDataLocator;
+    }
+
+    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
+        this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
     public void writeCommand(Attributes cmd) throws IOException {
@@ -150,23 +161,48 @@ public class DicomOutputStream extends FilterOutputStream {
             writeHeader(tag, vr, 0);
             return;
         }
-        int swapBytes = vr.numEndianBytes();
-        int padlen = val.length & 1;
-        writeHeader(tag, vr, val.length + padlen);
-        InputStream in = val.openStream();
-        try {
-            StreamUtils.skipFully(in, val.position);
-            if (swapBytes != 1 
-                    && (val.transferSyntax.equals(UID.ExplicitVRBigEndian)
-                            ? !bigEndian : bigEndian))
-                StreamUtils.copy(in, this, val.length, swapBytes);
-            else
-                StreamUtils.copy(in, this, val.length);
-        } finally {
-            in.close();
+        if (includeBulkDataLocator && !val.deleteOnFinalize) {
+            writeHeader(tag, vr, -3);
+            writeBulkDataLocator(val);
+        } else {
+            int swapBytes = vr.numEndianBytes();
+            int padlen = val.length & 1;
+            writeHeader(tag, vr, val.length + padlen);
+            InputStream in = val.openStream();
+            try {
+                StreamUtils.skipFully(in, val.position);
+                if (swapBytes != 1 
+                        && (val.transferSyntax.equals(UID.ExplicitVRBigEndian)
+                                ? !bigEndian : bigEndian))
+                    StreamUtils.copy(in, this, val.length, swapBytes);
+                else
+                    StreamUtils.copy(in, this, val.length);
+            } finally {
+                in.close();
+            }
+            if (padlen > 0)
+                out.write(vr.paddingByte());
         }
-        if (padlen > 0)
-            out.write(vr.paddingByte());
+    }
+
+    private void writeBulkDataLocator(BulkDataLocator val)
+            throws IOException {
+        byte[] b = buf;
+        ByteUtils.intToBytesBE(val.length, b, 0);
+        ByteUtils.longToBytesBE(val.position, b, 4);
+        write(b, 0, 12);
+        writeASCII(val.uri);
+        writeASCII(val.transferSyntax);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void writeASCII(String s) throws IOException {
+        final int len = s.length();
+        byte[] b = new byte[len];
+        s.getBytes(0, len, b, 0);
+        write(len << 8);
+        write(len);
+        write(b, 0, len);
     }
 
     public void writeGroupLength(int tag, int len) throws IOException {

@@ -72,13 +72,13 @@ public class ByteUtils {
         return Float.intBitsToFloat(bytesToIntLE(bytes, off));
     }
 
-    public static double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
-        return bigEndian ? bytesToDoubleBE(bytes, off)
-                         : bytesToDoubleLE(bytes, off);
+    public static long bytesToLong(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToLongBE(bytes, off)
+                         : bytesToLongLE(bytes, off);
     }
 
-    public static double bytesToDoubleBE(byte[] bytes, int off) {
-        long l = ((long) bytes[off] << 56)
+    public static long bytesToLongBE(byte[] bytes, int off) {
+        return ((long) bytes[off] << 56)
                 + ((long) (bytes[off + 1] & 255) << 48)
                 + ((long) (bytes[off + 2] & 255) << 40)
                 + ((long) (bytes[off + 3] & 255) << 32)
@@ -86,11 +86,10 @@ public class ByteUtils {
                 + ((bytes[off + 5] & 255) << 16)
                 + ((bytes[off + 6] & 255) << 8)
                 + (bytes[off + 7] & 255);
-        return Double.longBitsToDouble(l);
-    }
+     }
 
-    public static double bytesToDoubleLE(byte[] bytes, int off) {
-        long l = ((long) bytes[off + 7] << 56)
+    public static long bytesToLongLE(byte[] bytes, int off) {
+        return ((long) bytes[off + 7] << 56)
                 + ((long) (bytes[off + 6] & 255) << 48)
                 + ((long) (bytes[off + 5] & 255) << 40)
                 + ((long) (bytes[off + 4] & 255) << 32)
@@ -98,7 +97,19 @@ public class ByteUtils {
                 + ((bytes[off + 2] & 255) << 16)
                 + ((bytes[off + 1] & 255) << 8)
                 + (bytes[off] & 255);
-        return Double.longBitsToDouble(l);
+    }
+
+    public static double bytesToDouble(byte[] bytes, int off, boolean bigEndian) {
+        return bigEndian ? bytesToDoubleBE(bytes, off)
+                         : bytesToDoubleLE(bytes, off);
+    }
+
+    public static double bytesToDoubleBE(byte[] bytes, int off) {
+        return Double.longBitsToDouble(bytesToLongBE(bytes, off));
+    }
+
+    public static double bytesToDoubleLE(byte[] bytes, int off) {
+        return Double.longBitsToDouble(bytesToLongLE(bytes, off));
     }
 
     public static byte[] shortToBytes(int i, byte[] bytes, int off,

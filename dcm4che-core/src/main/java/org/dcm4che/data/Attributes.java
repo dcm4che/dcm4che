@@ -621,6 +621,7 @@ public class Attributes implements Serializable {
         out.writeBoolean(bigEndian);
         out.writeInt(groupsSize);
         DicomOutputStream dout = new DicomOutputStream(out, true, bigEndian);
+        dout.setIncludeBulkDataLocator(true);
         dout.writeDataset(null, this);
         dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
     }

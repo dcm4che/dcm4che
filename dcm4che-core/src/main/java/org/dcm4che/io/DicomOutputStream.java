@@ -165,7 +165,7 @@ public class DicomOutputStream extends FilterOutputStream {
             writeHeader(tag, vr, val.length + padlen);
             InputStream in = val.openStream();
             try {
-                StreamUtils.skipFully(in, val.position);
+                StreamUtils.skipFully(in, val.offset);
                 if (swapBytes != 1 
                         && (val.transferSyntax.equals(UID.ExplicitVRBigEndian)
                                 ? !bigEndian : bigEndian))
@@ -184,7 +184,7 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         byte[] b = buf;
         ByteUtils.intToBytesBE(val.length, b, 0);
-        ByteUtils.longToBytesBE(val.position, b, 4);
+        ByteUtils.longToBytesBE(val.offset, b, 4);
         write(b, 0, 12);
         writeASCII(val.uri);
         writeASCII(val.transferSyntax);

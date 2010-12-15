@@ -11,11 +11,11 @@ public class BulkDataLocator {
 
     public final String uri;
     public final String transferSyntax;
-    public final long position;
+    public final long offset;
     public final int length;
     public final boolean deleteOnFinalize;
 
-    public BulkDataLocator(String uri, String transferSyntax, long position,
+    public BulkDataLocator(String uri, String transferSyntax, long offset,
             int length, boolean deleteOnFinalize) {
         try {
             new URI(uri);
@@ -26,7 +26,7 @@ public class BulkDataLocator {
             throw new NullPointerException("transferSyntax");
         this.uri = uri;
         this.transferSyntax = transferSyntax;
-        this.position = position;
+        this.offset = offset;
         this.length = length;
         this.deleteOnFinalize = deleteOnFinalize;
     }
@@ -39,7 +39,7 @@ public class BulkDataLocator {
     public String toString() {
         return "BulkDataLocator[uri=" +  uri 
                 + ", tsuid=" + transferSyntax
-                + ", pos=" + position
+                + ", pos=" + offset
                 + ", len=" + length + "]";
     }
 

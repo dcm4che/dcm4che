@@ -452,10 +452,10 @@ public class DicomInputStream extends FilterInputStream
         byte[] b = buffer;
         StreamUtils.readFully(this, b, 0, 12);
         int len = ByteUtils.bytesToIntBE(b, 0);
-        long position = ByteUtils.bytesToLongBE(b, 4);
+        long off = ByteUtils.bytesToLongBE(b, 4);
         String uri = readASCII();
         String tsuid = readASCII();
-        return new BulkDataLocator(uri, tsuid, position, len, false);
+        return new BulkDataLocator(uri, tsuid, off, len, false);
     }
 
     private BulkDataLocator createBulkDataLocator() throws IOException {

@@ -54,8 +54,6 @@ public class DicomInputStream extends FilterInputStream
 
     private static final int BULK_DATA_LOCATOR = 0xffff;
 
-    private static byte[] EMPTY_BYTES = {};
-
     private String uri;
     private String tsuid;
     private byte[] preamble;
@@ -423,7 +421,9 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
         checkIsThis(dis);
-        if (vr == VR.SQ) {
+        if (length == 0) {
+            attrs.setNull(tag, null, vr);
+        } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
@@ -501,6 +501,10 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
         checkIsThis(dis);
+        if (length == 0) {
+            seq.add(new Attributes(seq.getParent().bigEndian(), 0));
+            return;
+        }
         Attributes attrs = new Attributes(seq.getParent().bigEndian());
         seq.add(attrs);
         readAttributes(attrs, length,
@@ -535,10 +539,6 @@ public class DicomInputStream extends FilterInputStream
 
     private void readSequence(int len, Attributes attrs, int sqtag)
             throws IOException {
-        if (len == 0) {
-            attrs.setNull(sqtag, null, VR.SQ);
-            return;
-        }
         Sequence seq = attrs.newSequence(sqtag, null, 10);
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
@@ -586,8 +586,6 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private byte[] readValue(int len) throws IOException {
-        if (len == 0)
-            return EMPTY_BYTES;
         byte[] value = new byte[len];
         readFully(value);
         return value;

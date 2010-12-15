@@ -45,6 +45,8 @@ public class DicomInputStream extends FilterInputStream
         "Missing or wrong File Meta Information Group Length (0002,0000)";
     private static final String NOT_A_DICOM_STREAM = 
         "Not a DICOM Stream";
+    private static final String IMPLICIT_VR_BIG_ENDIAN =
+        "Implicit VR Big Endian encoded DICOM Stream";
     private static final String DEFLATED_WITH_ZLIB_HEADER =
         "Deflated DICOM Stream with ZLIB Header";
 
@@ -94,13 +96,6 @@ public class DicomInputStream extends FilterInputStream
         bulkData.setNull(Tag.PixelData, null, VR.UT);
         bulkData.trimToSize(false);
         return bulkData;
-    }
-
-    public DicomInputStream(InputStream in, boolean explicitVR,
-            boolean bigEndian) throws IOException {
-        super(in);
-        this.explicitVR = explicitVR;
-        this.bigEndian = bigEndian;
     }
 
     public DicomInputStream(InputStream in, String tsuid) throws IOException {
@@ -330,23 +325,21 @@ public class DicomInputStream extends FilterInputStream
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
     }
 
-    public void readAttributes(Attributes attrs, int len) throws IOException {
-        readAttributes(attrs, len, false);
-    }
-
-    public Attributes readCommand(int len) throws IOException {
+    public Attributes readCommand() throws IOException {
         if (bigEndian || explicitVR)
             throw new IllegalStateException(
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
         Attributes attrs = new Attributes(1);
-        readAttributes(attrs, len, false);
+        readAttributes(attrs, -1, -1);
+        attrs.trimToSize();
         return attrs;
     }
 
-    public Attributes readDataset(int len) throws IOException {
+    public Attributes readDataset(int len, int stopTag) throws IOException {
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian);
-        readAttributes(attrs, len, false);
+        readAttributes(attrs, len, stopTag);
+        attrs.trimToSize();
         return attrs;
     }
 
@@ -357,7 +350,23 @@ public class DicomInputStream extends FilterInputStream
             return;  // already read
 
         Attributes attrs = new Attributes(bigEndian, 1);
-        readAttributes(attrs, -1, true);
+        while (pos != fmiEndPos) {
+            mark(12);
+            readHeader();
+            if (TagUtils.groupNumber(tag) != 2) {
+                LOG.warn(MISSING_FMI_LENGTH);
+                reset();
+                break;
+            }
+             if (vr != null) {
+                if (vr == VR.UN)
+                    vr = ElementDictionary.getStandardElementDictionary()
+                            .vrOf(tag);
+                handler.readValue(this, attrs);
+            } else
+                skipAttribute(UNEXPECTED_ATTRIBUTE);
+        }
+        attrs.trimToSize();
         fileMetaInformation = attrs;
 
         String tsuid = attrs.getString(
@@ -369,13 +378,15 @@ public class DicomInputStream extends FilterInputStream
         switchTransferSyntax(tsuid);
     }
 
-    private void readAttributes(Attributes attrs, int len,
-            boolean fmi) throws IOException {
-        long endPos =  pos + (len & 0xffffffffL);
+    public void readAttributes(Attributes attrs, int len, int stopTag)
+            throws IOException {
         boolean undeflen = len == -1;
-        while (fmi ? this.pos != fmiEndPos
-                : (undeflen || this.pos < endPos)) {
-            mark(12);
+        boolean hasStopTag = stopTag != -1;
+        if (hasStopTag && !undeflen)
+            throw new IllegalArgumentException(
+                    "Cannot specify an explicit length and a stopTag");
+        long endPos =  pos + (len & 0xffffffffL);
+        while (undeflen || this.pos < endPos) {
             try {
                 readHeader();
             } catch (EOFException e) {
@@ -383,48 +394,36 @@ public class DicomInputStream extends FilterInputStream
                     break;
                 throw e;
             }
-            if (fmi && TagUtils.groupNumber(tag) != 2) {
-                LOG.warn(MISSING_FMI_LENGTH);
-                reset();
+            if (hasStopTag && tag == stopTag)
                 break;
-            }
-            boolean prevBigEndian = bigEndian;
-            boolean prevExplicitVR = explicitVR;
-            try {
-                if (vr == VR.UN) {
-                    bigEndian = false;
-                    explicitVR = false;
-                    vr = ElementDictionary.vrOf(tag,
-                            attrs.getPrivateCreator(tag));
-                    if (vr == VR.UN && length == -1)
-                        vr = VR.SQ; // assumes UN with undefined length are SQ,
-                                    // will fail on UN fragments!
+            if (vr != null) {
+                boolean prevBigEndian = bigEndian;
+                boolean prevExplicitVR = explicitVR;
+                try {
+                    if (vr == VR.UN) {
+                        bigEndian = false;
+                        explicitVR = false;
+                        vr = ElementDictionary.vrOf(tag,
+                                attrs.getPrivateCreator(tag));
+                        if (vr == VR.UN && length == -1)
+                            vr = VR.SQ; // assumes UN with undefined length are SQ,
+                                        // will fail on UN fragments!
+                    }
+                    handler.readValue(this, attrs);
+                } finally {
+                    bigEndian = prevBigEndian;
+                    explicitVR = prevExplicitVR;
                 }
-                if (!handler.readValue(this, attrs))
-                    break;
-            } finally {
-                bigEndian = prevBigEndian;
-                explicitVR = prevExplicitVR;
-            }
-            if (fmi && pos == fmiEndPos)
-                break;
+            } else
+                skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
-        attrs.trimToSize();
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Attributes attrs)
-        throws IOException {
-
+    public void readValue(DicomInputStream dis, Attributes attrs)
+            throws IOException {
         checkIsThis(dis);
-        if (vr == null) {
-            if (tag == Tag.ItemDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                return false;
-            }
-            skipAttribute(UNEXPECTED_ATTRIBUTE);
-        } else if (vr == VR.SQ) {
+        if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
@@ -447,7 +446,6 @@ public class DicomInputStream extends FilterInputStream
             } else if (tag == Tag.FileMetaInformationGroupLength)
                 setFileMetaInformationGroupLength(b);
         }
-        return true;
     }
 
     private BulkDataLocator readBulkDataLocator() throws IOException {
@@ -500,51 +498,28 @@ public class DicomInputStream extends FilterInputStream
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Sequence seq)
-        throws IOException {
-
+    public void readValue(DicomInputStream dis, Sequence seq)
+            throws IOException {
         checkIsThis(dis);
-        if (vr == null) {
-            if (tag == Tag.Item) {
-                Attributes attrs = new Attributes(seq.getParent().bigEndian());
-                seq.add(attrs);
-                readAttributes(attrs, length);
-                return true;
-            }
-            if (tag == Tag.SequenceDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                return false;
-            }
-        }
-        skipAttribute(UNEXPECTED_ATTRIBUTE);
-        return true;
+        Attributes attrs = new Attributes(seq.getParent().bigEndian());
+        seq.add(attrs);
+        readAttributes(attrs, length,
+                length == -1 ? Tag.ItemDelimitationItem : -1);
+        attrs.trimToSize();
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Fragments frags)
+    public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         checkIsThis(dis);
-        if (this.vr == null) {
-            if (tag == Tag.Item) {
-                if (length == BULK_DATA_LOCATOR) {
-                    frags.add(readBulkDataLocator());
-                } else {
-                    byte[] b = readValue(length);
-                    if (bigEndian != frags.bigEndian())
-                        vr.toggleEndian(b, false);
-                    frags.add(b);
-                }
-                return true;
-            }
-            if (tag == Tag.SequenceDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                return false;
-            }
+        if (length == BULK_DATA_LOCATOR) {
+            frags.add(readBulkDataLocator());
+        } else {
+            byte[] b = readValue(length);
+            if (bigEndian != frags.bigEndian())
+                vr.toggleEndian(b, false);
+            frags.add(b);
         }
-        skipAttribute(UNEXPECTED_ATTRIBUTE);
-        return true;
     }
 
     private void checkIsThis(DicomInputStream dis) {
@@ -558,50 +533,54 @@ public class DicomInputStream extends FilterInputStream
         skip(length);
     }
 
-    private void readSequence(int len, Attributes attrs, int tag)
-        throws IOException {
-
-        if (len == 0)
-            attrs.setNull(tag, null, VR.SQ);
-        else {
-            Sequence seq = attrs.newSequence(tag, null, 10);
-            readSequence(tag, attrs.getPrivateCreator(tag), len, seq);
-            if (seq.isEmpty())
-                attrs.setNull(tag, null, VR.SQ);
-            else
-                seq.trimToSize();
-        }
-    }
-
-    private void readSequence(int tag, String privateCreator, int len,
-            Sequence seq) throws IOException {
-        if (len == 0)
+    private void readSequence(int len, Attributes attrs, int sqtag)
+            throws IOException {
+        if (len == 0) {
+            attrs.setNull(sqtag, null, VR.SQ);
             return;
-
+        }
+        Sequence seq = attrs.newSequence(sqtag, null, 10);
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
-        boolean quit = false;
-        while (!quit && (undefLen || pos < endPos)) {
-            itemPointers.add(new ItemPointer(tag, privateCreator, seq.size()));
+        for (int i = 0; undefLen || pos < endPos; ++i) {
             readHeader();
-            quit = !handler.readValue(this, seq);
-            itemPointers.removeLast();
+            if (tag == Tag.Item) {
+                itemPointers.add(new ItemPointer(sqtag,
+                        attrs.getPrivateCreator(sqtag), i));
+                handler.readValue(this, seq);
+                itemPointers.removeLast();
+            } else if (undefLen && tag == Tag.SequenceDelimitationItem) {
+                if (length != 0)
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                break;
+            } else
+                skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
+        if (seq.isEmpty())
+            attrs.setNull(sqtag, null, VR.SQ);
+        else
+            seq.trimToSize();
     }
 
-    private void readFragments(Attributes attrs, int tag, VR vr)
+    private void readFragments(Attributes attrs, int fragsTag, VR vr)
             throws IOException {
         Fragments frags =
-                attrs.newFragments(tag, null, vr, attrs.bigEndian(), 10);
-        boolean quit = false;
-        while (!quit) {
-            itemPointers.add(new ItemPointer(tag, null, frags.size()));
+                attrs.newFragments(fragsTag, null, vr, attrs.bigEndian(), 10);
+        for (int i = 0; true; ++i) {
             readHeader();
-            quit = !handler.readValue(this, frags);
-            itemPointers.removeLast();
+            if (tag == Tag.Item) {
+                itemPointers.add(new ItemPointer(fragsTag, null, i));
+                handler.readValue(this, frags);
+                itemPointers.removeLast();
+            } else if (tag == Tag.SequenceDelimitationItem) {
+                if (length != 0)
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                break;
+            } else
+                skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
         if (frags.isEmpty())
-            attrs.setNull(tag, null, vr);
+            attrs.setNull(fragsTag, null, vr);
         else
             frags.trimToSize();
     }
@@ -666,7 +645,8 @@ public class DicomInputStream extends FilterInputStream
                 == 2;
     }
 
-    private boolean guessTransferSyntax(byte[] b128, boolean bigEndian) {
+    private boolean guessTransferSyntax(byte[] b128, boolean bigEndian)
+            throws DicomStreamException {
         int tag1 = ByteUtils.bytesToTag(b128, 0, bigEndian);
         VR vr = ElementDictionary.vrOf(tag1, null);
         if (vr == VR.UN)
@@ -684,10 +664,10 @@ public class DicomInputStream extends FilterInputStream
         int tag2 = ByteUtils.bytesToTag(b128, len + 8, bigEndian);
         if (TagUtils.groupNumber(tag1) == TagUtils.groupNumber(tag2) &&
             tag1 < tag2) {
-
-            this.tsuid = bigEndian ? "1.2.840.113619.5.2"
-                                   : UID.ImplicitVRLittleEndian;
-            this.bigEndian = bigEndian;
+            if (bigEndian)
+                throw new DicomStreamException(IMPLICIT_VR_BIG_ENDIAN);
+            this.tsuid = UID.ImplicitVRLittleEndian;
+            this.bigEndian = false;
             this.explicitVR = false;
             return true;
         }

@@ -260,6 +260,9 @@ class Group {
                 StreamUtils.skipFully(in, bdl.position);
                 byte[] b = new byte[bdl.length];
                 StreamUtils.readFully(in, b, 0, b.length);
+                if (bdl.transferSyntax.equals(UID.ExplicitVRBigEndian)
+                        ? !bigEndian() : bigEndian())
+                    vrs[index].toggleEndian(b, false);
                 return b;
             } finally {
                 in.close();

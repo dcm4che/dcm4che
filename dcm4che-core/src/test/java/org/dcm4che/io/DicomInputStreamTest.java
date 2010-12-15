@@ -1,14 +1,13 @@
 package org.dcm4che.io;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.InputStream;
-import java.net.URL;
+import java.io.File;
 
-import org.junit.Test;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
+import org.junit.Test;
 
 public class DicomInputStreamTest {
 
@@ -42,13 +41,12 @@ public class DicomInputStreamTest {
             boolean excludeBulkData, boolean includeBulkDataLocator)
             throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        URL url = cl.getResource(name);
-        DicomInputStream in = new DicomInputStream(url.openStream());
+        DicomInputStream in = new DicomInputStream(
+                new File(cl.getResource(name).toURI()));
         try {
-            in.setURI(url.toURI().toString());
             in.setExcludeBulkData(excludeBulkData);
             in.setIncludeBulkDataLocator(includeBulkDataLocator);
-            return in.readDataset(-1);
+            return in.readDataset(-1, -1);
         } finally {
             in.close();
         }

@@ -620,7 +620,9 @@ public class Attributes implements Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeBoolean(bigEndian);
         out.writeInt(groupsSize);
-        DicomOutputStream dout = new DicomOutputStream(out, true, bigEndian);
+        DicomOutputStream dout = new DicomOutputStream(out,
+                bigEndian ? UID.ExplicitVRBigEndian
+                          : UID.ExplicitVRLittleEndian);
         dout.setIncludeBulkDataLocator(true);
         dout.writeDataset(null, this);
         dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
@@ -632,8 +634,10 @@ public class Attributes implements Serializable {
         this.length = -1;
         this.bigEndian = in.readBoolean();
         this.groups = new Group[in.readInt()];
-        DicomInputStream din = new DicomInputStream(in, true, bigEndian);
-        din.readAttributes(this, -1);
+        DicomInputStream din = new DicomInputStream(in, 
+                bigEndian ? UID.ExplicitVRBigEndian
+                          : UID.ExplicitVRLittleEndian);
+        din.readAttributes(this, -1, Tag.ItemDelimitationItem);
     }
 
 }

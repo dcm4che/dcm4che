@@ -8,12 +8,12 @@ import org.dcm4che.data.Sequence;
 
 public interface DicomInputHandler {
 
-    boolean readValue(DicomInputStream dis, Attributes attrs)
+    void readValue(DicomInputStream dis, Attributes attrs)
     throws IOException;
 
-    boolean readValue(DicomInputStream dis, Sequence seq)
+    void readValue(DicomInputStream dis, Sequence seq)
     throws IOException;
 
-    boolean readValue(DicomInputStream dis, Fragments frags)
+    void readValue(DicomInputStream dis, Fragments frags)
     throws IOException;
 }

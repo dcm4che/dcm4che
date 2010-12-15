@@ -52,11 +52,11 @@ public class Dcm2Txt implements DicomInputHandler {
     public void parse(InputStream is) throws IOException {
         DicomInputStream dis = new DicomInputStream(is);
         dis.setDicomInputHandler(this);
-        dis.readDataset(-1);
+        dis.readDataset(-1, -1);
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Attributes attrs)
+    public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
         if (first) {
             promptPreamble(dis.getPreamble());
@@ -67,10 +67,19 @@ public class Dcm2Txt implements DicomInputHandler {
         appendHeader(dis, line);
         VR vr = dis.vr();
         int vallen = dis.length();
-        if (vr == null || vr == VR.SQ || vallen == -1) {
+        boolean undeflen = vallen == -1;
+        if (vr == VR.SQ || undeflen) {
             appendKeyword(dis, line);
             System.out.println(line);
-            return dis.readValue(dis, attrs);
+            dis.readValue(dis, attrs);
+            if (undeflen) {
+                line.setLength(0);
+                appendPrefix(dis, line);
+                appendHeader(dis, line);
+                appendKeyword(dis, line);
+                System.out.println(line);
+            }
+            return;
         }
         int tag = dis.tag();
         byte[] b = new byte[dis.length()];
@@ -89,29 +98,36 @@ public class Dcm2Txt implements DicomInputHandler {
                 || tag == Tag.SpecificCharacterSet
                 || TagUtils.isPrivateCreator(tag))
             attrs.setBytes(tag, null, vr, b);
-        return true;
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Sequence seq)
+    public void readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
         StringBuilder line = new StringBuilder(width);
         appendPrefix(dis, line);
         appendHeader(dis, line);
         appendKeyword(dis, line);
         System.out.println(line);
-        return dis.readValue(dis, seq);
+        boolean undeflen = dis.length() == -1;
+        dis.readValue(dis, seq);
+        if (undeflen) {
+            line.setLength(0);
+            appendPrefix(dis, line);
+            appendHeader(dis, line);
+            appendKeyword(dis, line);
+            System.out.println(line);
+        }
     }
 
     @Override
-    public boolean readValue(DicomInputStream dis, Fragments frags)
+    public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         StringBuilder line = new StringBuilder(width + 20);
         appendPrefix(dis, line);
         appendHeader(dis, line);
-        boolean appendFragment = appendFragment(line, dis, frags.vr());
+        appendFragment(line, dis, frags.vr());
         System.out.println(line);
-        return appendFragment || dis.readValue(dis, frags);
+        dis.readValue(dis, frags);
     }
 
     private void appendPrefix(DicomInputStream dis, StringBuilder line) {
@@ -136,11 +152,8 @@ public class Dcm2Txt implements DicomInputHandler {
             line.setLength(width);
     }
 
-    private boolean appendFragment(StringBuilder line, DicomInputStream dis,
+    private void appendFragment(StringBuilder line, DicomInputStream dis,
             VR vr) throws IOException {
-        if (dis.tag() != Tag.Item)
-            return false;
-        
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         line.append(" [");
@@ -149,7 +162,6 @@ public class Dcm2Txt implements DicomInputHandler {
             line.append(']');
             appendKeyword(dis, line);
         }
-        return true;
     }
 
     private void promptPreamble(byte[] preamble) {

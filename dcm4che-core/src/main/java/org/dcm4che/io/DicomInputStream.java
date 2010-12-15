@@ -50,6 +50,8 @@ public class DicomInputStream extends FilterInputStream
 
     private static final int ZLIB_HEADER = 0x789c;
 
+    private static final int BULK_DATA_LOCATOR = 0xffff;
+
     private static byte[] EMPTY_BYTES = {};
 
     private String uri;
@@ -426,7 +428,7 @@ public class DicomInputStream extends FilterInputStream
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
-        } else if (length == -3) {
+        } else if (length == BULK_DATA_LOCATOR) {
             attrs.setBulkDataLocator(tag, null, vr, readBulkDataLocator());
         } else if ((excludeBulkData || includeBulkDataLocator) 
                 && isBulkData(attrs)){

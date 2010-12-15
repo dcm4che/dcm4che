@@ -7,7 +7,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
@@ -24,6 +23,8 @@ import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 
 public class DicomOutputStream extends FilterOutputStream {
+
+    private static final int BULK_DATA_LOCATOR = 0xffff;
 
     private static final byte[] DICM = { 'D', 'I', 'C', 'M' };
 
@@ -162,7 +163,7 @@ public class DicomOutputStream extends FilterOutputStream {
             return;
         }
         if (includeBulkDataLocator && !val.deleteOnFinalize) {
-            writeHeader(tag, vr, -3);
+            writeHeader(tag, vr, BULK_DATA_LOCATOR);
             writeBulkDataLocator(val);
         } else {
             int swapBytes = vr.numEndianBytes();

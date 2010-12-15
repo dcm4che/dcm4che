@@ -527,7 +527,7 @@ public class DicomInputStream extends FilterInputStream
         checkIsThis(dis);
         if (this.vr == null) {
             if (tag == Tag.Item) {
-                if (length == -3) {
+                if (length == BULK_DATA_LOCATOR) {
                     frags.add(readBulkDataLocator());
                 } else {
                     byte[] b = readValue(length);

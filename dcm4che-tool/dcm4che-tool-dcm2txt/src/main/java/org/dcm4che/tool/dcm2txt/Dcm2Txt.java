@@ -127,7 +127,6 @@ public class Dcm2Txt implements DicomInputHandler {
         appendHeader(dis, line);
         appendFragment(line, dis, frags.vr());
         System.out.println(line);
-        dis.readValue(dis, frags);
     }
 
     private void appendPrefix(DicomInputStream dis, StringBuilder line) {

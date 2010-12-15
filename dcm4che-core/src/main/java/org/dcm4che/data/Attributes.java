@@ -17,8 +17,7 @@ public class Attributes implements Serializable {
 
     private static final int INIT_CAPACITY = 10;
     private static final int TO_STRING_LIMIT = 50;
-    private static final byte[] FMI_VERS = { 0, 1 };
-
+ 
     private transient Attributes parent;
     private transient Group[] groups;
     private transient int groupsSize;
@@ -606,7 +605,8 @@ public class Attributes implements Serializable {
         String cuid = getString(Tag.SOPClassUID, null, 0, null);
         String iuid = getString(Tag.SOPInstanceUID, null, 0, null);
         Attributes fmi = new Attributes(1);
-        fmi.setBytes(Tag.FileMetaInformationVersion, null, VR.OB, FMI_VERS);
+        fmi.setBytes(Tag.FileMetaInformationVersion, null, VR.OB,
+                new byte[]{ 0, 1 });
         fmi.setString(Tag.MediaStorageSOPClassUID, null, VR.UI, cuid);
         fmi.setString(Tag.MediaStorageSOPInstanceUID, null, VR.UI, iuid);
         fmi.setString(Tag.TransferSyntaxUID, null, VR.UI, tsuid);
@@ -614,6 +614,7 @@ public class Attributes implements Serializable {
                 Implementation.getClassUID());
         fmi.setString(Tag.ImplementationVersionName, null, VR.SH,
                 Implementation.getVersionName());
+        fmi.trimToSize(false);
         return fmi;
     }
 

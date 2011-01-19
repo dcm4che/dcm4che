@@ -56,6 +56,10 @@ public class TagUtils {
             && (tag & 0x000000FF) != 0;
     }
 
+    public static boolean isPrivateGroup(int tag) {
+        return (tag & 0x00010000) != 0;
+    }
+
     public static boolean isPrivateTag(int tag) {
         return (tag & 0x00010000) != 0
             && (tag & 0x0000FF00) != 0;
@@ -63,6 +67,20 @@ public class TagUtils {
 
     public static int toTag(int groupNumber, int elementNumber) {
         return groupNumber << 16 | elementNumber;
+    }
+
+    public static int toPrivateTag(int creatorTag, int elementNumber) {
+        return (creatorTag & 0xffff0000) 
+             | ((creatorTag & 0xff) << 8
+             | (elementNumber & 0xff));
+    }
+
+    public static int creatorTagOf(int tag) {
+        return (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
+    }
+
+    public static int groupLengthTagOf(int tag) {
+        return tag & 0xffff0000;
     }
 
     public static boolean isItem(int tag) {

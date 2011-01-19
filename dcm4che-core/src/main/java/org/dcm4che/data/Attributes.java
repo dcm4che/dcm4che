@@ -1,6 +1,7 @@
 package org.dcm4che.data;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.util.List;
 
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 
 public class Attributes implements Serializable {
@@ -17,14 +19,18 @@ public class Attributes implements Serializable {
 
     private static final int INIT_CAPACITY = 10;
     private static final int TO_STRING_LIMIT = 50;
+    private static final int TO_STRING_WIDTH = 78;
+    private static final int[][] NO_GROUP_LENGTHS = { null, null };
  
     private transient Attributes parent;
-    private transient Group[] groups;
-    private transient int groupsSize;
+    private transient int[] tags;
+    private transient VR[] vrs;
+    private transient Object[] values;
+    private transient int size;
     private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
     private transient long position = -1L;
     private transient int length = -1;
-
+    private transient int[][] groupLengths = NO_GROUP_LENGTHS;
     private transient boolean bigEndian;
 
     public Attributes() {
@@ -40,12 +46,18 @@ public class Attributes implements Serializable {
     }
 
     public Attributes(boolean bigEndian, int initialCapacity) {
+        init(bigEndian, initialCapacity);
+    }
+
+    private void init(boolean bigEndian, int initialCapacity) {
         this.bigEndian = bigEndian;
-        this.groups = new Group[initialCapacity];
+        this.tags = new int[initialCapacity];
+        this.vrs = new VR[initialCapacity];
+        this.values = new Object[initialCapacity];
     }
 
     public Attributes(boolean bigEndian, Attributes other) {
-        this(bigEndian, other.groupsSize);
+        this(bigEndian, other.size);
         addAll(other);
     }
 
@@ -90,15 +102,12 @@ public class Attributes implements Serializable {
         this.position = position;
     }
 
-   public boolean isEmpty() {
-        if (groupsSize == 0)
-            return true;
+    public final boolean isEmpty() {
+        return size == 0;
+    }
 
-        for (int i = 0; i < groupsSize; i++)
-            if (!groups[i].isEmpty())
-                return false;
-
-        return true;
+    public final int size() {
+        return size;
     }
 
     public void trimToSize() {
@@ -106,61 +115,73 @@ public class Attributes implements Serializable {
     }
 
     public void trimToSize(boolean recursive) {
-        int oldCapacity = groups.length;
-        int newCount = 0;
-        for (int i = 0; i < groupsSize; i++) {
-            Group group = groups[i];
-            if (!group.isEmpty()) {
-                group.trimToSize(recursive);
-                newCount++;
-            }
+        int oldCapacity = tags.length;
+        if (size < oldCapacity) {
+            tags = Arrays.copyOf(tags, size);
+            vrs = Arrays.copyOf(vrs, size);
+            values = Arrays.copyOf(values, size);
         }
-        if (newCount < oldCapacity) {
-            Group[] newGroups = new Group[newCount];
-            for (int i = 0, j = 0; i < groupsSize; i++) {
-                Group group = groups[i];
-                if (!group.isEmpty())
-                    newGroups[j++] = group;
+        if (recursive)
+            for (Object value : values) {
+                if (value instanceof Sequence) {
+                    ((Sequence) value).trimToSize(recursive);
+                } else if (value instanceof Fragments)
+                    ((Fragments) value).trimToSize();
             }
-            groups = newGroups;
-            groupsSize = newCount;
-        }
     }
 
     public void internalizeStringValues(boolean decode) {
-        for (int i = 0; i < groupsSize; i++)
-            groups[i].internalizeStringValues(decode);
+        Object value;
+        VR vr;
+        for (int i = 0; i < values.length; i++) {
+            if ((value = values[i]) == null)
+                continue;
+            if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value)
+                    item.internalizeStringValues(decode);
+            } else if ((vr = vrs[i]).isStringType()) {
+                if (value instanceof byte[]) {
+                    if (!decode)
+                        continue;
+                    value = vr.toStrings((byte[]) value, bigEndian,
+                            getSpecificCharacterSet());
+                }
+                if (value instanceof String)
+                    values[i] = ((String) value).intern();
+                else {
+                    String[] ss = (String[]) value;
+                    for (int j = 0; j < ss.length; j++)
+                        ss[j] = ss[j].intern();
+                }
+            }
+        }
     }
 
     public void decodeStringValues() {
-        for (int i = 0; i < groupsSize; i++)
-            groups[i].decodeStringValues();
+        Object value;
+        VR vr;
+        for (int i = 0; i < values.length; i++) {
+            if ((value = values[i]) == null)
+                continue;
+            if (value instanceof Sequence) {
+                for (Attributes item : (Sequence) value)
+                    item.decodeStringValues();
+            } else if ((vr = vrs[i]).isStringType())
+                if (value instanceof byte[])
+                    values[i] =
+                        vr.toStrings((byte[]) value, bigEndian,
+                                getSpecificCharacterSet());
+        }
     }
 
     private void ensureCapacity(int minCapacity) {
-        int oldCapacity = groups.length;
-        if (minCapacity > oldCapacity)
-            groups = Arrays.copyOf(groups, Math.max(minCapacity,
-                    (oldCapacity * 3) / 2 + 1));
-    }
-
-    private int indexOf(int groupNumber) {
-        int low = 0;
-        int high = groupsSize - 1;
-        Group[] g = groups;
-
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            int midGroupNumber = g[mid].getGroupNumber();
-
-            if (midGroupNumber < groupNumber)
-                low = mid + 1;
-            else if (midGroupNumber > groupNumber)
-                high = mid - 1;
-            else
-                return mid;
+        int oldCapacity = tags.length;
+        if (minCapacity > oldCapacity) {
+            int newCapacity = Math.max(minCapacity, (oldCapacity * 3)/2 + 1);
+            tags = Arrays.copyOf(tags, newCapacity);
+            vrs = Arrays.copyOf(vrs, newCapacity);
+            values = Arrays.copyOf(values, newCapacity);
         }
-        return -(low + 1);
     }
 
     public Attributes getNestedDataset(List<ItemPointer> itemPointers) {
@@ -174,10 +195,66 @@ public class Attributes implements Serializable {
         return item;
     }
 
+    private int indexForInsertOf(int tag) {
+        return size == 0 ? -1
+                : tags[size-1] < tag ? -(size+1)
+                        : indexOf(tag);
+    }
+
+    private int indexOf(int tag) {
+        return Arrays.binarySearch(tags, 0, size, tag);
+    }
+
+    private int creatorTagOf(int tag, String privateCreator, boolean reserve) {
+        if (!TagUtils.isPrivateTag(tag))
+            throw new IllegalArgumentException(TagUtils.toString(tag)
+                    + " is not a private Data Element");
+
+        for (int creatorTag = tag & 0xffff0000 | 0x10;
+                (creatorTag & 0xff) != 0; creatorTag++) {
+            int index = indexOf(creatorTag);
+            if (index < 0) {
+                if (!reserve)
+                    return -1;
+                setString(creatorTag, null, VR.LO, privateCreator);
+                return creatorTag;
+           }
+           if (privateCreator.equals(VR.LO.toString(
+                   decodeStringValue(index), false, null, 0, null)))
+               return creatorTag;
+        }
+        
+        throw new IllegalStateException("No free block for Private Element "
+                + TagUtils.toString(tag));
+    }
+
+    private Object decodeStringValue(int index) {
+        Object value = values[index];
+        if (value instanceof byte[])
+            values[index] = value =
+                vrs[index].toStrings((byte[]) value, bigEndian,
+                        getSpecificCharacterSet());
+        return value;
+    }
+
+    private static boolean isEmpty(Object value) {
+        if (value == null)
+            return true;
+
+        if (value instanceof Sequence)
+            return ((Sequence) value).isEmpty();
+
+        return false;
+    }
+
     public boolean contains(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        return index >= 0 && groups[index].contains(tag, privateCreator);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return false;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return indexOf(tag) >= 0;
     }
 
     public boolean contains(int tag, String privateCreator,
@@ -187,9 +264,14 @@ public class Attributes implements Serializable {
     }
 
     public boolean containsValue(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        return index >= 0 && groups[index].containsValue(tag, privateCreator);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return false;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
+        return index >= 0 && !isEmpty(values[index]);
     }
 
     public boolean containsValue(int tag, String privateCreator,
@@ -198,33 +280,38 @@ public class Attributes implements Serializable {
         return item != null && item.containsValue(tag, privateCreator);
     }
 
-    public String getPrivateCreator(int tag) {
+    public String privateCreatorOf(int tag) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
 
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
+        int index = indexOf(creatorTag);
         if (index < 0)
             return null;
-
-        return groups[index].getPrivateCreator(tag);
+        
+        return VR.LO.toString(decodeStringValue(index), false, null, 0, null);
     }
 
-    public String getPrivateCreator(int tag, List<ItemPointer> itemPointers) {
+    public String privateCreatorOf(int tag, List<ItemPointer> itemPointers) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
 
         Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getPrivateCreator(tag) : null;
+        return item != null ? item.privateCreatorOf(tag) : null;
     }
 
     public Object getValue(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getValue(tag, privateCreator);
+        return values[index];
     }
 
     public Object getValue(int tag, String privateCreator,
@@ -234,12 +321,44 @@ public class Attributes implements Serializable {
     }
 
     public byte[] getBytes(int tag, String privateCreator) throws IOException {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getBytes(tag, privateCreator);
+        Object value = values[index];
+        if (value == null)
+            return BinaryType.EMPTY_BYTES;
+
+        if (value instanceof byte[])
+            return (byte[]) value;
+
+        if (value instanceof BulkDataLocator) {
+            BulkDataLocator bdl = (BulkDataLocator) value;
+            if (bdl.length == 0)
+                return BinaryType.EMPTY_BYTES;
+
+            InputStream in = bdl.openStream();
+            try {
+                StreamUtils.skipFully(in, bdl.position);
+                byte[] b = new byte[bdl.length];
+                StreamUtils.readFully(in, b, 0, b.length);
+                if (bdl.transferSyntax.equals(UID.ExplicitVRBigEndian)
+                        ? !bigEndian : bigEndian)
+                    vrs[index].toggleEndian(b, false);
+                return b;
+            } finally {
+                in.close();
+            }
+        }
+
+        return vrs[index].toBytes(values[index], bigEndian(),
+                getSpecificCharacterSet());
     }
 
     public byte[] getBytes(int tag, String privateCreator,
@@ -250,13 +369,26 @@ public class Attributes implements Serializable {
 
     public String getString(int tag, String privateCreator, int valueIndex,
             String defVal) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return defVal;
 
-        return groups[index]
-                      .getString(tag, privateCreator, valueIndex, defVal);
+        Object value = values[index];
+        if (value == null)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (vr.isStringType())
+            value = decodeStringValue(index);
+
+        return vr.toString(value, bigEndian, getSpecificCharacterSet(),
+                valueIndex, defVal);
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
@@ -268,12 +400,30 @@ public class Attributes implements Serializable {
     }
 
     public String[] getStrings(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getStrings(tag, privateCreator);
+        Object value = values[index];
+        if (value == null)
+            return StringType.EMPTY_STRINGS;
+
+        VR vr = vrs[index];
+        return toStrings(vr.isStringType()
+                ? decodeStringValue(index) 
+                : vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
+    }
+
+    private static String[] toStrings(Object val) {
+        return (val instanceof String) 
+                ? new String[] { (String) val } 
+                : (String[]) val;
     }
 
     public String[] getStrings(int tag, String privateCreator,
@@ -284,12 +434,25 @@ public class Attributes implements Serializable {
 
     public int getInt(int tag, String privateCreator, int valueIndex,
             int defVal) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return defVal;
 
-        return groups[index].getInt(tag, privateCreator, valueIndex, defVal);
+        Object value = values[index];
+        if (value == null)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (vr == VR.IS)
+            value = decodeStringValue(index);
+
+        return vr.toInt(value, bigEndian, valueIndex, defVal);
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
@@ -301,12 +464,25 @@ public class Attributes implements Serializable {
     }
 
     public int[] getInts(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getInts(tag, privateCreator);
+        Object value = values[index];
+        if (value == null)
+            return BinaryType.EMPTY_INTS;
+
+        VR vr = vrs[index];
+        if (vr == VR.IS)
+            value = decodeStringValue(index);
+
+        return vr.toInts(value, bigEndian());
     }
 
     public int[] getInts(int tag, String privateCreator,
@@ -317,12 +493,25 @@ public class Attributes implements Serializable {
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
             float defVal) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return defVal;
 
-        return groups[index].getFloat(tag, privateCreator, valueIndex, defVal);
+        Object value = values[index];
+        if (value == null)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = decodeStringValue(index);
+
+        return vr.toFloat(value, bigEndian(), valueIndex, defVal);
     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
@@ -334,12 +523,25 @@ public class Attributes implements Serializable {
     }
 
     public float[] getFloats(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getFloats(tag, privateCreator);
+        Object value = values[index];
+        if (value == null)
+            return BinaryType.EMPTY_FLOATS;
+
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = decodeStringValue(index);
+
+        return vr.toFloats(value, bigEndian());
     }
 
     public float[] getFloats(int tag, String privateCreator,
@@ -350,13 +552,25 @@ public class Attributes implements Serializable {
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
             double defVal) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return defVal;
 
-        return groups[index].getDouble(tag, privateCreator, valueIndex,
-                defVal);
+        Object value = values[index];
+        if (value == null)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = decodeStringValue(index);
+
+        return vr.toDouble(value, bigEndian(), valueIndex, defVal);
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
@@ -368,12 +582,25 @@ public class Attributes implements Serializable {
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getDoubles(tag, privateCreator);
+        Object value = values[index];
+        if (value == null)
+            return BinaryType.EMPTY_DOUBLES;
+
+        VR vr = vrs[index];
+        if (vr == VR.DS)
+            value = decodeStringValue(index);
+
+        return vr.toDoubles(value, bigEndian());
     }
 
     public double[] getDoubles(int tag, String privateCreator,
@@ -383,12 +610,17 @@ public class Attributes implements Serializable {
     }
 
     public Sequence getSequence(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getSequence(tag, privateCreator);
+        return (Sequence) values[index];
     }
 
     public Sequence getSequence(int tag, String privateCreator,
@@ -398,12 +630,17 @@ public class Attributes implements Serializable {
     }
 
     public Fragments getFragments(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
         if (index < 0)
             return null;
 
-        return groups[index].getFragments(tag, privateCreator);
+        return (Fragments) values[index];
     }
 
     public Fragments getFragments(int tag, String privateCreator,
@@ -418,17 +655,39 @@ public class Attributes implements Serializable {
                         : SpecificCharacterSet.DEFAULT;
      }
 
-    public Object remove(int tag, String privateCreator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        int index = indexOf(groupNumber);
-        if (index < 0)
-            return false;
+     public String getPrivateCreator(int tag) {
+         return TagUtils.isPrivateTag(tag)
+                 ? getString(TagUtils.creatorTagOf(tag), null, 0, null)
+                 : null;
+     }
 
-        Object oldValue =  groups[index].remove(tag, privateCreator);
+     public Object remove(int tag, String privateCreator) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value instanceof Sequence)
+            ((Sequence) value).clear();
+
+        int numMoved = size - index - 1;
+        if (numMoved > 0) {
+            System.arraycopy(tags, index+1, tags, index, numMoved);
+            System.arraycopy(vrs, index+1, vrs, index, numMoved);
+            System.arraycopy(values, index+1, values, index, numMoved);
+        }
+        values[--size] = null;
+
         if (tag == Tag.SpecificCharacterSet)
             cs = null;
 
-        return oldValue;
+        return value;
     }
 
     public Object remove(int tag, String privateCreator,
@@ -438,90 +697,146 @@ public class Attributes implements Serializable {
     }
 
     public Object setNull(int tag, String privateCreator, VR vr) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        Object oldValue = getOrCreateGroup(groupNumber)
-                .setNull(tag, privateCreator, vr);
-        if (tag == Tag.SpecificCharacterSet)
-            cs = null;
-        return oldValue;
+        return set(tag, privateCreator, vr, null);
     }
 
-    public Object setBytes(int tag, String privateCreator, VR vr,
-            byte[] value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        Object oldValue = getOrCreateGroup(groupNumber)
-                .setBytes(tag, privateCreator, vr, value);
-        if (tag == Tag.SpecificCharacterSet)
-            initSpecificCharacterSet();
-        return oldValue;
+    public Object setBytes(int tag, String privateCreator, VR vr, byte[] b) {
+        return set(tag, privateCreator, vr, vr.toValue(b));
+    }
+
+    public Object setString(int tag, String privateCreator, VR vr, String s) {
+        return set(tag, privateCreator, vr, vr.toValue(s, bigEndian()));
     }
 
     public Object setString(int tag, String privateCreator, VR vr,
-            String val) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        Object oldValue = getOrCreateGroup(groupNumber)
-                .setString(tag, privateCreator, vr, val);
-        if (tag == Tag.SpecificCharacterSet)
-            initSpecificCharacterSet();
-        return oldValue;
+            String... ss) {
+        return set(tag, privateCreator, vr, vr.toValue(ss, bigEndian()));
     }
 
-    public Object setString(int tag, String privateCreator, VR vr,
-            String... value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        Object oldValue = getOrCreateGroup(groupNumber)
-                .setString(tag, privateCreator, vr,
-                value);
-        if (tag == Tag.SpecificCharacterSet)
-            initSpecificCharacterSet();
-        return oldValue;
-    }
-
-    public Object setInt(int tag, String privateCreator, VR vr, int... value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        return getOrCreateGroup(groupNumber)
-                .setInt(tag, privateCreator, vr, value);
+    public Object setInt(int tag, String privateCreator, VR vr, int... ints) {
+        return set(tag, privateCreator, vr, vr.toValue(ints, bigEndian()));
     }
 
     public Object setFloat(int tag, String privateCreator, VR vr,
-            float... value) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        return getOrCreateGroup(groupNumber)
-                .setFloat(tag, privateCreator, vr, value);
+            float... floats) {
+        return set(tag, privateCreator, vr, vr.toValue(floats, bigEndian()));
+    }
+
+    public Object setDouble(int tag, String privateCreator, VR vr,
+            double[] doubles) {
+        return set(tag, privateCreator, vr, vr.toValue(doubles, bigEndian()));
     }
 
     public Object setBulkDataLocator(int tag, String privateCreator, VR vr,
             BulkDataLocator bulkDataLocator) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        return getOrCreateGroup(groupNumber)
-                .set(tag, privateCreator, vr, bulkDataLocator);
-        
+        return set(tag, privateCreator, vr, bulkDataLocator);
     }
 
     public Sequence newSequence(int tag, String privateCreator,
             int initialCapacity) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        return getOrCreateGroup(groupNumber).newSequence(tag, privateCreator,
-                initialCapacity);
+        Sequence seq = new Sequence(this, initialCapacity);
+        set(tag, privateCreator, VR.SQ, seq);
+        return seq;
     }
 
     public Fragments newFragments(int tag, String privateCreator, VR vr,
             boolean bigEndian, int initialCapacity) {
-        int groupNumber = TagUtils.groupNumber(tag);
-        return getOrCreateGroup(groupNumber).newFragments(tag, privateCreator,
-                vr, bigEndian, initialCapacity);
+        Fragments fragments = new Fragments(vr, bigEndian, initialCapacity);
+        set(tag, privateCreator, vr, fragments);
+        return fragments;
+    }
+
+    public Object set(int tag, String privateCreator, VR vr, Object value) {
+        if (TagUtils.isGroupLength(tag))
+            return null;
+
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, true);
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+
+        Object oldValue = set(tag, vr, value);
+        if (tag == Tag.SpecificCharacterSet)
+            initSpecificCharacterSet();
+        return oldValue;
+    }
+
+    private Object set(int tag, VR vr, Object value) {
+        int index = indexForInsertOf(tag);
+        if (index >= 0) {
+            Object oldValue = values[index];
+            vrs[index] = vr;
+            values[index] = value;
+            return oldValue;
+        }
+        index = -index-1;
+        ensureCapacity(size+1);
+        int numMoved = size - index;
+        if (numMoved > 0) {
+            System.arraycopy(tags, index, tags, index+1, numMoved);
+            System.arraycopy(vrs, index, vrs, index+1, numMoved);
+            System.arraycopy(values, index, values, index+1, numMoved);
+        }
+        tags[index] = tag;
+        vrs[index] = vr;
+        values[index] = value;
+        size++;
+        return null;
     }
 
     public void addAll(Attributes other) {
         boolean toggleEndian = bigEndian != other.bigEndian;
-        Group[] srcGroups = other.groups;
-        int srcGroupSize = other.groupsSize;
-        for (int i = 0; i < srcGroupSize; i++) {
-            Group srcGroup = srcGroups[i];
-            int groupNumber = srcGroup.getGroupNumber();
-            getOrCreateGroup(groupNumber, srcGroupSize)
-                    .addAll(srcGroup, toggleEndian);
+        int[] tags = other.tags;
+        VR[] srcVRs = other.vrs;
+        Object[] srcValues = other.values;
+        int otherSize = other.size;
+        String privateCreator = null;
+        int creatorTag = 0;
+        for (int i = 0; i < otherSize; i++) {
+            int tag = tags[i];
+            if (!TagUtils.isGroupLength(tag)
+                    && !TagUtils.isPrivateCreator(tag)) {
+                VR vr = srcVRs[i];
+                if (TagUtils.isPrivateGroup(tag)) {
+                    int tmp = TagUtils.creatorTagOf(tag);
+                    if (creatorTag != tmp) {
+                        creatorTag = tmp;
+                        privateCreator = getString(creatorTag, null, 0, null);
+                    }
+                } else {
+                    creatorTag = 0;
+                    privateCreator = null;
+                }
+                set(tag, privateCreator, vr,
+                        copyValue(vr, toggleEndian, srcValues[i]));
+            }
         }
+    }
+
+    private Object copyValue(VR vr, boolean toogleEndian, Object value) {
+        if (value instanceof Sequence)
+            return clone((Sequence) value);
+        if (value instanceof Fragments)
+            return clone((Fragments) value, toogleEndian);
+        if (toogleEndian && value instanceof byte[])
+            return vr.toggleEndian((byte[]) value, true);
+        return value;
+    }
+
+    private Sequence clone(Sequence srcSeq) {
+        Sequence dstSeq = new Sequence(this, srcSeq.size());
+        for (Attributes src : srcSeq)
+            dstSeq.add(new Attributes(bigEndian, src));
+        return dstSeq;
+    }
+
+    private Fragments clone(Fragments src, boolean toogleEndian) {
+        VR vr = src.vr();
+        Fragments dst = new Fragments(vr, bigEndian, src.size());
+        for (Object o : src)
+            dst.add((toogleEndian && o instanceof byte[]) ? vr.toggleEndian(
+                    (byte[]) o, true) : o);
+        return dst;
     }
 
     void initSpecificCharacterSet() {
@@ -531,38 +846,9 @@ public class Attributes implements Serializable {
             cs = SpecificCharacterSet.valueOf(codes);
     }
 
-    private Group getOrCreateGroup(int groupNumber) {
-        return getOrCreateGroup(groupNumber, Group.INIT_CAPACITY);
-    }
-
-    private Group getOrCreateGroup(int groupNumber, int capacity) {
-        int index = groupsSize;
-        if (index != 0) {
-            Group lastGroup = groups[index - 1];
-            int lastGroupNumber = lastGroup.getGroupNumber();
-            if (groupNumber == lastGroupNumber)
-                return lastGroup;
-
-            if (groupNumber < lastGroupNumber) {
-                index = indexOf(groupNumber);
-                if (index >= 0)
-                    return groups[index];
-
-                index = -index - 1;
-            }
-        }
-        ensureCapacity(groupsSize + 1);
-        int numMoved = groupsSize - index;
-        if (numMoved > 0)
-            System.arraycopy(groups, index, groups, index + 1, numMoved);
-        groups[index] = new Group(this, groupNumber, capacity);
-        groupsSize++;
-        return groups[index];
-    }
-
     @Override
     public String toString() {
-        return toString(TO_STRING_LIMIT, Group.TO_STRING_WIDTH);
+        return toString(TO_STRING_LIMIT, TO_STRING_WIDTH);
     }
     
     public String toString(int limit, int maxWidth) {
@@ -571,34 +857,174 @@ public class Attributes implements Serializable {
     }
 
     public StringBuilder toStringBuilder(StringBuilder sb) {
-        return toStringBuilder(TO_STRING_LIMIT, Group.TO_STRING_WIDTH, sb);
+        return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb);
     }
 
-    public StringBuilder toStringBuilder(int limit, int maxWidth,
+    public StringBuilder toStringBuilder(int lines, int maxWidth,
             StringBuilder sb) {
-        int remaining = limit;
-        for (int i = 0; i < groupsSize; i++) {
-            groups[i].toStringBuilder(remaining, maxWidth, sb);
-            if ((remaining -= groups[i].size()) < 0) {
-                sb.append("...\n");
-                break;
+        int creatorTag = 0;
+        String privateCreator = null;
+        for (int i = 0, n = Math.min(size, lines); i < n; i++) {
+            int tag = tags[i];
+            if (TagUtils.isPrivateTag(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    privateCreator = getString(creatorTag, null, 0, null);
+                }
+            } else {
+                creatorTag = 0;
+                privateCreator = null;
             }
+            appendAttribute(tag, privateCreator, vrs[i], values[i],
+                    sb.length() + maxWidth, sb).append('\n');
+        }
+        if (size > lines)
+            sb.append("...\n");
+        return sb;
+    }
+
+    private StringBuilder appendAttribute(int tag, String privateCreator,
+            VR vr, Object value, int maxLength, StringBuilder sb) {
+        sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
+        if (vr.toStringBuilder(value, bigEndian, getSpecificCharacterSet(),
+                maxLength - sb.length() - 1, sb)) {
+            sb.append("] ").append(ElementDictionary.keywordOf(
+                        tag, privateCreator));
+            if (sb.length() > maxLength)
+                sb.setLength(maxLength);
         }
         return sb;
     }
 
     public int calcLength(boolean explicitVR, EncodeOptions encOpts) {
-        int len = 0;
-        for (int i = 0; i < groupsSize; i++)
-            len += groups[i].calcLength(explicitVR, encOpts);
-        length = len;
+        if (isEmpty())
+            return 0;
+
+        if (encOpts.isGroupLength()) { 
+            int[] counts = countGroups();
+            this.groupLengths = new int[][] {
+                    new int[counts[0]],  new int[counts[1]] };
+        } else {
+            this.groupLengths = NO_GROUP_LENGTHS;
+        }
+
+        int len;
+        if (tags[0] < 0) {
+            int index0 = -(1 + indexOf(0));
+            len = calcLength(explicitVR, encOpts, index0, size,
+                    groupLengths[1])
+                    + calcLength(explicitVR, encOpts, 0, index0,
+                            groupLengths[0]);
+            
+        } else {
+            len = calcLength(explicitVR, encOpts, 0, size, groupLengths[1]);
+        }
+        this.length = len;
         return len;
+    }
+
+    private int calcLength(boolean explicitVR, EncodeOptions encOpts,
+            int start, int end, int[] groupLengths) {
+        int len, length = 0;
+        int groupLengthTag = -1;
+        int groupLengthIndex = -1;
+        VR vr;
+        Object val;
+        for (int i = start; i < end; i++) {
+            vr = vrs[i];
+            val = values[i];
+            len = explicitVR ? vr.headerLength() : 8;
+            if (val == null) {
+                if (vr == VR.SQ && encOpts.isUndefEmptySequenceLength())
+                    len += 8;
+            } else if (val instanceof Sequence) {
+                Sequence sq = (Sequence) val;
+                len += sq.calcLength(explicitVR, encOpts);
+                if (sq.isEmpty() ? encOpts.isUndefEmptySequenceLength()
+                                 : encOpts.isUndefSequenceLength())
+                    len += 8;
+            } else if (val instanceof Fragments) {
+                    len += ((Fragments) val).calcLength() + 8;
+            } else if (val instanceof BulkDataLocator){
+                len += (((BulkDataLocator) val).length + 1) & ~1;
+            } else {
+                if (!(val instanceof byte[]))
+                    values[i] = val = vr.toBytes(val, bigEndian(),
+                            getSpecificCharacterSet());
+                len += (((byte[]) val).length + 1) & ~1;
+            }
+            length += len;
+            if (encOpts.isGroupLength()) {
+                int tmp = TagUtils.groupLengthTagOf(tags[i]);
+                if (groupLengthTag != tmp) {
+                    groupLengthTag = tmp;
+                    groupLengthIndex++;
+                    length += 12;
+                }
+                groupLengths[groupLengthIndex] += len;
+            }
+        }
+        return length;
+    }
+
+    private int[] countGroups() {
+        int groupLengthTag = -1;
+        int[] count = new int[2];
+        for (int i = 0; i < size; i++) {
+            int tmp = TagUtils.groupLengthTagOf(tags[i]);
+            if (groupLengthTag != tmp) {
+                groupLengthTag = tmp;
+                count[tmp < 0 ? 0 : 1]++;
+            }
+        }
+        return count;
     }
 
     public void writeTo(DicomOutputStream dos, EncodeOptions encOpts)
             throws IOException {
-        for (int i = 0; i < groupsSize; i++)
-            groups[i].writeTo(dos, encOpts);
+        if (isEmpty())
+            return;
+
+        if (tags[0] < 0) {
+            int index0 = -(1 + indexOf(0));
+            writeTo(dos, encOpts, index0, size, groupLengths[1]);
+            writeTo(dos, encOpts, 0, index0, groupLengths[0]);
+        } else {
+            writeTo(dos, encOpts, 0, size, groupLengths[1]);
+        }
+    }
+
+    private void writeTo(DicomOutputStream dos, EncodeOptions encOpts,
+            int start, int end, int[] groupLengths) throws IOException {
+        int groupLengthTag = -1;
+        int groupLengthIndex = -1;
+        for (int i = start; i < end; i++) {
+            int tag = tags[i];
+            int tmp = TagUtils.groupLengthTagOf(tag);
+            if (groupLengthTag != tmp) {
+                groupLengthTag = tmp;
+                groupLengthIndex++;
+                if (encOpts.isGroupLength())
+                    dos.writeGroupLength(groupLengthTag,
+                            groupLengths[groupLengthIndex]);
+            }
+            VR vr = vrs[i];
+            Object val = values[i];
+            if (vr == VR.SQ)
+                dos.writeSequence(tag, (Sequence) val, encOpts);
+            else if (val == null) 
+                dos.writeHeader(tag, vr, 0);
+            else if (val instanceof Fragments)
+                dos.writeFragments(tag, (Fragments) val);
+            else if (val instanceof BulkDataLocator)
+                dos.writeAttribute(tag, vr, (BulkDataLocator) val);
+            else
+                dos.writeAttribute(tag, vr, 
+                        (val instanceof byte[]) ? (byte[]) val 
+                                : vr.toBytes(val, bigEndian, 
+                                        getSpecificCharacterSet()));
+        }
     }
 
     public Attributes createFileMetaInformation(String tsuid) {
@@ -620,7 +1046,7 @@ public class Attributes implements Serializable {
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeBoolean(bigEndian);
-        out.writeInt(groupsSize);
+        out.writeInt(size);
         DicomOutputStream dout = new DicomOutputStream(out,
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
@@ -631,10 +1057,7 @@ public class Attributes implements Serializable {
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
-        this.position = -1L;
-        this.length = -1;
-        this.bigEndian = in.readBoolean();
-        this.groups = new Group[in.readInt()];
+        init(in.readBoolean(), in.readInt());
         DicomInputStream din = new DicomInputStream(in, 
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);

@@ -345,7 +345,7 @@ public class Attributes implements Serializable {
 
             InputStream in = bdl.openStream();
             try {
-                StreamUtils.skipFully(in, bdl.position);
+                StreamUtils.skipFully(in, bdl.offset);
                 byte[] b = new byte[bdl.length];
                 StreamUtils.readFully(in, b, 0, b.length);
                 if (bdl.transferSyntax.equals(UID.ExplicitVRBigEndian)

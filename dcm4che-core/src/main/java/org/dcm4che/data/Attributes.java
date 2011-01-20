@@ -17,7 +17,7 @@ public class Attributes implements Serializable {
 
     private static final long serialVersionUID = 5458387005121933754L;
 
-    private static final int INIT_CAPACITY = 10;
+    private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
  
@@ -177,7 +177,7 @@ public class Attributes implements Serializable {
     private void ensureCapacity(int minCapacity) {
         int oldCapacity = tags.length;
         if (minCapacity > oldCapacity) {
-            int newCapacity = Math.max(minCapacity, (oldCapacity * 3)/2 + 1);
+            int newCapacity = Math.max(minCapacity, oldCapacity << 1);
             tags = Arrays.copyOf(tags, newCapacity);
             vrs = Arrays.copyOf(vrs, newCapacity);
             values = Arrays.copyOf(values, newCapacity);

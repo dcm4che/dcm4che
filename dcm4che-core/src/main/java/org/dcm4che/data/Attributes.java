@@ -20,7 +20,6 @@ public class Attributes implements Serializable {
     private static final int INIT_CAPACITY = 10;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
-    private static final int[][] NO_GROUP_LENGTHS = { null, null };
  
     private transient Attributes parent;
     private transient int[] tags;
@@ -30,7 +29,8 @@ public class Attributes implements Serializable {
     private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
     private transient long position = -1L;
     private transient int length = -1;
-    private transient int[][] groupLengths = NO_GROUP_LENGTHS;
+    private transient int[] groupLengths;
+    private transient int groupLengthIndex0;
     private transient boolean bigEndian;
 
     public Attributes() {
@@ -902,36 +902,28 @@ public class Attributes implements Serializable {
             return 0;
 
         if (encOpts.isGroupLength()) { 
-            int[] counts = countGroups();
-            this.groupLengths = new int[][] {
-                    new int[counts[0]],  new int[counts[1]] };
+            int groupLengthTag = -1;
+            int count = 0;
+            for (int i = 0; i < size; i++) {
+                int tmp = TagUtils.groupLengthTagOf(tags[i]);
+                if (groupLengthTag != tmp) {
+                    if (groupLengthTag < 0)
+                        this.groupLengthIndex0 = count;
+                    groupLengthTag = tmp;
+                    count++;
+                }
+            }
+            this.groupLengths = new int[count];
         } else {
-            this.groupLengths = NO_GROUP_LENGTHS;
+            this.groupLengths = null;
         }
 
-        int len;
-        if (tags[0] < 0) {
-            int index0 = -(1 + indexOf(0));
-            len = calcLength(explicitVR, encOpts, index0, size,
-                    groupLengths[1])
-                    + calcLength(explicitVR, encOpts, 0, index0,
-                            groupLengths[0]);
-            
-        } else {
-            len = calcLength(explicitVR, encOpts, 0, size, groupLengths[1]);
-        }
-        this.length = len;
-        return len;
-    }
-
-    private int calcLength(boolean explicitVR, EncodeOptions encOpts,
-            int start, int end, int[] groupLengths) {
-        int len, length = 0;
+        int len, totlen = 0;
         int groupLengthTag = -1;
-        int groupLengthIndex = -1;
+        int groupLengthIndex = - 1;
         VR vr;
         Object val;
-        for (int i = start; i < end; i++) {
+        for (int i = 0; i < size; i++) {
             vr = vrs[i];
             val = values[i];
             len = explicitVR ? vr.headerLength() : 8;
@@ -954,51 +946,39 @@ public class Attributes implements Serializable {
                             getSpecificCharacterSet());
                 len += (((byte[]) val).length + 1) & ~1;
             }
-            length += len;
+            totlen += len;
             if (encOpts.isGroupLength()) {
                 int tmp = TagUtils.groupLengthTagOf(tags[i]);
                 if (groupLengthTag != tmp) {
                     groupLengthTag = tmp;
                     groupLengthIndex++;
-                    length += 12;
+                    totlen += 12;
                 }
                 groupLengths[groupLengthIndex] += len;
             }
         }
-        return length;
+        this.length = totlen;
+        return totlen;
     }
 
-    private int[] countGroups() {
-        int groupLengthTag = -1;
-        int[] count = new int[2];
-        for (int i = 0; i < size; i++) {
-            int tmp = TagUtils.groupLengthTagOf(tags[i]);
-            if (groupLengthTag != tmp) {
-                groupLengthTag = tmp;
-                count[tmp < 0 ? 0 : 1]++;
-            }
-        }
-        return count;
-    }
-
-    public void writeTo(DicomOutputStream dos, EncodeOptions encOpts)
+     public void writeTo(DicomOutputStream dos, EncodeOptions encOpts)
             throws IOException {
         if (isEmpty())
             return;
 
         if (tags[0] < 0) {
             int index0 = -(1 + indexOf(0));
-            writeTo(dos, encOpts, index0, size, groupLengths[1]);
-            writeTo(dos, encOpts, 0, index0, groupLengths[0]);
+            writeTo(dos, encOpts, index0, size, groupLengthIndex0);
+            writeTo(dos, encOpts, 0, index0, 0);
         } else {
-            writeTo(dos, encOpts, 0, size, groupLengths[1]);
+            writeTo(dos, encOpts, 0, size, 0);
         }
     }
 
     private void writeTo(DicomOutputStream dos, EncodeOptions encOpts,
-            int start, int end, int[] groupLengths) throws IOException {
+            int start, int end, int groupLengthIndex0) throws IOException {
         int groupLengthTag = -1;
-        int groupLengthIndex = -1;
+        int groupLengthIndex = groupLengthIndex0 - 1;
         for (int i = start; i < end; i++) {
             int tag = tags[i];
             int tmp = TagUtils.groupLengthTagOf(tag);

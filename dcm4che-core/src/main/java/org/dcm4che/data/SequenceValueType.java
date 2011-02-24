@@ -9,6 +9,11 @@ enum SequenceValueType implements ValueType {
     }
 
     @Override
+    public byte[] toggleEndian(byte[] b, boolean preserve) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public byte[] toBytes(Object val, SpecificCharacterSet cs) {
         throw new UnsupportedOperationException();
     } 

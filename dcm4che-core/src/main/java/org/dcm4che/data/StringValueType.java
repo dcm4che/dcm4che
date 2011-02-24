@@ -192,6 +192,11 @@ enum StringValueType implements ValueType {
         return 1;
     }
 
+    @Override
+    public byte[] toggleEndian(byte[] b, boolean preserve) {
+        return b;
+    }
+
     protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
         return cs;
     }

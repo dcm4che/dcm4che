@@ -4,6 +4,8 @@ interface ValueType {
 
     int numEndianBytes();
 
+    byte[] toggleEndian(byte[] b, boolean preserve);
+
     byte[] toBytes(Object val, SpecificCharacterSet cs);
 
     String toString(Object val, boolean bigEndian, int valueIndex, String defVal);

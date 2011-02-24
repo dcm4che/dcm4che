@@ -7,6 +7,11 @@ enum BinaryValueType implements ValueType {
     BYTE(1, 1) {
 
         @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return b;
+        }
+
+        @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
             return b[off];
         }
@@ -18,6 +23,11 @@ enum BinaryValueType implements ValueType {
         }
     },
     SHORT(2, 2) {
+
+        @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
+        }
 
         @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
@@ -32,6 +42,11 @@ enum BinaryValueType implements ValueType {
     USHORT(2, 2) {
 
         @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
+        }
+
+        @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
             return ByteUtils.bytesToUShort(b, off, bigEndian);
         }
@@ -42,6 +57,11 @@ enum BinaryValueType implements ValueType {
         }
     },
     INT(4, 4) {
+
+        @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
+        }
 
         @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
@@ -56,6 +76,11 @@ enum BinaryValueType implements ValueType {
     TAG(4, 2) {
 
         @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
+        }
+
+        @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
             return ByteUtils.bytesToTag(b, off, bigEndian);
         }
@@ -66,6 +91,11 @@ enum BinaryValueType implements ValueType {
         }
     },
     FLOAT(4, 4) {
+
+        @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
+        }
 
         @Override
         protected String toString(byte[] b, int off, boolean bigEndian) {
@@ -100,6 +130,11 @@ enum BinaryValueType implements ValueType {
         }
     },
     DOUBLE(8, 8) {
+
+        @Override
+        public byte[] toggleEndian(byte[] b, boolean preserve) {
+            return ByteUtils.swapLongs(preserve ? b.clone() : b, 0, b.length);
+        }
 
         @Override
         protected String toString(byte[] b, int off, boolean bigEndian) {

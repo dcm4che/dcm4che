@@ -1,6 +1,5 @@
 package org.dcm4che.data;
 
-import org.dcm4che.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +117,22 @@ public enum VR {
         return headerLength;
     }
 
+    public int paddingByte() {
+        return paddingByte;
+    }
+
+    public boolean isStringType() {
+        return valueType instanceof StringValueType;
+    }
+
+    public int numEndianBytes() {
+        return valueType.numEndianBytes();
+    }
+
+    public byte[] toggleEndian(byte[] b, boolean preserve) {
+        return valueType.toggleEndian(b, preserve);
+    }
+
     byte[] toBytes(Object val, SpecificCharacterSet cs) {
         return valueType.toBytes(val, cs);
     }
@@ -156,18 +171,6 @@ public enum VR {
         return valueType.toDoubles(val, bigEndian);
     }
 
-    public boolean isStringType() {
-        return valueType instanceof StringValueType;
-    }
-
-    public byte[] toggleEndian(byte[] b, boolean preserve) {
-        return ByteUtils.toggleEndian(b, numEndianBytes(), preserve);
-    }
-
-    public int numEndianBytes() {
-        return valueType.numEndianBytes();
-    }
-
     Object toValue(byte[] b) {
         return valueType.toValue(b);
     }
@@ -190,94 +193,10 @@ public enum VR {
 
     Object toValue(double[] ds, boolean bigEndian) {
         return valueType.toValue(ds, bigEndian);
-   }
-    
+    }
+
     public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         return valueType.prompt(val, bigEndian, cs, maxChars, sb);
-
-    }
-/*
-    public boolean toStringBuilder(byte[] b, boolean bigEndian,
-            SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
-        return isBinaryType()
-            ? binaryType.prompt(b, bigEndian, maxChars, sb)
-            : toStringBuilder(stringType.toString(b, cs), maxChars, sb);
-
-   }
-
-    private static boolean toStringBuilder(String s, int maxChars, 
-            StringBuilder sb) {
-        int maxLength = sb.length() + maxChars;
-        sb.append(s.trim());
-        if (sb.length() > maxLength) {
-            sb.setLength(maxLength+1);
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean toStringBuilder(String[] ss, int maxChars,
-            StringBuilder sb) {
-        int maxLength = sb.length() + maxChars;
-        for (int i = 0; i < ss.length; i++) {
-            if (i > 0)
-                sb.append('\\');
-            sb.append(ss[i]);
-            if (sb.length() > maxLength) {
-                sb.setLength(maxLength+1);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean toStringBuilder(int[] ints, int maxChars,
-            StringBuilder sb) {
-        int maxLength = sb.length() + maxChars;
-        for (int i = 0; i < ints.length; i++) {
-            if (i > 0)
-                sb.append('\\');
-            sb.append(ints[i]);
-            if (sb.length() > maxLength) {
-                sb.setLength(maxLength+1);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean toStringBuilder(float[] floats, int maxChars,
-            StringBuilder sb) {
-        int maxLength = sb.length() + maxChars;
-        for (int i = 0; i < floats.length; i++) {
-            if (i > 0)
-                sb.append('\\');
-            sb.append(formatDS(floats[i]));
-            if (sb.length() > maxLength) {
-                sb.setLength(maxLength+1);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean toStringBuilder(double[] doubles, int maxChars,
-            StringBuilder sb) {
-        int maxLength = sb.length() + maxChars;
-        for (int i = 0; i < doubles.length; i++) {
-            if (i > 0)
-                sb.append('\\');
-            sb.append(formatDS(doubles[i]));
-            if (sb.length() > maxLength) {
-                sb.setLength(maxLength+1);
-                return false;
-            }
-        }
-        return true;
-    }
-*/
-    public int paddingByte() {
-        return paddingByte;
     }
 }

@@ -228,6 +228,20 @@ public class ByteUtils {
         return bytes;
     }
 
+    public static byte[] toggleEndian(byte[] b, int numBytes, boolean preserve) {
+        switch (numBytes) {
+        case 1:
+            return b;
+        case 2:
+            return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
+        case 4:
+            return ByteUtils.swapInts(preserve ? b.clone() : b, 0, b.length);
+        case 8:
+            return ByteUtils.swapLongs(preserve ? b.clone() : b, 0, b.length);
+        }
+        throw new IllegalArgumentException("numBytes: " + numBytes);
+    }
+
     public static byte[] swapShorts(byte b[], int off, int len) {
         checkLength(len, 2);
         for (int i = off, n = off + len; i < n; i += 2)

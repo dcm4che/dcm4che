@@ -20,6 +20,12 @@ public class Attributes implements Serializable {
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
+
+    private static final byte[] EMPTY_BYTES = {};
+    private static final int[] EMPTY_INTS = {};
+    private static final float[] EMPTY_FLOATS = {};
+    private static final double[] EMPTY_DOUBLES = {};
+    private static final String[] EMPTY_STRINGS = {};
  
     private transient Attributes parent;
     private transient int[] tags;
@@ -220,7 +226,7 @@ public class Attributes implements Serializable {
                 return creatorTag;
            }
            if (privateCreator.equals(VR.LO.toString(
-                   decodeStringValue(index), false, null, 0, null)))
+                   decodeStringValue(index), false, 0, null)))
                return creatorTag;
         }
         
@@ -289,7 +295,7 @@ public class Attributes implements Serializable {
         if (index < 0)
             return null;
         
-        return VR.LO.toString(decodeStringValue(index), false, null, 0, null);
+        return VR.LO.toString(decodeStringValue(index), false, 0, null);
     }
 
     public String privateCreatorOf(int tag, List<ItemPointer> itemPointers) {
@@ -333,7 +339,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == null)
-            return BinaryType.EMPTY_BYTES;
+            return EMPTY_BYTES;
 
         if (value instanceof byte[])
             return (byte[]) value;
@@ -341,7 +347,7 @@ public class Attributes implements Serializable {
         if (value instanceof BulkDataLocator) {
             BulkDataLocator bdl = (BulkDataLocator) value;
             if (bdl.length == 0)
-                return BinaryType.EMPTY_BYTES;
+                return EMPTY_BYTES;
 
             InputStream in = bdl.openStream();
             try {
@@ -357,8 +363,7 @@ public class Attributes implements Serializable {
             }
         }
 
-        return vrs[index].toBytes(values[index], bigEndian(),
-                getSpecificCharacterSet());
+        return vrs[index].toBytes(values[index], getSpecificCharacterSet());
     }
 
     public byte[] getBytes(int tag, String privateCreator,
@@ -387,8 +392,7 @@ public class Attributes implements Serializable {
         if (vr.isStringType())
             value = decodeStringValue(index);
 
-        return vr.toString(value, bigEndian, getSpecificCharacterSet(),
-                valueIndex, defVal);
+        return vr.toString(value, bigEndian, valueIndex, defVal);
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
@@ -412,7 +416,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == null)
-            return StringType.EMPTY_STRINGS;
+            return EMPTY_STRINGS;
 
         VR vr = vrs[index];
         return toStrings(vr.isStringType()
@@ -476,7 +480,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == null)
-            return BinaryType.EMPTY_INTS;
+            return EMPTY_INTS;
 
         VR vr = vrs[index];
         if (vr == VR.IS)
@@ -535,7 +539,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == null)
-            return BinaryType.EMPTY_FLOATS;
+            return EMPTY_FLOATS;
 
         VR vr = vrs[index];
         if (vr == VR.DS)
@@ -594,7 +598,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == null)
-            return BinaryType.EMPTY_DOUBLES;
+            return EMPTY_DOUBLES;
 
         VR vr = vrs[index];
         if (vr == VR.DS)
@@ -887,7 +891,7 @@ public class Attributes implements Serializable {
     private StringBuilder appendAttribute(int tag, String privateCreator,
             VR vr, Object value, int maxLength, StringBuilder sb) {
         sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
-        if (vr.toStringBuilder(value, bigEndian, getSpecificCharacterSet(),
+        if (vr.prompt(value, bigEndian, getSpecificCharacterSet(),
                 maxLength - sb.length() - 1, sb)) {
             sb.append("] ").append(ElementDictionary.keywordOf(
                         tag, privateCreator));
@@ -942,8 +946,7 @@ public class Attributes implements Serializable {
                 len += (((BulkDataLocator) val).length + 1) & ~1;
             } else {
                 if (!(val instanceof byte[]))
-                    values[i] = val = vr.toBytes(val, bigEndian(),
-                            getSpecificCharacterSet());
+                    values[i] = val = vr.toBytes(val, getSpecificCharacterSet());
                 len += (((byte[]) val).length + 1) & ~1;
             }
             totlen += len;
@@ -1002,8 +1005,7 @@ public class Attributes implements Serializable {
             else
                 dos.writeAttribute(tag, vr, 
                         (val instanceof byte[]) ? (byte[]) val 
-                                : vr.toBytes(val, bigEndian, 
-                                        getSpecificCharacterSet()));
+                                : vr.toBytes(val, getSpecificCharacterSet()));
         }
     }
 

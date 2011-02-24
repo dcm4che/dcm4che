@@ -1,234 +1,51 @@
 package org.dcm4che.data;
 
+import org.dcm4che.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public enum VR {
-    AE(0x4145, 8, ' ', null, StringType.ASCII),
-    AS(0x4153, 8, ' ', null, StringType.ASCII),
-    AT(0x4154, 8, 0, BinaryType.TAG, null),
-    CS(0x4353, 8, ' ', null, StringType.ASCII),
-    DA(0x4441, 8, ' ', null, StringType.ASCII),
-    DS(0x4453, 8, ' ', null, StringType.ASCII) {
-
-        @Override
-        void checkSupportFloats() { }
-
-        @Override
-        float toFloat(Object val, boolean bigEndian, int valueIndex,
-                float defVal) {
-            if (val instanceof String)
-                return valueIndex == 0 ? Float.parseFloat((String) val)
-                        : defVal;
-            String[] ss = (String[]) val;
-            return valueIndex < ss.length
-                    ? Float.parseFloat(ss[valueIndex])
-                    : defVal; 
-        }
-
-        @Override
-        float[] toFloats(Object val, boolean bigEndian) {
-            if (val instanceof String)
-                return new float[] { Float.parseFloat((String) val) };
-            String[] ss = (String[]) val;
-            float[] floats = new float[ss.length];
-            for (int i = 0; i < ss.length; i++)
-                floats[i] = Float.parseFloat(ss[i]);
-            return floats;
-        }
-
-        @Override
-        double toDouble(Object val, boolean bigEndian, int valueIndex,
-                double defVal) {
-            if (val instanceof String)
-                return valueIndex == 0 ? Double.parseDouble((String) val)
-                        : defVal;
-            String[] ss = (String[]) val;
-            return valueIndex < ss.length
-                    ? Double.parseDouble(ss[valueIndex])
-                    : defVal; 
-        }
-
-        @Override
-        double[] toDoubles(Object val, boolean bigEndian) {
-            if (val instanceof String)
-                return new double[] { Double.parseDouble((String) val) };
-            String[] ss = (String[]) val;
-            double[] doubles = new double[ss.length];
-            for (int i = 0; i < ss.length; i++)
-                doubles[i] = Double.parseDouble(ss[i]);
-            return doubles;
-        }
-
-        @Override
-        Object toValue(float[] floats, boolean bigEndian) {
-            String s = formatDS(floats[0]);
-            if (floats.length == 1)
-                return s;
-            String[] ss = new String[floats.length];
-            ss[0] = s;
-            for (int i = 1; i < floats.length; i++)
-                ss[i] = formatDS(floats[i]);
-            return ss;
-        }
-
-        @Override
-        Object toValue(double[] doubles, boolean bigEndian) {
-            String s = formatDS(doubles[0]);
-            if (doubles.length == 1)
-                return s;
-            String[] ss = new String[doubles.length];
-            ss[0] = s;
-            for (int i = 1; i < doubles.length; i++)
-                ss[i] = formatDS(doubles[i]);
-            return ss;
-        }
-    },
-    DT(0x4454, 8, ' ', null, StringType.ASCII),
-    FD(0x4644, 8, 0, BinaryType.DOUBLE, null) {
-
-        @Override
-        void checkSupportInts() {
-            throw unsupported();
-        }
-
-        @Override
-        void checkSupportFloats() {}
-    },
-    FL(0x464c, 8, 0, BinaryType.FLOAT, null) {
-
-        @Override
-        void checkSupportInts() {
-            throw unsupported();
-        }
-
-        @Override
-        void checkSupportFloats() {}
-    },
-    IS(0x4953, 8, ' ', null, StringType.ASCII) {
-
-        @Override
-        void checkSupportInts() { }
-
-        @Override
-        int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
-            if (val instanceof String)
-                return valueIndex == 0 ? parseIS((String) val) : defVal;
-
-            String[] ss = (String[]) val;
-            return valueIndex < ss.length ? parseIS(ss[valueIndex]) : defVal; 
-        }
-
-        @Override
-        int[] toInts(Object val, boolean bigEndian) {
-            if (val instanceof String)
-                return new int[] { parseIS((String) val) };
-
-            String[] ss = (String[]) val;
-            int[] floats = new int[ss.length];
-            for (int i = 0; i < ss.length; i++)
-                floats[i] = parseIS(ss[i]);
-
-            return floats;
-        }
-
-        @Override
-        Object toValue(int[] ints, boolean bigEndian) {
-            String s = Integer.toString(ints[0]);
-            if (ints.length == 1)
-                return s;
-            String[] ss = new String[ints.length];
-            ss[0] = s;
-            for (int i = 1; i < ints.length; i++)
-                ss[i] = Integer.toString(ints[i]);
-            return ss;
-        }
-    },
-    LO(0x4c4f, 8, ' ', null, StringType.STRING),
-    LT(0x4c54, 8, ' ', null, StringType.TEXT) {
-
-        @Override
-        void checkSupportStrings() {
-            throw unsupported();
-        }
-    },
-    OB(0x4f42, 12, 0, BinaryType.BYTE, null),
-    OF(0x4f46, 12, 0, BinaryType.FLOAT, null) {
-
-        @Override
-        void checkSupportInts() {
-            throw unsupported();
-        }
-
-        @Override
-        void checkSupportFloats() {}
-    },
-    OW(0x4f57, 12, 0, BinaryType.SHORT, null),
-    PN(0x504e, 8, ' ', null, StringType.PN),
-    SH(0x5348, 8, ' ', null, StringType.STRING),
-    SL(0x534c, 8, 0, BinaryType.INT, null),
-    SQ(0x5351, 12, 0, null, null){
-
-        @Override
-        void checkSupportBytes() {
-            throw unsupported();
-        }
-
-        @Override
-        void checkSupportString() {
-            throw unsupported();
-        }
-
-        @Override
-        void checkSupportStrings() {
-            throw unsupported();
-        }
-    },
-    SS(0x5353, 8, 0, BinaryType.SHORT,null),
-    ST(0x5354, 8, ' ', null, StringType.TEXT) {
-
-        @Override
-        void checkSupportStrings() {
-            throw unsupported();
-        }
-    },
-    TM(0x544d, 8, ' ', null, StringType.ASCII),
-    UI(0x5549, 8, 0, null, StringType.UI),
-    UL(0x554c, 8, 0, BinaryType.INT, null),
-    UN(0x554e, 12, 0, BinaryType.BYTE, null),
-    US(0x5553, 8, 0, BinaryType.USHORT, null),
-    UT(0x5554, 12, ' ', null, StringType.TEXT) {
-
-        @Override
-        void checkSupportStrings() {
-            throw unsupported();
-        }
-    };
+    AE(0x4145, 8, ' ', StringValueType.ASCII),
+    AS(0x4153, 8, ' ', StringValueType.ASCII),
+    AT(0x4154, 8, 0, BinaryValueType.TAG),
+    CS(0x4353, 8, ' ', StringValueType.ASCII),
+    DA(0x4441, 8, ' ', StringValueType.ASCII),
+    DS(0x4453, 8, ' ', StringValueType.DS),
+    DT(0x4454, 8, ' ', StringValueType.ASCII),
+    FD(0x4644, 8, 0, BinaryValueType.DOUBLE),
+    FL(0x464c, 8, 0, BinaryValueType.FLOAT),
+    IS(0x4953, 8, ' ', StringValueType.IS),
+    LO(0x4c4f, 8, ' ', StringValueType.STRING),
+    LT(0x4c54, 8, ' ', StringValueType.TEXT),
+    OB(0x4f42, 12, 0, BinaryValueType.BYTE),
+    OF(0x4f46, 12, 0, BinaryValueType.FLOAT),
+    OW(0x4f57, 12, 0, BinaryValueType.SHORT),
+    PN(0x504e, 8, ' ', StringValueType.STRING),
+    SH(0x5348, 8, ' ', StringValueType.STRING),
+    SL(0x534c, 8, 0, BinaryValueType.INT),
+    SQ(0x5351, 12, 0, SequenceValueType.SQ),
+    SS(0x5353, 8, 0, BinaryValueType.SHORT),
+    ST(0x5354, 8, ' ', StringValueType.TEXT),
+    TM(0x544d, 8, ' ', StringValueType.ASCII),
+    UI(0x5549, 8, 0, StringValueType.ASCII),
+    UL(0x554c, 8, 0, BinaryValueType.INT),
+    UN(0x554e, 12, 0, BinaryValueType.BYTE),
+    US(0x5553, 8, 0, BinaryValueType.USHORT),
+    UT(0x5554, 12, ' ', StringValueType.TEXT);
 
     private static Logger LOG = LoggerFactory.getLogger(VR.class);
 
     protected final int code;
     protected final int headerLength;
     protected final int paddingByte;
-    protected final BinaryType binaryType;
-    protected final StringType stringType;
+    protected final ValueType valueType;
 
-    VR(int code, int headerLength, int paddingByte, BinaryType binaryType,
-            StringType stringType) {
+    VR(int code, int headerLength, int paddingByte, ValueType valueType) {
         this.code = code;
         this.headerLength = headerLength;
         this.paddingByte = paddingByte;
-        this.binaryType = binaryType;
-        this.stringType = stringType;
-    }
-
-    public int code() {
-        return code;
-    }
-
-    public int headerLength() {
-        return headerLength;
+        this.valueType = valueType;
     }
 
     public static VR valueOf(int code) {
@@ -293,245 +110,94 @@ public enum VR {
         return UN;
     }
 
-    byte[] toBytes(Object val, boolean bigEndian, SpecificCharacterSet cs) {
-        if (val instanceof byte[])
-            return (byte[]) val;
-
-        if (val instanceof String)
-            return toBytes((String) val, bigEndian, cs);
-
-        if (val instanceof String[])
-            return toBytes((String[]) val, bigEndian, cs);
-
-        throw unsupported();
+    public int code() {
+        return code;
     }
 
-    private byte[] toBytes(String s, boolean bigEndian,
-            SpecificCharacterSet cs) {
-        return isBinaryType()
-                ? binaryType.stringToBytes(s, bigEndian)
-                : stringType.toBytes(s, cs);
+    public int headerLength() {
+        return headerLength;
     }
 
-    private byte[] toBytes(String[] ss, boolean bigEndian,
-            SpecificCharacterSet cs) {
-        return isBinaryType()
-                ? binaryType.stringsToBytes(ss, bigEndian)
-                : stringType.toBytes(ss, cs);
+    byte[] toBytes(Object val, SpecificCharacterSet cs) {
+        return valueType.toBytes(val, cs);
     }
 
     Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs) {
-        if (val instanceof String || val instanceof String[])
-            return val;
-
-        if (val instanceof byte[])
-            return toStrings((byte[]) val, bigEndian, cs);
-
-        throw unsupported();
+        return valueType.toStrings(val, bigEndian, cs);
     }
 
-    String toString(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            int valueIndex, String defVal) {
-
-        if (val instanceof String)
-            return valueIndex == 0 ? (String) val : defVal;
-
-        if (val instanceof String[]) {
-            String[] ss = (String[]) val;
-            return valueIndex < ss.length ? ss[valueIndex] : defVal;
-        }
-
-        if (val instanceof byte[])
-            return toString((byte[]) val, bigEndian, cs, valueIndex, defVal);
-
-        throw unsupported();
+    String toString(Object val, boolean bigEndian, int valueIndex,
+            String defVal) {
+        return valueType.toString(val, bigEndian, valueIndex, defVal);
     }
-
-    String toString(byte[] b, boolean bigEndian, SpecificCharacterSet cs,
-            int valueIndex, String defVal) {
-        return isBinaryType()
-                ? binaryType.bytesToString(b, bigEndian, valueIndex, defVal)
-                : toString(stringType.toStrings(b, cs), bigEndian, cs,
-                        valueIndex, defVal);
-    }
-
-    Object toStrings(byte[] b, boolean bigEndian, SpecificCharacterSet cs) {
-        return isBinaryType()
-                ? binaryType.bytesToStrings(b, bigEndian)
-                : stringType.toStrings(b, cs);
-        }
 
     int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
-        checkSupportInts();
-        if (val instanceof Fragments)
-            throw unsupported();
-        return binaryType.bytesToInt((byte[]) val, bigEndian, valueIndex, 
-                defVal);
+        return valueType.toInt(val, bigEndian, valueIndex, defVal);
     }
 
     int[] toInts(Object val, boolean bigEndian) {
-        checkSupportInts();
-        if (val instanceof Fragments)
-            throw unsupported();
-        return binaryType.bytesToInts((byte[]) val, bigEndian);
+        return valueType.toInts(val, bigEndian);
     }
 
     float toFloat(Object  val, boolean bigEndian, int valueIndex, float defVal) {
-        checkSupportFloats();
-        return binaryType.bytesToFloat((byte[]) val, bigEndian, valueIndex, defVal);
+        return valueType.toFloat(val, bigEndian, valueIndex, defVal);
     }
 
     float[] toFloats(Object val, boolean bigEndian) {
-        checkSupportFloats();
-        return binaryType.bytesToFloats((byte[]) val, bigEndian);
+        return valueType.toFloats(val, bigEndian);
     }
 
     double toDouble(Object val, boolean bigEndian, int valueIndex,
             double defVal) {
-        checkSupportFloats();
-        return binaryType.bytesToDouble((byte[]) val, bigEndian, valueIndex, defVal);
+        return valueType.toDouble(val, bigEndian, valueIndex, defVal);
     }
 
     double[] toDoubles(Object val, boolean bigEndian) {
-        checkSupportFloats();
-        return binaryType.bytesToDoubles((byte[]) val, bigEndian);
-    }
-
-    private boolean isBinaryType() {
-        return binaryType != null;
+        return valueType.toDoubles(val, bigEndian);
     }
 
     public boolean isStringType() {
-        return stringType != null;
+        return valueType instanceof StringValueType;
     }
 
     public byte[] toggleEndian(byte[] b, boolean preserve) {
-        return isBinaryType() ? binaryType.toggleEndian(b, preserve) : b;
+        return ByteUtils.toggleEndian(b, numEndianBytes(), preserve);
     }
 
     public int numEndianBytes() {
-        return isBinaryType() ? binaryType.numBytes() : 1;
-    }
-
-    UnsupportedOperationException unsupported() {
-        return new UnsupportedOperationException("VR:" + this);
-    }
-
-    void checkSupportBytes() { }
-
-    void checkSupportString() { }
-
-    void checkSupportStrings() { }
-
-    void checkSupportInts() {
-        if (binaryType == null)
-            throw unsupported();
-    }
-
-    void checkSupportFloats() {
-        throw unsupported();
+        return valueType.numEndianBytes();
     }
 
     Object toValue(byte[] b) {
-        checkSupportBytes();
-        return b != null && b.length > 0 ? b : null;
+        return valueType.toValue(b);
     }
 
     Object toValue(String s, boolean bigEndian) {
-        checkSupportString();
-        if (s == null || s.length() == 0)
-            return null;
-        if (isBinaryType())
-            return binaryType.stringToBytes(s, bigEndian);
-        return s;
+        return valueType.toValue(s, bigEndian);
     }
 
     Object toValue(String[] ss, boolean bigEndian) {
-        checkSupportStrings();
-        if (ss == null || ss.length == 0)
-            return null;
-        if (ss.length == 1)
-            return toValue(ss[0], bigEndian);
-        if (isBinaryType())
-            return binaryType.stringsToBytes(ss, bigEndian);
-        return ss;
+        return valueType.toValue(ss, bigEndian);
     }
 
-    Object toValue(int[] ints, boolean bigEndian) {
-        checkSupportInts();
-        if (ints == null || ints.length == 0)
-            return null;
-        return binaryType.intsToBytes(ints, bigEndian);
+    Object toValue(int[] is, boolean bigEndian) {
+        return valueType.toValue(is, bigEndian);
     }
 
-    Object toValue(float[] floats, boolean bigEndian) {
-        checkSupportFloats();
-        if (floats == null || floats.length == 0)
-            return null;
-        return binaryType.floatsToBytes(floats, bigEndian);
+    Object toValue(float[] fs, boolean bigEndian) {
+        return valueType.toValue(fs, bigEndian);
     }
 
-    Object toValue(double[] doubles, boolean bigEndian) {
-        checkSupportFloats();
-        if (doubles == null || doubles.length == 0)
-            return null;
-        return binaryType.doublesToBytes(doubles, bigEndian);
+    Object toValue(double[] ds, boolean bigEndian) {
+        return valueType.toValue(ds, bigEndian);
    }
     
-    static int parseIS(String s) {
-        return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
-    }
-
-    static String formatDS(double d) {
-        String s = Double.toString(d);
-        int l = s.length();
-        if (s.startsWith(".0", l-2))
-            return s.substring(0, l-2);
-        int skip = l - 16;
-        int e = s.indexOf('E', l-5);
-        return e < 0 ? (skip > 0 ? s.substring(0, 16) : s)
-                : s.startsWith(".0", e-2) ? cut(s, e-2, e)
-                : skip > 0 ? cut(s, e-skip, e) : s;
-    }
-
-    static String formatDS(float f) {
-        String s = Float.toString(f);
-        int l = s.length();
-        if (s.startsWith(".0", l-2))
-            return s.substring(0, l-2);
-        int e = s.indexOf('E', l-5);
-        return e > 0 && s.startsWith(".0", e-2) ? cut(s, e-2, e)  : s;
-    }
-
-    static String cut(String s, int begin, int end) {
-        int l = s.length();
-        char[] ch = new char[l-(end-begin)];
-        s.getChars(0, begin, ch, 0);
-        s.getChars(end, l, ch, begin);
-        return new String(ch);
-    }
-
-    public boolean toStringBuilder(Object val, boolean bigEndian,
+    public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
-        if (val == null)
-            return true;
-        if (val instanceof byte[])
-            return toStringBuilder((byte[]) val, bigEndian, cs, maxChars, sb);
-        if (val instanceof String)
-            return toStringBuilder((String) val, maxChars, sb);
-        if (val instanceof String[])
-            return toStringBuilder((String[]) val, maxChars, sb);
-        if (val instanceof int[])
-            return toStringBuilder((int[]) val, maxChars, sb);
-        if (val instanceof float[])
-            return toStringBuilder((float[]) val, maxChars, sb);
-        if (val instanceof double[])
-            return toStringBuilder((double[]) val, maxChars, sb);
-         
-        sb.append(val);
-        return true;
-    }
+        return valueType.prompt(val, bigEndian, cs, maxChars, sb);
 
+    }
+/*
     public boolean toStringBuilder(byte[] b, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         return isBinaryType()
@@ -610,7 +276,7 @@ public enum VR {
         }
         return true;
     }
-
+*/
     public int paddingByte() {
         return paddingByte;
     }

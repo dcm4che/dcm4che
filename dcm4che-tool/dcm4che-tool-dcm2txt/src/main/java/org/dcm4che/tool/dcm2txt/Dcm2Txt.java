@@ -85,7 +85,7 @@ public class Dcm2Txt implements DicomInputHandler {
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         line.append(" [");
-        if (vr.toStringBuilder(b, dis.bigEndian(),
+        if (vr.prompt(b, dis.bigEndian(),
                 attrs.getSpecificCharacterSet(),
                 width - line.length() - 1, line)) {
             line.append(']');
@@ -156,7 +156,7 @@ public class Dcm2Txt implements DicomInputHandler {
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         line.append(" [");
-        if (vr.toStringBuilder(b, dis.bigEndian(), null, 
+        if (vr.prompt(b, dis.bigEndian(), null, 
                 width - line.length() - 1, line)) {
             line.append(']');
             appendKeyword(dis, line);
@@ -169,7 +169,7 @@ public class Dcm2Txt implements DicomInputHandler {
         
         StringBuilder line = new StringBuilder(width);
         line.append("0: [");
-        if (VR.OB.toStringBuilder(preamble, false, null, width - 5, line))
+        if (VR.OB.prompt(preamble, false, null, width - 5, line))
             line.append(']');
         System.out.println(line);
     }

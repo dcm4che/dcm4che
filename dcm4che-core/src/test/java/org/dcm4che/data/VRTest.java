@@ -159,10 +159,10 @@ public class VRTest {
     @Test
     public void testToBytes() {
         assertArrayEquals(DCM4CHEE_AS_AE,
-                VR.AE.toBytes("DCM4CHEE", false, CS));
+                VR.AE.toBytes("DCM4CHEE", CS));
         assertArrayEquals(INTS_AS_IS,
-                VR.IS.toBytes(INTS_AS_STRINGS, false, CS));
-        assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(FLOATS_AS_STRINGS, false, CS));
+                VR.IS.toBytes(INTS_AS_STRINGS, CS));
+        assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(FLOATS_AS_STRINGS, CS));
     }
 
     @Test
@@ -190,12 +190,12 @@ public class VRTest {
 
     @Test(expected=UnsupportedOperationException.class)
     public void testSequenceToBytes() {
-        VR.SQ.toBytes(SEQUENCE, false, CS);
+        VR.SQ.toBytes(SEQUENCE, CS);
     }
 
     @Test(expected=UnsupportedOperationException.class)
     public void testFragmentsToBytes() {
-        VR.OB.toBytes(FRAGMENTS, false, CS);
+        VR.OB.toBytes(FRAGMENTS, CS);
     }
 
     @Test
@@ -302,168 +302,6 @@ public class VRTest {
         assertArrayEquals(INTS_AS_SS_BE, VR.SS.toggleEndian(INTS_AS_SS, true));
         assertArrayEquals(INTS_AS_SL_BE, VR.SL.toggleEndian(INTS_AS_SL, true));
         assertArrayEquals(TAGS_AS_AT_BE, VR.AT.toggleEndian(TAGS_AS_AT, true));
-    }
-
-    @Test
-    public void testCheckSupportBytes() {
-        VR.AE.checkSupportBytes();
-        VR.AS.checkSupportBytes();
-        VR.AT.checkSupportBytes();
-        VR.CS.checkSupportBytes();
-        VR.DA.checkSupportBytes();
-        VR.DS.checkSupportBytes();
-        VR.DT.checkSupportBytes();
-        VR.FD.checkSupportBytes();
-        VR.FL.checkSupportBytes();
-        VR.IS.checkSupportBytes();
-        VR.LO.checkSupportBytes();
-        VR.LT.checkSupportBytes();
-        VR.OB.checkSupportBytes();
-        VR.OF.checkSupportBytes();
-        VR.OW.checkSupportBytes();
-        VR.PN.checkSupportBytes();
-        VR.SH.checkSupportBytes();
-        VR.SL.checkSupportBytes();
-        VR.SS.checkSupportBytes();
-        VR.ST.checkSupportBytes();
-        VR.TM.checkSupportBytes();
-        VR.UI.checkSupportBytes();
-        VR.UL.checkSupportBytes();
-        VR.UN.checkSupportBytes();
-        VR.US.checkSupportBytes();
-        VR.UT.checkSupportBytes();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testSQCheckSupportBytes() {
-        VR.SQ.checkSupportBytes();
-    }
-
-    @Test
-    public void testCheckSupportString() {
-        VR.AE.checkSupportString();
-        VR.AS.checkSupportString();
-        VR.AT.checkSupportString();
-        VR.CS.checkSupportString();
-        VR.DA.checkSupportString();
-        VR.DS.checkSupportString();
-        VR.DT.checkSupportString();
-        VR.FD.checkSupportString();
-        VR.FL.checkSupportString();
-        VR.IS.checkSupportString();
-        VR.LO.checkSupportString();
-        VR.LT.checkSupportString();
-        VR.OB.checkSupportString();
-        VR.OF.checkSupportString();
-        VR.OW.checkSupportString();
-        VR.PN.checkSupportString();
-        VR.SH.checkSupportString();
-        VR.SL.checkSupportString();
-        VR.SS.checkSupportString();
-        VR.ST.checkSupportString();
-        VR.TM.checkSupportString();
-        VR.UI.checkSupportString();
-        VR.UL.checkSupportString();
-        VR.UN.checkSupportString();
-        VR.US.checkSupportString();
-        VR.UT.checkSupportString();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testSQCheckSupportString() {
-        VR.SQ.checkSupportString();
-    }
-
-    @Test
-    public void testCheckSupportStrings() {
-        VR.AE.checkSupportStrings();
-        VR.AS.checkSupportStrings();
-        VR.AT.checkSupportStrings();
-        VR.CS.checkSupportStrings();
-        VR.DA.checkSupportStrings();
-        VR.DS.checkSupportStrings();
-        VR.DT.checkSupportStrings();
-        VR.FD.checkSupportStrings();
-        VR.FL.checkSupportStrings();
-        VR.IS.checkSupportStrings();
-        VR.LO.checkSupportStrings();
-        VR.OB.checkSupportStrings();
-        VR.OF.checkSupportStrings();
-        VR.OW.checkSupportStrings();
-        VR.PN.checkSupportStrings();
-        VR.SH.checkSupportStrings();
-        VR.SL.checkSupportStrings();
-        VR.SS.checkSupportStrings();
-        VR.TM.checkSupportStrings();
-        VR.UI.checkSupportStrings();
-        VR.UL.checkSupportStrings();
-        VR.UN.checkSupportStrings();
-        VR.US.checkSupportStrings();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testSQCheckSupportStrings() {
-        VR.SQ.checkSupportStrings();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testLTCheckSupportStrings() {
-        VR.LT.checkSupportStrings();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testSTCheckSupportStrings() {
-        VR.ST.checkSupportStrings();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testUTCheckSupportStrings() {
-        VR.UT.checkSupportStrings();
-    }
-
-    @Test
-    public void testCheckSupportInts() {
-        VR.AT.checkSupportInts();
-        VR.IS.checkSupportInts();
-        VR.OB.checkSupportInts();
-        VR.OW.checkSupportInts();
-        VR.SL.checkSupportInts();
-        VR.SS.checkSupportInts();
-        VR.UL.checkSupportInts();
-        VR.US.checkSupportInts();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testSQCheckSupportInts() {
-        VR.SQ.checkSupportInts();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testAECheckSupportInts() {
-        VR.AE.checkSupportInts();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testFDCheckSupportInts() {
-        VR.FD.checkSupportInts();
-    }
-
-    @Test
-    public void testCheckSupportFloats() {
-        VR.DS.checkSupportFloats();
-        VR.FD.checkSupportFloats();
-        VR.FL.checkSupportFloats();
-        VR.OF.checkSupportFloats();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testISCheckSupportFloats() {
-        VR.IS.checkSupportFloats();
-    }
-
-    @Test(expected=UnsupportedOperationException.class)
-    public void testOWCheckSupportFloats() {
-        VR.OW.checkSupportFloats();
     }
 
 }

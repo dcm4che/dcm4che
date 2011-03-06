@@ -9,6 +9,15 @@ public class TagUtils {
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
+    public static String shortToHexString(int n) {
+        char[] s = {
+                HEX_DIGITS[(n >>> 12) & 0xF],
+                HEX_DIGITS[(n >>> 8) & 0xF],
+                HEX_DIGITS[(n >>> 4) & 0xF],
+                HEX_DIGITS[(n >>> 0) & 0xF] };
+        return new String(s);
+    }
+
     public static String toHexString(int tag) {
         char[] s = {
                 HEX_DIGITS[(tag >>> 28)],

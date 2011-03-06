@@ -428,14 +428,13 @@ public class DicomInputStream extends FilterInputStream
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
         } else if (length == BULK_DATA_LOCATOR) {
-            attrs.setBulkDataLocator(tag, null, vr, readBulkDataLocator());
+            attrs.setValue(tag, null, vr, readBulkDataLocator());
         } else if ((excludeBulkData || includeBulkDataLocator) 
                 && isBulkData(attrs)){
             if (excludeBulkData) {
                 skipFully(length);
             } else {
-                attrs.setBulkDataLocator(tag, null, vr,
-                        createBulkDataLocator());
+                attrs.setValue(tag, null, vr, createBulkDataLocator());
             }
         } else {
             byte[] b = readValue(length);
@@ -487,7 +486,8 @@ public class DicomInputStream extends FilterInputStream
             bulkData = DicomInputStream.defaultBulkData();
         Attributes item = bulkData;
         for (ItemPointer ip : itemPointers) {
-            Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
+            Sequence sq = (Sequence)
+                    item.getValue(ip.sequenceTag, ip.privateCreator);
             if (sq == null)
                 return false;
             item = sq.get(0);
@@ -564,8 +564,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)
             throws IOException {
-        Fragments frags =
-                attrs.newFragments(fragsTag, null, vr, attrs.bigEndian(), 10);
+        Fragments frags = new Fragments(vr, attrs.bigEndian(), 10);
         for (int i = 0; true; ++i) {
             readHeader();
             if (tag == Tag.Item) {
@@ -581,8 +580,10 @@ public class DicomInputStream extends FilterInputStream
         }
         if (frags.isEmpty())
             attrs.setNull(fragsTag, null, vr);
-        else
+        else {
             frags.trimToSize();
+            attrs.setValue(fragsTag, null, vr, frags);
+        }
     }
 
     private byte[] readValue(int len) throws IOException {

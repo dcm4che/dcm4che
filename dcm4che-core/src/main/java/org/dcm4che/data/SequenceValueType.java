@@ -96,6 +96,7 @@ enum SequenceValueType implements ValueType {
     @Override
     public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
-        throw new UnsupportedOperationException();
+        sb.append(val);
+        return true;
     }
 }

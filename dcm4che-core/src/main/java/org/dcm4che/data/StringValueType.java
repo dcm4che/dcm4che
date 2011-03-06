@@ -97,7 +97,7 @@ enum StringValueType implements ValueType {
         @Override
         public Object toValue(float[] fs, boolean bigEndian) {
             if (fs == null || fs.length == 0)
-                return null;
+                return Value.NULL;
 
             if (fs.length == 1)
                 return StringUtils.formatDS(fs[0]);
@@ -112,7 +112,7 @@ enum StringValueType implements ValueType {
         @Override
         public Object toValue(double[] ds, boolean bigEndian) {
             if (ds == null || ds.length == 0)
-                return null;
+                return Value.NULL;
 
             if (ds.length == 1)
                 return StringUtils.formatDS(ds[0]);
@@ -168,7 +168,7 @@ enum StringValueType implements ValueType {
         @Override
         public Object toValue(int[] is, boolean bigEndian) {
             if (is == null || is.length == 0)
-                return null;
+                return Value.NULL;
 
             if (is.length == 1)
                 return Integer.toString(is[0]);
@@ -286,13 +286,13 @@ enum StringValueType implements ValueType {
 
     @Override
     public Object toValue(byte[] b) {
-        return b != null && b.length > 0 ? b : null;
+        return b != null && b.length > 0 ? b : Value.NULL;
     } 
 
     @Override
     public Object toValue(String s, boolean bigEndian) {
         if (s == null || s.isEmpty())
-            return null;
+            return Value.NULL;
 
         return s;
     } 
@@ -300,7 +300,7 @@ enum StringValueType implements ValueType {
     @Override
     public Object toValue(String[] ss, boolean bigEndian) {
         if (ss == null || ss.length == 0)
-            return null;
+            return Value.NULL;
 
         if (ss.length == 1)
             return toValue(ss[0], bigEndian);

@@ -218,10 +218,10 @@ enum BinaryValueType implements ValueType {
 
     @Override
     public byte[] toBytes(Object val, SpecificCharacterSet cs) {
-        if (!(val instanceof byte[]))
-            throw new UnsupportedOperationException();
+        if (val instanceof byte[])
+            return (byte[]) val;
 
-        return (byte[]) val;
+        throw new UnsupportedOperationException();
     } 
 
     @Override
@@ -347,13 +347,13 @@ enum BinaryValueType implements ValueType {
 
     @Override
     public Object toValue(byte[] b) {
-        return b != null && b.length > 0 ? b : null;
+        return b != null && b.length > 0 ? b : Value.NULL;
     } 
 
     @Override
     public Object toValue(String s, boolean bigEndian) {
         if (s == null || s.isEmpty())
-            return null;
+            return Value.NULL;
 
         return toBytes(s, new byte[numBytes], 0, bigEndian);
     } 
@@ -361,7 +361,7 @@ enum BinaryValueType implements ValueType {
     @Override
     public Object toValue(String[] ss, boolean bigEndian) {
         if (ss == null || ss.length == 0)
-            return null;
+            return Value.NULL;
 
         if (ss.length == 1)
             return toValue(ss[0], bigEndian);
@@ -376,7 +376,7 @@ enum BinaryValueType implements ValueType {
     @Override
     public Object toValue(int[] is, boolean bigEndian) {
         if (is == null || is.length == 0)
-            return null;
+            return Value.NULL;
 
         byte[] b = new byte[is.length * numBytes];
         for (int i = 0, off = 0; i < is.length; i++, off += numBytes)
@@ -388,7 +388,7 @@ enum BinaryValueType implements ValueType {
     @Override
     public Object toValue(float[] fs, boolean bigEndian) {
         if (fs == null || fs.length == 0)
-            return null;
+            return Value.NULL;
 
         byte[] b = new byte[fs.length * numBytes];
         for (int i = 0, off = 0; i < fs.length; i++, off += numBytes)
@@ -400,7 +400,7 @@ enum BinaryValueType implements ValueType {
     @Override
     public Object toValue(double[] ds, boolean bigEndian) {
         if (ds == null || ds.length == 0)
-            return null;
+            return Value.NULL;
 
         byte[] b = new byte[ds.length * numBytes];
         for (int i = 0, off = 0; i < ds.length; i++, off += numBytes)

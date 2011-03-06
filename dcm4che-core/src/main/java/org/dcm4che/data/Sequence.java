@@ -1,10 +1,13 @@
 package org.dcm4che.data;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.dcm4che.io.DicomOutputStream;
 
-public class Sequence extends ArrayList<Attributes> {
+
+public class Sequence extends ArrayList<Attributes> implements Value {
 
     private static final long serialVersionUID = 7062970085409148066L;
 
@@ -13,6 +16,8 @@ public class Sequence extends ArrayList<Attributes> {
 
     Sequence(Attributes parent, int initialCapacity) {
         super(initialCapacity);
+        if (parent == null)
+            throw new NullPointerException("parent");
         this.parent = parent;
     }
 
@@ -93,20 +98,38 @@ public class Sequence extends ArrayList<Attributes> {
         return "" + size() + " Items";
     }
 
-    int calcLength(boolean explicitVR, EncodeOptions encOpts) {
+    @Override
+    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
         int len = 0;
         for (Attributes item : this) {
-            len += 8;
-            if (item.isEmpty()) {
-                if (encOpts.isUndefEmptyItemLength())
-                    len += 8;
-            } else {
-                len += item.calcLength(explicitVR, encOpts);
-                if (encOpts.isUndefItemLength())
-                    len += 8;
-            }
+            len += 8 + item.calcLength(explicitVR, encOpts);
+            if (item.isEmpty() ? encOpts.isUndefEmptyItemLength()
+                               : encOpts.isUndefItemLength())
+                len += 8;
         }
+        if (isEmpty() ? encOpts.isUndefEmptySequenceLength()
+                      : encOpts.isUndefSequenceLength())
+            len += 8;
         length = len;
         return len;
+    }
+
+    @Override
+    public void writeTo(DicomOutputStream dos, int tag, VR vr)
+            throws IOException {
+        EncodeOptions encOpts = dos.getEncodeOptions();
+        int len = isEmpty()
+                ? encOpts.isUndefEmptySequenceLength() ? -1 : 0
+                : encOpts.isUndefSequenceLength() ? -1 : length;
+        dos.writeHeader(tag, VR.SQ, len);
+        for (Attributes item : this)
+            item.writeItemTo(dos);
+        if (len != -1)
+            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+    }
+
+    @Override
+    public byte[] toBytes(VR vr, boolean bigEndian) throws IOException {
+        throw new UnsupportedOperationException();
     }
 }

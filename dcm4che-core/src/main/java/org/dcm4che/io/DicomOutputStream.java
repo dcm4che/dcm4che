@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -13,18 +12,13 @@ import java.util.zip.DeflaterOutputStream;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.EncodeOptions;
-import org.dcm4che.data.Fragments;
-import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.util.ByteUtils;
-import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 
 public class DicomOutputStream extends FilterOutputStream {
-
-    private static final int BULK_DATA_LOCATOR = 0xffff;
 
     private static final byte[] DICM = { 'D', 'I', 'C', 'M' };
 
@@ -64,6 +58,18 @@ public class DicomOutputStream extends FilterOutputStream {
         this.encOpts = encOpts;
     }
 
+    public final EncodeOptions getEncodeOptions() {
+        return encOpts;
+    }
+
+    public final boolean isExplicitVR() {
+        return explicitVR;
+    }
+
+    public final boolean isBigEndian() {
+        return bigEndian;
+    }
+
     public final boolean isIncludeBulkDataLocator() {
         return includeBulkDataLocator;
     }
@@ -76,7 +82,9 @@ public class DicomOutputStream extends FilterOutputStream {
         if (explicitVR || bigEndian)
             throw new IllegalStateException("explicitVR=" + explicitVR
                     + ", bigEndian=" + bigEndian);
-        writeGroupWithGroupLength(Tag.CommandField, cmd);
+        cmd.writeGroupTo(this, Tag.CommandGroupLength);
+        writeGroupLength(Tag.CommandField, cmd.calcLength(explicitVR, null));
+        cmd.writeTo(this);
     }
 
     public void writeFileMetaInformation(Attributes fmi) throws IOException {
@@ -86,15 +94,11 @@ public class DicomOutputStream extends FilterOutputStream {
         String tsuid = fmi.getString(Tag.TransferSyntaxUID, null, 0, null);
         write(preamble);
         write(DICM);
-        writeGroupWithGroupLength(Tag.FileMetaInformationGroupLength, fmi);
+        fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);
+        writeGroupLength(Tag.FileMetaInformationGroupLength,
+                fmi.calcLength(explicitVR, null));
+        fmi.writeTo(this);
         switchTransferSyntax(tsuid);
-    }
-
-    private void writeGroupWithGroupLength(int grlentag, Attributes attrs)
-            throws IOException {
-        int grlen = attrs.calcLength(explicitVR, EncodeOptions.DEFAULTS);
-        writeGroupLength(grlentag, grlen);
-        attrs.writeTo(this, EncodeOptions.DEFAULTS);
     }
 
     public void writeDataset(Attributes fmi, Attributes dataset)
@@ -106,7 +110,7 @@ public class DicomOutputStream extends FilterOutputStream {
             dataset = new Attributes(bigEndian, dataset);
         if (needCalcLength)
             dataset.calcLength(explicitVR, encOpts);
-        dataset.writeTo(this, encOpts);
+        dataset.writeTo(this);
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {
@@ -150,37 +154,7 @@ public class DicomOutputStream extends FilterOutputStream {
             out.write(vr.paddingByte());
     }
 
-    public void writeAttribute(int tag, VR vr, BulkDataLocator val)
-            throws IOException {
-        if (val == null) {
-            writeHeader(tag, vr, 0);
-            return;
-        }
-        if (includeBulkDataLocator && !val.deleteOnFinalize) {
-            writeHeader(tag, vr, BULK_DATA_LOCATOR);
-            writeBulkDataLocator(val);
-        } else {
-            int swapBytes = vr.numEndianBytes();
-            int padlen = val.length & 1;
-            writeHeader(tag, vr, val.length + padlen);
-            InputStream in = val.openStream();
-            try {
-                StreamUtils.skipFully(in, val.offset);
-                if (swapBytes != 1 
-                        && (val.transferSyntax.equals(UID.ExplicitVRBigEndian)
-                                ? !bigEndian : bigEndian))
-                    StreamUtils.copy(in, this, val.length, swapBytes);
-                else
-                    StreamUtils.copy(in, this, val.length);
-            } finally {
-                in.close();
-            }
-            if (padlen > 0)
-                out.write(vr.paddingByte());
-        }
-    }
-
-    private void writeBulkDataLocator(BulkDataLocator val)
+    public void writeBulkDataLocator(BulkDataLocator val)
             throws IOException {
         byte[] b = buf;
         ByteUtils.intToBytesBE(val.length, b, 0);
@@ -211,56 +185,5 @@ public class DicomOutputStream extends FilterOutputStream {
         }
         ByteUtils.intToBytes(len, b, 8, bigEndian);
         out.write(b, 0, 12);
-    }
-
-    public void writeSequence(int tag, Sequence sq, EncodeOptions encOpts)
-            throws IOException {
-        if (sq == null || sq.isEmpty()) {
-            if (encOpts.isUndefEmptySequenceLength()) {
-                writeHeader(tag, VR.SQ, -1);
-                writeHeader(Tag.SequenceDelimitationItem, null, 0);
-            } else {
-                writeHeader(tag, VR.SQ, 0);
-            }
-        } else if (encOpts.isUndefSequenceLength()) {
-            writeHeader(tag, VR.SQ, -1);
-            for (Attributes item : sq)
-                writeItem(item, encOpts);
-            writeHeader(Tag.SequenceDelimitationItem, null, 0);
-        }  else {
-            writeHeader(tag, VR.SQ, sq.getLength());
-            for (Attributes item : sq)
-                writeItem(item, encOpts);
-        }
-    }
-
-    private void writeItem(Attributes item, EncodeOptions encOpts)
-            throws IOException {
-        if (item.isEmpty()) {
-            if (encOpts.isUndefEmptyItemLength()) {
-                writeHeader(Tag.Item, null, -1);
-                writeHeader(Tag.ItemDelimitationItem, null, 0);
-            } else {
-                writeHeader(Tag.Item, null, 0);
-            }
-        } else if (encOpts.isUndefItemLength()) {
-            writeHeader(Tag.Item, null, -1);
-            item.writeTo(this, encOpts);
-            writeHeader(Tag.ItemDelimitationItem, null, 0);
-        }  else {
-            writeHeader(Tag.Item, null, item.getLength());
-            item.writeTo(this, encOpts);
-        }
-    }
-
-    public void writeFragments(int tag, Fragments frags)
-            throws IOException {
-        writeHeader(tag, frags.vr(), -1);
-        for (Object o : frags)
-            if (o instanceof BulkDataLocator)
-                writeAttribute(Tag.Item, frags.vr(), (BulkDataLocator) o);
-            else
-                writeAttribute(Tag.Item, frags.vr(), (byte[]) o);
-        writeHeader(Tag.SequenceDelimitationItem, null, 0);
     }
 }

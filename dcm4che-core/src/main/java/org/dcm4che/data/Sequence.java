@@ -16,8 +16,6 @@ public class Sequence extends ArrayList<Attributes> implements Value {
 
     Sequence(Attributes parent, int initialCapacity) {
         super(initialCapacity);
-        if (parent == null)
-            throw new NullPointerException("parent");
         this.parent = parent;
     }
 

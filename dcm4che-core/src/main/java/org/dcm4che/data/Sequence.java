@@ -51,10 +51,15 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     private void setParent(Collection<? extends Attributes> c) {
-        for (Attributes attrs : c)
+        boolean bigEndian = parent.bigEndian();
+        for (Attributes attrs : c) {
+            if (attrs.bigEndian() != bigEndian)
+                throw new IllegalArgumentException(
+                    "Endian of Item must match Endian of parent Data Set");
             if (!attrs.isRoot())
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                     "Item already contained by Sequence");
+        }
         for (Attributes attrs : c)
             attrs.setParent(parent);
     }

@@ -83,7 +83,6 @@ public class DicomOutputStream extends FilterOutputStream {
             throw new IllegalStateException("explicitVR=" + explicitVR
                     + ", bigEndian=" + bigEndian);
         cmd.writeGroupTo(this, Tag.CommandGroupLength);
-        writeGroupLength(Tag.CommandField, cmd.calcLength(explicitVR, null));
         cmd.writeTo(this);
     }
 
@@ -95,8 +94,6 @@ public class DicomOutputStream extends FilterOutputStream {
         write(preamble);
         write(DICM);
         fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);
-        writeGroupLength(Tag.FileMetaInformationGroupLength,
-                fmi.calcLength(explicitVR, null));
         fmi.writeTo(this);
         switchTransferSyntax(tsuid);
     }

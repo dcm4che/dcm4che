@@ -962,7 +962,8 @@ public class Attributes implements Serializable {
         if (TagUtils.groupLengthTagOf(tag) != groupLengthTag)
             throw new IllegalStateException(TagUtils.toString(tag)
                     + " does not belong to group (" 
-                    + TagUtils.shortToHexString(TagUtils.groupNumber(tag))
+                    + TagUtils.shortToHexString(
+                            TagUtils.groupNumber(groupLengthTag))
                     + ",eeee).");
         
     }

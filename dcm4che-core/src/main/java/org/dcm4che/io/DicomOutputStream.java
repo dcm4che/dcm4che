@@ -93,7 +93,6 @@ public class DicomOutputStream extends FilterOutputStream {
         write(preamble);
         write(DICM);
         fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);
-        fmi.writeTo(this);
         switchTransferSyntax(tsuid);
     }
 

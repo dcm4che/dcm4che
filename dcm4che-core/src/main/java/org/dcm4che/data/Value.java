@@ -19,7 +19,7 @@ public interface Value {
                 throws IOException {
             if (vr == VR.SQ
                     && dos.getEncodeOptions().isUndefEmptySequenceLength()) {
-                dos.writeHeader(tag, vr, 0);
+                dos.writeHeader(tag, vr, -1);
                 dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
             } else {
                 dos.writeHeader(tag, vr, 0);

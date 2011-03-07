@@ -2,6 +2,7 @@ package org.dcm4che.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.dcm4che.io.DicomOutputStream;
 
@@ -29,6 +30,29 @@ public class Fragments extends ArrayList<Object> implements Value {
     @Override
     public String toString() {
         return "" + size() + " Fragments";
+    }
+
+    @Override
+    public boolean add(Object frag) {
+        add(size(), frag);
+        return true;
+    }
+
+    @Override
+    public void add(int index, Object frag) {
+        super.add(index, frag != null ? frag : Value.EMPTY_BYTES);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Object> c) {
+        return addAll(size(), c);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Object> c) {
+        for (Object o : c)
+            add(index++, o);
+        return !c.isEmpty();
     }
 
     @Override

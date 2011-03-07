@@ -915,7 +915,7 @@ public class Attributes implements Serializable {
                  : encOpts.isUndefItemLength() ? -1 : length;
          dos.writeHeader(Tag.Item, null, len);
          writeTo(dos);
-         if (len != -1)
+         if (len == -1)
              dos.writeHeader(Tag.ItemDelimitationItem, null, 0);
      }
 

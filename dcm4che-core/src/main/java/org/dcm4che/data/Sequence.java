@@ -122,7 +122,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
         dos.writeHeader(tag, VR.SQ, len);
         for (Attributes item : this)
             item.writeItemTo(dos);
-        if (len != -1)
+        if (len == -1)
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
     }
 

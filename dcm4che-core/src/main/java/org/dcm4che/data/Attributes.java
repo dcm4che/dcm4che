@@ -675,6 +675,13 @@ public class Attributes implements Serializable {
         return seq;
     }
 
+    public Fragments newFragments(int tag, String privateCreator, VR vr,
+            int initialCapacity) {
+        Fragments frags = new Fragments(vr, bigEndian, initialCapacity);
+        set(tag, privateCreator, vr, frags);
+        return frags;
+    }
+
     private Object set(int tag, String privateCreator, VR vr, Object value) {
         if (TagUtils.isGroupLength(tag))
             return null;
@@ -736,36 +743,35 @@ public class Attributes implements Serializable {
                     creatorTag = 0;
                     privateCreator = null;
                 }
-                set(tag, privateCreator, vr,
-                        copyValue(vr, toggleEndian, srcValues[i]));
+                Object value = srcValues[i];
+                if (value instanceof Sequence) {
+                    set(tag, privateCreator, (Sequence) value);
+                } else if (value instanceof Fragments) {
+                    set(tag, privateCreator, (Fragments) value);
+                } else {
+                    set(tag, privateCreator, vr,
+                            (value instanceof byte[] && toggleEndian)
+                                    ? vr.toggleEndian((byte[]) value, true)
+                                    : value);
+                }
             }
         }
     }
 
-    private Object copyValue(VR vr, boolean toogleEndian, Object value) {
-        if (value instanceof Sequence)
-            return clone((Sequence) value);
-        if (value instanceof Fragments)
-            return clone((Fragments) value, toogleEndian);
-        if (toogleEndian && value instanceof byte[])
-            return vr.toggleEndian((byte[]) value, true);
-        return value;
+    private void set(int tag, String privateCreator, Sequence src) {
+        Sequence dst = newSequence(tag, privateCreator, src.size());
+        for (Attributes item : src)
+            dst.add(new Attributes(bigEndian, item));
     }
 
-    private Sequence clone(Sequence srcSeq) {
-        Sequence dstSeq = new Sequence(this, srcSeq.size());
-        for (Attributes src : srcSeq)
-            dstSeq.add(new Attributes(bigEndian, src));
-        return dstSeq;
-    }
-
-    private Fragments clone(Fragments src, boolean toogleEndian) {
+    private void set(int tag, String privateCreator, Fragments src) {
+        boolean toogleEndian = src.bigEndian() != bigEndian;
         VR vr = src.vr();
-        Fragments dst = new Fragments(vr, bigEndian, src.size());
-        for (Object o : src)
-            dst.add((toogleEndian && o instanceof byte[]) ? vr.toggleEndian(
-                    (byte[]) o, true) : o);
-        return dst;
+        Fragments dst = newFragments(tag, privateCreator, vr, src.size());
+        for (Object frag : src)
+            dst.add((frag instanceof byte[] && toogleEndian) 
+                    ? vr.toggleEndian((byte[]) frag, true)
+                    : frag);
     }
 
     void initSpecificCharacterSet() {

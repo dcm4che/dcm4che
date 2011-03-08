@@ -210,7 +210,7 @@ public class Attributes implements Serializable {
     }
 
     private int creatorTagOf(int tag, String privateCreator, boolean reserve) {
-        if (!TagUtils.isPrivateTag(tag))
+        if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
                     + " is not a private Data Element");
 
@@ -737,7 +737,8 @@ public class Attributes implements Serializable {
                     int tmp = TagUtils.creatorTagOf(tag);
                     if (creatorTag != tmp) {
                         creatorTag = tmp;
-                        privateCreator = getString(creatorTag, null, 0, null);
+                        privateCreator = other
+                                .getString(creatorTag, null, 0, null);
                     }
                 } else {
                     creatorTag = 0;
@@ -991,7 +992,6 @@ public class Attributes implements Serializable {
         DicomOutputStream dout = new DicomOutputStream(out,
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
-        dout.setIncludeBulkDataLocator(true);
         dout.writeDataset(null, this);
         dout.writeHeader(Tag.ItemDelimitationItem, null, 0);
     }

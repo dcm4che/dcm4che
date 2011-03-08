@@ -1,6 +1,5 @@
 package org.dcm4che.data;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -18,10 +17,9 @@ public class BulkDataLocator implements Value {
     public final String transferSyntax;
     public final long offset;
     public final int length;
-    public final boolean deleteOnFinalize;
 
     public BulkDataLocator(String uri, String transferSyntax, long offset,
-            int length, boolean deleteOnFinalize) {
+            int length) {
         try {
             new URI(uri);
         } catch (URISyntaxException e) {
@@ -33,12 +31,6 @@ public class BulkDataLocator implements Value {
         this.transferSyntax = transferSyntax;
         this.offset = offset;
         this.length = length;
-        this.deleteOnFinalize = deleteOnFinalize;
-    }
-
-    protected void finalize() throws Throwable {
-        if (deleteOnFinalize)
-            new File(new URI(uri)).delete();
     }
 
     @Override
@@ -64,7 +56,7 @@ public class BulkDataLocator implements Value {
 
     @Override
     public void writeTo(DicomOutputStream dos, int tag, VR vr) throws IOException {
-        if (dos.isIncludeBulkDataLocator() && !deleteOnFinalize) {
+        if (dos.isIncludeBulkDataLocator()) {
             dos.writeHeader(tag, vr, BULK_DATA_LOCATOR);
             dos.writeBulkDataLocator(this);
         } else {

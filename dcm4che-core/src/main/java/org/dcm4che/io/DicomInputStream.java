@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
@@ -79,6 +81,7 @@ public class DicomInputStream extends FilterInputStream
     private String tempFilePrefix = "blk";
     private String tempFileSuffix;
     private File tempDirectory;
+    private ArrayList<File> tempFiles = new ArrayList<File>(1);
 
     public static Attributes defaultBulkData() {
         Attributes wfsqitem = new Attributes(1);
@@ -169,6 +172,10 @@ public class DicomInputStream extends FilterInputStream
 
     public final void setTempDirectory(File tempDirectory) {
         this.tempDirectory = tempDirectory;
+    }
+
+    public final List<File> getTempFiles() {
+        return tempFiles;
     }
 
     public final Attributes getBulkData() {
@@ -454,18 +461,18 @@ public class DicomInputStream extends FilterInputStream
         long off = ByteUtils.bytesToLongBE(b, 4);
         String uri = readASCII();
         String tsuid = readASCII();
-        return new BulkDataLocator(uri, tsuid, off, len, false);
+        return new BulkDataLocator(uri, tsuid, off, len);
     }
 
     private BulkDataLocator createBulkDataLocator() throws IOException {
             BulkDataLocator locator;
         if (uri != null) {
-            locator = new BulkDataLocator(uri, tsuid, pos, length, false);
+            locator = new BulkDataLocator(uri, tsuid, pos, length);
             skipFully(length);
         } else {
             File tempfile = File.createTempFile(tempFilePrefix,
                     tempFileSuffix, tempDirectory);
-            tempfile.deleteOnExit();
+            tempFiles.add(tempfile);
             FileOutputStream tempout = new FileOutputStream(tempfile);
             try {
                 StreamUtils.copy(this, tempout, length);
@@ -473,7 +480,7 @@ public class DicomInputStream extends FilterInputStream
                 tempout.close();
             }
             locator = new BulkDataLocator(tempfile.toURI().toString(), tsuid,
-                    0, length, true);
+                    0, length);
         }
         return locator;
     }

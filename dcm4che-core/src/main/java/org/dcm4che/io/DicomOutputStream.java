@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -22,6 +23,8 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private static final byte[] DICM = { 'D', 'I', 'C', 'M' };
 
+    private static final int BULK_DATA_LOCATOR = 0xffff;
+
     private byte[] preamble = new byte[128];
 
     private EncodeOptions encOpts = EncodeOptions.DEFAULTS;
@@ -29,8 +32,6 @@ public class DicomOutputStream extends FilterOutputStream {
     private boolean explicitVR;
 
     private boolean bigEndian;
-
-    private boolean includeBulkDataLocator;
 
     private final byte[] buf = new byte[12];
 
@@ -68,14 +69,6 @@ public class DicomOutputStream extends FilterOutputStream {
 
     public final boolean isBigEndian() {
         return bigEndian;
-    }
-
-    public final boolean isIncludeBulkDataLocator() {
-        return includeBulkDataLocator;
-    }
-
-    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
-        this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
     public void writeCommand(Attributes cmd) throws IOException {
@@ -149,24 +142,19 @@ public class DicomOutputStream extends FilterOutputStream {
             out.write(vr.paddingByte());
     }
 
-    public void writeBulkDataLocator(BulkDataLocator val)
+    public void writeAttribute(int tag, VR vr, BulkDataLocator bdl)
             throws IOException {
-        byte[] b = buf;
-        ByteUtils.intToBytesBE(val.length, b, 0);
-        ByteUtils.longToBytesBE(val.offset, b, 4);
-        write(b, 0, 12);
-        writeASCII(val.uri);
-        writeASCII(val.transferSyntax);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void writeASCII(String s) throws IOException {
-        final int len = s.length();
-        byte[] b = new byte[len];
-        s.getBytes(0, len, b, 0);
-        write(len << 8);
-        write(len);
-        write(b, 0, len);
+        final int length = bdl.length;
+        if (super.out instanceof ObjectOutputStream) {
+            writeHeader(tag, vr, BULK_DATA_LOCATOR);
+            bdl.serializeTo((ObjectOutputStream) super.out);
+        } else {
+            int padlen = length & 1;
+            writeHeader(tag, vr, length + padlen);
+            bdl.writeTo(this, vr);
+            if (padlen > 0)
+                write(vr.paddingByte());
+        }
     }
 
     public void writeGroupLength(int tag, int len) throws IOException {

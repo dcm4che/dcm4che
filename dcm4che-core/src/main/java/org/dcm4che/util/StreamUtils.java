@@ -53,7 +53,11 @@ public class StreamUtils {
 
     public static void copy(InputStream in, OutputStream out, int len,
             int swapBytes, byte buf[]) throws IOException {
-        if (!(swapBytes == 1 || swapBytes == 2 || swapBytes == 4))
+        if (swapBytes == 1) {
+            copy(in, out, len, buf);
+            return;
+        }
+        if (!(swapBytes == 2 || swapBytes == 4))
             throw new IllegalArgumentException("swapBytes: " + swapBytes);
         if (len < 0 || (len % swapBytes) != 0)
             throw new IllegalArgumentException("length: " + len);

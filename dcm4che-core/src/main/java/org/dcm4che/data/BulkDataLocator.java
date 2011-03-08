@@ -2,6 +2,8 @@ package org.dcm4che.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -10,8 +12,6 @@ import org.dcm4che.util.StreamUtils;
 
 
 public class BulkDataLocator implements Value {
-
-    private static final int BULK_DATA_LOCATOR = 0xffff;
 
     public final String uri;
     public final String transferSyntax;
@@ -55,30 +55,9 @@ public class BulkDataLocator implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, int tag, VR vr) throws IOException {
-        if (dos.isIncludeBulkDataLocator()) {
-            dos.writeHeader(tag, vr, BULK_DATA_LOCATOR);
-            dos.writeBulkDataLocator(this);
-        } else {
-            int swapBytes = vr.numEndianBytes();
-            int padlen = length & 1;
-            dos.writeHeader(tag, vr, length + padlen);
-            InputStream in = openStream();
-            try {
-                StreamUtils.skipFully(in, offset);
-                boolean bigEndian = dos.isBigEndian();
-                if (swapBytes != 1 
-                        && (transferSyntax.equals(UID.ExplicitVRBigEndian)
-                                ? !bigEndian : dos.isBigEndian()))
-                    StreamUtils.copy(in, dos, length, swapBytes);
-                else
-                    StreamUtils.copy(in, dos, length);
-            } finally {
-                in.close();
-            }
-            if (padlen > 0)
-                dos.write(vr.paddingByte());
-        }
+    public void writeTo(DicomOutputStream dos, int tag, VR vr)
+            throws IOException {
+        dos.writeAttribute(tag, vr, this);
     }
 
     @Override
@@ -96,7 +75,8 @@ public class BulkDataLocator implements Value {
             StreamUtils.skipFully(in, offset);
             byte[] b = new byte[length];
             StreamUtils.readFully(in, b, 0, b.length);
-            if (transferSyntax.equals(UID.ExplicitVRBigEndian) ? !bigEndian
+            if (transferSyntax.equals(UID.ExplicitVRBigEndian) 
+                    ? !bigEndian
                     : bigEndian) {
                 vr.toggleEndian(b, false);
             }
@@ -105,5 +85,36 @@ public class BulkDataLocator implements Value {
             in.close();
         }
 
+    }
+
+    public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
+        InputStream in = openStream();
+        try {
+            StreamUtils.skipFully(in, offset);
+            if (transferSyntax.equals(UID.ExplicitVRBigEndian)
+                    ? !dos.isBigEndian()
+                    : dos.isBigEndian())
+                StreamUtils.copy(in, dos, length, vr.numEndianBytes());
+            else
+                StreamUtils.copy(in, dos, length);
+        } finally {
+            in.close();
+        }
+    }
+
+    public void serializeTo(ObjectOutputStream oos) throws IOException {
+        oos.writeInt(length);
+        oos.writeLong(offset);
+        oos.writeUTF(uri);
+        oos.writeUTF(transferSyntax);
+    }
+
+    public static Value deserializeFrom(ObjectInputStream ois)
+            throws IOException {
+        int len = ois.readInt();
+        long off = ois.readLong();
+        String uri = ois.readUTF();
+        String tsuid = ois.readUTF();
+        return new BulkDataLocator(uri, tsuid, off, len);
     }
 }

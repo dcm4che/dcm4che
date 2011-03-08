@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.EncodeOptions;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
@@ -156,10 +157,19 @@ public class DicomOutputStreamTest {
                 .add(requestAttributes());
         ds.setString(Tag.SOPClassUID, null, VR.UI, "1.2.3.4");
         ds.setString(Tag.SOPInstanceUID, null, VR.UI, "4.3.2.1");
-        Fragments frags = ds.newFragments(Tag.PixelData, null, VR.OB, 2);
+        BulkDataLocator bdl = new BulkDataLocator(uri("OT-PAL-8-face"), 
+                        UID.ImplicitVRLittleEndian, 1654, 307200);
+        ds.setValue(Tag.PixelData, null, VR.OW, bdl);
+        Fragments frags = ds.newFragments(0x99990010, "DicomOutputStreamTest", VR.OB, 3);
         frags.add(null);
         frags.add(new byte[] { 1, 2, 3, 4 });
+        frags.add(bdl);
         return ds;
+    }
+
+    private static String uri(String name) {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        return cl.getResource(name).toString();
     }
 
     private Attributes requestAttributes() {

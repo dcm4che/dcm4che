@@ -144,11 +144,11 @@ public class DicomOutputStream extends FilterOutputStream {
 
     public void writeAttribute(int tag, VR vr, BulkDataLocator bdl)
             throws IOException {
-        final int length = bdl.length;
         if (super.out instanceof ObjectOutputStream) {
             writeHeader(tag, vr, BULK_DATA_LOCATOR);
             bdl.serializeTo((ObjectOutputStream) super.out);
         } else {
+            int length = bdl.length;
             int padlen = length & 1;
             writeHeader(tag, vr, length + padlen);
             bdl.writeTo(this, vr);

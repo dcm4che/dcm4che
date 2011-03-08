@@ -55,13 +55,12 @@ public class BulkDataLocator implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, int tag, VR vr)
-            throws IOException {
-        dos.writeAttribute(tag, vr, this);
+    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
+        return getEncodedLength();
     }
 
     @Override
-    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
+    public int getEncodedLength() {
         return (length + 1) & ~1;
     }
 
@@ -87,6 +86,7 @@ public class BulkDataLocator implements Value {
 
     }
 
+    @Override
     public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
         InputStream in = openStream();
         try {
@@ -97,6 +97,8 @@ public class BulkDataLocator implements Value {
                 StreamUtils.copy(in, dos, length, vr.numEndianBytes());
             else
                 StreamUtils.copy(in, dos, length);
+            if ((length & 1) != 0)
+                dos.write(vr.paddingByte());
         } finally {
             in.close();
         }

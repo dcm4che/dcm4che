@@ -15,15 +15,12 @@ public interface Value {
         }
 
         @Override
-        public void writeTo(DicomOutputStream dos, int tag, VR vr)
-                throws IOException {
-            if (vr == VR.SQ
-                    && dos.getEncodeOptions().isUndefEmptySequenceLength()) {
-                dos.writeHeader(tag, vr, -1);
-                dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-            } else {
-                dos.writeHeader(tag, vr, 0);
-            }
+        public int getEncodedLength() {
+            return 0;
+        }
+
+        @Override
+        public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
         }
 
         @Override
@@ -46,8 +43,10 @@ public interface Value {
 
     byte[] toBytes(VR vr, boolean bigEndian) throws IOException;
 
-    void writeTo(DicomOutputStream dos, int tag, VR vr) throws IOException;
+    void writeTo(DicomOutputStream dos, VR vr) throws IOException;
 
     int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr);
+
+    int getEncodedLength();
 
 }

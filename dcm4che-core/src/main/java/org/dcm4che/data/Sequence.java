@@ -23,7 +23,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
         return parent;
     }
 
-    public final int getLength() {
+    public final int getEncodedLength() {
         return length;
     }
 
@@ -118,17 +118,9 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, int tag, VR vr)
-            throws IOException {
-        EncodeOptions encOpts = dos.getEncodeOptions();
-        int len = isEmpty()
-                ? encOpts.isUndefEmptySequenceLength() ? -1 : 0
-                : encOpts.isUndefSequenceLength() ? -1 : length;
-        dos.writeHeader(tag, VR.SQ, len);
+    public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
         for (Attributes item : this)
             item.writeItemTo(dos);
-        if (len == -1)
-            dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
     }
 
     @Override

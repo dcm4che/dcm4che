@@ -133,7 +133,7 @@ public enum VR {
         return valueType.toggleEndian(b, preserve);
     }
 
-    byte[] toBytes(Object val, SpecificCharacterSet cs) {
+    public byte[] toBytes(Object val, SpecificCharacterSet cs) {
         return valueType.toBytes(val, cs);
     }
 

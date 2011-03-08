@@ -56,15 +56,10 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, int tag, VR vr)
+    public void writeTo(DicomOutputStream dos, VR vr)
             throws IOException {
-        dos.writeHeader(tag, vr, -1);
         for (Object frag : this)
-            if (frag instanceof Value)
-                ((Value) frag).writeTo(dos, Tag.Item, vr);
-            else
-                dos.writeAttribute(Tag.Item, this.vr(), (byte[]) frag);
-        dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+            dos.writeAttribute(Tag.Item, vr, frag, null);
     }
 
     @Override
@@ -78,6 +73,11 @@ public class Fragments extends ArrayList<Object> implements Value {
                 len += (((byte[]) frag).length + 1) & ~1;
         }
         return len;
+    }
+
+    @Override
+    public int getEncodedLength() {
+        return -1;
     }
 
     @Override

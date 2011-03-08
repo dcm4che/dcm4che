@@ -136,6 +136,7 @@ public class Attributes implements Serializable {
     public void internalizeStringValues(boolean decode) {
         Object value;
         VR vr;
+        SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < values.length; i++) {
             if ((value = values[i]) == null)
                 continue;
@@ -146,8 +147,7 @@ public class Attributes implements Serializable {
                 if (value instanceof byte[]) {
                     if (!decode)
                         continue;
-                    value = vr.toStrings((byte[]) value, bigEndian,
-                            getSpecificCharacterSet());
+                    value = vr.toStrings((byte[]) value, bigEndian, cs);
                 }
                 if (value instanceof String)
                     values[i] = ((String) value).intern();
@@ -163,6 +163,7 @@ public class Attributes implements Serializable {
     public void decodeStringValues() {
         Object value;
         VR vr;
+        SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < values.length; i++) {
             if ((value = values[i]) == null)
                 continue;
@@ -172,8 +173,7 @@ public class Attributes implements Serializable {
             } else if ((vr = vrs[i]).isStringType())
                 if (value instanceof byte[])
                     values[i] =
-                        vr.toStrings((byte[]) value, bigEndian,
-                                getSpecificCharacterSet());
+                        vr.toStrings((byte[]) value, bigEndian, cs);
         }
     }
 
@@ -840,12 +840,13 @@ public class Attributes implements Serializable {
         this.groupLengths = encOpts.isGroupLength() 
                 ? new int[countGroups()]
                 : null;
-        this.length = calcLength(explicitVR, encOpts, groupLengths);
+        this.length = calcLength(explicitVR, encOpts,
+                getSpecificCharacterSet(), groupLengths);
         return this.length;
     }
 
     private int calcLength(boolean explicitVR, EncodeOptions encOpts,
-            int[] groupLengths) {
+            SpecificCharacterSet cs, int[] groupLengths) {
         int len, totlen = 0;
         int groupLengthTag = -1;
         int groupLengthIndex = -1;
@@ -859,8 +860,7 @@ public class Attributes implements Serializable {
                 len += ((Value) val).calcLength(explicitVR, encOpts, vr);
             else {
                 if (!(val instanceof byte[]))
-                    values[i] = val = vr
-                            .toBytes(val, getSpecificCharacterSet());
+                    values[i] = val = vr.toBytes(val, cs);
                 len += (((byte[]) val).length + 1) & ~1;
             }
             totlen += len;
@@ -901,12 +901,13 @@ public class Attributes implements Serializable {
             throw new IllegalStateException(
                     "groupLengths not initialized by calcLength()");
 
+        SpecificCharacterSet cs = getSpecificCharacterSet();
         if (tags[0] < 0) {
             int index0 = -(1 + indexOf(0));
-            writeTo(dos, index0, size, groupLengthIndex0);
-            writeTo(dos, 0, index0, 0);
+            writeTo(dos, cs, index0, size, groupLengthIndex0);
+            writeTo(dos, cs, 0, index0, 0);
         } else {
-            writeTo(dos, 0, size, 0);
+            writeTo(dos, cs, 0, size, 0);
         }
     }
 
@@ -920,8 +921,8 @@ public class Attributes implements Serializable {
              dos.writeHeader(Tag.ItemDelimitationItem, null, 0);
      }
 
-    private void writeTo(DicomOutputStream dos, int start, int end,
-            int groupLengthIndex) throws IOException {
+    private void writeTo(DicomOutputStream dos, SpecificCharacterSet cs,
+            int start, int end, int groupLengthIndex) throws IOException {
         boolean groupLength = groupLengths != null;
         int groupLengthTag = -1;
         for (int i = start; i < end; i++) {
@@ -934,13 +935,7 @@ public class Attributes implements Serializable {
                             groupLengths[groupLengthIndex++]);
                 }
             }
-            VR vr = vrs[i];
-            Object val = values[i];
-            if (val instanceof Value)
-                ((Value) val).writeTo(dos, tag, vr);
-            else
-                dos.writeAttribute(tag, vr,
-                        vr.toBytes(val, getSpecificCharacterSet()));
+            dos.writeAttribute(tag, vrs[i], values[i], cs);
         }
     }
 
@@ -952,9 +947,11 @@ public class Attributes implements Serializable {
         
         checkInGroup(0, groupLengthTag);
         checkInGroup(size-1, groupLengthTag);
+        SpecificCharacterSet cs = getSpecificCharacterSet();
         dos.writeGroupLength(groupLengthTag,
-                calcLength(dos.isExplicitVR(), dos.getEncodeOptions(), null));
-        writeTo(dos, 0, size, 0);
+                calcLength(dos.isExplicitVR(), dos.getEncodeOptions(), cs,
+                        null));
+        writeTo(dos, cs, 0, size, 0);
     }
 
 

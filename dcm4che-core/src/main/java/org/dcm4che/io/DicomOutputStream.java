@@ -13,9 +13,11 @@ import java.util.zip.DeflaterOutputStream;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.EncodeOptions;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.data.Value;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.TagUtils;
 
@@ -130,11 +132,19 @@ public class DicomOutputStream extends FilterOutputStream {
         out.write(b, 0, headerLen);
     }
 
+
+    public void writeAttribute(int tag, VR vr, Object value,
+            SpecificCharacterSet cs)  throws IOException {
+        if (value instanceof Value)
+            writeAttribute(tag, vr, (Value) value);
+        else
+            writeAttribute(tag, vr,
+                    (value instanceof byte[])
+                            ? (byte[]) value
+                            : vr.toBytes(value, cs));
+    }
+
     public void writeAttribute(int tag, VR vr, byte[] val) throws IOException {
-        if (val == null) {
-            writeHeader(tag, vr, 0);
-            return;
-        }
         int padlen = val.length & 1;
         writeHeader(tag, vr, val.length + padlen);
         out.write(val);
@@ -142,18 +152,22 @@ public class DicomOutputStream extends FilterOutputStream {
             out.write(vr.paddingByte());
     }
 
-    public void writeAttribute(int tag, VR vr, BulkDataLocator bdl)
-            throws IOException {
-        if (super.out instanceof ObjectOutputStream) {
+    public void writeAttribute(int tag, VR vr, Value val) throws IOException {
+        if (val instanceof BulkDataLocator
+                && super.out instanceof ObjectOutputStream) {
             writeHeader(tag, vr, BULK_DATA_LOCATOR);
-            bdl.serializeTo((ObjectOutputStream) super.out);
+            ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
         } else {
-            int length = bdl.length;
-            int padlen = length & 1;
-            writeHeader(tag, vr, length + padlen);
-            bdl.writeTo(this, vr);
-            if (padlen > 0)
-                write(vr.paddingByte());
+            int length = vr == VR.SQ 
+                    && (val.isEmpty() 
+                            ? encOpts.isUndefEmptySequenceLength()
+                            : encOpts.isUndefSequenceLength())
+                            ? -1
+                            : val.getEncodedLength();
+            writeHeader(tag, vr, length);
+            val.writeTo(this, vr);
+            if (length == -1)
+                writeHeader(Tag.SequenceDelimitationItem, null, 0);
         }
     }
 

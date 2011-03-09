@@ -94,7 +94,7 @@ public class DicomInputStream extends FilterInputStream
         bulkData.setNull(Tag.SpectroscopyData, null, VR.OF);
         wfsqitem.setNull(Tag.WaveformData, null, VR.OB);
         bulkData.setNull(Tag.OverlayData, null, VR.OB);
-        bulkData.setNull(Tag.PixelData, null, VR.UT);
+        bulkData.setNull(Tag.PixelData, null, VR.OB);
         return bulkData;
     }
 

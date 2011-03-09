@@ -9,11 +9,17 @@ import org.dcm4che.data.Sequence;
 public interface DicomInputHandler {
 
     void readValue(DicomInputStream dis, Attributes attrs)
-    throws IOException;
+            throws IOException;
 
     void readValue(DicomInputStream dis, Sequence seq)
-    throws IOException;
+            throws IOException;
 
     void readValue(DicomInputStream dis, Fragments frags)
-    throws IOException;
+            throws IOException;
+
+    void startDataset()
+            throws IOException;
+
+    void endDataset()
+            throws IOException;
 }

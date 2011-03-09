@@ -330,7 +330,9 @@ public class DicomInputStream extends FilterInputStream
     public Attributes readDataset(int len, int stopTag) throws IOException {
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian);
+        handler.startDataset();
         readAttributes(attrs, len, stopTag);
+        handler.endDataset();
         attrs.trimToSize();
         return attrs;
     }
@@ -512,6 +514,14 @@ public class DicomInputStream extends FilterInputStream
                 vr.toggleEndian(b, false);
             frags.add(b);
         }
+    }
+
+    @Override
+    public void startDataset() {
+    }
+
+    @Override
+    public void endDataset() {
     }
 
     private void checkIsThis(DicomInputStream dis) {

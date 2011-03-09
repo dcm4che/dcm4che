@@ -37,7 +37,6 @@ public class Dcm2Txt implements DicomInputHandler {
     private static final int DEFAULT_WIDTH = 78;
 
     private int width = DEFAULT_WIDTH;
-    private boolean first = true;
 
     public final int getWidth() {
         return width;
@@ -56,12 +55,17 @@ public class Dcm2Txt implements DicomInputHandler {
     }
 
     @Override
+    public void startDataset(DicomInputStream dis) throws IOException {
+        promptPreamble(dis.getPreamble());
+    }
+
+    @Override
+    public void endDataset(DicomInputStream dis) throws IOException {
+    }
+
+    @Override
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
-        if (first) {
-            promptPreamble(dis.getPreamble());
-            first = false;
-        }
         StringBuilder line = new StringBuilder(width + 30);
         appendPrefix(dis, line);
         appendHeader(dis, line);
@@ -82,8 +86,7 @@ public class Dcm2Txt implements DicomInputHandler {
             return;
         }
         int tag = dis.tag();
-        byte[] b = new byte[dis.length()];
-        dis.readFully(b);
+        byte[] b = dis.readValue();
         line.append(" [");
         if (vr.prompt(b, dis.bigEndian(),
                 attrs.getSpecificCharacterSet(),
@@ -153,8 +156,7 @@ public class Dcm2Txt implements DicomInputHandler {
 
     private void appendFragment(StringBuilder line, DicomInputStream dis,
             VR vr) throws IOException {
-        byte[] b = new byte[dis.length()];
-        dis.readFully(b);
+        byte[] b = dis.readValue();
         line.append(" [");
         if (vr.prompt(b, dis.bigEndian(), null, 
                 width - line.length() - 1, line)) {

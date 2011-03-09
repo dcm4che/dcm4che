@@ -328,12 +328,12 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public Attributes readDataset(int len, int stopTag) throws IOException {
+        handler.startDataset(this);
         readFileMetaInformation();
         Attributes attrs = new Attributes(bigEndian);
-        handler.startDataset();
         readAttributes(attrs, len, stopTag);
-        handler.endDataset();
         attrs.trimToSize();
+        handler.endDataset(this);
         return attrs;
     }
 
@@ -435,7 +435,7 @@ public class DicomInputStream extends FilterInputStream
                 attrs.setValue(tag, null, vr, createBulkDataLocator());
             }
         } else {
-            byte[] b = readValue(length);
+            byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
                 if (bigEndian != attrs.bigEndian())
                     vr.toggleEndian(b, false);
@@ -509,7 +509,7 @@ public class DicomInputStream extends FilterInputStream
             frags.add(BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
         } else {
-            byte[] b = readValue(length);
+            byte[] b = readValue();
             if (bigEndian != frags.bigEndian())
                 vr.toggleEndian(b, false);
             frags.add(b);
@@ -517,11 +517,11 @@ public class DicomInputStream extends FilterInputStream
     }
 
     @Override
-    public void startDataset() {
+    public void startDataset(DicomInputStream dis) {
     }
 
     @Override
-    public void endDataset() {
+    public void endDataset(DicomInputStream dis) {
     }
 
     private void checkIsThis(DicomInputStream dis) {
@@ -584,8 +584,8 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    private byte[] readValue(int len) throws IOException {
-        byte[] value = new byte[len];
+    public byte[] readValue() throws IOException {
+        byte[] value = new byte[length];
         readFully(value);
         return value;
     }

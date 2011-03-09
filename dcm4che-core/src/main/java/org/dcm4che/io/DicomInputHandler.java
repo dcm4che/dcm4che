@@ -17,9 +17,9 @@ public interface DicomInputHandler {
     void readValue(DicomInputStream dis, Fragments frags)
             throws IOException;
 
-    void startDataset()
+    void startDataset(DicomInputStream dis)
             throws IOException;
 
-    void endDataset()
+    void endDataset(DicomInputStream dis)
             throws IOException;
 }

@@ -6,8 +6,8 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
-import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.data.Value;
 import org.dcm4che.util.TagUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -22,7 +22,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     @Override
-    public void startDataset() throws IOException {
+    public void startDataset(DicomInputStream dis) throws IOException {
         try {
             ch.startDocument();
             ch.startElement("", "", "NativeDicomModel",
@@ -33,7 +33,7 @@ public class SAXWriter implements DicomInputHandler {
     }
 
     @Override
-    public void endDataset() throws IOException {
+    public void endDataset(DicomInputStream dis) throws IOException {
         try {
             ch.endElement("", "", "NativeDicomModel");
             ch.endDocument();
@@ -45,17 +45,16 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
-        int tag = dis.tag();
-        if (TagUtils.isFileMetaInformation(tag)) {
-            dis.readValue(dis, attrs);
-        } else try {
+        try {
+            int tag = dis.tag();
             VR vr = dis.vr();
+            int len = dis.length();
             ch.startElement("", "", "DicomAttribute",
                     atts(tag, attrs.getPrivateCreator(tag), vr));
-            dis.readValue(dis, attrs);
-            if (tag != Tag.SpecificCharacterSet
-                    && TagUtils.isPrivateCreator(tag)) {
-                attrs.remove(tag, null);
+            if (vr == VR.SQ || dis.length() == -1) {
+                dis.readValue(dis, attrs);
+            } else if (len > 0) {
+                // TODO
             }
             ch.endElement("", "", "DicomAttribute");
         } catch (SAXException e) {
@@ -84,13 +83,28 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
-        dis.readValue(dis, seq);
+        try {
+            ch.startElement("", "", "Item",
+                    atts("number", Integer.toString(seq.size() + 1)));
+            dis.readValue(dis, seq);
+            ch.endElement("", "", "Item");
+        } catch (SAXException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
-        dis.readValue(dis, frags);
+        try {
+            frags.add(Value.EMPTY_BYTES); // increment size
+            ch.startElement("", "", "DataFragment",
+                    atts("number", Integer.toString(frags.size())));
+            // TODO
+            ch.endElement("", "", "DataFragment");
+        } catch (SAXException e) {
+            throw new IOException(e);
+        }
     }
 
 }

@@ -85,18 +85,16 @@ public class DicomInputStream extends FilterInputStream
     private ArrayList<File> tempFiles = new ArrayList<File>(1);
 
     public static Attributes defaultBulkData() {
-        Attributes wfsqitem = new Attributes(1);
-        wfsqitem.setNull(Tag.WaveformData, null, VR.OB);
-        wfsqitem.trimToSize(false);
-        Attributes bulkData = new Attributes(6);
+        Attributes bulkData = new Attributes(7);
         bulkData.setNull(Tag.PixelDataProviderURL, null, VR.UT);
         bulkData.setNull(Tag.AudioSampleData, null, VR.OB);
         bulkData.setNull(Tag.CurveData, null, VR.OB);
+        Attributes wfsqitem = new Attributes(1);
         bulkData.newSequence(Tag.WaveformSequence, null, 1).add(wfsqitem);
         bulkData.setNull(Tag.SpectroscopyData, null, VR.OF);
+        wfsqitem.setNull(Tag.WaveformData, null, VR.OB);
         bulkData.setNull(Tag.OverlayData, null, VR.OB);
         bulkData.setNull(Tag.PixelData, null, VR.UT);
-        bulkData.trimToSize(false);
         return bulkData;
     }
 

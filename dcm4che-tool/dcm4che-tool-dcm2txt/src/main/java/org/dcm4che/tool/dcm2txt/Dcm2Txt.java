@@ -25,11 +25,12 @@ import org.dcm4che.util.TagUtils;
 
 public class Dcm2Txt implements DicomInputHandler {
 
-    private static final String USAGE = "dcm2txt [options] [infile]";
+    private static final String USAGE = "dcm2txt [<options>] <dicom-file>";
 
     private static final String DESCRIPTION = 
-        "\nWrites a text representation of DICOM infile to standard output. " +
-        "With no infile read standard input.\n.\nOptions:";
+        "\nParse specified <dicom-file> (or the standard input if the " +
+        "filename provided is - ) and writes a text representation to " +
+        "standard output.\n.\nOptions:";
 
     private static final String EXAMPLE = null;
 
@@ -210,8 +211,14 @@ public class Dcm2Txt implements DicomInputHandler {
     }
 
     private static InputStream inputStream(List<String> argList) 
-            throws FileNotFoundException {
-        return argList.isEmpty() ? System.in 
+            throws FileNotFoundException, ParseException {
+        int numArgs = argList.size();
+        if (numArgs == 0)
+            throw new ParseException("Missing file operand");
+        if (numArgs > 1)
+            throw new ParseException("Too many arguments");
+        String fname = argList.get(0);
+        return fname.equals("-") ? System.in 
                                  : new FileInputStream(argList.get(0));
     }
 

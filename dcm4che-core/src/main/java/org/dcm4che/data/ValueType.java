@@ -1,5 +1,8 @@
 package org.dcm4che.data;
 
+import org.dcm4che.io.SAXWriter;
+import org.xml.sax.SAXException;
+
 interface ValueType {
 
     int numEndianBytes();
@@ -39,5 +42,8 @@ interface ValueType {
 
     boolean prompt(Object val, boolean bigEndian, SpecificCharacterSet cs,
             int maxChars, StringBuilder sb);
+
+    void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
+            SAXWriter saxWriter, boolean xmlbase64) throws SAXException;
 
 }

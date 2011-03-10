@@ -1,7 +1,9 @@
 package org.dcm4che.data;
 
+import org.dcm4che.io.SAXWriter;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
+import org.xml.sax.SAXException;
 
 enum BinaryValueType implements ValueType {
     BYTE(1, 1) {
@@ -431,5 +433,29 @@ enum BinaryValueType implements ValueType {
                 sb.append('\\');
         }
         return true;
+    }
+
+    @Override
+    public void toXML(Object val, boolean bigEndian,
+            SpecificCharacterSet cs, SAXWriter saxWriter, boolean xmlbase64)
+            throws SAXException {
+        if (val instanceof byte[]) {
+            toXML((byte[]) val, bigEndian, saxWriter, xmlbase64);
+            return;
+        }
+
+        throw new UnsupportedOperationException();
+   }
+
+    private void toXML(byte[] b, boolean bigEndian, SAXWriter saxWriter,
+            boolean xmlbase64) throws SAXException {
+        if (xmlbase64) {
+            saxWriter.writeValueBase64(b, bigEndian, numEndianBytes);
+        } else {
+            for (int i = 0, n = b.length / numBytes, off = 0; i < n;
+                    i++, off += numBytes) {
+                saxWriter.writeValue(i, toString(b, off, bigEndian));
+            }
+        }
     }
 }

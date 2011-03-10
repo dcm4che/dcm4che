@@ -1,37 +1,39 @@
 package org.dcm4che.data;
 
+import org.dcm4che.io.SAXWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 
 public enum VR {
-    AE(0x4145, 8, ' ', StringValueType.ASCII),
-    AS(0x4153, 8, ' ', StringValueType.ASCII),
-    AT(0x4154, 8, 0, BinaryValueType.TAG),
-    CS(0x4353, 8, ' ', StringValueType.ASCII),
-    DA(0x4441, 8, ' ', StringValueType.ASCII),
-    DS(0x4453, 8, ' ', StringValueType.DS),
-    DT(0x4454, 8, ' ', StringValueType.ASCII),
-    FD(0x4644, 8, 0, BinaryValueType.DOUBLE),
-    FL(0x464c, 8, 0, BinaryValueType.FLOAT),
-    IS(0x4953, 8, ' ', StringValueType.IS),
-    LO(0x4c4f, 8, ' ', StringValueType.STRING),
-    LT(0x4c54, 8, ' ', StringValueType.TEXT),
-    OB(0x4f42, 12, 0, BinaryValueType.BYTE),
-    OF(0x4f46, 12, 0, BinaryValueType.FLOAT),
-    OW(0x4f57, 12, 0, BinaryValueType.SHORT),
-    PN(0x504e, 8, ' ', StringValueType.STRING),
-    SH(0x5348, 8, ' ', StringValueType.STRING),
-    SL(0x534c, 8, 0, BinaryValueType.INT),
-    SQ(0x5351, 12, 0, SequenceValueType.SQ),
-    SS(0x5353, 8, 0, BinaryValueType.SHORT),
-    ST(0x5354, 8, ' ', StringValueType.TEXT),
-    TM(0x544d, 8, ' ', StringValueType.ASCII),
-    UI(0x5549, 8, 0, StringValueType.ASCII),
-    UL(0x554c, 8, 0, BinaryValueType.INT),
-    UN(0x554e, 12, 0, BinaryValueType.BYTE),
-    US(0x5553, 8, 0, BinaryValueType.USHORT),
-    UT(0x5554, 12, ' ', StringValueType.TEXT);
+    AE(0x4145, 8, ' ', StringValueType.ASCII, false),
+    AS(0x4153, 8, ' ', StringValueType.ASCII, false),
+    AT(0x4154, 8, 0, BinaryValueType.TAG, false),
+    CS(0x4353, 8, ' ', StringValueType.ASCII, false),
+    DA(0x4441, 8, ' ', StringValueType.ASCII, false),
+    DS(0x4453, 8, ' ', StringValueType.DS, false),
+    DT(0x4454, 8, ' ', StringValueType.ASCII, false),
+    FD(0x4644, 8, 0, BinaryValueType.DOUBLE, false),
+    FL(0x464c, 8, 0, BinaryValueType.FLOAT, false),
+    IS(0x4953, 8, ' ', StringValueType.IS, false),
+    LO(0x4c4f, 8, ' ', StringValueType.STRING, false),
+    LT(0x4c54, 8, ' ', StringValueType.TEXT, false),
+    OB(0x4f42, 12, 0, BinaryValueType.BYTE, true),
+    OF(0x4f46, 12, 0, BinaryValueType.FLOAT, true),
+    OW(0x4f57, 12, 0, BinaryValueType.SHORT, true),
+    PN(0x504e, 8, ' ', StringValueType.PN, false),
+    SH(0x5348, 8, ' ', StringValueType.STRING, false),
+    SL(0x534c, 8, 0, BinaryValueType.INT, false),
+    SQ(0x5351, 12, 0, SequenceValueType.SQ, false),
+    SS(0x5353, 8, 0, BinaryValueType.SHORT, false),
+    ST(0x5354, 8, ' ', StringValueType.TEXT, false),
+    TM(0x544d, 8, ' ', StringValueType.ASCII, false),
+    UI(0x5549, 8, 0, StringValueType.ASCII, false),
+    UL(0x554c, 8, 0, BinaryValueType.INT, false),
+    UN(0x554e, 12, 0, BinaryValueType.BYTE, true),
+    US(0x5553, 8, 0, BinaryValueType.USHORT, false),
+    UT(0x5554, 12, ' ', StringValueType.TEXT, false);
 
     private static Logger LOG = LoggerFactory.getLogger(VR.class);
 
@@ -39,12 +41,15 @@ public enum VR {
     protected final int headerLength;
     protected final int paddingByte;
     protected final ValueType valueType;
+    protected final boolean xmlbase64;
 
-    VR(int code, int headerLength, int paddingByte, ValueType valueType) {
+    VR(int code, int headerLength, int paddingByte, ValueType valueType,
+            boolean xmlbase64) {
         this.code = code;
         this.headerLength = headerLength;
         this.paddingByte = paddingByte;
         this.valueType = valueType;
+        this.xmlbase64 = xmlbase64;
     }
 
     public static VR valueOf(int code) {
@@ -198,5 +203,10 @@ public enum VR {
     public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         return valueType.prompt(val, bigEndian, cs, maxChars, sb);
+    }
+
+    public void toXML(Object val, boolean bigEndian,
+            SpecificCharacterSet cs, SAXWriter saxWriter) throws SAXException {
+        valueType.toXML(val, bigEndian, cs, saxWriter, xmlbase64);
     }
 }

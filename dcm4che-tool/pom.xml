@@ -12,6 +12,7 @@
   <version>3.0.0-SNAPSHOT</version>
   <description>DICOM utilities</description>
   <modules>
-  	<module>dcm4che-tool-dcm2txt</module>
+    <module>dcm4che-tool-dcm2txt</module>
+    <module>dcm4che-tool-dcm2xml</module>
   </modules>
 </project>

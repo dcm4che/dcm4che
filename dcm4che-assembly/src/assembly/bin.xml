@@ -23,6 +23,23 @@
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
     </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
+      <includes>
+        <include>bin/dcm2xml</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
+      <includes>
+        <include>bin/dcm2xml.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
@@ -30,6 +47,7 @@
       <includes>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2txt</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-simple</include>
         <include>commons-cli:commons-cli</include>

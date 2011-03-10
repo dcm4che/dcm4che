@@ -1,6 +1,8 @@
 package org.dcm4che.data;
 
+import org.dcm4che.io.SAXWriter;
 import org.dcm4che.util.StringUtils;
+import org.xml.sax.SAXException;
 
 enum StringValueType implements ValueType {
     ASCII("\\") {
@@ -18,7 +20,15 @@ enum StringValueType implements ValueType {
             return StringUtils.trimTrailing(s);
         }
     },
-    PN("^=\\"),
+    PN("^=\\"){
+
+        @Override
+        protected void toXML(int i, String s, SAXWriter saxWriter)
+                throws SAXException {
+            if (s != null)
+                saxWriter.writePersonName(i, new PersonName(s));
+        }
+    },
     DS("\\") {
 
         @Override
@@ -361,5 +371,25 @@ enum StringValueType implements ValueType {
             }
         }
         return true;
+    }
+
+    @Override
+    public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
+            SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
+        if (xmlbase64)
+            throw new IllegalArgumentException("xmlbase64=true");
+        Object o = toStrings(val, bigEndian, cs);
+        if (o instanceof String[]) {
+            String[] ss = (String[]) o;
+            for (int i = 0; i < ss.length; i++)
+                toXML(i, ss[i], saxWriter);
+        } else
+            toXML(0, (String) o, saxWriter);
+    }
+
+    protected void toXML(int i, String s, SAXWriter saxWriter)
+            throws SAXException {
+        if (s != null)
+            saxWriter.writeValue(i, s);
     }
 }

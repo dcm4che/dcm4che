@@ -1,5 +1,8 @@
 package org.dcm4che.data;
 
+import org.dcm4che.io.SAXWriter;
+import org.xml.sax.SAXException;
+
 enum SequenceValueType implements ValueType {
     SQ;
 
@@ -98,5 +101,11 @@ enum SequenceValueType implements ValueType {
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         sb.append(val);
         return true;
+    }
+
+    @Override
+    public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
+            SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
+        throw new UnsupportedOperationException();
     }
 }

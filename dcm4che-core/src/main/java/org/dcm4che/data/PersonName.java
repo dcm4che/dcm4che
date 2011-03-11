@@ -122,11 +122,6 @@ public class PersonName {
     }
 
     private static String trim(String s) {
-        if (s != null) {
-            s = s.trim();
-            if (s.isEmpty())
-                s = null;
-        }
-        return s;
+        return s == null || (s = s.trim()).isEmpty() ? null : s;
     }
 }

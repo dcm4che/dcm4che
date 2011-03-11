@@ -10,6 +10,7 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
+import org.dcm4che.util.Base64;
 import org.dcm4che.util.TagUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -17,11 +18,14 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class SAXWriter implements DicomInputHandler {
 
+    private static final int BASE64_CHUNK_LENGTH = 256 * 3;
+    private static final int BUFFER_LENGTH = 256 * 4;
+    
     private static final AttributesImpl NO_ATTS = new AttributesImpl();
 
     private ContentHandler ch;
 
-    private char[] buffer = new char[1024];
+    private char[] buffer = new char[BUFFER_LENGTH];
 
     public SAXWriter(ContentHandler ch) {
         this.ch = ch;
@@ -51,24 +55,26 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
-        try {
-            int tag = dis.tag();
+        int tag = dis.tag();
+        if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag)) {
+            dis.readValue(dis, attrs);
+        } else try {
             VR vr = dis.vr();
             int len = dis.length();
+            String privateCreator = attrs.getPrivateCreator(tag);
             ch.startElement("", "", "DicomAttribute",
-                    atts(tag, attrs.getPrivateCreator(tag), vr));
-            if (vr == VR.SQ || dis.length() == -1) {
+                    atts(privateCreator != null ? tag & 0xffff00ff : tag,
+                            privateCreator, vr));
+            if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
             } else if (len > 0) {
                 byte[] b = dis.readValue();
-                vr.toXML(b, dis.bigEndian(), attrs.getSpecificCharacterSet(),
-                        this);
-                if (tag == Tag.FileMetaInformationGroupLength)
-                    dis.setFileMetaInformationGroupLength(b);
-                else if (tag == Tag.TransferSyntaxUID
-                        || tag == Tag.SpecificCharacterSet
-                        || TagUtils.isPrivateCreator(tag))
+                if (tag == Tag.TransferSyntaxUID
+                        || tag == Tag.SpecificCharacterSet)
                     attrs.setBytes(tag, null, vr, b);
+                if (dis.bigEndian())
+                    vr.toggleEndian(b, false);
+                vr.toXML(b, false, attrs.getSpecificCharacterSet(), this);
             }
             ch.endElement("", "", "DicomAttribute");
         } catch (SAXException e) {
@@ -89,7 +95,8 @@ public class SAXWriter implements DicomInputHandler {
             atts.addAttribute("", "", "keyword", "NMTOKEN", keyword);
         atts.addAttribute("", "", "tag", "NMTOKEN", TagUtils.toHexString(tag));
         if (privateCreator != null)
-            atts.addAttribute("", "", "privateCreator", "NMTOKEN", privateCreator);
+            atts.addAttribute("", "", "privateCreator", "NMTOKEN", 
+                    privateCreator);
         atts.addAttribute("", "", "vr", "NMTOKEN", vr.name());
         return atts ;
     }
@@ -114,8 +121,10 @@ public class SAXWriter implements DicomInputHandler {
             frags.add(Value.EMPTY_BYTES); // increment size
             ch.startElement("", "", "DataFragment",
                     atts("number", Integer.toString(frags.size())));
-            writeBase64(dis.readValue(), dis.bigEndian(),
-                    frags.vr().numEndianBytes());
+            byte[] b = dis.readValue();
+            if (dis.bigEndian())
+                frags.vr().toggleEndian(b, false);
+            writeBase64(b);
             ch.endElement("", "", "DataFragment");
         } catch (SAXException e) {
             throw new IOException(e);
@@ -126,26 +135,32 @@ public class SAXWriter implements DicomInputHandler {
         writeElement("Value", atts("number", Integer.toString(index + 1)), s);
     }
 
-    public void writeValueBase64(byte[] b, boolean bigEndian,
-            int numEndianBytes) throws SAXException {
+    public void writeValueBase64(byte[] b) throws SAXException {
         ch.startElement("", "", "Value",  atts("number", "1"));
-        writeBase64(b, bigEndian, numEndianBytes);
+        writeBase64(b);
         ch.endElement("", "", "Value");
     }
 
-    private void writeBase64(byte[] b, boolean bigEndian, int numEndianBytes)
+    private void writeBase64(byte[] b)
             throws SAXException {
-        // TODO
+        char[] buf = buffer;
+         for (int off = 0; off < b.length;) {
+            int len = Math.min(b.length - off, BASE64_CHUNK_LENGTH);
+            Base64.encode(b, off, len, buf, 0);
+            ch.characters(buf, 0, (len * 4 / 3 + 3) & ~3);
+            off += len;
+        }
     }
 
     private void writeElement(String qname, AttributesImpl atts, String s)
             throws SAXException {
         if (s != null) {
+            char[] buf = buffer;
             ch.startElement("", "", qname, atts); 
             for (int off = 0, totlen = s.length(); off < totlen;) {
-                int len = Math.min(totlen - off, buffer.length);
-                s.getChars(off, off += len, buffer, 0);
-                ch.characters(buffer, 0, len);
+                int len = Math.min(totlen - off, buf.length);
+                s.getChars(off, off += len, buf, 0);
+                ch.characters(buf, 0, len);
             }
             ch.endElement("", "", qname);
         }

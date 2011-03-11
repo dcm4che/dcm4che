@@ -450,7 +450,7 @@ enum BinaryValueType implements ValueType {
     private void toXML(byte[] b, boolean bigEndian, SAXWriter saxWriter,
             boolean xmlbase64) throws SAXException {
         if (xmlbase64) {
-            saxWriter.writeValueBase64(b, bigEndian, numEndianBytes);
+            saxWriter.writeValueBase64(bigEndian ? toggleEndian(b, true) : b);
         } else {
             for (int i = 0, n = b.length / numBytes, off = 0; i < n;
                     i++, off += numBytes) {

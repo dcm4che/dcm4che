@@ -3,6 +3,7 @@ package org.dcm4che.io;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.PersonName;
@@ -23,12 +24,22 @@ public class SAXWriter implements DicomInputHandler {
     
     private static final AttributesImpl NO_ATTS = new AttributesImpl();
 
+    private boolean includeKeyword = true;
+
     private ContentHandler ch;
 
     private char[] buffer = new char[BUFFER_LENGTH];
 
     public SAXWriter(ContentHandler ch) {
         this.ch = ch;
+    }
+
+    public final boolean isIncludeKeyword() {
+        return includeKeyword;
+    }
+
+    public final void setIncludeKeyword(boolean includeKeyword) {
+        this.includeKeyword = includeKeyword;
     }
 
     @Override
@@ -56,11 +67,18 @@ public class SAXWriter implements DicomInputHandler {
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
         int tag = dis.tag();
+        VR vr = dis.vr();
+        int len = dis.length();
         if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag)) {
             dis.readValue(dis, attrs);
+        } else if (!dis.isIncludeBulkData()
+                && !dis.isIncludeBulkDataLocator()
+                && dis.isBulkData(attrs)) {
+            if (len == -1)
+                dis.readValue(dis, attrs);
+            else
+                dis.skipFully(len);
         } else try {
-            VR vr = dis.vr();
-            int len = dis.length();
             String privateCreator = attrs.getPrivateCreator(tag);
             ch.startElement("", "", "DicomAttribute",
                     atts(privateCreator != null ? tag & 0xffff00ff : tag,
@@ -68,13 +86,17 @@ public class SAXWriter implements DicomInputHandler {
             if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
             } else if (len > 0) {
-                byte[] b = dis.readValue();
-                if (tag == Tag.TransferSyntaxUID
-                        || tag == Tag.SpecificCharacterSet)
-                    attrs.setBytes(tag, null, vr, b);
-                if (dis.bigEndian())
-                    vr.toggleEndian(b, false);
-                vr.toXML(b, false, attrs.getSpecificCharacterSet(), this);
+                if (dis.isIncludeBulkDataLocator() && dis.isBulkData(attrs)) {
+                    writeBulkDataLocator(dis.createBulkDataLocator());
+                } else {
+                    byte[] b = dis.readValue();
+                    if (tag == Tag.TransferSyntaxUID
+                            || tag == Tag.SpecificCharacterSet)
+                        attrs.setBytes(tag, null, vr, b);
+                    if (dis.bigEndian())
+                        vr.toggleEndian(b, false);
+                    vr.toXML(b, false, attrs.getSpecificCharacterSet(), this);
+                }
             }
             ch.endElement("", "", "DicomAttribute");
         } catch (SAXException e) {
@@ -90,9 +112,11 @@ public class SAXWriter implements DicomInputHandler {
 
     private AttributesImpl atts(int tag, String privateCreator, VR vr) {
         AttributesImpl atts = new AttributesImpl();
-        String keyword = ElementDictionary.keywordOf(tag, privateCreator);
-        if (keyword != null && !keyword.isEmpty())
-            atts.addAttribute("", "", "keyword", "NMTOKEN", keyword);
+        if (includeKeyword) {
+            String keyword = ElementDictionary.keywordOf(tag, privateCreator);
+            if (keyword != null && !keyword.isEmpty())
+                atts.addAttribute("", "", "keyword", "NMTOKEN", keyword);
+        }
         atts.addAttribute("", "", "tag", "NMTOKEN", TagUtils.toHexString(tag));
         if (privateCreator != null)
             atts.addAttribute("", "", "privateCreator", "NMTOKEN", 
@@ -117,15 +141,26 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
-        try {
+        int len = dis.length();
+        if (!dis.isIncludeBulkData()
+                && !dis.isIncludeBulkDataLocator()
+                && dis.isBulkDataFragment()) {
+            dis.skipFully(len);
+        } else try {
             frags.add(Value.EMPTY_BYTES); // increment size
-            ch.startElement("", "", "DataFragment",
-                    atts("number", Integer.toString(frags.size())));
-            byte[] b = dis.readValue();
-            if (dis.bigEndian())
-                frags.vr().toggleEndian(b, false);
-            writeBase64(b);
-            ch.endElement("", "", "DataFragment");
+            if (len > 0) {
+                ch.startElement("", "", "DataFragment",
+                        atts("number", Integer.toString(frags.size())));
+                if (dis.isIncludeBulkDataLocator() && dis.isBulkDataFragment()) {
+                    writeBulkDataLocator(dis.createBulkDataLocator());
+                } else {
+                    byte[] b = dis.readValue();
+                    if (dis.bigEndian())
+                        frags.vr().toggleEndian(b, false);
+                    writeValueBase64(b);
+                }
+                ch.endElement("", "", "DataFragment");
+            }
         } catch (SAXException e) {
             throw new IOException(e);
         }
@@ -137,19 +172,24 @@ public class SAXWriter implements DicomInputHandler {
 
     public void writeValueBase64(byte[] b) throws SAXException {
         ch.startElement("", "", "Value",  atts("number", "1"));
-        writeBase64(b);
-        ch.endElement("", "", "Value");
-    }
-
-    private void writeBase64(byte[] b)
-            throws SAXException {
         char[] buf = buffer;
-         for (int off = 0; off < b.length;) {
+        for (int off = 0; off < b.length;) {
             int len = Math.min(b.length - off, BASE64_CHUNK_LENGTH);
             Base64.encode(b, off, len, buf, 0);
             ch.characters(buf, 0, (len * 4 / 3 + 3) & ~3);
             off += len;
         }
+        ch.endElement("", "", "Value");
+    }
+
+    private void writeBulkDataLocator(BulkDataLocator bdl)
+            throws SAXException {
+        ch.startElement("", "", "BulkDataLocator", NO_ATTS); 
+        writeElement("Length", NO_ATTS, Integer.toString(bdl.length));
+        writeElement("Offset", NO_ATTS, Long.toString(bdl.offset));
+        writeElement("TransferSyntax", NO_ATTS, bdl.transferSyntax);
+        writeElement("URI", NO_ATTS, bdl.uri);
+        ch.endElement("", "", "BulkDataLocator");
     }
 
     private void writeElement(String qname, AttributesImpl atts, String s)

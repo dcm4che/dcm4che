@@ -26,6 +26,7 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.data.Value;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
@@ -418,7 +419,8 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         checkIsThis(dis);
         if (length == 0) {
-            attrs.setNull(tag, null, vr);
+            if (includeBulkData || includeBulkDataLocator || isBulkData(attrs))
+                attrs.setNull(tag, null, vr);
         } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
         } else if (length == -1) {
@@ -427,14 +429,8 @@ public class DicomInputStream extends FilterInputStream
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, null, vr, BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else if ((!includeBulkData || includeBulkDataLocator) 
-                && isBulkData(attrs)){
-            if (includeBulkDataLocator) {
-                attrs.setValue(tag, null, vr, createBulkDataLocator());
-            } else {
-                skipFully(length);
-            }
-        } else {
+        } else if (includeBulkData && !includeBulkDataLocator 
+                || !isBulkData(attrs)){
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
                 if (bigEndian != attrs.bigEndian())
@@ -442,10 +438,14 @@ public class DicomInputStream extends FilterInputStream
                 attrs.setBytes(tag, null, vr, b);
             } else if (tag == Tag.FileMetaInformationGroupLength)
                 setFileMetaInformationGroupLength(b);
+        } else if (includeBulkDataLocator) {
+            attrs.setValue(tag, null, vr, createBulkDataLocator());
+        } else {
+            skipFully(length);
         }
     }
 
-    private BulkDataLocator createBulkDataLocator() throws IOException {
+    public BulkDataLocator createBulkDataLocator() throws IOException {
             BulkDataLocator locator;
         if (uri != null) {
             locator = new BulkDataLocator(uri, tsuid, pos, length);
@@ -466,7 +466,7 @@ public class DicomInputStream extends FilterInputStream
         return locator;
     }
 
-    private boolean isBulkData(Attributes attrs) {
+    public boolean isBulkData(Attributes attrs) {
         int grtag = TagUtils.groupNumber(tag);
         if (grtag < 8)
             return false;
@@ -483,6 +483,22 @@ public class DicomInputStream extends FilterInputStream
         int tag0 = ((grtag &= 0xff00) == 0x5000 || grtag == 0x6000)
                 ? tag & 0xff00ffff : tag;
         return item.contains(tag0, attrs.getPrivateCreator(tag));
+    }
+
+    public boolean isBulkDataFragment() {
+        if (tag != Tag.Item)
+            return false;
+        if (bulkData == null)
+            bulkData = DicomInputStream.defaultBulkData();
+        Attributes item = bulkData;
+        for (ItemPointer ip : itemPointers) {
+            Object value = item.getValue(ip.sequenceTag, ip.privateCreator);
+            if (value instanceof Sequence)
+                item = ((Sequence) value).get(0);
+            else
+                return value != null;
+        }
+        return false;
     }
 
     @Override
@@ -504,15 +520,24 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         checkIsThis(dis);
-        if (length == BULK_DATA_LOCATOR
+        if (length == 0) {
+            if (includeBulkData || includeBulkDataLocator ||
+                    isBulkDataFragment())
+                frags.add(Value.EMPTY_BYTES);
+        } else if (length == BULK_DATA_LOCATOR
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else {
+        } else if (includeBulkData && !includeBulkDataLocator 
+                || !isBulkDataFragment()){
             byte[] b = readValue();
             if (bigEndian != frags.bigEndian())
                 vr.toggleEndian(b, false);
             frags.add(b);
+        } else if (includeBulkDataLocator) {
+            frags.add(createBulkDataLocator());
+        } else {
+            skipFully(length);
         }
     }
 

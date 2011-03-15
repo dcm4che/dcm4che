@@ -1,10 +1,7 @@
 package org.dcm4che.tool.dcm2xml;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
@@ -20,6 +17,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -39,7 +37,13 @@ public class Dcm2Xml {
     private static final String EXAMPLE = null;
     
     private URL xslt;
-    private boolean indent;
+    private boolean indent = false;
+    private boolean includeKeyword = true;
+    private boolean includeBulkData = false;
+    private boolean includeBulkDataLocator = true;
+    private String tempFilePrefix = "blk";
+    private String tempFileSuffix;
+    private File tempDirectory;
 
     public final void setXSLT(URL xslt) {
         this.xslt = xslt;
@@ -47,6 +51,30 @@ public class Dcm2Xml {
 
     public final void setIndent(boolean indent) {
         this.indent = indent;
+    }
+
+    public final void setIncludeKeyword(boolean includeKeyword) {
+        this.includeKeyword = includeKeyword;
+    }
+
+    public final void setIncludeBulkData(boolean includeBulkData) {
+        this.includeBulkData = includeBulkData;
+    }
+
+    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
+        this.includeBulkDataLocator = includeBulkDataLocator;
+    }
+
+    public final void setTempFilePrefix(String tempFilePrefix) {
+        this.tempFilePrefix = tempFilePrefix;
+    }
+
+    public final void setTempFileSuffix(String tempFileSuffix) {
+        this.tempFileSuffix = tempFileSuffix;
+    }
+
+    public final void setTempDirectory(File tempDirectory) {
+        this.tempDirectory = tempDirectory;
     }
 
     @SuppressWarnings("static-access")
@@ -62,6 +90,46 @@ public class Dcm2Xml {
         options.addOption(OptionBuilder
                 .withLongOpt("indent")
                 .withDescription("use additional whitespace in XML output")
+                .create());
+        options.addOption(OptionBuilder
+                .withLongOpt("no-keyword")
+                .withDescription("do not include keyword attribute of " +
+                    "DicomAttribute element in XML output")
+                .create());
+        OptionGroup group = new OptionGroup();
+        group.addOption(OptionBuilder
+                .withLongOpt("no-bulkdata")
+                .withDescription("do not include bulkdata in XML output; " +
+                     "by default, references to bulkdata are included.")
+                .create());
+        group.addOption(OptionBuilder
+                .withLongOpt("with-bulkdata")
+                .withDescription("include bulkdata directly in XML output; " +
+                    "by default, only references to bulkdata are included.")
+                .create());
+        options.addOptionGroup(group);
+        options.addOption(OptionBuilder
+                .withLongOpt("tmp-dir")
+                .hasArg()
+                .withArgName("directory")
+                .withDescription("directory were referenced bulkdata is " +
+                     "filed if the DICOM object is read from standard input; " +
+                     "if not specified, files are stored into the default " +
+                     "temporary-file directory.")
+                .create());
+        options.addOption(OptionBuilder
+                .withLongOpt("tmp-file-prefix")
+                .hasArg()
+                .withArgName("prefix")
+                .withDescription("prefix for generating temporary-file names; " +
+                    "'blk' by default.")
+                .create());
+        options.addOption(OptionBuilder
+                .withLongOpt("tmp-file-suffix")
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription("suffix for generating temporary-file names; " +
+                    "'.tmp' by default.")
                 .create());
         options.addOption(OptionBuilder
                 .withLongOpt("help")
@@ -97,12 +165,38 @@ public class Dcm2Xml {
                     dcm2xml.setXSLT(new File(s).toURI().toURL());
                 }
                 dcm2xml.setIndent(cl.hasOption("indent"));
-                InputStream is = inputStream(cl.getArgList());
-                try {
-                    dcm2xml.parse(is);
-                } finally {
-                    if (is != System.in)
-                        is.close();
+                dcm2xml.setIncludeKeyword(!cl.hasOption("no-keyword"));
+                if (cl.hasOption("with-bulkdata")) {
+                    dcm2xml.setIncludeBulkData(true);
+                    dcm2xml.setIncludeBulkDataLocator(false);
+                }
+                if (cl.hasOption("no-bulkdata")) {
+                    dcm2xml.setIncludeBulkData(false);
+                    dcm2xml.setIncludeBulkDataLocator(false);
+                }
+                if (cl.hasOption("tmp-file-prefix")) {
+                    dcm2xml.setTempFilePrefix(
+                            cl.getOptionValue("tmp-file-prefix"));
+                }
+                if (cl.hasOption("tmp-file-suffix")) {
+                    dcm2xml.setTempFileSuffix(
+                            cl.getOptionValue("tmp-file-suffix"));
+                }
+                if (cl.hasOption("tmp-dir")) {
+                    File tempDir = new File(cl.getOptionValue("tmp-dir"));
+                    dcm2xml.setTempDirectory(tempDir);
+                }
+                String fname = fname(cl.getArgList());
+                if (fname.equals("-")) {
+                    dcm2xml.parse(new DicomInputStream(System.in));
+                } else {
+                    DicomInputStream dis =
+                            new DicomInputStream(new File(fname));
+                    try {
+                        dcm2xml.parse(dis);
+                    } finally {
+                        dis.close();
+                    }
                 }
             }
         } catch (ParseException e) {
@@ -116,27 +210,29 @@ public class Dcm2Xml {
         }
     }
 
-    private static InputStream inputStream(List<String> argList)
-            throws FileNotFoundException, ParseException {
+    private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
             throw new ParseException("Missing file operand");
         if (numArgs > 1)
             throw new ParseException("Too many arguments");
-        String fname = argList.get(0);
-        return fname.equals("-")
-                ? System.in
-                : new FileInputStream(argList.get(0));
+        return argList.get(0);
     }
 
-    public void parse(InputStream is) throws IOException,
+    public void parse(DicomInputStream dis) throws IOException,
             TransformerConfigurationException {
-        DicomInputStream dis = new DicomInputStream(is);
+        dis.setIncludeBulkData(includeBulkData);
+        dis.setIncludeBulkDataLocator(includeBulkDataLocator);
+        dis.setTempDirectory(tempDirectory);
+        dis.setTempFilePrefix(tempFilePrefix);
+        dis.setTempFileSuffix(tempFileSuffix);
         TransformerHandler th = getTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                 indent ? "yes" : "no");
         th.setResult(new StreamResult(System.out));
-        dis.setDicomInputHandler(new SAXWriter(th));
+        SAXWriter saxWriter = new SAXWriter(th);
+        saxWriter.setIncludeKeyword(includeKeyword);
+        dis.setDicomInputHandler(saxWriter);
         dis.readDataset(-1, -1);
     }
 

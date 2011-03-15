@@ -64,7 +64,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean hasfmi;
     private boolean bigEndian;
     private boolean explicitVR;
-    private boolean excludeBulkData;
+    private boolean includeBulkData = true;
     private boolean includeBulkDataLocator;
     private long pos;
     private long fmiEndPos = -1L;
@@ -133,12 +133,12 @@ public class DicomInputStream extends FilterInputStream
         this.uri = uri;
     }
 
-    public final boolean isExcludeBulkData() {
-        return excludeBulkData;
+    public final boolean isIncludeBulkData() {
+        return includeBulkData;
     }
 
-    public final void setExcludeBulkData(boolean excludeBulkData) {
-        this.excludeBulkData = excludeBulkData;
+    public final void setIncludeBulkData(boolean includeBulkData) {
+        this.includeBulkData = includeBulkData;
     }
 
     public final boolean isIncludeBulkDataLocator() {
@@ -427,12 +427,12 @@ public class DicomInputStream extends FilterInputStream
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, null, vr, BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else if ((excludeBulkData || includeBulkDataLocator) 
+        } else if ((!includeBulkData || includeBulkDataLocator) 
                 && isBulkData(attrs)){
-            if (excludeBulkData) {
-                skipFully(length);
-            } else {
+            if (includeBulkDataLocator) {
                 attrs.setValue(tag, null, vr, createBulkDataLocator());
+            } else {
+                skipFully(length);
             }
         } else {
             byte[] b = readValue();

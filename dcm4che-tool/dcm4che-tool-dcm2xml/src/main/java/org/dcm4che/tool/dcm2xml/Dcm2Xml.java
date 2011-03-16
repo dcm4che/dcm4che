@@ -29,10 +29,10 @@ public class Dcm2Xml {
     private static final String USAGE = "dcm2xml [<options>] <dicom-file>";
 
     private static final String DESCRIPTION = 
-        "\nConvert <dicom-file> (or the standard input if the filename " +
-        "provided is - ) in XML presentation and optionally apply XSLT " +
-        "stylesheet on it. Writes result to standard output." +
-        "\n.\nOptions:";
+        "\nConvert <dicom-file> (or the standard input if <dicom-file> = '-') " +
+        "in XML presentation and optionally apply XSLT stylesheet on it. " +
+        "Writes result to standard output." +
+        "\n-\nOptions:";
 
     private static final String EXAMPLE = null;
     

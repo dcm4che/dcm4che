@@ -86,70 +86,70 @@ public class Dcm2Xml {
                 .hasArg()
                 .withArgName("xsl-file")
                 .withDescription("apply specified XSLT stylesheet")
-                .create());
+                .create("X"));
         options.addOption(OptionBuilder
                 .withLongOpt("indent")
                 .withDescription("use additional whitespace in XML output")
-                .create());
+                .create("I"));
         options.addOption(OptionBuilder
                 .withLongOpt("no-keyword")
                 .withDescription("do not include keyword attribute of " +
                     "DicomAttribute element in XML output")
-                .create());
+                .create("K"));
         OptionGroup group = new OptionGroup();
         group.addOption(OptionBuilder
                 .withLongOpt("no-bulkdata")
                 .withDescription("do not include bulkdata in XML output; " +
                      "by default, references to bulkdata are included.")
-                .create());
+                .create("B"));
         group.addOption(OptionBuilder
                 .withLongOpt("with-bulkdata")
                 .withDescription("include bulkdata directly in XML output; " +
                     "by default, only references to bulkdata are included.")
-                .create());
+                .create("b"));
         options.addOptionGroup(group);
         options.addOption(OptionBuilder
-                .withLongOpt("tmp-dir")
+                .withLongOpt("blk-file-dir")
                 .hasArg()
                 .withArgName("directory")
-                .withDescription("directory were referenced bulkdata is " +
-                     "filed if the DICOM object is read from standard input; " +
-                     "if not specified, files are stored into the default " +
-                     "temporary-file directory.")
-                .create());
+                .withDescription("directory were files with extracted " +
+                     "bulkdata are stored if the DICOM object is read from " +
+                     "standard input; if not specified, files are stored into " +
+                     "the default temporary-file directory.")
+                .create("d"));
         options.addOption(OptionBuilder
-                .withLongOpt("tmp-file-prefix")
+                .withLongOpt("blk-file-prefix")
                 .hasArg()
                 .withArgName("prefix")
-                .withDescription("prefix for generating temporary-file names; " +
-                    "'blk' by default.")
+                .withDescription("prefix for generating file names for " +
+                     "extracted bulkdata; 'blk' by default.")
                 .create());
         options.addOption(OptionBuilder
-                .withLongOpt("tmp-file-suffix")
+                .withLongOpt("blk-file-suffix")
                 .hasArg()
                 .withArgName("suffix")
-                .withDescription("suffix for generating temporary-file names; " +
-                    "'.tmp' by default.")
+                .withDescription("suffix for generating file names for " +
+                     "extracted bulkdata; '.tmp' by default.")
                 .create());
         options.addOption(OptionBuilder
                 .withLongOpt("help")
                 .withDescription("display this help and exit")
-                .create());
+                .create("h"));
         options.addOption(OptionBuilder
                 .withLongOpt("version")
                 .withDescription("output version information and exit")
-                .create());
+                .create("V"));
         CommandLineParser parser = new PosixParser();
         CommandLine cl = parser.parse(options, args);
-        if (cl.hasOption("help")) {
+        if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, options, EXAMPLE);
-            return null;
+            System.exit(0);
         }
-        if (cl.hasOption("version")) {
+        if (cl.hasOption("V")) {
             System.out.println("dcm2xml " + 
                     Dcm2Xml.class.getPackage().getImplementationVersion());
-            return null;
+            System.exit(0);
         }
         return cl;
     }
@@ -158,45 +158,43 @@ public class Dcm2Xml {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            if (cl != null) {
-                Dcm2Xml dcm2xml = new Dcm2Xml();
-                if (cl.hasOption("xslt")) {
-                    String s = cl.getOptionValue("xslt");
-                    dcm2xml.setXSLT(new File(s).toURI().toURL());
-                }
-                dcm2xml.setIndent(cl.hasOption("indent"));
-                dcm2xml.setIncludeKeyword(!cl.hasOption("no-keyword"));
-                if (cl.hasOption("with-bulkdata")) {
-                    dcm2xml.setIncludeBulkData(true);
-                    dcm2xml.setIncludeBulkDataLocator(false);
-                }
-                if (cl.hasOption("no-bulkdata")) {
-                    dcm2xml.setIncludeBulkData(false);
-                    dcm2xml.setIncludeBulkDataLocator(false);
-                }
-                if (cl.hasOption("tmp-file-prefix")) {
-                    dcm2xml.setTempFilePrefix(
-                            cl.getOptionValue("tmp-file-prefix"));
-                }
-                if (cl.hasOption("tmp-file-suffix")) {
-                    dcm2xml.setTempFileSuffix(
-                            cl.getOptionValue("tmp-file-suffix"));
-                }
-                if (cl.hasOption("tmp-dir")) {
-                    File tempDir = new File(cl.getOptionValue("tmp-dir"));
-                    dcm2xml.setTempDirectory(tempDir);
-                }
-                String fname = fname(cl.getArgList());
-                if (fname.equals("-")) {
-                    dcm2xml.parse(new DicomInputStream(System.in));
-                } else {
-                    DicomInputStream dis =
-                            new DicomInputStream(new File(fname));
-                    try {
-                        dcm2xml.parse(dis);
-                    } finally {
-                        dis.close();
-                    }
+            Dcm2Xml dcm2xml = new Dcm2Xml();
+            if (cl.hasOption("X")) {
+                String s = cl.getOptionValue("X");
+                dcm2xml.setXSLT(new File(s).toURI().toURL());
+            }
+            dcm2xml.setIndent(cl.hasOption("I"));
+            dcm2xml.setIncludeKeyword(!cl.hasOption("K"));
+            if (cl.hasOption("b")) {
+                dcm2xml.setIncludeBulkData(true);
+                dcm2xml.setIncludeBulkDataLocator(false);
+            }
+            if (cl.hasOption("B")) {
+                dcm2xml.setIncludeBulkData(false);
+                dcm2xml.setIncludeBulkDataLocator(false);
+            }
+            if (cl.hasOption("blk-file-prefix")) {
+                dcm2xml.setTempFilePrefix(
+                        cl.getOptionValue("blk-file-prefix"));
+            }
+            if (cl.hasOption("blk-file-suffix")) {
+                dcm2xml.setTempFileSuffix(
+                        cl.getOptionValue("blk-file-suffix"));
+            }
+            if (cl.hasOption("d")) {
+                File tempDir = new File(cl.getOptionValue("d"));
+                dcm2xml.setTempDirectory(tempDir);
+            }
+            String fname = fname(cl.getArgList());
+            if (fname.equals("-")) {
+                dcm2xml.parse(new DicomInputStream(System.in));
+            } else {
+                DicomInputStream dis =
+                        new DicomInputStream(new File(fname));
+                try {
+                    dcm2xml.parse(dis);
+                } finally {
+                    dis.close();
                 }
             }
         } catch (ParseException e) {
@@ -223,9 +221,9 @@ public class Dcm2Xml {
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
         dis.setIncludeBulkDataLocator(includeBulkDataLocator);
-        dis.setTempDirectory(tempDirectory);
-        dis.setTempFilePrefix(tempFilePrefix);
-        dis.setTempFileSuffix(tempFileSuffix);
+        dis.setBulkDataDirectory(tempDirectory);
+        dis.setBulkDataFilePrefix(tempFilePrefix);
+        dis.setBulkDataFileSuffix(tempFileSuffix);
         TransformerHandler th = getTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                 indent ? "yes" : "no");

@@ -80,22 +80,18 @@ public class Dcm2Xml {
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
-        Options options = new Options();
-        options.addOption(OptionBuilder
+        Options opts = new Options();
+        opts.addOption(OptionBuilder
                 .withLongOpt("xslt")
                 .hasArg()
                 .withArgName("xsl-file")
                 .withDescription("apply specified XSLT stylesheet")
                 .create("X"));
-        options.addOption(OptionBuilder
-                .withLongOpt("indent")
-                .withDescription("use additional whitespace in XML output")
-                .create("I"));
-        options.addOption(OptionBuilder
-                .withLongOpt("no-keyword")
-                .withDescription("do not include keyword attribute of " +
-                    "DicomAttribute element in XML output")
-                .create("K"));
+        opts.addOption("I", "indent", false,
+                "use additional whitespace in XML output");
+        opts.addOption("K", "no-keyword", false,
+                "do not include keyword attribute of DicomAttribute element " +
+                "in XML output");
         OptionGroup group = new OptionGroup();
         group.addOption(OptionBuilder
                 .withLongOpt("no-bulkdata")
@@ -107,8 +103,8 @@ public class Dcm2Xml {
                 .withDescription("include bulkdata directly in XML output; " +
                     "by default, only references to bulkdata are included.")
                 .create("b"));
-        options.addOptionGroup(group);
-        options.addOption(OptionBuilder
+        opts.addOptionGroup(group);
+        opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-dir")
                 .hasArg()
                 .withArgName("directory")
@@ -117,33 +113,28 @@ public class Dcm2Xml {
                      "standard input; if not specified, files are stored into " +
                      "the default temporary-file directory.")
                 .create("d"));
-        options.addOption(OptionBuilder
+        opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-prefix")
                 .hasArg()
                 .withArgName("prefix")
                 .withDescription("prefix for generating file names for " +
                      "extracted bulkdata; 'blk' by default.")
                 .create());
-        options.addOption(OptionBuilder
+        opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-suffix")
                 .hasArg()
                 .withArgName("suffix")
                 .withDescription("suffix for generating file names for " +
                      "extracted bulkdata; '.tmp' by default.")
                 .create());
-        options.addOption(OptionBuilder
-                .withLongOpt("help")
-                .withDescription("display this help and exit")
-                .create("h"));
-        options.addOption(OptionBuilder
-                .withLongOpt("version")
-                .withDescription("output version information and exit")
-                .create("V"));
+        opts.addOption("h", "help", false, "display this help and exit");
+        opts.addOption("V", "version", false,
+                "output version information and exit");
         CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(options, args);
+        CommandLine cl = parser.parse(opts, args);
         if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, options, EXAMPLE);
+            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
         }
         if (cl.hasOption("V")) {

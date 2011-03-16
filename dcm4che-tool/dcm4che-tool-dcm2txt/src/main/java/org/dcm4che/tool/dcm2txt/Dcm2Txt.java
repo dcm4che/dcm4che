@@ -1,7 +1,6 @@
 package org.dcm4che.tool.dcm2txt;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -181,23 +180,26 @@ public class Dcm2Txt implements DicomInputHandler {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            if (cl != null) {
-                Dcm2Txt dcm2txt = new Dcm2Txt();
-                if (cl.hasOption("w")) {
-                    String s = cl.getOptionValue("w");
-                    try {
-                        dcm2txt.setWidth(Integer.parseInt(s));
-                    } catch (IllegalArgumentException e) {
-                        throw new ParseException(
-                                "Illegal line length: " + s);
-                    }
-                }
-                InputStream is = inputStream(cl.getArgList());
+            Dcm2Txt dcm2txt = new Dcm2Txt();
+            if (cl.hasOption("w")) {
+                String s = cl.getOptionValue("w");
                 try {
-                    dcm2txt.parse(is);
+                    dcm2txt.setWidth(Integer.parseInt(s));
+                } catch (IllegalArgumentException e) {
+                    throw new ParseException(
+                            "Illegal line length: " + s);
+                }
+            }
+            String fname = fname(cl.getArgList());
+            if (fname.equals("-")) {
+                dcm2txt.parse(new DicomInputStream(System.in));
+            } else {
+                DicomInputStream dis =
+                        new DicomInputStream(new File(fname));
+                try {
+                    dcm2txt.parse(dis);
                 } finally {
-                    if (is != System.in)
-                        is.close();
+                    dis.close();
                 }
             }
         } catch (ParseException e) {
@@ -210,47 +212,39 @@ public class Dcm2Txt implements DicomInputHandler {
         }
     }
 
-    private static InputStream inputStream(List<String> argList) 
-            throws FileNotFoundException, ParseException {
+    private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
             throw new ParseException("Missing file operand");
         if (numArgs > 1)
             throw new ParseException("Too many arguments");
-        String fname = argList.get(0);
-        return fname.equals("-") ? System.in 
-                                 : new FileInputStream(argList.get(0));
+        return argList.get(0);
     }
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
-        Options options = new Options();
-        options.addOption(OptionBuilder
+        Options opts = new Options();
+        opts.addOption(OptionBuilder
                 .withLongOpt("width")
                 .hasArg()
                 .withArgName("col")
                 .withDescription("set line length; default: 78")
                 .create("w"));
-        options.addOption(OptionBuilder
-                .withLongOpt("help")
-                .withDescription("display this help and exit")
-                .create());
-        options.addOption(OptionBuilder
-                .withLongOpt("version")
-                .withDescription("output version information and exit")
-                .create());
+        opts.addOption("h", "help", false, "display this help and exit");
+        opts.addOption("V", "version", false,
+                "output version information and exit");
         CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(options, args);
-        if (cl.hasOption("help")) {
+        CommandLine cl = parser.parse(opts, args);
+        if (cl.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, options, EXAMPLE);
-            return null;
+            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
+            System.exit(0);
         }
-        if (cl.hasOption("version")) {
+        if (cl.hasOption("V")) {
             System.out.println("dcm2txt " + 
                     Dcm2Txt.class.getPackage().getImplementationVersion());
-            return null;
+            System.exit(0);
         }
         return cl;
     }

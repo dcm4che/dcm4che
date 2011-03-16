@@ -80,10 +80,10 @@ public class DicomInputStream extends FilterInputStream
     private final LinkedList<ItemPointer> itemPointers = 
             new LinkedList<ItemPointer>();
 
-    private String tempFilePrefix = "blk";
-    private String tempFileSuffix;
-    private File tempDirectory;
-    private ArrayList<File> tempFiles = new ArrayList<File>(1);
+    private String blkFilePrefix = "blk";
+    private String blkFileSuffix;
+    private File blkDirectory;
+    private ArrayList<File> blkFiles = new ArrayList<File>(1);
 
     public static Attributes defaultBulkData() {
         Attributes bulkData = new Attributes(7);
@@ -140,6 +140,8 @@ public class DicomInputStream extends FilterInputStream
 
     public final void setIncludeBulkData(boolean includeBulkData) {
         this.includeBulkData = includeBulkData;
+        if (includeBulkData)
+            includeBulkDataLocator = false;
     }
 
     public final boolean isIncludeBulkDataLocator() {
@@ -148,41 +150,43 @@ public class DicomInputStream extends FilterInputStream
 
     public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
         this.includeBulkDataLocator = includeBulkDataLocator;
+        if (includeBulkDataLocator)
+            includeBulkData = false;
     }
 
-    public final String getTempFilePrefix() {
-        return tempFilePrefix;
+    public final String getBulkDataFilePrefix() {
+        return blkFilePrefix;
     }
 
-    public final void setTempFilePrefix(String tempFilePrefix) {
-        this.tempFilePrefix = tempFilePrefix;
+    public final void setBulkDataFilePrefix(String blkFilePrefix) {
+        this.blkFilePrefix = blkFilePrefix;
     }
 
-    public final String getTempFileSuffix() {
-        return tempFileSuffix;
+    public final String getBulkDataFileSuffix() {
+        return blkFileSuffix;
     }
 
-    public final void setTempFileSuffix(String tempFileSuffix) {
-        this.tempFileSuffix = tempFileSuffix;
+    public final void setBulkDataFileSuffix(String blkFileSuffix) {
+        this.blkFileSuffix = blkFileSuffix;
     }
 
-    public final File getTempDirectory() {
-        return tempDirectory;
+    public final File getBulkDataDirectory() {
+        return blkDirectory;
     }
 
-    public final void setTempDirectory(File tempDirectory) {
-        this.tempDirectory = tempDirectory;
+    public final void setBulkDataDirectory(File blkDirectory) {
+        this.blkDirectory = blkDirectory;
     }
 
-    public final List<File> getTempFiles() {
-        return tempFiles;
+    public final List<File> getBulkDataFiles() {
+        return blkFiles;
     }
 
-    public final Attributes getBulkData() {
+    public final Attributes getBulkDataAttributes() {
         return bulkData;
     }
 
-    public final void setBulkData(Attributes bulkData) {
+    public final void setBulkDataAttributes(Attributes bulkData) {
         this.bulkData = bulkData;
     }
 
@@ -429,8 +433,7 @@ public class DicomInputStream extends FilterInputStream
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, null, vr, BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else if (includeBulkData && !includeBulkDataLocator 
-                || !isBulkData(attrs)){
+        } else if (includeBulkData || !isBulkData(attrs)){
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
                 if (bigEndian != attrs.bigEndian())
@@ -451,9 +454,9 @@ public class DicomInputStream extends FilterInputStream
             locator = new BulkDataLocator(uri, tsuid, pos, length);
             skipFully(length);
         } else {
-            File tempfile = File.createTempFile(tempFilePrefix,
-                    tempFileSuffix, tempDirectory);
-            tempFiles.add(tempfile);
+            File tempfile = File.createTempFile(blkFilePrefix,
+                    blkFileSuffix, blkDirectory);
+            blkFiles.add(tempfile);
             FileOutputStream tempout = new FileOutputStream(tempfile);
             try {
                 StreamUtils.copy(this, tempout, length);

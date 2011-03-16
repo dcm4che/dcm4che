@@ -2,7 +2,6 @@ package org.dcm4che.tool.dcm2txt;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -48,8 +47,7 @@ public class Dcm2Txt implements DicomInputHandler {
         this.width = width;
     }
 
-    public void parse(InputStream is) throws IOException {
-        DicomInputStream dis = new DicomInputStream(is);
+    public void parse(DicomInputStream dis) throws IOException {
         dis.setDicomInputHandler(this);
         dis.readDataset(-1, -1);
     }

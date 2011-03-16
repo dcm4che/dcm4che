@@ -6,10 +6,10 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che.tool</groupId>
-  <artifactId>dcm4che-tool-dcm2xml</artifactId>
-  <name>dcm4che-tool-dcm2xml</name>
+  <artifactId>dcm4che-tool-xml2dcm</artifactId>
+  <name>dcm4che-tool-xml2dcm</name>
   <version>3.0.0-SNAPSHOT</version>
-  <description>Convert DICOM file to XML</description>
+  <description>Convert XML to DICOM file</description>
   <build>
     <plugins>
       <plugin>
@@ -18,7 +18,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.dcm4che.tool.dcm2xml.Dcm2Xml</mainClass>
+              <mainClass>org.dcm4che.tool.xml2dcm.Xml2Dcm</mainClass>
               <addClasspath>true</addClasspath>
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>

@@ -41,9 +41,9 @@ public class Dcm2Xml {
     private boolean includeKeyword = true;
     private boolean includeBulkData = false;
     private boolean includeBulkDataLocator = true;
-    private String tempFilePrefix = "blk";
-    private String tempFileSuffix;
-    private File tempDirectory;
+    private String blkFilePrefix = "blk";
+    private String blkFileSuffix;
+    private File blkDirectory;
 
     public final void setXSLT(URL xslt) {
         this.xslt = xslt;
@@ -65,16 +65,16 @@ public class Dcm2Xml {
         this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
-    public final void setTempFilePrefix(String tempFilePrefix) {
-        this.tempFilePrefix = tempFilePrefix;
+    public final void setBulkDataFilePrefix(String blkFilePrefix) {
+        this.blkFilePrefix = blkFilePrefix;
     }
 
-    public final void setTempFileSuffix(String tempFileSuffix) {
-        this.tempFileSuffix = tempFileSuffix;
+    public final void setBulkDataFileSuffix(String blkFileSuffix) {
+        this.blkFileSuffix = blkFileSuffix;
     }
 
-    public final void setTempDirectory(File tempDirectory) {
-        this.tempDirectory = tempDirectory;
+    public final void setBulkDataDirectory(File blkDirectory) {
+        this.blkDirectory = blkDirectory;
     }
 
     @SuppressWarnings("static-access")
@@ -174,16 +174,16 @@ public class Dcm2Xml {
                 dcm2xml.setIncludeBulkDataLocator(false);
             }
             if (cl.hasOption("blk-file-prefix")) {
-                dcm2xml.setTempFilePrefix(
+                dcm2xml.setBulkDataFilePrefix(
                         cl.getOptionValue("blk-file-prefix"));
             }
             if (cl.hasOption("blk-file-suffix")) {
-                dcm2xml.setTempFileSuffix(
+                dcm2xml.setBulkDataFileSuffix(
                         cl.getOptionValue("blk-file-suffix"));
             }
             if (cl.hasOption("d")) {
                 File tempDir = new File(cl.getOptionValue("d"));
-                dcm2xml.setTempDirectory(tempDir);
+                dcm2xml.setBulkDataDirectory(tempDir);
             }
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
@@ -221,9 +221,9 @@ public class Dcm2Xml {
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
         dis.setIncludeBulkDataLocator(includeBulkDataLocator);
-        dis.setBulkDataDirectory(tempDirectory);
-        dis.setBulkDataFilePrefix(tempFilePrefix);
-        dis.setBulkDataFileSuffix(tempFileSuffix);
+        dis.setBulkDataDirectory(blkDirectory);
+        dis.setBulkDataFilePrefix(blkFilePrefix);
+        dis.setBulkDataFileSuffix(blkFileSuffix);
         TransformerHandler th = getTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                 indent ? "yes" : "no");

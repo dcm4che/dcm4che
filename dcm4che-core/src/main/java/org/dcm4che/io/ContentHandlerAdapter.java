@@ -1,6 +1,7 @@
 package org.dcm4che.io;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -20,11 +21,12 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ContentHandlerAdapter extends DefaultHandler {
 
     private Attributes fmi;
+    private final boolean bigEndian;
     private final LinkedList<Attributes> items = new LinkedList<Attributes>();
     private final LinkedList<Sequence> seqs = new LinkedList<Sequence>();
 
     private final ByteArrayOutputStream bout = new ByteArrayOutputStream(64);
-    private final char[] carry = new char[3];
+    private final char[] carry = new char[4];
     private int carryLen;
     private final StringBuilder sb = new StringBuilder(64);
     private final ArrayList<String> values = new ArrayList<String>();
@@ -33,10 +35,10 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private int tag;
     private String privateCreator;
     private VR vr;
-    private String ts;
-    private String uri;
-    private long offset;
-    private int length;
+    private String blkts;
+    private String blkuri;
+    private long blkoffset;
+    private int blklen;
     private BulkDataLocator bulkDataLocator;
     private Fragments dataFragments;
     private boolean base64;
@@ -45,6 +47,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         if (attrs == null)
             throw new NullPointerException();
         items.add(attrs);
+        bigEndian = attrs.bigEndian();
     }
 
     public Attributes getFileMetaInformation() {
@@ -110,7 +113,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private void startDataFragment(int number) {
         if (dataFragments == null)
-            dataFragments = new Fragments(vr, false, 10);
+            dataFragments = items.getLast()
+                    .newFragments(tag, privateCreator, vr,  10);
         while (dataFragments.size() < number-1)
             dataFragments.add(Value.EMPTY_BYTES);
         base64 = true;
@@ -141,10 +145,22 @@ public class ContentHandlerAdapter extends DefaultHandler {
     public void characters(char[] ch, int offset, int len)
             throws SAXException {
         if (base64) {
-            int newCarryLen = (len + carryLen) & 3;
-            Base64.decode(ch, offset, len - newCarryLen, carry, carryLen, bout);
-            System.arraycopy(ch, offset + len - newCarryLen, carry, 0, newCarryLen);
-            carryLen = newCarryLen;
+            try {
+                if (carryLen != 0) {
+                    int copy = 4 - carryLen;
+                    System.arraycopy(ch, offset, carry, carryLen, copy);
+                    Base64.decode(carry, 0, 4, bout);
+                    offset += copy;
+                    len -= copy;
+                }
+                if ((carryLen = len & 3) != 0) {
+                    len -= carryLen;
+                    System.arraycopy(ch, offset + len, carry, 0, carryLen);
+                }
+                Base64.decode(ch, offset, len, bout);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else
             sb.append(ch, offset, len);
     }
@@ -177,7 +193,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             break;
         case 'L':
             if (qName.equals("Length"))
-                length = Integer.parseInt(getString());
+                blklen = Integer.parseInt(getString());
             break;
         case 'M':
             if (qName.equals("MiddleName"))
@@ -191,7 +207,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             break;
         case 'O':
             if (qName.equals("Offset"))
-                offset = Long.parseLong(getString());
+                blkoffset = Long.parseLong(getString());
             break;
         case 'P':
             if (qName.equals("PersonName"))
@@ -199,12 +215,12 @@ public class ContentHandlerAdapter extends DefaultHandler {
             break;
         case 'T':
             if (qName.equals("TransferSyntax")) {
-                ts = getString();
+                blkts = getString();
             }
             break;
         case 'U':
             if (qName.equals("URI")) {
-                uri = getString();
+                blkuri = getString();
             }
             break;
         case 'V':
@@ -213,6 +229,13 @@ public class ContentHandlerAdapter extends DefaultHandler {
             }
             break;
         }
+    }
+
+    @Override
+    public void endDocument() throws SAXException {
+        if (fmi != null)
+            fmi.trimToSize();
+        items.getFirst().trimToSize();
     }
 
     private void endDataFragment() {
@@ -243,8 +266,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         if (bulkDataLocator != null) {
             attrs.setValue(tag, privateCreator, vr, bulkDataLocator);
             bulkDataLocator = null;
-        }
-        if (base64) {
+        } else if (base64) {
             attrs.setBytes(tag, privateCreator, vr, getBytes());
         } else {
             attrs.setString(tag, privateCreator, vr, getStrings());
@@ -252,7 +274,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private void endBulkDataLocator() {
-        bulkDataLocator = new BulkDataLocator(uri, ts, offset, length);
+        bulkDataLocator = new BulkDataLocator(blkuri, blkts, blkoffset, blklen);
     }
 
     private void endItem() {
@@ -275,20 +297,18 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private String getString() {
-        try {
-            return sb.toString();
-        } finally {
-            sb.setLength(0);
-        }
+        final String s = sb.toString();
+        sb.setLength(0);
+        return s;
     }
 
     private byte[] getBytes() {
-        try {
-            return bout.toByteArray();
-        } finally {
-            bout.reset();
-            base64 = false;
-        }
+        byte[] b = bout.toByteArray();
+        bout.reset();
+        base64 = false;
+        if (bigEndian)
+            vr.toggleEndian(b, false);
+        return b;
     }
 
     private String[] getStrings() {

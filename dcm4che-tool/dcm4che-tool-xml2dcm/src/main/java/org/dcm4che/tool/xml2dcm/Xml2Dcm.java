@@ -1,7 +1,12 @@
 package org.dcm4che.tool.xml2dcm;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -15,8 +20,12 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.EncodeOptions;
+import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 
 public class Xml2Dcm {
 
@@ -38,7 +47,12 @@ public class Xml2Dcm {
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
+    private String tsuid;
+    private boolean withfmi;
+    private boolean nofmi;
+    private EncodeOptions encOpts = new EncodeOptions();
 
+    private List<File> bulkDataFiles;
     private Attributes fmi;
     private Attributes dataset;
 
@@ -62,6 +76,38 @@ public class Xml2Dcm {
         this.blkDirectory = blkDirectory;
     }
 
+    public final void setTransferSyntax(String uid) {
+        this.tsuid = uid;
+    }
+
+    public final void setWithFileMetaInformation(boolean withfmi) {
+        this.withfmi = withfmi;
+    }
+
+    public final void setNoFileMetaInformation(boolean nofmi) {
+        this.nofmi = nofmi;
+    }
+
+    public final void setGroupLength(boolean groupLength) {
+        encOpts.setGroupLength(groupLength);
+    }
+
+    public final void setUndefSequenceLength(boolean undefLength) {
+        encOpts.setUndefSequenceLength(undefLength);
+    }
+
+    public final void setUndefEmptySequenceLength(boolean undefLength) {
+        encOpts.setUndefEmptySequenceLength(undefLength);
+    }
+
+    public final void setUndefItemLength(boolean undefLength) {
+        encOpts.setUndefItemLength(undefLength);
+    }
+
+    public final void setUndefEmptyItemLength(boolean undefLength) {
+        encOpts.setUndefEmptyItemLength(undefLength);
+    }
+
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
@@ -79,6 +125,12 @@ public class Xml2Dcm {
                      "parsed from <xml-file>; set <dicom-file> = '-' to read " +
                      "DICOM stream from standard input.")
                 .create("i"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("dicom-file")
+                .withDescription("Store result into <dicom-file>. By default " +
+                     "write DICOM stream to standard output.")
+                .create("o"));
         OptionGroup blkGroup = new OptionGroup();
         blkGroup.addOption(OptionBuilder
                 .withLongOpt("no-bulkdata")
@@ -119,6 +171,17 @@ public class Xml2Dcm {
                 .withDescription("Do not delete extracted bulkdata after it " +
                     "was written into the generated DICOM stream.")
                 .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("transfer-syntax")
+                .hasArg()
+                .withArgName("uid")
+                .withDescription("Store result with specified Transfer " +
+                    "Syntax. At default use the Transfer Syntax of the " +
+                    "input DICOM file or Explicit VR Little Endian if no " +
+                    "input DICOM file was specified for generated DICOM " +
+                    "Part 10 files, and Implicit VR Little Endian if no " +
+                    "File Meta Information is included in the stored result.")
+                .create("t"));
         OptionGroup fmiGroup = new OptionGroup();
         fmiGroup.addOption(OptionBuilder
                 .withLongOpt("no-fmi")
@@ -183,7 +246,7 @@ public class Xml2Dcm {
                     Xml2Dcm.class.getPackage().getImplementationVersion());
             System.exit(0);
         }
-        if (!cl.hasOption("x")) {
+        if (!cl.hasOption("x") && !cl.hasOption("i")) {
             throw new ParseException("Missing required option: x");
         }
         return cl;
@@ -213,21 +276,47 @@ public class Xml2Dcm {
                 File tempDir = new File(cl.getOptionValue("d"));
                 xml2dcm.setBulkDataDirectory(tempDir);
             }
-            if (cl.hasOption("i")) {
-                String fname = cl.getOptionValue("i");
-                if (fname.equals("-")) {
-                    xml2dcm.parse(new DicomInputStream(System.in));
-                } else {
-                    DicomInputStream dis = 
-                            new DicomInputStream(new File(fname));
-                    try {
-                        xml2dcm.parse(dis);
-                    } finally {
-                        dis.close();
+            if (cl.hasOption("t")) {
+                xml2dcm.setTransferSyntax(cl.getOptionValue("t"));
+            }
+            xml2dcm.setWithFileMetaInformation(cl.hasOption("f"));
+            xml2dcm.setNoFileMetaInformation(cl.hasOption("F"));
+            xml2dcm.setGroupLength(cl.hasOption("g"));
+            xml2dcm.setUndefItemLength(!cl.hasOption("e"));
+            xml2dcm.setUndefSequenceLength(!cl.hasOption("E"));
+            xml2dcm.setUndefEmptyItemLength(cl.hasOption("u"));
+            xml2dcm.setUndefEmptySequenceLength(cl.hasOption("U"));
+            try {
+                if (cl.hasOption("i")) {
+                    String fname = cl.getOptionValue("i");
+                    if (fname.equals("-")) {
+                        xml2dcm.parse(new DicomInputStream(System.in));
+                    } else {
+                        DicomInputStream dis = 
+                                new DicomInputStream(new File(fname));
+                        try {
+                            xml2dcm.parse(dis);
+                        } finally {
+                            dis.close();
+                        }
                     }
                 }
+
+                if (cl.hasOption("x"))
+                    xml2dcm.parseXML(cl.getOptionValue("x"));
+
+                OutputStream out = cl.hasOption("o") 
+                        ? new FileOutputStream(cl.getOptionValue("o"))
+                        : new FileOutputStream(FileDescriptor.out);
+                try {
+                    xml2dcm.writeTo(out);
+                } finally {
+                    out.close();
+                }
+            } finally {
+                if (!cl.hasOption("keep-blk-files"))
+                    xml2dcm.delBulkDataFiles();
             }
-            xml2dcm.parseXML(cl.getOptionValue("x"));
         } catch (ParseException e) {
             System.err.println("xml2dcm: " + e.getMessage());
             System.err.println("Try `xml2dcm --help' for more information.");
@@ -239,6 +328,33 @@ public class Xml2Dcm {
         }
     }
 
+    public void writeTo(OutputStream out) throws IOException {
+        if (nofmi)
+            fmi = null;
+        else if (fmi == null
+                ? withfmi
+                : tsuid != null && !tsuid.equals(
+                        fmi.getString(Tag.TransferSyntaxUID, null, 0, null))) {
+            fmi = dataset.createFileMetaInformation(tsuid);
+        }
+        DicomOutputStream dos = new DicomOutputStream(
+                new BufferedOutputStream(out),
+                fmi != null
+                        ? UID.ExplicitVRLittleEndian
+                        : tsuid != null 
+                                ? tsuid
+                                : UID.ImplicitVRLittleEndian);
+        dos.setEncodeOptions(encOpts);
+        dos.writeDataset(fmi, dataset);
+        dos.flush();
+    }
+
+    public void delBulkDataFiles() {
+        if (bulkDataFiles != null)
+            for (File f : bulkDataFiles)
+                f.delete();
+    }
+
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
         dis.setIncludeBulkDataLocator(includeBulkDataLocator);
@@ -247,6 +363,7 @@ public class Xml2Dcm {
         dis.setBulkDataFileSuffix(blkFileSuffix);
         dataset = dis.readDataset(-1, -1);
         fmi = dis.getFileMetaInformation();
+        bulkDataFiles = dis.getBulkDataFiles();
     }
 
     private void parseXML(String fname) throws Exception {

@@ -1,5 +1,11 @@
 package org.dcm4che.tool.xml2dcm;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -8,6 +14,9 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.io.ContentHandlerAdapter;
+import org.dcm4che.io.DicomInputStream;
 
 public class Xml2Dcm {
 
@@ -23,6 +32,35 @@ public class Xml2Dcm {
         "\n-\nOptions:";
 
     private static final String EXAMPLE = null;
+
+    private boolean includeBulkData = false;
+    private boolean includeBulkDataLocator = true;
+    private String blkFilePrefix = "blk";
+    private String blkFileSuffix;
+    private File blkDirectory;
+
+    private Attributes fmi;
+    private Attributes dataset;
+
+    public final void setIncludeBulkData(boolean includeBulkData) {
+        this.includeBulkData = includeBulkData;
+    }
+
+    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
+        this.includeBulkDataLocator = includeBulkDataLocator;
+    }
+
+    public final void setBulkDataFilePrefix(String blkFilePrefix) {
+        this.blkFilePrefix = blkFilePrefix;
+    }
+
+    public final void setBulkDataFileSuffix(String blkFileSuffix) {
+        this.blkFileSuffix = blkFileSuffix;
+    }
+
+    public final void setBulkDataDirectory(File blkDirectory) {
+        this.blkDirectory = blkDirectory;
+    }
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
@@ -151,11 +189,45 @@ public class Xml2Dcm {
         return cl;
     }
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             Xml2Dcm xml2dcm = new Xml2Dcm();
+            if (cl.hasOption("b")) {
+                xml2dcm.setIncludeBulkData(true);
+                xml2dcm.setIncludeBulkDataLocator(false);
+            }
+            if (cl.hasOption("B")) {
+                xml2dcm.setIncludeBulkData(false);
+                xml2dcm.setIncludeBulkDataLocator(false);
+            }
+            if (cl.hasOption("blk-file-prefix")) {
+                xml2dcm.setBulkDataFilePrefix(
+                        cl.getOptionValue("blk-file-prefix"));
+            }
+            if (cl.hasOption("blk-file-suffix")) {
+                xml2dcm.setBulkDataFileSuffix(
+                        cl.getOptionValue("blk-file-suffix"));
+            }
+            if (cl.hasOption("d")) {
+                File tempDir = new File(cl.getOptionValue("d"));
+                xml2dcm.setBulkDataDirectory(tempDir);
+            }
+            if (cl.hasOption("i")) {
+                String fname = cl.getOptionValue("i");
+                if (fname.equals("-")) {
+                    xml2dcm.parse(new DicomInputStream(System.in));
+                } else {
+                    DicomInputStream dis = 
+                            new DicomInputStream(new File(fname));
+                    try {
+                        xml2dcm.parse(dis);
+                    } finally {
+                        dis.close();
+                    }
+                }
+            }
+            xml2dcm.parseXML(cl.getOptionValue("x"));
         } catch (ParseException e) {
             System.err.println("xml2dcm: " + e.getMessage());
             System.err.println("Try `xml2dcm --help' for more information.");
@@ -165,6 +237,32 @@ public class Xml2Dcm {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    public void parse(DicomInputStream dis) throws IOException {
+        dis.setIncludeBulkData(includeBulkData);
+        dis.setIncludeBulkDataLocator(includeBulkDataLocator);
+        dis.setBulkDataDirectory(blkDirectory);
+        dis.setBulkDataFilePrefix(blkFilePrefix);
+        dis.setBulkDataFileSuffix(blkFileSuffix);
+        dataset = dis.readDataset(-1, -1);
+        fmi = dis.getFileMetaInformation();
+    }
+
+    private void parseXML(String fname) throws Exception {
+        if (dataset == null)
+            dataset = new Attributes();
+        ContentHandlerAdapter ch = new ContentHandlerAdapter(dataset);
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        SAXParser p = f.newSAXParser();
+        if (fname.equals("-")) {
+            p.parse(System.in, ch);
+        } else {
+            p.parse(new File(fname), ch);
+        }
+        Attributes fmi2 = ch.getFileMetaInformation();
+        if (fmi2 != null)
+            fmi = fmi2;
     }
 
 }

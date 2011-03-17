@@ -1,5 +1,7 @@
 package org.dcm4che.util;
 
+import java.io.OutputStream;
+
 public class Base64 {
 
     private static final char[] BASE64 = {
@@ -43,5 +45,11 @@ public class Base64 {
             break;
         }
      }
+
+    public static void decode(char[] ch, int off, int len, char[] carry,
+            int carryLen, OutputStream bout) {
+        // TODO Auto-generated method stub
+        
+    }
 
 }

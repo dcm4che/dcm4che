@@ -130,6 +130,10 @@ public enum VR {
         return valueType instanceof StringValueType;
     }
 
+    public boolean isXMLBase64() {
+        return xmlbase64;
+    }
+
     public int numEndianBytes() {
         return valueType.numEndianBytes();
     }

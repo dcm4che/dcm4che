@@ -98,5 +98,9 @@ public class TagUtils {
             || tag == Tag.SequenceDelimitationItem;
     }
 
+    public static boolean isFileMetaInformation(int tag) {
+        return (tag & 0xffff0000) == 0x00020000;
+    }
+
 }
 

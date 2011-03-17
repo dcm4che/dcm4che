@@ -450,7 +450,7 @@ public class DicomInputStream extends FilterInputStream
 
     public BulkDataLocator createBulkDataLocator() throws IOException {
             BulkDataLocator locator;
-        if (uri != null) {
+        if (uri != null && !(super.in instanceof InflaterInputStream)) {
             locator = new BulkDataLocator(uri, tsuid, pos, length);
             skipFully(length);
         } else {

@@ -674,8 +674,8 @@ public class DicomInputStream extends FilterInputStream
                 && !guessTransferSyntax(b128, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
-        hasfmi = TagUtils.groupNumber(ByteUtils.bytesToTag(b128, 0, bigEndian))
-                == 2;
+        hasfmi = TagUtils.isFileMetaInformation(
+                ByteUtils.bytesToTag(b128, 0, bigEndian));
     }
 
     private boolean guessTransferSyntax(byte[] b128, boolean bigEndian)

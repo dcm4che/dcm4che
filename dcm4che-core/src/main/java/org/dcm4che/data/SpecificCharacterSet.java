@@ -95,122 +95,84 @@ public class SpecificCharacterSet {
         public static Codec forCode(String code) {
             if (code == null)
                 return ISO_646;
-                
-            switch (code.hashCode()) {
-            case -332223596: // "ISO_IR 100".hashCode()
-                if ("ISO_IR 100".equals(code))
-                    return Codec.ISO_8859_1;
-                break;
-            case -332223595: // "ISO_IR 101".hashCode()
-                if ("ISO_IR 101".equals(code))
-                    return Codec.ISO_8859_2;
-                break;
-            case -332223587: // "ISO_IR 109".hashCode()
-                if ("ISO_IR 109".equals(code))
-                    return Codec.ISO_8859_3;
-                break;
-            case -332223565: // "ISO_IR 110".hashCode()
-                if ("ISO_IR 110".equals(code))
-                    return Codec.ISO_8859_4;
-                break;
-            case -332223468: // "ISO_IR 144".hashCode()
-                if ("ISO_IR 144".equals(code))
-                    return Codec.ISO_8859_5;
-                break;
-            case -332223527: // "ISO_IR 127".hashCode()
-                if ("ISO_IR 127".equals(code))
-                    return Codec.ISO_8859_6;
-                break;
-            case -332223528: // "ISO_IR 126".hashCode()
-                if ("ISO_IR 126".equals(code))
-                    return Codec.ISO_8859_7;
-                break;
-            case -332223495: // "ISO_IR 138".hashCode()
-                if ("ISO_IR 138".equals(code))
-                    return Codec.ISO_8859_8;
-                break;
-            case -332223464: // "ISO_IR 148".hashCode()
-                if ("ISO_IR 148".equals(code))
-                    return Codec.ISO_8859_9;
-                break;
-            case -287811553: // "ISO_IR 13".hashCode()
-                if ("ISO_IR 13".equals(code))
-                    return Codec.JIS_X_201;
-                break;
-            case -332223404: // "ISO_IR 166".hashCode()
-                if ("ISO_IR 166".equals(code))
-                    return Codec.TIS_620;
-                break;
-            case 427562726: // "ISO 2022 IR 6".hashCode()
-                if ("ISO 2022 IR 6".equals(code))
+
+            switch(index(code)) {
+            case -1:
+                if (code.equals("ISO 2022 IR 6"))
                     return Codec.ISO_646;
                 break;
-            case -1429083999: // "ISO 2022 IR 100".hashCode()
-                if ("ISO 2022 IR 100".equals(code))
+            case 0:
+                if (code.equals("ISO_IR 100") || code.equals("ISO 2022 IR 100"))
                     return Codec.ISO_8859_1;
                 break;
-            case -1429083998: // "ISO 2022 IR 101".hashCode()
-                if ("ISO 2022 IR 101".equals(code))
+            case 1:
+                if (code.equals("ISO_IR 101") || code.equals("ISO 2022 IR 101"))
                     return Codec.ISO_8859_2;
                 break;
-            case -1429083990: // "ISO 2022 IR 109".hashCode()
-                if ("ISO 2022 IR 109".equals(code))
-                    return Codec.ISO_8859_3;
-                break;
-            case -1429083968: // "ISO 2022 IR 110".hashCode()
-                if ("ISO 2022 IR 110".equals(code))
-                    return Codec.ISO_8859_4;
-                break;
-            case -1429083871: // "ISO 2022 IR 144".hashCode()
-                if ("ISO 2022 IR 144".equals(code))
-                    return Codec.ISO_8859_5;
-                break;
-            case -1429083930: // "ISO 2022 IR 127".hashCode()
-                if ("ISO 2022 IR 127".equals(code))
-                    return Codec.ISO_8859_6;
-                break;
-            case -1429083931: // "ISO 2022 IR 126".hashCode()
-                if ("ISO 2022 IR 126".equals(code))
-                    return Codec.ISO_8859_7;
-                break;
-            case -1429083898: // "ISO 2022 IR 138".hashCode()
-                if ("ISO 2022 IR 138".equals(code))
-                    return Codec.ISO_8859_8;
-                break;
-            case -1429083867: // "ISO 2022 IR 148".hashCode()
-                if ("ISO 2022 IR 148".equals(code))
-                    return Codec.ISO_8859_9;
-                break;
-            case 369542514: // "ISO 2022 IR 13".hashCode()
-                if ("ISO 2022 IR 13".equals(code))
-                    return Codec.JIS_X_201;
-                break;
-            case -1429083807: // "ISO 2022 IR 166".hashCode()
-                if ("ISO 2022 IR 166".equals(code))
-                    return Codec.TIS_620;
-                break;
-            case 369542735: // "ISO 2022 IR 87".hashCode()
-                if ("ISO 2022 IR 87".equals(code))
-                    return Codec.JIS_X_208;
-                break;
-            case -1429083835: // "ISO 2022 IR 159".hashCode()
-                if ("ISO 2022 IR 159".equals(code))
+            case 8:
+                if (code.equals("ISO 2022 IR 159"))
                     return Codec.JIS_X_212;
                 break;
-            case -1429083866: // "ISO 2022 IR 149".hashCode()
-                if ("ISO 2022 IR 149".equals(code))
-                    return Codec.KS_X_1001;
+            case 9:
+                if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
+                    return Codec.ISO_8859_3;
                 break;
-            case -332223315: // "ISO_IR 192".hashCode()
-                if ("ISO_IR 192".equals(code))
+            case 10:
+                if (code.equals("ISO_IR 110") || code.equals("ISO 2022 IR 110"))
+                    return Codec.ISO_8859_4;
+                break;
+            case 13:
+                if (code.equals("ISO_IR 13") || code.equals("ISO 2022 IR 13"))
+                    return Codec.JIS_X_201;
+                break;
+            case 15:
+                if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166"))
+                    return Codec.TIS_620;
+                break;
+            case 26:
+                if (code.equals("ISO_IR 126") || code.equals("ISO 2022 IR 126"))
+                    return Codec.ISO_8859_7;
+                break;
+            case 27:
+                if (code.equals("ISO_IR 127") || code.equals("ISO 2022 IR 127"))
+                    return Codec.ISO_8859_6;
+                break;
+            case 30:
+                if (code.equals("GB18030"))
+                    return Codec.GB18030;
+                break;
+            case 36:
+                if (code.equals("ISO 2022 IR 87"))
+                    return Codec.JIS_X_208;
+                break;
+            case 38:
+                if (code.equals("ISO_IR 138") || code.equals("ISO 2022 IR 138"))
+                    return Codec.ISO_8859_8;
+                break;
+            case 41:
+                if (code.equals("ISO_IR 192"))
                     return Codec.UTF_8;
                 break;
-            case 524744459: // "GB18030".hashCode()
-                if ("GB18030".equals(code))
-                    return Codec.GB18030;
+            case 44:
+                if (code.equals("ISO_IR 144") || code.equals("ISO 2022 IR 144"))
+                    return Codec.ISO_8859_5;
+                break;
+            case 48:
+                if (code.equals("ISO_IR 148") || code.equals("ISO 2022 IR 148"))
+                    return Codec.ISO_8859_9;
+                break;
+            case 49:
+                if (code.equals("ISO 2022 IR 149"))
+                    return Codec.KS_X_1001;
                 break;
             }
             return ISO_646;
+        }
+
+        private static int index(String code) {
+            int len = code.length();
+            return len < 7 ? -2
+                : ((code.charAt(len-2)) * 10 + code.charAt(len-1) - 528) % 51;
         }
 
         public byte[] encode(String val) {

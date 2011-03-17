@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -21,6 +23,8 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.SAXWriter;
 
@@ -44,6 +48,7 @@ public class Dcm2Xml {
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
+    private Attributes blkAttrs;
 
     public final void setXSLT(URL xslt) {
         this.xslt = xslt;
@@ -75,6 +80,10 @@ public class Dcm2Xml {
 
     public final void setBulkDataDirectory(File blkDirectory) {
         this.blkDirectory = blkDirectory;
+    }
+
+    public final void setBulkDataAttributes(Attributes blkAttrs) {
+        this.blkAttrs = blkAttrs;
     }
 
     @SuppressWarnings("static-access")
@@ -127,6 +136,13 @@ public class Dcm2Xml {
                 .withDescription("suffix for generating file names for " +
                      "extracted bulkdata; '.tmp' by default.")
                 .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("blk-spec")
+                .hasArg()
+                .withArgName("xml-file")
+                .withDescription("specify bulkdata attributes explicitly by " +
+                     "XML presentation in <xml-file>.")
+                .create("x"));
         opts.addOption("h", "help", false, "display this help and exit");
         opts.addOption("V", "version", false,
                 "output version information and exit");
@@ -176,6 +192,10 @@ public class Dcm2Xml {
                 File tempDir = new File(cl.getOptionValue("d"));
                 dcm2xml.setBulkDataDirectory(tempDir);
             }
+            if (cl.hasOption("x")) {
+                dcm2xml.setBulkDataAttributes(
+                        parseXML(cl.getOptionValue("x")));
+            }
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
                 dcm2xml.parse(new DicomInputStream(System.in));
@@ -199,6 +219,15 @@ public class Dcm2Xml {
         }
     }
 
+    private static Attributes parseXML(String fname) throws Exception {
+        Attributes attrs = new Attributes();
+        ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        SAXParser p = f.newSAXParser();
+        p.parse(new File(fname), ch);
+        return attrs;
+    }
+
     private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
@@ -215,6 +244,7 @@ public class Dcm2Xml {
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
+        dis.setBulkDataAttributes(blkAttrs);
         TransformerHandler th = getTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                 indent ? "yes" : "no");

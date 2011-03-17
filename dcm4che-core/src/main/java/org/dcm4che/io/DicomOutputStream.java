@@ -29,7 +29,7 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private byte[] preamble = new byte[128];
 
-    private EncodeOptions encOpts = EncodeOptions.DEFAULTS;
+    private EncodeOptions encOpts = new EncodeOptions();
 
     private boolean explicitVR;
 

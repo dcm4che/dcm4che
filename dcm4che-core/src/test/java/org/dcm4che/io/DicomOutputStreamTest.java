@@ -23,10 +23,12 @@ import org.junit.Test;
 public class DicomOutputStreamTest {
 
     private File file;
+    private EncodeOptions encOpts;
 
     @Before
     public void setUp() throws IOException {
         file = File.createTempFile("test", ".dcm");
+        encOpts = new EncodeOptions();
     }
 
     @After
@@ -79,41 +81,42 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDatasetWithoutFileMetaInformation()
             throws IOException {
-        testWriteDataset(null, EncodeOptions.DEFAULTS);
+        testWriteDataset(null);
     }
 
     @Test
     public void testWriteDataset() throws IOException {
-        testWriteDataset(UID.ExplicitVRLittleEndian, EncodeOptions.DEFAULTS);
+        testWriteDataset(UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithGroupLength() throws IOException {
-        testWriteDataset(UID.ExplicitVRLittleEndian,
-                new EncodeOptions(true, true, false, true, false));
+        encOpts.setGroupLength(true);
+        testWriteDataset(UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithoutUndefLength() throws IOException {
-        testWriteDataset(UID.ExplicitVRLittleEndian,
-                new EncodeOptions(false, false, false, false, false));
+        encOpts.setUndefEmptyItemLength(false);
+        encOpts.setUndefEmptySequenceLength(false);
+        testWriteDataset(UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithUndefEmptyLength() throws IOException {
-        testWriteDataset(UID.ExplicitVRLittleEndian,
-                new EncodeOptions(false, true, true, true, true));
+        encOpts.setUndefEmptyItemLength(true);
+        encOpts.setUndefEmptySequenceLength(true);
+        testWriteDataset(UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetBigEndian() throws IOException {
-        testWriteDataset(UID.ExplicitVRBigEndian, EncodeOptions.DEFAULTS);
+        testWriteDataset(UID.ExplicitVRBigEndian);
     }
 
     @Test
     public void testWriteDatasetDeflated() throws IOException {
-        testWriteDataset(UID.DeflatedExplicitVRLittleEndian,
-                EncodeOptions.DEFAULTS);
+        testWriteDataset(UID.DeflatedExplicitVRLittleEndian);
     }
 
     @Test
@@ -129,8 +132,7 @@ public class DicomOutputStreamTest {
         deserializeAttributes();
     }
 
-    private void testWriteDataset(String tsuid, EncodeOptions encOpts)
-            throws IOException {
+    private void testWriteDataset(String tsuid) throws IOException {
         Attributes ds = dataset();
         Attributes fmi = tsuid != null
                 ? ds.createFileMetaInformation(tsuid)

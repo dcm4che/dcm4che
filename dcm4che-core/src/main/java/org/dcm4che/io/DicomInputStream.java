@@ -472,6 +472,8 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public boolean isBulkData(Attributes attrs) {
+        if (TagUtils.isPrivateCreator(tag))
+            return false;
         int grtag = TagUtils.groupNumber(tag);
         if (grtag < 8)
             return false;

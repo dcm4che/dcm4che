@@ -465,7 +465,11 @@ public class DicomInputStream extends FilterInputStream
             } finally {
                 tempout.close();
             }
-            locator = new BulkDataLocator(tempfile.toURI().toString(), tsuid,
+            locator = new BulkDataLocator(
+                    tempfile.toURI().toString(),
+                    (super.in instanceof InflaterInputStream) 
+                            ? UID.ExplicitVRLittleEndian
+                            : tsuid,
                     0, length);
         }
         return locator;

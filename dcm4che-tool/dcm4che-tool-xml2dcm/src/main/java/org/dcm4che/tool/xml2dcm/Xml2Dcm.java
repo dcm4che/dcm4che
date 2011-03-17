@@ -346,6 +346,7 @@ public class Xml2Dcm {
                                 : UID.ImplicitVRLittleEndian);
         dos.setEncodeOptions(encOpts);
         dos.writeDataset(fmi, dataset);
+        dos.finish();
         dos.flush();
     }
 

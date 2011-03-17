@@ -188,4 +188,18 @@ public class DicomOutputStream extends FilterOutputStream {
         ByteUtils.intToBytes(len, b, 8, bigEndian);
         out.write(b, 0, 12);
     }
+
+    public void finish() throws IOException {
+        if( out instanceof DeflaterOutputStream ) {
+            ((DeflaterOutputStream) out).finish();
+        }
+    }
+
+    public void close() throws IOException {
+        try {
+            finish();
+        } catch (IOException ignored) {
+        }
+        super.close();
+    }
 }

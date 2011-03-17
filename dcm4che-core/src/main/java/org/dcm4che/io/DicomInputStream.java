@@ -83,7 +83,7 @@ public class DicomInputStream extends FilterInputStream
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
-    private ArrayList<File> blkFiles = new ArrayList<File>(1);
+    private ArrayList<File> blkFiles;
 
     public static Attributes defaultBulkData() {
         Attributes bulkData = new Attributes(7);
@@ -456,6 +456,8 @@ public class DicomInputStream extends FilterInputStream
         } else {
             File tempfile = File.createTempFile(blkFilePrefix,
                     blkFileSuffix, blkDirectory);
+            if (blkFiles == null)
+                blkFiles = new ArrayList<File>();
             blkFiles.add(tempfile);
             FileOutputStream tempout = new FileOutputStream(tempfile);
             try {

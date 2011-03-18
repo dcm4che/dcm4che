@@ -44,9 +44,11 @@ public class Xml2Dcm {
 
     private boolean includeBulkData = false;
     private boolean includeBulkDataLocator = true;
+    private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
+    private Attributes blkAttrs;
     private String tsuid;
     private boolean withfmi;
     private boolean nofmi;
@@ -64,6 +66,10 @@ public class Xml2Dcm {
         this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
+    public final void setConcatenateBulkDataFiles(boolean catBlkFiles) {
+        this.catBlkFiles = catBlkFiles;
+    }
+
     public final void setBulkDataFilePrefix(String blkFilePrefix) {
         this.blkFilePrefix = blkFilePrefix;
     }
@@ -74,6 +80,10 @@ public class Xml2Dcm {
 
     public final void setBulkDataDirectory(File blkDirectory) {
         this.blkDirectory = blkDirectory;
+    }
+
+    public final void setBulkDataAttributes(Attributes blkAttrs) {
+        this.blkAttrs = blkAttrs;
     }
 
     public final void setTransferSyntax(String uid) {
@@ -121,15 +131,16 @@ public class Xml2Dcm {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("dicom-file")
-                .withDescription("Load DICOM file to be merged with attributes " +
-                     "parsed from <xml-file>; set <dicom-file> = '-' to read " +
-                     "DICOM stream from standard input.")
+                .withDescription("Load DICOM file to be merged with " +
+                     "attributes parsed from -x <xml-file>; " +
+                     "set <dicom-file> = '-' to read DICOM stream from " +
+                     "standard input.")
                 .create("i"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("dicom-file")
-                .withDescription("Store result into <dicom-file>. By default " +
-                     "write DICOM stream to standard output.")
+                .withDescription("Store result into <dicom-file>. " +
+                     "By default write DICOM stream to standard output.")
                 .create("o"));
         OptionGroup blkGroup = new OptionGroup();
         blkGroup.addOption(OptionBuilder
@@ -148,9 +159,9 @@ public class Xml2Dcm {
                 .hasArg()
                 .withArgName("directory")
                 .withDescription("directory were files with extracted " +
-                     "bulkdata are stored if the DICOM stream to be merged is " +
-                     "read from standard input; if not specified, files are " +
-                     "stored into the default temporary-file directory.")
+                     "bulkdata are stored if the DICOM stream to be merged " +
+                     "is read from standard input; if not specified, files " +
+                     "are stored into the default temporary-file directory.")
                 .create("d"));
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-prefix")
@@ -166,6 +177,13 @@ public class Xml2Dcm {
                 .withDescription("suffix for generating file names for " +
                      "extracted bulkdata; '.tmp' by default.")
                 .create());
+        opts.addOption("c", "cat-blk-files", false,
+                "concatenate extracted bulkdata into one file.");
+        opts.addOption(OptionBuilder.withLongOpt("blk-spec").hasArg()
+                .withArgName("xml-file").withDescription(
+                     "specify bulkdata attributes explicitly by " +
+                     "XML presentation in <xml-file>.")
+                .create("X"));
         opts.addOption(OptionBuilder
                 .withLongOpt("keep-blk-files")
                 .withDescription("Do not delete extracted bulkdata after it " +
@@ -206,9 +224,9 @@ public class Xml2Dcm {
         OptionGroup sqlenGroup = new OptionGroup();
         sqlenGroup.addOption(OptionBuilder
                 .withLongOpt("expl-seq-len")
-                .withDescription("Encode sequences with explicit length. At " +
-                    "default, non-empty sequences are encoded with undefined " +
-                    "length.")
+                .withDescription("Encode sequences with explicit length. " +
+                    "At default, non-empty sequences are encoded with " +
+                    "undefined length.")
                 .create("E"));
         sqlenGroup.addOption(OptionBuilder
                 .withLongOpt("undef-seq-len")
@@ -276,6 +294,11 @@ public class Xml2Dcm {
                 File tempDir = new File(cl.getOptionValue("d"));
                 xml2dcm.setBulkDataDirectory(tempDir);
             }
+            xml2dcm.setConcatenateBulkDataFiles(cl.hasOption("c"));
+            if (cl.hasOption("X")) {
+                xml2dcm.setBulkDataAttributes(
+                        parseXML(cl.getOptionValue("X")));
+            }
             if (cl.hasOption("t")) {
                 xml2dcm.setTransferSyntax(cl.getOptionValue("t"));
             }
@@ -303,7 +326,7 @@ public class Xml2Dcm {
                 }
 
                 if (cl.hasOption("x"))
-                    xml2dcm.parseXML(cl.getOptionValue("x"));
+                    xml2dcm.mergeXML(cl.getOptionValue("x"));
 
                 OutputStream out = cl.hasOption("o") 
                         ? new FileOutputStream(cl.getOptionValue("o"))
@@ -359,18 +382,35 @@ public class Xml2Dcm {
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
         dis.setIncludeBulkDataLocator(includeBulkDataLocator);
+        dis.setBulkDataAttributes(blkAttrs);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
+        dis.setConcatenateBulkDataFiles(catBlkFiles);
         dataset = dis.readDataset(-1, -1);
         fmi = dis.getFileMetaInformation();
         bulkDataFiles = dis.getBulkDataFiles();
     }
 
-    private void parseXML(String fname) throws Exception {
+    public void mergeXML(String fname) throws Exception {
         if (dataset == null)
             dataset = new Attributes();
         ContentHandlerAdapter ch = new ContentHandlerAdapter(dataset);
+        parseXML(fname, ch);
+        Attributes fmi2 = ch.getFileMetaInformation();
+        if (fmi2 != null)
+            fmi = fmi2;
+    }
+
+    public static Attributes parseXML(String fname) throws Exception {
+        Attributes attrs = new Attributes();
+        ContentHandlerAdapter ch = new ContentHandlerAdapter(attrs);
+        parseXML(fname, ch);
+        return attrs;
+    }
+
+    private static void parseXML(String fname, ContentHandlerAdapter ch)
+            throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         SAXParser p = f.newSAXParser();
         if (fname.equals("-")) {
@@ -378,9 +418,6 @@ public class Xml2Dcm {
         } else {
             p.parse(new File(fname), ch);
         }
-        Attributes fmi2 = ch.getFileMetaInformation();
-        if (fmi2 != null)
-            fmi = fmi2;
     }
 
 }

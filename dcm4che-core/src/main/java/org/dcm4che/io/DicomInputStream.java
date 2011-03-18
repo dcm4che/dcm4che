@@ -80,10 +80,14 @@ public class DicomInputStream extends FilterInputStream
     private final LinkedList<ItemPointer> itemPointers = 
             new LinkedList<ItemPointer>();
 
+    private boolean catBlkFiles;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
     private ArrayList<File> blkFiles;
+    private String blkURI;
+    private FileOutputStream blkOut;
+    private long blkOutPos;
 
     public static Attributes defaultBulkData() {
         Attributes bulkData = new Attributes(7);
@@ -178,6 +182,14 @@ public class DicomInputStream extends FilterInputStream
         this.blkDirectory = blkDirectory;
     }
 
+    public final boolean isConcatenateBulkDataFiles() {
+        return catBlkFiles;
+    }
+
+    public final void setConcatenateBulkDataFiles(boolean catBlkFiles) {
+        this.catBlkFiles = catBlkFiles;
+    }
+
     public final List<File> getBulkDataFiles() {
         return blkFiles;
     }
@@ -245,7 +257,20 @@ public class DicomInputStream extends FilterInputStream
         return explicitVR;
     }
 
-   @Override
+    @Override
+    public void close() throws IOException {
+        closeBlkOut();
+        super.close();
+    }
+
+    private void closeBlkOut() {
+        if (blkOut != null) {
+            try { blkOut.close(); } catch (IOException ignore) {}
+            blkOut = null;
+        }
+    }
+
+    @Override
     public synchronized void mark(int readlimit) {
         super.mark(readlimit);
         markPos = pos;
@@ -454,23 +479,28 @@ public class DicomInputStream extends FilterInputStream
             locator = new BulkDataLocator(uri, tsuid, pos, length);
             skipFully(length);
         } else {
-            File tempfile = File.createTempFile(blkFilePrefix,
-                    blkFileSuffix, blkDirectory);
-            if (blkFiles == null)
-                blkFiles = new ArrayList<File>();
-            blkFiles.add(tempfile);
-            FileOutputStream tempout = new FileOutputStream(tempfile);
-            try {
-                StreamUtils.copy(this, tempout, length);
-            } finally {
-                tempout.close();
+            if (blkOut == null) {
+                File blkfile = File.createTempFile(blkFilePrefix,
+                        blkFileSuffix, blkDirectory);
+                if (blkFiles == null)
+                    blkFiles = new ArrayList<File>();
+                blkFiles.add(blkfile);
+                blkURI = blkfile.toURI().toString();
+                blkOut = new FileOutputStream(blkfile);
+                blkOutPos = 0L;
             }
-            locator = new BulkDataLocator(
-                    tempfile.toURI().toString(),
-                    (super.in instanceof InflaterInputStream) 
+            try {
+                StreamUtils.copy(this, blkOut, length);
+            } finally {
+                if (!catBlkFiles)
+                    closeBlkOut();
+            }
+            locator = new BulkDataLocator(blkURI,
+                    (super.in instanceof InflaterInputStream)
                             ? UID.ExplicitVRLittleEndian
                             : tsuid,
-                    0, length);
+                     blkOutPos, length);
+            blkOutPos += length;
         }
         return locator;
     }

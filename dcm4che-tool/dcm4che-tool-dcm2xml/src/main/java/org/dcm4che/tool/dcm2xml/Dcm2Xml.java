@@ -45,6 +45,7 @@ public class Dcm2Xml {
     private boolean includeKeyword = true;
     private boolean includeBulkData = false;
     private boolean includeBulkDataLocator = true;
+    private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
@@ -68,6 +69,10 @@ public class Dcm2Xml {
 
     public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
         this.includeBulkDataLocator = includeBulkDataLocator;
+    }
+
+    public final void setConcatenateBulkDataFiles(boolean catBlkFiles) {
+        this.catBlkFiles = catBlkFiles;
     }
 
     public final void setBulkDataFilePrefix(String blkFilePrefix) {
@@ -95,7 +100,7 @@ public class Dcm2Xml {
                 .hasArg()
                 .withArgName("xsl-file")
                 .withDescription("apply specified XSLT stylesheet")
-                .create("X"));
+                .create("x"));
         opts.addOption("I", "indent", false,
                 "use additional whitespace in XML output");
         opts.addOption("K", "no-keyword", false,
@@ -136,13 +141,15 @@ public class Dcm2Xml {
                 .withDescription("suffix for generating file names for " +
                      "extracted bulkdata; '.tmp' by default.")
                 .create());
+        opts.addOption("c", "cat-blk-files", false,
+                     "concatenate extracted bulkdata into one file.");
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-spec")
                 .hasArg()
                 .withArgName("xml-file")
                 .withDescription("specify bulkdata attributes explicitly by " +
                      "XML presentation in <xml-file>.")
-                .create("x"));
+                .create("X"));
         opts.addOption("h", "help", false, "display this help and exit");
         opts.addOption("V", "version", false,
                 "output version information and exit");
@@ -166,8 +173,8 @@ public class Dcm2Xml {
         try {
             CommandLine cl = parseComandLine(args);
             Dcm2Xml dcm2xml = new Dcm2Xml();
-            if (cl.hasOption("X")) {
-                String s = cl.getOptionValue("X");
+            if (cl.hasOption("x")) {
+                String s = cl.getOptionValue("x");
                 dcm2xml.setXSLT(new File(s).toURI().toURL());
             }
             dcm2xml.setIndent(cl.hasOption("I"));
@@ -192,9 +199,10 @@ public class Dcm2Xml {
                 File tempDir = new File(cl.getOptionValue("d"));
                 dcm2xml.setBulkDataDirectory(tempDir);
             }
-            if (cl.hasOption("x")) {
+            dcm2xml.setConcatenateBulkDataFiles(cl.hasOption("c"));
+            if (cl.hasOption("X")) {
                 dcm2xml.setBulkDataAttributes(
-                        parseXML(cl.getOptionValue("x")));
+                        parseXML(cl.getOptionValue("X")));
             }
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
@@ -241,10 +249,11 @@ public class Dcm2Xml {
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
         dis.setIncludeBulkDataLocator(includeBulkDataLocator);
+        dis.setBulkDataAttributes(blkAttrs);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
-        dis.setBulkDataAttributes(blkAttrs);
+        dis.setConcatenateBulkDataFiles(catBlkFiles);
         TransformerHandler th = getTransformerHandler();
         th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                 indent ? "yes" : "no");

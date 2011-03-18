@@ -109,19 +109,13 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public DicomInputStream(InputStream in) throws IOException {
-        super(buffer(in));
+        super(in.markSupported() ? in : new BufferedInputStream(in));
         guessTransferSyntax();
     }
 
     public DicomInputStream(File file) throws IOException {
         this(new FileInputStream(file));
         uri = file.toURI().toString();
-    }
-
-    private static BufferedInputStream buffer(InputStream in) {
-        return (in instanceof BufferedInputStream) 
-                ? (BufferedInputStream) in
-                : new BufferedInputStream(in);
     }
 
     public final String getURI() {

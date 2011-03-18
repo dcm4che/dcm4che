@@ -40,21 +40,19 @@ public class Base64 {
                                    | (((b3 = src[srcPos++]) >>> 6) & 0x03)];
             dest[destPos++] = BASE64[b3 & 0x3F];
         }
-        switch (r) {
-        case 1:
-            dest[destPos++] = BASE64[((b1 = src[srcPos]) >>> 2) & 0x3F];
-            dest[destPos++] = BASE64[((b1 & 0x03) << 4)];
-            dest[destPos++] = '=';
-            dest[destPos++] = '=';
-            break;
-        case 2:
-            dest[destPos++] = BASE64[((b1 = src[srcPos++]) >>> 2) & 0x3F];
-            dest[destPos++] = BASE64[((b1 & 0x03) << 4)
-                                   | (((b2 = src[srcPos]) >>> 4) & 0x0F)];
-            dest[destPos++] = BASE64[(b2 & 0x0F) << 2];
-            dest[destPos++] = '=';
-            break;
-        }
+        if (r > 0)
+            if (r == 1) {
+                dest[destPos++] = BASE64[((b1 = src[srcPos]) >>> 2) & 0x3F];
+                dest[destPos++] = BASE64[((b1 & 0x03) << 4)];
+                dest[destPos++] = '=';
+                dest[destPos++] = '=';
+            } else {
+                dest[destPos++] = BASE64[((b1 = src[srcPos++]) >>> 2) & 0x3F];
+                dest[destPos++] = BASE64[((b1 & 0x03) << 4)
+                                       | (((b2 = src[srcPos]) >>> 4) & 0x0F)];
+                dest[destPos++] = BASE64[(b2 & 0x0F) << 2];
+                dest[destPos++] = '=';
+            }
      }
 
     public static void decode(char[] ch, int off, int len, OutputStream out)

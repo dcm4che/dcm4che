@@ -11,24 +11,23 @@ public class StreamUtils {
     
     public static void readFully(InputStream in, byte b[], int off, int len)
             throws IOException {
-        if (len < 0)
+        if (off < 0 || len < 0 || off + len > b.length)
             throw new IndexOutOfBoundsException();
-        int n = 0;
-        while (n < len) {
-            int count = in.read(b, off + n, len - n);
+        while (len > 0) {
+            int count = in.read(b, off, len);
             if (count < 0)
                 throw new EOFException();
-            n += count;
+            off += count;
+            len -= count;
         }
     }
     
     public static  void skipFully(InputStream in, long n) throws IOException {
-        long remaining = n;
-        while (remaining > 0) {
-            long count = in.skip(remaining);
+        while (n > 0) {
+            long count = in.skip(n);
             if (count <= 0)
                 throw new EOFException();
-            remaining -= count;
+            n -= count;
         }
     }
 
@@ -36,13 +35,12 @@ public class StreamUtils {
             byte buf[]) throws IOException {
         if (len < 0)
             throw new IndexOutOfBoundsException();
-        int n = 0;
-        while (n < len) {
-            int count = in.read(buf, 0, Math.min(len - n, buf.length));
+        while (len > 0) {
+            int count = in.read(buf, 0, Math.min(len, buf.length));
             if (count < 0)
                 throw new EOFException();
             out.write(buf, 0, count);
-            n += count;
+            len -= count;
         }
     }
 
@@ -61,13 +59,12 @@ public class StreamUtils {
             throw new IllegalArgumentException("swapBytes: " + swapBytes);
         if (len < 0 || (len % swapBytes) != 0)
             throw new IllegalArgumentException("length: " + len);
-        int n = 0;
         int off = 0;
-        while (n < len) {
-            int count = in.read(buf, off, Math.min(len - n, buf.length - off));
+        while (len > 0) {
+            int count = in.read(buf, off, Math.min(len, buf.length - off));
             if (count < 0)
                 throw new EOFException();
-            n += count;
+            len -= count;
             count += off;
             off = count % swapBytes;
             count -= off;

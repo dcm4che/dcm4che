@@ -163,12 +163,7 @@ public class DicomOutputStream extends FilterOutputStream {
             writeHeader(tag, vr, BULK_DATA_LOCATOR);
             ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
         } else {
-            int length = vr == VR.SQ 
-                    && (val.isEmpty() 
-                            ? encOpts.isUndefEmptySequenceLength()
-                            : encOpts.isUndefSequenceLength())
-                            ? -1
-                            : val.getEncodedLength();
+            int length = val.getEncodedLength(encOpts, vr);
             writeHeader(tag, vr, length);
             val.writeTo(this, vr);
             if (length == -1)

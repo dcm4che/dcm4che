@@ -23,10 +23,6 @@ public class Sequence extends ArrayList<Attributes> implements Value {
         return parent;
     }
 
-    public final int getEncodedLength() {
-        return length;
-    }
-
     public void trimToSize(boolean recursive) {
         super.trimToSize();
         if (recursive)
@@ -115,6 +111,12 @@ public class Sequence extends ArrayList<Attributes> implements Value {
             len += 8;
         length = len;
         return len;
+    }
+
+    @Override
+    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
+        return isEmpty() ? encOpts.isUndefEmptySequenceLength() ? -1 : 0
+                         : encOpts.isUndefSequenceLength() ? -1 : length;
     }
 
     @Override

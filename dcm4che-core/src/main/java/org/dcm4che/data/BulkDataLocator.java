@@ -56,11 +56,11 @@ public class BulkDataLocator implements Value {
 
     @Override
     public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
-        return getEncodedLength();
+        return getEncodedLength(encOpts, vr);
     }
 
     @Override
-    public int getEncodedLength() {
+    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
         return (length + 1) & ~1;
     }
 

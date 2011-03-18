@@ -15,8 +15,8 @@ public interface Value {
         }
 
         @Override
-        public int getEncodedLength() {
-            return 0;
+        public int getEncodedLength(EncodeOptions encOpts, VR vr) {
+            return vr == VR.SQ && encOpts.isUndefEmptySequenceLength() ? 8 : 0;
         }
 
         @Override
@@ -25,7 +25,7 @@ public interface Value {
 
         @Override
         public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
-             return vr == VR.SQ && encOpts.isUndefEmptySequenceLength() ? 8 : 0 ;
+             return getEncodedLength(encOpts, vr) ;
         }
 
         @Override
@@ -47,6 +47,6 @@ public interface Value {
 
     int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr);
 
-    int getEncodedLength();
+    int getEncodedLength(EncodeOptions encOpts, VR vr);
 
 }

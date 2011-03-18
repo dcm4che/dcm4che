@@ -76,7 +76,7 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public int getEncodedLength() {
+    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
         return -1;
     }
 

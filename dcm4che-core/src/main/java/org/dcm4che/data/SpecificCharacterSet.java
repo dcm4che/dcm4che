@@ -96,11 +96,7 @@ public class SpecificCharacterSet {
             if (code == null)
                 return ISO_646;
 
-            switch(index(code)) {
-            case -1:
-                if (code.equals("ISO 2022 IR 6"))
-                    return Codec.ISO_646;
-                break;
+            switch(last2digits(code)) {
             case 0:
                 if (code.equals("ISO_IR 100") || code.equals("ISO 2022 IR 100"))
                     return Codec.ISO_8859_1;
@@ -109,9 +105,9 @@ public class SpecificCharacterSet {
                 if (code.equals("ISO_IR 101") || code.equals("ISO 2022 IR 101"))
                     return Codec.ISO_8859_2;
                 break;
-            case 8:
-                if (code.equals("ISO 2022 IR 159"))
-                    return Codec.JIS_X_212;
+            case 6:
+                if (code.equals("ISO 2022 IR 6"))
+                    return Codec.ISO_646;
                 break;
             case 9:
                 if (code.equals("ISO_IR 109") || code.equals("ISO 2022 IR 109"))
@@ -125,10 +121,6 @@ public class SpecificCharacterSet {
                 if (code.equals("ISO_IR 13") || code.equals("ISO 2022 IR 13"))
                     return Codec.JIS_X_201;
                 break;
-            case 15:
-                if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166"))
-                    return Codec.TIS_620;
-                break;
             case 26:
                 if (code.equals("ISO_IR 126") || code.equals("ISO 2022 IR 126"))
                     return Codec.ISO_8859_7;
@@ -141,17 +133,9 @@ public class SpecificCharacterSet {
                 if (code.equals("GB18030"))
                     return Codec.GB18030;
                 break;
-            case 36:
-                if (code.equals("ISO 2022 IR 87"))
-                    return Codec.JIS_X_208;
-                break;
             case 38:
                 if (code.equals("ISO_IR 138") || code.equals("ISO 2022 IR 138"))
                     return Codec.ISO_8859_8;
-                break;
-            case 41:
-                if (code.equals("ISO_IR 192"))
-                    return Codec.UTF_8;
                 break;
             case 44:
                 if (code.equals("ISO_IR 144") || code.equals("ISO 2022 IR 144"))
@@ -165,14 +149,33 @@ public class SpecificCharacterSet {
                 if (code.equals("ISO 2022 IR 149"))
                     return Codec.KS_X_1001;
                 break;
+            case 59:
+                if (code.equals("ISO 2022 IR 159"))
+                    return Codec.JIS_X_212;
+                break;
+            case 66:
+                if (code.equals("ISO_IR 166") || code.equals("ISO 2022 IR 166"))
+                    return Codec.TIS_620;
+                break;
+            case 87:
+                if (code.equals("ISO 2022 IR 87"))
+                    return Codec.JIS_X_208;
+                break;
+            case 92:
+                if (code.equals("ISO_IR 192"))
+                    return Codec.UTF_8;
+                break;
             }
             return ISO_646;
         }
 
-        private static int index(String code) {
+        private static int last2digits(String code) {
             int len = code.length();
-            return len < 7 ? -2
-                : ((code.charAt(len-2)) * 10 + code.charAt(len-1) - 528) % 51;
+            if (len < 2)
+                return -1;
+            char ch1 = code.charAt(len-1);
+            char ch2 = code.charAt(len-2);
+            return (ch2 & 15) * 10 + (ch1 & 15);
         }
 
         public byte[] encode(String val) {

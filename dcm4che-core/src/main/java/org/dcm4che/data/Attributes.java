@@ -6,9 +6,11 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 
 public class Attributes implements Serializable {
@@ -730,8 +732,7 @@ public class Attributes implements Serializable {
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
-            if (!TagUtils.isGroupLength(tag)
-                    && !TagUtils.isPrivateCreator(tag)) {
+            if (!TagUtils.isPrivateCreator(tag)) {
                 VR vr = srcVRs[i];
                 if (TagUtils.isPrivateGroup(tag)) {
                     int tmp = TagUtils.creatorTagOf(tag);
@@ -981,6 +982,113 @@ public class Attributes implements Serializable {
                 Implementation.getVersionName());
         fmi.trimToSize(false);
         return fmi;
+    }
+
+    public boolean matches(Attributes keys, boolean ignorePNCase) {
+        int[] keyTags = keys.tags;
+        VR[] keyVrs = keys.vrs;
+        Object[] keyValues = keys.values;
+        int keysSize = keys.size;
+        String privateCreator = null;
+        int creatorTag = 0;
+        for (int i = 0; i < keysSize; i++) {
+            int tag = keyTags[i];
+            if (TagUtils.isPrivateCreator(tag))
+                continue;
+
+            if (TagUtils.isPrivateGroup(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    privateCreator = keys
+                            .getString(creatorTag, null, 0, null);
+                }
+            } else {
+                creatorTag = 0;
+                privateCreator = null;
+            }
+
+            Object keyValue = keyValues[i];
+            if (isEmpty(keyValue))
+                continue;
+
+            if (keyVrs[i].isStringType()) {
+                if (!matches(tag, privateCreator, keyVrs[i], ignorePNCase,
+                        keys.getStrings(tag, privateCreator)))
+                    return false;
+            } else if (keyValue instanceof Sequence) {
+                if (!matches(tag, privateCreator, ignorePNCase,
+                        (Sequence) keyValue))
+                    return false;
+            } else {
+                throw new UnsupportedOperationException("Keys with VR: "
+                        + keyVrs[i] + " not supported");
+            }
+        }
+        return true;
+   }
+
+    private boolean matches(int tag, String privateCreator, VR vr,
+            boolean ignorePNCase, String[] keyVals) {
+        if (keyVals.length > 1)
+            throw new IllegalArgumentException("Keys contain Attribute "
+                    + TagUtils.toString(tag) + " with " + keyVals.length
+                    + " values");
+
+        String[] vals = getStrings(tag, privateCreator);
+        if (vals == null || vals.length == 0)
+            return true;
+
+        boolean ignoreCase = ignorePNCase && vr == VR.PN;
+        String keyVal = vr == VR.PN
+                ? new PersonName(keyVals[0]).toString()
+                : keyVals[0];
+
+        if (StringUtils.containsWildCard(keyVal)) {
+            Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
+            for (String val : vals) {
+                if (val == null)
+                    return true;
+                if (vr == VR.PN)
+                    val = new PersonName(val).toString();
+                if (pattern.matcher(val).matches())
+                    return true;
+            }
+        } else {
+            for (String val : vals) {
+                if (val == null)
+                    return true;
+                if (vr == VR.PN)
+                    val = new PersonName(val).toString();
+                if (ignoreCase ? keyVal.equalsIgnoreCase(val)
+                               : keyVal.equals(val))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean matches(int tag, String privateCreator,
+            boolean ignorePNCase, Sequence keySeq) {
+        int n = keySeq.size();
+        if (n > 1)
+            throw new IllegalArgumentException("Keys contain Sequence "
+                    + TagUtils.toString(tag) + " with " + n + " Items");
+
+        Attributes keys = keySeq.get(0);
+        if (keys.isEmpty())
+            return true;
+
+        Object value = getValue(tag, privateCreator);
+        if (value == null || isEmpty(value))
+            return true;
+
+        if (value instanceof Sequence) {
+            Sequence sq = (Sequence) value;
+            for (Attributes item : sq)
+                if (item.matches(keys, ignorePNCase));
+        }
+        return false;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

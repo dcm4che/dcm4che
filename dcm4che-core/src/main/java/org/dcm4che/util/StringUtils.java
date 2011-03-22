@@ -1,5 +1,8 @@
 package org.dcm4che.util;
 
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+
 public class StringUtils {
 
     public static String[] EMPTY_STRING = {};
@@ -98,4 +101,37 @@ public class StringUtils {
         return new String(ch);
     }
 
+    public static boolean matches(String s, String key, boolean ignoreCase) {
+        if (s == null || s.length() == 0)
+            return true;
+
+        if (key == null || key.length() == 0)
+            return true;
+
+        return containsWildCard(key) 
+                ? compilePattern(key, ignoreCase).matcher(s).matches()
+                : ignoreCase ? key.equalsIgnoreCase(s) : key.equals(s);
+    }
+
+    public static Pattern compilePattern(String key, boolean ignoreCase) {
+        StringTokenizer stk = new StringTokenizer(key, "*?", true);
+        StringBuilder regex = new StringBuilder();
+        while (stk.hasMoreTokens()) {
+            String tk = stk.nextToken();
+            char ch1 = tk.charAt(0);
+            if (ch1 == '*') {
+                regex.append(".*");
+            } else if (ch1 == '?') {
+                regex.append(".");
+            } else {
+                regex.append("\\Q").append(tk).append("\\E");
+            }
+        }
+        return Pattern.compile(regex.toString(),
+                ignoreCase ? Pattern.CASE_INSENSITIVE : 0);
+    }
+
+    public static boolean containsWildCard(String s) {
+        return (s.indexOf('*') >= 0 || s.indexOf('?') >= 0);
+    }
 }

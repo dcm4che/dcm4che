@@ -626,7 +626,8 @@ public class DicomInputStream extends FilterInputStream
         for (int i = 0; true; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                itemPointers.add(new ItemPointer(fragsTag, null, i));
+                itemPointers.add(new ItemPointer(fragsTag,
+                        attrs.getPrivateCreator(fragsTag), i));
                 handler.readValue(this, frags);
                 itemPointers.removeLast();
             } else if (tag == Tag.SequenceDelimitationItem) {

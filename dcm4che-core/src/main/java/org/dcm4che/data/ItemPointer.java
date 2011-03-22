@@ -7,7 +7,6 @@ public class ItemPointer {
     public final int itemIndex;
 
     public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {
-        super();
         this.sequenceTag = sequenceTag;
         this.privateCreator = privateCreator;
         this.itemIndex = itemIndex;

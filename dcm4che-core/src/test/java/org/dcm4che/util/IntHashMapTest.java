@@ -90,7 +90,9 @@ public class IntHashMapTest {
     @Test
     public void testClone() {
         removeOdd();
-        testGet((IntHashMap<Integer>) map.clone());
+        IntHashMap<Integer> clone = (IntHashMap<Integer>) map.clone();
+        map.clear();
+        testGet(clone);
     }
 
     @SuppressWarnings("unchecked")

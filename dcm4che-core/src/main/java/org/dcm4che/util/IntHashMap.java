@@ -183,10 +183,9 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
     public Object clone() {
         try {
             IntHashMap<V> m = (IntHashMap<V>) super.clone();
-            m.states = states;
-            m.keys = keys;
-            m.values = values;
-            m.free = free;
+            m.states = states.clone();
+            m.keys = keys.clone();
+            m.values = values.clone();
             return m;
         } catch (CloneNotSupportedException e) {
             throw new InternalError();

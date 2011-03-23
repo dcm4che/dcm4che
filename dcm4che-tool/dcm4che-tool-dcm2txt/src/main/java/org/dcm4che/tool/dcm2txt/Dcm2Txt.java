@@ -108,6 +108,7 @@ public class Dcm2Txt implements DicomInputHandler {
         appendPrefix(dis, line);
         appendHeader(dis, line);
         appendKeyword(dis, line);
+        appendNumber(seq.size() + 1, line);
         System.out.println(line);
         boolean undeflen = dis.length() == -1;
         dis.readValue(dis, seq);
@@ -146,10 +147,21 @@ public class Dcm2Txt implements DicomInputHandler {
     }
 
     private void appendKeyword(DicomInputStream dis, StringBuilder line) {
-        line.append(" ");
-        line.append(ElementDictionary.keywordOf(dis.tag(), null));
-        if (line.length() > width)
-            line.setLength(width);
+        if (line.length() < width) {
+            line.append(" ");
+            line.append(ElementDictionary.keywordOf(dis.tag(), null));
+            if (line.length() > width)
+                line.setLength(width);
+        }
+    }
+
+    private void appendNumber(int number, StringBuilder line) {
+        if (line.length() < width) {
+            line.append(" #");
+            line.append(number);
+            if (line.length() > width)
+                line.setLength(width);
+        }
     }
 
     private void appendFragment(StringBuilder line, DicomInputStream dis,

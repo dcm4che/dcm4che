@@ -32,7 +32,6 @@ public class Attributes implements Serializable {
     private transient Object[] values;
     private transient int size;
     private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
-    private transient long position = -1L;
     private transient int length = -1;
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;
@@ -97,14 +96,6 @@ public class Attributes implements Serializable {
         }
         this.parent = parent;
         return this;
-    }
-
-    public final long getPosition() {
-        return position;
-    }
-
-    public final void setPosition(long position) {
-        this.position = position;
     }
 
     public final boolean isEmpty() {
@@ -1026,7 +1017,7 @@ public class Attributes implements Serializable {
             }
         }
         return true;
-   }
+    }
 
     private boolean matches(int tag, String privateCreator, VR vr,
             boolean ignorePNCase, String[] keyVals) {

@@ -239,6 +239,10 @@ public class DicomInputStream extends FilterInputStream
         return pos;
     }
 
+    public void setPosition(long pos) {
+        this.pos = pos;
+    }
+
     public long getTagPosition() {
         return tagPos;
     }
@@ -361,11 +365,11 @@ public class DicomInputStream extends FilterInputStream
         return attrs;
     }
 
-    public void readFileMetaInformation() throws IOException {
+    public Attributes readFileMetaInformation() throws IOException {
         if (!hasfmi)
-            return;  // No File Meta Information
+            return null;  // No File Meta Information
         if (fileMetaInformation != null)
-            return;  // already read
+            return fileMetaInformation;  // already read
 
         Attributes attrs = new Attributes(bigEndian, 1);
         while (pos != fmiEndPos) {
@@ -394,6 +398,7 @@ public class DicomInputStream extends FilterInputStream
             tsuid = UID.ExplicitVRLittleEndian;
         }
         switchTransferSyntax(tsuid);
+        return attrs;
     }
 
     public void readAttributes(Attributes attrs, int len, int stopTag)
@@ -546,8 +551,7 @@ public class DicomInputStream extends FilterInputStream
         }
         Attributes attrs = new Attributes(seq.getParent().bigEndian());
         seq.add(attrs);
-        readAttributes(attrs, length,
-                length == -1 ? Tag.ItemDelimitationItem : -1);
+        readAttributes(attrs, length, Tag.ItemDelimitationItem);
         attrs.trimToSize();
     }
 
@@ -607,7 +611,7 @@ public class DicomInputStream extends FilterInputStream
                         attrs.getPrivateCreator(sqtag), i));
                 handler.readValue(this, seq);
                 itemPointers.removeLast();
-            } else if (undefLen && tag == Tag.SequenceDelimitationItem) {
+            } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
                 break;
@@ -618,6 +622,18 @@ public class DicomInputStream extends FilterInputStream
             attrs.setNull(sqtag, null, VR.SQ);
         else
             seq.trimToSize();
+    }
+
+
+    public Attributes readItem() throws IOException {
+        readHeader();
+        if (tag != Tag.Item)
+            throw new IOException("Unexpected attribute "
+                    + TagUtils.toString(tag) + " #" + length + " @ " + pos);
+        Attributes attrs = new Attributes(bigEndian);
+        readAttributes(attrs, length, Tag.ItemDelimitationItem);
+        attrs.trimToSize();
+        return attrs;
     }
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)

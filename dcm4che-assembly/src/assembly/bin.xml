@@ -41,6 +41,23 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmdir/src</directory>
+      <includes>
+        <include>bin/dcmdir</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmdir/src</directory>
+      <includes>
+        <include>bin/dcmdir.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
       <includes>
         <include>bin/xml2dcm</include>
@@ -65,6 +82,7 @@
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2txt</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-simple</include>

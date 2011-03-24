@@ -70,11 +70,11 @@ public class DicomOutputStreamTest {
 
     private Attributes cechorq() {
         Attributes cechorq = new Attributes();
-        cechorq.setString(Tag.AffectedSOPClassUID, null, VR.UI,
+        cechorq.setString(Tag.AffectedSOPClassUID, VR.UI,
                 UID.VerificationSOPClass);
-        cechorq.setInt(Tag.CommandField, null, VR.US, 0x0030);
-        cechorq.setInt(Tag.MessageID, null, VR.US, 1);
-        cechorq.setInt(Tag.CommandDataSetType, null, VR.US, 0x0101);
+        cechorq.setInt(Tag.CommandField, VR.US, 0x0030);
+        cechorq.setInt(Tag.MessageID, VR.US, 1);
+        cechorq.setInt(Tag.CommandDataSetType, VR.US, 0x0101);
         return cechorq;
     }
 
@@ -149,19 +149,19 @@ public class DicomOutputStreamTest {
 
     private Attributes dataset() {
         Attributes ds = new Attributes();
-        ds.setString(Tag.PatientName, null, VR.PN, "Simpson^Homer");
-        ds.setNull(Tag.ReferencedPatientSequence, null, VR.SQ);
-        ds.newSequence(Tag.ReferencedVisitSequence, null, 0);
-        ds.newSequence(Tag.ReferencedStudySequence, null, 1)
+        ds.setString(Tag.PatientName, VR.PN, "Simpson^Homer");
+        ds.setNull(Tag.ReferencedPatientSequence, VR.SQ);
+        ds.newSequence(Tag.ReferencedVisitSequence, 0);
+        ds.newSequence(Tag.ReferencedStudySequence, 1)
                 .add(new Attributes());
-        ds.setNull(Tag.AccessionNumber, null, VR.SH);
-        ds.newSequence(Tag.RequestAttributesSequence, null, 1)
+        ds.setNull(Tag.AccessionNumber, VR.SH);
+        ds.newSequence(Tag.RequestAttributesSequence, 1)
                 .add(requestAttributes());
-        ds.setString(Tag.SOPClassUID, null, VR.UI, "1.2.3.4");
-        ds.setString(Tag.SOPInstanceUID, null, VR.UI, "4.3.2.1");
+        ds.setString(Tag.SOPClassUID, VR.UI, "1.2.3.4");
+        ds.setString(Tag.SOPInstanceUID, VR.UI, "4.3.2.1");
         BulkDataLocator bdl = new BulkDataLocator(uri("OT-PAL-8-face"), 
                         UID.ImplicitVRLittleEndian, 1654, 307200);
-        ds.setValue(Tag.PixelData, null, VR.OW, bdl);
+        ds.setValue(Tag.PixelData, VR.OW, bdl);
         Fragments frags = ds.newFragments(0x99990010, "DicomOutputStreamTest", VR.OB, 3);
         frags.add(null);
         frags.add(new byte[] { 1, 2, 3, 4 });
@@ -176,20 +176,20 @@ public class DicomOutputStreamTest {
 
     private Attributes requestAttributes() {
         Attributes item = new Attributes();
-        item.setString(Tag.RequestedProcedureID, null, VR.SH, "P1234");
-        item.setString(Tag.ScheduledProcedureStepID, null, VR.SH, "S1234");
-        item.setString(Tag.AccessionNumber, null, VR.SH, "A1234");
-        item.newSequence(Tag.IssuerOfAccessionNumberSequence, null, 1)
+        item.setString(Tag.RequestedProcedureID, VR.SH, "P1234");
+        item.setString(Tag.ScheduledProcedureStepID, VR.SH, "S1234");
+        item.setString(Tag.AccessionNumber, VR.SH, "A1234");
+        item.newSequence(Tag.IssuerOfAccessionNumberSequence, 1)
                 .add(hl7v2HierarchicDesignator());
         return item;
     }
 
     private Attributes hl7v2HierarchicDesignator() {
         Attributes item= new Attributes();
-        item.setString(Tag.LocalNamespaceEntityID, null, VR.UT, "E1234");
-        item.setString(Tag.UniversalEntityID, null, VR.UT,
+        item.setString(Tag.LocalNamespaceEntityID, VR.UT, "E1234");
+        item.setString(Tag.UniversalEntityID, VR.UT,
                 "ef9d7472-3364-4480-b362-fc2d2a47a0c5");
-        item.setString(Tag.UniversalEntityIDType, null, VR.CS, "UUID");
+        item.setString(Tag.UniversalEntityIDType, VR.CS, "UUID");
         return item;
     }
 

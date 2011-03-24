@@ -46,15 +46,15 @@ public class DicomDirReader {
     }
 
     public String getFileSetUID() {
-        return fmi.getString(Tag.MediaStorageSOPInstanceUID, null, 0, null);
+        return fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
     }
 
     public String getFileSetID() {
-        return fsInfo.getString(Tag.FileSetID, null, 0, null);
+        return fsInfo.getString(Tag.FileSetID, null);
     }
 
     public File getFileSetDescriptorFile() {
-        return toFile(fsInfo.getStrings(Tag.FileSetDescriptorFileID, null));
+        return toFile(fsInfo.getStrings(Tag.FileSetDescriptorFileID));
     }
 
     public File toFile(String[] fileIDs) {
@@ -69,18 +69,17 @@ public class DicomDirReader {
             getSpecificCharacterSetOfFileSetDescriptorFile() {
         return SpecificCharacterSet.valueOf(
                 fsInfo.getStrings(
-                        Tag.SpecificCharacterSetOfFileSetDescriptorFile,
-                        null));
+                        Tag.SpecificCharacterSetOfFileSetDescriptorFile));
     }
 
     public int getFileSetConsistencyFlag() {
-        return fsInfo.getInt(Tag.FileSetConsistencyFlag, null, 0, 0);
+        return fsInfo.getInt(Tag.FileSetConsistencyFlag, 0);
     }
 
     public boolean isEmpty() {
         return fsInfo.getInt(
-                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
-                null, 0, 0) == 0;
+                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity, 0)
+                == 0;
     }
 
     public void clearCache() {
@@ -91,20 +90,19 @@ public class DicomDirReader {
         return readRecord(
                 fsInfo.getInt(
                     Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
-                    null, 0, 0));
+                    0));
     }
 
     public Attributes readNextDirectoryRecord(Attributes rec)
             throws IOException {
         return readRecord(
-                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, null, 0, 0));
+                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0));
     }
 
     public Attributes readLowerDirectoryRecord(Attributes rec)
             throws IOException {
         return readRecord(
-                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity,
-                        null, 0, 0));
+                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0));
     }
 
     public Attributes findRootDirectoryRecord(Attributes keys,
@@ -112,22 +110,21 @@ public class DicomDirReader {
         return findRecord(
                 fsInfo.getInt(
                     Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
-                    null, 0, 0),
+                    0),
                 keys, ignoreCaseOfPN);
     }
 
     public Attributes findNextDirectoryRecord(Attributes rec, Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
         return findRecord(
-                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, null, 0, 0),
+                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0),
                 keys, ignoreCaseOfPN);
     }
 
     public Attributes findLowerDirectoryRecord(Attributes rec, Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
         return findRecord(
-                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity,
-                        null, 0, 0),
+                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0),
                 keys, ignoreCaseOfPN);
     }
 
@@ -137,8 +134,7 @@ public class DicomDirReader {
             Attributes item = readRecord(offset);
             if (item.matches(keys, ignoreCaseOfPN))
                 return item;
-            offset = item.getInt(
-                    Tag.OffsetOfTheNextDirectoryRecord, null, 0, 0);
+            offset = item.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0);
         }
         return null;
     }

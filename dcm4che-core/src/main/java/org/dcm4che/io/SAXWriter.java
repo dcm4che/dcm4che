@@ -92,7 +92,7 @@ public class SAXWriter implements DicomInputHandler {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
                             || tag == Tag.SpecificCharacterSet)
-                        attrs.setBytes(tag, null, vr, b);
+                        attrs.setBytes(tag, vr, b);
                     if (dis.bigEndian())
                         vr.toggleEndian(b, false);
                     vr.toXML(b, false, attrs.getSpecificCharacterSet(), this);

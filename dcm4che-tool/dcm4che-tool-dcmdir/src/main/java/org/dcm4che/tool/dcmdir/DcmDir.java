@@ -18,7 +18,7 @@ import org.dcm4che.media.DicomDirReader;
 public class DcmDir {
 
     private static final String USAGE =
-        "dcmdir -{acdptz} <dicomdir> [Options] [<file>..][<directory>..]";
+        "dcmdir -{acdlpz} <dicomdir> [Options] [<file>..][<directory>..]";
 
     private static final String DESCRIPTION = 
         "\nDump/Create/Update/Compact DICOM directory file.\n-\nOptions:";
@@ -54,8 +54,8 @@ public class DcmDir {
                             "Illegal line length: " + s);
                 }
             }
-            if (cl.hasOption("t")) {
-                dcmdir.dump(new File(cl.getOptionValue("t")));
+            if (cl.hasOption("l")) {
+                dcmdir.dump(new File(cl.getOptionValue("l")));
             }
         } catch (ParseException e) {
             System.err.println("dcmdir: " + e.getMessage());
@@ -63,6 +63,7 @@ public class DcmDir {
             System.exit(2);
         } catch (IOException e) {
             System.err.println("dcmdir: " + e.getMessage());
+            e.printStackTrace();
             System.exit(2);
         }
     }
@@ -76,7 +77,7 @@ public class DcmDir {
                 .hasArg()
                 .withArgName("col")
                 .withDescription("read directory file <dicomdir> and dump content to stdout")
-                .create("t"));
+                .create("l"));
         opts.addOption(OptionBuilder
                 .withLongOpt("width")
                 .hasArg()
@@ -104,8 +105,10 @@ public class DcmDir {
     public void dump(File file) throws IOException {
         DicomDirReader r = new DicomDirReader(file);
         try {
+            System.out.println("File Meta Information:");
             System.out.println(r.getFileMetaInformation()
                     .toString(Integer.MAX_VALUE, width));
+            System.out.println("File-setInformation:");
             System.out.println(r.getFileSetInformation()
                     .toString(Integer.MAX_VALUE, width));
             dump(r, r.readFirstRootDirectoryRecord(), new int[0]);
@@ -122,21 +125,19 @@ public class DcmDir {
         int[] index = Arrays.copyOf(prefix, prefix.length + 1);
         do {
             index[prefix.length]++;
-            System.out.println(toTitle(index,
-                    rec.getString(Tag.DirectoryRecordType, null, 0, null)));
+            System.out.println(heading(index,
+                    rec.getString(Tag.DirectoryRecordType, null)));
             System.out.println(rec.toString(Integer.MAX_VALUE, width));
             dump(r, r.readLowerDirectoryRecord(rec), index);
             rec = r.readNextDirectoryRecord(rec);
         } while (rec != null);
     }
 
-    private String toTitle(int[] index, String s) {
+    private String heading(int[] index, String s) {
         sb.setLength(0);
         for (int i : index)
             sb.append(i).append('.');
-        sb.setCharAt(sb.length() - 1, ' ');
-        sb.append(s);
-        return sb.toString();
+        return sb.append(' ').append(s).append(':').toString();
     }
 
 }

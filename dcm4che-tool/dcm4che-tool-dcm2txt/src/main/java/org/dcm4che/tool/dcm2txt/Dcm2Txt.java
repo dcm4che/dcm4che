@@ -98,7 +98,7 @@ public class Dcm2Txt implements DicomInputHandler {
         else if (tag == Tag.TransferSyntaxUID
                 || tag == Tag.SpecificCharacterSet
                 || TagUtils.isPrivateCreator(tag))
-            attrs.setBytes(tag, null, vr, b);
+            attrs.setBytes(tag, vr, b);
     }
 
     @Override

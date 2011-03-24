@@ -213,7 +213,7 @@ public class Attributes implements Serializable {
             if (index < 0) {
                 if (!reserve)
                     return -1;
-                setString(creatorTag, null, VR.LO, privateCreator);
+                setString(creatorTag, VR.LO, privateCreator);
                 return creatorTag;
            }
            if (privateCreator.equals(VR.LO.toString(
@@ -238,6 +238,10 @@ public class Attributes implements Serializable {
         return (value instanceof Value) && ((Value) value).isEmpty();
     }
 
+    public boolean contains(int tag) {
+        return contains(tag, null);
+    }
+
     public boolean contains(int tag, String privateCreator) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -248,10 +252,18 @@ public class Attributes implements Serializable {
         return indexOf(tag) >= 0;
     }
 
-    public boolean contains(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public boolean contains(List<ItemPointer> itemPointers, int tag) {
+        return contains(itemPointers, tag, null);
+    }
+
+    public boolean contains(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null && item.contains(tag, privateCreator);
+    }
+
+    public boolean containsValue(int tag) {
+        return containsValue(tag, null);
     }
 
     public boolean containsValue(int tag, String privateCreator) {
@@ -265,8 +277,12 @@ public class Attributes implements Serializable {
         return index >= 0 && !isEmpty(values[index]);
     }
 
-    public boolean containsValue(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public boolean containsValue(List<ItemPointer> itemPointers, int tag) {
+        return containsValue(itemPointers, tag, null);
+    }
+
+    public boolean containsValue(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null && item.containsValue(tag, privateCreator);
     }
@@ -283,12 +299,16 @@ public class Attributes implements Serializable {
         return VR.LO.toString(decodeStringValue(index), false, 0, null);
     }
 
-    public String privateCreatorOf(int tag, List<ItemPointer> itemPointers) {
+    public String privateCreatorOf(List<ItemPointer> itemPointers, int tag) {
         if (!TagUtils.isPrivateTag(tag))
             return null;
 
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.privateCreatorOf(tag) : null;
+    }
+
+    public Object getValue(int tag) {
+        return getValue(tag, null);
     }
 
     public Object getValue(int tag, String privateCreator) {
@@ -305,10 +325,18 @@ public class Attributes implements Serializable {
         return values[index];
     }
 
-    public Object getValue(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public Object getValue(List<ItemPointer> itemPointers, int tag) {
+        return getValue(itemPointers, tag, null);
+    }
+
+    public Object getValue(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getValue(tag, privateCreator) : null;
+    }
+
+    public byte[] getBytes(int tag) throws IOException {
+        return getBytes(tag, null);
     }
 
     public byte[] getBytes(int tag, String privateCreator) throws IOException {
@@ -331,10 +359,27 @@ public class Attributes implements Serializable {
         return vr.toBytes(value, getSpecificCharacterSet());
     }
 
-    public byte[] getBytes(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) throws IOException {
+    public byte[] getBytes(List<ItemPointer> itemPointers, int tag)
+            throws IOException {
+        return getBytes(itemPointers, tag, null);
+    }
+
+    public byte[] getBytes(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) throws IOException {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getBytes(tag, privateCreator) : null;
+    }
+
+    public String getString(int tag, String defVal) {
+        return getString(tag, null, 0, defVal);
+    }
+
+    public String getString(int tag, int valueIndex, String defVal) {
+        return getString(tag, null, valueIndex, defVal);
+    }
+
+    public String getString(int tag, String privateCreator, String defVal) {
+        return getString(tag, privateCreator, 0, defVal);
     }
 
     public String getString(int tag, String privateCreator, int valueIndex,
@@ -360,12 +405,31 @@ public class Attributes implements Serializable {
         return vr.toString(value, bigEndian, valueIndex, defVal);
     }
 
-    public String getString(int tag, String privateCreator, int valueIndex,
-            String defVal, List<ItemPointer> itemPointers) {
+    public String getString(List<ItemPointer> itemPointers, int tag,
+            String defVal) {
+        return getString(itemPointers, tag, null, 0, defVal);
+    }
+
+    public String getString(List<ItemPointer> itemPointers, int tag,
+            int valueIndex, String defVal) {
+        return getString(itemPointers, tag, null, valueIndex, defVal);
+    }
+
+    public String getString(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, String defVal) {
+        return getString(itemPointers, tag, privateCreator, 0, defVal);
+    }
+
+    public String getString(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int valueIndex, String defVal) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null
                 ? item.getString(tag, privateCreator, valueIndex, defVal)
                 : defVal;
+    }
+
+    public String[] getStrings(int tag) {
+        return getStrings(tag, null);
     }
 
     public String[] getStrings(int tag, String privateCreator) {
@@ -395,10 +459,26 @@ public class Attributes implements Serializable {
                 : (String[]) val;
     }
 
-    public String[] getStrings(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public String[] getStrings(List<ItemPointer> itemPointers, int tag) {
+        return getStrings(itemPointers, tag, null);
+    }
+
+    public String[] getStrings(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getStrings(tag, privateCreator) : null;
+    }
+
+    public int getInt(int tag, int defVal) {
+        return getInt(tag, null, 0, defVal);
+    }
+
+    public int getInt(int tag, int valueIndex, int defVal) {
+        return getInt(tag, null, valueIndex, defVal);
+    }
+
+    public int getInt(int tag, String privateCreator, int defVal) {
+        return getInt(tag, privateCreator, 0, defVal);
     }
 
     public int getInt(int tag, String privateCreator, int valueIndex,
@@ -424,12 +504,30 @@ public class Attributes implements Serializable {
         return vr.toInt(value, bigEndian, valueIndex, defVal);
     }
 
-    public int getInt(int tag, String privateCreator, int valueIndex,
-            int defVal, List<ItemPointer> itemPointers) {
+    public int getInt(List<ItemPointer> itemPointers, int tag, int defVal) {
+        return getInt(itemPointers, tag, null, 0, defVal);
+    }
+
+    public int getInt(List<ItemPointer> itemPointers, int tag, int valueIndex,
+            int defVal) {
+        return getInt(itemPointers, tag, null, valueIndex, defVal);
+    }
+
+    public int getInt(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int defVal) {
+        return getInt(itemPointers, tag, privateCreator, 0, defVal);
+    }
+
+    public int getInt(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int valueIndex, int defVal) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null
                 ? item.getInt(tag, privateCreator, valueIndex, defVal)
                 : defVal;
+    }
+
+    public int[] getInts(int tag) {
+        return getInts(tag, null);
     }
 
     public int[] getInts(int tag, String privateCreator) {
@@ -454,10 +552,26 @@ public class Attributes implements Serializable {
         return vr.toInts(value, bigEndian);
     }
 
-    public int[] getInts(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public int[] getInts(List<ItemPointer> itemPointers, int tag) {
+        return getInts(itemPointers, tag, null);
+    }
+
+    public int[] getInts(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getInts(tag, privateCreator) : null;
+    }
+
+    public float getFloat(int tag, float defVal) {
+        return getFloat(tag, null, 0, defVal);
+    }
+
+    public float getFloat(int tag, int valueIndex, float defVal) {
+        return getFloat(tag, null, valueIndex, defVal);
+    }
+
+    public float getFloat(int tag, String privateCreator, float defVal) {
+        return getFloat(tag, privateCreator, 0, defVal);
     }
 
     public float getFloat(int tag, String privateCreator, int valueIndex,
@@ -483,12 +597,31 @@ public class Attributes implements Serializable {
         return vr.toFloat(value, bigEndian, valueIndex, defVal);
     }
 
-    public float getFloat(int tag, String privateCreator, int valueIndex,
-            float defVal, List<ItemPointer> itemPointers) {
+    public float getFloat(List<ItemPointer> itemPointers, int tag,
+            float defVal) {
+        return getFloat(itemPointers, tag, null, 0, defVal);
+    }
+
+    public float getFloat(List<ItemPointer> itemPointers, int tag,
+            int valueIndex, float defVal) {
+        return getFloat(itemPointers, tag, null, valueIndex, defVal);
+    }
+
+    public float getFloat(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, float defVal) {
+        return getFloat(itemPointers, tag, privateCreator, 0, defVal);
+    }
+
+    public float getFloat(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int valueIndex, float defVal) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null
                 ? item.getFloat(tag, privateCreator, valueIndex, defVal)
                 : defVal;
+    }
+
+    public float[] getFloats(int tag) {
+        return getFloats(tag, null);
     }
 
     public float[] getFloats(int tag, String privateCreator) {
@@ -513,10 +646,26 @@ public class Attributes implements Serializable {
         return vr.toFloats(value, bigEndian);
     }
 
-    public float[] getFloats(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public float[] getFloats(List<ItemPointer> itemPointers, int tag) {
+        return getFloats(itemPointers, tag, null);
+    }
+
+    public float[] getFloats(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getFloats(tag, privateCreator) : null;
+    }
+
+    public double getDouble(int tag, double defVal) {
+        return getDouble(tag, null, 0, defVal);
+    }
+
+    public double getDouble(int tag, int valueIndex, double defVal) {
+        return getDouble(tag, null, valueIndex, defVal);
+    }
+
+    public double getDouble(int tag, String privateCreator, double defVal) {
+        return getDouble(tag, privateCreator, 0, defVal);
     }
 
     public double getDouble(int tag, String privateCreator, int valueIndex,
@@ -542,12 +691,31 @@ public class Attributes implements Serializable {
         return vr.toDouble(value, bigEndian, valueIndex, defVal);
     }
 
-    public double getDouble(int tag, String privateCreator, int valueIndex,
-            double defVal, List<ItemPointer> itemPointers) {
+    public double getDouble(List<ItemPointer> itemPointers, int tag,
+            double defVal) {
+        return getDouble(itemPointers, tag, null, 0, defVal);
+    }
+
+    public double getDouble(List<ItemPointer> itemPointers, int tag,
+            int valueIndex, double defVal) {
+        return getDouble(itemPointers, tag, null, valueIndex, defVal);
+    }
+
+    public double getDouble(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, double defVal) {
+        return getDouble(itemPointers, tag, privateCreator, 0, defVal);
+    }
+
+    public double getDouble(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int valueIndex, double defVal) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null
                 ? item.getDouble(tag, privateCreator, valueIndex, defVal)
                 : defVal;
+    }
+
+    public double[] getDoubles(int tag) {
+        return getDoubles(tag, null);
     }
 
     public double[] getDoubles(int tag, String privateCreator) {
@@ -572,8 +740,12 @@ public class Attributes implements Serializable {
         return vr.toDoubles(value, bigEndian);
     }
 
-    public double[] getDoubles(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+    public double[] getDoubles(List<ItemPointer> itemPointers, int tag) {
+        return getDoubles(itemPointers, tag, null);
+    }
+
+    public double[] getDoubles(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getDoubles(tag, privateCreator) : null;
     }
@@ -587,8 +759,12 @@ public class Attributes implements Serializable {
 
      public String getPrivateCreator(int tag) {
          return TagUtils.isPrivateTag(tag)
-                 ? getString(TagUtils.creatorTagOf(tag), null, 0, null)
+                 ? getString(TagUtils.creatorTagOf(tag), null)
                  : null;
+     }
+
+     public Object remove(int tag) {
+         return remove(tag, null);
      }
 
      public Object remove(int tag, String privateCreator) {
@@ -620,22 +796,42 @@ public class Attributes implements Serializable {
         return value;
     }
 
-    public Object remove(int tag, String privateCreator,
-            List<ItemPointer> itemPointers) {
+     public Object remove(List<ItemPointer> itemPointers, int tag) {
+         return remove(itemPointers, tag, null);
+     }
+
+    public Object remove(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.remove(tag, privateCreator) : null;
+    }
+
+    public Object setNull(int tag, VR vr) {
+        return setNull(tag, null, vr);
     }
 
     public Object setNull(int tag, String privateCreator, VR vr) {
         return set(tag, privateCreator, vr, Value.NULL);
     }
 
+    public Object setBytes(int tag, VR vr, byte[] b) {
+        return setBytes(tag, null, vr, b);
+    }
+
     public Object setBytes(int tag, String privateCreator, VR vr, byte[] b) {
         return set(tag, privateCreator, vr, vr.toValue(b));
     }
 
+    public Object setString(int tag, VR vr, String s) {
+        return setString(tag, null, vr, s);
+    }
+
     public Object setString(int tag, String privateCreator, VR vr, String s) {
         return set(tag, privateCreator, vr, vr.toValue(s, bigEndian));
+    }
+
+    public Object setString(int tag, VR vr, String... ss) {
+        return setString(tag, null, vr, ss);
     }
 
     public Object setString(int tag, String privateCreator, VR vr,
@@ -643,22 +839,42 @@ public class Attributes implements Serializable {
         return set(tag, privateCreator, vr, vr.toValue(ss, bigEndian));
     }
 
-    public Object setInt(int tag, String privateCreator, VR vr, int... ints) {
-        return set(tag, privateCreator, vr, vr.toValue(ints, bigEndian));
+    public Object setInt(int tag, VR vr, int... is) {
+        return setInt(tag, null, vr, is);
+    }
+
+    public Object setInt(int tag, String privateCreator, VR vr, int... is) {
+        return set(tag, privateCreator, vr, vr.toValue(is, bigEndian));
+    }
+
+    public Object setFloat(int tag, VR vr, float... fs) {
+        return setFloat(tag, null, vr, fs);
     }
 
     public Object setFloat(int tag, String privateCreator, VR vr,
-            float... floats) {
-        return set(tag, privateCreator, vr, vr.toValue(floats, bigEndian));
+            float... fs) {
+        return set(tag, privateCreator, vr, vr.toValue(fs, bigEndian));
+    }
+
+    public Object setDouble(int tag, VR vr, double[] ds) {
+        return setDouble(tag, null, vr, ds);
     }
 
     public Object setDouble(int tag, String privateCreator, VR vr,
-            double[] doubles) {
-        return set(tag, privateCreator, vr, vr.toValue(doubles, bigEndian));
+            double[] ds) {
+        return set(tag, privateCreator, vr, vr.toValue(ds, bigEndian));
+    }
+
+    public Object setValue(int tag, VR vr, Value value) {
+        return setValue(tag, null, vr, value);
     }
 
     public Object setValue(int tag, String privateCreator, VR vr, Value value) {
         return set(tag, privateCreator, vr, value != null ? value : Value.NULL);
+    }
+
+    public Sequence newSequence(int tag, int initialCapacity) {
+        return newSequence(tag, null, initialCapacity);
     }
 
     public Sequence newSequence(int tag, String privateCreator,
@@ -666,6 +882,10 @@ public class Attributes implements Serializable {
         Sequence seq = new Sequence(this, initialCapacity);
         set(tag, privateCreator, VR.SQ, seq);
         return seq;
+    }
+
+    public Fragments newFragments(int tag, VR vr, int initialCapacity) {
+        return newFragments(tag, null, vr, initialCapacity);
     }
 
     public Fragments newFragments(int tag, String privateCreator, VR vr,
@@ -729,8 +949,7 @@ public class Attributes implements Serializable {
                     int tmp = TagUtils.creatorTagOf(tag);
                     if (creatorTag != tmp) {
                         creatorTag = tmp;
-                        privateCreator = other
-                                .getString(creatorTag, null, 0, null);
+                        privateCreator = other.getString(creatorTag, null);
                     }
                 } else {
                     creatorTag = 0;
@@ -769,7 +988,7 @@ public class Attributes implements Serializable {
 
     void initSpecificCharacterSet() {
         cs = null;
-        String[] codes = getStrings(Tag.SpecificCharacterSet, null);
+        String[] codes = getStrings(Tag.SpecificCharacterSet);
         if (codes != null)
             cs = SpecificCharacterSet.valueOf(codes);
     }
@@ -798,7 +1017,7 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
                     creatorTag = tmp;
-                    privateCreator = getString(creatorTag, null, 0, null);
+                    privateCreator = getString(creatorTag, null);
                 }
             } else {
                 creatorTag = 0;
@@ -959,17 +1178,17 @@ public class Attributes implements Serializable {
     }
 
     public Attributes createFileMetaInformation(String tsuid) {
-        String cuid = getString(Tag.SOPClassUID, null, 0, null);
-        String iuid = getString(Tag.SOPInstanceUID, null, 0, null);
+        String cuid = getString(Tag.SOPClassUID, null);
+        String iuid = getString(Tag.SOPInstanceUID, null);
         Attributes fmi = new Attributes(1);
-        fmi.setBytes(Tag.FileMetaInformationVersion, null, VR.OB,
+        fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB,
                 new byte[]{ 0, 1 });
-        fmi.setString(Tag.MediaStorageSOPClassUID, null, VR.UI, cuid);
-        fmi.setString(Tag.MediaStorageSOPInstanceUID, null, VR.UI, iuid);
-        fmi.setString(Tag.TransferSyntaxUID, null, VR.UI, tsuid);
-        fmi.setString(Tag.ImplementationClassUID, null, VR.UI,
+        fmi.setString(Tag.MediaStorageSOPClassUID, VR.UI, cuid);
+        fmi.setString(Tag.MediaStorageSOPInstanceUID, VR.UI, iuid);
+        fmi.setString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        fmi.setString(Tag.ImplementationClassUID, VR.UI,
                 Implementation.getClassUID());
-        fmi.setString(Tag.ImplementationVersionName, null, VR.SH,
+        fmi.setString(Tag.ImplementationVersionName, VR.SH,
                 Implementation.getVersionName());
         fmi.trimToSize(false);
         return fmi;
@@ -991,8 +1210,7 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
                     creatorTag = tmp;
-                    privateCreator = keys
-                            .getString(creatorTag, null, 0, null);
+                    privateCreator = keys.getString(creatorTag, null);
                 }
             } else {
                 creatorTag = 0;

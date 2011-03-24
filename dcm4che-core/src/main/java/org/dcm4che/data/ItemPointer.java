@@ -6,6 +6,10 @@ public class ItemPointer {
     public final String privateCreator;
     public final int itemIndex;
 
+    public ItemPointer(int sequenceTag, int itemIndex) {
+        this(sequenceTag, null, itemIndex);
+    }
+
     public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {
         this.sequenceTag = sequenceTag;
         this.privateCreator = privateCreator;

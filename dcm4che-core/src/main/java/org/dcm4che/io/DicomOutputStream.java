@@ -89,7 +89,7 @@ public class DicomOutputStream extends FilterOutputStream {
         if (!explicitVR || bigEndian)
             throw new IllegalStateException("explicitVR=" + explicitVR
                     + ", bigEndian=" + bigEndian);
-        String tsuid = fmi.getString(Tag.TransferSyntaxUID, null, 0, null);
+        String tsuid = fmi.getString(Tag.TransferSyntaxUID, null);
         write(preamble);
         write(DICM);
         fmi.writeGroupTo(this, Tag.FileMetaInformationGroupLength);

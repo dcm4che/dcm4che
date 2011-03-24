@@ -357,7 +357,7 @@ public class Xml2Dcm {
         else if (fmi == null
                 ? withfmi
                 : tsuid != null && !tsuid.equals(
-                        fmi.getString(Tag.TransferSyntaxUID, null, 0, null))) {
+                        fmi.getString(Tag.TransferSyntaxUID, null))) {
             fmi = dataset.createFileMetaInformation(tsuid);
         }
         DicomOutputStream dos = new DicomOutputStream(

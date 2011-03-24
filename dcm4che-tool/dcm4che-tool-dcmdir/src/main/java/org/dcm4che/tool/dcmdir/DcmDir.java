@@ -8,12 +8,15 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.media.DicomDirReader;
+import org.dcm4che.media.DicomDirWriter;
+import org.dcm4che.util.UIDUtils;
 
 public class DcmDir {
 
@@ -21,18 +24,37 @@ public class DcmDir {
         "dcmdir -{acdlpz} <dicomdir> [Options] [<file>..][<directory>..]";
 
     private static final String DESCRIPTION = 
-        "\nDump/Create/Update/Compact DICOM directory file.\n-\nOptions:";
+        "\nList/Create/Update/Compact DICOM directory file.\n-\nOptions:";
 
     private static final String EXAMPLE = null;
 
     /** default number of characters per line */
     private static final int DEFAULT_WIDTH = 78;
 
+    private String uid;
+    private String id;
+    private File descFile;
+    private String descFileCharset;
     private int width = DEFAULT_WIDTH;
-    private StringBuilder sb = new StringBuilder();
 
-    public final int getWidth() {
-        return width;
+    private StringBuilder sb = new StringBuilder();
+    private DicomDirReader in;
+    private DicomDirWriter out;
+
+    public final void setFilesetUID(String uid) {
+        this.uid = uid;
+    }
+
+    public final void setFilesetID(String id) {
+        this.id = id;
+    }
+
+    public final void setDescriptorFile(File descFile) {
+        this.descFile = descFile;
+    }
+
+    public final void setDescriptorFileCharset(String descFileCharset) {
+        this.descFileCharset = descFileCharset;
     }
 
     public final void setWidth(int width) {
@@ -45,6 +67,15 @@ public class DcmDir {
         try {
             CommandLine cl = parseComandLine(args);
             DcmDir dcmdir = new DcmDir();
+            if (cl.hasOption("u"))
+                dcmdir.setFilesetUID(cl.getOptionValue("u"));
+            if (cl.hasOption("i"))
+                dcmdir.setFilesetID(cl.getOptionValue("i"));
+            if (cl.hasOption("desc"))
+                dcmdir.setDescriptorFile(new File(cl.getOptionValue("desc")));
+            if (cl.hasOption("desc-charset"))
+                dcmdir.setDescriptorFileCharset(
+                        cl.getOptionValue("desc-charset"));
             if (cl.hasOption("w")) {
                 String s = cl.getOptionValue("w");
                 try {
@@ -54,8 +85,15 @@ public class DcmDir {
                             "Illegal line length: " + s);
                 }
             }
-            if (cl.hasOption("l")) {
-                dcmdir.dump(new File(cl.getOptionValue("l")));
+            try {
+                if (cl.hasOption("l")) {
+                    dcmdir.openForReadOnly(new File(cl.getOptionValue("l")));
+                    dcmdir.list();
+                } else if (cl.hasOption("c")) {
+                    dcmdir.create(new File(cl.getOptionValue("c")));
+                } 
+            } finally {
+                dcmdir.close();
             }
         } catch (ParseException e) {
             System.err.println("dcmdir: " + e.getMessage());
@@ -72,12 +110,46 @@ public class DcmDir {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        opts.addOption(OptionBuilder
-                .withLongOpt("dicomdir")
+        OptionGroup cmdGroup = new OptionGroup();
+        cmdGroup.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("col")
-                .withDescription("read directory file <dicomdir> and dump content to stdout")
+                .withArgName("dicomdir")
+                .withDescription("read directory file <dicomdir> and list " +
+                    "content into standard out")
                 .create("l"));
+        cmdGroup.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("dicomdir")
+                .withDescription("create new directory file <dicomdir> for " +
+                     "DICOM File-set specified by file.. or directory.. " +
+                     "arguments")
+                .create("c"));
+        opts.addOptionGroup(cmdGroup);
+        opts.addOption(OptionBuilder
+                .withLongOpt("desc")
+                .hasArg()
+                .withArgName("txtfile")
+                .withDescription("specify File-set Descriptor File")
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("desc-charset")
+                .hasArg()
+                .withArgName("code")
+                .withDescription("Character Set used in File-set Descriptor " +
+                     "File (\"ISO_IR 100\" = ISO Latin 1).")
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("fileset-id")
+                .hasArg()
+                .withArgName("id")
+                .withDescription("specify File-set ID")
+                .create("i"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("fileset-uid")
+                .hasArg()
+                .withArgName("uid")
+                .withDescription("specify File-set UID")
+                .create("u"));
         opts.addOption(OptionBuilder
                 .withLongOpt("width")
                 .hasArg()
@@ -102,23 +174,39 @@ public class DcmDir {
         return cl;
     }
 
-    public void dump(File file) throws IOException {
-        DicomDirReader r = new DicomDirReader(file);
-        try {
-            System.out.println("File Meta Information:");
-            System.out.println(r.getFileMetaInformation()
-                    .toString(Integer.MAX_VALUE, width));
-            System.out.println("File-setInformation:");
-            System.out.println(r.getFileSetInformation()
-                    .toString(Integer.MAX_VALUE, width));
-            dump(r, r.readFirstRootDirectoryRecord(), new int[0]);
-        } finally {
-            r.close();
-        }
+    public void close() {
+        if (in != null) {
+            try { in.close(); } catch (IOException ignore) {}
+            in = null;
+            out = null;
+        } 
     }
 
-    private void dump(DicomDirReader r, Attributes rec, int[] prefix)
-    throws IOException {
+    public void openForReadOnly(File file) throws IOException {
+        in = new DicomDirReader(file);
+    }
+
+    public void create(File file) throws IOException {
+        in = out = DicomDirWriter
+                .create(file, uid(), id, descFile, descFileCharset);
+    }
+
+    private String uid() {
+        return uid == null ? UIDUtils.createUID() : uid;
+    }
+
+    public void list() throws IOException {
+            System.out.println("File Meta Information:");
+            System.out.println(in.getFileMetaInformation()
+                    .toString(Integer.MAX_VALUE, width));
+            System.out.println("File-set Information:");
+            System.out.println(in.getFileSetInformation()
+                    .toString(Integer.MAX_VALUE, width));
+            list(in.readFirstRootDirectoryRecord(), new int[0]);
+    }
+
+    private void list(Attributes rec, int[] prefix)
+            throws IOException {
         if (rec == null)
             return;
 
@@ -128,8 +216,8 @@ public class DcmDir {
             System.out.println(heading(index,
                     rec.getString(Tag.DirectoryRecordType, null)));
             System.out.println(rec.toString(Integer.MAX_VALUE, width));
-            dump(r, r.readLowerDirectoryRecord(rec), index);
-            rec = r.readNextDirectoryRecord(rec);
+            list(in.readLowerDirectoryRecord(rec), index);
+            rec = in.readNextDirectoryRecord(rec);
         } while (rec != null);
     }
 

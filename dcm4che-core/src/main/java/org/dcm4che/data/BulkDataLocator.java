@@ -10,7 +10,6 @@ import java.net.URISyntaxException;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.StreamUtils;
 
-
 public class BulkDataLocator implements Value {
 
     public final String uri;
@@ -55,12 +54,12 @@ public class BulkDataLocator implements Value {
     }
 
     @Override
-    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
-        return getEncodedLength(encOpts, vr);
+    public int calcLength(DicomOutputStream out, VR vr) {
+        return getEncodedLength(out, vr);
     }
 
     @Override
-    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
+    public int getEncodedLength(DicomOutputStream out, VR vr) {
         return (length + 1) & ~1;
     }
 
@@ -87,18 +86,18 @@ public class BulkDataLocator implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
+    public void writeTo(DicomOutputStream out, VR vr) throws IOException {
         InputStream in = openStream();
         try {
             StreamUtils.skipFully(in, offset);
             if (transferSyntax.equals(UID.ExplicitVRBigEndian)
-                    ? !dos.isBigEndian()
-                    : dos.isBigEndian())
-                StreamUtils.copy(in, dos, length, vr.numEndianBytes());
+                    ? !out.isBigEndian()
+                    : out.isBigEndian())
+                StreamUtils.copy(in, out, length, vr.numEndianBytes());
             else
-                StreamUtils.copy(in, dos, length);
+                StreamUtils.copy(in, out, length);
             if ((length & 1) != 0)
-                dos.write(vr.paddingByte());
+                out.write(vr.paddingByte());
         } finally {
             in.close();
         }

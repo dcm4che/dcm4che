@@ -98,31 +98,31 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
-    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
+    public int calcLength(DicomOutputStream out, VR vr) {
         int len = 0;
         for (Attributes item : this) {
-            len += 8 + item.calcLength(explicitVR, encOpts);
-            if (item.isEmpty() ? encOpts.isUndefEmptyItemLength()
-                               : encOpts.isUndefItemLength())
+            len += 8 + item.calcLength(out);
+            if (item.isEmpty() ? out.isUndefEmptyItemLength()
+                               : out.isUndefItemLength())
                 len += 8;
         }
-        if (isEmpty() ? encOpts.isUndefEmptySequenceLength()
-                      : encOpts.isUndefSequenceLength())
+        if (isEmpty() ? out.isUndefEmptySequenceLength()
+                      : out.isUndefSequenceLength())
             len += 8;
         length = len;
         return len;
     }
 
     @Override
-    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
-        return isEmpty() ? encOpts.isUndefEmptySequenceLength() ? -1 : 0
-                         : encOpts.isUndefSequenceLength() ? -1 : length;
+    public int getEncodedLength(DicomOutputStream out, VR vr) {
+        return isEmpty() ? out.isUndefEmptySequenceLength() ? -1 : 0
+                         : out.isUndefSequenceLength() ? -1 : length;
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
+    public void writeTo(DicomOutputStream out, VR vr) throws IOException {
         for (Attributes item : this)
-            item.writeItemTo(dos);
+            item.writeItemTo(out);
     }
 
     @Override

@@ -1044,23 +1044,22 @@ public class Attributes implements Serializable {
         return sb;
     }
 
-    public int calcLength(boolean explicitVR, EncodeOptions encOpts) {
+    public int calcLength(DicomOutputStream out) {
         if (isEmpty())
             return 0;
 
-        this.groupLengths = encOpts.isGroupLength() 
+        this.groupLengths = out.isEncodeGroupLength() 
                 ? new int[countGroups()]
                 : null;
-        this.length = calcLength(explicitVR, encOpts,
-                getSpecificCharacterSet(), groupLengths);
+        this.length = calcLength(out, getSpecificCharacterSet(), groupLengths);
         return this.length;
     }
 
-    private int calcLength(boolean explicitVR, EncodeOptions encOpts,
-            SpecificCharacterSet cs, int[] groupLengths) {
+    private int calcLength(DicomOutputStream out, SpecificCharacterSet cs, int[] groupLengths) {
         int len, totlen = 0;
         int groupLengthTag = -1;
         int groupLengthIndex = -1;
+        boolean explicitVR = out.isExplicitVR();
         VR vr;
         Object val;
         for (int i = 0; i < size; i++) {
@@ -1068,7 +1067,7 @@ public class Attributes implements Serializable {
             val = values[i];
             len = explicitVR ? vr.headerLength() : 8;
             if (val instanceof Value)
-                len += ((Value) val).calcLength(explicitVR, encOpts, vr);
+                len += ((Value) val).calcLength(out, vr);
             else {
                 if (!(val instanceof byte[]))
                     values[i] = val = vr.toBytes(val, cs);
@@ -1108,7 +1107,7 @@ public class Attributes implements Serializable {
         if (isEmpty())
             return;
 
-        if (dos.getEncodeOptions().isGroupLength() && groupLengths == null)
+        if (dos.isEncodeGroupLength() && groupLengths == null)
             throw new IllegalStateException(
                     "groupLengths not initialized by calcLength()");
 
@@ -1122,17 +1121,16 @@ public class Attributes implements Serializable {
         }
     }
 
-     public void writeItemTo(DicomOutputStream dos) throws IOException {
-         EncodeOptions encOpts = dos.getEncodeOptions();
-         int len = isEmpty() ? encOpts.isUndefEmptyItemLength() ? -1 : 0
-                 : encOpts.isUndefItemLength() ? -1 : length;
-         dos.writeHeader(Tag.Item, null, len);
-         writeTo(dos);
+     public void writeItemTo(DicomOutputStream out) throws IOException {
+         int len = isEmpty() ? out.isUndefEmptyItemLength() ? -1 : 0
+                 : out.isUndefItemLength() ? -1 : length;
+         out.writeHeader(Tag.Item, null, len);
+         writeTo(out);
          if (len == -1)
-             dos.writeHeader(Tag.ItemDelimitationItem, null, 0);
+             out.writeHeader(Tag.ItemDelimitationItem, null, 0);
      }
 
-    private void writeTo(DicomOutputStream dos, SpecificCharacterSet cs,
+    private void writeTo(DicomOutputStream out, SpecificCharacterSet cs,
             int start, int end, int groupLengthIndex) throws IOException {
         boolean groupLength = groupLengths != null;
         int groupLengthTag = -1;
@@ -1142,16 +1140,16 @@ public class Attributes implements Serializable {
                 int tmp = TagUtils.groupLengthTagOf(tag);
                 if (groupLengthTag != tmp) {
                     groupLengthTag = tmp;
-                    dos.writeGroupLength(groupLengthTag,
+                    out.writeGroupLength(groupLengthTag,
                             groupLengths[groupLengthIndex++]);
                 }
             }
-            dos.writeAttribute(tag, vrs[i], values[i], cs);
+            out.writeAttribute(tag, vrs[i], values[i], cs);
         }
     }
 
 
-    public void writeGroupTo(DicomOutputStream dos, int groupLengthTag)
+    public void writeGroupTo(DicomOutputStream out, int groupLengthTag)
             throws IOException {
         if (isEmpty())
             throw new IllegalStateException("No attributes");
@@ -1159,10 +1157,8 @@ public class Attributes implements Serializable {
         checkInGroup(0, groupLengthTag);
         checkInGroup(size-1, groupLengthTag);
         SpecificCharacterSet cs = getSpecificCharacterSet();
-        dos.writeGroupLength(groupLengthTag,
-                calcLength(dos.isExplicitVR(), dos.getEncodeOptions(), cs,
-                        null));
-        writeTo(dos, cs, 0, size, 0);
+        out.writeGroupLength(groupLengthTag, calcLength(out, cs, null));
+        writeTo(out, cs, 0, size, 0);
     }
 
 
@@ -1178,9 +1174,18 @@ public class Attributes implements Serializable {
     }
 
     public Attributes createFileMetaInformation(String tsuid) {
-        String cuid = getString(Tag.SOPClassUID, null);
-        String iuid = getString(Tag.SOPInstanceUID, null);
-        Attributes fmi = new Attributes(1);
+        return createFileMetaInformation(
+                getString(Tag.SOPInstanceUID, null),
+                getString(Tag.SOPClassUID, null),
+                tsuid);
+    }
+
+    public static Attributes createFileMetaInformation(String iuid,
+            String cuid, String tsuid) {
+        if (iuid.isEmpty() || cuid.isEmpty() || tsuid.isEmpty())
+            throw new IllegalArgumentException();
+
+        Attributes fmi = new Attributes(6);
         fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB,
                 new byte[]{ 0, 1 });
         fmi.setString(Tag.MediaStorageSOPClassUID, VR.UI, cuid);
@@ -1190,7 +1195,6 @@ public class Attributes implements Serializable {
                 Implementation.getClassUID());
         fmi.setString(Tag.ImplementationVersionName, VR.SH,
                 Implementation.getVersionName());
-        fmi.trimToSize(false);
         return fmi;
     }
 

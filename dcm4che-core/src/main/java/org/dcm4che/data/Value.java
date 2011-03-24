@@ -15,7 +15,7 @@ public interface Value {
         }
 
         @Override
-        public int getEncodedLength(EncodeOptions encOpts, VR vr) {
+        public int getEncodedLength(DicomOutputStream encOpts, VR vr) {
             return vr == VR.SQ && encOpts.isUndefEmptySequenceLength() ? 8 : 0;
         }
 
@@ -24,8 +24,8 @@ public interface Value {
         }
 
         @Override
-        public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
-             return getEncodedLength(encOpts, vr) ;
+        public int calcLength(DicomOutputStream out, VR vr) {
+             return getEncodedLength(out, vr) ;
         }
 
         @Override
@@ -43,10 +43,10 @@ public interface Value {
 
     byte[] toBytes(VR vr, boolean bigEndian) throws IOException;
 
-    void writeTo(DicomOutputStream dos, VR vr) throws IOException;
+    void writeTo(DicomOutputStream out, VR vr) throws IOException;
 
-    int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr);
+    int calcLength(DicomOutputStream out, VR vr);
 
-    int getEncodedLength(EncodeOptions encOpts, VR vr);
+    int getEncodedLength(DicomOutputStream out, VR vr);
 
 }

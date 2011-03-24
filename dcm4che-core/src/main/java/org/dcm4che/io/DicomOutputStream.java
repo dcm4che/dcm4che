@@ -12,7 +12,6 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
-import org.dcm4che.data.EncodeOptions;
 import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
@@ -29,11 +28,14 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private byte[] preamble = new byte[128];
 
-    private EncodeOptions encOpts = new EncodeOptions();
-
     private boolean explicitVR;
-
     private boolean bigEndian;
+
+    private boolean groupLength = false;
+    private boolean undefSeqLength = true;
+    private boolean undefEmptySeqLength = false;
+    private boolean undefItemLength = true;
+    private boolean undefEmptyItemLength = false;
 
     private final byte[] buf = new byte[12];
 
@@ -55,22 +57,64 @@ public class DicomOutputStream extends FilterOutputStream {
         this.preamble = preamble.clone();
     }
 
-    public final void setEncodeOptions(EncodeOptions encOpts) {
-        if (encOpts == null)
-            throw new NullPointerException();
-        this.encOpts = encOpts;
-    }
-
-    public final EncodeOptions getEncodeOptions() {
-        return encOpts;
-    }
-
     public final boolean isExplicitVR() {
         return explicitVR;
     }
 
     public final boolean isBigEndian() {
         return bigEndian;
+    }
+
+    public final boolean isEncodeGroupLength() {
+        return groupLength;
+    }
+
+    public final void setEncodeGroupLength(boolean groupLength) {
+        this.groupLength = groupLength;
+    }
+
+    public final boolean isUndefSequenceLength() {
+        return undefSeqLength;
+    }
+
+    public final void setUndefSequenceLength(boolean undefLength) {
+        this.undefSeqLength = undefLength;
+        if (!undefLength)
+            undefEmptySeqLength = false;
+    }
+
+    public final boolean isUndefEmptySequenceLength() {
+        return undefEmptySeqLength;
+    }
+
+    public final void setUndefEmptySequenceLength(boolean undefLength) {
+        this.undefEmptySeqLength = undefLength;
+        if (undefLength)
+            undefSeqLength = true;
+    }
+
+    public final boolean isUndefItemLength() {
+        return undefItemLength;
+    }
+
+    public final void setUndefItemLength(boolean undefLength) {
+        this.undefItemLength = undefLength;
+        if (!undefLength)
+            undefEmptyItemLength = false;
+    }
+
+    public final boolean isUndefEmptyItemLength() {
+        return undefEmptyItemLength;
+    }
+
+    public final void setUndefEmptyItemLength(boolean undefLength) {
+        this.undefEmptyItemLength = undefLength;
+        if (undefLength)
+            undefItemLength = true;
+    }
+
+    public final boolean needCalcLength() {
+        return groupLength || !undefSeqLength || !undefItemLength;
     }
 
     @Override
@@ -100,11 +144,11 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         if (fmi != null)
             writeFileMetaInformation(fmi);
-        boolean needCalcLength = encOpts.needCalcLength();
+        boolean needCalcLength = needCalcLength();
         if (needCalcLength || dataset.bigEndian() != bigEndian)
             dataset = new Attributes(bigEndian, dataset);
         if (needCalcLength)
-            dataset.calcLength(explicitVR, encOpts);
+            dataset.calcLength(this);
         dataset.writeTo(this);
     }
 
@@ -163,7 +207,7 @@ public class DicomOutputStream extends FilterOutputStream {
             writeHeader(tag, vr, BULK_DATA_LOCATOR);
             ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
         } else {
-            int length = val.getEncodedLength(encOpts, vr);
+            int length = val.getEncodedLength(this, vr);
             writeHeader(tag, vr, length);
             val.writeTo(this, vr);
             if (length == -1)

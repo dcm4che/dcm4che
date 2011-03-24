@@ -11,7 +11,6 @@ import java.io.ObjectOutputStream;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
-import org.dcm4che.data.EncodeOptions;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
@@ -23,12 +22,10 @@ import org.junit.Test;
 public class DicomOutputStreamTest {
 
     private File file;
-    private EncodeOptions encOpts;
 
     @Before
     public void setUp() throws IOException {
         file = File.createTempFile("test", ".dcm");
-        encOpts = new EncodeOptions();
     }
 
     @After
@@ -81,42 +78,49 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDatasetWithoutFileMetaInformation()
             throws IOException {
-        testWriteDataset(null);
+        DicomOutputStream out = new DicomOutputStream(file);
+        testWriteDataset(out, null);
     }
 
     @Test
     public void testWriteDataset() throws IOException {
-        testWriteDataset(UID.ExplicitVRLittleEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithGroupLength() throws IOException {
-        encOpts.setGroupLength(true);
-        testWriteDataset(UID.ExplicitVRLittleEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        out.setEncodeGroupLength(true);
+        testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithoutUndefLength() throws IOException {
-        encOpts.setUndefEmptyItemLength(false);
-        encOpts.setUndefEmptySequenceLength(false);
-        testWriteDataset(UID.ExplicitVRLittleEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        out.setUndefEmptyItemLength(false);
+        out.setUndefEmptySequenceLength(false);
+        testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithUndefEmptyLength() throws IOException {
-        encOpts.setUndefEmptyItemLength(true);
-        encOpts.setUndefEmptySequenceLength(true);
-        testWriteDataset(UID.ExplicitVRLittleEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        out.setUndefEmptyItemLength(true);
+        out.setUndefEmptySequenceLength(true);
+        testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetBigEndian() throws IOException {
-        testWriteDataset(UID.ExplicitVRBigEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        testWriteDataset(out, UID.ExplicitVRBigEndian);
     }
 
     @Test
     public void testWriteDatasetDeflated() throws IOException {
-        testWriteDataset(UID.DeflatedExplicitVRLittleEndian);
+        DicomOutputStream out = new DicomOutputStream(file);
+        testWriteDataset(out, UID.DeflatedExplicitVRLittleEndian);
     }
 
     @Test
@@ -132,13 +136,12 @@ public class DicomOutputStreamTest {
         deserializeAttributes();
     }
 
-    private void testWriteDataset(String tsuid) throws IOException {
+    private void testWriteDataset(DicomOutputStream out, String tsuid)
+            throws IOException {
         Attributes ds = dataset();
         Attributes fmi = tsuid != null
                 ? ds.createFileMetaInformation(tsuid)
                 : null;
-        DicomOutputStream out = new DicomOutputStream(file);
-        out.setEncodeOptions(encOpts);
         try {
             out.writeDataset(fmi, ds);
         } finally {

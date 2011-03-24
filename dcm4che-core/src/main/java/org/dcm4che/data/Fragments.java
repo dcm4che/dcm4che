@@ -56,19 +56,19 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public void writeTo(DicomOutputStream dos, VR vr)
+    public void writeTo(DicomOutputStream out, VR vr)
             throws IOException {
         for (Object frag : this)
-            dos.writeAttribute(Tag.Item, vr, frag, null);
+            out.writeAttribute(Tag.Item, vr, frag, null);
     }
 
     @Override
-    public int calcLength(boolean explicitVR, EncodeOptions encOpts, VR vr) {
+    public int calcLength(DicomOutputStream out, VR vr) {
         int len = 0;
         for (Object frag : this) {
             len += 8;
             if (frag instanceof Value)
-                len += ((Value) frag).calcLength(explicitVR, encOpts, vr);
+                len += ((Value) frag).calcLength(out, vr);
             else
                 len += (((byte[]) frag).length + 1) & ~1;
         }
@@ -76,7 +76,7 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public int getEncodedLength(EncodeOptions encOpts, VR vr) {
+    public int getEncodedLength(DicomOutputStream out, VR vr) {
         return -1;
     }
 

@@ -53,6 +53,25 @@ public class StringUtils {
         return ss;
     }
 
+    public static String[] split(String s, char delim) {
+        int count = 1;
+        int delimPos = -1;
+        while ((delimPos = s.indexOf(delim, delimPos+1)) >= 0)
+            count++;
+
+        if (count == 1)
+            return new String[] { s };
+
+        String[] ss = new String[count];
+        int delimPos2 = s.length();
+        while (--count >= 0) {
+            delimPos = s.lastIndexOf(delim, delimPos2-1);
+            ss[count] = s.substring(delimPos+1, delimPos2);
+            delimPos2 = delimPos;
+        }
+        return ss;
+    }
+
     private static String substring(String s, int beginIndex, int endIndex) {
         while (beginIndex < endIndex && s.charAt(beginIndex) <= ' ')
             beginIndex++;

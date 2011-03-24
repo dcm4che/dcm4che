@@ -20,7 +20,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.EncodeOptions;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.ContentHandlerAdapter;
@@ -52,7 +51,11 @@ public class Xml2Dcm {
     private String tsuid;
     private boolean withfmi;
     private boolean nofmi;
-    private EncodeOptions encOpts = new EncodeOptions();
+    private boolean groupLength;
+    private boolean undefSeqLength;
+    private boolean undefEmptySeqLength;
+    private boolean undefItemLength;
+    private boolean undefEmptyItemLength;
 
     private List<File> bulkDataFiles;
     private Attributes fmi;
@@ -98,24 +101,24 @@ public class Xml2Dcm {
         this.nofmi = nofmi;
     }
 
-    public final void setGroupLength(boolean groupLength) {
-        encOpts.setGroupLength(groupLength);
+    public final void setEncodeGroupLength(boolean groupLength) {
+        this.groupLength = groupLength;
     }
 
     public final void setUndefSequenceLength(boolean undefLength) {
-        encOpts.setUndefSequenceLength(undefLength);
+        this.undefSeqLength = undefLength;
     }
 
     public final void setUndefEmptySequenceLength(boolean undefLength) {
-        encOpts.setUndefEmptySequenceLength(undefLength);
+        this.undefEmptySeqLength = undefLength;
     }
 
     public final void setUndefItemLength(boolean undefLength) {
-        encOpts.setUndefItemLength(undefLength);
+        this.undefItemLength = undefLength;
     }
 
     public final void setUndefEmptyItemLength(boolean undefLength) {
-        encOpts.setUndefEmptyItemLength(undefLength);
+        this.undefEmptyItemLength = undefLength;
     }
 
     @SuppressWarnings("static-access")
@@ -304,7 +307,7 @@ public class Xml2Dcm {
             }
             xml2dcm.setWithFileMetaInformation(cl.hasOption("f"));
             xml2dcm.setNoFileMetaInformation(cl.hasOption("F"));
-            xml2dcm.setGroupLength(cl.hasOption("g"));
+            xml2dcm.setEncodeGroupLength(cl.hasOption("g"));
             xml2dcm.setUndefItemLength(!cl.hasOption("e"));
             xml2dcm.setUndefSequenceLength(!cl.hasOption("E"));
             xml2dcm.setUndefEmptyItemLength(cl.hasOption("u"));
@@ -367,7 +370,11 @@ public class Xml2Dcm {
                         : tsuid != null 
                                 ? tsuid
                                 : UID.ImplicitVRLittleEndian);
-        dos.setEncodeOptions(encOpts);
+        dos.setEncodeGroupLength(groupLength);
+        dos.setUndefSequenceLength(undefSeqLength);
+        dos.setUndefEmptySequenceLength(undefEmptySeqLength);
+        dos.setUndefItemLength(undefItemLength);
+        dos.setUndefEmptyItemLength(undefEmptyItemLength);
         dos.writeDataset(fmi, dataset);
         dos.finish();
         dos.flush();

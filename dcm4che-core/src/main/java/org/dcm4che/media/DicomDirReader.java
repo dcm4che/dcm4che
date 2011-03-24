@@ -14,19 +14,28 @@ import org.dcm4che.util.StringUtils;
 
 public class DicomDirReader {
 
-    private final File file;
-    private final RandomAccessFile raf;
-    private final DicomInputStream in;
-    private final Attributes fmi;
-    private final Attributes fsInfo;
-    private final IntHashMap<Attributes> cache = new IntHashMap<Attributes>();
+    protected final File file;
+    protected final RandomAccessFile raf;
+    protected final DicomInputStream in;
+    protected final Attributes fmi;
+    protected final Attributes fsInfo;
+    protected final IntHashMap<Attributes> cache = new IntHashMap<Attributes>();
 
     public DicomDirReader(File file) throws IOException {
+        this(file, "r");
+    }
+
+    protected DicomDirReader(File file, String mode) throws IOException {
         this.file = file;
         this.raf = new RandomAccessFile(file, "r");
-        this.in = new DicomInputStream(new RAFInputStreamAdapter(raf));
-        this.fmi = in.readFileMetaInformation();
-        this.fsInfo = in.readDataset(-1, Tag.DirectoryRecordSequence);
+        try {
+            this.in = new DicomInputStream(new RAFInputStreamAdapter(raf));
+            this.fmi = in.readFileMetaInformation();
+            this.fsInfo = in.readDataset(-1, Tag.DirectoryRecordSequence);
+        } catch (IOException e) {
+            try { raf.close(); } catch (IOException ignore) {}
+            throw e;
+        }
     }
 
     public final File getFile() {
@@ -49,6 +58,10 @@ public class DicomDirReader {
         return fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
     }
 
+    public String getTransferSyntaxUID() {
+        return fmi.getString(Tag.TransferSyntaxUID, null);
+    }
+
     public String getFileSetID() {
         return fsInfo.getString(Tag.FileSetID, null);
     }
@@ -61,7 +74,7 @@ public class DicomDirReader {
         if (fileIDs == null || fileIDs.length == 0)
             return null;
 
-        return new File(file.getParentFile(),
+        return new File(file.getParent(),
                 StringUtils.join(fileIDs, File.separatorChar));
     }
 

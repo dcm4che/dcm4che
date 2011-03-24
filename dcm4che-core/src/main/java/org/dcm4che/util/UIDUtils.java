@@ -69,12 +69,8 @@ public class UIDUtils {
                     ? ILLEGAL_UID 
                     : EXPECT_FIRST_DIGIT;
         case '0':
-            if (!acceptLeadingZero)
-                return state == EXPECT_DOT
-                        ? ILLEGAL_UID
-                        : state == EXPECT_FIRST_DIGIT
-                                ? EXPECT_DOT 
-                                : EXPECT_DOT_OR_DIGIT;
+            if (!acceptLeadingZero & state == EXPECT_FIRST_DIGIT)
+                return EXPECT_DOT;
             // fall through
         case '1': case '2': case '3':
         case '4': case '5': case '6':

@@ -56,8 +56,6 @@ public class DicomInputStream extends FilterInputStream
 
     private static final int ZLIB_HEADER = 0x789c;
 
-    private static final int BULK_DATA_LOCATOR = 0xffff;
-
     private String uri;
     private String tsuid;
     private byte[] preamble;
@@ -449,7 +447,7 @@ public class DicomInputStream extends FilterInputStream
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
-        } else if (length == BULK_DATA_LOCATOR
+        } else if (length == BulkDataLocator.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, vr, BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
@@ -559,7 +557,7 @@ public class DicomInputStream extends FilterInputStream
             if (includeBulkData || includeBulkDataLocator ||
                     isBulkDataFragment())
                 frags.add(Value.EMPTY_BYTES);
-        } else if (length == BULK_DATA_LOCATOR
+        } else if (length == BulkDataLocator.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));

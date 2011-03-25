@@ -24,8 +24,6 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private static final byte[] DICM = { 'D', 'I', 'C', 'M' };
 
-    private static final int BULK_DATA_LOCATOR = 0xffff;
-
     private byte[] preamble = new byte[128];
 
     private boolean explicitVR;
@@ -204,7 +202,7 @@ public class DicomOutputStream extends FilterOutputStream {
     public void writeAttribute(int tag, VR vr, Value val) throws IOException {
         if (val instanceof BulkDataLocator
                 && super.out instanceof ObjectOutputStream) {
-            writeHeader(tag, vr, BULK_DATA_LOCATOR);
+            writeHeader(tag, vr, BulkDataLocator.MAGIC_LEN);
             ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
         } else {
             int length = val.getEncodedLength(this, vr);

@@ -12,6 +12,8 @@ import org.dcm4che.util.StreamUtils;
 
 public class BulkDataLocator implements Value {
 
+    public static final int MAGIC_LEN = 0xfbfb;
+
     public final String uri;
     public final String transferSyntax;
     public final long offset;

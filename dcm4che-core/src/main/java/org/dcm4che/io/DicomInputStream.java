@@ -630,6 +630,7 @@ public class DicomInputStream extends FilterInputStream
             throw new IOException("Unexpected attribute "
                     + TagUtils.toString(tag) + " #" + length + " @ " + pos);
         Attributes attrs = new Attributes(bigEndian);
+        attrs.setItemPosition(tagPos);
         readAttributes(attrs, length, Tag.ItemDelimitationItem);
         attrs.trimToSize();
         return attrs;

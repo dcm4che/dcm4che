@@ -15,8 +15,6 @@ import org.dcm4che.util.TagUtils;
 
 public class Attributes implements Serializable {
 
-    private static final long serialVersionUID = 5458387005121933754L;
-
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
@@ -35,7 +33,9 @@ public class Attributes implements Serializable {
     private transient int length = -1;
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;
-    private transient boolean bigEndian;
+
+    private boolean bigEndian;
+    private long itemPosition = -1;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -50,11 +50,11 @@ public class Attributes implements Serializable {
     }
 
     public Attributes(boolean bigEndian, int initialCapacity) {
-        init(bigEndian, initialCapacity);
+        this.bigEndian = bigEndian;
+        init(initialCapacity);
     }
 
-    private void init(boolean bigEndian, int initialCapacity) {
-        this.bigEndian = bigEndian;
+    private void init(int initialCapacity) {
         this.tags = new int[initialCapacity];
         this.vrs = new VR[initialCapacity];
         this.values = new Object[initialCapacity];
@@ -96,6 +96,14 @@ public class Attributes implements Serializable {
         }
         this.parent = parent;
         return this;
+    }
+
+    public final long getItemPosition() {
+        return itemPosition;
+    }
+
+    public final void setItemPosition(long itemPosition) {
+        this.itemPosition = itemPosition;
     }
 
     public final boolean isEmpty() {
@@ -1304,8 +1312,10 @@ public class Attributes implements Serializable {
         return false;
     }
 
+    private static final long serialVersionUID = 7868714416968825241L;
+
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeBoolean(bigEndian);
+        out.defaultWriteObject();
         out.writeInt(size);
         DicomOutputStream dout = new DicomOutputStream(out,
                 bigEndian ? UID.ExplicitVRBigEndian
@@ -1316,7 +1326,8 @@ public class Attributes implements Serializable {
 
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {
-        init(in.readBoolean(), in.readInt());
+        in.defaultReadObject();
+        init(in.readInt());
         DicomInputStream din = new DicomInputStream(in, 
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);

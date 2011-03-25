@@ -941,7 +941,20 @@ public class Attributes implements Serializable {
         return null;
     }
 
+
     public void addAll(Attributes other) {
+        addAll(other, null, null);
+    }
+
+    public void addSelected(Attributes other, int[] selection) {
+        addAll(other, selection, null);
+    }
+
+    public void addNotSelected(Attributes other, int[] selection) {
+        addAll(other, null, selection);
+    }
+
+    private void addAll(Attributes other, int[] include, int[] exclude) {
         boolean toggleEndian = bigEndian != other.bigEndian;
         int[] tags = other.tags;
         VR[] srcVRs = other.vrs;
@@ -951,7 +964,11 @@ public class Attributes implements Serializable {
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
-            if (!TagUtils.isPrivateCreator(tag)) {
+            if (!TagUtils.isPrivateCreator(tag)
+                    && (include == null
+                            || Arrays.binarySearch(include, tag) >= 0)
+                    && (exclude == null
+                            || Arrays.binarySearch(exclude, tag) < 0)) {
                 VR vr = srcVRs[i];
                 if (TagUtils.isPrivateGroup(tag)) {
                     int tmp = TagUtils.creatorTagOf(tag);

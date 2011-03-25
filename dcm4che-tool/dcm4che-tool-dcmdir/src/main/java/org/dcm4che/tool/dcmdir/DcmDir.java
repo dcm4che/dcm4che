@@ -31,6 +31,7 @@ public class DcmDir {
     /** default number of characters per line */
     private static final int DEFAULT_WIDTH = 78;
 
+    private boolean inUse;
     private String uid;
     private String id;
     private File descFile;
@@ -40,71 +41,6 @@ public class DcmDir {
     private StringBuilder sb = new StringBuilder();
     private DicomDirReader in;
     private DicomDirWriter out;
-
-    public final void setFilesetUID(String uid) {
-        this.uid = uid;
-    }
-
-    public final void setFilesetID(String id) {
-        this.id = id;
-    }
-
-    public final void setDescriptorFile(File descFile) {
-        this.descFile = descFile;
-    }
-
-    public final void setDescriptorFileCharset(String descFileCharset) {
-        this.descFileCharset = descFileCharset;
-    }
-
-    public final void setWidth(int width) {
-        if (width < 40)
-            throw new IllegalArgumentException();
-        this.width = width;
-    }
-
-    public static void main(String[] args) {
-        try {
-            CommandLine cl = parseComandLine(args);
-            DcmDir dcmdir = new DcmDir();
-            if (cl.hasOption("u"))
-                dcmdir.setFilesetUID(cl.getOptionValue("u"));
-            if (cl.hasOption("i"))
-                dcmdir.setFilesetID(cl.getOptionValue("i"));
-            if (cl.hasOption("desc"))
-                dcmdir.setDescriptorFile(new File(cl.getOptionValue("desc")));
-            if (cl.hasOption("desc-charset"))
-                dcmdir.setDescriptorFileCharset(
-                        cl.getOptionValue("desc-charset"));
-            if (cl.hasOption("w")) {
-                String s = cl.getOptionValue("w");
-                try {
-                    dcmdir.setWidth(Integer.parseInt(s));
-                } catch (IllegalArgumentException e) {
-                    throw new ParseException(
-                            "Illegal line length: " + s);
-                }
-            }
-            try {
-                if (cl.hasOption("l")) {
-                    dcmdir.openForReadOnly(new File(cl.getOptionValue("l")));
-                    dcmdir.list();
-                } else if (cl.hasOption("c")) {
-                    dcmdir.create(new File(cl.getOptionValue("c")));
-                } 
-            } finally {
-                dcmdir.close();
-            }
-        } catch (ParseException e) {
-            System.err.println("dcmdir: " + e.getMessage());
-            System.err.println("Try `dcmdir --help' for more information.");
-            System.exit(2);
-        } catch (IOException e) {
-            System.err.println("dcmdir: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(2);
-        }
-    }
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
@@ -156,6 +92,8 @@ public class DcmDir {
                 .withArgName("col")
                 .withDescription("set line length; default: 78")
                 .create("w"));
+        opts.addOption(null, "in-use", false, "only list directory records " +
+                "with Record In-use Flag != 0");
         opts.addOption("h", "help", false, "display this help and exit");
         opts.addOption("V", "version", false,
                 "output version information and exit");
@@ -172,6 +110,76 @@ public class DcmDir {
             System.exit(0);
         }
         return cl;
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseComandLine(args);
+            DcmDir dcmdir = new DcmDir();
+            dcmdir.setInUse(cl.hasOption("in-use"));
+            if (cl.hasOption("u"))
+                dcmdir.setFilesetUID(cl.getOptionValue("u"));
+            if (cl.hasOption("i"))
+                dcmdir.setFilesetID(cl.getOptionValue("i"));
+            if (cl.hasOption("desc"))
+                dcmdir.setDescriptorFile(new File(cl.getOptionValue("desc")));
+            if (cl.hasOption("desc-charset"))
+                dcmdir.setDescriptorFileCharset(
+                        cl.getOptionValue("desc-charset"));
+            if (cl.hasOption("w")) {
+                String s = cl.getOptionValue("w");
+                try {
+                    dcmdir.setWidth(Integer.parseInt(s));
+                } catch (IllegalArgumentException e) {
+                    throw new ParseException(
+                            "Illegal line length: " + s);
+                }
+            }
+            try {
+                if (cl.hasOption("l")) {
+                    dcmdir.openForReadOnly(new File(cl.getOptionValue("l")));
+                    dcmdir.list();
+                } else if (cl.hasOption("c")) {
+                    dcmdir.create(new File(cl.getOptionValue("c")));
+                } 
+            } finally {
+                dcmdir.close();
+            }
+        } catch (ParseException e) {
+            System.err.println("dcmdir: " + e.getMessage());
+            System.err.println("Try `dcmdir --help' for more information.");
+            System.exit(2);
+        } catch (IOException e) {
+            System.err.println("dcmdir: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
+
+    public final void setInUse(boolean inUse) {
+        this.inUse = inUse;
+    }
+
+    public final void setFilesetUID(String uid) {
+        this.uid = uid;
+    }
+
+    public final void setFilesetID(String id) {
+        this.id = id;
+    }
+
+    public final void setDescriptorFile(File descFile) {
+        this.descFile = descFile;
+    }
+
+    public final void setDescriptorFileCharset(String descFileCharset) {
+        this.descFileCharset = descFileCharset;
+    }
+
+    public final void setWidth(int width) {
+        if (width < 40)
+            throw new IllegalArgumentException();
+        this.width = width;
     }
 
     public void close() {
@@ -202,7 +210,10 @@ public class DcmDir {
             System.out.println("File-set Information:");
             System.out.println(in.getFileSetInformation()
                     .toString(Integer.MAX_VALUE, width));
-            list(in.readFirstRootDirectoryRecord(), new int[0]);
+            list(inUse
+                    ? in.findFirstRootDirectoryRecordInUse()
+                    : in.readFirstRootDirectoryRecord(),
+                 new int[0]);
     }
 
     private void list(Attributes rec, int[] prefix)
@@ -216,8 +227,13 @@ public class DcmDir {
             System.out.println(heading(index,
                     rec.getString(Tag.DirectoryRecordType, null)));
             System.out.println(rec.toString(Integer.MAX_VALUE, width));
-            list(in.readLowerDirectoryRecord(rec), index);
-            rec = in.readNextDirectoryRecord(rec);
+            list(inUse
+                    ? in.findLowerDirectoryRecordInUse(rec)
+                    : in.readLowerDirectoryRecord(rec),
+                 index);
+            rec = inUse
+                    ? in.findNextDirectoryRecordInUse(rec)
+                    : in.readNextDirectoryRecord(rec);
         } while (rec != null);
     }
 

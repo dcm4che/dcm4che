@@ -118,34 +118,49 @@ public class DicomDirReader {
                 rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0));
     }
 
+    public Attributes findFirstRootDirectoryRecordInUse() throws IOException {
+        return findRootDirectoryRecord(null, false);
+    }
+
     public Attributes findRootDirectoryRecord(Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
-        return findRecord(
+        return findRecordInUse(
                 fsInfo.getInt(
                     Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
                     0),
                 keys, ignoreCaseOfPN);
     }
 
+    public Attributes findNextDirectoryRecordInUse(Attributes rec)
+            throws IOException {
+        return findNextDirectoryRecord(rec, null, false);
+    }
+
     public Attributes findNextDirectoryRecord(Attributes rec, Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
-        return findRecord(
+        return findRecordInUse(
                 rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0),
                 keys, ignoreCaseOfPN);
     }
 
+    public Attributes findLowerDirectoryRecordInUse(Attributes rec)
+            throws IOException {
+        return findLowerDirectoryRecord(rec, null, false);
+    }
+
     public Attributes findLowerDirectoryRecord(Attributes rec, Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
-        return findRecord(
+        return findRecordInUse(
                 rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0),
                 keys, ignoreCaseOfPN);
     }
 
-    private Attributes findRecord(int offset, Attributes keys,
+    private Attributes findRecordInUse(int offset, Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
         while (offset != 0) {
             Attributes item = readRecord(offset);
-            if (item.matches(keys, ignoreCaseOfPN))
+            if (inUse(item) 
+                    && (keys == null || item.matches(keys, ignoreCaseOfPN)))
                 return item;
             offset = item.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0);
         }
@@ -165,5 +180,9 @@ public class DicomDirReader {
             cache.put(offset, item);
         }
         return item;
+    }
+
+    public static boolean inUse(Attributes rec) {
+        return rec.getInt(Tag.RecordInUseFlag, 0) != 0;
     }
 }

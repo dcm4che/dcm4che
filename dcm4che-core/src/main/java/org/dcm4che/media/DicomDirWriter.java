@@ -14,6 +14,9 @@ import org.dcm4che.util.StringUtils;
 
 public class DicomDirWriter extends DicomDirReader {
 
+    private final static int IN_USE = 0xFFFF;
+    private final static int INACTIVE = 0;
+
     private final DicomOutputStream out;
 
     protected DicomDirWriter(File file) throws IOException {

@@ -2,7 +2,6 @@ package org.dcm4che.tool.dcmdir;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -38,7 +37,6 @@ public class DcmDir {
     private String descFileCharset;
     private int width = DEFAULT_WIDTH;
 
-    private StringBuilder sb = new StringBuilder();
     private DicomDirReader in;
     private DicomDirWriter out;
 
@@ -204,44 +202,48 @@ public class DcmDir {
     }
 
     public void list() throws IOException {
-            System.out.println("File Meta Information:");
-            System.out.println(in.getFileMetaInformation()
-                    .toString(Integer.MAX_VALUE, width));
-            System.out.println("File-set Information:");
-            System.out.println(in.getFileSetInformation()
-                    .toString(Integer.MAX_VALUE, width));
-            list(inUse
-                    ? in.findFirstRootDirectoryRecordInUse()
-                    : in.readFirstRootDirectoryRecord(),
-                 new int[0]);
+        list("File Meta Information:", in.getFileMetaInformation());
+        list("File-set Information:", in.getFileSetInformation());
+        list(inUse
+                ? in.findFirstRootDirectoryRecordInUse()
+                : in.readFirstRootDirectoryRecord(),
+             new StringBuilder());
     }
 
-    private void list(Attributes rec, int[] prefix)
+    private void list(final String header, final Attributes attrs) {
+        System.out.println(header);
+        System.out.println(attrs.toString(Integer.MAX_VALUE, width));
+    }
+
+    private void list(Attributes rec, StringBuilder index)
             throws IOException {
         if (rec == null)
             return;
 
-        int[] index = Arrays.copyOf(prefix, prefix.length + 1);
+        int indexLen = index.length();
+        int i = 1;
         do {
-            index[prefix.length]++;
-            System.out.println(heading(index,
-                    rec.getString(Tag.DirectoryRecordType, null)));
-            System.out.println(rec.toString(Integer.MAX_VALUE, width));
+            index.append(i++).append('.');
+            list(heading(rec, index), rec);
             list(inUse
                     ? in.findLowerDirectoryRecordInUse(rec)
                     : in.readLowerDirectoryRecord(rec),
-                 index);
+                    index);
             rec = inUse
                     ? in.findNextDirectoryRecordInUse(rec)
                     : in.readNextDirectoryRecord(rec);
+            index.setLength(indexLen);
         } while (rec != null);
     }
 
-    private String heading(int[] index, String s) {
-        sb.setLength(0);
-        for (int i : index)
-            sb.append(i).append('.');
-        return sb.append(' ').append(s).append(':').toString();
+    private String heading(Attributes rec, StringBuilder index) {
+        int prefixLen = index.length();
+        try {
+            return index.append(' ')
+                .append(rec.getString(Tag.DirectoryRecordType, ""))
+                .append(':').toString();
+        } finally {
+            index.setLength(prefixLen);
+        }
     }
-
 }

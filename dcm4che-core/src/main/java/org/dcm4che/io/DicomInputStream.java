@@ -404,9 +404,6 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         boolean undeflen = len == -1;
         boolean hasStopTag = stopTag != -1;
-        if (hasStopTag && !undeflen)
-            throw new IllegalArgumentException(
-                    "Cannot specify an explicit length and a stopTag");
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
             try {

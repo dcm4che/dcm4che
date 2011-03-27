@@ -3,6 +3,7 @@ package org.dcm4che.media;
 import java.util.Arrays;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 
@@ -27,19 +28,30 @@ public class RecordFactory {
     };
 
     private static final int[] SERIES_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.Modality,
         Tag.SeriesInstanceUID,
         Tag.SeriesNumber,
     };
 
     private static final int[] IMAGE_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.InstanceNumber,
     };
 
+    private static final int[] OVERLAY_KEYS = {
+        Tag.OverlayNumber,
+    };
+
+    private static final int[] VOI_LUT_KEYS = {
+        Tag.LUTNumber,
+    };
+
+    private static final int[] CURVE_KEYS = {
+        Tag.CurveNumber,
+    };
+
+    private static final int[] STORED_PRINT_KEYS = IMAGE_KEYS;
+
     private static final int[] RT_DOSE_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.InstanceNumber,
         Tag.DoseSummationType,
     };
@@ -61,7 +73,6 @@ public class RecordFactory {
     };
 
     private static final int[] RT_TREAT_RECORD_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.InstanceNumber,
         Tag.TreatmentDate,
         Tag.TreatmentTime,
@@ -80,7 +91,6 @@ public class RecordFactory {
     };
 
     private static final int[] WAVEFORM_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.ContentDate,
         Tag.ContentTime,
         Tag.InstanceNumber
@@ -106,7 +116,6 @@ public class RecordFactory {
     };
 
     private static final int[] SPECTROSCOPY_KEYS = {
-        Tag.SpecificCharacterSet,
         Tag.ImageType,
         Tag.ContentDate,
         Tag.ContentTime,
@@ -182,6 +191,10 @@ public class RecordFactory {
         STUDY_KEYS,
         SERIES_KEYS,
         IMAGE_KEYS,
+        OVERLAY_KEYS,
+        VOI_LUT_KEYS,
+        CURVE_KEYS,
+        STORED_PRINT_KEYS,
         RT_DOSE_KEYS,
         RT_STRUCTURE_SET_KEYS,
         RT_PLAN_KEYS,
@@ -213,7 +226,7 @@ public class RecordFactory {
             Attributes fmi, String[] fileIDs) {
         int[] keys = keysForRecordType[type.ordinal()];
         Attributes rec = new Attributes(
-                keys.length + (fileIDs != null ? 8 : 4));
+                keys.length + (fileIDs != null ? 9 : 5));
         rec.setInt(Tag.OffsetOfTheNextDirectoryRecord, VR.UL, 0);
         rec.setInt(Tag.RecordInUseFlag, VR.US, IN_USE);
         rec.setInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, VR.UL, 0);
@@ -228,6 +241,21 @@ public class RecordFactory {
                     fmi.getString(Tag.TransferSyntaxUID, null));
         }
         rec.addSelected(dataset, keys);
+        Sequence contentSeq = (Sequence) dataset.getValue(Tag.ContentSequence);
+        if (contentSeq != null)
+            copyConceptMod(contentSeq, rec);
         return rec ;
+    }
+
+    private void copyConceptMod(Sequence srcSeq, Attributes rec) {
+        Sequence dstSeq = null;
+        for (Attributes item : srcSeq) {
+            if ("HAS CONCEPT MOD"
+                    .equals(item.getString(Tag.RelationshipType, null))) {
+                if (dstSeq == null)
+                    dstSeq = rec.newSequence(Tag.ContentSequence, 1);
+                dstSeq.add(new Attributes(false, item));
+            }
+        }
     }
 }

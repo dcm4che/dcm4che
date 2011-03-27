@@ -13,9 +13,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
-import org.dcm4che.util.UIDUtils;
 
 public class DcmDir {
 
@@ -198,7 +198,7 @@ public class DcmDir {
     }
 
     private String uid() {
-        return uid == null ? UIDUtils.createUID() : uid;
+        return uid == null ? UID.createUID() : uid;
     }
 
     public void list() throws IOException {

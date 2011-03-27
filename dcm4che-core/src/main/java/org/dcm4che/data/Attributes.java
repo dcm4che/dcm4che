@@ -114,6 +114,10 @@ public class Attributes implements Serializable {
         return size;
     }
 
+    public int[] tags() {
+        return Arrays.copyOf(tags, size);
+    }
+
     public void trimToSize() {
         trimToSize(false);
     }

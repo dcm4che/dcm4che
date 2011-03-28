@@ -1,236 +1,206 @@
 package org.dcm4che.media;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.ContentHandlerAdapter;
+import org.xml.sax.SAXException;
 
 public class RecordFactory {
 
     private static final int IN_USE = 0xffff;
 
-    private static final int[] PATIENT_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.PatientName,
-        Tag.PatientID,
-    };
+    private EnumMap<RecordType, int[]> recordKeys;
 
-    private static final int[] STUDY_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.StudyDate,
-        Tag.StudyTime,
-        Tag.AccessionNumber,
-        Tag.StudyDescription,
-        Tag.StudyInstanceUID,
-        Tag.StudyID,
-    };
+    private HashMap<String, RecordType> recordTypes;
 
-    private static final int[] SERIES_KEYS = {
-        Tag.Modality,
-        Tag.SeriesInstanceUID,
-        Tag.SeriesNumber,
-    };
+    private HashMap<String, String> privateRecordUIDs;
 
-    private static final int[] IMAGE_KEYS = {
-        Tag.InstanceNumber,
-    };
+    private HashMap<String, int[]> privateRecordKeys;
 
-    private static final int[] OVERLAY_KEYS = {
-        Tag.OverlayNumber,
-    };
-
-    private static final int[] VOI_LUT_KEYS = {
-        Tag.LUTNumber,
-    };
-
-    private static final int[] CURVE_KEYS = {
-        Tag.CurveNumber,
-    };
-
-    private static final int[] STORED_PRINT_KEYS = IMAGE_KEYS;
-
-    private static final int[] RT_DOSE_KEYS = {
-        Tag.InstanceNumber,
-        Tag.DoseSummationType,
-    };
-
-    private static final int[] RT_STRUCTURE_SET_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.InstanceNumber,
-        Tag.StructureSetLabel,
-        Tag.StructureSetDate,
-        Tag.StructureSetTime,
-    };
-
-    private static final int[] RT_PLAN_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.InstanceNumber,
-        Tag.RTPlanLabel,
-        Tag.RTPlanDate,
-        Tag.RTPlanTime,
-    };
-
-    private static final int[] RT_TREAT_RECORD_KEYS = {
-        Tag.InstanceNumber,
-        Tag.TreatmentDate,
-        Tag.TreatmentTime,
-    };
-
-    private static final int[] PRESENTATION_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ReferencedSeriesSequence,
-        Tag.InstanceNumber,
-        Tag.ContentLabel,
-        Tag.ContentDescription,
-        Tag.PresentationCreationDate,
-        Tag.PresentationCreationTime,
-        Tag.ContentCreatorName,
-        Tag.BlendingSequence,
-    };
-
-    private static final int[] WAVEFORM_KEYS = {
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.InstanceNumber
-    };
-
-    private static final int[] SR_DOCUMENT_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.InstanceNumber,
-        Tag.VerificationDateTime,
-        Tag.ConceptNameCodeSequence,
-        Tag.CompletionFlag,
-        Tag.VerificationFlag
-    };
-
-    private static final int[] KEY_OBJECT_DOC_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.InstanceNumber,
-        Tag.ConceptNameCodeSequence
-    };
-
-    private static final int[] SPECTROSCOPY_KEYS = {
-        Tag.ImageType,
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.ReferencedImageEvidenceSequence,
-        Tag.InstanceNumber,
-        Tag.NumberOfFrames,
-        Tag.Rows,
-        Tag.Columns,
-        Tag.DataPointRows,
-        Tag.DataPointColumns
-    };
-
-    private static final int[] RAW_DATA_KEYS = WAVEFORM_KEYS;
-
-    private static final int[] REGISTRATION_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.InstanceNumber,
-        Tag.ContentLabel,
-        Tag.ContentDescription,
-        Tag.ContentCreatorName,
-    };
-
-    private static final int[] FIDUCIAL_KEYS = REGISTRATION_KEYS;
-
-    private static final int[] HANGING_PROTOCOL_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.HangingProtocolName,
-        Tag.HangingProtocolDescription,
-        Tag.HangingProtocolLevel,
-        Tag.HangingProtocolCreator,
-        Tag.HangingProtocolCreationDateTime,
-        Tag.HangingProtocolDefinitionSequence,
-        Tag.NumberOfPriorsReferenced,
-        Tag.HangingProtocolUserIdentificationCodeSequence
-    };
-
-    private static final int[] ENCAP_DOC_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ContentDate,
-        Tag.ContentTime,
-        Tag.InstanceNumber,
-        Tag.ConceptNameCodeSequence,
-        Tag.DocumentTitle,
-        Tag.MIMETypeOfEncapsulatedDocument
-    };
-
-    private static final int[] HL7_STRUC_DOC_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.HL7InstanceIdentifier,
-        Tag.HL7DocumentEffectiveTime,
-        Tag.HL7DocumentTypeCodeSequence,
-        Tag.DocumentTitle
-    };
-
-    private static final int[] VALUE_MAP_KEYS = REGISTRATION_KEYS;
-
-    private static final int[] STEREOMETRIC_KEYS = {
-        Tag.SpecificCharacterSet,
-    };
-
-    private static final int[] PALETTE_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.ContentLabel,
-        Tag.ContentDescription,
-    };
-
-    private static final int[] PRIVATE_KEYS = STEREOMETRIC_KEYS;
-
-    private final int[][] keysForRecordType = {
-        PATIENT_KEYS,
-        STUDY_KEYS,
-        SERIES_KEYS,
-        IMAGE_KEYS,
-        OVERLAY_KEYS,
-        VOI_LUT_KEYS,
-        CURVE_KEYS,
-        STORED_PRINT_KEYS,
-        RT_DOSE_KEYS,
-        RT_STRUCTURE_SET_KEYS,
-        RT_PLAN_KEYS,
-        RT_TREAT_RECORD_KEYS,
-        PRESENTATION_KEYS,
-        WAVEFORM_KEYS,
-        SR_DOCUMENT_KEYS,
-        KEY_OBJECT_DOC_KEYS,
-        SPECTROSCOPY_KEYS,
-        RAW_DATA_KEYS,
-        REGISTRATION_KEYS,
-        FIDUCIAL_KEYS,
-        HANGING_PROTOCOL_KEYS,
-        ENCAP_DOC_KEYS,
-        HL7_STRUC_DOC_KEYS,
-        VALUE_MAP_KEYS,
-        STEREOMETRIC_KEYS,
-        PALETTE_KEYS,
-        PRIVATE_KEYS
-    };
-
-    public void setRecordSelectionKeys(RecordType type, int[] keys) {
-        int[] tmp = keys.clone();
-        Arrays.sort(tmp);
-        keysForRecordType[type.ordinal()] = tmp;
+    private void lazyLoadDefaultConfiguration() {
+        if (recordTypes == null)
+            loadDefaultConfiguration();
     }
 
-    public Attributes createRecord(RecordType type, Attributes dataset,
-            Attributes fmi, String[] fileIDs) {
-        int[] keys = keysForRecordType[type.ordinal()];
+    public void loadDefaultConfiguration() {
+        try {
+            loadConfiguration(Thread.currentThread().getContextClassLoader()
+                    .getResource("org/dcm4che/media/RecordFactory.xml")
+                    .toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void loadConfiguration(String uri) 
+            throws ParserConfigurationException, SAXException, IOException {
+        Attributes attrs = parseXML(uri);
+        Sequence sq = (Sequence) attrs.getValue(Tag.DirectoryRecordSequence);
+        if (sq == null)
+            throw new IllegalArgumentException(
+                    "Missing Directory Record Sequence in " + uri);
+
+        EnumMap<RecordType, int[]> recordKeys =
+                new EnumMap<RecordType, int[]>(RecordType.class);
+        HashMap<String, RecordType> recordTypes =
+                new HashMap<String, RecordType>(134);
+        HashMap<String, String> privateRecordUIDs =
+                new HashMap<String, String>();
+        HashMap<String, int[]> privateRecordKeys =
+                new HashMap<String, int[]>();
+        for (Attributes item : sq) {
+            RecordType type = RecordType.forCode(
+                    item.getString(Tag.DirectoryRecordType, null));
+            String privuid = type == RecordType.PRIVATE 
+                    ? item.getString(Tag.PrivateRecordUID, null)
+                    : null;
+            String[] cuids = item.getStrings(Tag.ReferencedSOPClassUIDInFile);
+            if (cuids != null) {
+                if (type != RecordType.PRIVATE) {
+                    for (String cuid : cuids) {
+                        recordTypes.put(cuid, type);
+                    }
+                } else if (privuid != null) {
+                    for (String cuid : cuids) {
+                        privateRecordUIDs.put(cuid, privuid);
+                    }
+                }
+            }
+            item.remove(Tag.DirectoryRecordType);
+            item.remove(Tag.PrivateRecordUID);
+            item.remove(Tag.ReferencedSOPClassUIDInFile);
+            int[] keys = item.tags();
+            if (privuid != null) {
+                privateRecordKeys.put(privuid, keys);
+            } else {
+                recordKeys.put(type, keys);
+            }
+        }
+        checkRecordTypes(recordTypes);
+        this.recordTypes = recordTypes;
+        this.recordKeys = recordKeys;
+        this.privateRecordUIDs = privateRecordUIDs;
+        this.privateRecordKeys = privateRecordKeys;
+    }
+
+    private void checkRecordTypes(HashMap<String, RecordType> recordTypes) {
+        RecordType[] types = RecordType.values();
+        if (recordTypes.size() < types.length)
+            for (RecordType type : types)
+                if (!recordTypes.containsKey(type))
+                    throw new IllegalArgumentException(
+                            "Missing Record Type: " + type);
+    }
+
+    private Attributes parseXML(String uri)
+            throws ParserConfigurationException, SAXException, IOException {
+        Attributes attrs = new Attributes();
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        SAXParser parser = f.newSAXParser();
+        parser.parse(uri, new ContentHandlerAdapter(attrs));
+        return attrs;
+    }
+
+    public RecordType getRecordType(String cuid) {
+        if (cuid == null)
+            throw new NullPointerException();
+        lazyLoadDefaultConfiguration();
+        RecordType recordType = recordTypes.get(cuid);
+        return recordType != null ? recordType : RecordType.PRIVATE;
+    }
+
+    public RecordType setRecordType(String cuid, RecordType type) {
+        if (cuid == null || type == null)
+            throw new NullPointerException();
+        lazyLoadDefaultConfiguration();
+        return recordTypes.put(cuid, type);
+    }
+
+    public void setRecordKeys(RecordType type, int[] keys) {
+        if (type == null)
+            throw new NullPointerException();
+        int[] tmp = keys.clone();
+        Arrays.sort(tmp);
+        lazyLoadDefaultConfiguration();
+        recordKeys.put(type, keys);
+    }
+
+    public String getPrivateRecordUID(String cuid) {
+        if (cuid == null)
+            throw new NullPointerException();
+
+        lazyLoadDefaultConfiguration();
+        String uid = privateRecordUIDs.get(cuid);
+        return uid != null ? uid : cuid;
+    }
+
+    public String setPrivateRecordUID(String cuid, String uid) {
+        if (cuid == null || uid == null)
+            throw new NullPointerException();
+
+        lazyLoadDefaultConfiguration();
+        return privateRecordUIDs.put(cuid, uid);
+    }
+
+    public int[] setPrivateRecordKeys(String uid, int[] keys) {
+        if (uid == null)
+            throw new NullPointerException();
+
+        int[] tmp = keys.clone();
+        Arrays.sort(tmp);
+        lazyLoadDefaultConfiguration();
+        return privateRecordKeys.put(uid, tmp);
+    }
+
+    public Attributes createRecord(Attributes dataset, Attributes fmi,
+            String[] fileIDs) {
+        String cuid = fmi.getString(Tag.MediaStorageSOPClassUID, null);
+        RecordType type = getRecordType(cuid);
+        return createRecord(type,
+                type == RecordType.PRIVATE ? getPrivateRecordUID(cuid) : null,
+                dataset, fmi, fileIDs);
+    }
+
+    public Attributes createRecord(RecordType type, String privRecUID,
+                Attributes dataset, Attributes fmi, String[] fileIDs) {
+        if (type == null)
+            throw new NullPointerException("type");
+        if (dataset == null)
+            throw new NullPointerException("dataset");
+
+        lazyLoadDefaultConfiguration();
+        int[] keys = null;
+        if (type == RecordType.PRIVATE) {
+            if (privRecUID == null)
+                throw new NullPointerException(
+                        "privRecUID must not be null for type = PRIVATE");
+            keys = privateRecordKeys.get(privRecUID);
+        } else {
+            if (privRecUID != null)
+                throw new IllegalArgumentException(
+                        "privRecUID must be null for type != PRIVATE");
+        }
+        if (keys == null)
+            keys = recordKeys.get(type);
         Attributes rec = new Attributes(
                 keys.length + (fileIDs != null ? 9 : 5));
         rec.setInt(Tag.OffsetOfTheNextDirectoryRecord, VR.UL, 0);
         rec.setInt(Tag.RecordInUseFlag, VR.US, IN_USE);
         rec.setInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, VR.UL, 0);
         rec.setString(Tag.DirectoryRecordType, VR.CS, type.code());
+        if (privRecUID != null)
+            rec.setString(Tag.PrivateRecordUID, VR.UI, privRecUID);
         if (fileIDs != null) {
             rec.setString(Tag.ReferencedFileID, VR.CS, fileIDs);
             rec.setString(Tag.ReferencedSOPClassUIDInFile, VR.UI,

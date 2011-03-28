@@ -93,6 +93,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
             }
             break;
         }
+        sb.setLength(0);
+        bout.reset();
    }
 
     private void startBulkDataLocator() {
@@ -297,18 +299,12 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private String getString() {
-        final String s = sb.toString();
-        sb.setLength(0);
-        return s;
+        return sb.toString();
     }
 
     private byte[] getBytes() {
         byte[] b = bout.toByteArray();
-        bout.reset();
-        base64 = false;
-        if (bigEndian)
-            vr.toggleEndian(b, false);
-        return b;
+        return bigEndian ? vr.toggleEndian(b, false) : b;
     }
 
     private String[] getStrings() {

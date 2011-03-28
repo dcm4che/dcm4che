@@ -31,6 +31,10 @@ public enum RecordType {
     VALUE_MAP,
     STEREOMETRIC,
     PALETTE,
+    SURFACE,
+    MEASUREMENT,
+    PLAN,
+    STRUCT_DISPLAY,
     PRIVATE;
 
     private final int pkTag;
@@ -52,7 +56,7 @@ public enum RecordType {
         return name().replace('_', ' ');
     }
 
-    public RecordType forCode(String code) {
+    public static RecordType forCode(String code) {
         try {
             return RecordType.valueOf(code.replace(' ', '_'));
         } catch (IllegalArgumentException e) {

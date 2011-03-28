@@ -15,8 +15,8 @@ public interface Value {
         }
 
         @Override
-        public int getEncodedLength(DicomOutputStream encOpts, VR vr) {
-            return vr == VR.SQ && encOpts.isUndefEmptySequenceLength() ? 8 : 0;
+        public int getEncodedLength(DicomOutputStream out, VR vr) {
+            return vr == VR.SQ && out.isUndefEmptySequenceLength() ? -1 : 0;
         }
 
         @Override
@@ -25,7 +25,7 @@ public interface Value {
 
         @Override
         public int calcLength(DicomOutputStream out, VR vr) {
-             return getEncodedLength(out, vr) ;
+             return vr == VR.SQ && out.isUndefEmptySequenceLength() ? 8 : 0;
         }
 
         @Override

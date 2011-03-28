@@ -41,6 +41,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private int blklen;
     private BulkDataLocator bulkDataLocator;
     private Fragments dataFragments;
+    private boolean text;
     private boolean base64;
 
     public ContentHandlerAdapter(Attributes attrs) {
@@ -62,10 +63,6 @@ public class ContentHandlerAdapter extends DefaultHandler {
             if (qName.equals("Alphabetic"))
                 startPNGroup(PersonName.Group.Alphabetic);
             break;
-        case 'B':
-            if (qName.equals("BulkDataLocator"))
-                startBulkDataLocator();
-            break;
         case 'D':
             if (qName.equals("DicomAttribute"))
                 startDicomAttribute(
@@ -75,11 +72,35 @@ public class ContentHandlerAdapter extends DefaultHandler {
             else if (qName.equals("DataFragment"))
                 startDataFragment(Integer.parseInt(atts.getValue("number")));
             break;
+        case 'F':
+            if (qName.equals("FamilyName"))
+                startText();
+            break;
+        case 'G':
+            if (qName.equals("GivenName"))
+                startText();
+            break;
         case 'I':
             if (qName.equals("Item"))
                 startItem(Integer.parseInt(atts.getValue("number")));
             else if (qName.equals("Ideographic"))
                 startPNGroup(PersonName.Group.Ideographic);
+            break;
+        case 'L':
+            if (qName.equals("Length"))
+                startText();
+            break;
+        case 'M':
+            if (qName.equals("MiddleName"))
+                startText();
+            break;
+        case 'N':
+            if (qName.equals("NamePrefix") || qName.equals("NameSuffix"))
+                startText();
+            break;
+        case 'O':
+            if (qName.equals("Offset"))
+                startText();
             break;
         case 'P':
             if (qName.equals("PersonName")) {
@@ -87,18 +108,34 @@ public class ContentHandlerAdapter extends DefaultHandler {
             } else if (qName.equals("Phonetic"))
                 startPNGroup(PersonName.Group.Phonetic);
             break;
+        case 'T':
+            if (qName.equals("TransferSyntax"))
+                startText();
+            break;
+        case 'U':
+            if (qName.equals("URI"))
+                startText();
+            break;
         case 'V':
             if (qName.equals("Value")) {
                 startValue(Integer.parseInt(atts.getValue("number")));
+                if (this.vr.isXMLBase64())
+                    startBase64();
+                else
+                    startText();
             }
             break;
         }
-        sb.setLength(0);
-        bout.reset();
    }
 
-    private void startBulkDataLocator() {
-        base64 = false;
+    private void startBase64() {
+        base64 = true;
+        bout.reset();
+    }
+
+    private void startText() {
+        text = true;
+        sb.setLength(0);
     }
 
     private void startDicomAttribute(int tag, String privateCreator,
@@ -109,8 +146,6 @@ public class ContentHandlerAdapter extends DefaultHandler {
                              : ElementDictionary.vrOf(tag, privateCreator);
         if (this.vr == VR.SQ)
             seqs.add(items.getLast().newSequence(tag, privateCreator, 10));
-        else
-            base64 = this.vr.isXMLBase64();
     }
 
     private void startDataFragment(int number) {
@@ -119,14 +154,15 @@ public class ContentHandlerAdapter extends DefaultHandler {
                     .newFragments(tag, privateCreator, vr,  10);
         while (dataFragments.size() < number-1)
             dataFragments.add(Value.EMPTY_BYTES);
-        base64 = true;
     }
 
     private void startItem(int number) {
         Sequence seq = seqs.getLast();
-        while (seq.size() < number)
-            seq.add(new Attributes());
-        items.add(seq.get(number-1));
+        while (seq.size() < number-1)
+            seq.add(new Attributes(0));
+        Attributes item = new Attributes();
+        seq.add(item);
+        items.add(item);
     }
 
     private void startValue(int number) {
@@ -146,7 +182,9 @@ public class ContentHandlerAdapter extends DefaultHandler {
     @Override
     public void characters(char[] ch, int offset, int len)
             throws SAXException {
-        if (base64) {
+        if (text)
+            sb.append(ch, offset, len);
+        else if (base64) {
             try {
                 if (carryLen != 0) {
                     int copy = 4 - carryLen;
@@ -163,8 +201,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } else
-            sb.append(ch, offset, len);
+        }
     }
 
     @Override
@@ -231,6 +268,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
             }
             break;
         }
+        text = false;
+        base64 = false;
     }
 
     @Override

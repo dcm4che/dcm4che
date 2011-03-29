@@ -144,7 +144,7 @@ public class DicomOutputStream extends FilterOutputStream {
             writeFileMetaInformation(fmi);
         boolean needCalcLength = needCalcLength();
         if (needCalcLength || dataset.bigEndian() != bigEndian)
-            dataset = new Attributes(bigEndian, dataset);
+            dataset = new Attributes(dataset, bigEndian);
         if (needCalcLength)
             dataset.calcLength(this);
         dataset.writeTo(this);

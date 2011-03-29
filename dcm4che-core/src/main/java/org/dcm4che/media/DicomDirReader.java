@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.RAFInputStreamAdapter;
 import org.dcm4che.util.IntHashMap;
@@ -27,11 +27,13 @@ public class DicomDirReader {
 
     protected DicomDirReader(File file, String mode) throws IOException {
         this.file = file;
-        this.raf = new RandomAccessFile(file, "r");
+        this.raf = new RandomAccessFile(file, mode);
         try {
             this.in = new DicomInputStream(new RAFInputStreamAdapter(raf));
             this.fmi = in.readFileMetaInformation();
             this.fsInfo = in.readDataset(-1, Tag.DirectoryRecordSequence);
+            if (in.tag() != Tag.DirectoryRecordSequence)
+                throw new IOException("Missing Directory Record Sequence");
         } catch (IOException e) {
             try { raf.close(); } catch (IOException ignore) {}
             throw e;
@@ -66,7 +68,7 @@ public class DicomDirReader {
         return fsInfo.getString(Tag.FileSetID, null);
     }
 
-    public File getFileSetDescriptorFile() {
+    public File getDescriptorFile() {
         return toFile(fsInfo.getStrings(Tag.FileSetDescriptorFileID));
     }
 
@@ -78,21 +80,47 @@ public class DicomDirReader {
                 StringUtils.join(fileIDs, File.separatorChar));
     }
 
-    public SpecificCharacterSet
-            getSpecificCharacterSetOfFileSetDescriptorFile() {
-        return SpecificCharacterSet.valueOf(
-                fsInfo.getStrings(
-                        Tag.SpecificCharacterSetOfFileSetDescriptorFile));
+    public String getDescriptorFileCharacterSet() {
+        return fsInfo.getString(
+                Tag.SpecificCharacterSetOfFileSetDescriptorFile, null);
     }
 
     public int getFileSetConsistencyFlag() {
         return fsInfo.getInt(Tag.FileSetConsistencyFlag, 0);
     }
 
-    public boolean isEmpty() {
+    protected void setFileSetConsistencyFlag(int i) {
+        fsInfo.setInt(Tag.FileSetConsistencyFlag, VR.US, i);
+    }
+
+    public boolean knownInconsistencies() {
+        return getFileSetConsistencyFlag() != 0;
+    }
+
+    public int getOffsetOfFirstRootDirectoryRecord() {
         return fsInfo.getInt(
-                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity, 0)
-                == 0;
+                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity, 0);
+    }
+
+    protected void setOffsetOfFirstRootDirectoryRecord(int i) {
+        fsInfo.setInt(
+                Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
+                VR.UL, i);
+    }
+
+    public int getOffsetOfLastRootDirectoryRecord() {
+        return fsInfo.getInt(
+                Tag.OffsetOfTheLastDirectoryRecordOfTheRootDirectoryEntity, 0);
+    }
+
+    protected void setOffsetOfLastRootDirectoryRecord(int i) {
+        fsInfo.setInt(
+                Tag.OffsetOfTheLastDirectoryRecordOfTheRootDirectoryEntity,
+                VR.UL, i);
+    }
+
+    public boolean isEmpty() {
+        return getOffsetOfFirstRootDirectoryRecord() == 0;
     }
 
     public void clearCache() {
@@ -100,10 +128,11 @@ public class DicomDirReader {
     }
 
     public Attributes readFirstRootDirectoryRecord() throws IOException {
-        return readRecord(
-                fsInfo.getInt(
-                    Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
-                    0));
+        return readRecord(getOffsetOfFirstRootDirectoryRecord());
+    }
+
+    public Attributes readLastRootDirectoryRecord() throws IOException {
+        return readRecord(getOffsetOfLastRootDirectoryRecord());
     }
 
     public Attributes readNextDirectoryRecord(Attributes rec)
@@ -118,6 +147,18 @@ public class DicomDirReader {
                 rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0));
     }
 
+    protected Attributes findLastLowerDirectoryRecord(Attributes rec)
+            throws IOException {
+        Attributes lower = readLowerDirectoryRecord(rec);
+        if (lower == null)
+            return null;
+
+        Attributes next;
+        while ((next = readNextDirectoryRecord(lower)) != null)
+            lower = next;
+        return lower;
+    }
+
     public Attributes findFirstRootDirectoryRecordInUse() throws IOException {
         return findRootDirectoryRecord(null, false);
     }
@@ -125,9 +166,7 @@ public class DicomDirReader {
     public Attributes findRootDirectoryRecord(Attributes keys,
             boolean ignoreCaseOfPN) throws IOException {
         return findRecordInUse(
-                fsInfo.getInt(
-                    Tag.OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity,
-                    0),
+                getOffsetOfFirstRootDirectoryRecord(),
                 keys, ignoreCaseOfPN);
     }
 
@@ -153,6 +192,45 @@ public class DicomDirReader {
         return findRecordInUse(
                 rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0),
                 keys, ignoreCaseOfPN);
+    }
+
+    public Attributes findPatientRecord(String id) throws IOException {
+        return findRootDirectoryRecord(
+                pk(RecordType.PATIENT, Tag.PatientID, VR.LO, id), false);
+    }
+
+    public Attributes findStudyRecord(Attributes patRec, String iuid)
+            throws IOException {
+        return findLowerDirectoryRecord(patRec,
+                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuid), false);
+    }
+
+    public Attributes findSeriesRecord(Attributes studyRec, String iuid)
+            throws IOException {
+        return findLowerDirectoryRecord(studyRec, 
+                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuid), false);
+    }
+
+    public Attributes findInstanceRecord(Attributes seriesRec, String iuid)
+            throws IOException {
+        return findLowerDirectoryRecord(seriesRec, pk(iuid), false);
+    }
+
+    public Attributes findInstanceRecord(String iuid) throws IOException {
+        return findRootDirectoryRecord(pk(iuid), false);
+    }
+
+    private Attributes pk(RecordType type, int tag, VR vr, String s) {
+        Attributes pk = new Attributes(2);
+        pk.setString(Tag.DirectoryRecordType, VR.CS, type.code());
+        pk.setString(tag, vr, s);
+        return pk;
+    }
+
+    private Attributes pk(String iuid) {
+        Attributes pk = new Attributes(1);
+        pk.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.UI, iuid);
+        return pk;
     }
 
     private Attributes findRecordInUse(int offset, Attributes keys,

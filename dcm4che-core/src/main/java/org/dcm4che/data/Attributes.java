@@ -60,7 +60,11 @@ public class Attributes implements Serializable {
         this.values = new Object[initialCapacity];
     }
 
-    public Attributes(boolean bigEndian, Attributes other) {
+    public Attributes(Attributes other) {
+        this(other, other.bigEndian);
+    }
+
+    public Attributes(Attributes other, boolean bigEndian) {
         this(bigEndian, other.size);
         addAll(other);
     }
@@ -1002,7 +1006,7 @@ public class Attributes implements Serializable {
     private void set(int tag, String privateCreator, Sequence src) {
         Sequence dst = newSequence(tag, privateCreator, src.size());
         for (Attributes item : src)
-            dst.add(new Attributes(bigEndian, item));
+            dst.add(new Attributes(item, bigEndian));
     }
 
     private void set(int tag, String privateCreator, Fragments src) {

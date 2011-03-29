@@ -224,7 +224,7 @@ public class RecordFactory {
                     .equals(item.getString(Tag.RelationshipType, null))) {
                 if (dstSeq == null)
                     dstSeq = rec.newSequence(Tag.ContentSequence, 1);
-                dstSeq.add(new Attributes(false, item));
+                dstSeq.add(new Attributes(item, false));
             }
         }
     }

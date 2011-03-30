@@ -14,6 +14,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
@@ -240,10 +242,6 @@ public class DcmDir {
                 if (cl.hasOption("r")) {
                     dcmdir.openForReadOnly(new File(cl.getOptionValue("r")));
                     dcmdir.list();
-                } if (cl.hasOption("c")) {
-                    dcmdir.create(new File(cl.getOptionValue("c")));
-                } else if (cl.hasOption("u")) {
-                    dcmdir.open(new File(cl.getOptionValue("u")));
                 } else if (cl.hasOption("d")) {
                     dcmdir.open(new File(cl.getOptionValue("d")));
                     int num = 0;
@@ -266,38 +264,18 @@ public class DcmDir {
                 } else if (cl.hasOption("z")) {
                     String fpath = cl.getOptionValue("z");
                     File f = new File(fpath);
-                    File tmp = File.createTempFile("DICOMDIR", null,
-                            f.getParentFile());
                     File bak = new File(fpath + "~");
-                    DicomDirReader r = new DicomDirReader(f);
-                    try {
-                        dcmdir.setFilesetUID(r.getFileSetUID());
-                        dcmdir.setFilesetID(r.getFileSetID());
-                        dcmdir.setDescriptorFile(
-                                r.getDescriptorFile());
-                        dcmdir.setDescriptorFileCharset(
-                                r.getDescriptorFileCharacterSet());
-                        dcmdir.create(tmp);
-                        dcmdir.copyFrom(r);
-                    } finally {
-                        dcmdir.close();
-                        try { r.close(); } catch (IOException ignore) {}
-                    }
-                    bak.delete();
-                    if (!f.renameTo(bak)) {
-                        throw new IOException("Failed to rename " + f +
-                                " to " + bak);
-                    }
-                    if (!tmp.renameTo(f)) {
-                        throw new IOException("Failed to rename " + tmp +
-                                " to " + f);
-                    }
+                    dcmdir.compact(f, bak);
                     long end = System.currentTimeMillis();
                     System.out.println("Compact " + f + " from " + bak.length() 
                             + " to " + f.length() + " bytes in " + (end - start) 
                             + "ms.");
-                }
-                if (cl.hasOption("c") || cl.hasOption("u")) {
+                } else {
+                    if (cl.hasOption("c")) {
+                        dcmdir.create(new File(cl.getOptionValue("c")));
+                    } else if (cl.hasOption("u")) {
+                        dcmdir.open(new File(cl.getOptionValue("u")));
+                    }
                     dcmdir.setRecordFactory(new RecordFactory());
                     int num = 0;
                     for (String arg : argList)
@@ -306,9 +284,7 @@ public class DcmDir {
                     long end = System.currentTimeMillis();
                     System.out.println();
                     System.out.println("Add " + num 
-                            + (cl.hasOption("c") 
-                                ? " directory records to new directory file "
-                                : " directory records to existing directory file ")
+                            + " directory records to directory file "
                             + dcmdir.getFile() + " in " + (end - start) + "ms.");
                 }
             } finally {
@@ -322,6 +298,33 @@ public class DcmDir {
             System.err.println("dcmdir: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    public void compact(File f, File bak) throws IOException {
+        File tmp = File.createTempFile("DICOMDIR", null, f.getParentFile());
+        DicomDirReader r = new DicomDirReader(f);
+        try {
+            setFilesetUID(r.getFileSetUID());
+            setFilesetID(r.getFileSetID());
+            setDescriptorFile(
+                    r.getDescriptorFile());
+            setDescriptorFileCharset(
+                    r.getDescriptorFileCharacterSet());
+            create(tmp);
+            copyFrom(r);
+        } finally {
+            close();
+            try { r.close(); } catch (IOException ignore) {}
+        }
+        bak.delete();
+        if (!f.renameTo(bak)) {
+            throw new IOException("Failed to rename " + f +
+                    " to " + bak);
+        }
+        if (!tmp.renameTo(f)) {
+            throw new IOException("Failed to rename " + tmp +
+                    " to " + f);
         }
     }
 
@@ -512,16 +515,25 @@ public class DcmDir {
         din.setIncludeBulkData(false);
         Attributes fmi = din.readFileMetaInformation();
         Attributes dataset = din.readDataset(-1, Tag.PixelData);
-        Attributes patRec = in.findPatientRecord(
-                dataset.getString(Tag.PatientID, null));
+        char prompt = '.';
+        if (fmi == null) {
+            fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
+            prompt = 'F';
+        }
+        String pid = dataset.getString(Tag.PatientID, null);
+        String suid = dataset.getString(Tag.StudyInstanceUID, null);
+        if (pid == null) {
+            dataset.setString(Tag.PatientID, VR.LO, suid);
+            prompt = prompt == 'F' ? 'P' : 'p';
+        }
+        Attributes patRec = in.findPatientRecord(pid);
         if (patRec == null) {
             patRec = recFact.createRecord(RecordType.PATIENT, null, dataset,
                     null, null);
             out.addRootDirectoryRecord(patRec);
             n++;
         }
-        Attributes studyRec = in.findStudyRecord(patRec,
-                dataset.getString(Tag.StudyInstanceUID, null));
+        Attributes studyRec = in.findStudyRecord(patRec, suid);
         if (studyRec == null) {
             studyRec = recFact.createRecord(RecordType.STUDY, null, dataset,
                     null, null);
@@ -547,7 +559,7 @@ public class DcmDir {
         }
         instRec = recFact.createRecord(dataset, fmi, out.toFileIDs(f));
         out.addLowerDirectoryRecord(seriesRec, instRec);
-        System.out.print('.');
+        System.out.print(prompt);
         return n + 1;
     }
 

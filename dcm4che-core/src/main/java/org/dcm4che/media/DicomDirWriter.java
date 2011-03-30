@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
@@ -38,8 +39,8 @@ public class DicomDirWriter extends DicomDirReader {
     private final int firstRecordPos;
     private int nextRecordPos;
     private int rollbackLen = -1;
-    private Attributes cachedParentRecord;
-    private Attributes cachedLastChildRecord;
+    private IdentityHashMap<Attributes,Attributes> lastChildRecords =
+            new IdentityHashMap<Attributes,Attributes>();
     private final ArrayList<Attributes> dirtyRecords =
             new ArrayList<Attributes>();
 
@@ -166,20 +167,17 @@ public class DicomDirWriter extends DicomDirReader {
 
     public synchronized Attributes addLowerDirectoryRecord(
             Attributes parentRec, Attributes rec) throws IOException {
-        if (parentRec == cachedParentRecord) {
-            addRecord(Tag.OffsetOfTheNextDirectoryRecord, 
-                    cachedLastChildRecord, rec);
-        } else {
-            Attributes prevRec = findLastLowerDirectoryRecord(parentRec);
-            if (prevRec != null) {
-                addRecord(Tag.OffsetOfTheNextDirectoryRecord, prevRec, rec);
-            } else {
-                addRecord(Tag.OffsetOfReferencedLowerLevelDirectoryEntity,
-                        parentRec, rec);
-            }
-            cachedParentRecord = parentRec;
-        }
-        cachedLastChildRecord = rec;
+        Attributes prevRec = lastChildRecords.get(parentRec);
+        if (prevRec == null)
+            prevRec = findLastLowerDirectoryRecord(parentRec);
+
+        if (prevRec != null)
+            addRecord(Tag.OffsetOfTheNextDirectoryRecord, prevRec, rec);
+        else
+            addRecord(Tag.OffsetOfReferencedLowerLevelDirectoryEntity,
+                    parentRec, rec);
+
+        lastChildRecords.put(parentRec, rec);
         return rec;
     }
  
@@ -202,9 +200,7 @@ public class DicomDirWriter extends DicomDirReader {
         if (dirtyRecords.isEmpty())
             return;
 
-        cachedParentRecord = null;
-        cachedLastChildRecord = null;
-        cache.clear();
+        clearCache();
         dirtyRecords.clear();
         if (rollbackLen != -1) {
             restoreDirInfo();
@@ -218,6 +214,11 @@ public class DicomDirWriter extends DicomDirReader {
             writeFileSetConsistencyFlag(NO_KNOWN_INCONSISTENCIES);
             rollbackLen = -1;
         }
+    }
+
+    public void clearCache() {
+        lastChildRecords.clear();
+        super.clearCache();
     }
 
     public synchronized void commit() throws IOException {
@@ -307,9 +308,9 @@ public class DicomDirWriter extends DicomDirReader {
 
     private void addRecord(int tag, Attributes prevRec, Attributes rec)
             throws IOException {
-        writeRecord(nextRecordPos, rec);
         prevRec.setInt(tag, VR.UL, nextRecordPos);
         markAsDirty(prevRec);
+        writeRecord(nextRecordPos, rec);
     }
 
     private void writeRecord(int offset, Attributes rec) throws IOException {

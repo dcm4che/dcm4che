@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class StringUtilsTest {
 
     @Test

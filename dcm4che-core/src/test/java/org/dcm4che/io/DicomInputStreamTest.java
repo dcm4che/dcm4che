@@ -9,6 +9,9 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class DicomInputStreamTest {
 
     @Test

@@ -9,6 +9,9 @@ import java.util.TimeZone;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class DateUtilsTest {
 
     private final long SECOND = 1000L;

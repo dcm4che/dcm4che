@@ -10,6 +10,9 @@ import java.io.ObjectOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class IntHashMapTest {
 
     private IntHashMap<Integer> map;

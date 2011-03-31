@@ -19,6 +19,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class DicomOutputStreamTest {
 
     private File file;

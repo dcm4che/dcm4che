@@ -8,6 +8,9 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class DicomDirReaderTest {
 
     private static File toFile(String name) throws Exception {

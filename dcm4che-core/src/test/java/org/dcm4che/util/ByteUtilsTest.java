@@ -6,6 +6,9 @@ import static org.junit.Assert.*;
 import org.dcm4che.data.Tag;
 import org.junit.Test;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ */
 public class ByteUtilsTest {
 
     private static final byte[] SHORT_12345_BE = { -49, -57 };

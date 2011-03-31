@@ -160,64 +160,66 @@ public class DicomDirReader {
     }
 
     public Attributes findFirstRootDirectoryRecordInUse() throws IOException {
-        return findRootDirectoryRecord(null, false);
+        return findRootDirectoryRecord(null, false, false);
     }
 
     public Attributes findRootDirectoryRecord(Attributes keys,
-            boolean ignoreCaseOfPN) throws IOException {
+            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
         return findRecordInUse(
                 getOffsetOfFirstRootDirectoryRecord(),
-                keys, ignoreCaseOfPN);
+                keys, ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findNextDirectoryRecordInUse(Attributes rec)
             throws IOException {
-        return findNextDirectoryRecord(rec, null, false);
+        return findNextDirectoryRecord(rec, null, false, false);
     }
 
     public Attributes findNextDirectoryRecord(Attributes rec, Attributes keys,
-            boolean ignoreCaseOfPN) throws IOException {
+            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
         return findRecordInUse(
                 rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0),
-                keys, ignoreCaseOfPN);
+                keys, ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findLowerDirectoryRecordInUse(Attributes rec)
             throws IOException {
-        return findLowerDirectoryRecord(rec, null, false);
+        return findLowerDirectoryRecord(rec, null, false, false);
     }
 
     public Attributes findLowerDirectoryRecord(Attributes rec, Attributes keys,
-            boolean ignoreCaseOfPN) throws IOException {
+            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
         return findRecordInUse(
                 rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0),
-                keys, ignoreCaseOfPN);
+                keys, ignoreCaseOfPN, matchNoValue);
     }
 
     public Attributes findPatientRecord(String id) throws IOException {
         return findRootDirectoryRecord(
-                pk(RecordType.PATIENT, Tag.PatientID, VR.LO, id), false);
+                pk(RecordType.PATIENT, Tag.PatientID, VR.LO, id), false, false);
     }
 
     public Attributes findStudyRecord(Attributes patRec, String iuid)
             throws IOException {
         return findLowerDirectoryRecord(patRec,
-                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuid), false);
+                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuid),
+                false, false);
     }
 
     public Attributes findSeriesRecord(Attributes studyRec, String iuid)
             throws IOException {
         return findLowerDirectoryRecord(studyRec, 
-                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuid), false);
+                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuid),
+                false, false);
     }
 
     public Attributes findInstanceRecord(Attributes seriesRec, String iuid)
             throws IOException {
-        return findLowerDirectoryRecord(seriesRec, pk(iuid), false);
+        return findLowerDirectoryRecord(seriesRec, pk(iuid), false, false);
     }
 
     public Attributes findInstanceRecord(String iuid) throws IOException {
-        return findRootDirectoryRecord(pk(iuid), false);
+        return findRootDirectoryRecord(pk(iuid), false, false);
     }
 
     private Attributes pk(RecordType type, int tag, VR vr, String s) {
@@ -234,11 +236,11 @@ public class DicomDirReader {
     }
 
     private Attributes findRecordInUse(int offset, Attributes keys,
-            boolean ignoreCaseOfPN) throws IOException {
+            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
         while (offset != 0) {
             Attributes item = readRecord(offset);
-            if (inUse(item) 
-                    && (keys == null || item.matches(keys, ignoreCaseOfPN)))
+            if (inUse(item) && (keys == null
+                    || item.matches(keys, ignoreCaseOfPN, matchNoValue)))
                 return item;
             offset = item.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0);
         }

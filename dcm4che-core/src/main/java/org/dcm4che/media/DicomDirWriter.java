@@ -350,14 +350,14 @@ public class DicomDirWriter extends DicomDirReader {
 
     public synchronized int purge() throws IOException {
         int[] count = { 0 };
-        purge(readFirstRootDirectoryRecord(), count);
+        purge(findFirstRootDirectoryRecordInUse(), count);
         return count[0];
     }
 
     private boolean purge(Attributes rec, int[] count) throws IOException {
         boolean purge = true;
         while (rec != null) {
-            if (purge(readLowerDirectoryRecord(rec), count)
+            if (purge(findLowerDirectoryRecordInUse(rec), count)
                     && !rec.containsValue(Tag.ReferencedFileID)) {
                 deleteRecord(rec);
                 count[0]++;

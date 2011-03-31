@@ -1231,7 +1231,8 @@ public class Attributes implements Serializable {
         return fmi;
     }
 
-    public boolean matches(Attributes keys, boolean ignorePNCase) {
+    public boolean matches(Attributes keys, boolean ignorePNCase,
+            boolean matchNoValue) {
         int[] keyTags = keys.tags;
         VR[] keyVrs = keys.vrs;
         Object[] keyValues = keys.values;
@@ -1260,10 +1261,10 @@ public class Attributes implements Serializable {
 
             if (keyVrs[i].isStringType()) {
                 if (!matches(tag, privateCreator, keyVrs[i], ignorePNCase,
-                        keys.getStrings(tag, privateCreator)))
+                        matchNoValue, keys.getStrings(tag, privateCreator)))
                     return false;
             } else if (keyValue instanceof Sequence) {
-                if (!matches(tag, privateCreator, ignorePNCase,
+                if (!matches(tag, privateCreator, ignorePNCase, matchNoValue,
                         (Sequence) keyValue))
                     return false;
             } else {
@@ -1275,7 +1276,7 @@ public class Attributes implements Serializable {
     }
 
     private boolean matches(int tag, String privateCreator, VR vr,
-            boolean ignorePNCase, String[] keyVals) {
+            boolean ignorePNCase, boolean matchNoValue, String[] keyVals) {
         if (keyVals.length > 1)
             throw new IllegalArgumentException("Keys contain Attribute "
                     + TagUtils.toString(tag) + " with " + keyVals.length
@@ -1283,7 +1284,7 @@ public class Attributes implements Serializable {
 
         String[] vals = getStrings(tag, privateCreator);
         if (vals == null || vals.length == 0)
-            return true;
+            return matchNoValue;
 
         boolean ignoreCase = ignorePNCase && vr == VR.PN;
         String keyVal = vr == VR.PN
@@ -1294,7 +1295,10 @@ public class Attributes implements Serializable {
             Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
             for (String val : vals) {
                 if (val == null)
-                    return true;
+                    if (matchNoValue)
+                        return true;
+                    else
+                        continue;
                 if (vr == VR.PN)
                     val = new PersonName(val).toString();
                 if (pattern.matcher(val).matches())
@@ -1303,7 +1307,10 @@ public class Attributes implements Serializable {
         } else {
             for (String val : vals) {
                 if (val == null)
-                    return true;
+                    if (matchNoValue)
+                        return true;
+                    else
+                        continue;
                 if (vr == VR.PN)
                     val = new PersonName(val).toString();
                 if (ignoreCase ? keyVal.equalsIgnoreCase(val)
@@ -1315,7 +1322,7 @@ public class Attributes implements Serializable {
     }
 
     private boolean matches(int tag, String privateCreator,
-            boolean ignorePNCase, Sequence keySeq) {
+            boolean ignorePNCase, boolean matchNoValue, Sequence keySeq) {
         int n = keySeq.size();
         if (n > 1)
             throw new IllegalArgumentException("Keys contain Sequence "
@@ -1327,12 +1334,12 @@ public class Attributes implements Serializable {
 
         Object value = getValue(tag, privateCreator);
         if (value == null || isEmpty(value))
-            return true;
+            return matchNoValue;
 
         if (value instanceof Sequence) {
             Sequence sq = (Sequence) value;
             for (Attributes item : sq)
-                if (item.matches(keys, ignorePNCase));
+                if (item.matches(keys, ignorePNCase, matchNoValue));
         }
         return false;
     }

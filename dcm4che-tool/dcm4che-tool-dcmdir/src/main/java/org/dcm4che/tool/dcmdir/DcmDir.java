@@ -26,15 +26,28 @@ import org.dcm4che.util.UIDUtils;
 public class DcmDir {
 
     private static final String USAGE =
-        "dcmdir -{crudpz} <dicomdir> [Options] [<file>..][<directory>..]";
+        "dcmdir -{cdlpuz} <dicomdir> [Options] [<file>..][<directory>..]";
 
     private static final String DESCRIPTION = 
         "\nUtility to read, create and update DICOM directory files." +
+        "\n-\nPrompts:" +
+        "\n'.' - add record(s) referring regular DICOM Part 10 file" +
+        "\n'F' - add record(s) referring file without File Meta Information" +
+        "\n'p' - add record(s) referring instance without Patient ID, using" +
+        " the Study Instance UID as Patient ID in the PATIENT record" +
+        "\n'P' - add record(s) referring file without File Meta Information" +
+        " with instance without Patient ID, using the Study Instance UID" +
+        " as Patient ID in the PATIENT record" +
+        "\n'r' - add root record referring instance without Study Instance UID" +
+        "\n'R' - add root record referring file without File Meta Information" +
+        " with instance without Study Instance UID" +
+        "\n'-' - do not add any record for already referenced file" +
+        "\n'x' - delete record referring one file" +
         "\n-\nOptions:";
 
     private static final String EXAMPLE = 
         "--\nExample 1: list content of DICOMDIR to stdout:" +
-        "\n$ dicomdir -r /media/cdrom/DICOMDIR" +
+        "\n$ dicomdir -l /media/cdrom/DICOMDIR" +
         "\n--\nExample 2: create a new directory file with specified " +
         "File-set ID and Descriptor File, referencing all DICOM Files in " +
         "directory disk99/DICOM:" +
@@ -82,9 +95,9 @@ public class DcmDir {
         cmdGroup.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("dicomdir")
-                .withDescription("read directory file <dicomdir> and list " +
-                    "content into standard out")
-                .create("r"));
+                .withDescription("list content of directory file <dicomdir> " +
+                    "to standard out")
+                .create("l"));
         cmdGroup.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("dicomdir")
@@ -239,19 +252,19 @@ public class DcmDir {
             try {
                 List<String> argList = cl.getArgList();
                 long start = System.currentTimeMillis();
-                if (cl.hasOption("r")) {
-                    dcmdir.openForReadOnly(new File(cl.getOptionValue("r")));
+                if (cl.hasOption("l")) {
+                    dcmdir.openForReadOnly(new File(cl.getOptionValue("l")));
                     dcmdir.list();
                 } else if (cl.hasOption("d")) {
                     dcmdir.open(new File(cl.getOptionValue("d")));
                     int num = 0;
                     for (String arg : argList)
-                        num += dcmdir.deleteFile(new File(arg));
+                        num += dcmdir.removeReferenceTo(new File(arg));
                     dcmdir.close();
                     long end = System.currentTimeMillis();
                     System.out.println();
                     System.out.println("Delete " + num 
-                            + " directory records to existing directory file "
+                            + " directory record(s) from existing directory file "
                             + dcmdir.getFile() + " in " + (end - start) + "ms.");
                 } else if (cl.hasOption("p")) {
                     dcmdir.open(new File(cl.getOptionValue("p")));
@@ -259,7 +272,7 @@ public class DcmDir {
                     dcmdir.close();
                     long end = System.currentTimeMillis();
                     System.out.println("Purge " + num 
-                            + " directory records from existing directory file "
+                            + " directory record(s) from existing directory file "
                             + dcmdir.getFile() + " in " + (end - start) + "ms.");
                 } else if (cl.hasOption("z")) {
                     String fpath = cl.getOptionValue("z");
@@ -279,7 +292,7 @@ public class DcmDir {
                     dcmdir.setRecordFactory(new RecordFactory());
                     int num = 0;
                     for (String arg : argList)
-                        num += dcmdir.addFile(new File(arg));
+                        num += dcmdir.addReferenceTo(new File(arg));
                     dcmdir.close();
                     long end = System.currentTimeMillis();
                     System.out.println();
@@ -333,7 +346,7 @@ public class DcmDir {
         while (rec != null) {
             copyChildsFrom(r, rec,
                     out.addRootDirectoryRecord(new Attributes(rec)));
-            rec = r.readNextDirectoryRecord(rec);
+            rec = r.findNextDirectoryRecordInUse(rec);
         }
     }
 
@@ -343,7 +356,7 @@ public class DcmDir {
         while (rec != null) {
             copyChildsFrom(r, rec,
                     out.addLowerDirectoryRecord(dst, new Attributes(rec)));
-            rec = r.readNextDirectoryRecord(rec);
+            rec = r.findNextDirectoryRecordInUse(rec);
         }
     }
 
@@ -495,103 +508,161 @@ public class DcmDir {
         }
     }
 
-    public int addFile(File f) throws IOException {
+    public int addReferenceTo(File f) throws IOException {
         checkOut();
         checkRecordFactory();
-        return doAddFile(f);
-    }
-    private int doAddFile(File f) throws IOException {
         int n = 0;
         if (f.isDirectory()) {
             for (String s : f.list())
-                n += doAddFile(new File(f, s));
+                n += addReferenceTo(new File(f, s));
             return n;
         }
         // do not add reference to DICOMDIR
         if (f.equals(file))
             return 0;
 
-        DicomInputStream din = new DicomInputStream(f);
-        din.setIncludeBulkData(false);
-        Attributes fmi = din.readFileMetaInformation();
-        Attributes dataset = din.readDataset(-1, Tag.PixelData);
+        Attributes fmi;
+        Attributes dataset;
+        DicomInputStream din = null;
+        try {
+            din = new DicomInputStream(f);
+            din.setIncludeBulkData(false);
+            fmi = din.readFileMetaInformation();
+            dataset = din.readDataset(-1, Tag.PixelData);
+        } catch (IOException e) {
+            System.out.println();
+            System.out.println("Failed to parse file " + f
+                    + ": " + e.getMessage());
+            return 0;
+        } finally {
+            if (din != null)
+                try { din.close(); } catch (Exception ignore) {}
+        }
         char prompt = '.';
         if (fmi == null) {
             fmi = dataset.createFileMetaInformation(UID.ImplicitVRLittleEndian);
             prompt = 'F';
         }
+        String iuid = fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
+        if (iuid == null) {
+            System.out.println();
+            System.out.println("Skip DICOM file " + f
+                    + " without SOP Instance UID (0008, 0018)");
+            return 0;
+        }
         String pid = dataset.getString(Tag.PatientID, null);
-        String suid = dataset.getString(Tag.StudyInstanceUID, null);
-        if (pid == null) {
-            dataset.setString(Tag.PatientID, VR.LO, pid = suid);
-            prompt = prompt == 'F' ? 'P' : 'p';
-        }
-        Attributes patRec = in.findPatientRecord(pid);
-        if (patRec == null) {
-            patRec = recFact.createRecord(RecordType.PATIENT, null, dataset,
-                    null, null);
-            out.addRootDirectoryRecord(patRec);
-            n++;
-        }
-        Attributes studyRec = in.findStudyRecord(patRec, suid);
-        if (studyRec == null) {
-            studyRec = recFact.createRecord(RecordType.STUDY, null, dataset,
-                    null, null);
-            out.addLowerDirectoryRecord(patRec, studyRec);
-            n++;
-        }
-        Attributes seriesRec = in.findSeriesRecord(studyRec,
-                dataset.getString(Tag.SeriesInstanceUID, null));
-        if (seriesRec == null) {
-            seriesRec = recFact.createRecord(RecordType.SERIES, null, dataset,
-                    null, null);
-            out.addLowerDirectoryRecord(studyRec, seriesRec);
-            n++;
-        }
-        Attributes instRec;
-        if (checkDuplicate) {
-            instRec = in.findInstanceRecord(seriesRec,
-                    fmi.getString(Tag.MediaStorageSOPInstanceUID, null));
-            if (instRec != null) {
-                System.out.print('D');
-                return 0;
+        String styuid = dataset.getString(Tag.StudyInstanceUID, null);
+        String seruid = dataset.getString(Tag.SeriesInstanceUID, null);
+        if (styuid != null && seruid != null) {
+            if (pid == null) {
+                dataset.setString(Tag.PatientID, VR.LO, pid = styuid);
+                prompt = prompt == 'F' ? 'P' : 'p';
             }
+            Attributes patRec = in.findPatientRecord(pid);
+            if (patRec == null) {
+                patRec = recFact.createRecord(RecordType.PATIENT, null,
+                        dataset, null, null);
+                out.addRootDirectoryRecord(patRec);
+                n++;
+            }
+            Attributes studyRec = in.findStudyRecord(patRec, styuid);
+            if (studyRec == null) {
+                studyRec = recFact.createRecord(RecordType.STUDY, null,
+                        dataset, null, null);
+                out.addLowerDirectoryRecord(patRec, studyRec);
+                n++;
+            }
+            Attributes seriesRec = in.findSeriesRecord(studyRec, seruid);
+            if (seriesRec == null) {
+                seriesRec = recFact.createRecord(RecordType.SERIES, null,
+                        dataset, null, null);
+                out.addLowerDirectoryRecord(studyRec, seriesRec);
+                n++;
+            }
+            Attributes instRec;
+            if (checkDuplicate) {
+                instRec = in.findInstanceRecord(seriesRec, iuid);
+                if (instRec != null) {
+                    System.out.print('-');
+                    return 0;
+                }
+            }
+            instRec = recFact.createRecord(dataset, fmi, out.toFileIDs(f));
+            out.addLowerDirectoryRecord(seriesRec, instRec);
+        } else {
+            if (checkDuplicate) {
+                if (in.findInstanceRecord(iuid) != null) {
+                    System.out.print('-');
+                    return 0;
+                }
+            }
+            Attributes instRec = recFact.createRecord(dataset, fmi, 
+                    out.toFileIDs(f));
+            out.addRootDirectoryRecord(instRec);
+            prompt = prompt == 'F' ? 'R' : 'r';
         }
-        instRec = recFact.createRecord(dataset, fmi, out.toFileIDs(f));
-        out.addLowerDirectoryRecord(seriesRec, instRec);
         System.out.print(prompt);
         return n + 1;
     }
 
-    public int deleteFile(File f) throws IOException {
+    public int removeReferenceTo(File f) throws IOException {
         checkOut();
         int n = 0;
         if (f.isDirectory()) {
             for (String s : f.list())
-                n += deleteFile(new File(f, s));
+                n += removeReferenceTo(new File(f, s));
             return n;
         }
-        DicomInputStream din = new DicomInputStream(f);
-        din.setIncludeBulkData(false);
-        Attributes fmi = din.readFileMetaInformation();
-        Attributes dataset = din.readDataset(-1, Tag.PixelData);
-        Attributes patRec = in.findPatientRecord(
-                dataset.getString(Tag.PatientID, null));
-        if (patRec == null) {
+        String pid;
+        String styuid;
+        String seruid;
+        String iuid;
+        DicomInputStream din = null;
+        try {
+            din = new DicomInputStream(f);
+            din.setIncludeBulkData(false);
+            Attributes fmi = din.readFileMetaInformation();
+            Attributes dataset = din.readDataset(-1, Tag.StudyID);
+            iuid = (fmi != null)
+                ? fmi.getString(Tag.MediaStorageSOPInstanceUID, null)
+                : dataset.getString(Tag.SOPInstanceUID, null);
+            if (iuid == null) {
+                System.out.println();
+                System.out.println("Skip DICOM file " + f
+                        + " without SOP Instance UID (0008, 0018)");
+                return 0;
+            }
+            pid = dataset.getString(Tag.PatientID, null);
+            styuid = dataset.getString(Tag.StudyInstanceUID, null);
+            seruid = dataset.getString(Tag.SeriesInstanceUID, null);
+        } catch (IOException e) {
+            System.out.println();
+            System.out.println("Failed to parse file " + f
+                    + ": " + e.getMessage());
             return 0;
+        } finally {
+            if (din != null)
+                try { din.close(); } catch (Exception ignore) {}
         }
-        Attributes studyRec = in.findStudyRecord(patRec,
-                dataset.getString(Tag.StudyInstanceUID, null));
-        if (studyRec == null) {
-            return 0;
+        Attributes instRec;
+        if (styuid != null && seruid != null) {
+            Attributes patRec =
+                in.findPatientRecord(pid == null ? styuid : pid);
+            if (patRec == null) {
+                return 0;
+            }
+            Attributes studyRec = in.findStudyRecord(patRec, styuid);
+            if (studyRec == null) {
+                return 0;
+            }
+            Attributes seriesRec = in.findSeriesRecord(studyRec, seruid);
+            if (seriesRec == null) {
+                return 0;
+            }
+            instRec = in.findInstanceRecord(seriesRec, iuid);
+        } else {
+            instRec = in.findInstanceRecord(iuid);
         }
-        Attributes seriesRec = in.findSeriesRecord(studyRec,
-                dataset.getString(Tag.SeriesInstanceUID, null));
-        if (seriesRec == null) {
-            return 0;
-        }
-        Attributes instRec = in.findInstanceRecord(seriesRec,
-                    fmi.getString(Tag.MediaStorageSOPInstanceUID, null));
         if (instRec == null) {
             return 0;
         }

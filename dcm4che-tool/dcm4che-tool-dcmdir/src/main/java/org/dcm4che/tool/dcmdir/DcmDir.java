@@ -523,7 +523,7 @@ public class DcmDir {
         String pid = dataset.getString(Tag.PatientID, null);
         String suid = dataset.getString(Tag.StudyInstanceUID, null);
         if (pid == null) {
-            dataset.setString(Tag.PatientID, VR.LO, suid);
+            dataset.setString(Tag.PatientID, VR.LO, pid = suid);
             prompt = prompt == 'F' ? 'P' : 'p';
         }
         Attributes patRec = in.findPatientRecord(pid);

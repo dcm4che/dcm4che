@@ -143,16 +143,11 @@ public class Attributes implements Serializable {
     }
 
     public void internalizeStringValues(boolean decode) {
-        Object value;
-        VR vr;
         SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < values.length; i++) {
-            if ((value = values[i]) == null)
-                continue;
-            if (value instanceof Sequence) {
-                for (Attributes item : (Sequence) value)
-                    item.internalizeStringValues(decode);
-            } else if ((vr = vrs[i]).isStringType()) {
+            VR vr = vrs[i];
+            Object value = values[i];
+            if (vr.isStringType()) {
                 if (value instanceof byte[]) {
                     if (!decode)
                         continue;
@@ -160,12 +155,14 @@ public class Attributes implements Serializable {
                 }
                 if (value instanceof String)
                     values[i] = ((String) value).intern();
-                else {
+                else if (value instanceof String[]) {
                     String[] ss = (String[]) value;
                     for (int j = 0; j < ss.length; j++)
                         ss[j] = ss[j].intern();
                 }
-            }
+            } else if (value instanceof Sequence)
+                for (Attributes item : (Sequence) value)
+                    item.internalizeStringValues(decode);
         }
     }
 

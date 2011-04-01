@@ -70,7 +70,7 @@ public class Attributes implements Serializable {
     private transient VR[] vrs;
     private transient Object[] values;
     private transient int size;
-    private transient SpecificCharacterSet cs = SpecificCharacterSet.DEFAULT;
+    private transient SpecificCharacterSet cs;
     private transient int length = -1;
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;

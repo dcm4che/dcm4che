@@ -44,17 +44,24 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.DateUtils;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Attributes implements Serializable {
+
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(Attributes.class);
 
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
@@ -70,7 +77,10 @@ public class Attributes implements Serializable {
     private transient VR[] vrs;
     private transient Object[] values;
     private transient int size;
+    private transient volatile boolean initcs;
+    private transient volatile boolean inittz;
     private transient SpecificCharacterSet cs;
+    private transient TimeZone tz;
     private transient int length = -1;
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;
@@ -806,9 +816,43 @@ public class Attributes implements Serializable {
 
 
      public SpecificCharacterSet getSpecificCharacterSet() {
-        return cs != null ? cs 
-                : parent != null ? parent.getSpecificCharacterSet()
-                        : SpecificCharacterSet.DEFAULT;
+         if (initcs) {
+             String[] codes = getStrings(Tag.SpecificCharacterSet);
+             if (codes != null)
+                 cs = SpecificCharacterSet.valueOf(codes);
+             initcs = false;
+         }
+         return cs != null 
+                 ? cs
+                 : parent != null 
+                         ? parent.getSpecificCharacterSet()
+                         : SpecificCharacterSet.DEFAULT;
+     }
+
+     public TimeZone getTimeZone() {
+         if (inittz) {
+             String s = getString(Tag.TimezoneOffsetFromUTC, null);
+             if (s != null) {
+                 try {
+                     tz = DateUtils.timeZone(s);
+                 } catch (IllegalArgumentException e) {
+                     LOG.info(e.getMessage());
+                 }
+             }
+             
+             inittz = true;
+         }
+         return tz != null 
+                 ? tz
+                 : parent != null 
+                         ? parent.getTimeZone()
+                         : (tz = TimeZone.getDefault());
+     }
+
+     public void setTimeZone(TimeZone tz) {
+         String s = DateUtils.format(tz);
+         setString(Tag.TimezoneOffsetFromUTC, VR.SH, s);
+         this.tz = tz;
      }
 
      public String getPrivateCreator(int tag) {
@@ -844,8 +888,13 @@ public class Attributes implements Serializable {
         }
         values[--size] = null;
 
-        if (tag == Tag.SpecificCharacterSet)
+        if (tag == Tag.SpecificCharacterSet) {
             cs = null;
+            initcs = false;
+        } else if (tag == Tag.TimezoneOffsetFromUTC) {
+            tz = null;
+            inittz = false;
+        }
 
         return value;
     }
@@ -959,8 +1008,15 @@ public class Attributes implements Serializable {
         }
 
         Object oldValue = set(tag, vr, value);
-        if (tag == Tag.SpecificCharacterSet)
-            initSpecificCharacterSet();
+
+        if (tag == Tag.SpecificCharacterSet) {
+            cs = null;
+            initcs = true;
+        } else if (tag == Tag.TimezoneOffsetFromUTC) {
+            tz = null;
+            inittz = true;
+        }
+
         return oldValue;
     }
 
@@ -1055,13 +1111,6 @@ public class Attributes implements Serializable {
             dst.add((frag instanceof byte[] && toogleEndian) 
                     ? vr.toggleEndian((byte[]) frag, true)
                     : frag);
-    }
-
-    void initSpecificCharacterSet() {
-        cs = null;
-        String[] codes = getStrings(Tag.SpecificCharacterSet);
-        if (codes != null)
-            cs = SpecificCharacterSet.valueOf(codes);
     }
 
     @Override

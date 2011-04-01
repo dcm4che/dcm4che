@@ -128,18 +128,29 @@ public class DateUtils {
         Calendar cal = cal(tz, date);
         formatDT(cal, toAppendTo, lastField);
         if (timeZone) {
-            int value = cal.get(Calendar.ZONE_OFFSET)
+            int offset = cal.get(Calendar.ZONE_OFFSET)
                     + cal.get(Calendar.DST_OFFSET);
-            if (value < 0) {
-                value = -value;
-                toAppendTo.append('-');
-            } else
-                toAppendTo.append('+');
-            int min = value / 60000;
-            appendXX(min / 60, toAppendTo);
-            appendXX(min % 60, toAppendTo);
+            appendZZZZZ(offset, toAppendTo);
         }
         return toAppendTo;
+    }
+
+    private static StringBuilder appendZZZZZ(int offset, StringBuilder sb) {
+        if (offset < 0) {
+            offset = -offset;
+            sb.append('-');
+        } else
+            sb.append('+');
+        int min = offset / 60000;
+        appendXX(min / 60, sb);
+        appendXX(min % 60, sb);
+        return sb;
+    }
+
+
+    public static String format(TimeZone tz) {
+        int offset = tz.getOffset(System.currentTimeMillis());
+        return appendZZZZZ(offset, new StringBuilder(5)).toString();
     }
 
     private static StringBuilder formatDT(Calendar cal, StringBuilder toAppendTo,
@@ -263,7 +274,7 @@ public class DateUtils {
     public static TimeZone timeZone(String s) {
         TimeZone tz;
         if (s.length() != 5 || (tz = safeTimeZone(s)) == null)
-            throw new IllegalArgumentException(s);
+            throw new IllegalArgumentException("Illegal Timezone Offset: " + s);
         return tz;
     }
 

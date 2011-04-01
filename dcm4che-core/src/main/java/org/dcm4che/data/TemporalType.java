@@ -41,62 +41,46 @@ package org.dcm4che.data;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.dcm4che.io.SAXWriter;
-import org.xml.sax.SAXException;
+import org.dcm4che.util.DateUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-interface ValueType {
+enum TemporalType {
+    DA {
+        @Override
+        public Date parse(TimeZone tz, String s, boolean ceil) {
+            return DateUtils.parseDA(tz, s);
+        }
 
-    boolean isStringValue();
+        @Override
+        public String format(TimeZone tz, Date date) {
+            return DateUtils.formatDA(tz, date);
+        }
+    }, DT {
+        @Override
+        public Date parse(TimeZone tz, String s, boolean ceil) {
+            return DateUtils.parseDT(tz, s);
+        }
 
-    boolean isTemporalType();
+        @Override
+        public String format(TimeZone tz, Date date) {
+            return DateUtils.formatDT(tz, date);
+        }
+    }, TM {
+        @Override
+        public Date parse(TimeZone tz, String s, boolean ceil) {
+            return DateUtils.parseTM(tz, s);
+        }
 
-    int numEndianBytes();
+        @Override
+        public String format(TimeZone tz, Date date) {
+            return DateUtils.formatTM(tz, date);
+        }
+    };
 
-    byte[] toggleEndian(byte[] b, boolean preserve);
+    public abstract Date parse(TimeZone tz, String val, boolean ceil);
 
-    byte[] toBytes(Object val, SpecificCharacterSet cs);
-
-    String toString(Object val, boolean bigEndian, int valueIndex, String defVal);
-
-    Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs);
-
-    int toInt(Object val, boolean bigEndian, int valueIndex, int defVal);
-
-    int[] toInts(Object val, boolean bigEndian);
-
-    float toFloat(Object val, boolean bigEndian, int valueIndex, float defVal);
-
-    float[] toFloats(Object val, boolean bigEndian);
-
-    double toDouble(Object val, boolean bigEndian, int valueIndex,
-            double defVal);
-
-    double[] toDoubles(Object val, boolean bigEndian);
-
-    Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal);
-
-    Date[] toDate(Object val, TimeZone tz);
-
-    Object toValue(byte[] b);
-
-    Object toValue(String s, boolean bigEndian);
-
-    Object toValue(String[] ss, boolean bigEndian);
-
-    Object toValue(int[] is, boolean bigEndian);
-
-    Object toValue(float[] fs, boolean bigEndian);
-
-    Object toValue(double[] ds, boolean bigEndian);
-
-    Object toValue(Date[] ds, TimeZone tz);
-
-    boolean prompt(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            int maxChars, StringBuilder sb);
-
-    void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException;
+    public abstract String format(TimeZone tz, Date date);
 }

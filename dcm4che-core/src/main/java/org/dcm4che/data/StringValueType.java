@@ -38,6 +38,9 @@
 
 package org.dcm4che.data;
 
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.dcm4che.io.SAXWriter;
 import org.dcm4che.util.StringUtils;
 import org.xml.sax.SAXException;
@@ -46,22 +49,35 @@ import org.xml.sax.SAXException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 enum StringValueType implements ValueType {
-    ASCII("\\") {
+    ASCII("\\", null),
+    STRING("\\", null){
 
         @Override
         protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return SpecificCharacterSet.DEFAULT;
+            return cs;
         }
     },
-    STRING("\\"),
-    TEXT("\n\f\r") {
+    TEXT("\n\f\r", null) {
+
+        @Override
+        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
+            return cs;
+        }
 
         @Override
         protected Object splitAndTrim(String s) {
             return StringUtils.trimTrailing(s);
         }
     },
-    PN("^=\\"){
+    DA("\\", TemporalType.DA),
+    DT("\\", TemporalType.DT),
+    TM("\\", TemporalType.TM),
+    PN("^=\\", null){
+
+        @Override
+        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
+            return cs;
+        }
 
         @Override
         protected void toXML(int i, String s, SAXWriter saxWriter)
@@ -70,12 +86,7 @@ enum StringValueType implements ValueType {
                 saxWriter.writePersonName(i, new PersonName(s));
         }
     },
-    DS("\\") {
-
-        @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return SpecificCharacterSet.DEFAULT;
-        }
+    DS("\\", null) {
 
         @Override
         public float toFloat(Object val, boolean bigEndian, int valueIndex,
@@ -175,12 +186,7 @@ enum StringValueType implements ValueType {
             return ss;
         } 
     },
-    IS("\\") {
-
-        @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return SpecificCharacterSet.DEFAULT;
-        }
+    IS("\\", null) {
 
         @Override
         public int toInt(Object val, boolean bigEndian, int valueIndex,
@@ -232,10 +238,22 @@ enum StringValueType implements ValueType {
         } 
     };
 
-    final String delimiters; 
+    final String delimiters;
+    final TemporalType temporalType; 
 
-    StringValueType(String delimiters) {
+    StringValueType(String delimiters, TemporalType temperalType) {
         this.delimiters = delimiters;
+        this.temporalType = temperalType;
+   }
+
+    @Override
+    public boolean isStringValue() {
+        return true;
+    }
+
+    @Override
+    public boolean isTemporalType() {
+        return temporalType != null;
     }
 
     @Override
@@ -249,8 +267,9 @@ enum StringValueType implements ValueType {
     }
 
     protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-        return cs;
+        return SpecificCharacterSet.DEFAULT;
     }
+
 
     @Override
     public byte[] toBytes(Object val, SpecificCharacterSet cs) {
@@ -335,6 +354,46 @@ enum StringValueType implements ValueType {
         throw new UnsupportedOperationException();
     } 
 
+
+    @Override
+    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
+        if (temporalType == null)
+            throw new UnsupportedOperationException();
+
+        if (val instanceof String) {
+            return valueIndex == 0
+                ? temporalType.parse(tz, (String) val, false)
+                : defVal;
+        }
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            return (valueIndex < ss.length && ss[valueIndex] != null)
+                ? temporalType.parse(tz, ss[valueIndex], false)
+                : defVal;
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Date[] toDate(Object val, TimeZone tz) {
+        if (temporalType == null)
+            throw new UnsupportedOperationException();
+
+        if (val instanceof String) {
+            return new Date[] { temporalType.parse(tz, (String) val, false) };
+        }
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            Date[] is = new Date[ss.length];
+            for (int i = 0; i < is.length; i++) {
+                if (ss[i] != null)
+                    is[i] = temporalType.parse(tz, ss[i], false);
+            }
+            return is;
+        }
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Object toValue(byte[] b) {
         return b != null && b.length > 0 ? b : Value.NULL;
@@ -373,6 +432,24 @@ enum StringValueType implements ValueType {
     public Object toValue(double[] ds, boolean bigEndian) {
         throw new UnsupportedOperationException();
     } 
+
+    @Override
+    public Object toValue(Date[] ds, TimeZone tz) {
+        if (temporalType == null)
+            throw new UnsupportedOperationException();
+
+        if (ds == null || ds.length == 0)
+            return Value.NULL;
+
+        if (ds.length == 1)
+            return temporalType.format(tz, ds[0]);
+
+        String[] ss = new String[ds.length];
+        for (int i = 0; i < ss.length; i++) {
+            ss[i] = temporalType.format(tz, ds[i]);
+        }
+        return ss;
+    }
 
     @Override
     public boolean prompt(Object val, boolean bigEndian,

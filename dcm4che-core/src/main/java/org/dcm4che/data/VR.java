@@ -38,6 +38,9 @@
 
 package org.dcm4che.data;
 
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.dcm4che.io.SAXWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,8 +169,12 @@ public enum VR {
         return paddingByte;
     }
 
+    public boolean isTemporalType() {
+        return valueType.isTemporalType();
+    }
+
     public boolean isStringType() {
-        return valueType instanceof StringValueType;
+        return valueType.isStringValue();
     }
 
     public boolean isXMLBase64() {
@@ -220,6 +227,14 @@ public enum VR {
         return valueType.toDoubles(val, bigEndian);
     }
 
+    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
+        return valueType.toDate(val, tz, valueIndex, defVal);
+    }
+
+    public Date[] toDates(Object val, TimeZone tz) {
+        return valueType.toDate(val, tz);
+    }
+
     Object toValue(byte[] b) {
         return valueType.toValue(b);
     }
@@ -242,6 +257,10 @@ public enum VR {
 
     Object toValue(double[] ds, boolean bigEndian) {
         return valueType.toValue(ds, bigEndian);
+    }
+
+    public Object toValue(Date[] ds, TimeZone tz) {
+        return valueType.toValue(ds, tz);
     }
 
     public boolean prompt(Object val, boolean bigEndian,

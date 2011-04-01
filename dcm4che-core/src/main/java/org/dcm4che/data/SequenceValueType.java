@@ -38,6 +38,9 @@
 
 package org.dcm4che.data;
 
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.dcm4che.io.SAXWriter;
 import org.xml.sax.SAXException;
 
@@ -46,6 +49,16 @@ import org.xml.sax.SAXException;
  */
 enum SequenceValueType implements ValueType {
     SQ;
+
+    @Override
+    public boolean isStringValue() {
+        return false;
+    }
+
+    @Override
+    public boolean isTemporalType() {
+        return false;
+    }
 
     @Override
     public int numEndianBytes() {
@@ -108,6 +121,16 @@ enum SequenceValueType implements ValueType {
     } 
 
     @Override
+    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Date[] toDate(Object val, TimeZone tz) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object toValue(byte[] b) {
         throw new UnsupportedOperationException();
     } 
@@ -136,6 +159,11 @@ enum SequenceValueType implements ValueType {
     public Object toValue(double[] ds, boolean bigEndian) {
         throw new UnsupportedOperationException();
     } 
+
+    @Override
+    public Object toValue(Date[] ds, TimeZone tz) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public boolean prompt(Object val, boolean bigEndian,

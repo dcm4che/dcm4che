@@ -43,6 +43,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
@@ -71,7 +72,8 @@ public class Attributes implements Serializable {
     private static final float[] EMPTY_FLOATS = {};
     private static final double[] EMPTY_DOUBLES = {};
     private static final String[] EMPTY_STRINGS = {};
- 
+    private static final Date[] EMPTY_DATES = {};
+
     private transient Attributes parent;
     private transient int[] tags;
     private transient VR[] vrs;
@@ -814,6 +816,99 @@ public class Attributes implements Serializable {
         return item != null ? item.getDoubles(tag, privateCreator) : null;
     }
 
+    public Date getDate(int tag, Date defVal) {
+        return getDate(tag, null, 0, defVal);
+    }
+
+    public Date getDate(int tag, int valueIndex, Date defVal) {
+        return getDate(tag, null, valueIndex, defVal);
+    }
+
+    public Date getDate(int tag, String privateCreator, Date defVal) {
+        return getDate(tag, privateCreator, 0, defVal);
+    }
+
+    public Date getDate(int tag, String privateCreator, int valueIndex,
+            Date defVal) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
+        if (index < 0)
+            return defVal;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (!vr.isTemporalType())
+            throw new UnsupportedOperationException();
+
+        return vr.toDate(
+                decodeStringValue(index), getTimeZone(), valueIndex, defVal);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, int tag, Date defVal) {
+        return getDate(itemPointers, tag, null, 0, defVal);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, int tag, int valueIndex,
+            Date defVal) {
+        return getDate(itemPointers, tag, null, valueIndex, defVal);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, Date defVal) {
+        return getDate(itemPointers, tag, privateCreator, 0, defVal);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, int tag,
+            String privateCreator, int valueIndex, Date defVal) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getDate(tag, privateCreator, valueIndex, defVal)
+                : defVal;
+    }
+
+    public Date[] getDates(int tag) {
+        return getDates(tag, null);
+    }
+
+    public Date[] getDates(int tag, String privateCreator) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
+        if (index < 0)
+            return null;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return EMPTY_DATES;
+
+        VR vr = vrs[index];
+        if (!vr.isTemporalType())
+            throw new UnsupportedOperationException();
+
+        return vr.toDates(decodeStringValue(index), getTimeZone());
+    }
+
+    public Date[] getDates(List<ItemPointer> itemPointers, int tag) {
+        return getDates(itemPointers, tag, null);
+    }
+
+    public Date[] getDates(List<ItemPointer> itemPointers, int tag,
+            String privateCreator) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null ? item.getDates(tag, privateCreator) : null;
+    }
 
      public SpecificCharacterSet getSpecificCharacterSet() {
          if (initcs) {
@@ -959,13 +1054,21 @@ public class Attributes implements Serializable {
         return set(tag, privateCreator, vr, vr.toValue(fs, bigEndian));
     }
 
-    public Object setDouble(int tag, VR vr, double[] ds) {
+    public Object setDouble(int tag, VR vr, double... ds) {
         return setDouble(tag, null, vr, ds);
     }
 
     public Object setDouble(int tag, String privateCreator, VR vr,
-            double[] ds) {
+            double... ds) {
         return set(tag, privateCreator, vr, vr.toValue(ds, bigEndian));
+    }
+
+    public Object setDate(int tag, VR vr, Date... ds) {
+        return setDate(tag, null, vr, ds);
+    }
+
+    public Object setDate(int tag, String privateCreator, VR vr, Date... ds) {
+        return set(tag, privateCreator, vr, vr.toValue(ds, getTimeZone()));
     }
 
     public Object setValue(int tag, VR vr, Value value) {

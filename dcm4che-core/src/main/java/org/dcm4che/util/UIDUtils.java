@@ -55,7 +55,7 @@ public class UIDUtils {
     private static final String UUID_ROOT = "2.25";
 
     private static final Pattern PATTERN =
-            Pattern.compile("[12]((\\.0)|(\\.[1-9]\\d*))+");
+            Pattern.compile("[012]((\\.0)|(\\.[1-9]\\d*))+");
 
     public static boolean isValid(String uid) {
         return uid.length() <= 64 && PATTERN.matcher(uid).matches();

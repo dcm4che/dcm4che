@@ -874,6 +874,42 @@ public class Attributes implements Serializable {
                 : defVal;
     }
 
+    public Date getDate(long tag, Date defVal) {
+        return getDate(tag, null, defVal);
+    }
+
+    public Date getDate(long tag, String privateCreator, Date defVal) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+
+        String tm = getString(tmTag, privateCreator, null);
+        if (tm == null)
+            return getDate(daTag, defVal);
+
+        String da = getString(daTag, privateCreator, null);
+        if (da == null)
+            return defVal;
+
+        int dalen = da.length();
+        int tmlen = tm.length();
+        char[] datm = new char[dalen + tmlen];
+        da.getChars(0, dalen, datm, 0);
+        da.getChars(0, tmlen, datm, dalen);
+        return VR.DT.toDate(new String(datm), getTimeZone(), 0, null);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, long tag, Date defVal) {
+        return getDate(itemPointers, tag, null, defVal);
+    }
+
+    public Date getDate(List<ItemPointer> itemPointers, long tag,
+            String privateCreator, Date defVal) {
+        Attributes item = getNestedDataset(itemPointers);
+        return item != null
+                ? item.getDate(tag, privateCreator, defVal)
+                : defVal;
+    }
+
     public Date[] getDates(int tag) {
         return getDates(tag, null);
     }
@@ -1069,6 +1105,13 @@ public class Attributes implements Serializable {
 
     public Object setDate(int tag, String privateCreator, VR vr, Date... ds) {
         return set(tag, privateCreator, vr, vr.toValue(ds, getTimeZone()));
+    }
+
+    public void setDate(long tag, Date dt) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+        setDate(daTag, dt);
+        setDate(tmTag, dt);
     }
 
     public Object setValue(int tag, VR vr, Value value) {

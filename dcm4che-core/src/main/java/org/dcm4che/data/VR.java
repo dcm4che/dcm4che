@@ -54,9 +54,9 @@ public enum VR {
     AS(0x4153, 8, ' ', StringValueType.ASCII, false),
     AT(0x4154, 8, 0, BinaryValueType.TAG, false),
     CS(0x4353, 8, ' ', StringValueType.ASCII, false),
-    DA(0x4441, 8, ' ', StringValueType.ASCII, false),
+    DA(0x4441, 8, ' ', StringValueType.DA, false),
     DS(0x4453, 8, ' ', StringValueType.DS, false),
-    DT(0x4454, 8, ' ', StringValueType.ASCII, false),
+    DT(0x4454, 8, ' ', StringValueType.DT, false),
     FD(0x4644, 8, 0, BinaryValueType.DOUBLE, false),
     FL(0x464c, 8, 0, BinaryValueType.FLOAT, false),
     IS(0x4953, 8, ' ', StringValueType.IS, false),
@@ -71,7 +71,7 @@ public enum VR {
     SQ(0x5351, 12, 0, SequenceValueType.SQ, false),
     SS(0x5353, 8, 0, BinaryValueType.SHORT, false),
     ST(0x5354, 8, ' ', StringValueType.TEXT, false),
-    TM(0x544d, 8, ' ', StringValueType.ASCII, false),
+    TM(0x544d, 8, ' ', StringValueType.TM, false),
     UI(0x5549, 8, 0, StringValueType.ASCII, false),
     UL(0x554c, 8, 0, BinaryValueType.INT, false),
     UN(0x554e, 12, 0, BinaryValueType.BYTE, true),
@@ -227,12 +227,13 @@ public enum VR {
         return valueType.toDoubles(val, bigEndian);
     }
 
-    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
-        return valueType.toDate(val, tz, valueIndex, defVal);
+    public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
+            Date defVal) {
+        return valueType.toDate(val, tz, valueIndex, ceil, defVal);
     }
 
-    public Date[] toDates(Object val, TimeZone tz) {
-        return valueType.toDate(val, tz);
+    public Date[] toDates(Object val, TimeZone tz, boolean ceil) {
+        return valueType.toDate(val, tz, ceil);
     }
 
     Object toValue(byte[] b) {

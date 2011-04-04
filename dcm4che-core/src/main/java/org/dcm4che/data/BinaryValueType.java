@@ -402,12 +402,13 @@ enum BinaryValueType implements ValueType {
     } 
 
     @Override
-    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
+    public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
+            Date defVal) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Date[] toDate(Object val, TimeZone tz) {
+    public Date[] toDate(Object val, TimeZone tz, boolean ceil) {
         throw new UnsupportedOperationException();
     }
 

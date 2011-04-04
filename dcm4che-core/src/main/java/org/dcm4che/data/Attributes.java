@@ -848,8 +848,8 @@ public class Attributes implements Serializable {
         if (!vr.isTemporalType())
             throw new UnsupportedOperationException();
 
-        return vr.toDate(
-                decodeStringValue(index), getTimeZone(), valueIndex, defVal);
+        return vr.toDate(decodeStringValue(index),
+                getTimeZone(), valueIndex, false, defVal);
     }
 
     public Date getDate(List<ItemPointer> itemPointers, int tag, Date defVal) {
@@ -890,12 +890,7 @@ public class Attributes implements Serializable {
         if (da == null)
             return defVal;
 
-        int dalen = da.length();
-        int tmlen = tm.length();
-        char[] datm = new char[dalen + tmlen];
-        da.getChars(0, dalen, datm, 0);
-        da.getChars(0, tmlen, datm, dalen);
-        return VR.DT.toDate(new String(datm), getTimeZone(), 0, null);
+        return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
     }
 
     public Date getDate(List<ItemPointer> itemPointers, long tag, Date defVal) {
@@ -933,7 +928,7 @@ public class Attributes implements Serializable {
         if (!vr.isTemporalType())
             throw new UnsupportedOperationException();
 
-        return vr.toDates(decodeStringValue(index), getTimeZone());
+        return vr.toDates(decodeStringValue(index), getTimeZone(), false);
     }
 
     public Date[] getDates(List<ItemPointer> itemPointers, int tag) {
@@ -946,7 +941,88 @@ public class Attributes implements Serializable {
         return item != null ? item.getDates(tag, privateCreator) : null;
     }
 
-     public SpecificCharacterSet getSpecificCharacterSet() {
+    public DateRange getDateRange(int tag, DateRange defVal) {
+        return getDateRange(tag, null, defVal);
+    }
+
+    public DateRange getDateRange(int tag, String privateCreator,
+            DateRange defVal) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return defVal;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        int index = indexOf(tag);
+        if (index < 0)
+            return defVal;
+
+        Object value = values[index];
+        if (value == Value.NULL)
+            return defVal;
+
+        VR vr = vrs[index];
+        if (!vr.isTemporalType())
+            throw new UnsupportedOperationException();
+
+        String[] range = splitRange(
+                vr.toString(decodeStringValue(index), false, 0, null));
+        TimeZone tz = getTimeZone();
+        return new DateRange(
+                range[0] == null ? null
+                        : vr.toDate(range[0], tz, 0, false, null),
+                range[1] == null ? null
+                        : vr.toDate(range[1], tz, 0, true, null));
+    }
+
+    private static String[] splitRange(String s) {
+        String[] range = new String[2];
+        int delim = s.indexOf('-');
+        if (delim == -1)
+            range[0] = range[1] = s;
+        else {
+            if (delim > 0)
+                range[0] =  s.substring(0, delim);
+            if (delim < s.length() - 1)
+                range[1] =  s.substring(delim+1);
+        }
+        return range;
+    }
+
+    public DateRange getDateRange(long tag, DateRange defVal) {
+        return getDateRange(tag, null, defVal);
+    }
+
+    public DateRange getDateRange(long tag, String privateCreator,
+            DateRange defVal) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+
+        String tm = getString(tmTag, privateCreator, null);
+        if (tm == null)
+            return getDateRange(daTag, defVal);
+
+        String da = getString(daTag, privateCreator, null);
+        if (da == null)
+            return defVal;
+
+        String[] darange = splitRange(VR.DA.toString(da, false, 0, null));
+        String[] tmrange = splitRange(VR.TM.toString(tm, false, 0, null));
+
+        return new DateRange(
+                darange[0] == null ? null
+                        : VR.DT.toDate(tmrange[0] == null
+                                ? darange[0]
+                                : darange[0] + tmrange[0],
+                                tz, 0, false, null),
+                darange[1] == null ? null
+                        : VR.DT.toDate(tmrange[1] == null
+                                ? darange[1]
+                                : darange[1] + tmrange[1],
+                                tz, 0, true, null));
+    }
+
+    public SpecificCharacterSet getSpecificCharacterSet() {
          if (initcs) {
              String[] codes = getStrings(Tag.SpecificCharacterSet);
              if (codes != null)
@@ -1108,10 +1184,42 @@ public class Attributes implements Serializable {
     }
 
     public void setDate(long tag, Date dt) {
+        setDate(tag, null, dt);
+    }
+
+    public void setDate(long tag, String privateCreator, Date dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
-        setDate(daTag, dt);
-        setDate(tmTag, dt);
+        setDate(daTag, privateCreator, VR.DA, dt);
+        setDate(tmTag, privateCreator, VR.TM, dt);
+    }
+
+    public Object setDateRange(int tag, VR vr, DateRange range) {
+        return setDateRange(tag, null, vr, range);
+    }
+
+    public Object setDateRange(int tag, String privateCreator, VR vr,
+            DateRange range) {
+        TimeZone tz = getTimeZone();
+        String lower = range.getLower() != null
+                ? (String) vr.toValue(new Date[]{range.getLower()}, tz)
+                : "";
+        String upper = range.getUpper() != null
+                ? (String) vr.toValue(new Date[]{range.getUpper()}, tz)
+                : "";
+        return set(tag, privateCreator, vr,
+                lower.equals(upper) ? lower : (lower + '-' + upper));
+    }
+
+    public void setDateRange(long tag, DateRange dr) {
+        setDateRange(tag, null, dr);
+    }
+
+    public void setDateRange(long tag, String privateCreator, DateRange range) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+        setDateRange(daTag, privateCreator, VR.DA, range);
+        setDateRange(tmTag, privateCreator, VR.TM, range);
     }
 
     public Object setValue(int tag, VR vr, Value value) {

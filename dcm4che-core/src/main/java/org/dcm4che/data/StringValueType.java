@@ -356,38 +356,39 @@ enum StringValueType implements ValueType {
 
 
     @Override
-    public Date toDate(Object val, TimeZone tz, int valueIndex, Date defVal) {
+    public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
+            Date defVal) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
             return valueIndex == 0
-                ? temporalType.parse(tz, (String) val, false)
+                ? temporalType.parse(tz, (String) val, ceil)
                 : defVal;
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             return (valueIndex < ss.length && ss[valueIndex] != null)
-                ? temporalType.parse(tz, ss[valueIndex], false)
+                ? temporalType.parse(tz, ss[valueIndex], ceil)
                 : defVal;
         }
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Date[] toDate(Object val, TimeZone tz) {
+    public Date[] toDate(Object val, TimeZone tz, boolean ceil) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
-            return new Date[] { temporalType.parse(tz, (String) val, false) };
+            return new Date[] { temporalType.parse(tz, (String) val, ceil) };
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             Date[] is = new Date[ss.length];
             for (int i = 0; i < is.length; i++) {
                 if (ss[i] != null)
-                    is[i] = temporalType.parse(tz, ss[i], false);
+                    is[i] = temporalType.parse(tz, ss[i], ceil);
             }
             return is;
         }

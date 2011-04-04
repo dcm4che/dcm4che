@@ -38,66 +38,71 @@
 
 package org.dcm4che.data;
 
+import java.io.Serializable;
 import java.util.Date;
-import java.util.TimeZone;
-
-import org.dcm4che.io.SAXWriter;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * 
  */
-interface ValueType {
+public class DateRange implements Serializable {
 
-    boolean isStringValue();
+    private static final long serialVersionUID = 88574297440294935L;
 
-    boolean isTemporalType();
+    private final Date lower;
+    private final Date upper;
 
-    int numEndianBytes();
+    public DateRange(Date lower, Date upper) {
+        if (lower != null && upper != null && lower.after(upper))
+            throw new IllegalArgumentException("lower: " + lower
+                    + " after upper: " + upper);
+        this.lower = lower;
+        this.upper = upper;
+    }
 
-    byte[] toggleEndian(byte[] b, boolean preserve);
+    public final Date getLower() {
+        return lower;
+    }
 
-    byte[] toBytes(Object val, SpecificCharacterSet cs);
+    public final Date getUpper() {
+        return upper;
+    }
 
-    String toString(Object val, boolean bigEndian, int valueIndex, String defVal);
+    public boolean contains(Date when) {
+        return !(lower != null && lower.after(when)
+              || upper != null && upper.before(when));
+    }
 
-    Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
 
-    int toInt(Object val, boolean bigEndian, int valueIndex, int defVal);
+        if (!(obj instanceof DateRange))
+            return false;
 
-    int[] toInts(Object val, boolean bigEndian);
+        DateRange other = (DateRange) obj;
+        return (lower == null 
+                ? other.lower == null
+                : lower.equals(other.lower)) 
+            && (upper == null
+                ? other.upper == null
+                : upper.equals(other.upper));
+    }
 
-    float toFloat(Object val, boolean bigEndian, int valueIndex, float defVal);
+    @Override
+    public int hashCode() {
+        int code = 0;
+        if (lower != null)
+            code = lower.hashCode();
+        if (upper != null)
+            code ^= lower.hashCode();
+        return code;
+    }
 
-    float[] toFloats(Object val, boolean bigEndian);
+    @Override
+    public String toString() {
+        return "[" + lower + ", " + upper + "]";
+    }
 
-    double toDouble(Object val, boolean bigEndian, int valueIndex,
-            double defVal);
-
-    double[] toDoubles(Object val, boolean bigEndian);
-
-    Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
-            Date defVal);
-
-    Date[] toDate(Object val, TimeZone tz, boolean ceil);
-
-    Object toValue(byte[] b);
-
-    Object toValue(String s, boolean bigEndian);
-
-    Object toValue(String[] ss, boolean bigEndian);
-
-    Object toValue(int[] is, boolean bigEndian);
-
-    Object toValue(float[] fs, boolean bigEndian);
-
-    Object toValue(double[] ds, boolean bigEndian);
-
-    Object toValue(Date[] ds, TimeZone tz);
-
-    boolean prompt(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            int maxChars, StringBuilder sb);
-
-    void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException;
 }

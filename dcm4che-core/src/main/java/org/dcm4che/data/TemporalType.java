@@ -51,7 +51,7 @@ enum TemporalType {
     DA {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil) {
-            return DateUtils.parseDA(tz, s);
+            return DateUtils.parseDA(tz, s, ceil);
         }
 
         @Override
@@ -61,7 +61,7 @@ enum TemporalType {
     }, DT {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil) {
-            return DateUtils.parseDT(tz, s);
+            return DateUtils.parseDT(tz, s, ceil);
         }
 
         @Override
@@ -71,7 +71,7 @@ enum TemporalType {
     }, TM {
         @Override
         public Date parse(TimeZone tz, String s, boolean ceil) {
-            return DateUtils.parseTM(tz, s);
+            return DateUtils.parseTM(tz, s, ceil);
         }
 
         @Override

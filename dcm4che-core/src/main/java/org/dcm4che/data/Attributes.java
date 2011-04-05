@@ -1041,12 +1041,8 @@ public class Attributes implements Serializable {
     }
 
     public SpecificCharacterSet getSpecificCharacterSet() {
-         if (initcs) {
-             String[] codes = getStrings(Tag.SpecificCharacterSet);
-             if (codes != null)
-                 cs = SpecificCharacterSet.valueOf(codes);
-             initcs = false;
-         }
+         if (initcs)
+             initcs();
          return cs != null 
                  ? cs
                  : parent != null 
@@ -1054,25 +1050,34 @@ public class Attributes implements Serializable {
                          : SpecificCharacterSet.DEFAULT;
      }
 
-     public TimeZone getTimeZone() {
-         if (inittz) {
-             String s = getString(Tag.TimezoneOffsetFromUTC, null);
-             if (s != null) {
-                 try {
-                     tz = DateUtils.timeZone(s);
-                 } catch (IllegalArgumentException e) {
-                     LOG.info(e.getMessage());
-                 }
+    private void initcs() {
+        String[] codes = getStrings(Tag.SpecificCharacterSet);
+        if (codes != null)
+            cs = SpecificCharacterSet.valueOf(codes);
+        initcs = false;
+    }
+
+    public TimeZone getTimeZone() {
+        if (inittz)
+            inittz();
+        return tz != null
+                ? tz 
+                : parent != null
+                        ? parent.getTimeZone()
+                        : (tz = TimeZone.getDefault());
+    }
+
+    private void inittz() {
+        String s = getString(Tag.TimezoneOffsetFromUTC, null);
+         if (s != null) {
+             try {
+                 tz = DateUtils.timeZone(s);
+             } catch (IllegalArgumentException e) {
+                 LOG.info(e.getMessage());
              }
-             
-             inittz = true;
          }
-         return tz != null 
-                 ? tz
-                 : parent != null 
-                         ? parent.getTimeZone()
-                         : (tz = TimeZone.getDefault());
-     }
+         inittz = false;
+    }
 
      public void setTimeZone(TimeZone tz) {
          String s = DateUtils.format(tz);

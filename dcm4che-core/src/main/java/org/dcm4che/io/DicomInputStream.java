@@ -388,7 +388,7 @@ public class DicomInputStream extends FilterInputStream
         if (bigEndian || explicitVR)
             throw new IllegalStateException(
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
-        Attributes attrs = new Attributes(1);
+        Attributes attrs = new Attributes(9);
         readAttributes(attrs, -1, -1);
         attrs.trimToSize();
         return attrs;

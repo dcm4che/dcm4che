@@ -1091,11 +1091,11 @@ public class Attributes implements Serializable {
                  : null;
      }
 
-     public Object remove(int tag) {
-         return remove(tag, null);
-     }
+    public Object remove(int tag) {
+        return remove(tag, null);
+    }
 
-     public Object remove(int tag, String privateCreator) {
+    public Object remove(int tag, String privateCreator) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -1129,9 +1129,9 @@ public class Attributes implements Serializable {
         return value;
     }
 
-     public Object remove(List<ItemPointer> itemPointers, int tag) {
-         return remove(itemPointers, tag, null);
-     }
+    public Object remove(List<ItemPointer> itemPointers, int tag) {
+        return remove(itemPointers, tag, null);
+    }
 
     public Object remove(List<ItemPointer> itemPointers, int tag,
             String privateCreator) {

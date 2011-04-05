@@ -397,7 +397,7 @@ public class DicomInputStream extends FilterInputStream
     public Attributes readDataset(int len, int stopTag) throws IOException {
         handler.startDataset(this);
         readFileMetaInformation();
-        Attributes attrs = new Attributes(bigEndian);
+        Attributes attrs = new Attributes(bigEndian, 64);
         readAttributes(attrs, len, stopTag);
         attrs.trimToSize();
         handler.endDataset(this);
@@ -410,7 +410,7 @@ public class DicomInputStream extends FilterInputStream
         if (fileMetaInformation != null)
             return fileMetaInformation;  // already read
 
-        Attributes attrs = new Attributes(bigEndian, 1);
+        Attributes attrs = new Attributes(bigEndian, 9);
         while (pos != fmiEndPos) {
             mark(12);
             readHeader();

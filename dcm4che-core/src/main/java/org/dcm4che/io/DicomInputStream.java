@@ -390,7 +390,6 @@ public class DicomInputStream extends FilterInputStream
                     "bigEndian=" + bigEndian + ", explicitVR=" + explicitVR );
         Attributes attrs = new Attributes(9);
         readAttributes(attrs, -1, -1);
-        attrs.trimToSize();
         return attrs;
     }
 
@@ -427,7 +426,6 @@ public class DicomInputStream extends FilterInputStream
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
-        attrs.trimToSize();
         fileMetaInformation = attrs;
 
         String tsuid = attrs.getString(Tag.TransferSyntaxUID, null);

@@ -38,9 +38,17 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
+import org.dcm4che.net.pdu.AAbort;
+import org.dcm4che.net.pdu.AAssociateAC;
+import org.dcm4che.net.pdu.AAssociateRJ;
+import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.util.ByteUtils;
+import org.dcm4che.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,12 +115,82 @@ class PDUDecoder {
         return val;
     }
 
-    public void nextPDU() {
+    public void nextPDU() throws IOException {
         LOG.debug("{} waiting for PDU", as);
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
-        
-        
+        StreamUtils.readFully(in, buf, 0, 10);
+        pos = 0;
+        pdutype = get();
+        get();
+        pdulen = getInt();
+        LOG.debug("{} >> PDU[type={}, len={}]",
+                new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+        switch (pdutype) {
+        case PDUType.A_ASSOCIATE_RQ:
+            readPDU();
+            as.onAAssociateRQ((AAssociateRQ) decode(new AAssociateRQ()));
+            return;
+        case PDUType.A_ASSOCIATE_AC:
+            readPDU();
+            as.onAAssociateAC((AAssociateAC) decode(new AAssociateAC()));
+            return;
+        case PDUType.P_DATA_TF:
+            readPDU();
+            as.onPDataTF();
+            return;
+        case PDUType.A_ASSOCIATE_RJ:
+            checkPDULength(4);
+            get();
+            as.onAAssociateRJ(new AAssociateRJ(get(), get(), get()));
+            break;
+        case PDUType.A_RELEASE_RQ:
+            checkPDULength(4);
+            as.onReceiveAReleaseRQ();
+            break;
+        case PDUType.A_RELEASE_RP:
+            checkPDULength(4);
+            as.onAReleaseRP();
+            break;
+        case PDUType.A_ABORT:
+            checkPDULength(4);
+            get();
+            get();
+            as.onAAbort(new AAbort(get(), get()));
+            break;
+        default:
+            LOG.warn("{} >> unrecognized PDU[type={}, len={}]",
+                    new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.UNRECOGNIZED_PDU);
+        }
+    }
+
+    private AAssociateRQAC decode(AAssociateRQAC rqac) {
+        // TODO Auto-generated method stub
+        return rqac;
+    }
+
+    private void readPDU() throws IOException {
+        if (pdulen < 4 || pdulen > MAX_PDU_LEN)
+            invalidPDULength();
+
+        if (6 + pdulen > buf.length)
+            buf = Arrays.copyOf(buf, 6 + pdulen);
+
+        StreamUtils.readFully(in, buf, 10, pdulen - 4);
+    }
+
+    private void checkPDULength(int len) throws AAbort {
+        if (pdulen != len)
+            invalidPDULength();
+    }
+
+    private void invalidPDULength() throws AAbort {
+        LOG.warn("{} >> invalid length of PDU[type={}, len={}]",
+                new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+        throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                AAbort.INVALID_PDU_PARAMETER_VALUE);
     }
 
 }

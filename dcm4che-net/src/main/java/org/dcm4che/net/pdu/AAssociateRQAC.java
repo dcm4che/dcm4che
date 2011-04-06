@@ -42,6 +42,6 @@ package org.dcm4che.net.pdu;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class AAssociateRQ extends AAssociateRQAC {
+public abstract class AAssociateRQAC {
 
 }

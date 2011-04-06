@@ -36,12 +36,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.pdu;
+package org.dcm4che.net;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class AAssociateRQ extends AAssociateRQAC {
+class PDUType {
 
+    public static final int A_ASSOCIATE_RQ = 0x01;
+    public static final int A_ASSOCIATE_AC = 0x02;
+    public static final int A_ASSOCIATE_RJ = 0x03;
+    public static final int P_DATA_TF      = 0x04;
+    public static final int A_RELEASE_RQ   = 0x05;
+    public static final int A_RELEASE_RP   = 0x06;
+    public static final int A_ABORT        = 0x07;
 }

@@ -38,17 +38,22 @@
 
 package org.dcm4che.net;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.dcm4che.net.pdu.AAbort;
+import org.dcm4che.net.pdu.AAssociateAC;
+import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.net.pdu.AssociationAC;
 import org.dcm4che.net.PDUEncoder;
-import org.dcm4che2.net.State;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -143,7 +148,64 @@ public class Association implements Runnable {
     public void run() {
         if (!(state == State.Sta2 || state == State.Sta4))
             throw new IllegalStateException(state.toString());
-        while (!(state == State.Sta1 || state == State.Sta13))
-            decoder.nextPDU();
+        try {
+            while (!(state == State.Sta1 || state == State.Sta13))
+                decoder.nextPDU();
+        } catch (AAbort aa) {
+            abort(aa);
+        } catch (SocketTimeoutException e) {
+            
+        } catch (EOFException e) {
+            
+        } catch (IOException e) {
+            
+        } finally {
+            closeSocket();
+        }
+    }
+
+    private void closeSocket() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void abort(AAbort aa) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAAssociateRQ(AAssociateRQ rq) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAAssociateAC(AAssociateAC ac) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAAssociateRJ(AAssociateRJ rj) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAAbort(AAbort aAbort) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onPDataTF() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAReleaseRQ() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onAReleaseRP() {
+        // TODO Auto-generated method stub
+        
     }
 }

@@ -1224,14 +1224,14 @@ public class Attributes implements Serializable {
     public Object setDateRange(int tag, String privateCreator, VR vr,
             DateRange range) {
         TimeZone tz = getTimeZone();
-        String lower = range.getLower() != null
-                ? (String) vr.toValue(new Date[]{range.getLower()}, tz)
+        String start = range.getStartDate() != null
+                ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz)
                 : "";
-        String upper = range.getUpper() != null
-                ? (String) vr.toValue(new Date[]{range.getUpper()}, tz)
+        String end = range.getEndDate() != null
+                ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz)
                 : "";
         return set(tag, privateCreator, vr,
-                lower.equals(upper) ? lower : (lower + '-' + upper));
+                start.equals(end) ? start : (start + '-' + end));
     }
 
     public void setDateRange(long tag, DateRange dr) {

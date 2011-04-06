@@ -49,28 +49,28 @@ public class DateRange implements Serializable {
 
     private static final long serialVersionUID = 88574297440294935L;
 
-    private final Date lower;
-    private final Date upper;
+    private final Date start;
+    private final Date end;
 
-    public DateRange(Date lower, Date upper) {
-        if (lower != null && upper != null && lower.after(upper))
-            throw new IllegalArgumentException("lower: " + lower
-                    + " after upper: " + upper);
-        this.lower = lower;
-        this.upper = upper;
+    public DateRange(Date start, Date end) {
+        if (start != null && end != null && start.after(end))
+            throw new IllegalArgumentException("start: " + start
+                    + " after end: " + end);
+        this.start = start;
+        this.end = end;
     }
 
-    public final Date getLower() {
-        return lower;
+    public final Date getStartDate() {
+        return start;
     }
 
-    public final Date getUpper() {
-        return upper;
+    public final Date getEndDate() {
+        return end;
     }
 
     public boolean contains(Date when) {
-        return !(lower != null && lower.after(when)
-              || upper != null && upper.before(when));
+        return !(start != null && start.after(when)
+              || end != null && end.before(when));
     }
 
     @Override
@@ -82,27 +82,27 @@ public class DateRange implements Serializable {
             return false;
 
         DateRange other = (DateRange) obj;
-        return (lower == null 
-                ? other.lower == null
-                : lower.equals(other.lower)) 
-            && (upper == null
-                ? other.upper == null
-                : upper.equals(other.upper));
+        return (start == null 
+                ? other.start == null
+                : start.equals(other.start)) 
+            && (end == null
+                ? other.end == null
+                : end.equals(other.end));
     }
 
     @Override
     public int hashCode() {
         int code = 0;
-        if (lower != null)
-            code = lower.hashCode();
-        if (upper != null)
-            code ^= lower.hashCode();
+        if (start != null)
+            code = start.hashCode();
+        if (end != null)
+            code ^= start.hashCode();
         return code;
     }
 
     @Override
     public String toString() {
-        return "[" + lower + ", " + upper + "]";
+        return "[" + start + ", " + end + "]";
     }
 
 }

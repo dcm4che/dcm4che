@@ -72,9 +72,9 @@ public class AttributesTest {
         a.setString(Tag.StudyDate, VR.DA, "20110404-20110405");
         DateRange range = a.getDateRange(Tag.StudyDate, null);
         assertEquals("20110404000000.000",
-                DateUtils.formatDT(null, range.getLower()));
+                DateUtils.formatDT(null, range.getStartDate()));
         assertEquals("20110405235959.999",
-                DateUtils.formatDT(null, range.getUpper()));
+                DateUtils.formatDT(null, range.getEndDate()));
     }
 
     /**
@@ -87,9 +87,9 @@ public class AttributesTest {
         a.setString(Tag.StudyTime, VR.DT, "15-20");
         DateRange range = a.getDateRange(Tag.StudyDateAndTime, null);
         assertEquals("20110404150000.000",
-                DateUtils.formatDT(null, range.getLower()));
+                DateUtils.formatDT(null, range.getStartDate()));
         assertEquals("20110404205959.999",
-                DateUtils.formatDT(null, range.getUpper()));
+                DateUtils.formatDT(null, range.getEndDate()));
     }
 
     /**

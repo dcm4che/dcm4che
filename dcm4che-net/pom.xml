@@ -36,71 +36,26 @@
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
    - ***** END LICENSE BLOCK *****  -->
-   
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>dcm4che-parent</artifactId>
+    <groupId>org.dcm4che</groupId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
   <groupId>org.dcm4che</groupId>
-  <artifactId>dcm4che-parent</artifactId>
-  <packaging>pom</packaging>
-  <name>dcm4che DICOM toolkit and utilities</name>
+  <artifactId>dcm4che-net</artifactId>
   <version>3.0.0-SNAPSHOT</version>
-  <description>dcm4che DICOM toolkit and utilities</description>
-  <issueManagement>
-    <system>JIRA</system>
-    <url>http://dcm4che.org/jira</url>
-  </issueManagement>
-  <scm>
-    <connection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</connection>
-    <developerConnection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</developerConnection>
-    <url>https://github.com/gunterze/dcm4che</url>
-  </scm>
-  <organization>
-    <name>dcm4che.org</name>
-    <url>http://dcm4che.org</url>
-  </organization>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <configuration>
-          <encoding>UTF-8</encoding>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <modules>
-    <module>dcm4che-core</module>
-    <module>dcm4che-net</module>
-    <module>dcm4che-tool</module>
-    <module>dcm4che-assembly</module>
-  </modules>
+  <name>dcm4che-net</name>
+  <description>DICOM Network Services</description>
   <dependencies>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.6.1</version>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.6.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.1</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

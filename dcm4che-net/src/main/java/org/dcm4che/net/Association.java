@@ -71,6 +71,7 @@ public class Association {
 
     private final int serialNo;
     private final NetworkConnection conn;
+    private final Device device;
     private final boolean requestor;
     private String name;
     private State state;
@@ -91,6 +92,7 @@ public class Association {
         this.name = "Association(" + serialNo + ')';
         this.state = State.Sta1;
         this.conn = conn;
+        this.device = conn.getDevice();
         this.requestor = requestor;
     }
 
@@ -171,8 +173,7 @@ public class Association {
             
             @Override
             public void run() {
-                AtomicInteger counter = conn.getConnectionCounter();
-                counter.incrementAndGet();
+                device.incrementNumberOfOpenConnections();
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
@@ -185,7 +186,7 @@ public class Association {
                 } catch (IOException e) {
                     
                 } finally {
-                    counter.decrementAndGet();
+                    device.decrementNumberOfOpenConnections();
                     closeSocket();
                 }
             }
@@ -223,7 +224,7 @@ public class Association {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-            if (conn.isLimitOfOpenConnectionsExceeded())
+            if (device.isLimitOfOpenConnectionsExceeded())
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
                         AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
                         AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);

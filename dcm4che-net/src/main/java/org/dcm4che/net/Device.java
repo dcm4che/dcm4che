@@ -48,33 +48,37 @@ import javax.net.ssl.SSLContext;
  */
 public class Device {
 
-    private static final int DEF_MAX_CONNECTION = 100;
+    private static final int DEF_CONN_LIMIT = 100;
 
-    private int limitOfOpenConnections = DEF_MAX_CONNECTION;
+    private int connLimit = DEF_CONN_LIMIT;
 
-    private final AtomicInteger connectionCounter = new AtomicInteger(0);
+    private final AtomicInteger connCount = new AtomicInteger(0);
 
     public final int getLimitOfOpenConnections() {
-        return limitOfOpenConnections;
+        return connLimit;
     }
 
     public final void setLimitOfOpenConnections(int limit) {
         if (limit <= 0)
             throw new IllegalArgumentException("limit: " + limit);
 
-        this.limitOfOpenConnections = limit;
+        this.connLimit = limit;
     }
 
     public int getNumberOfOpenConnections() {
-        return connectionCounter.intValue();
+        return connCount.intValue();
     }
 
     public boolean isLimitOfOpenConnectionsExceeded() {
-        return getNumberOfOpenConnections() > limitOfOpenConnections;
+        return getNumberOfOpenConnections() > connLimit;
     }
 
-    AtomicInteger getConnectionCounter() {
-        return connectionCounter;
+    void incrementNumberOfOpenConnections() {
+        connCount.incrementAndGet();
+    }
+
+    void decrementNumberOfOpenConnections() {
+        connCount.decrementAndGet();
     }
 
     public SSLContext getSSLContext() {

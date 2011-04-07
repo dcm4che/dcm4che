@@ -49,7 +49,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -544,18 +543,6 @@ public class NetworkConnection {
         setSocketOptions(s);
         s.connect(endpoint, connectTimeout);
         return s;
-    }
-
-    boolean isLimitOfOpenConnectionsExceeded() {
-        if (device == null)
-            throw new IllegalStateException("Device not initalized");
-        return device.isLimitOfOpenConnectionsExceeded();
-    }
-
-    AtomicInteger getConnectionCounter() {
-        if (device == null)
-            throw new IllegalStateException("Device not initalized");
-        return device.getConnectionCounter();
     }
 
     /**

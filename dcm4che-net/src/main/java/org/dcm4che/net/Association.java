@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Association implements Runnable {
+public class Association {
 
     private static final Logger LOG =
          LoggerFactory.getLogger("org.dcm4che.net.Association");
@@ -69,80 +69,82 @@ public class Association implements Runnable {
          LoggerFactory.getLogger("org.dcm4che.net.Association.negotiation");
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
-    private final Executor executer;
     private final int serialNo;
+    private final NetworkConnection conn;
+    private final boolean requestor;
     private String name;
     private State state;
-    private boolean requestor;
     private Socket sock;
     private InputStream in;
     private OutputStream out;
     private PDUEncoder encoder;
     private PDUDecoder decoder;
+    private AAssociateRQ rq;
     private AssociationAC ac;
     private IOException ex;
-    private AAssociateRQ associateRQ;
-    private NetworkConnection conn;
 
-    public Association(Executor executer) {
-        if (executer == null)
+    private Association(NetworkConnection conn, boolean requestor) {
+        if (conn == null)
             throw new NullPointerException();
-        this.executer = executer;
+
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
         this.state = State.Sta1;
+        this.conn = conn;
+        this.requestor = requestor;
     }
 
-    public AssociationAC connect(NetworkConnection local,
-            NetworkConnection remote, AAssociateRQ rq)
+    public static Association connect(NetworkConnection local,
+            NetworkConnection remote, AAssociateRQ rq, Executor executer)
             throws IOException, InterruptedException {
-        return state.connect(this, local, remote, rq);
+        Association as = new Association(local, true);
+        as.connect(remote, rq, executer);
+        return as;
     }
 
-    AssociationAC doConnect(NetworkConnection local,
-            NetworkConnection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException {
+    public static Association accept(NetworkConnection local, Socket sock,
+            Executor executer) throws IOException, InterruptedException {
+        Association as = new Association(local, false);
+        as.accept(sock, executer);
+        return as;
+    }
+
+    private void connect(NetworkConnection remote, AAssociateRQ rq,
+            Executor executer) throws IOException, InterruptedException {
         enterState(State.Sta4);
-        init(local, local.connect(remote), true, remote.getAcceptTimeout());
-        enterState(State.Sta5);
+        setSocket(conn.connect(remote));
         encoder.write(rq);
+        startARTIM(remote.getAcceptTimeout());
+        enterState(State.Sta5);
+        activate(executer);
         synchronized (this) {
             while (state == State.Sta5)
                 wait();
         }
         checkException();
-        return ac;
     }
 
-    private void init(NetworkConnection local, Socket sock, boolean requestor,
-            int timeout) throws IOException {
-        this.conn = local;
-        this.sock = sock;
-        this.requestor = requestor;
-        in = sock.getInputStream();
-        out = sock.getOutputStream();
-        encoder = new PDUEncoder(this, out);
-        decoder = new PDUDecoder(this, in);
-        startARTIM(timeout);
-        executer.execute(this);
-    }
-
-    public AssociationAC accept(NetworkConnection local, Socket sock)
+    private void accept(Socket sock, Executor executer)
             throws IOException, InterruptedException {
-        return state.accept(this, local, sock);
-    }
-
-    AssociationAC doAccept(NetworkConnection local, Socket sock)
-        throws IOException, InterruptedException {
+        setSocket(sock);
+        startARTIM(conn.getRequestTimeout());
         enterState(State.Sta2);
-        init(local, sock, false, local.getRequestTimeout());
+        activate(executer);
         synchronized (this) {
             while (state == State.Sta2)
                 wait();
         }
         checkException();
-        return ac;
     }
+
+    private void setSocket(Socket sock) throws IOException {
+        this.sock = sock;
+        in = sock.getInputStream();
+        out = sock.getOutputStream();
+        encoder = new PDUEncoder(this, out);
+        decoder = new PDUDecoder(this, in);
+    }
+
 
     private void startARTIM(int timeout) throws IOException {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
@@ -164,26 +166,30 @@ public class Association implements Runnable {
         notifyAll();
     }
 
-    @Override
-    public void run() {
-        if (!(state == State.Sta2 || state == State.Sta4))
-            throw new IllegalStateException(state.toString());
-        conn.incrementAccepted();
-        try {
-            while (!(state == State.Sta1 || state == State.Sta13))
-                decoder.nextPDU();
-        } catch (AAbort aa) {
-            abort(aa);
-        } catch (SocketTimeoutException e) {
+    private void activate(Executor executer) {
+        executer.execute(new Runnable() {
             
-        } catch (EOFException e) {
-            
-        } catch (IOException e) {
-            
-        } finally {
-            conn.decrementAccepted();
-            closeSocket();
-        }
+            @Override
+            public void run() {
+                AtomicInteger counter = conn.getConnectionCounter();
+                counter.incrementAndGet();
+                try {
+                    while (!(state == State.Sta1 || state == State.Sta13))
+                        decoder.nextPDU();
+                } catch (AAbort aa) {
+                    abort(aa);
+                } catch (SocketTimeoutException e) {
+                    
+                } catch (EOFException e) {
+                    
+                } catch (IOException e) {
+                    
+                } finally {
+                    counter.decrementAndGet();
+                    closeSocket();
+                }
+            }
+        });
     }
 
     private void closeSocket() {
@@ -201,7 +207,7 @@ public class Association implements Runnable {
     }
 
     void handle(AAssociateRQ rq) throws IOException {
-        associateRQ = rq;
+        this.rq = rq;
         name = rq.getCallingAET() + '(' + serialNo + ")";
         stopARTIM();
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
@@ -217,10 +223,10 @@ public class Association implements Runnable {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-            if (conn.isMaxAcceptedExceeded())
+            if (conn.isLimitOfOpenConnectionsExceeded())
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
                         AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                        AAssociateRJ.REASON_TEMPORARY_CONGESTION);
+                        AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
         } catch (AAssociateRJ e) {
             enterState(State.Sta13);
             encoder.write(e);

@@ -113,10 +113,7 @@ public class NetworkConnection {
     private boolean tlsNeedClientAuth = true;
     private String[] tlsProtocol = TLS_WO_SSLv2;
     private String[] tlsCipherSuite = {};
-    private int maxAccepted = DEF_MAX_ACCEPTED;
     private Collection<InetAddress> blacklist;
-
-    private AtomicInteger curAccepted = new AtomicInteger();
 
     private ServerSocket server;
     private InetAddress addr;
@@ -296,27 +293,6 @@ public class NetworkConnection {
         if (backlog < 1)
             throw new IllegalArgumentException("backlog: " + backlog);
         this.backlog = backlog;
-    }
-
-    /**
-     * Get the maximum number of incoming associations that this Network
-     * Connection will allow.
-     * 
-     * @return An int which defines the max associations.
-     */
-    public final int getMaxAccepted() {
-        return maxAccepted;
-    }
-
-    /**
-     * Set the maximum number of incoming associations that this Network
-     * Connection will allow.
-     * 
-     * @param maxAccepted
-     *            An int which defines the max associations.
-     */
-    public final void setMaxAccepted(int maxAccepted) {
-        this.maxAccepted = maxAccepted;
     }
 
     public final int getAcceptTimeout() {
@@ -570,6 +546,18 @@ public class NetworkConnection {
         return s;
     }
 
+    boolean isLimitOfOpenConnectionsExceeded() {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+        return device.isLimitOfOpenConnectionsExceeded();
+    }
+
+    AtomicInteger getConnectionCounter() {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+        return device.getConnectionCounter();
+    }
+
     /**
      * Set options on a socket that was either just accepted (if this network
      * connection is an SCP), or just created (if this network connection is an
@@ -637,8 +625,7 @@ public class NetworkConnection {
                         } else {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);
-                            new Association(executor)
-                                .accept(NetworkConnection.this, s);
+                            Association.accept(NetworkConnection.this, s, executor);
                         }
                     }
                 } catch (Throwable e) {
@@ -655,23 +642,6 @@ public class NetworkConnection {
         return blacklist != null && blacklist.contains(ia);
     }
 
-    public void incrementAccepted() {
-        curAccepted.incrementAndGet();
-    }
-
-    public void decrementAccepted() {
-        for (;;) {
-            int current = curAccepted.get();
-            if (current <= 0
-                    || curAccepted.compareAndSet(current, current - 1))
-                return;
-        }
-    }
-
-    public boolean isMaxAcceptedExceeded() {
-        return curAccepted.intValue() > maxAccepted;
-    }
-
     public synchronized void unbind() {
         if (server == null)
             return;
@@ -680,7 +650,6 @@ public class NetworkConnection {
         } catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
-        curAccepted.set(0);
         server = null;
     }
 

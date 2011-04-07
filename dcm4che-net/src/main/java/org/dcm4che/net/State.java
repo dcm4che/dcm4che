@@ -39,33 +39,17 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
-import java.net.Socket;
 
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
-import org.dcm4che.net.pdu.AssociationAC;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public enum State {
-    Sta1("Sta1 - Idle") {
-
-        @Override
-        public AssociationAC connect(Association as, NetworkConnection local,
-                NetworkConnection remote, AAssociateRQ rq)
-                throws IOException, InterruptedException {
-            return as.doConnect(local, remote, rq);
-        }
-
-        @Override
-        public AssociationAC accept(Association as, NetworkConnection local,
-                Socket sock) throws IOException, InterruptedException {
-            return as.doAccept(local, sock);
-        }
-    },
+    Sta1("Sta1 - Idle"),
     Sta2("Sta2 - Transport connection open") {
 
         @Override
@@ -147,17 +131,6 @@ public enum State {
     @Override
     public String toString() {
         return name;
-    }
-
-    AssociationAC connect(Association as, NetworkConnection local,
-            NetworkConnection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException {
-        throw new IllegalStateException(name);
-    }
-
-    AssociationAC accept(Association as, NetworkConnection local,
-            Socket sock) throws IOException, InterruptedException {
-        throw new IllegalStateException(name);
     }
 
     void onAAssociateRQ(Association as, AAssociateRQ rq)

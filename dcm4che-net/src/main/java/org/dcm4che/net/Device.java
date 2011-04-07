@@ -38,6 +38,8 @@
 
 package org.dcm4che.net;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLContext;
 
 /**
@@ -45,6 +47,35 @@ import javax.net.ssl.SSLContext;
  *
  */
 public class Device {
+
+    private static final int DEF_MAX_CONNECTION = 100;
+
+    private int limitOfOpenConnections = DEF_MAX_CONNECTION;
+
+    private final AtomicInteger connectionCounter = new AtomicInteger(0);
+
+    public final int getLimitOfOpenConnections() {
+        return limitOfOpenConnections;
+    }
+
+    public final void setLimitOfOpenConnections(int limit) {
+        if (limit <= 0)
+            throw new IllegalArgumentException("limit: " + limit);
+
+        this.limitOfOpenConnections = limit;
+    }
+
+    public int getNumberOfOpenConnections() {
+        return connectionCounter.intValue();
+    }
+
+    public boolean isLimitOfOpenConnectionsExceeded() {
+        return getNumberOfOpenConnections() > limitOfOpenConnections;
+    }
+
+    AtomicInteger getConnectionCounter() {
+        return connectionCounter;
+    }
 
     public SSLContext getSSLContext() {
         // TODO Auto-generated method stub

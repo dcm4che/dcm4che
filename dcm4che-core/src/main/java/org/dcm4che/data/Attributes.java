@@ -80,8 +80,7 @@ public class Attributes implements Serializable {
     private transient VR[] vrs;
     private transient Object[] values;
     private transient int size;
-    private transient volatile boolean initcs;
-    private transient volatile boolean inittz;
+    private transient boolean inittz;
     private transient SpecificCharacterSet cs;
     private transient TimeZone tz;
     private transient int length = -1;
@@ -1041,8 +1040,6 @@ public class Attributes implements Serializable {
     }
 
     public SpecificCharacterSet getSpecificCharacterSet() {
-         if (initcs)
-             initcs();
          return cs != null 
                  ? cs
                  : parent != null 
@@ -1054,7 +1051,6 @@ public class Attributes implements Serializable {
         String[] codes = getStrings(Tag.SpecificCharacterSet);
         if (codes != null)
             cs = SpecificCharacterSet.valueOf(codes);
-        initcs = false;
     }
 
     public TimeZone getTimeZone() {
@@ -1120,7 +1116,6 @@ public class Attributes implements Serializable {
 
         if (tag == Tag.SpecificCharacterSet) {
             cs = null;
-            initcs = false;
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
             tz = null;
             inittz = false;
@@ -1287,8 +1282,7 @@ public class Attributes implements Serializable {
         Object oldValue = set(tag, vr, value);
 
         if (tag == Tag.SpecificCharacterSet) {
-            cs = null;
-            initcs = true;
+            initcs();
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
             tz = null;
             inittz = true;

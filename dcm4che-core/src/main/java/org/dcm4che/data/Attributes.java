@@ -72,7 +72,6 @@ public class Attributes implements Serializable {
     private static final int[] EMPTY_INTS = {};
     private static final float[] EMPTY_FLOATS = {};
     private static final double[] EMPTY_DOUBLES = {};
-    private static final String[] EMPTY_STRINGS = {};
     private static final Date[] EMPTY_DATES = {};
 
     private transient Attributes parent;
@@ -80,7 +79,6 @@ public class Attributes implements Serializable {
     private transient VR[] vrs;
     private transient Object[] values;
     private transient int size;
-    private transient boolean inittz;
     private transient SpecificCharacterSet cs;
     private transient TimeZone tz;
     private transient int length = -1;
@@ -528,7 +526,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == Value.NULL)
-            return EMPTY_STRINGS;
+            return StringUtils.EMPTY_STRING;
 
         VR vr = vrs[index];
         return toStrings(vr.isStringType()
@@ -1054,8 +1052,6 @@ public class Attributes implements Serializable {
     }
 
     public TimeZone getTimeZone() {
-        if (inittz)
-            inittz();
         return tz != null
                 ? tz 
                 : parent != null
@@ -1065,14 +1061,13 @@ public class Attributes implements Serializable {
 
     private void inittz() {
         String s = getString(Tag.TimezoneOffsetFromUTC, null);
-         if (s != null) {
-             try {
-                 tz = DateUtils.timeZone(s);
-             } catch (IllegalArgumentException e) {
-                 LOG.info(e.getMessage());
-             }
-         }
-         inittz = false;
+        if (s != null) {
+            try {
+                tz = DateUtils.timeZone(s);
+            } catch (IllegalArgumentException e) {
+                LOG.info(e.getMessage());
+            }
+        }
     }
 
      public void setTimeZone(TimeZone tz) {
@@ -1118,7 +1113,6 @@ public class Attributes implements Serializable {
             cs = null;
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
             tz = null;
-            inittz = false;
         }
 
         return value;
@@ -1284,8 +1278,7 @@ public class Attributes implements Serializable {
         if (tag == Tag.SpecificCharacterSet) {
             initcs();
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
-            tz = null;
-            inittz = true;
+            inittz();
         }
 
         return oldValue;

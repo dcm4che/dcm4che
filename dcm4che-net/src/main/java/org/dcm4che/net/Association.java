@@ -47,6 +47,7 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.dcm4che.data.UID;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
@@ -167,6 +168,7 @@ public class Association implements Runnable {
     public void run() {
         if (!(state == State.Sta2 || state == State.Sta4))
             throw new IllegalStateException(state.toString());
+        conn.incrementAccepted();
         try {
             while (!(state == State.Sta1 || state == State.Sta13))
                 decoder.nextPDU();
@@ -179,6 +181,7 @@ public class Association implements Runnable {
         } catch (IOException e) {
             
         } finally {
+            conn.decrementAccepted();
             closeSocket();
         }
     }
@@ -204,7 +207,24 @@ public class Association implements Runnable {
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
         LOG_NEGOTIATION.debug("{}", rq);
         enterState(State.Sta3);
-        
+        try {
+            if ((rq.getProtocolVersion() & 1) == 0)
+                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
+            if (!rq.getApplicationContext().equals(
+                    UID.DICOMApplicationContextName))
+                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_USER,
+                        AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
+            if (conn.isMaxAcceptedExceeded())
+                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
+                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.REASON_TEMPORARY_CONGESTION);
+        } catch (AAssociateRJ e) {
+            enterState(State.Sta13);
+            encoder.write(e);
+        }
     }
 
     void onAAssociateAC(AAssociateAC ac) throws IOException {

@@ -40,6 +40,8 @@ package org.dcm4che.net.pdu;
 
 import java.io.IOException;
 
+import org.dcm4che.util.StringUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
@@ -58,14 +60,30 @@ public class AAbort extends IOException {
     public static final int UNEXPECTED_PDU_PARAMETER = 5;
     public static final int INVALID_PDU_PARAMETER_VALUE = 6;
 
-    private static final String[] REASONS = {
-        "A-P-ABORT[reason: 0 -  reason-not-specified]",
-        "A-P-ABORT[reason: 1 -  unrecognized-PDU]",
-        "A-P-ABORT[reason: 2 -  unexpected-PDU]",
-        "A-P-ABORT[reason: 3]",
-        "A-P-ABORT[reason: 4 -  unrecognized-PDU-parameter]",
-        "A-P-ABORT[reason: 5 -  unexpected-PDU-parameter]",
-        "A-P-ABORT[reason: 6 -  invalid-PDU-parameter-value]"
+    private static final String[] SOURCES = {
+        "0 - service-user",
+        "1",
+        "2 - service-provider",
+    };
+
+    private static final String[] SERVICE_USER_REASONS = {
+        "0",
+    };
+
+    private static final String[] SERVICE_PROVIDER_REASONS = {
+        "0 - reason-not-specified",
+        "1 - unrecognized-PDU",
+        "2 - unexpected-PDU",
+        "3",
+        "4 - unrecognized-PDU-parameter",
+        "5 - unexpected-PDU-parameter",
+        "6 - invalid-PDU-parameter-value"
+    };
+
+    private static final String[][] REASONS = {
+        SERVICE_USER_REASONS,
+        StringUtils.EMPTY_STRING,
+        SERVICE_PROVIDER_REASONS
     };
 
     private final int source;
@@ -76,21 +94,27 @@ public class AAbort extends IOException {
     }
 
     public AAbort(int source, int reason) {
-        super(createMessage(source, reason));
+        super("A-ABORT[source: " + toString(SOURCES, source)
+                  + ", reason: " + toReason(source, reason)
+                  + ']');
         this.source = source;
         this.reason = reason;
     }
 
-    private static String createMessage(int source, int reason) {
-        if (source == UL_SERIVE_PROVIDER) {
-            try {
-                return REASONS[reason];
-            } catch (IndexOutOfBoundsException e) {
-                return "A-P-ABORT[reason: "+ reason + ']';
-            }
-        } else if (source == UL_SERIVE_USER && reason == 0)
-            return "A-ABORT[source: 0, reason: 0]";
-        return "A-ABORT[source: " + source + ", reason: " + reason + ']';
+    private static String toString(String[] ss, int i) {
+        try {
+            return ss[i];
+        } catch (IndexOutOfBoundsException e) {
+            return Integer.toString(i);
+        }
+    }
+
+    private static String toReason(int source, int reason) {
+        try {
+            return toString(REASONS[source], reason);
+        } catch (IndexOutOfBoundsException e) {
+            return Integer.toString(reason);
+        }
     }
 
     public final int getReason() {

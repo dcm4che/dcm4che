@@ -36,32 +36,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.dcm4che.net.pdu.AAssociateRJ;
-import org.dcm4che.net.pdu.AAssociateRQ;
+package org.dcm4che.net.pdu;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * 
  */
-class PDUEncoder {
+public class ExtendedNegotiation {
 
-    public PDUEncoder(Association as, OutputStream out) {
-        // TODO Auto-generated constructor stub
+    private final String cuid;
+    private final byte[] info;
+
+    public ExtendedNegotiation(String cuid, byte[] info) {
+        if (cuid == null)
+            throw new NullPointerException();
+
+        this.cuid = cuid;
+        this.info = info.clone();
     }
 
-    public void write(AAssociateRQ rq) throws IOException {
-        // TODO Auto-generated method stub
-        
+    public final String getSOPClassUID() {
+        return cuid;
     }
 
-    public void write(AAssociateRJ e) throws IOException {
-        // TODO Auto-generated method stub
-        
+    public final byte[] getInformation() {
+        return info.clone();
     }
 
+    public int length() {
+        return cuid.length() + info.length + 2;
+    }
 }

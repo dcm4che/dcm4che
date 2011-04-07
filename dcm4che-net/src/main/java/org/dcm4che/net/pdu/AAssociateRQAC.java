@@ -38,21 +38,63 @@
 
 package org.dcm4che.net.pdu;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+
+import org.dcm4che.data.Implementation;
+import org.dcm4che.data.UID;
+import org.dcm4che.util.IntHashMap;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public abstract class AAssociateRQAC {
 
-    private String callingAET;
-    private String calledAET;
+    private static final int DEF_MAX_PDU_LENGTH = 16384;
+    private static final String DEF_CALLED_AET = "ANONYMOUS";
+    private static final String DEF_CALLING_AET = "ANONYMOUS";
 
-    public final String getCallingAET() {
-        return callingAET;
+    protected byte[] reservedBytes = new byte[32];
+    protected int protocolVersion = 1;
+    protected int maxPDULength = DEF_MAX_PDU_LENGTH;
+    protected int maxOpsInvoked = 1;
+    protected int maxOpsPerformed = 1;
+    protected String calledAET = DEF_CALLED_AET;
+    protected String callingAET = DEF_CALLING_AET;
+    protected String applicationContext = UID.DICOMApplicationContextName;
+    protected String implClassUID = Implementation.getClassUID();
+    protected String implVersionName = Implementation.getVersionName();
+    protected final ArrayList<PresentationContext>
+            pcs = new ArrayList<PresentationContext>();
+    protected final IntHashMap<PresentationContext>
+            pcidMap = new IntHashMap<PresentationContext>();
+    protected final LinkedHashMap<String, RoleSelection>
+            roleSelMap = new LinkedHashMap<String, RoleSelection>();
+    protected final LinkedHashMap<String, ExtendedNegotiation>
+            extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
+    protected final LinkedHashMap<String, CommonExtendedNegotiation>
+            commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
+
+    public final int getProtocolVersion() {
+        return protocolVersion;
     }
 
-    public final void setCallingAET(String callingAET) {
-        this.callingAET = callingAET;
+    public final void setProtocolVersion(int protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
+
+    public final byte[] getReservedBytes() {
+        return reservedBytes.clone();
+    }
+
+    public final void setReservedBytes(byte[] reservedBytes) {
+        if (reservedBytes.length != 32)
+            throw new IllegalArgumentException("reservedBytes.length: "
+                    + reservedBytes.length);
+        System.arraycopy(reservedBytes, 0, this.reservedBytes, 0, 32);
     }
 
     public final String getCalledAET() {
@@ -60,6 +102,184 @@ public abstract class AAssociateRQAC {
     }
 
     public final void setCalledAET(String calledAET) {
+        if (calledAET.length() > 16)
+            throw new IllegalArgumentException("calledAET: " + calledAET);
         this.calledAET = calledAET;
+    }
+
+    public final String getCallingAET() {
+        return callingAET;
+    }
+
+    public final void setCallingAET(String callingAET) {
+        if (callingAET.length() > 16)
+            throw new IllegalArgumentException("callingAET: " + callingAET);
+        this.callingAET = callingAET;
+    }
+
+    public final String getApplicationContext() {
+        return applicationContext;
+    }
+
+    public final void setApplicationContext(String applicationContext) {
+        if (applicationContext == null)
+            throw new NullPointerException();
+
+        this.applicationContext = applicationContext;
+    }
+
+    public final int getMaxPDULength() {
+        return maxPDULength;
+    }
+
+    public final void setMaxPDULength(int maxPDULength) {
+        this.maxPDULength = maxPDULength;
+    }
+
+    public final int getMaxOpsInvoked() {
+        return maxOpsInvoked;
+    }
+
+    public final void setMaxOpsInvoked(int maxOpsInvoked) {
+        this.maxOpsInvoked = maxOpsInvoked;
+    }
+
+    public final int getMaxOpsPerformed() {
+        return maxOpsPerformed;
+    }
+
+    public final void setMaxOpsPerformed(int maxOpsPerformed) {
+        this.maxOpsPerformed = maxOpsPerformed;
+    }
+
+    public final boolean isAsyncOps() {
+        return maxOpsInvoked != 1 || maxOpsPerformed != 1;
+    }
+
+    public final String getImplClassUID() {
+        return implClassUID;
+    }
+
+    public final void setImplClassUID(String implClassUID) {
+        if (implClassUID == null)
+            throw new NullPointerException();
+
+        this.implClassUID = implClassUID;
+    }
+
+    public final String getImplVersionName() {
+        return implVersionName;
+    }
+
+    public final void setImplVersionName(String implVersionName) {
+        this.implVersionName = implVersionName;
+    }
+
+    public Collection<PresentationContext> getPresentationContexts() {
+        return Collections.unmodifiableCollection(pcs);
+    }
+
+    public int getNumberOfPresentationContexts() {
+        return pcs.size();
+    }
+
+    public PresentationContext getPresentationContext(int pcid) {
+        return pcidMap.get(pcid);
+    }
+
+    public synchronized void addPresentationContext(PresentationContext pc) {
+        int pcid = pc.getPCID();
+        PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
+        if (prev != null)
+            pcs.remove(prev);
+        pcidMap.put(pcid, pc);
+        pcs.add(pc);
+    }
+
+    public synchronized boolean removePresentationContext(PresentationContext pc) {
+        if (!pcs.remove(pc))
+            return false;
+
+        pcidMap.remove(pc.getPCID());
+        return true;
+    }
+
+    public Collection<RoleSelection> getRoleSelections() {
+        return Collections.unmodifiableCollection(roleSelMap.values());
+    }
+
+    public RoleSelection getRoleSelectionFor(String cuid) {
+        return roleSelMap.get(cuid);
+    }
+
+    public RoleSelection addRoleSelection(RoleSelection rs) {
+        return roleSelMap.put(rs.getSOPClassUID(), rs);
+    }
+
+    public RoleSelection removeRoleSelectionFor(String cuid) {
+        return roleSelMap.remove(cuid);
+    }
+
+    public Collection<ExtendedNegotiation> getExtendedNegotiations() {
+        return Collections.unmodifiableCollection(extNegMap.values());
+    }
+
+    public ExtendedNegotiation getExtendedNegotiationFor(String cuid) {
+        return extNegMap.get(cuid);
+    }
+
+    public ExtendedNegotiation addExtendedNegotiation(ExtendedNegotiation extNeg) {
+        return extNegMap.put(extNeg.getSOPClassUID(), extNeg);
+    }
+
+    public ExtendedNegotiation removeExtendedNegotiationFor(String cuid) {
+        return extNegMap.remove(cuid);
+    }
+
+    public Collection<CommonExtendedNegotiation> getCommonExtendedNegotiations() {
+        return Collections.unmodifiableCollection(commonExtNegMap.values());
+    }
+
+    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(String cuid) {
+        return commonExtNegMap.get(cuid);
+    }
+
+    public CommonExtendedNegotiation addCommonExtendedNegotiation(
+            CommonExtendedNegotiation extNeg) {
+        return commonExtNegMap.put(extNeg.getSOPClassUID(), extNeg);
+    }
+
+    public CommonExtendedNegotiation removeCommonExtendedNegotiationFor(
+            String cuid) {
+        return commonExtNegMap.remove(cuid);
+    }
+
+    public int length() {
+        int len = 68; // Fix AA-RQ/AC PDU fields
+        len += 4 + applicationContext.length();
+        for (PresentationContext pc : pcs) {
+            len += 4 + pc.length();
+        }
+        len += 4 + userInfoLength();
+        return len;
+    }
+
+    public int userInfoLength() {
+        int len = 8; // Max Length Sub-Item
+        len += 4 + implClassUID.length();
+        if (isAsyncOps())
+            len += 8; // Asynchronous Operations Window Sub-Item
+        for (RoleSelection rs : roleSelMap.values()) {
+            len += 4 + rs.length();
+        }
+        if (implVersionName != null)
+            len += 4 + implVersionName.length();
+        for (ExtendedNegotiation en : extNegMap.values()) {
+            len += 4 + en.length();
+        }
+        for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
+            len += 4 + cen.length();
+        }
+        return len;
     }
 }

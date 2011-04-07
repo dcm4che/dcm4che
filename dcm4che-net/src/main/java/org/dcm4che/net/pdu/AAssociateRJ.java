@@ -2,7 +2,11 @@ package org.dcm4che.net.pdu;
 
 import java.io.IOException;
 
+import org.dcm4che.util.StringUtils;
+
 public class AAssociateRJ extends IOException {
+
+    private static final long serialVersionUID = 6390401944858894694L;
 
     public static final int RESULT_REJECTED_PERMANENT = 1;
     public static final int RESULT_REJECTED_TRANSIENT = 2;
@@ -21,27 +25,47 @@ public class AAssociateRJ extends IOException {
     public static final int REASON_TEMPORARY_CONGESTION = 1;
     public static final int REASON_LOCAL_LIMIT_EXCEEDED = 2;
 
-    private static final String[] SOURCE_SERVICE_USER_REASONS = {
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 0]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 1 - no-reason-given]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 2 - application-context-name-not-supported]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 3 - calling-AE-title-not-recognized]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 4]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 5]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 6]",
-            "A-ASSOCIATE-RJ[result: 1, source: 1, reason: 7 - called-AE-title-not-recognized]",
+    private static final String[] RESULTS = {
+        "0",
+        "1 - rejected-permanent",
+        "2 - rejected-transient"
     };
 
-    private static final String[] SOURCE_SERVICE_PROVIDER_PRES_REASONS = {
-            "A-ASSOCIATE-RJ[result: 1, source: 3, reason: 0]",
-            "A-ASSOCIATE-RJ[result: 1, source: 3, reason: 1 - no-reason-given]",
-            "A-ASSOCIATE-RJ[result: 1, source: 3, reason: 2 - protocol-version-not-supported]",
+    private static final String[] SOURCES = {
+        "0",
+        "1 - service-user",
+        "2 - service-provider (ACSE related function)",
+        "3 - service-provider (Presentation related function)"
     };
 
-    private static final String[] SOURCE_SERVICE_PROVIDER_ACSE_REASONS = {
-            "A-ASSOCIATE-RJ[result: 2, source: 2, reason: 0]",
-            "A-ASSOCIATE-RJ[result: 2, source: 2, reason: 1 - temporary-congestion]",
-            "A-ASSOCIATE-RJ[result: 2, source: 2, reason: 2 - local-limit-exceeded]",
+    private static final String[] SERVICE_USER_REASONS = {
+        "0",
+        "1 - no-reason-given]",
+        "2 - application-context-name-not-supported",
+        "3 - calling-AE-title-not-recognized",
+        "4",
+        "5",
+        "6",
+        "7 - called-AE-title-not-recognized]",
+    };
+
+    private static final String[] SERVICE_PROVIDER_ACSE_REASONS = {
+        "0",
+        "1 - no-reason-given",
+        "2 - protocol-version-not-supported",
+    };
+
+    private static final String[] SERVICE_PROVIDER_PRES_REASONS = {
+        "0",
+        "1 - temporary-congestion]",
+        "2 - local-limit-exceeded]",
+    };
+
+    private static final String[][] REASONS = {
+        StringUtils.EMPTY_STRING,
+        SERVICE_USER_REASONS,
+        SERVICE_PROVIDER_ACSE_REASONS,
+        SERVICE_PROVIDER_PRES_REASONS
     };
 
     private final int result;
@@ -49,32 +73,29 @@ public class AAssociateRJ extends IOException {
     private final int reason;
 
     public AAssociateRJ(int result, int source, int reason) {
-        super(createMessage(result, source, reason));
+        super("A-ASSOCIATE-RJ[result: " + toString(RESULTS, result)
+                         + ", source: " + toString(SOURCES, source)
+                         + ", reason: " + toReason(source, reason)
+                         + ']');
         this.result = result;
         this.source = source;
         this.reason = reason;
     }
 
-    private static String createMessage(int result, int source, int reason) {
+    private static String toString(String[] ss, int i) {
         try {
-            switch (source) {
-            case SOURCE_SERVICE_USER:
-                if (result == RESULT_REJECTED_PERMANENT)
-                    return SOURCE_SERVICE_USER_REASONS[reason];
-                break;
-            case SOURCE_SERVICE_PROVIDER_ACSE:
-                if (result == RESULT_REJECTED_PERMANENT)
-                    return SOURCE_SERVICE_PROVIDER_ACSE_REASONS[reason];
-                break;
-            case SOURCE_SERVICE_PROVIDER_PRES:
-                if (result == RESULT_REJECTED_TRANSIENT)
-                    return SOURCE_SERVICE_PROVIDER_PRES_REASONS[reason];
-                break;
-            }
-        } catch (IndexOutOfBoundsException ignore) {}
-        return "A-ASSOCIATE-RJ[result: " + result
-                          + ", source: " + source
-                          + ", reason: " + reason + ']';
+            return ss[i];
+        } catch (IndexOutOfBoundsException e) {
+            return Integer.toString(i);
+        }
+    }
+
+    private static String toReason(int source, int reason) {
+        try {
+            return toString(REASONS[source], reason);
+        } catch (IndexOutOfBoundsException e) {
+            return Integer.toString(reason);
+        }
     }
 
     public final int getResult() {

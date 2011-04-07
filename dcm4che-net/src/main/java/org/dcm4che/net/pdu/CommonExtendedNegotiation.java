@@ -36,32 +36,62 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.pdu;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.dcm4che.net.pdu.AAssociateRJ;
-import org.dcm4che.net.pdu.AAssociateRQ;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * 
  */
-class PDUEncoder {
+public class CommonExtendedNegotiation {
 
-    public PDUEncoder(Association as, OutputStream out) {
-        // TODO Auto-generated constructor stub
+    private final String sopCUID;
+    private final String serviceCUID;
+    private final Set<String> relSopCUIDs = new LinkedHashSet<String>();
+
+
+    public CommonExtendedNegotiation(String sopCUID, String serviceCUID) {
+        if (sopCUID == null)
+            throw new NullPointerException("sopCUID");
+
+        if (serviceCUID == null)
+            throw new NullPointerException("serviceCUID");
+
+        this.sopCUID = sopCUID;
+        this.serviceCUID = serviceCUID;
     }
 
-    public void write(AAssociateRQ rq) throws IOException {
-        // TODO Auto-generated method stub
-        
+    public final String getSOPClassUID() {
+        return sopCUID;
     }
 
-    public void write(AAssociateRJ e) throws IOException {
-        // TODO Auto-generated method stub
-        
+    public final String getServiceClassUID() {
+        return serviceCUID;
     }
 
+    public boolean addRelatedGeneralSOPClassUID(String relSopCUID) {
+        if (relSopCUID == null)
+            throw new NullPointerException();
+
+        return relSopCUIDs.add(relSopCUID);
+    }
+
+    public boolean removeRelatedGeneralSOPClassUID(String relSopCUID) {
+        return relSopCUIDs.remove(relSopCUID);
+    }
+
+    public Set<String> getRelatedGeneralSOPClassUID(String relSopCUID) {
+        return Collections.unmodifiableSet(relSopCUIDs);
+    }
+
+    public int length() {
+        int len = 4 + sopCUID.length() + serviceCUID.length();
+        for (String cuid : relSopCUIDs) {
+            len += 2 + cuid.length();
+        }
+        return len;
+    }
 }

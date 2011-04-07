@@ -44,4 +44,22 @@ package org.dcm4che.net.pdu;
  */
 public abstract class AAssociateRQAC {
 
+    private String callingAET;
+    private String calledAET;
+
+    public final String getCallingAET() {
+        return callingAET;
+    }
+
+    public final void setCallingAET(String callingAET) {
+        this.callingAET = callingAET;
+    }
+
+    public final String getCalledAET() {
+        return calledAET;
+    }
+
+    public final void setCalledAET(String calledAET) {
+        this.calledAET = calledAET;
+    }
 }

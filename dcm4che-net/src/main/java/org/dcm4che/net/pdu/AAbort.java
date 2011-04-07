@@ -59,39 +59,38 @@ public class AAbort extends IOException {
     public static final int INVALID_PDU_PARAMETER_VALUE = 6;
 
     private static final String[] REASONS = {
-        " -  reason-not-specified",
-        " -  unrecognized-PDU",
-        " -  unexpected-PDU",
-        "",
-        " -  unrecognized-PDU-parameter",
-        " -  unexpected-PDU-parameter",
-        " -  invalid-PDU-parameter-value"
+        "A-P-ABORT[reason: 0 -  reason-not-specified]",
+        "A-P-ABORT[reason: 1 -  unrecognized-PDU]",
+        "A-P-ABORT[reason: 2 -  unexpected-PDU]",
+        "A-P-ABORT[reason: 3]",
+        "A-P-ABORT[reason: 4 -  unrecognized-PDU-parameter]",
+        "A-P-ABORT[reason: 5 -  unexpected-PDU-parameter]",
+        "A-P-ABORT[reason: 6 -  invalid-PDU-parameter-value]"
     };
 
     private final int source;
     private final int reason;
 
     public AAbort() {
-        this(UL_SERIVE_USER, REASON_NOT_SPECIFIED);
+        this(UL_SERIVE_USER, 0);
     }
 
     public AAbort(int source, int reason) {
-        super("source=" + source + ", reason=" + reason
-                + toString(source, reason));
+        super(createMessage(source, reason));
         this.source = source;
         this.reason = reason;
     }
 
-    private static String toString(int source, int reason) {
-        if (source == UL_SERIVE_USER)
-            return " -  service-user-initiated-abort";
-
-        if (source == UL_SERIVE_PROVIDER)
+    private static String createMessage(int source, int reason) {
+        if (source == UL_SERIVE_PROVIDER) {
             try {
                 return REASONS[reason];
-            } catch (IndexOutOfBoundsException ignore) {}
-
-        return "";
+            } catch (IndexOutOfBoundsException e) {
+                return "A-P-ABORT[reason: "+ reason + ']';
+            }
+        } else if (source == UL_SERIVE_USER && reason == 0)
+            return "A-ABORT[source: 0, reason: 0]";
+        return "A-ABORT[source: " + source + ", reason: " + reason + ']';
     }
 
     public final int getReason() {
@@ -100,5 +99,10 @@ public class AAbort extends IOException {
 
     public final int getSource() {
         return source;
+    }
+
+    @Override
+    public String toString() {
+        return getMessage();
     }
 }

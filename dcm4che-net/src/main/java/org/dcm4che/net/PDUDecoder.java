@@ -146,7 +146,7 @@ class PDUDecoder {
             break;
         case PDUType.A_RELEASE_RQ:
             checkPDULength(4);
-            as.onReceiveAReleaseRQ();
+            as.onAReleaseRQ();
             break;
         case PDUType.A_RELEASE_RP:
             checkPDULength(4);
@@ -166,9 +166,9 @@ class PDUDecoder {
         }
     }
 
-    private AAssociateRQAC decode(AAssociateRQAC rqac) {
-        // TODO Auto-generated method stub
-        return rqac;
+    private void checkPDULength(int len) throws AAbort {
+        if (pdulen != len)
+            invalidPDULength();
     }
 
     private void readPDU() throws IOException {
@@ -181,16 +181,16 @@ class PDUDecoder {
         StreamUtils.readFully(in, buf, 10, pdulen - 4);
     }
 
-    private void checkPDULength(int len) throws AAbort {
-        if (pdulen != len)
-            invalidPDULength();
-    }
-
     private void invalidPDULength() throws AAbort {
         LOG.warn("{} >> invalid length of PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
                 AAbort.INVALID_PDU_PARAMETER_VALUE);
+    }
+
+    private AAssociateRQAC decode(AAssociateRQAC rqac) {
+        // TODO Auto-generated method stub
+        return rqac;
     }
 
 }

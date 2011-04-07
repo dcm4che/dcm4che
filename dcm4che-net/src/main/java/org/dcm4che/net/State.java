@@ -41,6 +41,8 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.net.Socket;
 
+import org.dcm4che.net.pdu.AAssociateAC;
+import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.AssociationAC;
 
@@ -50,6 +52,7 @@ import org.dcm4che.net.pdu.AssociationAC;
  */
 public enum State {
     Sta1("Sta1 - Idle") {
+
         @Override
         public AssociationAC connect(Association as, NetworkConnection local,
                 NetworkConnection remote, AAssociateRQ rq)
@@ -63,16 +66,75 @@ public enum State {
             return as.doAccept(local, sock);
         }
     },
-    Sta2("Sta2 - Transport connection open"),
+    Sta2("Sta2 - Transport connection open") {
+
+        @Override
+        public void onAAssociateRQ(Association as, AAssociateRQ rq)
+                throws IOException {
+            as.handle(rq);
+        }
+    },
     Sta3("Sta3 - Awaiting local A-ASSOCIATE response primitive"),
     Sta4("Sta4 - Awaiting transport connection opening to complete"),
-    Sta5("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU"),
-    Sta6("Sta6 - Association established and ready for data transfer"),
-    Sta7("Sta7 - Awaiting A-RELEASE-RP PDU"),
+    Sta5("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU") {
+
+        @Override
+        public void onAAssociateAC(Association as, AAssociateAC ac)
+                throws IOException {
+            as.handle(ac);
+        }
+
+        @Override
+        public void onAAssociateRJ(Association as, AAssociateRJ rj)
+                throws IOException {
+            as.handle(rj);
+        }
+    },
+    Sta6("Sta6 - Association established and ready for data transfer") {
+
+        @Override
+        public void onAReleaseRQ(Association as) throws IOException {
+            as.handleAReleaseRQ();
+        }
+
+        @Override
+        public void onPDataTF(Association as) throws IOException {
+            as.handlePDataTF();
+        }
+    },
+    Sta7("Sta7 - Awaiting A-RELEASE-RP PDU") {
+
+        @Override
+        public void onAReleaseRP(Association as) throws IOException {
+            as.handleAReleaseRP();
+        }
+
+        @Override
+        public void onAReleaseRQ(Association as) throws IOException {
+            as.handleAReleaseRQCollision();
+        }
+
+        @Override
+        public void onPDataTF(Association as) throws IOException {
+            as.handlePDataTF();
+        }
+    },
     Sta8("Sta8 - Awaiting local A-RELEASE response primitive"),
     Sta9("Sta9 - Release collision requestor side; awaiting A-RELEASE response"),
-    Sta10("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU"),
-    Sta11("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU"),
+    Sta10("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU"){
+
+        @Override
+        public void onAReleaseRP(Association as) throws IOException {
+            as.handleAReleaseRPCollision();
+        }
+    },
+    Sta11("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU"){
+
+        @Override
+        public void onAReleaseRP(Association as) throws IOException {
+            as.handleAReleaseRP();
+        }
+    },
     Sta12("Sta12 - Release collision acceptor side; awaiting A-RELEASE response primitive"),
     Sta13("Sta13 - Awaiting Transport Connection Close Indication");
 
@@ -87,15 +149,42 @@ public enum State {
         return name;
     }
 
-    public AssociationAC connect(Association as, NetworkConnection local,
+    AssociationAC connect(Association as, NetworkConnection local,
             NetworkConnection remote, AAssociateRQ rq)
             throws IOException, InterruptedException {
         throw new IllegalStateException(name);
     }
 
-    public AssociationAC accept(Association as, NetworkConnection local,
+    AssociationAC accept(Association as, NetworkConnection local,
             Socket sock) throws IOException, InterruptedException {
         throw new IllegalStateException(name);
+    }
+
+    void onAAssociateRQ(Association as, AAssociateRQ rq)
+            throws IOException {
+        as.unexpectedPDU("A-ASSOCIATE-RQ");
+    }
+
+    void onAAssociateAC(Association as, AAssociateAC ac)
+            throws IOException {
+        as.unexpectedPDU("A-ASSOCIATE-AC");
+    }
+
+    void onAAssociateRJ(Association as, AAssociateRJ rj)
+            throws IOException {
+        as.unexpectedPDU("A-ASSOCIATE-RJ");
+    }
+
+    void onPDataTF(Association as) throws IOException {
+        as.unexpectedPDU("P-DATA-TF");
+    }
+
+    void onAReleaseRQ(Association as) throws IOException {
+        as.unexpectedPDU("A-RELEASE-RQ");
+    }
+
+    void onAReleaseRP(Association as) throws IOException {
+        as.unexpectedPDU("A-RELEASE-RP");
     }
 
 }

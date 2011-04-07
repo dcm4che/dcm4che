@@ -51,9 +51,10 @@ import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
-import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.net.pdu.AssociationAC;
 import org.dcm4che.net.PDUEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,11 +62,15 @@ import org.dcm4che.net.PDUEncoder;
  */
 public class Association implements Runnable {
 
-    private static final AtomicInteger serialNo = new AtomicInteger();
+    private static final Logger LOG =
+         LoggerFactory.getLogger("org.dcm4che.net.Association");
+    private static final Logger LOG_NEGOTIATION =
+         LoggerFactory.getLogger("org.dcm4che.net.Association.negotiation");
+    private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
     private final Executor executer;
-    private final String name;
-
+    private final int serialNo;
+    private String name;
     private State state;
     private boolean requestor;
     private Socket sock;
@@ -75,12 +80,15 @@ public class Association implements Runnable {
     private PDUDecoder decoder;
     private AssociationAC ac;
     private IOException ex;
+    private AAssociateRQ associateRQ;
+    private NetworkConnection conn;
 
     public Association(Executor executer) {
         if (executer == null)
             throw new NullPointerException();
         this.executer = executer;
-        this.name = "Association-" + serialNo.incrementAndGet();
+        this.serialNo = prevSerialNo.incrementAndGet();
+        this.name = "Association(" + serialNo + ')';
         this.state = State.Sta1;
     }
 
@@ -94,7 +102,7 @@ public class Association implements Runnable {
             NetworkConnection remote, AAssociateRQ rq)
             throws IOException, InterruptedException {
         enterState(State.Sta4);
-        init(local.connect(remote), true, remote.getAcceptTimeout());
+        init(local, local.connect(remote), true, remote.getAcceptTimeout());
         enterState(State.Sta5);
         encoder.write(rq);
         synchronized (this) {
@@ -105,15 +113,16 @@ public class Association implements Runnable {
         return ac;
     }
 
-    private void init(Socket sock, boolean requestor, int timeout)
-            throws IOException {
+    private void init(NetworkConnection local, Socket sock, boolean requestor,
+            int timeout) throws IOException {
+        this.conn = local;
         this.sock = sock;
         this.requestor = requestor;
         in = sock.getInputStream();
         out = sock.getOutputStream();
         encoder = new PDUEncoder(this, out);
         decoder = new PDUDecoder(this, in);
-        sock.setSoTimeout(timeout);
+        startARTIM(timeout);
         executer.execute(this);
     }
 
@@ -125,13 +134,23 @@ public class Association implements Runnable {
     AssociationAC doAccept(NetworkConnection local, Socket sock)
         throws IOException, InterruptedException {
         enterState(State.Sta2);
-        init(sock, false, local.getRequestTimeout());
+        init(local, sock, false, local.getRequestTimeout());
         synchronized (this) {
             while (state == State.Sta2)
                 wait();
         }
         checkException();
         return ac;
+    }
+
+    private void startARTIM(int timeout) throws IOException {
+        LOG.debug("{}: start ARTIM {}ms", name, timeout);
+        sock.setSoTimeout(timeout);
+    }
+
+    private void stopARTIM() throws IOException {
+        sock.setSoTimeout(0);
+        LOG.debug("{}: stop ARTIM", name);
     }
 
     private void checkException() throws IOException {
@@ -174,19 +193,50 @@ public class Association implements Runnable {
         
     }
 
-    void onAAssociateRQ(AAssociateRQ rq) {
-        // TODO Auto-generated method stub
+    void onAAssociateRQ(AAssociateRQ rq) throws IOException {
+        state.onAAssociateRQ(this, rq);
+    }
+
+    void handle(AAssociateRQ rq) throws IOException {
+        associateRQ = rq;
+        name = rq.getCallingAET() + '(' + serialNo + ")";
+        stopARTIM();
+        LOG.info("{} >> A-ASSOCIATE-RQ", name);
+        LOG_NEGOTIATION.debug("{}", rq);
+        enterState(State.Sta3);
         
     }
 
-    void onAAssociateAC(AAssociateAC ac) {
-        // TODO Auto-generated method stub
-        
+    void onAAssociateAC(AAssociateAC ac) throws IOException {
+        state.onAAssociateAC(this, ac);
     }
 
-    void onAAssociateRJ(AAssociateRJ rj) {
-        // TODO Auto-generated method stub
-        
+    void handle(AAssociateAC rq) throws IOException {
+        stopARTIM();
+    }
+
+    void onAAssociateRJ(AAssociateRJ rj) throws IOException {
+        state.onAAssociateRJ(this, rj);
+    }
+
+    void handle(AAssociateRJ rq) {
+    }
+
+    void onAReleaseRQ() throws IOException {
+        state.onAReleaseRQ(this);
+    }
+
+    void handleAReleaseRQ() {
+    }
+
+    void handleAReleaseRQCollision() {
+    }
+
+    void onAReleaseRP() throws IOException {
+        state.onAReleaseRP(this);
+    }
+
+    void handleAReleaseRP() {
     }
 
     void onAAbort(AAbort aAbort) {
@@ -194,18 +244,22 @@ public class Association implements Runnable {
         
     }
 
-    void onPDataTF() {
+    void handleAReleaseRPCollision() {
         // TODO Auto-generated method stub
         
     }
 
-    void onAReleaseRQ() {
-        // TODO Auto-generated method stub
-        
+    void unexpectedPDU(String pdu) throws AAbort {
+        LOG.warn("{} >> unexpected {} in state: {}",
+                new Object[] { name, pdu, state });
+        throw new AAbort(AAbort.UL_SERIVE_PROVIDER, AAbort.UNEXPECTED_PDU);
     }
 
-    void onAReleaseRP() {
-        // TODO Auto-generated method stub
-        
+    void onPDataTF() throws IOException {
+        state.onPDataTF(this);
     }
+
+    void handlePDataTF() {
+    }
+
 }

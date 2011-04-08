@@ -50,6 +50,7 @@ import java.io.ObjectInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Inflater;
@@ -96,6 +97,7 @@ public class DicomInputStream extends FilterInputStream
         "Deflated DICOM Stream with ZLIB Header";
 
     private static final int ZLIB_HEADER = 0x789c;
+    private static final int ALLOC_INC = 0x4000000; // 64 MiB
 
     private String uri;
     private String tsuid;
@@ -696,8 +698,17 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-        byte[] value = new byte[length];
-        readFully(value);
+        if (length < 0)
+            throw new EOFException(); // assume InputStream length < 2 GiB
+        int allocLen = Math.min(length, ALLOC_INC);
+        byte[] value = new byte[allocLen];
+        readFully(value, 0, allocLen);
+        while (allocLen < length) {
+            int newLength = Math.min(length, allocLen + ALLOC_INC);
+            value = Arrays.copyOf(value, newLength);
+            readFully(value, allocLen, newLength - allocLen);
+            allocLen = newLength;
+        }
         return value;
     }
 

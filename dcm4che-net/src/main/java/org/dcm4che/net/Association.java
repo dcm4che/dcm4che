@@ -70,9 +70,7 @@ public class Association {
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
     private final int serialNo;
-    private final NetworkConnection conn;
     private final Device device;
-    private final boolean requestor;
     private String name;
     private State state;
     private Socket sock;
@@ -84,59 +82,50 @@ public class Association {
     private AssociationAC ac;
     private IOException ex;
 
-    private Association(NetworkConnection conn, boolean requestor) {
-        if (conn == null)
+    private Association(Device device) {
+        if (device == null)
             throw new NullPointerException();
 
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
         this.state = State.Sta1;
-        this.conn = conn;
-        this.device = conn.getDevice();
-        this.requestor = requestor;
+        this.device = device;
     }
 
-    public static Association connect(NetworkConnection local,
-            NetworkConnection remote, AAssociateRQ rq, Executor executer)
+    public static Association connect(OutboundConnection local,
+            InboundConnection remote, AAssociateRQ rq, Executor executer)
             throws IOException, InterruptedException {
-        Association as = new Association(local, true);
-        as.connect(remote, rq, executer);
+        Association as = new Association(local.getDevice());
+        as.doConnect(local, remote, rq, executer);
         return as;
     }
 
-    public static Association accept(NetworkConnection local, Socket sock,
-            Executor executer) throws IOException, InterruptedException {
-        Association as = new Association(local, false);
-        as.accept(sock, executer);
-        return as;
-    }
-
-    private void connect(NetworkConnection remote, AAssociateRQ rq,
-            Executor executer) throws IOException, InterruptedException {
+    private void doConnect(OutboundConnection local,
+            InboundConnection remote, AAssociateRQ rq, Executor executer)
+            throws IOException, InterruptedException {
         enterState(State.Sta4);
-        setSocket(conn.connect(remote));
+        setSocket(local.connect(remote));
         encoder.write(rq);
         startARTIM(remote.getAcceptTimeout());
         enterState(State.Sta5);
         activate(executer);
-        synchronized (this) {
-            while (state == State.Sta5)
-                wait();
-        }
+        waitForLeaving(State.Sta5);
         checkException();
     }
 
-    private void accept(Socket sock, Executor executer)
-            throws IOException, InterruptedException {
+    public static Association accept(InboundConnection local, Socket sock,
+            Executor executer) throws IOException, InterruptedException {
+        Association as = new Association(local.getDevice());
+        as.doAccept(local, sock, executer);
+        return as;
+    }
+
+    private void doAccept(InboundConnection local, Socket sock,
+            Executor executer) throws IOException, InterruptedException {
         setSocket(sock);
-        startARTIM(conn.getRequestTimeout());
+        startARTIM(local.getRequestTimeout());
         enterState(State.Sta2);
         activate(executer);
-        synchronized (this) {
-            while (state == State.Sta2)
-                wait();
-        }
-        checkException();
     }
 
     private void setSocket(Socket sock) throws IOException {
@@ -166,6 +155,12 @@ public class Association {
     private synchronized void enterState(State newState) {
         this.state = newState;
         notifyAll();
+    }
+
+    private synchronized void waitForLeaving(State sta)
+            throws InterruptedException {
+        while (state == sta)
+            wait();
     }
 
     private void activate(Executor executer) {

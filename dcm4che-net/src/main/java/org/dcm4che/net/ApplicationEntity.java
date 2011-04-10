@@ -42,6 +42,6 @@ package org.dcm4che.net;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class NetworkApplicationEntity {
+public class ApplicationEntity {
 
 }

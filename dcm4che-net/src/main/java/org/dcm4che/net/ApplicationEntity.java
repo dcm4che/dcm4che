@@ -38,10 +38,24 @@
 
 package org.dcm4che.net;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dcm4che.net.pdu.AAssociateAC;
+import org.dcm4che.net.pdu.AAssociateRQ;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class ApplicationEntity {
+
+    private List<String> preferredCalledAETitles = new ArrayList<String>();
+    private List<String> preferredCallingAETitles = new ArrayList<String>();
+
+    public AAssociateAC negotiate(Association as, AAssociateRQ rq) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

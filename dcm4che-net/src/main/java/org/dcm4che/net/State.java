@@ -48,7 +48,7 @@ import org.dcm4che.net.pdu.AAssociateRQ;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public enum State {
+enum State {
     Sta1("Sta1 - Idle"),
     Sta2("Sta2 - Transport connection open") {
 

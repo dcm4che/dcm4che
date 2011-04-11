@@ -44,4 +44,28 @@ package org.dcm4che.net.pdu;
  */
 public class AAssociateRQ extends AAssociateRQAC {
 
+    private UserIdentityRQ userIdentity;
+
+    public final UserIdentityRQ getUserIdentity() {
+        return userIdentity;
+    }
+
+    public final void setUserIdentity(UserIdentityRQ userIdentity) {
+        this.userIdentity = userIdentity;
+    }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder(512)).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        return promptTo("AAssociateRQ[", sb);
+    }
+
+    @Override
+    protected void promptUserIdentityTo(StringBuilder sb) {
+        if (userIdentity != null)
+            userIdentity.promptTo(sb);
+    }
 }

@@ -38,7 +38,6 @@
 
 package org.dcm4che.net;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,7 +51,6 @@ import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
-import org.dcm4che.net.pdu.AssociationAC;
 import org.dcm4che.net.PDUEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,78 +62,78 @@ import org.slf4j.LoggerFactory;
 public class Association {
 
     private static final Logger LOG =
-         LoggerFactory.getLogger("org.dcm4che.net.Association");
-    private static final Logger LOG_NEGOTIATION =
-         LoggerFactory.getLogger("org.dcm4che.net.Association.negotiation");
+            LoggerFactory.getLogger(Association.class);
+
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
     private final int serialNo;
     private final Device device;
+    private final AbstractConnection conn;
+    private Socket sock;
+    private final InputStream in;
+    private final OutputStream out;
+    private final PDUEncoder encoder;
+    private final PDUDecoder decoder;
     private String name;
     private State state;
-    private Socket sock;
-    private InputStream in;
-    private OutputStream out;
-    private PDUEncoder encoder;
-    private PDUDecoder decoder;
     private AAssociateRQ rq;
-    private AssociationAC ac;
+    private AAssociateAC ac;
     private IOException ex;
 
-    private Association(Device device) {
-        if (device == null)
-            throw new NullPointerException();
-
+    private Association(AbstractConnection conn, Socket sock, State state)
+            throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
-        this.state = State.Sta1;
-        this.device = device;
+        this.conn = conn;
+        this.device = conn.getDevice();
+        this.sock = sock;
+        this.in = sock.getInputStream();
+        this.out = sock.getOutputStream();
+        this.encoder = new PDUEncoder(this, out);
+        this.decoder = new PDUDecoder(this, in);
+        enterState(state);
+    }
+
+    private Association(OutboundConnection local, Socket sock)
+            throws IOException {
+        this(local, sock, State.Sta4);
+    }
+
+    private Association(InboundConnection local, Socket sock)
+            throws IOException {
+        this(local, sock, State.Sta2);
+        startARTIM(local.getRequestTimeout());
     }
 
     public static Association connect(OutboundConnection local,
             InboundConnection remote, AAssociateRQ rq, Executor executer)
             throws IOException, InterruptedException {
-        Association as = new Association(local.getDevice());
-        as.doConnect(local, remote, rq, executer);
+        Association as = new Association(local, local.connect(remote));
+        as.write(rq, remote.getAcceptTimeout());
+        as.activate(executer);
+        as.waitForLeaving(State.Sta5);
         return as;
-    }
-
-    private void doConnect(OutboundConnection local,
-            InboundConnection remote, AAssociateRQ rq, Executor executer)
-            throws IOException, InterruptedException {
-        enterState(State.Sta4);
-        setSocket(local.connect(remote));
-        encoder.write(rq);
-        startARTIM(remote.getAcceptTimeout());
-        enterState(State.Sta5);
-        activate(executer);
-        waitForLeaving(State.Sta5);
-        checkException();
     }
 
     public static Association accept(InboundConnection local, Socket sock,
             Executor executer) throws IOException, InterruptedException {
-        Association as = new Association(local.getDevice());
-        as.doAccept(local, sock, executer);
+        Association as = new Association(local, sock);
+        as.activate(executer);
         return as;
     }
 
-    private void doAccept(InboundConnection local, Socket sock,
-            Executor executer) throws IOException, InterruptedException {
-        setSocket(sock);
-        startARTIM(local.getRequestTimeout());
-        enterState(State.Sta2);
-        activate(executer);
+    private void write(AAssociateRQ rq, int acceptTimeout) throws IOException {
+        this.rq = rq;
+        encoder.write(rq);
+        startARTIM(acceptTimeout);
+        enterState(State.Sta5);
     }
 
-    private void setSocket(Socket sock) throws IOException {
-        this.sock = sock;
-        in = sock.getInputStream();
-        out = sock.getOutputStream();
-        encoder = new PDUEncoder(this, out);
-        decoder = new PDUDecoder(this, in);
+    private void write(AAssociateAC ac) throws IOException {
+        this.ac = ac;
+        encoder.write(ac);
+        enterState(State.Sta6);
     }
-
 
     private void startARTIM(int timeout) throws IOException {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
@@ -153,19 +151,24 @@ public class Association {
     }
 
     private synchronized void enterState(State newState) {
+        LOG.debug("{}: enter state: {}", name, newState);
         this.state = newState;
         notifyAll();
     }
 
     private synchronized void waitForLeaving(State sta)
-            throws InterruptedException {
+            throws InterruptedException, IOException {
         while (state == sta)
             wait();
+        checkException();
     }
 
     private void activate(Executor executer) {
+        if (!(state == State.Sta2 || state == State.Sta5))
+                throw new IllegalStateException("state: " + state);
+
         executer.execute(new Runnable() {
-            
+
             @Override
             public void run() {
                 device.incrementNumberOfOpenConnections();
@@ -175,11 +178,13 @@ public class Association {
                 } catch (AAbort aa) {
                     abort(aa);
                 } catch (SocketTimeoutException e) {
-                    
-                } catch (EOFException e) {
-                    
+                    ex = e;
+                    LOG.warn("{}: ARTIM timer expired in State: {}",
+                            name, state);
                 } catch (IOException e) {
-                    
+                    ex = e;
+                    LOG.warn("{}: i/o exception: {} in State: {}",
+                            new Object[] { name, e, state });
                 } finally {
                     device.decrementNumberOfOpenConnections();
                     closeSocket();
@@ -189,8 +194,21 @@ public class Association {
     }
 
     private void closeSocket() {
-        // TODO Auto-generated method stub
-        
+        if (state == State.Sta13) {
+            try {
+                Thread.sleep(conn.getSocketCloseDelay());
+            } catch (InterruptedException e) {
+                LOG.warn("Interrupted Socket Close Delay", e);
+            }
+        }
+        enterState(State.Sta1);
+        try { out.close(); } catch (IOException ignore) {}
+        try { in.close(); } catch (IOException ignore) {}
+        if (sock != null) {
+            LOG.info("{}: close {}", name, sock);
+            try { sock.close(); } catch (IOException ignore) {}
+            sock = null;
+        }
     }
 
     public void abort(AAbort aa) {
@@ -207,7 +225,7 @@ public class Association {
         name = rq.getCallingAET() + '(' + serialNo + ")";
         stopARTIM();
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
-        LOG_NEGOTIATION.debug("{}", rq);
+        LOG.debug("{}", rq);
         enterState(State.Sta3);
         try {
             if ((rq.getProtocolVersion() & 1) == 0)
@@ -219,13 +237,10 @@ public class Association {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-            if (device.isLimitOfOpenConnectionsExceeded())
-                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                        AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
+            write(device.negotiate(this, rq));
         } catch (AAssociateRJ e) {
-            enterState(State.Sta13);
             encoder.write(e);
+            enterState(State.Sta13);
         }
     }
 

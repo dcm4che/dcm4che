@@ -46,6 +46,8 @@ import java.util.LinkedHashMap;
 import org.dcm4che.data.Implementation;
 import org.dcm4che.data.UID;
 import org.dcm4che.util.IntHashMap;
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -73,10 +75,10 @@ public abstract class AAssociateRQAC {
             pcidMap = new IntHashMap<PresentationContext>();
     protected final LinkedHashMap<String, RoleSelection>
             roleSelMap = new LinkedHashMap<String, RoleSelection>();
-    protected final LinkedHashMap<String, ExtendedNegotiation>
-            extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
-    protected final LinkedHashMap<String, CommonExtendedNegotiation>
-            commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
+    protected final LinkedHashMap<String, ExtNegotiation>
+            extNegMap = new LinkedHashMap<String, ExtNegotiation>();
+    protected final LinkedHashMap<String, CommonExtNegotiation>
+            commonExtNegMap = new LinkedHashMap<String, CommonExtNegotiation>();
 
     public final int getProtocolVersion() {
         return protocolVersion;
@@ -220,36 +222,36 @@ public abstract class AAssociateRQAC {
         return roleSelMap.remove(cuid);
     }
 
-    public Collection<ExtendedNegotiation> getExtendedNegotiations() {
+    public Collection<ExtNegotiation> getExtendedNegotiations() {
         return Collections.unmodifiableCollection(extNegMap.values());
     }
 
-    public ExtendedNegotiation getExtendedNegotiationFor(String cuid) {
+    public ExtNegotiation getExtendedNegotiationFor(String cuid) {
         return extNegMap.get(cuid);
     }
 
-    public ExtendedNegotiation addExtendedNegotiation(ExtendedNegotiation extNeg) {
+    public ExtNegotiation addExtendedNegotiation(ExtNegotiation extNeg) {
         return extNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
-    public ExtendedNegotiation removeExtendedNegotiationFor(String cuid) {
+    public ExtNegotiation removeExtendedNegotiationFor(String cuid) {
         return extNegMap.remove(cuid);
     }
 
-    public Collection<CommonExtendedNegotiation> getCommonExtendedNegotiations() {
+    public Collection<CommonExtNegotiation> getCommonExtendedNegotiations() {
         return Collections.unmodifiableCollection(commonExtNegMap.values());
     }
 
-    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(String cuid) {
+    public CommonExtNegotiation getCommonExtendedNegotiationFor(String cuid) {
         return commonExtNegMap.get(cuid);
     }
 
-    public CommonExtendedNegotiation addCommonExtendedNegotiation(
-            CommonExtendedNegotiation extNeg) {
+    public CommonExtNegotiation addCommonExtendedNegotiation(
+            CommonExtNegotiation extNeg) {
         return commonExtNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
-    public CommonExtendedNegotiation removeCommonExtendedNegotiationFor(
+    public CommonExtNegotiation removeCommonExtendedNegotiationFor(
             String cuid) {
         return commonExtNegMap.remove(cuid);
     }
@@ -274,12 +276,45 @@ public abstract class AAssociateRQAC {
         }
         if (implVersionName != null)
             len += 4 + implVersionName.length();
-        for (ExtendedNegotiation en : extNegMap.values()) {
+        for (ExtNegotiation en : extNegMap.values()) {
             len += 4 + en.length();
         }
-        for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
+        for (CommonExtNegotiation cen : commonExtNegMap.values()) {
             len += 4 + cen.length();
         }
         return len;
     }
+
+    protected StringBuilder promptTo(String header, StringBuilder sb) {
+        sb.append(header)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  calledAET: ").append(calledAET)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  callingAET: ").append(callingAET)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  applicationContext: ");
+        UIDUtils.promptTo(applicationContext, sb)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  implClassUID: ").append(implClassUID)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  implVersionName: ").append(implVersionName)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  maxPDULength: ").append(maxPDULength)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  maxOpsInvoked/maxOpsPerformed: ")
+          .append(maxOpsInvoked).append("/").append(maxOpsPerformed)
+          .append(StringUtils.LINE_SEPARATOR);
+        promptUserIdentityTo(sb);
+        for (PresentationContext pc : pcs)
+            pc.promptTo(sb);
+        for (RoleSelection rs : roleSelMap.values())
+            rs.promptTo(sb);
+        for (ExtNegotiation extNeg : extNegMap.values())
+            extNeg.promptTo(sb);
+        for (CommonExtNegotiation extNeg : commonExtNegMap.values())
+            extNeg.promptTo(sb);
+        return sb.append("]");
+    }
+
+    protected abstract void promptUserIdentityTo(StringBuilder sb);
 }

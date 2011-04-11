@@ -38,6 +38,9 @@
 
 package org.dcm4che.net.pdu;
 
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
@@ -71,5 +74,23 @@ public class RoleSelection {
 
     public int length() {
         return cuid.length() + 4;
+    }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder()).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        sb.append("  RoleSelection[")
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("    sopClass: ");
+        return UIDUtils.promptTo(cuid, sb)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("    scu: ").append(scu)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("    scp: ").append(scp)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("  ]");
     }
 }

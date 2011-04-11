@@ -38,32 +38,41 @@
 
 package org.dcm4che.net.pdu;
 
+import org.dcm4che.util.StringUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
+ *
  */
-public class ExtendedNegotiation {
+public class UserIdentityAC {
 
-    private final String cuid;
-    private final byte[] info;
+    private byte[] serverResponse = {};
 
-    public ExtendedNegotiation(String cuid, byte[] info) {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-        this.info = info.clone();
+    public final byte[] getServerResponse() {
+        return serverResponse.clone();
     }
 
-    public final String getSOPClassUID() {
-        return cuid;
-    }
-
-    public final byte[] getInformation() {
-        return info.clone();
+    public final void setServerResponse(byte[] serverResponse) {
+        this.serverResponse = serverResponse.clone();
     }
 
     public int length() {
-        return cuid.length() + info.length + 2;
+        return 2 + serverResponse.length;
     }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder()).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        return sb.append("  UserIdentity[")
+                 .append(StringUtils.LINE_SEPARATOR)
+                 .append("    serverResponse: byte[")
+                 .append(serverResponse.length)
+                 .append(']')
+                 .append(StringUtils.LINE_SEPARATOR)
+                 .append("  ]");
+    }
+
 }

@@ -38,9 +38,14 @@
 
 package org.dcm4che.net;
 
+import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
+
+import org.dcm4che.net.pdu.AAssociateAC;
+import org.dcm4che.net.pdu.AAssociateRJ;
+import org.dcm4che.net.pdu.AAssociateRQ;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,6 +58,8 @@ public class Device {
     private int connLimit = DEF_CONN_LIMIT;
 
     private final AtomicInteger connCount = new AtomicInteger(0);
+    private final LinkedHashMap<String, ApplicationEntity> aes = 
+            new LinkedHashMap<String, ApplicationEntity>();
 
     public final int getLimitOfOpenConnections() {
         return connLimit;
@@ -69,10 +76,6 @@ public class Device {
         return connCount.intValue();
     }
 
-    public boolean isLimitOfOpenConnectionsExceeded() {
-        return getNumberOfOpenConnections() > connLimit;
-    }
-
     void incrementNumberOfOpenConnections() {
         connCount.incrementAndGet();
     }
@@ -81,9 +84,31 @@ public class Device {
         connCount.decrementAndGet();
     }
 
+    boolean isLimitOfOpenConnectionsExceeded() {
+        return getNumberOfOpenConnections() > connLimit;
+    }
+
     public SSLContext getSSLContext() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public ApplicationEntity getApplicationEntity(String aet) {
+        return aes.get(aet);
+    }
+
+    public AAssociateAC negotiate(Association as, AAssociateRQ rq)
+            throws AAssociateRJ {
+        if (isLimitOfOpenConnectionsExceeded())
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
+                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                    AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
+        ApplicationEntity ae = aes.get(rq.getCalledAET());
+        if (ae == null)
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_USER,
+                    AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+        return ae.negotiate(as, rq);
     }
 
 }

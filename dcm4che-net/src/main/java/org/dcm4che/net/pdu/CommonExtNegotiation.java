@@ -42,18 +42,20 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
-public class CommonExtendedNegotiation {
+public class CommonExtNegotiation {
 
     private final String sopCUID;
     private final String serviceCUID;
     private final Set<String> relSopCUIDs = new LinkedHashSet<String>();
 
-
-    public CommonExtendedNegotiation(String sopCUID, String serviceCUID) {
+    public CommonExtNegotiation(String sopCUID, String serviceCUID) {
         if (sopCUID == null)
             throw new NullPointerException("sopCUID");
 
@@ -94,4 +96,29 @@ public class CommonExtendedNegotiation {
         }
         return len;
     }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder()).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        sb.append("  CommonExtNegotiation[")
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("    sopClass: ");
+        UIDUtils.promptTo(sopCUID, sb)
+          .append(StringUtils.LINE_SEPARATOR)
+          .append("    serviceClass: ");
+        UIDUtils.promptTo(serviceCUID, sb)
+          .append(StringUtils.LINE_SEPARATOR);
+        if (!relSopCUIDs.isEmpty()) {
+            sb.append("    relatedSOPClasses:")
+              .append(StringUtils.LINE_SEPARATOR);
+            for (String uid : relSopCUIDs)
+                UIDUtils.promptTo(uid, sb.append("      "))
+                  .append(StringUtils.LINE_SEPARATOR);
+        }
+        return sb.append("  ]");
+    }
+
 }

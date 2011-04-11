@@ -38,6 +38,8 @@
 
 package org.dcm4che.util;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -45,6 +47,14 @@ import java.util.regex.Pattern;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class StringUtils {
+
+    public static String LINE_SEPARATOR = AccessController.doPrivileged(
+            new PrivilegedAction<String>() {
+                public String run() {
+                    return System.getProperty("line.separator");
+                }
+            }
+         );
 
     public static String[] EMPTY_STRING = {};
 
@@ -194,4 +204,5 @@ public class StringUtils {
     public static boolean containsWildCard(String s) {
         return (s.indexOf('*') >= 0 || s.indexOf('?') >= 0);
     }
+
 }

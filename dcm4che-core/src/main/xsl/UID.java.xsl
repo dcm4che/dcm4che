@@ -54,7 +54,7 @@ public class UID {
         try {
             return rb.getString(uid);
         } catch (Exception e) {
-            return uid;
+            return "?";
         }
     }
 

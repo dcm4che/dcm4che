@@ -41,6 +41,7 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 
@@ -60,6 +61,11 @@ class PDUEncoder {
     }
 
     public void write(AAssociateRJ e) throws IOException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void write(AAssociateAC ac) throws IOException {
         // TODO Auto-generated method stub
         
     }

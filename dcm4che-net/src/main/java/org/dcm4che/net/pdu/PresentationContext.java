@@ -42,6 +42,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
@@ -66,6 +69,14 @@ public class PresentationContext {
     private int result;
     private String abstractSyntax;
     private Set<String> transferSyntaxes = new LinkedHashSet<String>();
+
+    private static String resultAsString(int result) {
+        try {
+            return RESULTS[result];
+        } catch (IndexOutOfBoundsException e) {
+            return Integer.toString(result);
+        }
+    }
 
     public final int getPCID() {
         return pcid;
@@ -118,9 +129,28 @@ public class PresentationContext {
         int len = 4;
         if (abstractSyntax != null)
             len += 4 + abstractSyntax.length();
-        for (String tsuid : transferSyntaxes) {
+        for (String tsuid : transferSyntaxes)
             len += 4 + tsuid.length();
-        }
         return len;
     }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder()).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        sb.append("  PresentationContext[id: ").append(pcid)
+          .append(StringUtils.LINE_SEPARATOR);
+        if (abstractSyntax != null)
+            UIDUtils.promptTo(abstractSyntax, sb.append("    as: "));
+        else
+            sb.append("    result: ").append(resultAsString(result));
+        sb.append(StringUtils.LINE_SEPARATOR);
+        for (String tsuid : transferSyntaxes)
+            UIDUtils.promptTo(tsuid, sb.append("    ts: "))
+                .append(StringUtils.LINE_SEPARATOR);
+        return sb.append("    ]");
+    }
+
 }

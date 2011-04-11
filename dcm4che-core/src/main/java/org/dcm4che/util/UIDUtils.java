@@ -42,6 +42,8 @@ import java.math.BigInteger;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.dcm4che.data.UID;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -86,5 +88,9 @@ public class UIDUtils {
         cs[rootlen] = '.';
         uuidStr.getChars(0, uuidlen, cs, rootlen + 1);
         return new String(cs);
+    }
+
+    public static StringBuilder promptTo(String uid, StringBuilder sb) {
+        return sb.append(uid).append(" - ").append(UID.nameOf(uid));
     }
 }

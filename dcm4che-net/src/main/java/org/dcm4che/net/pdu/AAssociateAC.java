@@ -38,10 +38,36 @@
 
 package org.dcm4che.net.pdu;
 
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class AAssociateAC extends AAssociateRQAC {
+
+    private UserIdentityAC userIdentity;
+
+    public final UserIdentityAC getUserIdentity() {
+        return userIdentity;
+    }
+
+    public final void setUserIdentity(UserIdentityAC userIdentity) {
+        this.userIdentity = userIdentity;
+    }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder(512)).toString();
+    }
+
+    StringBuilder promptTo(StringBuilder sb) {
+        return promptTo("AAssociateAC[", sb);
+    }
+
+    @Override
+    protected void promptUserIdentityTo(StringBuilder sb) {
+        if (userIdentity != null)
+            userIdentity.promptTo(sb);
+    }
 
 }

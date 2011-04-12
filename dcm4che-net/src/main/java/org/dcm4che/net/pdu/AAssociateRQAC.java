@@ -55,7 +55,7 @@ import org.dcm4che.util.UIDUtils;
  */
 public abstract class AAssociateRQAC {
 
-    private static final int DEF_MAX_PDU_LENGTH = 16384;
+    public static final int DEF_MAX_PDU_LENGTH = 16384;
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";
 
@@ -226,7 +226,7 @@ public abstract class AAssociateRQAC {
         return Collections.unmodifiableCollection(extNegMap.values());
     }
 
-    public ExtNegotiation getExtendedNegotiationFor(String cuid) {
+    public ExtNegotiation getExtNegotiationFor(String cuid) {
         return extNegMap.get(cuid);
     }
 

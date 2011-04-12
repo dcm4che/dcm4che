@@ -38,7 +38,6 @@
 
 package org.dcm4che.net.pdu;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -68,7 +67,8 @@ public class PresentationContext {
     private int pcid;
     private int result;
     private String abstractSyntax;
-    private Set<String> transferSyntaxes = new LinkedHashSet<String>();
+    private LinkedHashSet<String> transferSyntaxes =
+            new LinkedHashSet<String>();
 
     private static String resultAsString(int result) {
         try {
@@ -107,22 +107,15 @@ public class PresentationContext {
     }
 
     public final Set<String> getTransferSyntaxes() {
-        return Collections.unmodifiableSet(transferSyntaxes);
+        return transferSyntaxes;
     }
 
     public String getTransferSyntax() {
         return transferSyntaxes.iterator().next();
     }
 
-    public final boolean addTransferSyntax(String tsuid) {
-        if (tsuid == null)
-            throw new NullPointerException();
-
-        return transferSyntaxes.add(tsuid);
-    }
-
-    public final boolean removeTransferSyntax(String tsuid) {
-        return transferSyntaxes.remove(tsuid);
+    public void addTransferSyntax(String ts) {
+        transferSyntaxes.add(ts);
     }
 
     public int length() {

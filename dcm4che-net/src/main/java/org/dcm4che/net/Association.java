@@ -67,23 +67,25 @@ public class Association {
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
     private final int serialNo;
+    private String name;
+    private final boolean requestor;
     private final Device device;
-    private final AbstractConnection conn;
+    private final Connection conn;
     private Socket sock;
     private final InputStream in;
     private final OutputStream out;
     private final PDUEncoder encoder;
     private final PDUDecoder decoder;
-    private String name;
     private State state;
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;
 
-    private Association(AbstractConnection conn, Socket sock, State state)
+    private Association(Connection conn, Socket sock, boolean requestor)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
+        this.requestor = requestor;
         this.conn = conn;
         this.device = conn.getDevice();
         this.sock = sock;
@@ -91,41 +93,31 @@ public class Association {
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
         this.decoder = new PDUDecoder(this, in);
-        enterState(state);
+        enterState(requestor ? State.Sta4 : State.Sta2);
     }
 
-    private Association(OutboundConnection local, Socket sock)
-            throws IOException {
-        this(local, sock, State.Sta4);
-    }
-
-    private Association(InboundConnection local, Socket sock)
-            throws IOException {
-        this(local, sock, State.Sta2);
-        startARTIM(local.getRequestTimeout());
-    }
-
-    public static Association connect(OutboundConnection local,
-            InboundConnection remote, AAssociateRQ rq, Executor executer)
+    public static Association connect(Connection local, Connection remote,
+            AAssociateRQ rq, Executor executer)
             throws IOException, InterruptedException {
-        Association as = new Association(local, local.connect(remote));
-        as.write(rq, remote.getAcceptTimeout());
+        Association as = new Association(local, local.connect(remote), true);
+        as.write(rq);
+        as.startARTIM(remote.getAcceptTimeout());
         as.activate(executer);
-        as.waitForLeaving(State.Sta5);
+        as.waitForAcknowledge();
         return as;
     }
 
-    public static Association accept(InboundConnection local, Socket sock,
+    public static Association accept(Connection local, Socket sock,
             Executor executer) throws IOException, InterruptedException {
-        Association as = new Association(local, sock);
+        Association as = new Association(local, sock, false);
+        as.startARTIM(local.getRequestTimeout());
         as.activate(executer);
         return as;
     }
 
-    private void write(AAssociateRQ rq, int acceptTimeout) throws IOException {
+    private void write(AAssociateRQ rq) throws IOException {
         this.rq = rq;
         encoder.write(rq);
-        startARTIM(acceptTimeout);
         enterState(State.Sta5);
     }
 
@@ -156,9 +148,9 @@ public class Association {
         notifyAll();
     }
 
-    private synchronized void waitForLeaving(State sta)
+    private synchronized void waitForAcknowledge()
             throws InterruptedException, IOException {
-        while (state == sta)
+        while (state == State.Sta5)
             wait();
         checkException();
     }

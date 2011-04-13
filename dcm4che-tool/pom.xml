@@ -54,6 +54,7 @@
     <module>dcm4che-tool-dcm2txt</module>
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdir</module>
+    <module>dcm4che-tool-dcmrcv</module>
     <module>dcm4che-tool-dcmsnd</module>
     <module>dcm4che-tool-xml2dcm</module>
   </modules>

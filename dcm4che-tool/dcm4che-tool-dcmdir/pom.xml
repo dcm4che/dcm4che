@@ -57,7 +57,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.dcm4che.tool.dcm2xml.Dcm2Xml</mainClass>
+              <mainClass>org.dcm4che.tool.dcmdir.DcmDir</mainClass>
               <addClasspath>true</addClasspath>
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>

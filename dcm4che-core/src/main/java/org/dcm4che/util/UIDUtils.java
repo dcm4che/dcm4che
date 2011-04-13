@@ -59,19 +59,34 @@ public class UIDUtils {
     private static final Pattern PATTERN =
             Pattern.compile("[012]((\\.0)|(\\.[1-9]\\d*))+");
 
+    private static String root = UUID_ROOT;
+
+    public static final String getRoot() {
+        return root;
+    }
+
+    public static final void setRoot(String root) {
+        checkRoot(root);
+        UIDUtils.root = root;
+    }
+
+    private static void checkRoot(String root) {
+        if (root.length() > 24)
+            throw new IllegalArgumentException("root length > 24");
+        if (!isValid(root))
+            throw new IllegalArgumentException(root);
+    }
+
     public static boolean isValid(String uid) {
         return uid.length() <= 64 && PATTERN.matcher(uid).matches();
     }
 
     public static String createUID() {
-        return doCreateUID(UUID_ROOT);
+        return doCreateUID(root);
     }
 
     public static String createUID(String root) {
-        if (root.length() > 24)
-            throw new IllegalArgumentException("root length > 24");
-        if (!isValid(root))
-            throw new IllegalArgumentException(root);
+        checkRoot(root);
         return doCreateUID(root);
     }
 

@@ -97,6 +97,10 @@ public class ApplicationEntity {
     private HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
 
+    public ApplicationEntity(String aeTitle) {
+        setAETitle(aeTitle);
+    }
+
     /**
      * Get the device that is identified by this application entity.
      * 
@@ -134,6 +138,8 @@ public class ApplicationEntity {
      *                A String containing the AE title.
      */
     public final void setAETitle(String aetitle) {
+        if (aetitle.isEmpty())
+            throw new IllegalArgumentException("AE Title cannot be empty");
         this.aeTitle = aetitle;
     }
 
@@ -445,8 +451,7 @@ public class ApplicationEntity {
            PresentationContext rqpc) {
        String asuid = rqpc.getAbstractSyntax();
        TransferCapability tc = roleSelection(rq, ac, asuid);
-       PresentationContext acpc = new PresentationContext();
-       acpc.setPCID(rqpc.getPCID());
+       PresentationContext acpc = new PresentationContext(rqpc.getPCID());
        if (tc != null) {
            Set<String> rqts = rqpc.getTransferSyntaxes();
            String[] acts = tc.getTransferSyntax();

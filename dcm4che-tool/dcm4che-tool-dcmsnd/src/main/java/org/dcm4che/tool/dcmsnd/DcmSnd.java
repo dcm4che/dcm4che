@@ -38,15 +38,154 @@
 
 package org.dcm4che.tool.dcmsnd;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Connection;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.pdu.AAssociateRQ;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DcmSnd {
 
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
+    private static final String USAGE = 
+        "dcmsnd [Options] <aet>[@<host>[:<port>]] [<file>..][<directory>..]";
 
+    private static final String DESCRIPTION = 
+        "\nLoad DICOM Composite Object(s) from specified DICOM file(s) and " +
+        "send them to the specified remote Application Entity using " +
+        "appropriate SOP Classes of the Storage Service Class. If a " +
+        "directory is specified, DICOM Composite Objects in files under " +
+        "that directory and further sub-directories are sent. If no DICOM " +
+        "file(s) are specified, the DICOM connection to the specified " +
+        "remote Application Entity will be verfied using the Verification " +
+        "SOP Class." +
+        "\nIf <port> is not specified, DICOM default port 104 is assumed. If " +
+        "also no <host> is specified, localhost is assumed." +
+        "\n-\nOptions:";
+
+    private static final String EXAMPLE = 
+        "--\nExample: dcmsnd STORESCP@localhost:11112 image.dcm" +
+        "\n=> Send DICOM Composite Object image.dcm to Application Entity " +
+        "STORESCP, listening on local port 11112.";
+
+    private final Device device = new Device("dcmsnd");
+    private final ApplicationEntity ae = new ApplicationEntity("DCMSND");
+    private final Connection conn = new Connection();
+    private final Connection remoteConn = new Connection();
+    private final AAssociateRQ rq = new AAssociateRQ();
+
+    private static CommandLine parseComandLine(String[] args)
+            throws ParseException{
+        Options opts = new Options();
+        opts.addOption("h", "help", false, "display this help and exit");
+        opts.addOption("V", "version", false,
+                "output version information and exit");
+        CommandLineParser parser = new PosixParser();
+        CommandLine cl = parser.parse(opts, args);
+        if (cl.hasOption("h")) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
+            System.exit(0);
+        }
+        if (cl.hasOption("V")) {
+            System.out.println("dcmsnd " + 
+                    DcmSnd.class.getPackage().getImplementationVersion());
+            System.exit(0);
+        }
+        return cl;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseComandLine(args);
+            DcmSnd dcmsnd = new DcmSnd();
+            List<String> argList = cl.getArgList();
+            if (argList.isEmpty())
+                throw new ParseException("Missing remote AE operand");
+            String remoteAE = argList.get(0);
+            String[] calledAETAddress = split(remoteAE, '@');
+            dcmsnd.setCalledAET(calledAETAddress[0]);
+            if (calledAETAddress[1] == null) {
+                dcmsnd.setRemoteHost("127.0.0.1");
+                dcmsnd.setRemotePort(104);
+            } else {
+                String[] hostPort = split(calledAETAddress[1], ':');
+                dcmsnd.setRemoteHost(hostPort[0]);
+                dcmsnd.setRemotePort(toPort(hostPort[1]));
+            }
+            if (cl.hasOption("L")) {
+                String localAE = cl.getOptionValue("L");
+                String[] callingAETHost = split(localAE, '@');
+                dcmsnd.setCallingAET(callingAETHost[0]);
+                if (callingAETHost[1] != null) {
+                    dcmsnd.setLocalHost(callingAETHost[1]);
+                }
+            }
+            dcmsnd.open();
+        } catch (ParseException e) {
+            System.err.println("dcmsnd: " + e.getMessage());
+            System.err.println("Try `dcmsnd --help' for more information.");
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("dcmsnd: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
+
+    public void open() {
+        rq.setCallingAET(ae.getAETitle());
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
+        
+    }
+
+    private static String[] split(String s, char delim) {
+        String[] s2 = { s, null };
+        int pos = s.indexOf(delim);
+        if (pos != -1) {
+            s2[0] = s.substring(0, pos);
+            s2[1] = s.substring(pos + 1);
+        }
+        return s2;
+    }
+
+    private static int toPort(String port) {
+        return port != null 
+                ? Integer.parseInt(port)
+                : 104;
+    }
+
+    public void setCallingAET(String aet) {
+        ae.setAETitle(aet);
+    }
+
+    public void setCalledAET(String aet) {
+        rq.setCalledAET(aet);
+    }
+
+    public void setRemoteHost(String hostname) {
+        remoteConn.setHostname(hostname);
+    }
+
+    public void setRemotePort(int port) {
+        remoteConn.setPort(port);
+    }
+
+    public void setLocalHost(String hostname) {
+        conn.setHostname(hostname);
     }
 
 }

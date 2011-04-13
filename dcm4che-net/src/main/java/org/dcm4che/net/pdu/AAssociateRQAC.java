@@ -193,9 +193,10 @@ public abstract class AAssociateRQAC {
 
     public synchronized void addPresentationContext(PresentationContext pc) {
         int pcid = pc.getPCID();
-        PresentationContext prev = (PresentationContext) pcidMap.remove(pcid);
-        if (prev != null)
-            pcs.remove(prev);
+        if (pcidMap.containsKey(pcid))
+            throw new IllegalStateException(
+                    "Already contains Presentation Context with pid: "
+                    + pcid);
         pcidMap.put(pcid, pc);
         pcs.add(pc);
     }

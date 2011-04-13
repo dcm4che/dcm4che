@@ -64,11 +64,15 @@ public class PresentationContext {
         "4 - transfer-syntaxes-not-supported (provider rejection)"
     };
 
-    private int pcid;
+    private final int pcid;
     private int result;
     private String abstractSyntax;
     private LinkedHashSet<String> transferSyntaxes =
             new LinkedHashSet<String>();
+
+    public PresentationContext(int pcid) {
+        this.pcid = pcid;
+    }
 
     private static String resultAsString(int result) {
         try {
@@ -80,10 +84,6 @@ public class PresentationContext {
 
     public final int getPCID() {
         return pcid;
-    }
-
-    public final void setPCID(int pcid) {
-        this.pcid = pcid;
     }
 
     public final int getResult() {

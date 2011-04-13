@@ -92,6 +92,10 @@ public class Device {
 
     private SSLContext sslContext;
 
+    public Device(String name) {
+        setDeviceName(name);
+    }
+
     /**
      * Get the name of this device.
      * 
@@ -111,6 +115,8 @@ public class Device {
      *                A String containing the device name.
      */
     public final void setDeviceName(String deviceName) {
+        if (deviceName.isEmpty())
+            throw new IllegalArgumentException("Device Name cannot be empty");
         this.deviceName = deviceName;
     }
 

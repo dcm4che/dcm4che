@@ -105,13 +105,12 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
         int[] keys = this.keys;
         int mask = keys.length - 1;
         int i = key & mask;
-        while (true) {
+        while (states[i] != FREE) {
             if (keys[i] == key)
                 return (V) values[i];
-            if (states[i] == FREE)
-                return null;
             i = (i + 1) & mask;
         }
+        return null;
     }
 
     public boolean containsKey(int key) {
@@ -119,14 +118,13 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
         int[] keys = this.keys;
         int mask = keys.length - 1;
         int i = key & mask;
-        while (true) {
+        while (states[i] != FREE) {
             if (keys[i] == key)
-                return true;
-            if (states[i] == FREE)
-                return false;
+                return states[i] > FREE; // states[i] == FULL
             i = (i + 1) & mask;
         }
-    }
+        return false;
+   }
 
     @SuppressWarnings("unchecked")
     public V put(int key, V value) {

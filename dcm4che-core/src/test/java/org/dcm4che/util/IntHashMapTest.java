@@ -62,8 +62,9 @@ public class IntHashMapTest {
 
     @Test
     public void testContainsKey() {
+        removeOdd();
         for (int i = 1; i < 45; i++)
-            assertEquals((i % 3) == 1, map.containsKey(i));
+            assertEquals((i & 1) == 0 && (i % 3) == 1, map.containsKey(i));
     }
 
     @Test

@@ -38,10 +38,6 @@
 
 package org.dcm4che.net.pdu;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
 
@@ -49,52 +45,29 @@ import org.dcm4che.util.UIDUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
-public class CommonExtNegotiation {
+public class ExtendedNegotiation {
 
-    private final String sopCUID;
-    private final String serviceCUID;
-    private final Set<String> relSopCUIDs = new LinkedHashSet<String>();
+    private final String cuid;
+    private final byte[] info;
 
-    public CommonExtNegotiation(String sopCUID, String serviceCUID) {
-        if (sopCUID == null)
-            throw new NullPointerException("sopCUID");
+    public ExtendedNegotiation(String cuid, byte[] info) {
+        if (cuid == null)
+            throw new NullPointerException();
 
-        if (serviceCUID == null)
-            throw new NullPointerException("serviceCUID");
-
-        this.sopCUID = sopCUID;
-        this.serviceCUID = serviceCUID;
+        this.cuid = cuid;
+        this.info = info.clone();
     }
 
     public final String getSOPClassUID() {
-        return sopCUID;
+        return cuid;
     }
 
-    public final String getServiceClassUID() {
-        return serviceCUID;
-    }
-
-    public boolean addRelatedGeneralSOPClassUID(String relSopCUID) {
-        if (relSopCUID == null)
-            throw new NullPointerException();
-
-        return relSopCUIDs.add(relSopCUID);
-    }
-
-    public boolean removeRelatedGeneralSOPClassUID(String relSopCUID) {
-        return relSopCUIDs.remove(relSopCUID);
-    }
-
-    public Set<String> getRelatedGeneralSOPClassUID(String relSopCUID) {
-        return Collections.unmodifiableSet(relSopCUIDs);
+    public final byte[] getInformation() {
+        return info.clone();
     }
 
     public int length() {
-        int len = 4 + sopCUID.length() + serviceCUID.length();
-        for (String cuid : relSopCUIDs) {
-            len += 2 + cuid.length();
-        }
-        return len;
+        return cuid.length() + info.length + 2;
     }
 
     @Override
@@ -103,22 +76,17 @@ public class CommonExtNegotiation {
     }
 
     StringBuilder promptTo(StringBuilder sb) {
-        sb.append("  CommonExtNegotiation[")
+        sb.append("  ExtNegotiation[")
           .append(StringUtils.LINE_SEPARATOR)
           .append("    sopClass: ");
-        UIDUtils.promptTo(sopCUID, sb)
+        UIDUtils.promptTo(cuid, sb)
           .append(StringUtils.LINE_SEPARATOR)
-          .append("    serviceClass: ");
-        UIDUtils.promptTo(serviceCUID, sb)
-          .append(StringUtils.LINE_SEPARATOR);
-        if (!relSopCUIDs.isEmpty()) {
-            sb.append("    relatedSOPClasses:")
-              .append(StringUtils.LINE_SEPARATOR);
-            for (String uid : relSopCUIDs)
-                UIDUtils.promptTo(uid, sb.append("      "))
-                  .append(StringUtils.LINE_SEPARATOR);
-        }
-        return sb.append("  ]");
+          .append("    info: [");
+        for (byte b : info)
+            sb.append(b).append(", ");
+        return sb.append(']')
+                 .append(StringUtils.LINE_SEPARATOR)
+                 .append("  ]");
     }
 
 }

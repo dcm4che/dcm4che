@@ -36,57 +36,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.pdu;
+package org.dcm4che.net;
 
-import org.dcm4che.util.StringUtils;
-import org.dcm4che.util.UIDUtils;
+import org.dcm4che.net.pdu.AAssociateRJ;
+import org.dcm4che.net.pdu.UserIdentityAC;
+import org.dcm4che.net.pdu.UserIdentityRQ;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
-public class ExtNegotiation {
+public interface UserIdentityNegotiator {
 
-    private final String cuid;
-    private final byte[] info;
-
-    public ExtNegotiation(String cuid, byte[] info) {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-        this.info = info.clone();
-    }
-
-    public final String getSOPClassUID() {
-        return cuid;
-    }
-
-    public final byte[] getInformation() {
-        return info.clone();
-    }
-
-    public int length() {
-        return cuid.length() + info.length + 2;
-    }
-
-    @Override
-    public String toString() {
-        return promptTo(new StringBuilder()).toString();
-    }
-
-    StringBuilder promptTo(StringBuilder sb) {
-        sb.append("  ExtNegotiation[")
-          .append(StringUtils.LINE_SEPARATOR)
-          .append("    sopClass: ");
-        UIDUtils.promptTo(cuid, sb)
-          .append(StringUtils.LINE_SEPARATOR)
-          .append("    info: [");
-        for (byte b : info)
-            sb.append(b).append(", ");
-        return sb.append(']')
-                 .append(StringUtils.LINE_SEPARATOR)
-                 .append("  ]");
-    }
+    UserIdentityAC negotiate(Association as, UserIdentityRQ userIdentity)
+            throws AAssociateRJ;
 
 }

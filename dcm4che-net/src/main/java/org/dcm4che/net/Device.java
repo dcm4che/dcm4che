@@ -38,17 +38,19 @@
 
 package org.dcm4che.net;
 
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-
-import org.dcm4che.net.pdu.AAssociateAC;
-import org.dcm4che.net.pdu.AAssociateRJ;
-import org.dcm4che.net.pdu.AAssociateRQ;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM enabled system or
@@ -492,32 +494,71 @@ public class Device {
         return getNumberOfOpenConnections() > connLimit;
     }
 
-    public SSLContext getSSLContext() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public ApplicationEntity getApplicationEntity(String aet) {
         return aes.get(aet);
     }
 
-    public AAssociateAC negotiate(Association as, AAssociateRQ rq)
-            throws AAssociateRJ {
-        if (isLimitOfOpenConnectionsExceeded())
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                    AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
-        ApplicationEntity ae = aes.get(rq.getCalledAET());
-        if (ae == null || !ae.isInstalled() || !ae.isAssociationAcceptor())
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJ.SOURCE_SERVICE_USER,
-                    AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (ae.isAcceptOnlyPreferredCallingAETitles()
-                && !ae.isPreferredCallingAETitle(rq.getCallingAET()))
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJ.SOURCE_SERVICE_USER,
-                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
-        return ae.negotiate(as, rq);
+    public final SSLContext getSSLContext() {
+        return sslContext;
     }
 
+    /**
+     * Initialize transport layer security (TLS) for network interactions using
+     * the device's certificate (as returned by
+     * <code>getThisNodeCertificate()</code>).
+     * 
+     * @param key
+     *                The <code>KeyStore</code> containing the keys needed for
+     *                secure network interaction with another device.
+     * @param password
+     *                A char array containing the password used to access the
+     *                key.
+     * @throws GeneralSecurityException
+     */
+    public void initTLS(KeyStore key, char[] password)
+            throws GeneralSecurityException {
+        KeyStore trust = KeyStore.getInstance(KeyStore.getDefaultType());
+        addCertificate(trust, getThisNodeCertificate());
+        addCertificate(trust, getAuthorizedNodeCertificate());
+        initTLS(key, password, trust);
+    }
+
+    private void addCertificate(KeyStore trust, final X509Certificate[] certs)
+            throws KeyStoreException {
+        if (certs != null) {
+            for (int i = 0; i < certs.length; i++)
+                trust.setCertificateEntry(certs[i].getSubjectDN().getName(),
+                        certs[i]);
+        }
+    }
+
+    /**
+     * Initialize transport layer security (TLS) for network interactions using
+     * the trusted material (certificates, etc.) contained in the "trust"
+     * parameter..
+     * 
+     * @param key
+     *                The <code>KeyStore</code> containing the keys needed for
+     *                secure network interaction with another device.
+     * @param password
+     *                A char array containing the password used to access the
+     *                key.
+     * @param trust
+     *                The <code>KeyStore</code> object containing the source
+     *                of certificates and trusted material.
+     * @throws GeneralSecurityException
+     */
+    public void initTLS(KeyStore key, char[] password, KeyStore trust)
+            throws GeneralSecurityException {
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
+                .getDefaultAlgorithm());
+        kmf.init(key, password);
+        TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trust);
+        if (sslContext == null)
+            sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(),
+                new SecureRandom());
+    }
 }

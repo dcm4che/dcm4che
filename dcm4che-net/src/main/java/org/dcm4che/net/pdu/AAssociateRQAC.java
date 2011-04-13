@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.dcm4che.data.Implementation;
 import org.dcm4che.data.UID;
@@ -56,6 +57,7 @@ import org.dcm4che.util.UIDUtils;
 public abstract class AAssociateRQAC {
 
     public static final int DEF_MAX_PDU_LENGTH = 16384;
+
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";
 
@@ -75,10 +77,10 @@ public abstract class AAssociateRQAC {
             pcidMap = new IntHashMap<PresentationContext>();
     protected final LinkedHashMap<String, RoleSelection>
             roleSelMap = new LinkedHashMap<String, RoleSelection>();
-    protected final LinkedHashMap<String, ExtNegotiation>
-            extNegMap = new LinkedHashMap<String, ExtNegotiation>();
-    protected final LinkedHashMap<String, CommonExtNegotiation>
-            commonExtNegMap = new LinkedHashMap<String, CommonExtNegotiation>();
+    protected final LinkedHashMap<String, ExtendedNegotiation>
+            extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
+    protected final LinkedHashMap<String, CommonExtendedNegotiation>
+            commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
 
     public final int getProtocolVersion() {
         return protocolVersion;
@@ -177,8 +179,8 @@ public abstract class AAssociateRQAC {
         this.implVersionName = implVersionName;
     }
 
-    public Collection<PresentationContext> getPresentationContexts() {
-        return Collections.unmodifiableCollection(pcs);
+    public List<PresentationContext> getPresentationContexts() {
+        return Collections.unmodifiableList(pcs);
     }
 
     public int getNumberOfPresentationContexts() {
@@ -222,36 +224,36 @@ public abstract class AAssociateRQAC {
         return roleSelMap.remove(cuid);
     }
 
-    public Collection<ExtNegotiation> getExtendedNegotiations() {
+    public Collection<ExtendedNegotiation> getExtendedNegotiations() {
         return Collections.unmodifiableCollection(extNegMap.values());
     }
 
-    public ExtNegotiation getExtNegotiationFor(String cuid) {
+    public ExtendedNegotiation getExtNegotiationFor(String cuid) {
         return extNegMap.get(cuid);
     }
 
-    public ExtNegotiation addExtendedNegotiation(ExtNegotiation extNeg) {
+    public ExtendedNegotiation addExtendedNegotiation(ExtendedNegotiation extNeg) {
         return extNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
-    public ExtNegotiation removeExtendedNegotiationFor(String cuid) {
+    public ExtendedNegotiation removeExtendedNegotiationFor(String cuid) {
         return extNegMap.remove(cuid);
     }
 
-    public Collection<CommonExtNegotiation> getCommonExtendedNegotiations() {
+    public Collection<CommonExtendedNegotiation> getCommonExtendedNegotiations() {
         return Collections.unmodifiableCollection(commonExtNegMap.values());
     }
 
-    public CommonExtNegotiation getCommonExtendedNegotiationFor(String cuid) {
+    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(String cuid) {
         return commonExtNegMap.get(cuid);
     }
 
-    public CommonExtNegotiation addCommonExtendedNegotiation(
-            CommonExtNegotiation extNeg) {
+    public CommonExtendedNegotiation addCommonExtendedNegotiation(
+            CommonExtendedNegotiation extNeg) {
         return commonExtNegMap.put(extNeg.getSOPClassUID(), extNeg);
     }
 
-    public CommonExtNegotiation removeCommonExtendedNegotiationFor(
+    public CommonExtendedNegotiation removeCommonExtendedNegotiationFor(
             String cuid) {
         return commonExtNegMap.remove(cuid);
     }
@@ -276,10 +278,10 @@ public abstract class AAssociateRQAC {
         }
         if (implVersionName != null)
             len += 4 + implVersionName.length();
-        for (ExtNegotiation en : extNegMap.values()) {
+        for (ExtendedNegotiation en : extNegMap.values()) {
             len += 4 + en.length();
         }
-        for (CommonExtNegotiation cen : commonExtNegMap.values()) {
+        for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
             len += 4 + cen.length();
         }
         return len;
@@ -309,9 +311,9 @@ public abstract class AAssociateRQAC {
             pc.promptTo(sb);
         for (RoleSelection rs : roleSelMap.values())
             rs.promptTo(sb);
-        for (ExtNegotiation extNeg : extNegMap.values())
+        for (ExtendedNegotiation extNeg : extNegMap.values())
             extNeg.promptTo(sb);
-        for (CommonExtNegotiation extNeg : commonExtNegMap.values())
+        for (CommonExtendedNegotiation extNeg : commonExtNegMap.values())
             extNeg.promptTo(sb);
         return sb.append("]");
     }

@@ -49,9 +49,10 @@ import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.AAssociateRQAC;
-import org.dcm4che.net.pdu.ExtNegotiation;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
+import org.dcm4che.net.pdu.UserIdentityAC;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -92,6 +93,9 @@ public class ApplicationEntity {
     private int maxPDULengthReceive = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
     private int maxOpsPerformed = 1;
     private int maxOpsInvoked = 1;
+    private UserIdentityNegotiator userIdNegotiator;
+    private HashMap<String, ExtendedNegotiator> extNegotiators =
+            new HashMap<String, ExtendedNegotiator>();
 
     /**
      * Get the device that is identified by this application entity.
@@ -402,6 +406,22 @@ public class ApplicationEntity {
 
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
+        if (!(isInstalled() && associationAcceptor))
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_USER,
+                    AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+        if (acceptOnlyPreferredCallingAETitles
+                && !isPreferredCallingAETitle(rq.getCallingAET()))
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                    AAssociateRJ.SOURCE_SERVICE_USER,
+                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
+        UserIdentityAC userIdentity = userIdNegotiator != null
+                ? userIdNegotiator.negotiate(as, rq.getUserIdentity())
+                : null;
+        if (device.isLimitOfOpenConnectionsExceeded())
+            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
+                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                    AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
         AAssociateAC ac = new AAssociateAC();
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
@@ -410,6 +430,7 @@ public class ApplicationEntity {
                 maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
+        ac.setUserIdentity(userIdentity);
         Collection<PresentationContext> pcs = rq.getPresentationContexts();
         for (PresentationContext rqpc : pcs)
             ac.addPresentationContext(negotiate(rq, ac, rqpc));
@@ -423,18 +444,7 @@ public class ApplicationEntity {
    private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
            PresentationContext rqpc) {
        String asuid = rqpc.getAbstractSyntax();
-       TransferCapability tcscu = scuTransferCapabilities.get(asuid);
-       TransferCapability tcscp = scpTransferCapabilities.get(asuid);
-       RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
-       RoleSelection acrs = ac.getRoleSelectionFor(asuid);
-       if (rqrs != null && acrs == null) {
-           boolean scu = rqrs.isSCU() && tcscp != null;
-           boolean scp = rqrs.isSCP() && tcscu != null;
-           acrs = new RoleSelection(asuid, scu, scp);
-           ac.addRoleSelection(acrs);
-       }
-       TransferCapability tc = rqrs == null || acrs.isSCU() ? tcscp : tcscu;
-
+       TransferCapability tc = roleSelection(rq, ac, asuid);
        PresentationContext acpc = new PresentationContext();
        acpc.setPCID(rqpc.getPCID());
        if (tc != null) {
@@ -456,12 +466,42 @@ public class ApplicationEntity {
        return acpc;
     }
 
+    private TransferCapability roleSelection(AAssociateRQ rq,
+            AAssociateAC ac, String asuid) {
+        RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
+        if (rqrs == null)
+            return scpTransferCapabilities.get(asuid);
+
+        RoleSelection acrs = ac.getRoleSelectionFor(asuid);
+        if (acrs != null)
+            return acrs.isSCU()
+                    ? scpTransferCapabilities.get(asuid)
+                    : scuTransferCapabilities.get(asuid);
+
+        TransferCapability tcscu = null;
+        TransferCapability tcscp = null;
+        boolean scu = rqrs.isSCU()
+                && (tcscp = scpTransferCapabilities.get(asuid)) != null;
+        boolean scp = rqrs.isSCP()
+                && (tcscu = scuTransferCapabilities.get(asuid)) != null;
+        ac.addRoleSelection(new RoleSelection(asuid, scu, scp));
+        return scu ? tcscp : tcscu;
+    }
+
     private void extNegotiate(AAssociateRQ rq, AAssociateAC ac, String asuid) {
-        ExtNegotiation rqexneg = rq.getExtNegotiationFor(asuid);
-        ExtNegotiation acexneg = ac.getExtNegotiationFor(asuid);
-        if (acexneg == null && rqexneg != null) {
-            
-        }
+        ExtendedNegotiation rqexneg = rq.getExtNegotiationFor(asuid);
+        if (rqexneg == null)
+            return;
+
+        ExtendedNegotiation acexneg = ac.getExtNegotiationFor(asuid);
+        if (acexneg != null)
+            return;
+
+        ExtendedNegotiator exneg = extNegotiators .get(asuid);
+        if (exneg == null)
+            return;
+
+        ac.addExtendedNegotiation(exneg.negotiate(rqexneg));
     }
 
 }

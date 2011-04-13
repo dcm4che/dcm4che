@@ -229,7 +229,13 @@ public class Association {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-            write(device.negotiate(this, rq));
+            ApplicationEntity ae =
+                    device.getApplicationEntity(rq.getCalledAET());
+            if (ae == null)
+                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
+                        AAssociateRJ.SOURCE_SERVICE_USER,
+                        AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
+            write(ae.negotiate(this, rq));
         } catch (AAssociateRJ e) {
             encoder.write(e);
             enterState(State.Sta13);

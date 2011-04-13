@@ -59,13 +59,12 @@ import org.slf4j.LoggerFactory;
 class PDUDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(PDUDecoder.class);
-    private static final int DEF_PDU_LEN = 0x4000; // 16KB
-    private static final int MAX_PDU_LEN = 0x1000000; // 16MB
+    private static final int MAX_PDU_LEN = 0x1000000; // 16MiB
 
     private final Association as;
     private final InputStream in;
     private final Thread th;
-    private byte[] buf = new byte[6 + DEF_PDU_LEN];
+    private byte[] buf = new byte[6 + AAssociateRQAC.DEF_MAX_PDU_LENGTH];
     private int pos;
     private int pdutype;
     private int pdulen;

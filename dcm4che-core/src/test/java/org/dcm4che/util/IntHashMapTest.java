@@ -69,7 +69,7 @@ public class IntHashMapTest {
     @Test
     public void testRehash() {
         removeOdd();
-        map.rehash(true);
+        map.trimToSize();
         testGet(map);
    }
 

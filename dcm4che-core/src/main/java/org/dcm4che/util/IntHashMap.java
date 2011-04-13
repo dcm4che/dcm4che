@@ -135,30 +135,30 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
         int mask = keys.length - 1;
         int i = key & mask;
 
-        while (states[i] != FREE) {
+        while (states[i] > FREE) { // states[i] == FULL
             if (keys[i] == key) {
                 V oldValue = (V) values[i];
                 values[i] = value;
-                if (states[i] < FREE) { // states[i] == REMOVED
-                    states[i] = FULL; 
-                    ++size;
-                }
                 return oldValue;
             }
             i = (i + 1) & mask;
         }
-
+        byte oldState = states[i];
         states[i] = FULL;
         keys[i] = key;
         values[i] = value;
         ++size;
-        if (--free <= 0)
-            resize(keys.length << 1);
+        if (oldState == FREE && --free < 0)
+            resize(Math.max(capacity(size), keys.length));
         return null;
     }
 
-    public void rehash(boolean trimToSize) {
-        resize(trimToSize ? capacity(size) : keys.length);
+    public void trimToSize() {
+        resize(capacity(size));
+    }
+
+    public void rehash() {
+        resize(keys.length);
     }
 
     private void resize(int newLength) {

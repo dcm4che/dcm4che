@@ -38,10 +38,6 @@
 
 package org.dcm4che.net.pdu;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
 
@@ -53,9 +49,10 @@ public class CommonExtendedNegotiation {
 
     private final String sopCUID;
     private final String serviceCUID;
-    private final Set<String> relSopCUIDs = new LinkedHashSet<String>();
+    private final String[] relSopCUIDs;
 
-    public CommonExtendedNegotiation(String sopCUID, String serviceCUID) {
+    public CommonExtendedNegotiation(String sopCUID, String serviceCUID,
+            String... relSopCUIDs) {
         if (sopCUID == null)
             throw new NullPointerException("sopCUID");
 
@@ -64,6 +61,7 @@ public class CommonExtendedNegotiation {
 
         this.sopCUID = sopCUID;
         this.serviceCUID = serviceCUID;
+        this.relSopCUIDs = relSopCUIDs;
     }
 
     public final String getSOPClassUID() {
@@ -74,19 +72,8 @@ public class CommonExtendedNegotiation {
         return serviceCUID;
     }
 
-    public boolean addRelatedGeneralSOPClassUID(String relSopCUID) {
-        if (relSopCUID == null)
-            throw new NullPointerException();
-
-        return relSopCUIDs.add(relSopCUID);
-    }
-
-    public boolean removeRelatedGeneralSOPClassUID(String relSopCUID) {
-        return relSopCUIDs.remove(relSopCUID);
-    }
-
-    public Set<String> getRelatedGeneralSOPClassUID(String relSopCUID) {
-        return Collections.unmodifiableSet(relSopCUIDs);
+    public String[] getRelatedGeneralSOPClassUIDs() {
+        return relSopCUIDs;
     }
 
     public int length() {
@@ -111,7 +98,7 @@ public class CommonExtendedNegotiation {
           .append("    serviceClass: ");
         UIDUtils.promptTo(serviceCUID, sb)
           .append(StringUtils.LINE_SEPARATOR);
-        if (!relSopCUIDs.isEmpty()) {
+        if (relSopCUIDs.length != 0) {
             sb.append("    relatedSOPClasses:")
               .append(StringUtils.LINE_SEPARATOR);
             for (String uid : relSopCUIDs)

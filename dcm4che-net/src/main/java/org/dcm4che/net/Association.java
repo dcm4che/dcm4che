@@ -68,9 +68,9 @@ public class Association {
 
     private final int serialNo;
     private String name;
-    private final boolean requestor;
     private final Device device;
     private final Connection conn;
+    private final Connection remote;
     private Socket sock;
     private final InputStream in;
     private final OutputStream out;
@@ -81,38 +81,70 @@ public class Association {
     private AAssociateAC ac;
     private IOException ex;
 
-    private Association(Connection conn, Socket sock, boolean requestor)
+    private Association(Connection local, Socket sock, Connection remote)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
-        this.requestor = requestor;
-        this.conn = conn;
-        this.device = conn.getDevice();
+        this.device = local.getDevice();
+        this.conn = local;
+        this.remote = remote;
         this.sock = sock;
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
         this.decoder = new PDUDecoder(this, in);
-        enterState(requestor ? State.Sta4 : State.Sta2);
     }
 
     public static Association connect(Connection local, Connection remote,
             AAssociateRQ rq, Executor executer)
             throws IOException, InterruptedException {
-        Association as = new Association(local, local.connect(remote), true);
+        Association as = new Association(local, local.connect(remote), remote);
+        as.enterState(State.Sta4);
         as.write(rq);
         as.startARTIM(remote.getAcceptTimeout());
         as.activate(executer);
-        as.waitForAcknowledge();
+        as.waitForLeaving(State.Sta5);
         return as;
     }
 
     public static Association accept(Connection local, Socket sock,
             Executor executer) throws IOException, InterruptedException {
-        Association as = new Association(local, sock, false);
+        Association as = new Association(local, sock, null);
+        as.enterState(State.Sta2);
         as.startARTIM(local.getRequestTimeout());
         as.activate(executer);
         return as;
+    }
+
+    public void release() throws IOException {
+        if (remote == null)
+            throw new IllegalStateException("Association was accepted");
+        state.writeAReleaseRQ(this);
+    }
+
+    public void abort(AAbort aa) {
+        state.write(this, aa);
+    }
+
+    void write(AAbort aa) {
+        try {
+            encoder.write(aa);
+        } catch (IOException e) {
+            LOG.debug("{}: failed to write {}", name, aa);
+        }
+        ex = aa;
+        enterState(State.Sta13);
+    }
+
+    void writeAReleaseRQ() throws IOException {
+        encoder.writeAReleaseRQ();
+        enterState(State.Sta7);
+        startARTIM(remote.getReleaseTimeout());
+    }
+
+    public void waitForOutstandingRSP() {
+        // TODO Auto-generated method stub
+        
     }
 
     private void write(AAssociateRQ rq) throws IOException {
@@ -148,9 +180,16 @@ public class Association {
         notifyAll();
     }
 
-    private synchronized void waitForAcknowledge()
+    public synchronized void waitForLeaving(State state)
             throws InterruptedException, IOException {
-        while (state == State.Sta5)
+        while (this.state == state)
+            wait();
+        checkException();
+    }
+
+    public synchronized void waitForEnter(State state)
+            throws InterruptedException, IOException {
+        while (this.state != state)
             wait();
         checkException();
     }
@@ -203,11 +242,6 @@ public class Association {
         }
     }
 
-    public void abort(AAbort aa) {
-        // TODO Auto-generated method stub
-        
-    }
-
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
         state.onAAssociateRQ(this, rq);
     }
@@ -216,8 +250,6 @@ public class Association {
         this.rq = rq;
         name = rq.getCallingAET() + '(' + serialNo + ")";
         stopARTIM();
-        LOG.info("{} >> A-ASSOCIATE-RQ", name);
-        LOG.debug("{}", rq);
         enterState(State.Sta3);
         try {
             if ((rq.getProtocolVersion() & 1) == 0)
@@ -296,5 +328,4 @@ public class Association {
 
     void handlePDataTF() {
     }
-
 }

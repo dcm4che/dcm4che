@@ -41,6 +41,8 @@ package org.dcm4che.net;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -449,26 +451,25 @@ public class ApplicationEntity {
 
    private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
            PresentationContext rqpc) {
-       String asuid = rqpc.getAbstractSyntax();
-       TransferCapability tc = roleSelection(rq, ac, asuid);
-       PresentationContext acpc = new PresentationContext(rqpc.getPCID());
-       if (tc != null) {
-           Set<String> rqts = rqpc.getTransferSyntaxes();
-           String[] acts = tc.getTransferSyntax();
-           for (int i = 0; i < acts.length; i++) {
-               if (rqts.contains(acts[i])) {
-                   acpc.addTransferSyntax(acts[i]);
-                   extNegotiate(rq, ac, asuid);
-                   return acpc;
-               }
-           }
-           acpc.setResult(PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED);
-       }
-       else {
-           acpc.setResult(PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED);
-       }
-       acpc.addTransferSyntax(rqpc.getTransferSyntax());
-       return acpc;
+       String as = rqpc.getAbstractSyntax();
+       TransferCapability tc = roleSelection(rq, ac, as);
+       int pcid = rqpc.getPCID();
+       if (tc == null)
+           return new PresentationContext(pcid,
+                   PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
+                   rqpc.getTransferSyntax());
+
+       for (String rqts : rqpc.getTransferSyntaxes())
+            for (String ts : tc.getTransferSyntax())
+                if (ts.hashCode() == rqts.hashCode() && ts.equals(rqts)) {
+                    extNegotiate(rq, ac, as);
+                    return new PresentationContext(pcid,
+                            PresentationContext.ACCEPTANCE, ts);
+                }
+
+       return new PresentationContext(pcid,
+                PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,
+                rqpc.getTransferSyntax());
     }
 
     private TransferCapability roleSelection(AAssociateRQ rq,

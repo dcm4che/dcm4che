@@ -40,6 +40,9 @@ package org.dcm4che.tool.dcmsnd;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -47,10 +50,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -84,6 +90,10 @@ public class DcmSnd {
     private final Connection conn = new Connection();
     private final Connection remoteConn = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+
+    private final ExecutorService executer =
+            Executors.newSingleThreadExecutor();
+    private Association as;
 
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
@@ -145,11 +155,15 @@ public class DcmSnd {
         }
     }
 
-    public void open() {
-        rq.setCallingAET(ae.getAETitle());
+    public void open() throws IOException, InterruptedException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
-        
+        rq.setCallingAET(ae.getAETitle());
+        if (rq.getNumberOfPresentationContexts() == 0)
+            rq.addPresentationContext(
+                    new PresentationContext(1, UID.VerificationSOPClass,
+                            UID.ImplicitVRLittleEndian));
+        as = Association.connect(conn, remoteConn, rq, executer);
     }
 
     private static String[] split(String s, char delim) {

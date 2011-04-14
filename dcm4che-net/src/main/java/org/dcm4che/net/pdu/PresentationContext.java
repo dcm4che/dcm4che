@@ -38,9 +38,6 @@
 
 package org.dcm4che.net.pdu;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
 
@@ -65,13 +62,23 @@ public class PresentationContext {
     };
 
     private final int pcid;
-    private int result;
-    private String abstractSyntax;
-    private LinkedHashSet<String> transferSyntaxes =
-            new LinkedHashSet<String>();
+    private final int result;
+    private final String as;
+    private final String[] tss;
 
-    public PresentationContext(int pcid) {
+    public PresentationContext(int pcid, int result, String as, String... tss) {
         this.pcid = pcid;
+        this.result = result;
+        this.as = as;
+        this.tss = tss;
+    }
+
+    public PresentationContext(int pcid, String as, String... tss) {
+        this(pcid, 0, as, tss);
+    }
+
+    public PresentationContext(int pcid, int result, String ts) {
+        this(pcid, result, null, ts);
     }
 
     private static String resultAsString(int result) {
@@ -94,36 +101,24 @@ public class PresentationContext {
         return result == ACCEPTANCE;
     }
 
-    public final void setResult(int result) {
-        this.result = result;
+   public final String getAbstractSyntax() {
+        return as;
     }
 
-    public final String getAbstractSyntax() {
-        return abstractSyntax;
-    }
-
-    public final void setAbstractSyntax(String abstractSyntax) {
-        this.abstractSyntax = abstractSyntax;
-    }
-
-    public final Set<String> getTransferSyntaxes() {
-        return transferSyntaxes;
+    public final String[] getTransferSyntaxes() {
+        return tss;
     }
 
     public String getTransferSyntax() {
-        return transferSyntaxes.iterator().next();
-    }
-
-    public void addTransferSyntax(String ts) {
-        transferSyntaxes.add(ts);
+        return tss[0];
     }
 
     public int length() {
         int len = 4;
-        if (abstractSyntax != null)
-            len += 4 + abstractSyntax.length();
-        for (String tsuid : transferSyntaxes)
-            len += 4 + tsuid.length();
+        if (as != null)
+            len += 4 + as.length();
+        for (String ts : tss)
+            len += 4 + ts.length();
         return len;
     }
 
@@ -135,13 +130,13 @@ public class PresentationContext {
     StringBuilder promptTo(StringBuilder sb) {
         sb.append("  PresentationContext[id: ").append(pcid)
           .append(StringUtils.LINE_SEPARATOR);
-        if (abstractSyntax != null)
-            UIDUtils.promptTo(abstractSyntax, sb.append("    as: "));
+        if (as != null)
+            UIDUtils.promptTo(as, sb.append("    as: "));
         else
             sb.append("    result: ").append(resultAsString(result));
         sb.append(StringUtils.LINE_SEPARATOR);
-        for (String tsuid : transferSyntaxes)
-            UIDUtils.promptTo(tsuid, sb.append("    ts: "))
+        for (String ts : tss)
+            UIDUtils.promptTo(ts, sb.append("    ts: "))
                 .append(StringUtils.LINE_SEPARATOR);
         return sb.append("    ]");
     }

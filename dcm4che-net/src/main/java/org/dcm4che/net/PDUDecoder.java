@@ -40,6 +40,7 @@ package org.dcm4che.net;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.dcm4che.net.pdu.AAbort;
@@ -47,6 +48,12 @@ import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.AAssociateRQAC;
+import org.dcm4che.net.pdu.CommonExtendedNegotiation;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
+import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.RoleSelection;
+import org.dcm4che.net.pdu.UserIdentityAC;
+import org.dcm4che.net.pdu.UserIdentityRQ;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
 import org.slf4j.Logger;
@@ -59,6 +66,16 @@ import org.slf4j.LoggerFactory;
 class PDUDecoder {
 
     private static final Logger LOG = LoggerFactory.getLogger(PDUDecoder.class);
+
+    private static final String UNRECOGNIZED_PDU =
+            "{} >> unrecognized PDU[type={}, len={}]";
+    private static final String INVALID_PDU_LENGTH =
+            "{} >> invalid length of PDU[type={}, len={}]";
+    private static final String INVALID_COMMON_EXTENDED_NEGOTIATION =
+            "{} >> invalid Common Extended Negotiation sub-item in PDU[type={}, len={}]";
+    private static final String INVALID_USER_IDENTITY =
+            "{} >> invalid User Identity sub-item in PDU[type={}, len={}]";
+    
     private static final int MAX_PDU_LEN = 0x1000000; // 16MiB
 
     private final Association as;
@@ -114,6 +131,16 @@ class PDUDecoder {
         return val;
     }
 
+    private byte[] getBytes(int len) {
+        byte[] bs = new byte[len];
+        get(bs, 0, len);
+        return bs;
+    }
+
+    private byte[] decodeBytes() {
+        return getBytes(getUnsignedShort());
+    }
+
     public void nextPDU() throws IOException {
         LOG.debug("{} waiting for PDU", as);
         if (th != Thread.currentThread())
@@ -158,21 +185,18 @@ class PDUDecoder {
             as.onAAbort(new AAbort(get(), get()));
             break;
         default:
-            LOG.warn("{} >> unrecognized PDU[type={}, len={}]",
-                    new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
-            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
-                    AAbort.UNRECOGNIZED_PDU);
+            abort(AAbort.UNRECOGNIZED_PDU, UNRECOGNIZED_PDU);
         }
     }
 
     private void checkPDULength(int len) throws AAbort {
         if (pdulen != len)
-            invalidPDULength();
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDU_LENGTH);
     }
 
     private void readPDU() throws IOException {
         if (pdulen < 4 || pdulen > MAX_PDU_LEN)
-            invalidPDULength();
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDU_LENGTH);
 
         if (6 + pdulen > buf.length)
             buf = Arrays.copyOf(buf, 6 + pdulen);
@@ -180,16 +204,195 @@ class PDUDecoder {
         StreamUtils.readFully(in, buf, 10, pdulen - 4);
     }
 
-    private void invalidPDULength() throws AAbort {
-        LOG.warn("{} >> invalid length of PDU[type={}, len={}]",
-                new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
-        throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
-                AAbort.INVALID_PDU_PARAMETER_VALUE);
+    private void abort(int reason, String logmsg) throws AAbort {
+        LOG.warn(logmsg, new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+        throw new AAbort(AAbort.UL_SERIVE_PROVIDER, reason);
     }
 
-    private AAssociateRQAC decode(AAssociateRQAC rqac) {
-        // TODO Auto-generated method stub
+    @SuppressWarnings("deprecation")
+    private String getString(int len) {
+        if (pos + len > pdulen + 6)
+            throw new IndexOutOfBoundsException();
+        String s;
+        // Skip illegal trailing NULL
+        int len0 = len;
+        while (len0 > 0 && buf[pos + len0 - 1] == 0) {
+            len0--;
+        }
+        s = new String(buf, 0, pos, len0);
+        pos += len;
+        return s;
+    }
+
+    private String decodeString() {
+        return getString(getUnsignedShort());
+    }
+
+    private AAssociateRQAC decode(AAssociateRQAC rqac)
+            throws AAbort {
+        try {
+            rqac.setProtocolVersion(getUnsignedShort());
+            get();
+            get();
+            rqac.setCalledAET(getString(16).trim());
+            rqac.setCallingAET(getString(16).trim());
+            rqac.setReservedBytes(getBytes(32));
+            while (pos < pdulen)
+                decodeItem(rqac);
+            checkPDULength(pos - 6);
+        } catch (IndexOutOfBoundsException e) {
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDU_LENGTH);
+        }
         return rqac;
+    }
+
+    private void decodeItem(AAssociateRQAC rqac) throws AAbort {
+        int itemType = get();
+        get(); // skip reserved byte
+        int itemLen = getUnsignedShort();
+        switch (itemType)
+        {
+        case ItemType.APP_CONTEXT:
+            rqac.setApplicationContext(getString(itemLen));
+            break;
+        case ItemType.RQ_PRES_CONTEXT:
+        case ItemType.AC_PRES_CONTEXT:
+            rqac.addPresentationContext(decodePC(itemLen));
+            break;
+        case ItemType.USER_INFO:
+            decodeUserInfo(itemLen, rqac);
+            break;
+        default:
+            skip(itemLen);
+        }
+    }
+
+    private PresentationContext decodePC(int itemLen) {
+        int pcid = get();
+        get(); // skip reserved byte
+        int result = get();
+        get(); // skip reserved byte
+        String as = null;
+        ArrayList<String> tss = new ArrayList<String>(1);
+        get(); // skip reserved byte
+        int endpos = pos + itemLen - 4;
+        while (pos < endpos) {
+            int subItemType = get() & 0xff;
+            get(); // skip reserved byte
+            int subItemLen = getUnsignedShort();
+            switch (subItemType)
+            {
+            case ItemType.ABSTRACT_SYNTAX:
+                as = getString(subItemLen);
+                break;
+            case ItemType.TRANSFER_SYNTAX:
+                tss.add(getString(subItemLen));
+                break;
+            default:
+                skip(subItemLen);
+            }
+        }
+        return new PresentationContext(pcid, result, as,
+                tss.toArray(new String[tss.size()]));
+    }
+
+    private void decodeUserInfo(int itemLength, AAssociateRQAC rqac) throws AAbort
+    {
+        int endpos = pos + itemLength;
+        while (pos < endpos)
+            decodeUserInfoSubItem(rqac);
+    }
+
+    private void decodeUserInfoSubItem(AAssociateRQAC rqac) throws AAbort
+    {
+        int itemType = get();
+        get(); // skip reserved byte
+        int itemLen = getUnsignedShort();
+        switch (itemType)
+        {
+        case ItemType.MAX_PDU_LENGTH:
+            rqac.setMaxPDULength(getInt());
+            break;
+        case ItemType.IMPL_CLASS_UID:
+            rqac.setImplClassUID(getString(itemLen));
+            break;
+        case ItemType.ASYNC_OPS_WINDOW:
+            rqac.setMaxOpsInvoked(getUnsignedShort());
+            rqac.setMaxOpsPerformed(getUnsignedShort());
+            break;
+        case ItemType.ROLE_SELECTION:
+            rqac.addRoleSelection(decodeRoleSelection(itemLen));
+            break;
+        case ItemType.IMPL_VERSION_NAME:
+            rqac.setImplVersionName(getString(itemLen));
+            break;
+        case ItemType.EXT_NEG:
+            rqac.addExtendedNegotiation(decodeExtNeg(itemLen));
+            break;
+        case ItemType.COMMON_EXT_NEG:
+            rqac.addCommonExtendedNegotiation(decodeCommonExtNeg(itemLen));
+            break;
+        case ItemType.RQ_USER_IDENTITY:
+        case ItemType.AC_USER_IDENTITY:
+            if (rqac instanceof AAssociateRQ) {
+                ((AAssociateRQ) rqac).setUserIdentity(decodeUserIdentityRQ(itemLen));               
+            } else {
+                ((AAssociateAC) rqac).setUserIdentity(decodeUserIdentityAC(itemLen));                
+            }
+            break;
+        default:
+            skip(itemLen);
+        }
+    }
+
+    private RoleSelection decodeRoleSelection(int itemLen) {
+        String cuid = decodeString();
+        boolean scu = get() != 0;
+        boolean scp = get() != 0;
+        return new RoleSelection(cuid, scu, scp);
+    }
+
+    private ExtendedNegotiation decodeExtNeg(int itemLen) {
+        int uidLength = getUnsignedShort();
+        String cuid = getString(uidLength);
+        byte[] info = getBytes(itemLen - uidLength - 2);
+        return new ExtendedNegotiation(cuid, info);
+    }
+
+    private CommonExtendedNegotiation decodeCommonExtNeg(int itemLen)
+            throws AAbort {
+        int endPos = pos + itemLen;
+        String sopCUID = getString(getUnsignedShort());
+        String serviceCUID = getString(getUnsignedShort());
+        ArrayList<String> relSopCUIDs = new ArrayList<String>(1);
+        int endRelSopCUIDs  = pos + getUnsignedShort();
+        while (pos < endRelSopCUIDs)
+            relSopCUIDs.add(decodeString());
+        if (pos != endRelSopCUIDs || pos > endPos)
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE,
+                    INVALID_COMMON_EXTENDED_NEGOTIATION);
+        skip(endPos - pos);
+        return new CommonExtendedNegotiation(sopCUID, serviceCUID,
+                relSopCUIDs.toArray(new String[relSopCUIDs.size()]));
+    }
+
+    private UserIdentityRQ decodeUserIdentityRQ(int itemLen) throws AAbort {
+        int endPos = pos + itemLen;
+        int type = get() & 0xff;
+        boolean rspReq = get() != 0;
+        byte[] primaryField = decodeBytes();
+        byte[] secondaryField = decodeBytes();
+        if (pos != endPos)
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_USER_IDENTITY);
+        return new UserIdentityRQ(type, rspReq, primaryField, secondaryField);
+    }
+
+    private UserIdentityAC decodeUserIdentityAC(int itemLen) throws AAbort {
+        int endPos = pos + itemLen;
+        byte[] serverResponse = decodeBytes();
+        if (pos != endPos)
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_USER_IDENTITY);
+        return new UserIdentityAC(serverResponse);
     }
 
 }

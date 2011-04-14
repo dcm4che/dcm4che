@@ -64,10 +64,32 @@ public class UserIdentityRQ {
         "4 - SAML Assertion"
     };
 
-    private int userIdentityType;
-    private boolean positiveResponseRequested;
-    private byte[] primaryField = {};
-    private byte[] secondaryField = {};
+    private final int type;
+    private final boolean rspReq;
+    private final byte[] primaryField;
+    private final byte[] secondaryField;
+
+    public UserIdentityRQ(int type, boolean rspReq, byte[] primaryField,
+            byte[] secondaryField) {
+        this.type = type;
+        this.rspReq = rspReq;
+        this.primaryField = primaryField.clone();
+        this.secondaryField = secondaryField != null 
+                ? secondaryField.clone()
+                : new byte[0];
+    }
+
+    public UserIdentityRQ(int type, boolean rspReq, byte[] primaryField) {
+        this(type, rspReq, primaryField, null);
+    }
+
+    public UserIdentityRQ(String username, char[] passcode) {
+        this(USERNAME_PASSCODE, true, toBytes(username), toBytes(passcode));
+    }
+
+    public UserIdentityRQ(String username, boolean rspReq) {
+        this(USERNAME_PASSCODE, rspReq, toBytes(username));
+    }
 
     private static String typeAsString(int type) {
         try {
@@ -77,53 +99,28 @@ public class UserIdentityRQ {
         }
     }
 
-    public final int getUserIdentityType() {
-        return userIdentityType;
-    }
-
-    public final void setUserIdentityType(int userIdentityType) {
-        this.userIdentityType = userIdentityType;
+    public final int getType() {
+        return type;
     }
 
     public final boolean isPositiveResponseRequested() {
-        return positiveResponseRequested;
-    }
-
-    public final void setPositiveResponseRequested(
-            boolean positiveResponseRequested) {
-        this.positiveResponseRequested = positiveResponseRequested;
+        return rspReq;
     }
 
     public final byte[] getPrimaryField() {
         return primaryField.clone();
     }
 
-    public final void setPrimaryField(byte[] primaryField) {
-        this.primaryField = primaryField.clone();
-    }
-
     public final byte[] getSecondaryField() {
         return secondaryField.clone();
     }
 
-    public final void setSecondaryField(byte[] secondaryField) {
-        this.secondaryField = secondaryField.clone();
-    }
-
-    public String getUsername() {
+    public final String getUsername() {
         return toString(primaryField);
     }
 
-    public void setUsername(String username) {
-        primaryField = toBytes(username);
-    }
-
-    public char[] getPasscode() {
+    public final char[] getPasscode() {
         return toChars(secondaryField);
-    }
-
-    public void setPasscode(char[] passcode) {
-        secondaryField = toBytes(passcode);
     }
 
     private static byte[] toBytes(String s) {
@@ -167,17 +164,17 @@ public class UserIdentityRQ {
         sb.append("  UserIdentity[")
             .append(StringUtils.LINE_SEPARATOR)
             .append("    type: ")
-            .append(typeAsString(userIdentityType))
+            .append(typeAsString(type))
             .append(StringUtils.LINE_SEPARATOR);
-        if (userIdentityType == USERNAME
-                || userIdentityType == USERNAME_PASSCODE)
+        if (type == USERNAME
+                || type == USERNAME_PASSCODE)
             sb.append("    username: ")
               .append(getUsername());
         else
             sb.append("    primaryField: byte[")
               .append(primaryField.length)
               .append(']');
-        if (userIdentityType == USERNAME_PASSCODE) {
+        if (type == USERNAME_PASSCODE) {
             sb.append(StringUtils.LINE_SEPARATOR)
               .append("    passcode: ");
             for (int i = secondaryField.length; --i >= 0;)
@@ -190,4 +187,5 @@ public class UserIdentityRQ {
         }
         return sb.append(StringUtils.LINE_SEPARATOR).append("  ]");
     }
+
 }

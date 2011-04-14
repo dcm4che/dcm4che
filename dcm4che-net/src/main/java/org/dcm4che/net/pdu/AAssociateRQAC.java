@@ -191,7 +191,7 @@ public abstract class AAssociateRQAC {
         return pcidMap.get(pcid);
     }
 
-    public synchronized void addPresentationContext(PresentationContext pc) {
+    public void addPresentationContext(PresentationContext pc) {
         int pcid = pc.getPCID();
         if (pcidMap.containsKey(pcid))
             throw new IllegalStateException(
@@ -201,7 +201,7 @@ public abstract class AAssociateRQAC {
         pcs.add(pc);
     }
 
-    public synchronized boolean removePresentationContext(PresentationContext pc) {
+    public boolean removePresentationContext(PresentationContext pc) {
         if (!pcs.remove(pc))
             return false;
 

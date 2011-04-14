@@ -39,7 +39,7 @@
 package org.dcm4che.net;
 
 /**
- * DICOM Standard, Part 15, Annex H: Transfer Capability � The description of
+ * DICOM Standard, Part 15, Annex H: Transfer Capability - The description of
  * the SOP classes and syntaxes supported by a Network AE.
  * <p>
  * An instance of the <code>TransferCapability</code> class describes the

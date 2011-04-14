@@ -40,6 +40,7 @@ package org.dcm4che.net;
 
 import java.io.IOException;
 
+import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
@@ -49,11 +50,17 @@ import org.dcm4che.net.pdu.AAssociateRQ;
  *
  */
 enum State {
-    Sta1("Sta1 - Idle"),
+    Sta1("Sta1 - Idle") {
+
+        @Override
+        void write(Association as, AAbort aa) {
+            // NO OP
+        }
+    },
     Sta2("Sta2 - Transport connection open") {
 
         @Override
-        public void onAAssociateRQ(Association as, AAssociateRQ rq)
+        void onAAssociateRQ(Association as, AAssociateRQ rq)
                 throws IOException {
             as.handle(rq);
         }
@@ -63,13 +70,13 @@ enum State {
     Sta5("Sta5 - Awaiting A-ASSOCIATE-AC or A-ASSOCIATE-RJ PDU") {
 
         @Override
-        public void onAAssociateAC(Association as, AAssociateAC ac)
+        void onAAssociateAC(Association as, AAssociateAC ac)
                 throws IOException {
             as.handle(ac);
         }
 
         @Override
-        public void onAAssociateRJ(Association as, AAssociateRJ rj)
+        void onAAssociateRJ(Association as, AAssociateRJ rj)
                 throws IOException {
             as.handle(rj);
         }
@@ -77,13 +84,18 @@ enum State {
     Sta6("Sta6 - Association established and ready for data transfer") {
 
         @Override
-        public void onAReleaseRQ(Association as) throws IOException {
+        void onAReleaseRQ(Association as) throws IOException {
             as.handleAReleaseRQ();
         }
 
         @Override
-        public void onPDataTF(Association as) throws IOException {
+        void onPDataTF(Association as) throws IOException {
             as.handlePDataTF();
+        }
+
+        @Override
+        void writeAReleaseRQ(Association as) throws IOException {
+            as.writeAReleaseRQ();
         }
     },
     Sta7("Sta7 - Awaiting A-RELEASE-RP PDU") {
@@ -94,12 +106,12 @@ enum State {
         }
 
         @Override
-        public void onAReleaseRQ(Association as) throws IOException {
+        void onAReleaseRQ(Association as) throws IOException {
             as.handleAReleaseRQCollision();
         }
 
         @Override
-        public void onPDataTF(Association as) throws IOException {
+        void onPDataTF(Association as) throws IOException {
             as.handlePDataTF();
         }
     },
@@ -108,19 +120,25 @@ enum State {
     Sta10("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU"){
 
         @Override
-        public void onAReleaseRP(Association as) throws IOException {
+        void onAReleaseRP(Association as) throws IOException {
             as.handleAReleaseRPCollision();
         }
     },
     Sta11("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU"){
 
         @Override
-        public void onAReleaseRP(Association as) throws IOException {
+        void onAReleaseRP(Association as) throws IOException {
             as.handleAReleaseRP();
         }
     },
     Sta12("Sta12 - Release collision acceptor side; awaiting A-RELEASE response primitive"),
-    Sta13("Sta13 - Awaiting Transport Connection Close Indication");
+    Sta13("Sta13 - Awaiting Transport Connection Close Indication") {
+
+        @Override
+        void write(Association as, AAbort aa) {
+            // NO OP
+        }
+    };
 
     private String name;
 
@@ -158,6 +176,14 @@ enum State {
 
     void onAReleaseRP(Association as) throws IOException {
         as.unexpectedPDU("A-RELEASE-RP");
+    }
+
+    void writeAReleaseRQ(Association as) throws IOException {
+        throw new IllegalStateException("State: " + this);
+    }
+
+    void write(Association as, AAbort aa) {
+        as.write(aa);
     }
 
 }

@@ -43,7 +43,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcm4che.data.UID;
@@ -61,64 +60,64 @@ import org.slf4j.LoggerFactory;
  */
 public class Association {
 
-    private static final Logger LOG =
+    static final Logger LOG =
             LoggerFactory.getLogger(Association.class);
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
 
     private final int serialNo;
     private String name;
+    private ApplicationEntity ae;
     private final Device device;
     private final Connection conn;
-    private final Connection remote;
+    private Connection remote;
     private Socket sock;
     private final InputStream in;
     private final OutputStream out;
     private final PDUEncoder encoder;
-    private final PDUDecoder decoder;
+    private PDUDecoder decoder;
     private State state;
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;
 
-    private Association(Connection local, Socket sock, Connection remote)
+    Association(Connection local, Socket sock,  State state)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.name = "Association(" + serialNo + ')';
-        this.device = local.getDevice();
         this.conn = local;
-        this.remote = remote;
+        this.device = local.getDevice();
         this.sock = sock;
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
-        this.decoder = new PDUDecoder(this, in);
+        enterState(state);
     }
 
-    public static Association connect(Connection local, Connection remote,
-            AAssociateRQ rq, Executor executer)
-            throws IOException, InterruptedException {
-        Association as = new Association(local, local.connect(remote), remote);
-        as.enterState(State.Sta4);
-        as.write(rq);
-        as.startARTIM(remote.getAcceptTimeout());
-        as.activate(executer);
-        as.waitForLeaving(State.Sta5);
-        return as;
+    @Override
+    public String toString() {
+        return name;
     }
 
-    public static Association accept(Connection local, Socket sock,
-            Executor executer) throws IOException, InterruptedException {
-        Association as = new Association(local, sock, null);
-        as.enterState(State.Sta2);
-        as.startARTIM(local.getRequestTimeout());
-        as.activate(executer);
-        return as;
+    final void setRemoteConnection(Connection remote) {
+        this.remote = remote;
+    }
+
+    public final ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
+
+    final void setApplicationEntity(ApplicationEntity ae) {
+        this.ae = ae;
+    }
+
+    public boolean isRequestor() {
+        return remote != null;
     }
 
     public void release() throws IOException {
-        if (remote == null)
-            throw new IllegalStateException("Association was accepted");
+        if (!isRequestor())
+            throw new IllegalStateException("is not association-requestor");
         state.writeAReleaseRQ(this);
     }
 
@@ -127,18 +126,20 @@ public class Association {
     }
 
     void write(AAbort aa) {
+        LOG.info("{} << {}", name, aa);
+        enterState(State.Sta13);
         try {
             encoder.write(aa);
         } catch (IOException e) {
             LOG.debug("{}: failed to write {}", name, aa);
         }
         ex = aa;
-        enterState(State.Sta13);
     }
 
     void writeAReleaseRQ() throws IOException {
-        encoder.writeAReleaseRQ();
+        LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
+        encoder.writeAReleaseRQ();
         startARTIM(remote.getReleaseTimeout());
     }
 
@@ -147,19 +148,24 @@ public class Association {
         
     }
 
-    private void write(AAssociateRQ rq) throws IOException {
+    void write(AAssociateRQ rq) throws IOException {
+        name = rq.getCalledAET() + '(' + serialNo + ")";
         this.rq = rq;
-        encoder.write(rq);
+        LOG.info("{} << A-ASSOCIATE-RQ", name);
+        LOG.debug("{}", rq);
         enterState(State.Sta5);
+        encoder.write(rq);
     }
 
     private void write(AAssociateAC ac) throws IOException {
         this.ac = ac;
-        encoder.write(ac);
+        LOG.info("{} << A-ASSOCIATE-AC", name);
+        LOG.debug("{}", ac);
         enterState(State.Sta6);
+        encoder.write(ac);
     }
 
-    private void startARTIM(int timeout) throws IOException {
+    void startARTIM(int timeout) throws IOException {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
         sock.setSoTimeout(timeout);
     }
@@ -180,28 +186,22 @@ public class Association {
         notifyAll();
     }
 
-    public synchronized void waitForLeaving(State state)
+    synchronized void waitForLeaving(State state)
             throws InterruptedException, IOException {
         while (this.state == state)
             wait();
         checkException();
     }
 
-    public synchronized void waitForEnter(State state)
-            throws InterruptedException, IOException {
-        while (this.state != state)
-            wait();
-        checkException();
-    }
-
-    private void activate(Executor executer) {
+    void activate() {
         if (!(state == State.Sta2 || state == State.Sta5))
                 throw new IllegalStateException("state: " + state);
 
-        executer.execute(new Runnable() {
+        device.execute(new Runnable() {
 
             @Override
             public void run() {
+                decoder = new PDUDecoder(Association.this, in);
                 device.incrementNumberOfOpenConnections();
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
@@ -225,6 +225,9 @@ public class Association {
     }
 
     private void closeSocket() {
+        if (sock == null)
+            return;
+
         if (state == State.Sta13) {
             try {
                 Thread.sleep(conn.getSocketCloseDelay());
@@ -232,7 +235,6 @@ public class Association {
                 LOG.warn("Interrupted Socket Close Delay", e);
             }
         }
-        enterState(State.Sta1);
         try { out.close(); } catch (IOException ignore) {}
         try { in.close(); } catch (IOException ignore) {}
         if (sock != null) {
@@ -240,9 +242,12 @@ public class Association {
             try { sock.close(); } catch (IOException ignore) {}
             sock = null;
         }
+        enterState(State.Sta1);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
+        LOG.info("{} >> A-ASSOCIATE-RQ", name);
+        LOG.debug("{}", rq);
         state.onAAssociateRQ(this, rq);
     }
 
@@ -261,59 +266,90 @@ public class Association {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
-            ApplicationEntity ae =
-                    device.getApplicationEntity(rq.getCalledAET());
+            ae = device.getApplicationEntity(rq.getCalledAET());
             if (ae == null)
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
             write(ae.negotiate(this, rq));
+            enterState(State.Sta6);
         } catch (AAssociateRJ e) {
-            encoder.write(e);
+            Association.LOG.info("{} << {}", name, e);
             enterState(State.Sta13);
+            encoder.write(e);
         }
     }
 
     void onAAssociateAC(AAssociateAC ac) throws IOException {
+        LOG.info("{} >> A-ASSOCIATE-AC", name);
+        LOG.debug("{}", ac);
         state.onAAssociateAC(this, ac);
     }
 
-    void handle(AAssociateAC rq) throws IOException {
+    void handle(AAssociateAC ac) throws IOException {
+        this.ac = ac;
         stopARTIM();
+        enterState(State.Sta6);
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
+        LOG.info("{} >> {}", name, rj);
         state.onAAssociateRJ(this, rj);
     }
 
     void handle(AAssociateRJ rq) {
+        ex = rq;
+        closeSocket();
     }
 
     void onAReleaseRQ() throws IOException {
+        LOG.info("{} >> A-RELEASE-RQ", name);
         state.onAReleaseRQ(this);
     }
 
-    void handleAReleaseRQ() {
+    void handleAReleaseRQ() throws IOException {
+        enterState(State.Sta8);
+        LOG.info("{} << A-RELEASE-RP", name);
+        enterState(State.Sta13);
+        encoder.writeAReleaseRP();
     }
 
-    void handleAReleaseRQCollision() {
+    void handleAReleaseRQCollision() throws IOException {
+        if (isRequestor()) {
+            enterState(State.Sta9);
+            LOG.info("{} << A-RELEASE-RP", name);
+            enterState(State.Sta11);
+            encoder.writeAReleaseRP();
+       } else {
+            enterState(State.Sta10);
+            try {
+                waitForLeaving(State.Sta10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            enterState(State.Sta13);
+        }
     }
 
     void onAReleaseRP() throws IOException {
+        LOG.info("{} >> A-RELEASE-RP", name);
         state.onAReleaseRP(this);
     }
 
-    void handleAReleaseRP() {
+    void handleAReleaseRP() throws IOException {
+        stopARTIM();
+        closeSocket();
     }
 
-    void onAAbort(AAbort aAbort) {
-        // TODO Auto-generated method stub
-        
+    void handleAReleaseRPCollision() throws IOException {
+        stopARTIM();
+        enterState(State.Sta12);
     }
 
-    void handleAReleaseRPCollision() {
-        // TODO Auto-generated method stub
-        
+    void onAAbort(AAbort aa) {
+        LOG.info("{} << {}", name, aa);
+        ex = aa;
+        closeSocket();
     }
 
     void unexpectedPDU(String pdu) throws AAbort {

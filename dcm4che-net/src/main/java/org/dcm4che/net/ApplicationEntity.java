@@ -38,11 +38,10 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,24 +71,24 @@ import org.dcm4che.net.pdu.UserIdentityAC;
 public class ApplicationEntity {
 
     private Device device;
-    private String aeTitle;
+    private String aet;
     private String description;
     private Object vendorData;
     private LinkedHashSet<String> applicationCluster =
             new LinkedHashSet<String>();
-    private LinkedHashSet<String> preferredCalledAETitle =
+    private LinkedHashSet<String> prefCalledAETs =
             new LinkedHashSet<String>();
-    private LinkedHashSet<String> preferredCallingAETitle =
+    private LinkedHashSet<String> prefCallingAETs =
             new LinkedHashSet<String>();
     private String[] supportedCharacterSet = {};
-    private boolean acceptOnlyPreferredCallingAETitles;
-    private boolean associationAcceptor;
-    private boolean associationInitiator;
+    private boolean checkCallingAET;
+    private boolean acceptor;
+    private boolean initiator;
     private Boolean installed;
     private final List<Connection> conns = new ArrayList<Connection>(1);
-    private final HashMap<String, TransferCapability> scuTransferCapabilities =
+    private final HashMap<String, TransferCapability> scuTCs =
             new HashMap<String, TransferCapability>();
-    private final HashMap<String, TransferCapability> scpTransferCapabilities =
+    private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
     private int maxPDULengthSend = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
     private int maxPDULengthReceive = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
@@ -130,19 +129,21 @@ public class ApplicationEntity {
      * @return A String containing the AE title.
      */
     public final String getAETitle() {
-        return aeTitle;
+        return aet;
     }
 
     /**
      * Set the AE title for this Network AE.
      * 
-     * @param aetitle
-     *                A String containing the AE title.
+     * @param aet
+     *            A String containing the AE title.
      */
-    public final void setAETitle(String aetitle) {
-        if (aetitle.isEmpty())
-            throw new IllegalArgumentException("AE Title cannot be empty");
-        this.aeTitle = aetitle;
+    public void setAETitle(String aet) {
+        if (aet.isEmpty())
+            throw new IllegalArgumentException("AE title cannot be empty");
+        if (device != null)
+            throw new IllegalStateException("Device already initalized");
+        this.aet = aet;
     }
 
     /**
@@ -216,23 +217,23 @@ public class ApplicationEntity {
      * @return A Set<String> of the preferred called AE titles.
      */
     public Set<String> getPreferredCalledAETitles() {
-        return preferredCalledAETitle;
+        return prefCalledAETs;
     }
 
     public boolean isPreferredCalledAETitle(String aet) {
-        return preferredCalledAETitle.contains(aet);
+        return prefCalledAETs.contains(aet);
     }
 
     public boolean addPreferredCalledAETitle(String aet) {
-        return preferredCalledAETitle.add(aet);
+        return prefCalledAETs.add(aet);
     }
 
     public boolean removePreferredCalledAETitle(String aet) {
-        return preferredCalledAETitle.remove(aet);
+        return prefCalledAETs.remove(aet);
     }
 
     public void clearPreferredCalledAETitles() {
-        preferredCalledAETitle.clear();
+        prefCalledAETs.clear();
     }
 
     /**
@@ -242,31 +243,31 @@ public class ApplicationEntity {
      * @return A Set<String> containing the preferred calling AE titles.
      */
     public Set<String> getPreferredCallingAETitle() {
-        return preferredCallingAETitle;
+        return prefCallingAETs;
     }
 
     public boolean isPreferredCallingAETitle(String aet) {
-        return preferredCallingAETitle.contains(aet);
+        return prefCallingAETs.contains(aet);
     }
 
     public void addPreferredCallingAETitle(String aet) {
-        preferredCallingAETitle.add(aet);
+        prefCallingAETs.add(aet);
     }
 
     public boolean removePreferredCallingAETitle(String aet) {
-        return preferredCallingAETitle.remove(aet);
+        return prefCallingAETs.remove(aet);
     }
 
     public void clearPreferredCallingAETitles() {
-        preferredCallingAETitle.clear();
+        prefCallingAETs.clear();
     }
 
-    public void setAcceptOnlyPreferredCallingAETitles(boolean acceptOnly) {
-        this.acceptOnlyPreferredCallingAETitles = acceptOnly;
+    public void setAcceptOnlyPreferredCallingAETitles(boolean checkCallingAET) {
+        this.checkCallingAET = checkCallingAET;
     }
 
     public boolean isAcceptOnlyPreferredCallingAETitles() {
-        return acceptOnlyPreferredCallingAETitles;
+        return checkCallingAET;
     }
 
     /**
@@ -303,7 +304,7 @@ public class ApplicationEntity {
      *         false otherwise.
      */
     public final boolean isAssociationAcceptor() {
-        return associationAcceptor;
+        return acceptor;
     }
 
     /**
@@ -314,7 +315,7 @@ public class ApplicationEntity {
      *                associations, false otherwise.
      */
     public final void setAssociationAcceptor(boolean acceptor) {
-        this.associationAcceptor = acceptor;
+        this.acceptor = acceptor;
     }
 
     /**
@@ -324,7 +325,7 @@ public class ApplicationEntity {
      *         false otherwise.
      */
     public final boolean isAssociationInitiator() {
-        return associationInitiator;
+        return initiator;
     }
 
     /**
@@ -335,7 +336,7 @@ public class ApplicationEntity {
      *                associations, false otherwise.
      */
     public final void setAssociationInitiator(boolean initiator) {
-        this.associationInitiator = initiator;
+        this.initiator = initiator;
     }
 
     /**
@@ -397,29 +398,41 @@ public class ApplicationEntity {
         this.maxOpsInvoked = maxOpsInvoked;
     }
 
-    public void add(TransferCapability tc) {
+    private void checkDevice() {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+    }
+
+    public void addConnection(Connection conn) {
+        checkDevice();
+        if (device != conn.getDevice())
+            throw new IllegalArgumentException(
+                    "" + conn + " is not a connection of " + device);
+        conns.add(conn);
+    }
+
+    public void addTransferCapability(TransferCapability tc) {
         String sopClass = tc.getSopClass();
         TransferCapability.Role role = tc.getRole();
         if (role == null || sopClass == null)
             throw new IllegalArgumentException(tc.toString());
         switch(role) {
         case SCU:
-            scuTransferCapabilities.put(sopClass, tc);
+            scuTCs.put(sopClass, tc);
             break;
         case SCP:
-            scpTransferCapabilities.put(sopClass, tc);
+            scpTCs.put(sopClass, tc);
             break;
         }
     }
 
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
-        if (!(isInstalled() && associationAcceptor))
+        if (!(isInstalled() && acceptor))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (acceptOnlyPreferredCallingAETitles
-                && !isPreferredCallingAETitle(rq.getCallingAET()))
+        if (checkCallingAET && !isPreferredCallingAETitle(rq.getCallingAET()))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
@@ -476,20 +489,20 @@ public class ApplicationEntity {
             AAssociateAC ac, String asuid) {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         if (rqrs == null)
-            return scpTransferCapabilities.get(asuid);
+            return scpTCs.get(asuid);
 
         RoleSelection acrs = ac.getRoleSelectionFor(asuid);
         if (acrs != null)
             return acrs.isSCU()
-                    ? scpTransferCapabilities.get(asuid)
-                    : scuTransferCapabilities.get(asuid);
+                    ? scpTCs.get(asuid)
+                    : scuTCs.get(asuid);
 
         TransferCapability tcscu = null;
         TransferCapability tcscp = null;
         boolean scu = rqrs.isSCU()
-                && (tcscp = scpTransferCapabilities.get(asuid)) != null;
+                && (tcscp = scpTCs.get(asuid)) != null;
         boolean scp = rqrs.isSCP()
-                && (tcscu = scuTransferCapabilities.get(asuid)) != null;
+                && (tcscu = scuTCs.get(asuid)) != null;
         ac.addRoleSelection(new RoleSelection(asuid, scu, scp));
         return scu ? tcscp : tcscu;
     }
@@ -508,6 +521,23 @@ public class ApplicationEntity {
             return;
 
         ac.addExtendedNegotiation(exneg.negotiate(rqexneg));
+    }
+
+    public Association connect(Connection local, Connection remote,
+            AAssociateRQ rq) throws IOException, InterruptedException {
+        if (!aet.equals(rq.getCallingAET()))
+            throw new IllegalArgumentException(
+                    "Calling AE title: " + rq.getCallingAET() + 
+                    " does not match AE title: " + aet);
+        Association as = new Association(local, local.connect(remote),
+                State.Sta4);
+        as.setRemoteConnection(remote);
+        as.setApplicationEntity(this);
+        as.write(rq);
+        as.startARTIM(remote.getAcceptTimeout());
+        as.activate();
+        as.waitForLeaving(State.Sta5);
+        return as;
     }
 
 }

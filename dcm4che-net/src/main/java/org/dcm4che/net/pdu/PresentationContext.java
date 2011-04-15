@@ -138,7 +138,7 @@ public class PresentationContext {
         for (String ts : tss)
             UIDUtils.promptTo(ts, sb.append("    ts: "))
                 .append(StringUtils.LINE_SEPARATOR);
-        return sb.append("    ]");
+        return sb.append("  ]");
     }
 
 }

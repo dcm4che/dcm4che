@@ -91,9 +91,14 @@ public class DcmSnd {
     private final Connection remoteConn = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
 
-    private final ExecutorService executer =
-            Executors.newSingleThreadExecutor();
     private Association as;
+
+    public DcmSnd(Executor executor) {
+        device.setExecuter(executor);
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
+        ae.addConnection(conn);
+    }
 
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
@@ -118,9 +123,10 @@ public class DcmSnd {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
             CommandLine cl = parseComandLine(args);
-            DcmSnd dcmsnd = new DcmSnd();
+            DcmSnd dcmsnd = new DcmSnd(executorService);
             List<String> argList = cl.getArgList();
             if (argList.isEmpty())
                 throw new ParseException("Missing remote AE operand");
@@ -144,6 +150,11 @@ public class DcmSnd {
                 }
             }
             dcmsnd.open();
+            try {
+                
+            } finally {
+                dcmsnd.close();
+            }
         } catch (ParseException e) {
             System.err.println("dcmsnd: " + e.getMessage());
             System.err.println("Try `dcmsnd --help' for more information.");
@@ -152,18 +163,25 @@ public class DcmSnd {
             System.err.println("dcmsnd: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+    public void close() throws IOException {
+        if (as != null) {
+            as.waitForOutstandingRSP();
+            as.release();
         }
     }
 
     public void open() throws IOException, InterruptedException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
         rq.setCallingAET(ae.getAETitle());
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,
                             UID.ImplicitVRLittleEndian));
-        as = Association.connect(conn, remoteConn, rq, executer);
+        as = ae.connect(conn, remoteConn, rq);
     }
 
     private static String[] split(String s, char delim) {

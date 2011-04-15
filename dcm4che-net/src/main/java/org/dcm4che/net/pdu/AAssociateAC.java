@@ -61,7 +61,7 @@ public class AAssociateAC extends AAssociateRQAC {
     }
 
     StringBuilder promptTo(StringBuilder sb) {
-        return promptTo("AAssociateAC[", sb);
+        return promptTo("A-ASSOCIATE-AC[", sb);
     }
 
     @Override

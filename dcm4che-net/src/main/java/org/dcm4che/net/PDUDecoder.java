@@ -65,16 +65,14 @@ import org.slf4j.LoggerFactory;
  */
 class PDUDecoder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PDUDecoder.class);
-
     private static final String UNRECOGNIZED_PDU =
-            "{} >> unrecognized PDU[type={}, len={}]";
+            "{}: unrecognized PDU[type={}, len={}]";
     private static final String INVALID_PDU_LENGTH =
-            "{} >> invalid length of PDU[type={}, len={}]";
+            "{}: invalid length of PDU[type={}, len={}]";
     private static final String INVALID_COMMON_EXTENDED_NEGOTIATION =
-            "{} >> invalid Common Extended Negotiation sub-item in PDU[type={}, len={}]";
+            "{}: invalid Common Extended Negotiation sub-item in PDU[type={}, len={}]";
     private static final String INVALID_USER_IDENTITY =
-            "{} >> invalid User Identity sub-item in PDU[type={}, len={}]";
+            "{}: invalid User Identity sub-item in PDU[type={}, len={}]";
     
     private static final int MAX_PDU_LEN = 0x1000000; // 16MiB
 
@@ -142,7 +140,7 @@ class PDUDecoder {
     }
 
     public void nextPDU() throws IOException {
-        LOG.debug("{} waiting for PDU", as);
+        Association.LOG.debug("{}: waiting for PDU", as);
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         StreamUtils.readFully(in, buf, 0, 10);
@@ -150,7 +148,7 @@ class PDUDecoder {
         pdutype = get();
         get();
         pdulen = getInt();
-        LOG.debug("{} >> PDU[type={}, len={}]",
+        Association.LOG.debug("{} >> PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         switch (pdutype) {
         case PDUType.A_ASSOCIATE_RQ:
@@ -205,7 +203,8 @@ class PDUDecoder {
     }
 
     private void abort(int reason, String logmsg) throws AAbort {
-        LOG.warn(logmsg, new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
+        Association.LOG.warn(logmsg,
+                new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         throw new AAbort(AAbort.UL_SERIVE_PROVIDER, reason);
     }
 
@@ -274,7 +273,6 @@ class PDUDecoder {
         get(); // skip reserved byte
         String as = null;
         ArrayList<String> tss = new ArrayList<String>(1);
-        get(); // skip reserved byte
         int endpos = pos + itemLen - 4;
         while (pos < endpos) {
             int subItemType = get() & 0xff;

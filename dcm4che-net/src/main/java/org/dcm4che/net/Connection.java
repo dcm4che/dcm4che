@@ -47,7 +47,6 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.concurrent.Executor;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -563,25 +562,25 @@ public class Connection {
         return server;
     }
 
+    private void checkDevice() {
+        if (device == null)
+            throw new IllegalStateException("Device not initalized");
+    }
+
     /**
      * Bind this network connection to a TCP port and start a server socket
      * accept loop.
      * 
-     * @param executor
-     *            The <code>Executor</code> implementation that association
-     *            threads should run within. The executor determines the
-     *            threading model.
      * @throws IOException
      *             If there is a problem with the network interaction.
      */
-    public synchronized void bind(final Executor executor) throws IOException {
-        if (device == null)
-            throw new IllegalStateException("Device not initalized");
+    public synchronized void bind() throws IOException {
+        checkDevice();
         if (server != null)
             throw new IllegalStateException("Already listening - " + server);
         server = isTLS() ? createTLSServerSocket() : new ServerSocket();
         server.bind(getEndPoint(), backlog);
-        executor.execute(new Runnable() {
+        device.execute(new Runnable() {
 
             public void run() {
                 SocketAddress sockAddr = server.getLocalSocketAddress();
@@ -590,13 +589,16 @@ public class Connection {
                     for (;;) {
                         LOG.debug("Wait for connection on {}", sockAddr);
                         Socket s = server.accept();
-                        if (isBlocked(s.getInetAddress())) {
+                        if (isBlackListed(s.getInetAddress())) {
                             LOG.info("Reject connection from {}", s);
                             try { s.close(); } catch (IOException ignore) {}
                         } else {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);
-                            Association.accept(Connection.this, s, executor);
+                            Association as = new Association(Connection.this,
+                                    s, State.Sta2);
+                            as.startARTIM(requestTimeout);
+                            as.activate();
                         }
                     }
                 } catch (Throwable e) {
@@ -611,8 +613,6 @@ public class Connection {
 
     private ServerSocket createTLSServerSocket() throws IOException {
         SSLContext sslContext = device.getSSLContext();
-        if (sslContext == null)
-            throw new IllegalStateException("TLS Context not initialized!");
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
         ss.setEnabledProtocols(tlsProtocol);
@@ -621,7 +621,7 @@ public class Connection {
         return ss;
     }
 
-    private boolean isBlocked(InetAddress ia) {
+    private boolean isBlackListed(InetAddress ia) {
         return blacklist != null && blacklist.contains(ia);
     }
 
@@ -648,12 +648,11 @@ public class Connection {
      *             If the connection cannot be made due to network IO reasons.
      */
     public Socket connect(Connection peerConfig) throws IOException {
-        if (device == null)
-            throw new IllegalStateException("Device not initalized");
+        checkDevice();
         Socket s = isTLS() ? createTLSSocket() : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
         InetSocketAddress endpoint = peerConfig.getEndPoint();
-        LOG.debug("Initiate connection from {} to {}", bindPoint, endpoint);
+        LOG.info("Initiate connection from {} to {}", bindPoint, endpoint);
         s.bind(bindPoint);
         setSocketOptions(s);
         s.connect(endpoint, peerConfig.getConnectTimeout());
@@ -662,8 +661,6 @@ public class Connection {
 
     private Socket createTLSSocket() throws IOException {
         SSLContext sslContext = device.getSSLContext();
-        if (sslContext == null)
-            throw new IllegalStateException("TLS Context not initialized!");
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(tlsProtocol);

@@ -316,7 +316,7 @@ public abstract class AAssociateRQAC {
             extNeg.promptTo(sb);
         for (CommonExtendedNegotiation extNeg : commonExtNegMap.values())
             extNeg.promptTo(sb);
-        return sb.append("]");
+        return sb.append(StringUtils.LINE_SEPARATOR).append("]");
     }
 
     protected abstract void promptUserIdentityTo(StringBuilder sb);

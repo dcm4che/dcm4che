@@ -46,6 +46,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -66,7 +67,7 @@ public class Device {
 
     private static final int DEF_CONN_LIMIT = 100;
 
-    private String deviceName;
+    private final String deviceName;
     private String description;
     private String manufacturer;
     private String manufacturerModelName;
@@ -85,15 +86,19 @@ public class Device {
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
+    
+    private String acceptNotRecognizedCalledAETAs;
 
     private int connLimit = DEF_CONN_LIMIT;
-
     private final AtomicInteger connCount = new AtomicInteger(0);
 
+    private Executor executer;
     private SSLContext sslContext;
 
     public Device(String name) {
-        setDeviceName(name);
+        if (name.isEmpty())
+            throw new IllegalArgumentException("Device Name cannot be empty");
+        this.deviceName = name;
     }
 
     /**
@@ -103,21 +108,6 @@ public class Device {
      */
     public final String getDeviceName() {
         return deviceName;
-    }
-
-    /**
-     * Set the name of this device.
-     * <p>
-     * This should be a unique name for this device. It is restricted to legal
-     * LDAP names, and not constrained by DICOM AE Title limitations.
-     * 
-     * @param deviceName
-     *                A String containing the device name.
-     */
-    public final void setDeviceName(String deviceName) {
-        if (deviceName.isEmpty())
-            throw new IllegalArgumentException("Device Name cannot be empty");
-        this.deviceName = deviceName;
     }
 
     /**
@@ -444,6 +434,14 @@ public class Device {
         this.installed = installed;
     }
 
+    public final Executor getExecuter() {
+        return executer;
+    }
+
+    public final void setExecuter(Executor executer) {
+        this.executer = executer;
+    }
+
     public void addConnection(Connection conn) {
         conn.setDevice(this);
         conns.add(conn);
@@ -459,9 +457,6 @@ public class Device {
 
     public void addApplicationEntity(ApplicationEntity ae) {
         String aet = ae.getAETitle();
-        if (aet == null)
-            throw new IllegalArgumentException("ae without AE Title");
-
         ae.setDevice(this);
         aes.put(aet, ae);
     }
@@ -500,11 +495,24 @@ public class Device {
         return getNumberOfOpenConnections() > connLimit;
     }
 
+    public final String getAcceptNotRecognizedCalledAETAs() {
+        return acceptNotRecognizedCalledAETAs;
+    }
+
+    public final void setAcceptNotRecognizedCalledAETAs(String aet) {
+        this.acceptNotRecognizedCalledAETAs = aet;
+    }
+
     public ApplicationEntity getApplicationEntity(String aet) {
-        return aes.get(aet);
+        ApplicationEntity ae = aes.get(aet);
+        if (ae == null && acceptNotRecognizedCalledAETAs != null)
+            ae = aes.get(acceptNotRecognizedCalledAETAs);
+        return ae;
     }
 
     public final SSLContext getSSLContext() {
+        if (sslContext == null)
+            throw new IllegalStateException("TLS Context not initialized!");
         return sslContext;
     }
 
@@ -566,5 +574,11 @@ public class Device {
             sslContext = SSLContext.getInstance("TLS");
         sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(),
                 new SecureRandom());
+    }
+
+    void execute(Runnable command) {
+        if (executer == null)
+            throw new IllegalStateException("executer not initalized");
+        executer.execute(command);
     }
 }

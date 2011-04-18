@@ -141,9 +141,12 @@ public class ApplicationEntity {
     public void setAETitle(String aet) {
         if (aet.isEmpty())
             throw new IllegalArgumentException("AE title cannot be empty");
+        Device device = this.device;
         if (device != null)
-            throw new IllegalStateException("Device already initalized");
+            device.removeApplicationEntity(this.aet);
         this.aet = aet;
+        if (device != null)
+            device.addApplicationEntity(this);
     }
 
     /**
@@ -347,8 +350,8 @@ public class ApplicationEntity {
      *         inherited from the device
      */
     public boolean isInstalled() {
-        return installed != null ? installed.booleanValue() : device == null
-                || device.isInstalled();
+        return device != null && device.isInstalled() 
+                && (installed == null || installed.booleanValue());
     }
 
     /**

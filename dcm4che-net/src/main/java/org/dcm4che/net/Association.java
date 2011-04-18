@@ -80,6 +80,7 @@ public class Association {
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;
+    private AssociationCloseListener asListener;
 
     Association(Connection local, Socket sock,  State state)
             throws IOException {
@@ -165,6 +166,12 @@ public class Association {
         encoder.write(ac);
     }
 
+    private void write(AAssociateRJ e) throws IOException {
+        Association.LOG.info("{} << {}", name, e);
+        enterState(State.Sta13);
+        encoder.write(e);
+    }
+
     void startARTIM(int timeout) throws IOException {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
         sock.setSoTimeout(timeout);
@@ -241,6 +248,8 @@ public class Association {
             LOG.info("{}: close {}", name, sock);
             try { sock.close(); } catch (IOException ignore) {}
             sock = null;
+            if (asListener != null)
+                asListener.onClose(this);
         }
         enterState(State.Sta1);
     }
@@ -272,11 +281,8 @@ public class Association {
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
             write(ae.negotiate(this, rq));
-            enterState(State.Sta6);
         } catch (AAssociateRJ e) {
-            Association.LOG.info("{} << {}", name, e);
-            enterState(State.Sta13);
-            encoder.write(e);
+            write(e);
         }
     }
 

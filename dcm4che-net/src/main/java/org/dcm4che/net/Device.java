@@ -86,13 +86,11 @@ public class Device {
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
-    
-    private String acceptNotRecognizedCalledAETAs;
 
     private int connLimit = DEF_CONN_LIMIT;
     private final AtomicInteger connCount = new AtomicInteger(0);
 
-    private Executor executer;
+    private Executor executor;
     private SSLContext sslContext;
 
     public Device(String name) {
@@ -434,12 +432,12 @@ public class Device {
         this.installed = installed;
     }
 
-    public final Executor getExecuter() {
-        return executer;
+    public final Executor getExecutor() {
+        return executor;
     }
 
-    public final void setExecuter(Executor executer) {
-        this.executer = executer;
+    public final void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     public void addConnection(Connection conn) {
@@ -495,18 +493,10 @@ public class Device {
         return getNumberOfOpenConnections() > connLimit;
     }
 
-    public final String getAcceptNotRecognizedCalledAETAs() {
-        return acceptNotRecognizedCalledAETAs;
-    }
-
-    public final void setAcceptNotRecognizedCalledAETAs(String aet) {
-        this.acceptNotRecognizedCalledAETAs = aet;
-    }
-
     public ApplicationEntity getApplicationEntity(String aet) {
         ApplicationEntity ae = aes.get(aet);
-        if (ae == null && acceptNotRecognizedCalledAETAs != null)
-            ae = aes.get(acceptNotRecognizedCalledAETAs);
+        if (ae == null)
+            ae = aes.get("*");
         return ae;
     }
 
@@ -577,8 +567,8 @@ public class Device {
     }
 
     void execute(Runnable command) {
-        if (executer == null)
+        if (executor == null)
             throw new IllegalStateException("executer not initalized");
-        executer.execute(command);
+        executor.execute(command);
     }
 }

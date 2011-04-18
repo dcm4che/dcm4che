@@ -72,10 +72,10 @@ public class DcmSnd {
         "send them to the specified remote Application Entity using " +
         "appropriate SOP Classes of the Storage Service Class. If a " +
         "directory is specified, DICOM Composite Objects in files under " +
-        "that directory and further sub-directories are sent. If no DICOM " +
-        "file(s) are specified, the DICOM connection to the specified " +
-        "remote Application Entity will be verfied using the Verification " +
-        "SOP Class." +
+        "that directory and further sub-directories are sent." +
+        "\nIf no DICOM file(s) are specified, the DICOM connection to the " +
+        "specified remote Application Entity will be verfied using the " +
+        "Verification SOP Class." +
         "\nIf <port> is not specified, DICOM default port 104 is assumed. If " +
         "also no <host> is specified, localhost is assumed." +
         "\n-\nOptions:";
@@ -93,8 +93,7 @@ public class DcmSnd {
 
     private Association as;
 
-    public DcmSnd(Executor executor) {
-        device.setExecuter(executor);
+    public DcmSnd() {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -123,13 +122,12 @@ public class DcmSnd {
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
             CommandLine cl = parseComandLine(args);
-            DcmSnd dcmsnd = new DcmSnd(executorService);
+            DcmSnd dcmsnd = new DcmSnd();
             List<String> argList = cl.getArgList();
             if (argList.isEmpty())
-                throw new ParseException("Missing remote AE operand");
+                throw new ParseException("Missing remote AE argument");
             String remoteAE = argList.get(0);
             String[] calledAETAddress = split(remoteAE, '@');
             dcmsnd.setCalledAET(calledAETAddress[0]);
@@ -139,7 +137,9 @@ public class DcmSnd {
             } else {
                 String[] hostPort = split(calledAETAddress[1], ':');
                 dcmsnd.setRemoteHost(hostPort[0]);
-                dcmsnd.setRemotePort(toPort(hostPort[1]));
+                dcmsnd.setRemotePort((hostPort[1] != null 
+                                        ? Integer.parseInt(hostPort[1])
+                                        : 104));
             }
             if (cl.hasOption("L")) {
                 String localAE = cl.getOptionValue("L");
@@ -149,11 +149,14 @@ public class DcmSnd {
                     dcmsnd.setLocalHost(callingAETHost[1]);
                 }
             }
-            dcmsnd.open();
+            ExecutorService executorService =
+                    Executors.newSingleThreadExecutor();
             try {
+                dcmsnd.open(executorService);
                 
             } finally {
                 dcmsnd.close();
+                executorService.shutdown();
             }
         } catch (ParseException e) {
             System.err.println("dcmsnd: " + e.getMessage());
@@ -163,8 +166,6 @@ public class DcmSnd {
             System.err.println("dcmsnd: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
-        } finally {
-            executorService.shutdown();
         }
     }
 
@@ -175,7 +176,10 @@ public class DcmSnd {
         }
     }
 
-    public void open() throws IOException, InterruptedException {
+    public void open(Executor executor)
+            throws IOException, InterruptedException {
+        device.setExecutor(executor);
+        device.setInstalled(true);
         rq.setCallingAET(ae.getAETitle());
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(
@@ -192,12 +196,6 @@ public class DcmSnd {
             s2[1] = s.substring(pos + 1);
         }
         return s2;
-    }
-
-    private static int toPort(String port) {
-        return port != null 
-                ? Integer.parseInt(port)
-                : 104;
     }
 
     public void setCallingAET(String aet) {

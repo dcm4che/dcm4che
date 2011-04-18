@@ -55,10 +55,19 @@ public class TransferCapability {
 
     public static enum Role { SCU, SCP }
 
-    private String commonName;
-    private String sopClass;
-    private Role role;
-    private String[] transferSyntax ;
+    private final String commonName;
+    private final String sopClass;
+    private final Role role;
+    private final String[] transferSyntax ;
+
+
+    public TransferCapability(String commonName, String sopClass, Role role,
+            String... transferSyntax) {
+        this.commonName = commonName;
+        this.sopClass = sopClass;
+        this.role = role;
+        this.transferSyntax = transferSyntax;
+    }
 
     /**
      * Set the name of the Transfer Capability object. Can be a meaningful name
@@ -71,33 +80,12 @@ public class TransferCapability {
     }
 
     /**
-     * Get the name of the Transfer Capability object. Can be a meaningful name
-     * or any unique sequence of characters.
-     * 
-     * @param commonName
-     *                A String containing the common name.
-     */
-    public final void setCommonName(String commonName) {
-        this.commonName = commonName;
-    }
-
-    /**
      * Get the role for this <code>TransferCapability</code>instance.
      * 
      * @return Role (SCU or SCP) for this <code>TransferCapability</code>instance
      */
     public final  Role getRole() {
         return role;
-    }
-
-    /**
-     * Set the role for this <code>TransferCapability</code>instance.
-     * 
-     * @param role
-     *                Role (SCU or SCP) for this <code>TransferCapability</code>instance
-     */
-    public final void setRole(Role role) {
-        this.role = role;
     }
 
     /**
@@ -110,16 +98,6 @@ public class TransferCapability {
     }
 
     /**
-     * Set the SOP Class of this Transfer Capability object.
-     * 
-     * @param sopClass
-     *                A String containing the SOP Class UID.
-     */
-    public final void setSopClass(String sopClass) {
-        this.sopClass = sopClass;
-    }
-
-    /**
      * Get the transfer syntax(es) that may be requested as an SCU or that are
      * offered as an SCP.
      * 
@@ -127,16 +105,5 @@ public class TransferCapability {
      */
     public final String[] getTransferSyntax() {
         return transferSyntax;
-    }
-
-    /**
-     * Set the transfer syntax(es) that may be requested as an SCU or that are
-     * offered as an SCP.
-     * 
-     * @param transferSyntax
-     *                String array containing the transfer syntaxes.
-     */
-    public final void setTransferSyntax(String[] transferSyntax) {
-       this.transferSyntax = transferSyntax;
     }
 }

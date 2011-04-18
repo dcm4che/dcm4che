@@ -469,8 +469,8 @@ public class Connection {
      *         network.
      */
     public boolean isInstalled() {
-        return installed != null ? installed.booleanValue() : device == null
-                || device.isInstalled();
+        return device != null && device.isInstalled() 
+                && (installed == null || installed.booleanValue());
     }
 
     /**
@@ -482,9 +482,6 @@ public class Connection {
      *                True if the NetworkConnection is installed on the network.
      */
     public void setInstalled(Boolean installed) {
-        if (installed != null && installed.booleanValue()
-                && device != null && !device.isInstalled())
-            throw new IllegalStateException("owning device not installed");
         this.installed = installed;
     }
 
@@ -562,9 +559,9 @@ public class Connection {
         return server;
     }
 
-    private void checkDevice() {
-        if (device == null)
-            throw new IllegalStateException("Device not initalized");
+    private void checkInstalled() {
+        if (!isInstalled())
+            throw new IllegalStateException("Not installed");
     }
 
     /**
@@ -575,7 +572,9 @@ public class Connection {
      *             If there is a problem with the network interaction.
      */
     public synchronized void bind() throws IOException {
-        checkDevice();
+        checkInstalled();
+        if (!isServer())
+            throw new IllegalStateException("Does not accept connections");
         if (server != null)
             throw new IllegalStateException("Already listening - " + server);
         server = isTLS() ? createTLSServerSocket() : new ServerSocket();
@@ -648,7 +647,7 @@ public class Connection {
      *             If the connection cannot be made due to network IO reasons.
      */
     public Socket connect(Connection peerConfig) throws IOException {
-        checkDevice();
+        checkInstalled();
         Socket s = isTLS() ? createTLSSocket() : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
         InetSocketAddress endpoint = peerConfig.getEndPoint();

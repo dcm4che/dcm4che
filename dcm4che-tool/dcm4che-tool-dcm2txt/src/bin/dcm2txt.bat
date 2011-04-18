@@ -40,11 +40,12 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\etc\
+set CP=%DCM4CHE_HOME%\etc\dcm2txt\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-simple-1.6.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

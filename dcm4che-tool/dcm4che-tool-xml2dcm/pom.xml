@@ -57,8 +57,6 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.dcm4che.tool.xml2dcm.Xml2Dcm</mainClass>
-              <addClasspath>true</addClasspath>
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
@@ -80,7 +78,7 @@
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
+      <artifactId>slf4j-log4j12</artifactId>
       <version>1.6.1</version>
       <scope>runtime</scope>
     </dependency>

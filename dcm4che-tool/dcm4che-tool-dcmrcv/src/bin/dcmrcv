@@ -37,12 +37,13 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/etc/"
+CP="$DCM4CHE_HOME/etc/dcmrcv/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.0.0-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.0.0-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/slf4j-simple-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
 
 # For Cygwin, switch paths to Windows format before running java

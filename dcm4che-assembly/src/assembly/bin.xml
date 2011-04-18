@@ -24,6 +24,14 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2txt/src</directory>
+      <includes>
+        <include>etc/dcm2txt/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
       <includes>
         <include>bin/dcm2xml</include>
@@ -36,6 +44,14 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
       <includes>
         <include>bin/dcm2xml.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
+      <includes>
+        <include>etc/dcm2xml/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -58,6 +74,14 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmdir/src</directory>
+      <includes>
+        <include>etc/dcmdir/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
       <includes>
         <include>bin/dcmrcv</include>
@@ -70,6 +94,14 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
       <includes>
         <include>bin/dcmrcv.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
+      <includes>
+        <include>etc/dcmrcv/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -92,6 +124,14 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src</directory>
+      <includes>
+        <include>etc/dcmsnd/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
       <includes>
         <include>bin/xml2dcm</include>
@@ -104,6 +144,14 @@
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
       <includes>
         <include>bin/xml2dcm.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
+      <includes>
+        <include>etc/xml2dcm/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -122,7 +170,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmsnd</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.slf4j:slf4j-api</include>
-        <include>org.slf4j:slf4j-simple</include>
+        <include>org.slf4j:slf4j-log4j12</include>
+        <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
       </includes>
     </dependencySet>

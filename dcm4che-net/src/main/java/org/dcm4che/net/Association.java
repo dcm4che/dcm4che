@@ -43,14 +43,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.PDUEncoder;
+import org.dcm4che.util.IntHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,13 +72,13 @@ public class Association {
             LoggerFactory.getLogger(Association.class);
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
-
+    private final AtomicInteger messageID = new AtomicInteger();
     private final int serialNo;
+    private final boolean requestor;
     private String name;
     private ApplicationEntity ae;
     private final Device device;
     private final Connection conn;
-    private Connection remote;
     private Socket sock;
     private final InputStream in;
     private final OutputStream out;
@@ -80,19 +88,35 @@ public class Association {
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;
+    private HashMap<String, Object> properties;
+    private int maxOpsInvoked;
+    private int maxPDULength;
     private AssociationCloseListener asListener;
+    private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
+            new IntHashMap<DimseRSPHandler>();
+    private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
+            new HashMap<String,HashMap<String,PresentationContext>>();
 
-    Association(Connection local, Socket sock,  State state)
+    Association(Connection local, Socket sock, boolean requestor)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
-        this.name = "Association(" + serialNo + ')';
+        this.requestor = requestor;
+        this.name = "Association" + delim() + serialNo;
         this.conn = local;
         this.device = local.getDevice();
         this.sock = sock;
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
-        enterState(state);
+        enterState(requestor ? State.Sta4 : State.Sta2);
+    }
+
+    private int nextMessageID() {
+        return messageID.incrementAndGet() & 0xFFFF;
+    }
+
+    private char delim() {
+        return requestor ? '-' : '+';
     }
 
     @Override
@@ -100,8 +124,16 @@ public class Association {
         return name;
     }
 
-    final void setRemoteConnection(Connection remote) {
-        this.remote = remote;
+    public final Socket getSocket() {
+        return sock;
+    }
+
+    public final AAssociateRQ getAAssociateRQ() {
+        return rq;
+    }
+
+    public final AAssociateAC getAAssociateAC() {
+        return ac;
     }
 
     public final ApplicationEntity getApplicationEntity() {
@@ -112,8 +144,73 @@ public class Association {
         this.ae = ae;
     }
 
-    public boolean isRequestor() {
-        return remote != null;
+    public final AssociationCloseListener getAAssociationCloseListener() {
+        return asListener;
+    }
+
+    public final void setAssociationCloseListener(
+            AssociationCloseListener listener) {
+        this.asListener = listener;
+    }
+
+    public Object getProperty(String key) {
+        return properties != null ? properties.get(key) : null;
+    }
+
+    public Object setProperty(String key, Object value) {
+        if (properties == null)
+            properties = new HashMap<String, Object>();
+        return properties.put(key, value);
+    }
+
+    public Object clearProperty(String key) {
+        return properties != null ? properties.remove(key) : null;
+    }
+
+    public final boolean isRequestor() {
+        return requestor;
+    }
+
+    final IOException getException() {
+        return ex;
+    }
+
+    private boolean isSCPFor(String cuid) {
+        RoleSelection rolsel = ac.getRoleSelectionFor(cuid);
+        if (rolsel == null)
+            return !requestor;
+        return requestor ? rolsel.isSCP() : rolsel.isSCU();
+    }
+
+    private boolean isSCUFor(String cuid) {
+        RoleSelection rolsel = ac.getRoleSelectionFor(cuid);
+        if (rolsel == null)
+            return requestor;
+        return requestor ? rolsel.isSCU() : rolsel.isSCP();
+    }
+
+    public String getCallingAET() {
+        return rq != null ? rq.getCallingAET() : null;
+    }
+
+    public String getCalledAET() {
+        return rq != null ? rq.getCalledAET() : null;
+    }
+
+    public String getRemoteAET() {
+        return requestor ? getCalledAET() : getCallingAET();
+    }
+
+    public String getLocalAET() {
+        return requestor ? getCallingAET() : getCalledAET();
+    }
+
+    final int getMaxPDULengthSend() {
+        return maxPDULength;
+    }
+
+    boolean isPackPDV() {
+        return ae.isPackPDV();
     }
 
     public void release() throws IOException {
@@ -141,7 +238,7 @@ public class Association {
         LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
         encoder.writeAReleaseRQ();
-        startARTIM(remote.getReleaseTimeout());
+        startARTIM(conn.getReleaseTimeout());
     }
 
     public void waitForOutstandingRSP() {
@@ -150,7 +247,7 @@ public class Association {
     }
 
     void write(AAssociateRQ rq) throws IOException {
-        name = rq.getCalledAET() + '(' + serialNo + ")";
+        name = rq.getCalledAET() + delim() + serialNo;
         this.rq = rq;
         LOG.info("{} << A-ASSOCIATE-RQ", name);
         LOG.debug("{}", rq);
@@ -159,7 +256,6 @@ public class Association {
     }
 
     private void write(AAssociateAC ac) throws IOException {
-        this.ac = ac;
         LOG.info("{} << A-ASSOCIATE-AC", name);
         LOG.debug("{}", ac);
         enterState(State.Sta6);
@@ -248,6 +344,16 @@ public class Association {
             LOG.info("{}: close {}", name, sock);
             try { sock.close(); } catch (IOException ignore) {}
             sock = null;
+            rspHandlerForMsgId.accept(
+                    new IntHashMap.Visitor<DimseRSPHandler>(){
+
+                        @Override
+                        public boolean visit(int key,
+                                DimseRSPHandler rspHandler) {
+                            rspHandler.onClose(Association.this);
+                            return true;
+                        }
+                    });
             if (asListener != null)
                 asListener.onClose(this);
         }
@@ -262,7 +368,7 @@ public class Association {
 
     void handle(AAssociateRQ rq) throws IOException {
         this.rq = rq;
-        name = rq.getCallingAET() + '(' + serialNo + ")";
+        name = rq.getCallingAET() + delim() + serialNo;
         stopARTIM();
         enterState(State.Sta3);
         try {
@@ -280,7 +386,12 @@ public class Association {
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-            write(ae.negotiate(this, rq));
+            ac = ae.negotiate(this, rq);
+            initPCMap();
+            maxOpsInvoked = ac.getMaxOpsPerformed();
+            maxPDULength = ApplicationEntity.minZeroAsMax(
+                    rq.getMaxPDULength(), ae.getMaxPDULengthSend());
+            write(ac);
         } catch (AAssociateRJ e) {
             write(e);
         }
@@ -294,6 +405,10 @@ public class Association {
 
     void handle(AAssociateAC ac) throws IOException {
         this.ac = ac;
+        initPCMap();
+        maxOpsInvoked = ac.getMaxOpsInvoked();
+        maxPDULength = ApplicationEntity.minZeroAsMax(
+                ac.getMaxPDULength(), ae.getMaxPDULengthSend());
         stopARTIM();
         enterState(State.Sta6);
     }
@@ -368,6 +483,139 @@ public class Association {
         state.onPDataTF(this);
     }
 
-    void handlePDataTF() {
+    void handlePDataTF() throws IOException {
+        decoder.decodeDIMSE();
+    }
+
+    void writePDataTF() throws IOException {
+        state.writePDataTF(this);
+    }
+
+    void doWritePDataTF() throws IOException {
+        encoder.writePDataTF();
+    }
+
+    void onDimseRQ(int pcid, Attributes cmd, PDVInputStream data,
+            String tsuid) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    void onDimseRSP(Attributes cmd, Attributes data) throws AAbort {
+        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
+        DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
+        if (rspHandler == null) {
+            LOG.info("{}: unexpected message ID in DIMSE RSP:", name);
+            LOG.info("{}", cmd);
+            throw new AAbort();
+        }
+        try {
+            rspHandler.onDimseRSP(this, cmd, data);
+        } finally {
+            if (!CommandUtils.isPendingRSP(cmd)) {
+                updateIdleTimeout();
+                removeDimseRSPHandler(msgId);
+            } else {
+                int cmdfield = cmd.getInt(Tag.CommandField, -1);
+                int timeout = cmdfield == CommandUtils.C_GET_RSP
+                        ? conn.getCGetRSPTimeout()
+                        : cmdfield == CommandUtils.C_MOVE_RSP
+                        ? conn.getCMoveRSPTimeout()
+                        : conn.getDimseRSPTimeout();
+                rspHandler.setTimeout(timeout == 0
+                        ? 0
+                        : (System.currentTimeMillis() + timeout));
+            }
+        }
+    }
+
+    private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)
+            throws InterruptedException {
+        synchronized (rspHandlerForMsgId) {
+            while (maxOpsInvoked > 0
+                    && rspHandlerForMsgId.size() >= maxOpsInvoked)
+                rspHandlerForMsgId.wait();
+            rspHandlerForMsgId.put(msgId, rspHandler);
+        }
+    }
+
+    private DimseRSPHandler getDimseRSPHandler(int msgId) {
+        synchronized (rspHandlerForMsgId ) {
+            return rspHandlerForMsgId.get(msgId);
+        }
+    }
+
+    private void removeDimseRSPHandler(int msgId) {
+        synchronized (rspHandlerForMsgId ) {
+            rspHandlerForMsgId.remove(msgId);
+            rspHandlerForMsgId.notifyAll();
+        }
+    }
+
+    private void updateIdleTimeout() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void cancel(int pcid, int msgId) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private void initPCMap() {
+        for (PresentationContext pc : ac.getPresentationContexts())
+            if (pc.isAccepted())
+                initTSMap(rq.getPresentationContext(pc.getPCID())
+                            .getAbstractSyntax())
+                        .put(pc.getTransferSyntax(), pc);
+    }
+
+    private HashMap<String, PresentationContext> initTSMap(String as) {
+        HashMap<String, PresentationContext> tsMap = pcMap.get(as);
+        if (tsMap == null)
+            pcMap.put(as, tsMap = new HashMap<String, PresentationContext>());
+        return tsMap;
+    }
+
+    private PresentationContext pcFor(String cuid, String tsuid)
+            throws NoPresentationContextException {
+        HashMap<String, PresentationContext> tsMap = pcMap.get(cuid);
+        if (tsMap == null)
+            throw new NoPresentationContextException(cuid);
+        if (tsuid == null)
+            return tsMap.values().iterator().next();
+        PresentationContext pc = tsMap.get(tsuid);
+        if (pc == null)
+            throw new NoPresentationContextException(cuid, tsuid);
+        return pc;
+    }
+
+    public DimseRSP cecho() throws IOException, InterruptedException {
+        return cecho(UID.VerificationSOPClass);
+    }
+
+    public DimseRSP cecho(String cuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP();
+        PresentationContext pc = pcFor(cuid, null);
+        if (!isSCUFor(cuid))
+            throw new NoRoleSelectionException(cuid,
+                    TransferCapability.Role.SCP);
+        int msgId = nextMessageID();
+        Attributes cechorq = CommandUtils.mkCEchoRQ(msgId, cuid);
+        invoke(pc, msgId, cechorq, null, rsp,
+                conn.getDimseRSPTimeout());
+        return rsp;
+    }
+
+    private void invoke(PresentationContext pc, int msgId, Attributes cmd,
+            DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
+            throws IOException, InterruptedException {
+        checkException();
+        rspHandler.setPcid(pc.getPCID());
+        rspHandler.setMsgId(msgId);
+        addDimseRSPHandler(msgId, rspHandler);
+        encoder.writeDIMSE(pc, cmd, data);
+        rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
     }
 }

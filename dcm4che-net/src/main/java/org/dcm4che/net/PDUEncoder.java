@@ -38,9 +38,14 @@
 
 package org.dcm4che.net;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.UID;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
@@ -57,7 +62,7 @@ import org.dcm4che.net.pdu.UserIdentityRQ;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class PDUEncoder {
+class PDUEncoder extends PDVOutputStream {
 
     private Association as;
     private OutputStream out;
@@ -67,6 +72,8 @@ class PDUEncoder {
     private int pdvcmd;
     private int pdvpos;
     private int maxpdulen;
+    private Thread th;
+    private Object dimseLock = new Object();
 
     public PDUEncoder(Association as, OutputStream out) {
         this.as = as;
@@ -76,13 +83,13 @@ class PDUEncoder {
     public void write(AAssociateRQ rq) throws IOException {
         encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
         encode(rq.getUserIdentity());
-        writePDU();
+        writePDU(pos - 6);
     }
 
     public void write(AAssociateAC ac) throws IOException {
         encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
         encode(ac.getUserIdentity());
-        writePDU();
+        writePDU(pos - 6);
     }
 
     public void write(AAssociateRJ rj) throws IOException {
@@ -102,8 +109,8 @@ class PDUEncoder {
         write(PDUType.A_ABORT, 0, aa.getSource(), aa.getReason());
     }
 
-    private void write(int pdutype, int result, int source, int reason)
-            throws IOException {
+    private synchronized void write(int pdutype, int result, int source,
+            int reason) throws IOException {
         byte[] b = {
                 (byte) pdutype,
                 0,
@@ -117,8 +124,8 @@ class PDUEncoder {
         out.flush();
     }
 
-    private void writePDU() throws IOException {
-        out.write(buf, 0, pos);
+    private synchronized void writePDU(int pdulen) throws IOException {
+        out.write(buf, 0, 6 + pdulen);
         out.flush();
         pdvpos = 6;
         pos = 12;
@@ -285,4 +292,136 @@ class PDUEncoder {
         encode(userIdentity.getServerResponse());
     }
 
+    @Override
+    public void write(int b) throws IOException {
+        checkThread();
+        flushPDataTF();
+        put(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        checkThread();
+        int pos = off;
+        int remaining = len;
+        while (remaining > 0) {
+            flushPDataTF();
+            int write = Math.min(remaining, free());
+            put(b, pos, write);
+            pos += write;
+            remaining -= write;
+        }
+    }
+
+    @Override
+    public void close() {
+        checkThread();
+        encodePDVHeader(PDVType.LAST);
+    }
+
+    @Override
+    public void copyFrom(InputStream in, int len) throws IOException {
+        checkThread();
+        int remaining = len;
+        while (remaining > 0) {
+            flushPDataTF();
+            int copy = in.read(buf, pos, Math.min(remaining, free()));
+            if (copy == -1)
+                throw new EOFException();
+            pos += copy;
+            remaining -= copy;
+        }
+    }
+
+    @Override
+    public void copyFrom(InputStream in) throws IOException {
+        checkThread();
+        for (;;) {
+            flushPDataTF();
+            int copy = in.read(buf, pos, free());
+            if (copy == -1)
+                return;
+            pos += copy;
+        }
+    }
+
+    private void checkThread() {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+    }
+
+    private int free() {
+        return maxpdulen + 6 - pos;
+    }
+
+    private void flushPDataTF() throws IOException {
+        if (free() > 0)
+            return;
+        encodePDVHeader(PDVType.PENDING);
+        as.writePDataTF();
+    }
+
+    private void encodePDVHeader(int last) {
+        final int endpos = pos;
+        final int pdvlen = endpos - pdvpos - 4;
+        pos = pdvpos;
+        putInt(pdvlen);
+        put(pdvpcid);
+        put(pdvcmd | last);
+        pos = endpos;
+        Association.LOG.debug("{} << PDV[len={}, pcid={}, mch={}]",
+                new Object[] { as, pdvlen, pdvpcid, (pdvcmd | last) });
+    }
+
+    public void writePDataTF() throws IOException {
+        int pdulen = pos - 6;
+        pos = 0;
+        put(PDUType.P_DATA_TF);
+        put(0);
+        putInt(pdulen);
+        Association.LOG.debug("{} << P-DATA-TF[len={}]", pdulen);
+        writePDU(pdulen);
+    }
+
+    public void writeDIMSE(PresentationContext pc, Attributes cmd,
+            DataWriter dataWriter) throws IOException {
+        int pcid = pc.getPCID();
+        String tsuid = pc.getTransferSyntax();
+        if (Association.LOG.isInfoEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(as).append(" << ");
+            CommandUtils.promptTo(cmd, pcid, tsuid, sb);
+            Association.LOG.info(sb.toString());
+        }
+        Association.LOG.debug("{}", cmd);
+        if (dataWriter instanceof DataWriterAdapter)
+            Association.LOG.debug("{}",
+                    ((DataWriterAdapter) dataWriter).getDataset());
+        synchronized (dimseLock) {
+            this.th = Thread.currentThread();
+            maxpdulen = as.getMaxPDULengthSend();
+            if (buf.length < maxpdulen + 6)
+                buf = new byte[maxpdulen + 6];
+
+            pdvpcid = pcid;
+            pdvcmd = PDVType.COMMAND;
+            DicomOutputStream cmdout =
+                new DicomOutputStream(this, UID.ImplicitVRLittleEndian);
+            cmdout.writeCommand(cmd);
+            cmdout.close();
+            if (dataWriter != null) {
+                if (!as.isPackPDV()) {
+                    as.writePDataTF();
+                } else {
+                    pdvpos = pos;
+                    pos += 6;
+                }
+                pdvcmd = PDVType.DATA;
+                dataWriter.writeTo(this, tsuid);
+                close();
+            }
+            as.writePDataTF();
+            this.th = null;
+        }
+    }
 }

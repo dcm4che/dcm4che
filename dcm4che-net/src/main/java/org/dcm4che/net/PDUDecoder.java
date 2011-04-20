@@ -38,11 +38,16 @@
 
 package org.dcm4che.net;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.UID;
+import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
@@ -56,14 +61,12 @@ import org.dcm4che.net.pdu.UserIdentityAC;
 import org.dcm4che.net.pdu.UserIdentityRQ;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class PDUDecoder {
+class PDUDecoder extends PDVInputStream {
 
     private static final String UNRECOGNIZED_PDU =
             "{}: unrecognized PDU[type={}, len={}]";
@@ -73,7 +76,13 @@ class PDUDecoder {
             "{}: invalid Common Extended Negotiation sub-item in PDU[type={}, len={}]";
     private static final String INVALID_USER_IDENTITY =
             "{}: invalid User Identity sub-item in PDU[type={}, len={}]";
-    
+    private static final String INVALID_PDV =
+            "{}: invalid PDV in PDU[type={}, len={}]";
+    private static final String UNEXPECTED_PDV_TYPE =
+            "{}: unexpected PDV type in PDU[type={}, len={}]";
+    private static final String UNEXPECTED_PDV_PCID =
+            "{}: unexpected pcid in PDV in PDU[type={}, len={}]";
+
     private static final int MAX_PDU_LEN = 0x1000000; // 16MiB
 
     private final Association as;
@@ -83,6 +92,9 @@ class PDUDecoder {
     private int pos;
     private int pdutype;
     private int pdulen;
+    private int pcid = -1;
+    private int pdvmch;
+    private int pdvend;
 
     public PDUDecoder(Association as, InputStream in) {
         this.as = as;
@@ -140,9 +152,8 @@ class PDUDecoder {
     }
 
     public void nextPDU() throws IOException {
+        checkThread();
         Association.LOG.debug("{}: waiting for PDU", as);
-        if (th != Thread.currentThread())
-            throw new IllegalStateException("Entered by wrong thread");
         StreamUtils.readFully(in, buf, 0, 10);
         pos = 0;
         pdutype = get();
@@ -185,6 +196,11 @@ class PDUDecoder {
         default:
             abort(AAbort.UNRECOGNIZED_PDU, UNRECOGNIZED_PDU);
         }
+    }
+
+    private void checkThread() {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
     }
 
     private void checkPDULength(int len) throws AAbort {
@@ -393,4 +409,205 @@ class PDUDecoder {
         return new UserIdentityAC(serverResponse);
     }
 
+    public void decodeDIMSE() throws IOException {
+        checkThread();
+        if (pcid != - 1)
+            return; // already inside decodeDIMSE
+
+        nextPDV(PDVType.COMMAND, -1);
+
+        PresentationContext pc = as.getAAssociateAC()
+                .getPresentationContext(pcid);
+        if (pc == null) {
+            Association.LOG.warn(
+                    "{}: No Presentation Context with given ID - {}",
+                    as, pcid);
+            throw new AAbort();
+        }
+
+        if (!pc.isAccepted()) {
+            Association.LOG.warn(
+                    "{}: No accepted Presentation Context with given ID - {}",
+                    as, pcid);
+            throw new AAbort();
+        }
+
+        String tsuid = pc.getTransferSyntax();
+        Attributes cmd = readCommand();
+        if (Association.LOG.isInfoEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(as).append(" >> ");
+            CommandUtils.promptTo(cmd, pcid, tsuid, sb);
+            Association.LOG.info(sb.toString());
+        }
+        Association.LOG.debug("{}", cmd);
+        if (CommandUtils.hasDataset(cmd)) {
+            nextPDV(PDVType.DATA, pcid);
+            if (CommandUtils.isRSP(cmd)) {
+                Attributes data = readDataset(tsuid);
+                Association.LOG.debug("{}", data);
+                as.onDimseRSP(cmd, data);
+            } else {
+                as.onDimseRQ(pcid, cmd, this, tsuid);
+                long skipped = skipAll();
+                if (skipped > 0)
+                    Association.LOG.info(
+                        "{}: Service User did not consume {} bytes of DIMSE data.",
+                        as, skipped);
+            }
+        } else {
+            if (CommandUtils.isRSP(cmd)) {
+                as.onDimseRSP(cmd, null);
+            } else {
+                as.onDimseRQ(pcid, cmd, null, null);
+            }
+        }
+        pcid = -1;
+    }
+
+    private Attributes readCommand() throws IOException {
+        DicomInputStream din =
+                new DicomInputStream(this, UID.ImplicitVRLittleEndian);
+        try {
+            return din.readCommand();
+        } finally {
+            try { din.close(); } catch (IOException ignore) {}
+        }
+    }
+
+    private Attributes readDataset(String tsuid) throws IOException {
+        DicomInputStream din = new DicomInputStream(this, tsuid);
+        try {
+            return din.readDataset(-1, -1);
+        } finally {
+            try { din.close(); } catch (IOException ignore) {}
+        }
+    }
+
+    @Override
+    public Attributes readDataset() throws IOException {
+        PresentationContext pc = as.getAAssociateAC()
+                .getPresentationContext(pcid);
+        return readDataset(pc.getTransferSyntax());
+    }
+
+    private void nextPDV(int expectedPDVType, int expectedPCID)
+            throws IOException {
+        if (!hasRemaining()) {
+            nextPDU();
+            if (pdutype != PDUType.P_DATA_TF) {
+                Association.LOG.info(
+                        "{}: Expected P-DATA-TF PDU but received PDU[type={}]",
+                        as, pdutype);
+                throw new EOFException();
+            }
+        }
+        if (remaining() < 6)
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
+        int pdvlen = getInt();
+        this.pdvend = pos + pdvlen;
+        if (pdvlen < 2 || pdvlen > remaining())
+            abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
+        this.pcid = get();
+        this.pdvmch = get();
+        Association.LOG.debug("{} >> PDV[len={}, pcid={}, mch={}",
+                new Object[] { as, pdvlen, pcid, pdvmch } );
+        if ((pdvmch & PDVType.COMMAND) != expectedPDVType)
+            abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_TYPE);
+        if (expectedPCID != -1 && pcid != expectedPCID)
+            abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_PCID);
+    }
+
+    private boolean isLastPDV() throws IOException {
+        while (pos == pdvend) {
+            if ((pdvmch & PDVType.LAST) != 0)
+                return true;
+            nextPDV(pdvmch & PDVType.COMMAND, pcid);
+        }
+        return false;
+    }
+
+    @Override
+    public int read() throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        if (isLastPDV())
+            return -1;
+
+        return get();
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        if (isLastPDV())
+            return -1;
+
+        int read = Math.min(len, pdvend - pos);
+        get(b, off, read);
+        return read;
+    }
+
+    @Override
+    public final int available() {
+        return pdvend - pos;
+    }
+
+    @Override
+    public long skip(long n) throws IOException
+    {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        if (n <= 0 || isLastPDV())
+            return 0;
+
+        int skipped = (int) Math.min(n, pdvend - pos);
+        skip(skipped);
+        return skipped;
+    }
+    
+    @Override
+    public void close() throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        skipAll();
+    }
+
+    @Override
+    public long skipAll() throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        long n = 0;
+        while (!isLastPDV()) {
+            n += pdvend - pos;
+            pos = pdvend;
+        }
+        return n;
+    }
+
+    @Override
+    public void copyTo(OutputStream out, int length) throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        int remaining = length;
+        while (remaining > 0) {
+            if (isLastPDV())
+                throw new EOFException("remaining: " + remaining);
+            int read = Math.min(remaining, pdvend - pos);
+            out.write(buf, pos, read);
+            remaining -= read;
+            pos += read;
+        }
+    }
+
+    @Override
+    public void copyTo(OutputStream out) throws IOException {
+        if (th != Thread.currentThread())
+            throw new IllegalStateException("Entered by wrong thread");
+        while (!isLastPDV()) {
+            out.write(buf, pos, pdvend - pos);
+            pos = pdvend;
+        }
+    }
 }

@@ -94,6 +94,7 @@ public class ApplicationEntity {
     private int maxPDULengthReceive = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
     private int maxOpsPerformed = 1;
     private int maxOpsInvoked = 1;
+    private boolean packPDV = true;
     private UserIdentityNegotiator userIdNegotiator;
     private HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
@@ -401,6 +402,14 @@ public class ApplicationEntity {
         this.maxOpsInvoked = maxOpsInvoked;
     }
 
+    public final boolean isPackPDV() {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV) {
+        this.packPDV = packPDV;
+    }
+
     private void checkDevice() {
         if (device == null)
             throw new IllegalStateException("Device not initalized");
@@ -461,9 +470,9 @@ public class ApplicationEntity {
         return ac ;
     }
 
-   private static int minZeroAsMax(int i1, int i2) {
+   static int minZeroAsMax(int i1, int i2) {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
-    }
+   }
 
    private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
            PresentationContext rqpc) {
@@ -526,21 +535,18 @@ public class ApplicationEntity {
         ac.addExtendedNegotiation(exneg.negotiate(rqexneg));
     }
 
-    public Association connect(Connection local, Connection remote,
+    public Association connect(Connection local, String host, int port,
             AAssociateRQ rq) throws IOException, InterruptedException {
         if (!aet.equals(rq.getCallingAET()))
             throw new IllegalArgumentException(
                     "Calling AE title: " + rq.getCallingAET() + 
                     " does not match AE title: " + aet);
-        Association as = new Association(local, local.connect(remote),
-                State.Sta4);
-        as.setRemoteConnection(remote);
+        Association as = new Association(local, local.connect(host, port), true);
         as.setApplicationEntity(this);
         as.write(rq);
-        as.startARTIM(remote.getAcceptTimeout());
+        as.startARTIM(local.getAcceptTimeout());
         as.activate();
         as.waitForLeaving(State.Sta5);
         return as;
     }
-
 }

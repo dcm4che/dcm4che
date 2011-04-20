@@ -231,6 +231,19 @@ public class IntHashMap<V> implements Cloneable, java.io.Serializable {
         }
     }
 
+    public interface Visitor<V> {
+        boolean visit(int key, V value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean accept(Visitor<V> visitor) {
+        for (int i = 0; i < states.length; i++)
+            if (states[i] > FREE) // states[i] == FULL
+                if (!visitor.visit(keys[i], (V) values[i]))
+                    return false;
+        return true; 
+    }
+
     private static final long serialVersionUID = 9153226350279204066L;
 
     private void writeObject(java.io.ObjectOutputStream s)

@@ -97,6 +97,11 @@ enum State {
         void writeAReleaseRQ(Association as) throws IOException {
             as.writeAReleaseRQ();
         }
+
+        @Override
+        public void writePDataTF(Association as) throws IOException {
+            as.doWritePDataTF();
+        }
     },
     Sta7("Sta7 - Awaiting A-RELEASE-RP PDU") {
 
@@ -115,7 +120,13 @@ enum State {
             as.handlePDataTF();
         }
     },
-    Sta8("Sta8 - Awaiting local A-RELEASE response primitive"),
+    Sta8("Sta8 - Awaiting local A-RELEASE response primitive") {
+
+        @Override
+        public void writePDataTF(Association as) throws IOException {
+            as.doWritePDataTF();
+        }
+    },
     Sta9("Sta9 - Release collision requestor side; awaiting A-RELEASE response"),
     Sta10("Sta10 - Release collision acceptor side; awaiting A-RELEASE-RP PDU"){
 
@@ -179,11 +190,15 @@ enum State {
     }
 
     void writeAReleaseRQ(Association as) throws IOException {
-        throw new IllegalStateException("State: " + this);
+        throw new IOException("State: " + this);
     }
 
     void write(Association as, AAbort aa) {
         as.write(aa);
+    }
+
+    public void writePDataTF(Association as) throws IOException {
+        throw new IOException("State: " + this);
     }
 
 }

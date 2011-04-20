@@ -95,6 +95,9 @@ public class Connection {
     private int requestTimeout;
     private int acceptTimeout;
     private int releaseTimeout;
+    private int dimseRSPTimeout;
+    private int cGetRSPTimeout;
+    private int cMoveRSPTimeout;
     private int socketCloseDelay = 50;
     private int sendBufferSize;
     private int receiveBufferSize;
@@ -257,37 +260,71 @@ public class Connection {
         this.acceptTimeout = timeout;
     }
 
-    public final boolean isTlsNeedClientAuth() {
-        return tlsNeedClientAuth;
-    }
 
-    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
-        this.tlsNeedClientAuth = tlsNeedClientAuth;
+    /**
+     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
+     * 
+     * @return An int value containing the milliseconds.
+     */
+    public final int getReleaseTimeout() {
+        return releaseTimeout;
     }
 
     /**
-     * Get a list of IP addresses from which we should ignore connections.
-     * Useful in an environment that utilizes a load balancer. In the case of a
-     * TCP ping from a load balancing switch, we don't want to spin off a new
-     * thread and try to negotiate an association.
+     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
      * 
-     * @return Returns the list of IP addresses which should be ignored.
+     * @param timeout
+     *            An int value containing the milliseconds.
      */
-    public final Collection<InetAddress> getBlacklist() {
-        return blacklist;
+    public final void setReleaseTimeout(int timeout) {
+        if (timeout < 0)
+            throw new IllegalArgumentException("timeout: " + timeout);
+        this.releaseTimeout = timeout;
     }
 
     /**
-     * Set a list of IP addresses from which we should ignore connections.
-     * Useful in an environment that utilizes a load balancer. In the case of a
-     * TCP ping from a load balancing switch, we don't want to spin off a new
-     * thread and try to negotiate an association.
+     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
      * 
-     * @param blacklist
-     *            the list of IP addresses which should be ignored.
+     * @return An int value containing the milliseconds.
      */
-    public final void setBlacklist(Collection<InetAddress> blacklist) {
-        this.blacklist = blacklist;
+    public final int getSocketCloseDelay() {
+        return socketCloseDelay;
+    }
+
+    /**
+     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
+     * 
+     * @param delay
+     *            An int value containing the milliseconds.
+     */
+    public final void setSocketCloseDelay(int delay) {
+        if (delay < 0)
+            throw new IllegalArgumentException("delay: " + delay);
+        this.socketCloseDelay = delay;
+    }
+
+    public final int getDimseRSPTimeout() {
+        return dimseRSPTimeout;
+    }
+
+    public final void setDimseRSPTimeout(int dimseRSPTimeout) {
+        this.dimseRSPTimeout = dimseRSPTimeout;
+    }
+
+    public final int getCGetRSPTimeout() {
+        return cGetRSPTimeout;
+    }
+
+    public final void setCGetRSPTimeout(int cGetRSPTimeout) {
+        this.cGetRSPTimeout = cGetRSPTimeout;
+    }
+
+    public final int getCMoveRSPTimeout() {
+        return cMoveRSPTimeout;
+    }
+
+    public final void setCMoveRSPTimeout(int cMoveRSPTimeout) {
+        this.cMoveRSPTimeout = cMoveRSPTimeout;
     }
 
     /**
@@ -338,48 +375,13 @@ public class Connection {
         return tlsCipherSuite.length > 0;
     }
 
-    /**
-     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
-     * 
-     * @return An int value containing the milliseconds.
-     */
-    public final int getReleaseTimeout() {
-        return releaseTimeout;
+    public final boolean isTlsNeedClientAuth() {
+        return tlsNeedClientAuth;
     }
 
-    /**
-     * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
-     * 
-     * @param timeout
-     *            An int value containing the milliseconds.
-     */
-    public final void setReleaseTimeout(int timeout) {
-        if (timeout < 0)
-            throw new IllegalArgumentException("timeout: " + timeout);
-        this.releaseTimeout = timeout;
+    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
+        this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
-
-    /**
-     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
-     * 
-     * @return An int value containing the milliseconds.
-     */
-    public final int getSocketCloseDelay() {
-        return socketCloseDelay;
-    }
-
-    /**
-     * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
-     * 
-     * @param delay
-     *            An int value containing the milliseconds.
-     */
-    public final void setSocketCloseDelay(int delay) {
-        if (delay < 0)
-            throw new IllegalArgumentException("delay: " + delay);
-        this.socketCloseDelay = delay;
-    }
-
     /**
      * Get the SO_RCVBUF socket value in KB.
      * 
@@ -483,6 +485,31 @@ public class Connection {
      */
     public void setInstalled(Boolean installed) {
         this.installed = installed;
+    }
+
+    /**
+     * Get a list of IP addresses from which we should ignore connections.
+     * Useful in an environment that utilizes a load balancer. In the case of a
+     * TCP ping from a load balancing switch, we don't want to spin off a new
+     * thread and try to negotiate an association.
+     * 
+     * @return Returns the list of IP addresses which should be ignored.
+     */
+    public final Collection<InetAddress> getBlacklist() {
+        return blacklist;
+    }
+
+    /**
+     * Set a list of IP addresses from which we should ignore connections.
+     * Useful in an environment that utilizes a load balancer. In the case of a
+     * TCP ping from a load balancing switch, we don't want to spin off a new
+     * thread and try to negotiate an association.
+     * 
+     * @param blacklist
+     *            the list of IP addresses which should be ignored.
+     */
+    public final void setBlacklist(Collection<InetAddress> blacklist) {
+        this.blacklist = blacklist;
     }
 
     @Override
@@ -594,8 +621,8 @@ public class Connection {
                         } else {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);
-                            Association as = new Association(Connection.this,
-                                    s, State.Sta2);
+                            Association as =
+                                    new Association(Connection.this, s, false);
                             as.startARTIM(requestTimeout);
                             as.activate();
                         }
@@ -646,15 +673,15 @@ public class Connection {
      * @throws IOException
      *             If the connection cannot be made due to network IO reasons.
      */
-    public Socket connect(Connection peerConfig) throws IOException {
+    public Socket connect(String host, int port) throws IOException {
         checkInstalled();
         Socket s = isTLS() ? createTLSSocket() : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
-        InetSocketAddress endpoint = peerConfig.getEndPoint();
+        InetSocketAddress endpoint = new InetSocketAddress(host, port);
         LOG.info("Initiate connection from {} to {}", bindPoint, endpoint);
         s.bind(bindPoint);
         setSocketOptions(s);
-        s.connect(endpoint, peerConfig.getConnectTimeout());
+        s.connect(endpoint, connectTimeout);
         return s;
     }
 

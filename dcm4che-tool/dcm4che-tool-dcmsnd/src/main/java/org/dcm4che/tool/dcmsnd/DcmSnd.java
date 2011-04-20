@@ -55,6 +55,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DimseRSP;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -88,8 +89,9 @@ public class DcmSnd {
     private final Device device = new Device("dcmsnd");
     private final ApplicationEntity ae = new ApplicationEntity("DCMSND");
     private final Connection conn = new Connection();
-    private final Connection remoteConn = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+    private String host = "localhost";
+    private int port = 104;
 
     private Association as;
 
@@ -153,7 +155,7 @@ public class DcmSnd {
                     Executors.newSingleThreadExecutor();
             try {
                 dcmsnd.open(executorService);
-                
+                dcmsnd.echo();
             } finally {
                 dcmsnd.close();
                 executorService.shutdown();
@@ -167,6 +169,10 @@ public class DcmSnd {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    public void echo() throws IOException, InterruptedException {
+        as.cecho().next();
     }
 
     public void close() throws IOException {
@@ -185,7 +191,7 @@ public class DcmSnd {
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,
                             UID.ImplicitVRLittleEndian));
-        as = ae.connect(conn, remoteConn, rq);
+        as = ae.connect(conn, host, port, rq);
     }
 
     private static String[] split(String s, char delim) {
@@ -206,12 +212,12 @@ public class DcmSnd {
         rq.setCalledAET(aet);
     }
 
-    public void setRemoteHost(String hostname) {
-        remoteConn.setHostname(hostname);
+    public void setRemoteHost(String host) {
+        this.host = host;
     }
 
     public void setRemotePort(int port) {
-        remoteConn.setPort(port);
+        this.port = port;
     }
 
     public void setLocalHost(String hostname) {

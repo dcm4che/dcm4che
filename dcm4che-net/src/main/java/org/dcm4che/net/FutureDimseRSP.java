@@ -64,6 +64,10 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
     private int autoCancel;
     private IOException ex;
 
+    public FutureDimseRSP(int msgID) {
+        super(msgID);
+    }
+
     @Override
     public synchronized void onDimseRSP(Association as, Attributes cmd,
             Attributes data) {
@@ -73,7 +77,7 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
             last = last.next;
 
         last.next = new Entry(cmd, data);
-        if (CommandUtils.isPendingRSP(cmd)) {
+        if (Commands.hasPendingStatus(cmd)) {
             if (autoCancel > 0 && --autoCancel == 0)
                 try {
                     super.cancel(as);

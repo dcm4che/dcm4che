@@ -36,27 +36,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class PDVInputStream extends InputStream {
+public interface CStoreSCP {
 
-    public abstract Attributes readDataset(String tsuid) throws IOException;
-
-    public abstract void copyTo(OutputStream out, int length)
-            throws IOException;
-
-    public abstract void copyTo(OutputStream out) throws IOException;
-
-    public abstract long skipAll() throws IOException;
+    void cstore(Association as, PresentationContext pc, Attributes cmd,
+            PDVInputStream data) throws IOException;
 
 }

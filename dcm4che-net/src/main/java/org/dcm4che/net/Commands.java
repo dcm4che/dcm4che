@@ -49,11 +49,8 @@ import org.dcm4che.util.UIDUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class CommandUtils {
+public class Commands {
 
-    public static final int SUCCESS = 0;
-    public static final int PENDING = 0xFF00;
-    
     public static final int NORMAL = 0;
     public static final int HIGH = 1;
     public static final int LOW = 2;
@@ -88,12 +85,17 @@ public class CommandUtils {
 
     private static boolean includeUIDinRSP;
 
-    public static boolean isRSP(Attributes cmd) {
-        return (cmd.getInt(Tag.CommandField, 0) & RSP) != 0;
+    public static boolean isRSP(int cmdField) {
+        return (cmdField & RSP) != 0;
     }
 
     public static boolean isCancelRQ(Attributes cmd) {
         return cmd.getInt(Tag.CommandField, 0) == C_CANCEL_RQ;
+    }
+
+    public static boolean isRetrieveRSP(Attributes cmd) {
+        int cmdField = cmd.getInt(Tag.CommandField, 0);
+        return cmdField == C_GET_RSP || cmdField == C_MOVE_RSP;
     }
 
     public static Attributes mkCStoreRQ(int msgId, String cuid, String iuid,
@@ -238,7 +240,7 @@ public class CommandUtils {
     }
 
     public static void setIncludeUIDinRSP(boolean includeUIDinRSP) {
-        CommandUtils.includeUIDinRSP = includeUIDinRSP;
+        Commands.includeUIDinRSP = includeUIDinRSP;
     }
 
     public static int getWithDatasetType() {
@@ -250,17 +252,16 @@ public class CommandUtils {
                 || (withDatasetType & 0xffff0000) != 0)
             throw new IllegalArgumentException("withDatasetType: " 
                     + Integer.toHexString(withDatasetType) + "H");
-        CommandUtils.withDatasetType = withDatasetType;
+        Commands.withDatasetType = withDatasetType;
     }
 
     public static boolean hasDataset(Attributes cmd) {
         return cmd.getInt(Tag.CommandDataSetType, 0) != NO_DATASET;
     }
 
-    public static boolean isPendingRSP(Attributes cmd) {
-        return (cmd.getInt(Tag.Status, 0) & PENDING) == PENDING;
+    public static boolean hasPendingStatus(Attributes cmd) {
+        return (cmd.getInt(Tag.Status, 0) & Status.Pending) == Status.Pending;
     }
-    
 
     public static StringBuilder promptTo(Attributes cmd, int pcid,
             String tsuid, StringBuilder sb) {
@@ -473,5 +474,4 @@ public class CommandUtils {
         promptUIDTo(cmd, "  cuid=", Tag.AffectedSOPClassUID, sb);
         promptUIDTo(cmd, "  iuid=", Tag.AffectedSOPInstanceUID, sb);
     }
-
 }

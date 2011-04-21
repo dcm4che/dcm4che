@@ -36,13 +36,21 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
 
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface AssociationCloseListener {
-    void onClose(Association as);
+public interface NGetSCP {
+
+    void nget(Association as, PresentationContext pc, Attributes cmd,
+            Attributes dataset) throws IOException;
+
 }

@@ -41,23 +41,24 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DimseRSPHandler implements AssociationCloseListener {
+public class DimseRSPHandler {
 
+    private final int msgId;
+    private PresentationContext pc;
     private long timeout;
-    private int msgId;
-    private int pcid;
 
-    final void setPcid(int pcid) {
-        this.pcid = pcid;
+    public DimseRSPHandler(int msgId) {
+        this.msgId = msgId;
     }
 
-    final void setMsgId(int msgId) {
-        this.msgId = msgId;
+    final void setPC(PresentationContext pc) {
+        this.pc = pc;
     }
 
     public final int getMessageID() {
@@ -73,14 +74,13 @@ public class DimseRSPHandler implements AssociationCloseListener {
     }
 
     public void cancel(Association as) throws IOException {
-        as.cancel(pcid, msgId);
+        as.cancel(pc, msgId);
     }
 
     public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
         // NO OP
     }
 
-    @Override
     public void onClose(Association as) {
         // NO OP
     }

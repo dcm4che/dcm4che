@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.pdu.AAbort;
@@ -416,8 +417,7 @@ class PDUDecoder extends PDVInputStream {
 
         nextPDV(PDVType.COMMAND, -1);
 
-        PresentationContext pc = as.getAAssociateAC()
-                .getPresentationContext(pcid);
+        PresentationContext pc = as.getPresentationContext(pcid);
         if (pc == null) {
             Association.LOG.warn(
                     "{}: No Presentation Context with given ID - {}",
@@ -437,18 +437,21 @@ class PDUDecoder extends PDVInputStream {
         if (Association.LOG.isInfoEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(as).append(" >> ");
-            CommandUtils.promptTo(cmd, pcid, tsuid, sb);
+            Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG.info(sb.toString());
         }
         Association.LOG.debug("{}", cmd);
-        if (CommandUtils.hasDataset(cmd)) {
+        int cmdField = cmd.getInt(Tag.CommandField, 0);
+        if (cmdField == Commands.C_CANCEL_RQ) {
+            as.onCancelRQ(cmd);
+        } else if (Commands.hasDataset(cmd)) {
             nextPDV(PDVType.DATA, pcid);
-            if (CommandUtils.isRSP(cmd)) {
+            if (Commands.isRSP(cmdField)) {
                 Attributes data = readDataset(tsuid);
                 Association.LOG.debug("{}", data);
                 as.onDimseRSP(cmd, data);
             } else {
-                as.onDimseRQ(pcid, cmd, this, tsuid);
+                as.onDimseRQ(pc, cmd, this);
                 long skipped = skipAll();
                 if (skipped > 0)
                     Association.LOG.info(
@@ -456,10 +459,10 @@ class PDUDecoder extends PDVInputStream {
                         as, skipped);
             }
         } else {
-            if (CommandUtils.isRSP(cmd)) {
+            if (Commands.isRSP(cmdField)) {
                 as.onDimseRSP(cmd, null);
             } else {
-                as.onDimseRQ(pcid, cmd, null, null);
+                as.onDimseRQ(pc, cmd, null);
             }
         }
         pcid = -1;
@@ -475,20 +478,14 @@ class PDUDecoder extends PDVInputStream {
         }
     }
 
-    private Attributes readDataset(String tsuid) throws IOException {
+    @Override
+    public Attributes readDataset(String tsuid) throws IOException {
         DicomInputStream din = new DicomInputStream(this, tsuid);
         try {
             return din.readDataset(-1, -1);
         } finally {
             try { din.close(); } catch (IOException ignore) {}
         }
-    }
-
-    @Override
-    public Attributes readDataset() throws IOException {
-        PresentationContext pc = as.getAAssociateAC()
-                .getPresentationContext(pcid);
-        return readDataset(pc.getTransferSyntax());
     }
 
     private void nextPDV(int expectedPDVType, int expectedPCID)

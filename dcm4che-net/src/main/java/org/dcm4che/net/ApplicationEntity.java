@@ -46,6 +46,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.dcm4che.data.Attributes;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
@@ -54,6 +55,7 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.pdu.UserIdentityAC;
+import org.dcm4che.net.service.DicomService;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -96,8 +98,10 @@ public class ApplicationEntity {
     private int maxOpsInvoked = 1;
     private boolean packPDV = true;
     private UserIdentityNegotiator userIdNegotiator;
-    private HashMap<String, ExtendedNegotiator> extNegotiators =
+    private final HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
+    private final DicomServiceRegistry serviceRegistry =
+            new DicomServiceRegistry();
 
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
@@ -438,6 +442,14 @@ public class ApplicationEntity {
         }
     }
 
+    public void addDicomService(DicomService service) {
+        serviceRegistry.addDicomService(service);
+    }
+
+    public void removeDicomService(DicomService service) {
+        serviceRegistry.removeDicomService(service);
+    }
+
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
         if (!(isInstalled() && acceptor))
@@ -548,5 +560,10 @@ public class ApplicationEntity {
         as.activate();
         as.waitForLeaving(State.Sta5);
         return as;
+    }
+
+    void perform(Association as, PresentationContext pc, Attributes cmd,
+            PDVInputStream data) throws IOException {
+        serviceRegistry.process(as, pc, cmd, data);
     }
 }

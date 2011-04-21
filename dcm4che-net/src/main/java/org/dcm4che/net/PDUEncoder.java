@@ -390,7 +390,7 @@ class PDUEncoder extends PDVOutputStream {
         if (Association.LOG.isInfoEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(as).append(" << ");
-            CommandUtils.promptTo(cmd, pcid, tsuid, sb);
+            Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG.info(sb.toString());
         }
         Association.LOG.debug("{}", cmd);

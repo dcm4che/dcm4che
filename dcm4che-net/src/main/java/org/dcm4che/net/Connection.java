@@ -96,8 +96,7 @@ public class Connection {
     private int acceptTimeout;
     private int releaseTimeout;
     private int dimseRSPTimeout;
-    private int cGetRSPTimeout;
-    private int cMoveRSPTimeout;
+    private int retrieveRSPTimeout;
     private int socketCloseDelay = 50;
     private int sendBufferSize;
     private int receiveBufferSize;
@@ -311,20 +310,12 @@ public class Connection {
         this.dimseRSPTimeout = dimseRSPTimeout;
     }
 
-    public final int getCGetRSPTimeout() {
-        return cGetRSPTimeout;
+    public final int getRetrieveRSPTimeout() {
+        return retrieveRSPTimeout;
     }
 
-    public final void setCGetRSPTimeout(int cGetRSPTimeout) {
-        this.cGetRSPTimeout = cGetRSPTimeout;
-    }
-
-    public final int getCMoveRSPTimeout() {
-        return cMoveRSPTimeout;
-    }
-
-    public final void setCMoveRSPTimeout(int cMoveRSPTimeout) {
-        this.cMoveRSPTimeout = cMoveRSPTimeout;
+    public final void setRetrieveRSPTimeout(int retrieveRSPTimeout) {
+        this.retrieveRSPTimeout = retrieveRSPTimeout;
     }
 
     /**

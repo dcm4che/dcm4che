@@ -55,7 +55,6 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
-import org.dcm4che.net.DimseRSP;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -175,7 +174,7 @@ public class DcmSnd {
         as.cecho().next();
     }
 
-    public void close() throws IOException {
+    public void close() throws IOException, InterruptedException {
         if (as != null) {
             as.waitForOutstandingRSP();
             as.release();
@@ -185,7 +184,6 @@ public class DcmSnd {
     public void open(Executor executor)
             throws IOException, InterruptedException {
         device.setExecutor(executor);
-        device.setInstalled(true);
         rq.setCallingAET(ae.getAETitle());
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(

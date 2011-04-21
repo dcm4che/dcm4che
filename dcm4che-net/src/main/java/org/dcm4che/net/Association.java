@@ -44,17 +44,18 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.AAssociateRQAC;
+import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.PDUEncoder;
@@ -70,6 +71,8 @@ public class Association {
 
     static final Logger LOG =
             LoggerFactory.getLogger(Association.class);
+    static final Logger LOG_AARQAC =
+            LoggerFactory.getLogger(AAssociateRQAC.class);
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
     private final AtomicInteger messageID = new AtomicInteger();
@@ -91,9 +94,11 @@ public class Association {
     private HashMap<String, Object> properties;
     private int maxOpsInvoked;
     private int maxPDULength;
-    private AssociationCloseListener asListener;
+    private int performing;
     private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
             new IntHashMap<DimseRSPHandler>();
+    private final IntHashMap<DimseRSP> cancelHandlerForMsgId =
+            new IntHashMap<DimseRSP>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
 
@@ -111,8 +116,13 @@ public class Association {
         enterState(requestor ? State.Sta4 : State.Sta2);
     }
 
-    private int nextMessageID() {
+    public int nextMessageID() {
         return messageID.incrementAndGet() & 0xFFFF;
+    }
+
+    private void adjustNextMessageID(int msgId) {
+        if ((messageID.get() & 0xFFFF) < msgId)
+            messageID.set(msgId);
     }
 
     private char delim() {
@@ -144,15 +154,6 @@ public class Association {
         this.ae = ae;
     }
 
-    public final AssociationCloseListener getAAssociationCloseListener() {
-        return asListener;
-    }
-
-    public final void setAssociationCloseListener(
-            AssociationCloseListener listener) {
-        this.asListener = listener;
-    }
-
     public Object getProperty(String key) {
         return properties != null ? properties.get(key) : null;
     }
@@ -175,11 +176,23 @@ public class Association {
         return ex;
     }
 
+    private void checkIsSCP(String cuid) throws NoRoleSelectionException {
+        if (!isSCPFor(cuid))
+            throw new NoRoleSelectionException(cuid,
+                    TransferCapability.Role.SCP);
+    }
+
     private boolean isSCPFor(String cuid) {
         RoleSelection rolsel = ac.getRoleSelectionFor(cuid);
         if (rolsel == null)
             return !requestor;
         return requestor ? rolsel.isSCP() : rolsel.isSCU();
+    }
+
+    private void checkIsSCU(String cuid) throws NoRoleSelectionException {
+        if (!isSCUFor(cuid))
+            throw new NoRoleSelectionException(cuid,
+                    TransferCapability.Role.SCU);
     }
 
     private boolean isSCUFor(String cuid) {
@@ -241,23 +254,25 @@ public class Association {
         startARTIM(conn.getReleaseTimeout());
     }
 
-    public void waitForOutstandingRSP() {
-        // TODO Auto-generated method stub
-        
+    public void waitForOutstandingRSP() throws InterruptedException {
+        synchronized (rspHandlerForMsgId) {
+            while (!rspHandlerForMsgId.isEmpty())
+                rspHandlerForMsgId.wait();
+        }
     }
 
     void write(AAssociateRQ rq) throws IOException {
         name = rq.getCalledAET() + delim() + serialNo;
         this.rq = rq;
         LOG.info("{} << A-ASSOCIATE-RQ", name);
-        LOG.debug("{}", rq);
+        LOG_AARQAC.debug("{}", rq);
         enterState(State.Sta5);
         encoder.write(rq);
     }
 
     private void write(AAssociateAC ac) throws IOException {
         LOG.info("{} << A-ASSOCIATE-AC", name);
-        LOG.debug("{}", ac);
+        LOG_AARQAC.debug("{}", ac);
         enterState(State.Sta6);
         encoder.write(ac);
     }
@@ -327,10 +342,11 @@ public class Association {
         });
     }
 
-    private void closeSocket() {
+    private synchronized void closeSocket() {
         if (sock == null)
             return;
 
+        clearDimseRSPHandler();
         if (state == State.Sta13) {
             try {
                 Thread.sleep(conn.getSocketCloseDelay());
@@ -354,15 +370,13 @@ public class Association {
                             return true;
                         }
                     });
-            if (asListener != null)
-                asListener.onClose(this);
         }
         enterState(State.Sta1);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
-        LOG.debug("{}", rq);
+        LOG_AARQAC.debug("{}", rq);
         state.onAAssociateRQ(this, rq);
     }
 
@@ -399,7 +413,7 @@ public class Association {
 
     void onAAssociateAC(AAssociateAC ac) throws IOException {
         LOG.info("{} >> A-ASSOCIATE-AC", name);
-        LOG.debug("{}", ac);
+        LOG_AARQAC.debug("{}", ac);
         state.onAAssociateAC(this, ac);
     }
 
@@ -430,19 +444,33 @@ public class Association {
 
     void handleAReleaseRQ() throws IOException {
         enterState(State.Sta8);
+        clearDimseRSPHandler();
+        waitForPerformingOps();
         LOG.info("{} << A-RELEASE-RP", name);
         enterState(State.Sta13);
         encoder.writeAReleaseRP();
     }
 
+    private synchronized void waitForPerformingOps() {
+        while (performing > 0 && state == State.Sta8) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // explicitly interrupted up by another thread; continue
+            }
+        }
+    }
+
     void handleAReleaseRQCollision() throws IOException {
         if (isRequestor()) {
             enterState(State.Sta9);
+            clearDimseRSPHandler();
             LOG.info("{} << A-RELEASE-RP", name);
             enterState(State.Sta11);
             encoder.writeAReleaseRP();
        } else {
             enterState(State.Sta10);
+            clearDimseRSPHandler();
             try {
                 waitForLeaving(State.Sta10);
             } catch (InterruptedException e) {
@@ -495,10 +523,20 @@ public class Association {
         encoder.writePDataTF();
     }
 
-    void onDimseRQ(int pcid, Attributes cmd, PDVInputStream data,
-            String tsuid) {
-        // TODO Auto-generated method stub
-        
+    void onDimseRQ(PresentationContext pc, Attributes cmd,
+            PDVInputStream data) throws IOException {
+        incPerforming();
+        adjustNextMessageID(cmd.getInt(Tag.MessageID, 0));
+        ae.perform(this, pc, cmd, data);
+    }
+
+    private synchronized void incPerforming() {
+        ++performing;
+    }
+
+    private synchronized void decPerforming() {
+        --performing;
+        notifyAll();
     }
 
     void onDimseRSP(Attributes cmd, Attributes data) throws AAbort {
@@ -512,15 +550,13 @@ public class Association {
         try {
             rspHandler.onDimseRSP(this, cmd, data);
         } finally {
-            if (!CommandUtils.isPendingRSP(cmd)) {
+            if (!Commands.hasPendingStatus(cmd)) {
                 updateIdleTimeout();
                 removeDimseRSPHandler(msgId);
+                removeCancelRQHandler(msgId);
             } else {
-                int cmdfield = cmd.getInt(Tag.CommandField, -1);
-                int timeout = cmdfield == CommandUtils.C_GET_RSP
-                        ? conn.getCGetRSPTimeout()
-                        : cmdfield == CommandUtils.C_MOVE_RSP
-                        ? conn.getCMoveRSPTimeout()
+                int timeout = Commands.isRetrieveRSP(cmd)
+                        ? conn.getRetrieveRSPTimeout()
                         : conn.getDimseRSPTimeout();
                 rspHandler.setTimeout(timeout == 0
                         ? 0
@@ -529,13 +565,13 @@ public class Association {
         }
     }
 
-    private void addDimseRSPHandler(int msgId, DimseRSPHandler rspHandler)
+    private void addDimseRSPHandler(DimseRSPHandler rspHandler)
             throws InterruptedException {
         synchronized (rspHandlerForMsgId) {
             while (maxOpsInvoked > 0
                     && rspHandlerForMsgId.size() >= maxOpsInvoked)
                 rspHandlerForMsgId.wait();
-            rspHandlerForMsgId.put(msgId, rspHandler);
+            rspHandlerForMsgId.put(rspHandler.getMessageID(), rspHandler);
         }
     }
 
@@ -552,14 +588,57 @@ public class Association {
         }
     }
 
+    private void clearDimseRSPHandler() {
+        synchronized (rspHandlerForMsgId ) {
+            rspHandlerForMsgId.clear();
+            rspHandlerForMsgId.notifyAll();
+        }
+    }
+
     private void updateIdleTimeout() {
         // TODO Auto-generated method stub
         
     }
 
-    public void cancel(int pcid, int msgId) {
-        // TODO Auto-generated method stub
-        
+    void cancel(PresentationContext pc, int msgId) throws IOException {
+        Attributes cmd = Commands.mkCCancelRQ(msgId);
+        encoder.writeDIMSE(pc, cmd, null);
+    }
+
+    public void writeDimseRSP(PresentationContext pc, Attributes cmd,
+            Attributes data) throws IOException {
+        DataWriter writer = null;
+        int datasetType = Commands.NO_DATASET;
+        if (data != null) {
+            writer = new DataWriterAdapter(data);
+            datasetType = Commands.getWithDatasetType();
+        }
+        cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
+        encoder.writeDIMSE(pc, cmd, writer);
+        if (!Commands.hasPendingStatus(cmd)) {
+            updateIdleTimeout();
+            decPerforming();
+        }
+    }
+
+    void onCancelRQ(Attributes cmd) throws IOException {
+        int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
+        DimseRSP handler = removeCancelRQHandler(msgId);
+        if (handler != null) {
+            handler.cancel(this);
+        }
+    }
+
+    public void addCancelRQHandler(int msgId, DimseRSP handler) {
+        synchronized (cancelHandlerForMsgId) {
+            cancelHandlerForMsgId.put(msgId, handler);
+        }
+    }
+
+    private DimseRSP removeCancelRQHandler(int msgId) {
+        synchronized (cancelHandlerForMsgId) {
+            return cancelHandlerForMsgId.remove(msgId);
+        }
     }
 
     private void initPCMap() {
@@ -590,32 +669,36 @@ public class Association {
         return pc;
     }
 
+    PresentationContext getPresentationContext(int pcid) {
+        return ac.getPresentationContext(pcid);
+    }
+
     public DimseRSP cecho() throws IOException, InterruptedException {
         return cecho(UID.VerificationSOPClass);
     }
 
     public DimseRSP cecho(String cuid)
             throws IOException, InterruptedException {
-        FutureDimseRSP rsp = new FutureDimseRSP();
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
         PresentationContext pc = pcFor(cuid, null);
-        if (!isSCUFor(cuid))
-            throw new NoRoleSelectionException(cuid,
-                    TransferCapability.Role.SCP);
-        int msgId = nextMessageID();
-        Attributes cechorq = CommandUtils.mkCEchoRQ(msgId, cuid);
-        invoke(pc, msgId, cechorq, null, rsp,
-                conn.getDimseRSPTimeout());
+        checkIsSCU(cuid);
+        Attributes cechorq = Commands.mkCEchoRQ(rsp.getMessageID(), cuid);
+        invoke(pc, cechorq, null, rsp, conn.getDimseRSPTimeout());
         return rsp;
     }
 
-    private void invoke(PresentationContext pc, int msgId, Attributes cmd,
+    private void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
         checkException();
-        rspHandler.setPcid(pc.getPCID());
-        rspHandler.setMsgId(msgId);
-        addDimseRSPHandler(msgId, rspHandler);
+        rspHandler.setPC(pc);
+        addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
         rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
+    }
+
+    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(
+            String cuid) {
+        return ac.getCommonExtendedNegotiationFor(cuid);
     }
 }

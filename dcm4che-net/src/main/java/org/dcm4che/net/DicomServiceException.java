@@ -39,24 +39,53 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
+import org.dcm4che.net.Commands;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class PDVInputStream extends InputStream {
+public class DicomServiceException extends IOException {
 
-    public abstract Attributes readDataset(String tsuid) throws IOException;
+    private static final long serialVersionUID = -8680017798403768406L;
 
-    public abstract void copyTo(OutputStream out, int length)
-            throws IOException;
+    private final Attributes rsp;
+    private Attributes data;
+    
+    public DicomServiceException(Attributes rq, int status) {
+        this(rq, status, null);
+    }
 
-    public abstract void copyTo(OutputStream out) throws IOException;
+    public DicomServiceException(Attributes rq, int status, String message) {
+        super(message);
+        rsp = Commands.mkRSP(rq, status);
+        if (message != null)
+            setErrorComment(message);
+    }
 
-    public abstract long skipAll() throws IOException;
+    public void setErrorComment(String val) {
+        if (val.length() > 64)
+            val = val.substring(0, 64);
+        rsp.setString(Tag.ErrorComment, VR.LO, val);
+    }
+    
+    public void setErrorID(int val) {
+        rsp.setInt(Tag.ErrorID, VR.US, val);
+    }
+    
+    public final Attributes getCommand() {
+        return rsp;
+    }
 
+    public final Attributes getDataset() {
+        return data;
+    }
+
+    public final void setDataset(Attributes data) {
+        this.data = data;
+    }
 }

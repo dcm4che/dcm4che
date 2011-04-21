@@ -82,7 +82,7 @@ public class Device {
     private X509Certificate[] authorizedNodeCertificate = {};
     private X509Certificate[] thisNodeCertificate = {};
     private Object vendorDeviceData;
-    private boolean installed;
+    private boolean installed = true;
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();

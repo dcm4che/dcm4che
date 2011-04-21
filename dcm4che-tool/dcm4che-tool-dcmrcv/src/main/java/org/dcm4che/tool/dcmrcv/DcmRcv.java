@@ -55,6 +55,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.VerificationService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -93,6 +94,7 @@ public class DcmRcv {
                         UID.VerificationSOPClass,
                         TransferCapability.Role.SCP,
                         UID.ImplicitVRLittleEndian));
+        ae.addDicomService(new VerificationService());
     }
 
     public void setHostname(String hostname) {
@@ -161,7 +163,6 @@ public class DcmRcv {
 
     private void start(Executor executor) throws IOException {
         device.setExecutor(executor);
-        device.setInstalled(true);
         conn.bind();
     }
 

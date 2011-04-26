@@ -38,14 +38,15 @@
 
 package org.dcm4che.tool.dcmsnd;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -188,7 +189,7 @@ public class DcmSnd {
                 dcmsnd.open(executorService);
                 t2 = System.currentTimeMillis();
                 System.out.printf(rb.getString("connected"), remoteAE,
-                        (t2 - t1) / 1000F);
+                        t2 - t1);
                 if (echo)
                     dcmsnd.echo();
                 else {
@@ -232,50 +233,49 @@ public class DcmSnd {
 
     public void scanFiles(List<String> fnames) throws IOException {
         tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
-        BufferedWriter sendList = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(tmpFile)));
+        DataOutputStream fileInfos = new DataOutputStream(
+                new BufferedOutputStream(new FileOutputStream(tmpFile)));
         try {
             for (String fname : fnames)
-                scanFile(sendList, new File(fname));
+                scanFile(fileInfos, new File(fname));
         } finally {
-            try { sendList.close(); } catch (IOException ignore) {}
+            try { fileInfos.close(); } catch (IOException ignore) {}
         }
     }
 
     public void sendFiles() throws IOException {
-        BufferedReader sendList = new BufferedReader(
-                new InputStreamReader(
+        DataInputStream fileInfos = new DataInputStream(
+                new BufferedInputStream(
                         new FileInputStream(tmpFile)));
         try {
             while (as.isReadyForDataTransfer()) {
-                String cuid = sendList.readLine();
-                if (cuid == null) {
-                    try {
-                        as.waitForOutstandingRSP();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-                }
-                String iuid = sendList.readLine();
-                String ts = sendList.readLine();
-                String fpath = sendList.readLine();
+                String fpath = fileInfos.readUTF();
+                long fmiEndPos = fileInfos.readLong();
+                String cuid = fileInfos.readUTF();
+                String iuid = fileInfos.readUTF();
+                String ts = fileInfos.readUTF();
                 try {
-                    send(new File(fpath), cuid, iuid, ts);
+                    send(new File(fpath), fmiEndPos, cuid, iuid, ts);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }            
+        } catch (EOFException eof) {
+            try {
+                as.waitForOutstandingRSP();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } finally {
-            try { sendList.close(); } catch (IOException ignore) {}
+            try { fileInfos.close(); } catch (IOException ignore) {}
             tmpFile.delete();
         }
     }
 
-    private void scanFile(BufferedWriter sendList, File f) {
+    private void scanFile(DataOutputStream fileInfos, File f) {
         if (f.isDirectory()) {
             for (String s : f.list())
-                scanFile(sendList, new File(f, s));
+                scanFile(fileInfos, new File(f, s));
             return;
         }
         DicomInputStream in = null;
@@ -283,13 +283,13 @@ public class DcmSnd {
             in = new DicomInputStream(f);
             Attributes fmi = in.readFileMetaInformation();
             if (fmi != null) {
-                addFile(sendList, f,
+                addFile(fileInfos, f, in.getPosition(),
                         fmi.getString(Tag.MediaStorageSOPClassUID, null),
                         fmi.getString(Tag.MediaStorageSOPInstanceUID, null),
                         fmi.getString(Tag.TransferSyntaxUID, null));
             } else {
                 Attributes ds = in.readDataset(-1, Tag.SOPInstanceUID);
-                addFile(sendList, f,
+                addFile(fileInfos, f, 0,
                         ds.getString(Tag.SOPClassUID, null),
                         ds.getString(Tag.SOPInstanceUID, null),
                         in.explicitVR() 
@@ -309,16 +309,13 @@ public class DcmSnd {
         }
     }
 
-    private void addFile(BufferedWriter sendList, File f, String cuid,
-            String iuid, String ts) throws IOException {
-        sendList.append(cuid);
-        sendList.newLine();
-        sendList.append(iuid);
-        sendList.newLine();
-        sendList.append(ts);
-        sendList.newLine();
-        sendList.append(f.getPath());
-        sendList.newLine();
+    private void addFile(DataOutputStream fileInfos, File f, long endFmi,
+            String cuid, String iuid, String ts) throws IOException {
+        fileInfos.writeUTF(f.getPath());
+        fileInfos.writeLong(endFmi);
+        fileInfos.writeUTF(cuid);
+        fileInfos.writeUTF(iuid);
+        fileInfos.writeUTF(ts);
 
         boolean firstPCforCUID = true;
         for (PresentationContext pc : rq.getPresentationContexts())
@@ -344,10 +341,10 @@ public class DcmSnd {
         as.cecho().next();
     }
 
-    public void send(final File f, String cuid, String iuid, String ts)
-            throws IOException, InterruptedException {
-        final DicomInputStream in = new DicomInputStream(f);
-        in.readFileMetaInformation();
+    public void send(final File f, long fmiEndPos, String cuid, String iuid,
+            String ts) throws IOException, InterruptedException {
+        final FileInputStream in = new FileInputStream(f);
+        in.skip(fmiEndPos);
         DataWriter data = new DataWriter() {
 
             @Override

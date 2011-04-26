@@ -101,7 +101,7 @@ public class DicomService {
      * 
      * @return String array containing the SOP Class UIDs.
      */
-    public final String[] getSopClasses() {
+    public final String[] getSOPClasses() {
         return sopClasses.clone();
     }
 

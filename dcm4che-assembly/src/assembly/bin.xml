@@ -163,6 +163,7 @@
       <includes>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-net</include>
+        <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2txt</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>

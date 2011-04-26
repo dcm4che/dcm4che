@@ -40,22 +40,20 @@ package org.dcm4che.tool.dcmrcv;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.VerificationService;
+import org.dcm4che.tool.common.CLIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -63,26 +61,14 @@ import org.dcm4che.net.service.VerificationService;
  */
 public class DcmRcv {
 
-    private static final String USAGE = 
-        "dcmrcv [Options] [<aet>[@<ip>]:]<port>";
-
-    private static final String DESCRIPTION = 
-        "\nDICOM Server listening on specified <port> for incoming " +
-        "association requests. If no local IP address of the network " +
-        "interface is specified connections on any/all local addresses are " +
-        "accepted. If <aet> is specified, only requests with matching " +
-        "called AE title will be accepted." +
-        "\n-\nOptions:";
-
-    private static final String EXAMPLE = 
-        "\nExample: dcmrcv DCMRCV:11112 -dest /tmp" +
-        "\n=> Starts server listening on port 11112, accepting association " +
-        "requests with DCMRCV as called AE title. Received objects are " +
-        "stored to /tmp.";
+    private static ResourceBundle rb =
+        ResourceBundle.getBundle("org.dcm4che.tool.dcmrcv.dcmrcv");
 
     private final Device device = new Device("dcmrcv");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
+
+    private final StorageSCP storageSCP = new StorageSCP(this);
 
     public DcmRcv() {
         device.addConnection(conn);
@@ -91,10 +77,11 @@ public class DcmRcv {
         ae.addConnection(conn);
         ae.addTransferCapability(
                 new TransferCapability(null, 
-                        UID.VerificationSOPClass,
+                        "*",
                         TransferCapability.Role.SCP,
-                        UID.ImplicitVRLittleEndian));
+                        "*"));
         ae.addDicomService(new VerificationService());
+        ae.addDicomService(storageSCP);
     }
 
     public void setHostname(String hostname) {
@@ -109,25 +96,20 @@ public class DcmRcv {
         ae.setAETitle(aet);
     }
 
+    public void setMaxOpsInvoked(int maxOpsInvoked) {
+        ae.setMaxOpsInvoked(maxOpsInvoked);
+    }
+
+    public void setMaxOpsPerformed(int maxOpsPerformed) {
+        ae.setMaxOpsPerformed(maxOpsPerformed);
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
-        opts.addOption("h", "help", false, "display this help and exit");
-        opts.addOption("V", "version", false,
-                "output version information and exit");
-        CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(opts, args);
-        if (cl.hasOption("h")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
-        }
-        if (cl.hasOption("V")) {
-            System.out.println("dcmrcv "
-                    + DcmRcv.class.getPackage().getImplementationVersion());
-            System.exit(0);
-        }
-        return cl;
+        CLIUtils.addAEOptions(opts);
+        CLIUtils.addCommonOptions(opts);
+        return CLIUtils.parseComandLine(args, opts, rb, DcmRcv.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -144,6 +126,7 @@ public class DcmRcv {
                 if (aetAndIP[1] != null)
                     dcmrcv.setHostname(aetAndIP[1]);
             }
+            CLIUtils.configure(dcmrcv.ae, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             try {
                 dcmrcv.start(executorService);
@@ -152,7 +135,7 @@ public class DcmRcv {
             }
         } catch (ParseException e) {
             System.err.println("dcmrcv: " + e.getMessage());
-            System.err.println("Try `dcmrcv --help' for more information.");
+            System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
             System.err.println("dcmrcv: " + e.getMessage());
@@ -169,9 +152,9 @@ public class DcmRcv {
     private static String port(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
-            throw new ParseException("Missing port argument");
+            throw new ParseException(rb.getString("missing"));
         if (numArgs > 1)
-            throw new ParseException("Too many argument");
+            throw new ParseException(rb.getString("toomany"));
         return argList.get(0);
     }
 

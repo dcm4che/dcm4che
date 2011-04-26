@@ -80,7 +80,7 @@ class DicomServiceRegistry {
     private HashMap<String, NEventReportSCU> neventReportSCUs;
 
     public synchronized void addDicomService(DicomService service) {
-        String[] sopClasses = service.getSopClasses();
+        String[] sopClasses = service.getSOPClasses();
         String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
             sopCUIDs.add(uid);
@@ -175,7 +175,7 @@ class DicomServiceRegistry {
     }
 
     public synchronized void removeDicomService(DicomService service) {
-        String[] sopClasses = service.getSopClasses();
+        String[] sopClasses = service.getSOPClasses();
         String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
             sopCUIDs.remove(uid);

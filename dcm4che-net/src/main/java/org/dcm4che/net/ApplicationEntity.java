@@ -498,10 +498,11 @@ public class ApplicationEntity {
 
        for (String rqts : rqpc.getTransferSyntaxes())
             for (String ts : tc.getTransferSyntax())
-                if (ts.hashCode() == rqts.hashCode() && ts.equals(rqts)) {
+                if (ts.hashCode() == rqts.hashCode() && ts.equals(rqts)
+                        || ts.equals("*")) {
                     extNegotiate(rq, ac, as);
                     return new PresentationContext(pcid,
-                            PresentationContext.ACCEPTANCE, ts);
+                            PresentationContext.ACCEPTANCE, rqts);
                 }
 
        return new PresentationContext(pcid,
@@ -513,22 +514,26 @@ public class ApplicationEntity {
             AAssociateAC ac, String asuid) {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         if (rqrs == null)
-            return scpTCs.get(asuid);
+            return getTC(scpTCs, asuid);
 
         RoleSelection acrs = ac.getRoleSelectionFor(asuid);
         if (acrs != null)
-            return acrs.isSCU()
-                    ? scpTCs.get(asuid)
-                    : scuTCs.get(asuid);
+            return getTC(acrs.isSCU() ? scpTCs : scuTCs, asuid);
 
         TransferCapability tcscu = null;
         TransferCapability tcscp = null;
         boolean scu = rqrs.isSCU()
-                && (tcscp = scpTCs.get(asuid)) != null;
+                && (tcscp = getTC(scpTCs, asuid)) != null;
         boolean scp = rqrs.isSCP()
-                && (tcscu = scuTCs.get(asuid)) != null;
+                && (tcscu = getTC(scuTCs, asuid)) != null;
         ac.addRoleSelection(new RoleSelection(asuid, scu, scp));
         return scu ? tcscp : tcscu;
+    }
+
+    private TransferCapability getTC(
+            HashMap<String, TransferCapability> tcs, String asuid) {
+        TransferCapability tc = tcs.get(asuid);
+        return tc != null ? tc : tcs.get("*");
     }
 
     private void extNegotiate(AAssociateRQ rq, AAssociateAC ac, String asuid) {
@@ -549,10 +554,11 @@ public class ApplicationEntity {
 
     public Association connect(Connection local, String host, int port,
             AAssociateRQ rq) throws IOException, InterruptedException {
-        if (!aet.equals(rq.getCallingAET()))
-            throw new IllegalArgumentException(
-                    "Calling AE title: " + rq.getCallingAET() + 
-                    " does not match AE title: " + aet);
+        if (!aet.equals("*"))
+            rq.setCallingAET(aet);
+        rq.setMaxOpsInvoked(maxOpsInvoked);
+        rq.setMaxOpsPerformed(maxOpsPerformed);
+        rq.setMaxPDULength(maxPDULengthReceive);
         Association as = new Association(local, local.connect(host, port), true);
         as.setApplicationEntity(this);
         as.write(rq);

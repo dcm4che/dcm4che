@@ -172,6 +172,10 @@ public class Association {
         return requestor;
     }
 
+    public boolean isReadyForDataTransfer() {
+        return state == State.Sta6;
+    }
+
     final IOException getException() {
         return ex;
     }
@@ -605,6 +609,11 @@ public class Association {
         encoder.writeDIMSE(pc, cmd, null);
     }
 
+    public void writeDimseRSP(PresentationContext pc, Attributes cmd)
+            throws IOException {
+        writeDimseRSP(pc, cmd, null);
+    }
+
     public void writeDimseRSP(PresentationContext pc, Attributes cmd,
             Attributes data) throws IOException {
         DataWriter writer = null;
@@ -673,6 +682,11 @@ public class Association {
         return ac.getPresentationContext(pcid);
     }
 
+    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(
+            String cuid) {
+        return ac.getCommonExtendedNegotiationFor(cuid);
+    }
+
     public DimseRSP cecho() throws IOException, InterruptedException {
         return cecho(UID.VerificationSOPClass);
     }
@@ -687,6 +701,71 @@ public class Association {
         return rsp;
     }
 
+    public void cstore(String cuid, String iuid, int priority, DataWriter data,
+            String tsuid, DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        cstore(cuid, cuid, iuid, priority, data, tsuid, rspHandler);
+    }
+
+    public void cstore(String asuid, String cuid, String iuid, int priority,
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
+                cuid, iuid, priority);
+        invoke(pc, cstorerq, data, rspHandler, conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP cstore(String cuid, String iuid, int priority,
+            DataWriter data, String tsuid)
+            throws IOException, InterruptedException {
+        return cstore(cuid, cuid, iuid, priority, data, tsuid);
+    }
+
+    public DimseRSP cstore(String asuid, String cuid, String iuid,
+            int priority, DataWriter data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        cstore(asuid, cuid, iuid, priority, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void cstore(String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid, rspHandler);
+    }
+
+    public void cstore(String asuid, String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
+                cuid, iuid, priority, moveOriginatorAET, moveOriginatorMsgId);
+        invoke(pc, cstorerq, data, rspHandler, conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP cstore(String cuid, String iuid, int priority,
+            String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid) throws IOException,
+            InterruptedException {
+        return cstore(cuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid);
+    }
+
+    public DimseRSP cstore(String asuid, String cuid, String iuid,
+            int priority, String moveOriginatorAET, int moveOriginatorMsgId,
+            DataWriter data, String tsuid) throws IOException,
+            InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        cstore(asuid, cuid, iuid, priority, moveOriginatorAET,
+                moveOriginatorMsgId, data, tsuid, rsp);
+        return rsp;
+    }
+
     private void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
@@ -695,10 +774,5 @@ public class Association {
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
         rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
-    }
-
-    public CommonExtendedNegotiation getCommonExtendedNegotiationFor(
-            String cuid) {
-        return ac.getCommonExtendedNegotiationFor(cuid);
     }
 }

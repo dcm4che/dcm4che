@@ -83,16 +83,14 @@ public class DcmSnd {
     private final Device device = new Device("dcmsnd");
     private final ApplicationEntity ae = new ApplicationEntity("DCMSND");
     private final Connection conn = new Connection();
+    private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
-    private String host = "localhost";
-    private int port = 104;
+    private int priority;
     private String tmpPrefix = "dcmsnd-";
     private String tmpSuffix;
     private File tmpDir;
     private File tmpFile;
     private Association as;
-
-    private int priority;
 
     private long totalSize;
     private int filesScanned;
@@ -104,24 +102,8 @@ public class DcmSnd {
         ae.addConnection(conn);
     }
 
-    public void setCallingAET(String aet) {
-        ae.setAETitle(aet);
-    }
-
-    public void setCalledAET(String aet) {
-        rq.setCalledAET(aet);
-    }
-
-    public void setRemoteHost(String host) {
-        this.host = host;
-    }
-
-    public void setRemotePort(int port) {
-        this.port = port;
-    }
-
-    public void setLocalHost(String hostname) {
-        conn.setHostname(hostname);
+    public final void setPriority(int priority) {
+        this.priority = priority;
     }
 
     public void setMaxOpsInvoked(int maxOpsInvoked) {
@@ -135,7 +117,10 @@ public class DcmSnd {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
+        CLIUtils.addTLSOptions(opts);
+        CLIUtils.addLocalRequestorOption(opts, "DCMSND");
         CLIUtils.addAEOptions(opts);
+        CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmSnd.class);
     }
@@ -150,27 +135,12 @@ public class DcmSnd {
             if (argList.isEmpty())
                 throw new ParseException(rb.getString("missing"));
             String remoteAE = argList.get(0);
-            String[] calledAETAddress = split(remoteAE, '@');
-            dcmsnd.setCalledAET(calledAETAddress[0]);
-            if (calledAETAddress[1] == null) {
-                dcmsnd.setRemoteHost("127.0.0.1");
-                dcmsnd.setRemotePort(104);
-            } else {
-                String[] hostPort = split(calledAETAddress[1], ':');
-                dcmsnd.setRemoteHost(hostPort[0]);
-                dcmsnd.setRemotePort((hostPort[1] != null 
-                                        ? Integer.parseInt(hostPort[1])
-                                        : 104));
-            }
-            if (cl.hasOption("L")) {
-                String localAE = cl.getOptionValue("L");
-                String[] callingAETHost = split(localAE, '@');
-                dcmsnd.setCallingAET(callingAETHost[0]);
-                if (callingAETHost[1] != null) {
-                    dcmsnd.setLocalHost(callingAETHost[1]);
-                }
-            }
+            CLIUtils.configureTLS(dcmsnd.conn, cl);
+            CLIUtils.configureRemoteAcceptor(dcmsnd.remote, dcmsnd.rq,
+                    remoteAE);
+            CLIUtils.configureLocalRequestor(dcmsnd.conn, dcmsnd.ae, cl);
             CLIUtils.configure(dcmsnd.ae, cl);
+            dcmsnd.setPriority(CLIUtils.priorityOf(cl));
             int nArgs = argList.size();
             boolean echo = nArgs == 1;
             if (!echo) {
@@ -178,7 +148,7 @@ public class DcmSnd {
                 t1 = System.currentTimeMillis();
                 dcmsnd.scanFiles(argList.subList(1, nArgs));
                 t2 = System.currentTimeMillis();
-                int n = dcmsnd.getNumberOfScannedFiles();
+                int n = dcmsnd.filesScanned;
                 System.out.printf(rb.getString("scanned"), n,
                         (t2 - t1) / 1000F, (t2 - t1) / n);
             }
@@ -201,11 +171,11 @@ public class DcmSnd {
                 dcmsnd.close();
                 executorService.shutdown();
             }
-            if (dcmsnd.getNumberOfScannedFiles() > 0) {
+            if (dcmsnd.filesScanned > 0) {
                 float s = (t2 - t1) / 1000F;
-                float mb = dcmsnd.getTotalSizeSent() / 1048576F;
+                float mb = dcmsnd.totalSize / 1048576F;
                 System.out.printf(rb.getString("sent"),
-                        dcmsnd.getNumberOfFilesSent(),
+                        dcmsnd.filesSent,
                         mb, s, mb / s);
             }
         } catch (ParseException e) {
@@ -217,18 +187,6 @@ public class DcmSnd {
             e.printStackTrace();
             System.exit(2);
         }
-    }
-
-    public final int getNumberOfScannedFiles() {
-        return filesScanned;
-    }
-
-    public final int getNumberOfFilesSent() {
-        return filesSent;
-    }
-
-    public final long getTotalSizeSent() {
-        return totalSize;
     }
 
     public void scanFiles(List<String> fnames) throws IOException {
@@ -380,17 +338,7 @@ public class DcmSnd {
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,
                             UID.ImplicitVRLittleEndian));
-        as = ae.connect(conn, host, port, rq);
-    }
-
-    private static String[] split(String s, char delim) {
-        String[] s2 = { s, null };
-        int pos = s.indexOf(delim);
-        if (pos != -1) {
-            s2[0] = s.substring(0, pos);
-            s2[1] = s.substring(pos + 1);
-        }
-        return s2;
+        as = ae.connect(conn, remote.getHostname(), remote.getPort(), rq);
     }
 
     private void onCStoreRSP(Attributes cmd, File f) {

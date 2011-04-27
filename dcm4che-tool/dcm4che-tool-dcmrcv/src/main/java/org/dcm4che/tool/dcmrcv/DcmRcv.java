@@ -84,29 +84,10 @@ public class DcmRcv {
         ae.addDicomService(storageSCP);
     }
 
-    public void setHostname(String hostname) {
-        conn.setHostname(hostname);
-    }
-
-    public void setPort(int port) {
-        conn.setPort(port);
-    }
-
-    public void setAETitle(String aet) {
-        ae.setAETitle(aet);
-    }
-
-    public void setMaxOpsInvoked(int maxOpsInvoked) {
-        ae.setMaxOpsInvoked(maxOpsInvoked);
-    }
-
-    public void setMaxOpsPerformed(int maxOpsPerformed) {
-        ae.setMaxOpsPerformed(maxOpsPerformed);
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
+        CLIUtils.addTLSOptions(opts);
         CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmRcv.class);
@@ -117,15 +98,9 @@ public class DcmRcv {
         try {
             CommandLine cl = parseComandLine(args);
             DcmRcv dcmrcv = new DcmRcv();
-            String port = port(cl.getArgList());
-            String[] aetAndPort = split(port, ':', 1);
-            dcmrcv.setPort(Integer.parseInt(aetAndPort[1]));
-            if (aetAndPort[0] != null) {
-                String[] aetAndIP = split(aetAndPort[0], '@', 0);
-                dcmrcv.setAETitle(aetAndIP[0]);
-                if (aetAndIP[1] != null)
-                    dcmrcv.setHostname(aetAndIP[1]);
-            }
+            CLIUtils.configureTLS(dcmrcv.conn, cl);
+            CLIUtils.configureLocalAcceptor(dcmrcv.conn, dcmrcv.ae,
+                    arg1(cl.getArgList()));
             CLIUtils.configure(dcmrcv.ae, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             try {
@@ -149,25 +124,13 @@ public class DcmRcv {
         conn.bind();
     }
 
-    private static String port(List<String> argList) throws ParseException {
+    private static String arg1(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
             throw new ParseException(rb.getString("missing"));
         if (numArgs > 1)
             throw new ParseException(rb.getString("toomany"));
         return argList.get(0);
-    }
-
-    private static String[] split(String s, char delim, int defPos) {
-        String[] s2 = new String[2];
-        int pos = s.indexOf(delim);
-        if (pos != -1) {
-            s2[0] = s.substring(0, pos);
-            s2[1] = s.substring(pos + 1);
-        } else {
-            s2[defPos] = s;
-        }
-        return s2;
     }
 
 }

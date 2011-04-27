@@ -75,17 +75,6 @@ public class Connection {
 
     private static Logger LOG = LoggerFactory.getLogger(Connection.class);
 
-    private static String[] TLS_WO_SSLv2 = { "TLSv1", "SSLv3" };
-    private static String[] TLS_AND_SSLv2 = { "TLSv1", "SSLv3", "SSLv2Hello" };
-    private static final String[] TLS_NULL = { "SSL_RSA_WITH_NULL_SHA" };
-    private static final String[] TLS_3DES_EDE_CBC = {
-        "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
-    };
-    private static final String[] TLS_AES_128_CBC = {
-        "TLS_RSA_WITH_AES_128_CBC_SHA",
-        "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
-    };
-
     private Device device;
     private String commonName;
     private String hostname;
@@ -102,8 +91,8 @@ public class Connection {
     private int receiveBufferSize;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
-    private String[] tlsProtocol = TLS_WO_SSLv2;
-    private String[] tlsCipherSuite = {};
+    private TLSProtocol tlsProtocol = TLSProtocol.ALL;
+    private CipherSuite tlsCipherSuite;
     private Boolean installed;
     private Collection<InetAddress> blacklist;
 
@@ -325,8 +314,8 @@ public class Connection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public String[] getTlsCipherSuite() {
-        return tlsCipherSuite.clone();
+    public CipherSuite getTLSCipherSuite() {
+        return tlsCipherSuite;
     }
 
     /**
@@ -337,40 +326,29 @@ public class Connection {
      * @param tlsCipherSuite
      *            A String array containing the supported cipher suites
      */
-    public void setTlsCipherSuite(String[] tlsCipherSuite) {
-        checkNotNull("tlsCipherSuite", tlsCipherSuite);
-        this.tlsCipherSuite = tlsCipherSuite.clone();
-    }
-
-    private static void checkNotNull(String name, Object[] a) {
-        if (a == null)
-            throw new NullPointerException(name);
-        for (int i = 0; i < a.length; i++)
-            if (a[i] == null)
-                throw new NullPointerException(name + '[' + i + ']');
-    }
-
-    public final void setTlsWithoutEncyrption() {
-        this.tlsCipherSuite = TLS_NULL;
-    }
-
-    public final void setTls3DES_EDE_CBC() {
-        this.tlsCipherSuite = TLS_3DES_EDE_CBC;
-    }
-
-    public final void setTlsAES_128_CBC() {
-        this.tlsCipherSuite = TLS_AES_128_CBC;
+    public void setTLSCipherSuite(CipherSuite tlsCipherSuite) {
+        this.tlsCipherSuite = tlsCipherSuite;
     }
 
     public final boolean isTLS() {
-        return tlsCipherSuite.length > 0;
+        return tlsCipherSuite != null;
     }
 
-    public final boolean isTlsNeedClientAuth() {
+    public TLSProtocol getTLSProtocol() {
+        return tlsProtocol;
+    }
+
+    public void setTLSProtocol(TLSProtocol tlsProtocol) {
+        if (tlsProtocol == null)
+            throw new NullPointerException();
+        this.tlsProtocol = tlsProtocol;
+    }
+
+    public final boolean isTLSNeedClientAuth() {
         return tlsNeedClientAuth;
     }
 
-    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
+    public final void setTLSNeedClientAuth(boolean tlsNeedClientAuth) {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
     /**
@@ -437,22 +415,6 @@ public class Connection {
         this.tcpNoDelay = tcpNoDelay;
     }
 
-    public String[] getTlsProtocol() {
-        return tlsProtocol.clone();
-    }
-
-    public void setTlsProtocol(String[] tlsProtocol) {
-        this.tlsProtocol = tlsProtocol.clone();
-    }
-
-    public void enableSSLv2Hello() {
-        this.tlsProtocol = TLS_AND_SSLv2;
-    }
-
-    public void disableSSLv2Hello() {
-        this.tlsProtocol = TLS_WO_SSLv2;
-    }
-
     /**
      * True if the Network Connection is installed on the network. If not
      * present, information about the installed status of the Network Connection
@@ -512,7 +474,7 @@ public class Connection {
             .append(port);
         if (isTLS()) {
             sb.append(", tls=[");
-            for (String s : tlsCipherSuite)
+            for (String s : tlsCipherSuite.getCipherSuites())
                 sb.append(s).append(", ");
             sb.setLength(sb.length() - 2);
             sb.append(']');
@@ -632,8 +594,8 @@ public class Connection {
         SSLContext sslContext = device.getSSLContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(tlsProtocol);
-        ss.setEnabledCipherSuites(tlsCipherSuite);
+        ss.setEnabledProtocols(tlsProtocol.getProtocols());
+        ss.setEnabledCipherSuites(tlsCipherSuite.getCipherSuites());
         ss.setNeedClientAuth(tlsNeedClientAuth);
         return ss;
     }
@@ -680,8 +642,8 @@ public class Connection {
         SSLContext sslContext = device.getSSLContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
-        s.setEnabledProtocols(tlsProtocol);
-        s.setEnabledCipherSuites(tlsCipherSuite);
+        s.setEnabledProtocols(tlsProtocol.getProtocols());
+        s.setEnabledCipherSuites(tlsCipherSuite.getCipherSuites());
         return s;
     }
 

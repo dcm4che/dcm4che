@@ -379,7 +379,8 @@ class PDUEncoder extends PDVOutputStream {
         put(PDUType.P_DATA_TF);
         put(0);
         putInt(pdulen);
-        Association.LOG.debug("{} << P-DATA-TF[len={}]", pdulen);
+        Association.LOG.debug("{} << P-DATA-TF[len={}]",
+                new Object[] { as, pdulen });
         writePDU(pdulen);
     }
 

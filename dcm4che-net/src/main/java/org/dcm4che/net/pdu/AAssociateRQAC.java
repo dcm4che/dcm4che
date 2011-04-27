@@ -56,7 +56,8 @@ import org.dcm4che.util.UIDUtils;
  */
 public abstract class AAssociateRQAC {
 
-    public static final int DEF_MAX_PDU_LENGTH = 16384;
+    public static final int DEF_MAX_PDU_LENGTH = 16378;
+    // to fit into TLS Application Data Length 16408
 
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";

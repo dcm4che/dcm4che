@@ -74,6 +74,8 @@ import org.slf4j.LoggerFactory;
 public class Connection {
 
     private static Logger LOG = LoggerFactory.getLogger(Connection.class);
+    
+    private static final String[] DEF_TLS_PROTOCOLS = { "TLSv1", "SSLv3" };
 
     private Device device;
     private String commonName;
@@ -91,8 +93,8 @@ public class Connection {
     private int receiveBufferSize;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
-    private TLSProtocol tlsProtocol = TLSProtocol.ALL;
-    private CipherSuite tlsCipherSuite;
+    private String[] tlsCipherSuites = {};
+    private String[] tlsProtocols = DEF_TLS_PROTOCOLS;
     private Boolean installed;
     private Collection<InetAddress> blacklist;
 
@@ -314,8 +316,8 @@ public class Connection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public CipherSuite getTLSCipherSuite() {
-        return tlsCipherSuite;
+    public String[] getTLSCipherSuite() {
+        return tlsCipherSuites.clone();
     }
 
     /**
@@ -326,22 +328,28 @@ public class Connection {
      * @param tlsCipherSuite
      *            A String array containing the supported cipher suites
      */
-    public void setTLSCipherSuite(CipherSuite tlsCipherSuite) {
-        this.tlsCipherSuite = tlsCipherSuite;
+    public void setTLSCipherSuite(String... tlsCipherSuite) {
+        for (String s : tlsCipherSuite)
+            if (s == null)
+                throw new NullPointerException();
+        this.tlsCipherSuites = tlsCipherSuite.clone();
     }
 
     public final boolean isTLS() {
-        return tlsCipherSuite != null;
+        return tlsCipherSuites.length > 0;
     }
 
-    public TLSProtocol getTLSProtocol() {
-        return tlsProtocol;
+    public String[] getTLSProtocols() {
+        return tlsProtocols.clone();
     }
 
-    public void setTLSProtocol(TLSProtocol tlsProtocol) {
-        if (tlsProtocol == null)
-            throw new NullPointerException();
-        this.tlsProtocol = tlsProtocol;
+    public void setTLSProtocol(String... tlsProtocols) {
+        if (tlsProtocols.length == 0)
+            throw new IllegalArgumentException("no TLS protocol specified");
+        for (String s : tlsProtocols)
+            if (s == null)
+                throw new NullPointerException();
+        this.tlsProtocols = tlsProtocols.clone();
     }
 
     public final boolean isTLSNeedClientAuth() {
@@ -351,6 +359,7 @@ public class Connection {
     public final void setTLSNeedClientAuth(boolean tlsNeedClientAuth) {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
+
     /**
      * Get the SO_RCVBUF socket value in KB.
      * 
@@ -474,7 +483,7 @@ public class Connection {
             .append(port);
         if (isTLS()) {
             sb.append(", tls=[");
-            for (String s : tlsCipherSuite.getCipherSuites())
+            for (String s : tlsCipherSuites)
                 sb.append(s).append(", ");
             sb.setLength(sb.length() - 2);
             sb.append(']');
@@ -594,8 +603,8 @@ public class Connection {
         SSLContext sslContext = device.getSSLContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(tlsProtocol.getProtocols());
-        ss.setEnabledCipherSuites(tlsCipherSuite.getCipherSuites());
+        ss.setEnabledProtocols(tlsProtocols);
+        ss.setEnabledCipherSuites(tlsCipherSuites);
         ss.setNeedClientAuth(tlsNeedClientAuth);
         return ss;
     }
@@ -642,8 +651,8 @@ public class Connection {
         SSLContext sslContext = device.getSSLContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
-        s.setEnabledProtocols(tlsProtocol.getProtocols());
-        s.setEnabledCipherSuites(tlsCipherSuite.getCipherSuites());
+        s.setEnabledProtocols(tlsProtocols);
+        s.setEnabledCipherSuites(tlsCipherSuites);
         return s;
     }
 

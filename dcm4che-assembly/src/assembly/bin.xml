@@ -102,11 +102,18 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
       <includes>
         <include>etc/dcmrcv/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
+      <includes>
         <include>etc/dcmrcv/key.jks</include>
         <include>etc/dcmrcv/cacerts.jks</include>
       </includes>
       <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src</directory>
@@ -129,11 +136,18 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src</directory>
       <includes>
         <include>etc/dcmsnd/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src</directory>
+      <includes>
         <include>etc/dcmsnd/key.jks</include>
         <include>etc/dcmsnd/cacerts.jks</include>
       </includes>
       <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>

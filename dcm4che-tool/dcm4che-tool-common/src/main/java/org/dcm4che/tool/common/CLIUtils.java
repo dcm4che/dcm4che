@@ -50,7 +50,6 @@ import java.util.ResourceBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -58,8 +57,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.DicomCipherSuite;
-import org.dcm4che.net.TLSProtocol;
 import org.dcm4che.net.pdu.AAssociateRQ;
 
 /**
@@ -108,24 +105,16 @@ public class CLIUtils {
     public static void addTLSOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("NULL|3DES|AES")
+                .withArgName("cipher-suite")
                 .withDescription(rb.getString("tls"))
                 .withLongOpt("tls")
                 .create(null));
-        OptionGroup tlsProtocol = new OptionGroup();
-        tlsProtocol.addOption(
-                new Option(null, "tls1", false, rb.getString("tls1")));
-        tlsProtocol.addOption(
-                new Option(null, "ssl3", false, rb.getString("ssl3")));
-        tlsProtocol.addOption(
-                new Option(null, "ssl2", false, rb.getString("ssl2")));
-        tlsProtocol.addOption(
-                new Option(null, "no-tls1", false, rb.getString("no-tls1")));
-        tlsProtocol.addOption(
-                new Option(null, "no-ssl3", false, rb.getString("no-ssl3")));
-        tlsProtocol.addOption(
-                new Option(null, "no-ssl2", false, rb.getString("no-ssl2")));
-        opts.addOptionGroup(tlsProtocol);
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("protocol")
+                .withDescription(rb.getString("tls-protocol"))
+                .withLongOpt("tls-protocol")
+                .create(null));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
         opts.addOption(OptionBuilder
                 .hasArg()
@@ -278,57 +267,39 @@ public class CLIUtils {
 
 
     public static void configureTLS(Connection conn, CommandLine cl)
-            throws Exception {
+            throws ParseException, GeneralSecurityException, IOException {
         if (!cl.hasOption("tls"))
             return;
-            String cipher = cl.getOptionValue("tls");
-            if ("NULL".equalsIgnoreCase(cipher)) {
-                conn.setTLSCipherSuite(DicomCipherSuite.NULL);
-            } else if ("3DES".equalsIgnoreCase(cipher)) {
-                conn.setTLSCipherSuite(DicomCipherSuite.TRIPLE_DES);
-            } else if ("AES".equalsIgnoreCase(cipher)) {
-                conn.setTLSCipherSuite(DicomCipherSuite.TRIPLE_DES);
-            } else {
-                throw new ParseException(rb.getString("invalid-tls"));
-            }
 
-            if (cl.hasOption("tls1")) {
-                conn.setTLSProtocol(TLSProtocol.TLS1);
-            } else if (cl.hasOption("ssl3")) {
-                conn.setTLSProtocol(TLSProtocol.SSL3);
-            } else if (cl.hasOption("ssl2")) {
-                conn.setTLSProtocol(TLSProtocol.SSL2);
-            } else if (cl.hasOption("no-tls1")) {
-                conn.setTLSProtocol(TLSProtocol.NO_TLS1);
-            } else if (cl.hasOption("no-ssl3")) {
-                conn.setTLSProtocol(TLSProtocol.NO_SSL3);
-            } else if (cl.hasOption("no-ssl2")) {
-                conn.setTLSProtocol(TLSProtocol.NO_SSL2);
-            }
-            conn.setTLSNeedClientAuth(!cl.hasOption("tls-noauth"));
+        conn.setTLSCipherSuite(cl.getOptionValues("tls"));
 
-            String keyStoreURL = cl.hasOption("key")
-                    ? cl.getOptionValue("key")
-                    : "resource:key.jks";
-            char[] keyStorePassword = cl.hasOption("key-pass")
-                    ? cl.getOptionValue("key-pass").toCharArray()
-                    : SECRET;
-            char[] keyPassword = cl.hasOption("key-pass2")
-                    ? cl.getOptionValue("key-pass2").toCharArray()
-                    : keyStorePassword;
-            String trustStoreURL = cl.hasOption("cacerts")
-                    ? cl.getOptionValue("cacerts")
-                    : "resource:cacerts.jks";
-            char[] trustStorePassword = cl.hasOption("cacerts-pass")
-                    ? cl.getOptionValue("cacerts-pass").toCharArray()
-                    : SECRET;
+        if (cl.hasOption("tls-protocol"))
+            conn.setTLSProtocol(cl.getOptionValues("tls-protocol"));
 
-                KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePassword);
-                KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePassword);
-                conn.getDevice().initTLS(keyStore,
-                        keyPassword != null ? keyPassword : keyStorePassword,
-                        trustStore);
-        }
+        conn.setTLSNeedClientAuth(!cl.hasOption("tls-noauth"));
+
+        String keyStoreURL = cl.hasOption("key")
+                ? cl.getOptionValue("key")
+                : "resource:key.jks";
+        char[] keyStorePass = cl.hasOption("key-pass")
+                ? cl.getOptionValue("key-pass").toCharArray()
+                : SECRET;
+        char[] keyPass = cl.hasOption("key-pass2")
+                ? cl.getOptionValue("key-pass2").toCharArray()
+                : keyStorePass;
+        String trustStoreURL = cl.hasOption("cacerts")
+                ? cl.getOptionValue("cacerts")
+                : "resource:cacerts.jks";
+        char[] trustStorePass = cl.hasOption("cacerts-pass")
+                ? cl.getOptionValue("cacerts-pass").toCharArray()
+                : SECRET;
+
+        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePass);
+        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePass);
+        conn.getDevice().initTLS(keyStore,
+                keyPass != null ? keyPass : keyStorePass,
+                trustStore);
+    }
 
     private static KeyStore loadKeyStore(String url, char[] password)
             throws GeneralSecurityException, IOException {

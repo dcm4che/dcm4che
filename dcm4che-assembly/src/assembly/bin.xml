@@ -102,6 +102,7 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmrcv/src</directory>
       <includes>
         <include>etc/dcmrcv/log4j.properties</include>
+        <include>etc/dcmrcv/sop-classes.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -136,6 +137,7 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmsnd/src</directory>
       <includes>
         <include>etc/dcmsnd/log4j.properties</include>
+        <include>etc/dcmsnd/rel-sop-classes.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

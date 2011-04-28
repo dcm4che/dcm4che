@@ -380,7 +380,8 @@ class PDUDecoder extends PDVInputStream {
         String sopCUID = getString(getUnsignedShort());
         String serviceCUID = getString(getUnsignedShort());
         ArrayList<String> relSopCUIDs = new ArrayList<String>(1);
-        int endRelSopCUIDs  = pos + getUnsignedShort();
+        int relSopCUIDsLen = getUnsignedShort();
+        int endRelSopCUIDs  = pos + relSopCUIDsLen;
         while (pos < endRelSopCUIDs)
             relSopCUIDs.add(decodeString());
         if (pos != endRelSopCUIDs || pos > endPos)

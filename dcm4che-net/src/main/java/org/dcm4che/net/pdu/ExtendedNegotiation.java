@@ -76,7 +76,7 @@ public class ExtendedNegotiation {
     }
 
     StringBuilder promptTo(StringBuilder sb) {
-        sb.append("  ExtNegotiation[")
+        sb.append("  ExtendedNegotiation[")
           .append(StringUtils.LINE_SEPARATOR)
           .append("    sopClass: ");
         UIDUtils.promptTo(cuid, sb)

@@ -54,6 +54,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
@@ -85,6 +86,9 @@ public class DcmSnd {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+    private final RelatedGeneralSOPClasses relSOPClasses =
+            new RelatedGeneralSOPClasses();
+    private boolean relExtNeg;
     private int priority;
     private String tmpPrefix = "dcmsnd-";
     private String tmpSuffix;
@@ -122,7 +126,20 @@ public class DcmSnd {
         CLIUtils.addAEOptions(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addRelatedSOPClassOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmSnd.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addRelatedSOPClassOptions(Options opts) {
+        opts.addOption(null, "rel-ext-neg", false,
+                rb.getString("rel-ext-neg"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("rel-sop-classes"))
+                .withLongOpt("rel-sop-classes")
+                .create(null));
     }
 
     @SuppressWarnings("unchecked")
@@ -140,6 +157,7 @@ public class DcmSnd {
                     remoteAE);
             CLIUtils.configureLocalRequestor(dcmsnd.conn, dcmsnd.ae, cl);
             CLIUtils.configure(dcmsnd.ae, cl);
+            configureRelatedSOPClass(dcmsnd, cl);
             dcmsnd.setPriority(CLIUtils.priorityOf(cl));
             int nArgs = argList.size();
             boolean echo = nArgs == 1;
@@ -187,6 +205,21 @@ public class DcmSnd {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static void configureRelatedSOPClass(DcmSnd dcmsnd, CommandLine cl)
+            throws IOException {
+        if (cl.hasOption("rel-ext-neg")) {
+            dcmsnd.enableSOPClassRelationshipExtNeg(true);
+            dcmsnd.relSOPClasses.init(CLIUtils.loadProperties(
+                    cl.hasOption("rel-sop-classes")
+                            ? cl.getOptionValue("rel-ext-neg")
+                            : "resource:rel-sop-classes.properties"));
+        }
+    }
+
+    public final void enableSOPClassRelationshipExtNeg(boolean enable) {
+        relExtNeg = enable;
     }
 
     public void scanFiles(List<String> fnames) throws IOException {
@@ -283,11 +316,16 @@ public class DcmSnd {
                     return;
             }
 
-        if (firstPCforCUID && !ts.equals(UID.ImplicitVRLittleEndian))
-            rq.addPresentationContext(
-                    new PresentationContext(
-                            rq.getNumberOfPresentationContexts() * 2 + 1,
-                            cuid, UID.ImplicitVRLittleEndian));
+        if (firstPCforCUID) {
+            if (relExtNeg)
+                rq.addCommonExtendedNegotiation(
+                        relSOPClasses.getCommonExtendedNegotiation(cuid));
+            if (!ts.equals(UID.ImplicitVRLittleEndian))
+                rq.addPresentationContext(
+                        new PresentationContext(
+                                rq.getNumberOfPresentationContexts() * 2 + 1,
+                                cuid, UID.ImplicitVRLittleEndian));
+        }
 
         rq.addPresentationContext(
                 new PresentationContext(

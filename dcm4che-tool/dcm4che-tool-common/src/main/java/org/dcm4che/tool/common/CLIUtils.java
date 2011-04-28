@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
@@ -88,6 +89,18 @@ public class CLIUtils {
     public static void addAEOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
+                .withArgName("length")
+                .withDescription(rb.getString("max-pdulen-rcv"))
+                .withLongOpt("max-pdulen-rcv")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("length")
+                .withDescription(rb.getString("max-pdulen-snd"))
+                .withLongOpt("max-pdulen-snd")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
                 .withArgName("no")
                 .withDescription(rb.getString("max-ops-invoked"))
                 .withLongOpt("max-ops-invoked")
@@ -105,16 +118,23 @@ public class CLIUtils {
     public static void addTLSOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("cipher-suite")
-                .withDescription(rb.getString("tls"))
-                .withLongOpt("tls")
+                .withArgName("cipher")
+                .withDescription(rb.getString("tls-cipher"))
+                .withLongOpt("tls-cipher")
                 .create(null));
+        opts.addOption(null, "tls", false, rb.getString("tls"));
+        opts.addOption(null, "tls-null", false, rb.getString("tls-null"));
+        opts.addOption(null, "tls-3des", false, rb.getString("tls-3des"));
+        opts.addOption(null, "tls-aes", false, rb.getString("tls-aes"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("protocol")
                 .withDescription(rb.getString("tls-protocol"))
                 .withLongOpt("tls-protocol")
                 .create(null));
+        opts.addOption(null, "tls1", false, rb.getString("tls1"));
+        opts.addOption(null, "ssl3", false, rb.getString("ssl3"));
+        opts.addOption(null, "ssl2Hello", false, rb.getString("ssl2Hello"));
         opts.addOption(null, "tls-noauth", false, rb.getString("tls-noauth"));
         opts.addOption(OptionBuilder
                 .hasArg()
@@ -240,6 +260,12 @@ public class CLIUtils {
     }
 
     public static void configure(ApplicationEntity ae, CommandLine cl) {
+        if (cl.hasOption("max-pdulen-rcv"))
+            ae.setMaxPDULengthReceive(Integer.parseInt(
+                    cl.getOptionValue("max-pdulen-rcv")));
+        if (cl.hasOption("max-pdulen-snd"))
+            ae.setMaxPDULengthSend(Integer.parseInt(
+                    cl.getOptionValue("max-pdulen-snd")));
         if(cl.hasOption("not-async")) {
             ae.setMaxOpsInvoked(1);
             ae.setMaxOpsPerformed(1);
@@ -255,7 +281,7 @@ public class CLIUtils {
                         cl.getOptionValue("max-ops-performed"));
             ae.setMaxOpsPerformed(maxOpsPerformed);
         }
-    }
+   }
 
     public static int priorityOf(CommandLine cl) {
         return cl.hasOption("prior-high")
@@ -268,12 +294,31 @@ public class CLIUtils {
 
     public static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {
-        if (!cl.hasOption("tls"))
+        if (cl.hasOption("tls"))
+            conn.setTLSCipherSuite(
+                    "SSL_RSA_WITH_NULL_SHA",
+                    "TLS_RSA_WITH_AES_128_CBC_SHA",
+                    "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        else if (cl.hasOption("tls-null"))
+            conn.setTLSCipherSuite("SSL_RSA_WITH_NULL_SHA");
+        else if (cl.hasOption("tls-3des"))
+            conn.setTLSCipherSuite("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        else if (cl.hasOption("tls-aes"))
+            conn.setTLSCipherSuite(
+                    "TLS_RSA_WITH_AES_128_CBC_SHA",
+                    "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        else if (cl.hasOption("tls-cipher"))
+            conn.setTLSCipherSuite(cl.getOptionValues("tls-cipher"));
+        else
             return;
 
-        conn.setTLSCipherSuite(cl.getOptionValues("tls"));
-
-        if (cl.hasOption("tls-protocol"))
+        if (cl.hasOption("tls1"))
+            conn.setTLSProtocol("TLSv1");
+        else if (cl.hasOption("ssl3"))
+            conn.setTLSProtocol("SSLv3");
+        else if (cl.hasOption("ssl2Hello"))
+            conn.setTLSProtocol("SSLv2Hello", "SSLv3", "TLSv1");
+        else if (cl.hasOption("tls-protocol"))
             conn.setTLSProtocol(cl.getOptionValues("tls-protocol"));
 
         conn.setTLSNeedClientAuth(!cl.hasOption("tls-noauth"));
@@ -313,7 +358,7 @@ public class CLIUtils {
         return key;
     }
 
-    private static InputStream openFileOrURL(String url) throws IOException {
+    public static InputStream openFileOrURL(String url) throws IOException {
         if (url.startsWith("resource:")) {
             return Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(url.substring(9));
@@ -328,6 +373,17 @@ public class CLIUtils {
     private static String toKeyStoreType(String fname) {
         return fname.endsWith(".p12") || fname.endsWith(".P12")
                  ? "PKCS12" : "JKS";
+    }
+
+    public static Properties loadProperties(String url) throws IOException {
+        Properties p = new Properties();
+        InputStream in = openFileOrURL(url);
+        try {
+            p.load(in);
+        } finally {
+            try { in.close(); } catch (IOException ignore) {}
+        }
+        return p;
     }
 
 }

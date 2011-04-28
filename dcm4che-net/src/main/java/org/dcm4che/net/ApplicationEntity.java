@@ -51,6 +51,7 @@ import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.AAssociateRQAC;
+import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
@@ -514,26 +515,42 @@ public class ApplicationEntity {
             AAssociateAC ac, String asuid) {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         if (rqrs == null)
-            return getTC(scpTCs, asuid);
+            return getTC(scpTCs, asuid, rq);
 
         RoleSelection acrs = ac.getRoleSelectionFor(asuid);
         if (acrs != null)
-            return getTC(acrs.isSCU() ? scpTCs : scuTCs, asuid);
+            return getTC(acrs.isSCU() ? scpTCs : scuTCs, asuid, rq);
 
         TransferCapability tcscu = null;
         TransferCapability tcscp = null;
         boolean scu = rqrs.isSCU()
-                && (tcscp = getTC(scpTCs, asuid)) != null;
+                && (tcscp = getTC(scpTCs, asuid, rq)) != null;
         boolean scp = rqrs.isSCP()
-                && (tcscu = getTC(scuTCs, asuid)) != null;
+                && (tcscu = getTC(scuTCs, asuid, rq)) != null;
         ac.addRoleSelection(new RoleSelection(asuid, scu, scp));
         return scu ? tcscp : tcscu;
     }
 
-    private TransferCapability getTC(
-            HashMap<String, TransferCapability> tcs, String asuid) {
+    private TransferCapability getTC(HashMap<String, TransferCapability> tcs,
+            String asuid, AAssociateRQ rq) {
         TransferCapability tc = tcs.get(asuid);
-        return tc != null ? tc : tcs.get("*");
+        if (tc != null)
+            return tc;
+
+        CommonExtendedNegotiation commonExtNeg =
+                rq.getCommonExtendedNegotiationFor(asuid);
+        if (commonExtNeg != null) {
+            for (String cuid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
+                tc = tcs.get(cuid);
+                if (tc != null)
+                    return tc;
+            }
+            tc = tcs.get(commonExtNeg.getServiceClassUID());
+            if (tc != null)
+                return tc;
+        }
+
+        return tcs.get("*");
     }
 
     private void extNegotiate(AAssociateRQ rq, AAssociateAC ac, String asuid) {

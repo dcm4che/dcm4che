@@ -269,6 +269,7 @@ class PDUEncoder extends PDVOutputStream {
         encodeItemHeader(ItemType.COMMON_EXT_NEG, extNeg.length());
         encode(extNeg.getSOPClassUID());
         encode(extNeg.getServiceClassUID());
+        putShort(extNeg.getRelatedGeneralSOPClassUIDsLength());
         for (String cuid : extNeg.getRelatedGeneralSOPClassUIDs())
             encode(cuid);
     }

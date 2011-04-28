@@ -57,7 +57,7 @@ import org.dcm4che.util.UIDUtils;
 public abstract class AAssociateRQAC {
 
     public static final int DEF_MAX_PDU_LENGTH = 16378;
-    // to fit into TLS Application Data Length 16408
+    // to fit into SunJSSE TLS Application Data Length 16408
 
     private static final String DEF_CALLED_AET = "ANONYMOUS";
     private static final String DEF_CALLING_AET = "ANONYMOUS";
@@ -310,14 +310,14 @@ public abstract class AAssociateRQAC {
           .append(StringUtils.LINE_SEPARATOR);
         promptUserIdentityTo(sb);
         for (PresentationContext pc : pcs)
-            pc.promptTo(sb);
+            pc.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         for (RoleSelection rs : roleSelMap.values())
-            rs.promptTo(sb);
+            rs.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         for (ExtendedNegotiation extNeg : extNegMap.values())
-            extNeg.promptTo(sb);
+            extNeg.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         for (CommonExtendedNegotiation extNeg : commonExtNegMap.values())
-            extNeg.promptTo(sb);
-        return sb.append(StringUtils.LINE_SEPARATOR).append("]");
+            extNeg.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
+        return sb.append("]");
     }
 
     protected abstract void promptUserIdentityTo(StringBuilder sb);

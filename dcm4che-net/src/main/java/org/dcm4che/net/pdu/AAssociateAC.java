@@ -38,6 +38,8 @@
 
 package org.dcm4che.net.pdu;
 
+import org.dcm4che.util.StringUtils;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -67,7 +69,7 @@ public class AAssociateAC extends AAssociateRQAC {
     @Override
     protected void promptUserIdentityTo(StringBuilder sb) {
         if (userIdentity != null)
-            userIdentity.promptTo(sb);
+            userIdentity.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
     }
 
 }

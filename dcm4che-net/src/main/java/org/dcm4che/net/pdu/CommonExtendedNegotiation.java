@@ -77,11 +77,8 @@ public class CommonExtendedNegotiation {
     }
 
     public int length() {
-        int len = 4 + sopCUID.length() + serviceCUID.length();
-        for (String cuid : relSopCUIDs) {
-            len += 2 + cuid.length();
-        }
-        return len;
+        return 6 + sopCUID.length() + serviceCUID.length()
+            + getRelatedGeneralSOPClassUIDsLength();
     }
 
     @Override
@@ -90,7 +87,7 @@ public class CommonExtendedNegotiation {
     }
 
     StringBuilder promptTo(StringBuilder sb) {
-        sb.append("  CommonExtNegotiation[")
+        sb.append("  CommonExtendedNegotiation[")
           .append(StringUtils.LINE_SEPARATOR)
           .append("    sopClass: ");
         UIDUtils.promptTo(sopCUID, sb)
@@ -106,6 +103,13 @@ public class CommonExtendedNegotiation {
                   .append(StringUtils.LINE_SEPARATOR);
         }
         return sb.append("  ]");
+    }
+
+    public int getRelatedGeneralSOPClassUIDsLength() {
+        int len = 0;
+        for (String cuid : relSopCUIDs)
+            len += 2 + cuid.length();
+        return len;
     }
 
 }

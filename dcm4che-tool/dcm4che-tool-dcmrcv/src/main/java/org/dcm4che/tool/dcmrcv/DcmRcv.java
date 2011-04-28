@@ -40,20 +40,24 @@ package org.dcm4che.tool.dcmrcv;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.VerificationService;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -75,11 +79,6 @@ public class DcmRcv {
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
-        ae.addTransferCapability(
-                new TransferCapability(null, 
-                        "*",
-                        TransferCapability.Role.SCP,
-                        "*"));
         ae.addDicomService(new VerificationService());
         ae.addDicomService(storageSCP);
     }
@@ -90,7 +89,20 @@ public class DcmRcv {
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
+        addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmRcv.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addTransferCapabilityOptions(Options opts) {
+        opts.addOption(null, "accept-unknown", false,
+                rb.getString("accept-unknown"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("sop-classes"))
+                .withLongOpt("sop-classes")
+                .create(null));
     }
 
     @SuppressWarnings("unchecked")
@@ -102,6 +114,7 @@ public class DcmRcv {
             CLIUtils.configureLocalAcceptor(dcmrcv.conn, dcmrcv.ae,
                     arg1(cl.getArgList()));
             CLIUtils.configure(dcmrcv.ae, cl);
+            configureTransferCapability(dcmrcv.ae, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             try {
                 dcmrcv.start(executorService);
@@ -118,6 +131,37 @@ public class DcmRcv {
             System.exit(2);
         }
     }
+
+    private static void configureTransferCapability(ApplicationEntity ae,
+            CommandLine cl) throws IOException {
+        if (cl.hasOption("accept-unknown")) {
+            ae.addTransferCapability(
+                    new TransferCapability(null, 
+                            "*",
+                            TransferCapability.Role.SCP,
+                            "*"));
+        } else {
+            ae.addTransferCapability(
+                    new TransferCapability(null, 
+                            UID.VerificationSOPClass,
+                            TransferCapability.Role.SCP,
+                            UID.ImplicitVRLittleEndian));
+            Properties p = CLIUtils.loadProperties(
+                    cl.hasOption("sop-classes")
+                        ? cl.getOptionValue("sop-classes")
+                        : "resource:sop-classes.properties");
+            for (String cuid : p.stringPropertyNames()) {
+                String ts = p.getProperty(cuid);
+                ae.addTransferCapability(
+                        ts.equals("*")
+                            ? new TransferCapability(null, cuid,
+                                    TransferCapability.Role.SCP, "*")
+                            : new TransferCapability(null, cuid,
+                                    TransferCapability.Role.SCP,
+                                    StringUtils.split(ts, ',')));
+            }
+        }
+     }
 
     private void start(Executor executor) throws IOException {
         device.setExecutor(executor);

@@ -36,38 +36,35 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.pdu;
+package org.dcm4che.tool.dcmsnd;
 
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.dcm4che.data.UID;
+import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class AAssociateRQ extends AAssociateRQAC {
+class RelatedGeneralSOPClasses {
 
-    private UserIdentityRQ userIdentity;
+    private final HashMap<String,CommonExtendedNegotiation> commonExtNegs =
+            new HashMap<String,CommonExtendedNegotiation>();
 
-    public final UserIdentityRQ getUserIdentity() {
-        return userIdentity;
+    public void init(Properties props) {
+        for (String cuid : props.stringPropertyNames())
+            commonExtNegs.put(cuid, new CommonExtendedNegotiation(cuid,
+                    UID.StorageServiceClass,
+                    StringUtils.split(props.getProperty(cuid), ',')));
     }
 
-    public final void setUserIdentity(UserIdentityRQ userIdentity) {
-        this.userIdentity = userIdentity;
-    }
-
-    @Override
-    public String toString() {
-        return promptTo(new StringBuilder(512)).toString();
-    }
-
-    StringBuilder promptTo(StringBuilder sb) {
-        return promptTo("A-ASSOCIATE-RQ[", sb);
-    }
-
-    @Override
-    protected void promptUserIdentityTo(StringBuilder sb) {
-        if (userIdentity != null)
-            userIdentity.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
+    public CommonExtendedNegotiation getCommonExtendedNegotiation(String cuid) {
+        CommonExtendedNegotiation commonExtNeg = commonExtNegs.get(cuid);
+        return commonExtNeg != null
+                ? commonExtNeg
+                : new CommonExtendedNegotiation(cuid, UID.StorageServiceClass);
     }
 }

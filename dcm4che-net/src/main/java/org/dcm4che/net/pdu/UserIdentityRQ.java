@@ -185,7 +185,8 @@ public class UserIdentityRQ {
               .append(secondaryField.length)
               .append(']');
         }
-        return sb.append(StringUtils.LINE_SEPARATOR).append("  ]");
+        return sb.append(StringUtils.LINE_SEPARATOR)
+                 .append("  ]");
     }
 
 }

@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NEventReportSCU {
 
-    void neventReport(Association as, PresentationContext pc, Attributes cmd,
-            Attributes dataset) throws IOException;
+    void onNEventReportRQ(Association as, PresentationContext pc,
+            Attributes cmd, Attributes dataset) throws IOException;
 
 }

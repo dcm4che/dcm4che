@@ -54,6 +54,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.dcm4che.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -553,6 +554,11 @@ public class Connection {
             throw new IllegalStateException("Not installed");
     }
 
+    private void checkDevice() {
+        if (device == null)
+            throw new IllegalStateException("Not attached to Device");
+    }
+
     /**
      * Bind this network connection to a TCP port and start a server socket
      * accept loop.
@@ -561,6 +567,7 @@ public class Connection {
      *             If there is a problem with the network interaction.
      */
     public synchronized void bind() throws IOException {
+        checkDevice();
         checkInstalled();
         if (!isServer())
             throw new IllegalStateException("Does not accept connections");
@@ -579,7 +586,7 @@ public class Connection {
                         Socket s = server.accept();
                         if (isBlackListed(s.getInetAddress())) {
                             LOG.info("Reject connection from {}", s);
-                            try { s.close(); } catch (IOException ignore) {}
+                            SafeClose.close(s);
                         } else {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);

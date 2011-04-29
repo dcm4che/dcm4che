@@ -71,6 +71,7 @@ import org.dcm4che.net.PDVOutputStream;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -230,7 +231,7 @@ public class DcmSnd {
             for (String fname : fnames)
                 scanFile(fileInfos, new File(fname));
         } finally {
-            try { fileInfos.close(); } catch (IOException ignore) {}
+            SafeClose.close(fileInfos);
         }
     }
 
@@ -258,7 +259,7 @@ public class DcmSnd {
                 e.printStackTrace();
             }
         } finally {
-            try { fileInfos.close(); } catch (IOException ignore) {}
+            SafeClose.close(fileInfos);
             tmpFile.delete();
         }
     }
@@ -295,8 +296,7 @@ public class DcmSnd {
             System.out.print('E');
             e.printStackTrace();
         } finally {
-            if (in != null)
-                try { in.close(); } catch (IOException ignore) {}
+            SafeClose.close(in);
         }
     }
 

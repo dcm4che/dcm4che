@@ -94,9 +94,13 @@ public class AAbort extends IOException {
     }
 
     public AAbort(int source, int reason) {
+        this(source, reason, null);
+    }
+
+    public AAbort(int source, int reason, Throwable cause) {
         super("A-ABORT[source: " + toString(SOURCES, source)
                   + ", reason: " + toReason(source, reason)
-                  + ']');
+                  + ']', cause);
         this.source = source;
         this.reason = reason;
     }

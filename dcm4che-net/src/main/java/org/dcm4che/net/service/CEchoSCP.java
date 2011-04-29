@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface CEchoSCP {
 
-    void cecho(Association as, PresentationContext pc, Attributes cmd)
+    void onCEchoRQ(Association as, PresentationContext pc, Attributes cmd)
             throws IOException;
 
 }

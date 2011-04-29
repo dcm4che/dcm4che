@@ -36,35 +36,32 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.DimseRQHandler;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.CEchoSCP;
-import org.dcm4che.net.service.CFindSCP;
-import org.dcm4che.net.service.CGetSCP;
-import org.dcm4che.net.service.CMoveSCP;
-import org.dcm4che.net.service.CStoreSCP;
-import org.dcm4che.net.service.DicomService;
-import org.dcm4che.net.service.NActionSCP;
-import org.dcm4che.net.service.NCreateSCP;
-import org.dcm4che.net.service.NDeleteSCP;
-import org.dcm4che.net.service.NEventReportSCU;
-import org.dcm4che.net.service.NGetSCP;
-import org.dcm4che.net.service.NSetSCP;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class DicomServiceRegistry {
+public class DicomServiceRegistry implements DimseRQHandler {
 
+    private final ArrayList<DicomService> services =
+            new ArrayList<DicomService>();
     private final HashSet<String> sopCUIDs = new HashSet<String>();
     private final HashMap<String, CEchoSCP> cechoSCPs =
             new HashMap<String, CEchoSCP>(1);
@@ -80,6 +77,7 @@ class DicomServiceRegistry {
     private HashMap<String, NEventReportSCU> neventReportSCUs;
 
     public synchronized void addDicomService(DicomService service) {
+        services.add(service);
         String[] sopClasses = service.getSOPClasses();
         String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
@@ -174,7 +172,10 @@ class DicomServiceRegistry {
         }
     }
 
-    public synchronized void removeDicomService(DicomService service) {
+    public synchronized boolean removeDicomService(DicomService service) {
+        if (!services.remove(service))
+            return false;
+
         String[] sopClasses = service.getSOPClasses();
         String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
@@ -267,10 +268,12 @@ class DicomServiceRegistry {
                     ndeleteSCPs.remove(serviceClass);
             }
         }
+        return true;
     }
 
-    void process(Association as, PresentationContext pc, Attributes cmd,
-            PDVInputStream data) throws IOException {
+    @Override
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Attributes cmd, PDVInputStream data) throws IOException {
         try {
             final int cmdfield = cmd.getInt(Tag.CommandField, -1);
             if (cmdfield == Commands.C_STORE_RQ) {
@@ -358,67 +361,79 @@ class DicomServiceRegistry {
     private void cstore(Association as, PresentationContext pc,
             Attributes cmd, PDVInputStream data) throws IOException {
         service(cstoreSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .cstore(as, pc, cmd, data);
+                .onCStoreRQ(as, pc, cmd, data);
     }
 
     private void cget(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(cgetSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .cget(as, pc, cmd, dataset);
+                .onCGetRQ(as, pc, cmd, dataset);
     }
 
     private void cfind(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(cfindSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .cfind(as, pc, cmd, dataset);
+                .onCFindRQ(as, pc, cmd, dataset);
     }
 
     private void cmove(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(cmoveSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .cmove(as, pc, cmd, dataset);
+                .onCMoveRQ(as, pc, cmd, dataset);
     }
 
     private void cecho(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(cechoSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .cecho(as, pc, cmd);
+                .onCEchoRQ(as, pc, cmd);
     }
 
     private void nget(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(ngetSCPs, cmd, Tag.RequestedSOPClassUID, as)
-                .nget(as, pc, cmd, dataset);
+                .onNGetRQ(as, pc, cmd, dataset);
     }
 
     private void nset(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException {
         service(nsetSCPs, cmd, Tag.RequestedSOPClassUID, as)
-                .nset(as, pc, cmd, dataset);
+                .onNSetRQ(as, pc, cmd, dataset);
     }
 
     private void ncreate(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(ncreateSCPs, cmd, Tag.AffectedSOPClassUID, as)
-                .ncreate(as, pc, cmd, dataset);
+                .onNCreateRQ(as, pc, cmd, dataset);
     }
 
     private void naction(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(nactionSCPs, cmd, Tag.RequestedSOPClassUID, as)
-                .naction(as, pc, cmd, dataset);
+                .onNActionRQ(as, pc, cmd, dataset);
     }
 
     private void ndelete(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(ndeleteSCPs, cmd, Tag.RequestedSOPClassUID, as)
-                .ndelete(as, pc, cmd);
+                .onNDeleteRQ(as, pc, cmd);
     }
 
     private void neventReport(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
         service(neventReportSCUs, cmd, Tag.AffectedSOPClassUID, as)
-                .neventReport(as, pc, cmd, dataset);
+                .onNEventReportRQ(as, pc, cmd, dataset);
+    }
+
+    @Override
+    public void onARelease(Association as) {
+        for (DicomService service : this.services)
+            service.onARelease(as);
+    }
+
+    @Override
+    public void onAAbort(Association as, AAbort aa) {
+        for (DicomService service : this.services)
+            service.onAAbort(as, aa);
     }
 
 }

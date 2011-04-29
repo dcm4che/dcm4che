@@ -36,21 +36,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.net;
 
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.net.Association;
+import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface CGetSCP {
+public interface DimseRQHandler {
 
-    void onCGetRQ(Association as, PresentationContext pc, Attributes cmd,
-            Attributes dataset) throws IOException;
+    void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
+            PDVInputStream data) throws IOException;
 
+    void onARelease(Association as);
+
+    void onAAbort(Association as, AAbort abort);
 }

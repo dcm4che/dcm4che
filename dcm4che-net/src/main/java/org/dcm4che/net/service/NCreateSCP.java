@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NCreateSCP {
 
-    void ncreate(Association as, PresentationContext pc, Attributes cmd,
+    void onNCreateRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

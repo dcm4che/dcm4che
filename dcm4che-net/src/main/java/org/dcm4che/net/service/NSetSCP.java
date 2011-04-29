@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NSetSCP {
 
-    void nset(Association as, PresentationContext pc, Attributes cmd,
+    void onNSetRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

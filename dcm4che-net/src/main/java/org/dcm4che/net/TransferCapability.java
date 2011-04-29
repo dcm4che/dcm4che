@@ -63,10 +63,19 @@ public class TransferCapability {
 
     public TransferCapability(String commonName, String sopClass, Role role,
             String... transferSyntax) {
+        if (sopClass.isEmpty())
+            throw new IllegalArgumentException("empty sopClass");
+        if (role == null)
+            throw new NullPointerException("missing tole");
+        if (transferSyntax.length == 0)
+            throw new IllegalArgumentException("missing transferSyntax");
+        for (String ts : transferSyntax)
+            if (ts.isEmpty())
+                throw new IllegalArgumentException("empty transferSyntax");
         this.commonName = commonName;
         this.sopClass = sopClass;
         this.role = role;
-        this.transferSyntax = transferSyntax;
+        this.transferSyntax = transferSyntax.clone();
     }
 
     /**
@@ -104,6 +113,20 @@ public class TransferCapability {
      * @return String array containing the transfer syntaxes.
      */
     public final String[] getTransferSyntax() {
-        return transferSyntax;
+        return transferSyntax.clone();
+    }
+
+    public boolean containsTransferSyntax(String ts) {
+        String[] ss = this.transferSyntax;
+        String s0 = ss[0];
+        if (s0.length() == 1 && s0.charAt(0) == '*')
+            return true;
+
+        int hc = ts.hashCode();
+        for (String s : ss)
+            if (s.hashCode() == hc && s.equals(ts))
+                return true;
+
+        return false;
     }
 }

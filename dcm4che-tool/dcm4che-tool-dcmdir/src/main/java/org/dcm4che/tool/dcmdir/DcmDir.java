@@ -59,6 +59,7 @@ import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.UIDUtils;
 
 /**
@@ -464,11 +465,9 @@ public class DcmDir {
     }
 
     public void close() {
-        if (in != null) {
-            try { in.close(); } catch (IOException ignore) {}
-            in = null;
-            out = null;
-        } 
+        SafeClose.close(in);
+        in = null;
+        out = null;
     }
 
     public void openForReadOnly(File file) throws IOException {

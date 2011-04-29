@@ -39,6 +39,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
@@ -56,7 +58,6 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.pdu.UserIdentityAC;
-import org.dcm4che.net.service.DicomService;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -101,8 +102,9 @@ public class ApplicationEntity {
     private UserIdentityNegotiator userIdNegotiator;
     private final HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
-    private final DicomServiceRegistry serviceRegistry =
-            new DicomServiceRegistry();
+    private DimseRQHandler dimseRQHandler;
+    private final ArrayList<Association> assocs =
+            new ArrayList<Association>();
 
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
@@ -415,9 +417,31 @@ public class ApplicationEntity {
         this.packPDV = packPDV;
     }
 
+    public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
+        this.dimseRQHandler = dimseRQHandler;
+    }
+
+    public final DimseRQHandler getDimseRQHandler() {
+        return dimseRQHandler;
+    }
+
+    private void checkInstalled() {
+        if (!isInstalled())
+            throw new IllegalStateException("Not installed");
+    }
+
     private void checkDevice() {
         if (device == null)
-            throw new IllegalStateException("Device not initalized");
+            throw new IllegalStateException("Not attached to Device");
+    }
+
+    void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
+            PDVInputStream data) throws IOException {
+        if (dimseRQHandler == null) {
+            Association.LOG.error("DimseRQHandler not initalized");
+            throw new AAbort();
+        }
+        dimseRQHandler.onDimseRQ(as, pc, cmd, data);
     }
 
     public void addConnection(Connection conn) {
@@ -441,14 +465,6 @@ public class ApplicationEntity {
             scpTCs.put(sopClass, tc);
             break;
         }
-    }
-
-    public void addDicomService(DicomService service) {
-        serviceRegistry.addDicomService(service);
-    }
-
-    public void removeDicomService(DicomService service) {
-        serviceRegistry.removeDicomService(service);
     }
 
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
@@ -497,14 +513,12 @@ public class ApplicationEntity {
                    PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
                    rqpc.getTransferSyntax());
 
-       for (String rqts : rqpc.getTransferSyntaxes())
-            for (String ts : tc.getTransferSyntax())
-                if (ts.hashCode() == rqts.hashCode() && ts.equals(rqts)
-                        || ts.equals("*")) {
-                    extNegotiate(rq, ac, as);
-                    return new PresentationContext(pcid,
-                            PresentationContext.ACCEPTANCE, rqts);
-                }
+       for (String ts : rqpc.getTransferSyntaxes())
+           if (tc.containsTransferSyntax(ts)) {
+                extNegotiate(rq, ac, as);
+                return new PresentationContext(pcid,
+                        PresentationContext.ACCEPTANCE, ts);
+           }
 
        return new PresentationContext(pcid,
                 PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,
@@ -571,12 +585,15 @@ public class ApplicationEntity {
 
     public Association connect(Connection local, String host, int port,
             AAssociateRQ rq) throws IOException, InterruptedException {
+        checkDevice();
+        checkInstalled();
         if (!aet.equals("*"))
             rq.setCallingAET(aet);
         rq.setMaxOpsInvoked(maxOpsInvoked);
         rq.setMaxOpsPerformed(maxOpsPerformed);
         rq.setMaxPDULength(maxPDULengthReceive);
-        Association as = new Association(local, local.connect(host, port), true);
+        Socket sock = local.connect(host, port);
+        Association as = new Association(local, sock, true);
         as.setApplicationEntity(this);
         as.write(rq);
         as.startARTIM(local.getAcceptTimeout());
@@ -585,8 +602,15 @@ public class ApplicationEntity {
         return as;
     }
 
-    void perform(Association as, PresentationContext pc, Attributes cmd,
-            PDVInputStream data) throws IOException {
-        serviceRegistry.process(as, pc, cmd, data);
+    void registerAssociation(Association as) {
+        synchronized (assocs) {
+            assocs.add(as);
+        }
+    }
+
+    void unregisterAssociation(Association as) {
+        synchronized (assocs) {
+            assocs.remove(as);
+        }
     }
 }

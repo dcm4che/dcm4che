@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NActionSCP {
 
-    void naction(Association as, PresentationContext pc, Attributes cmd,
+    void onNActionRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

@@ -67,6 +67,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.util.ByteUtils;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.TagUtils;
 import org.slf4j.Logger;
@@ -298,15 +299,8 @@ public class DicomInputStream extends FilterInputStream
 
     @Override
     public void close() throws IOException {
-        closeBlkOut();
+        SafeClose.close(blkOut);
         super.close();
-    }
-
-    private void closeBlkOut() {
-        if (blkOut != null) {
-            try { blkOut.close(); } catch (IOException ignore) {}
-            blkOut = null;
-        }
     }
 
     @Override
@@ -527,7 +521,7 @@ public class DicomInputStream extends FilterInputStream
                 StreamUtils.copy(this, blkOut, length);
             } finally {
                 if (!catBlkFiles)
-                    closeBlkOut();
+                    SafeClose.close(blkOut);
             }
             locator = new BulkDataLocator(blkURI,
                     (super.in instanceof InflaterInputStream)

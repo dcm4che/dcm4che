@@ -41,6 +41,7 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
@@ -69,8 +70,8 @@ public class DimseRSPHandler {
         return timeout;
     }
 
-    final void setTimeout(long timeout) {
-        this.timeout = timeout;
+    final void updateTimeout(long timeout) {
+        this.timeout = timeout == 0 ? 0 : System.currentTimeMillis() + timeout;
     }
 
     public void cancel(Association as) throws IOException {
@@ -81,8 +82,11 @@ public class DimseRSPHandler {
         // NO OP
     }
 
-    public void onClose(Association as) {
+    public void onARelease(Association as) {
         // NO OP
     }
 
+    public void onAAbort(Association as, AAbort abort) {
+        // NO OP
+    }
 }

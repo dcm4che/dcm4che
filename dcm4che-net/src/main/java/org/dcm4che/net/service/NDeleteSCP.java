@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NDeleteSCP {
 
-    void ndelete(Association as, PresentationContext pc, Attributes cmd)
+    void onNDeleteRQ(Association as, PresentationContext pc, Attributes cmd)
             throws IOException;
 
 }

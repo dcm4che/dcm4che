@@ -38,6 +38,7 @@
 
 package org.dcm4che.media;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -48,12 +49,13 @@ import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.RAFInputStreamAdapter;
 import org.dcm4che.util.IntHashMap;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class DicomDirReader {
+public class DicomDirReader implements Closeable {
 
     protected final File file;
     protected final RandomAccessFile raf;
@@ -76,7 +78,7 @@ public class DicomDirReader {
             if (in.tag() != Tag.DirectoryRecordSequence)
                 throw new IOException("Missing Directory Record Sequence");
         } catch (IOException e) {
-            try { raf.close(); } catch (IOException ignore) {}
+            SafeClose.close(raf);
             throw e;
         }
     }

@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface CMoveSCP {
 
-    void cmove(Association as, PresentationContext pc, Attributes cmd,
+    void onCMoveRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

@@ -58,8 +58,8 @@ public class VerificationService extends DicomService implements CEchoSCP {
     }
 
     @Override
-    public void cecho(Association as, PresentationContext pc, Attributes cmd)
-            throws IOException {
+    public void onCEchoRQ(Association as, PresentationContext pc,
+            Attributes cmd) throws IOException {
         as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
     }
 

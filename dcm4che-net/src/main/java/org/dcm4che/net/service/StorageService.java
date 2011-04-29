@@ -63,21 +63,21 @@ public class StorageService extends DicomService implements CStoreSCP {
     }
 
     @Override
-    public void cstore(Association as, PresentationContext pc, Attributes rq,
-            PDVInputStream data) throws IOException {
+    public void onCStoreRQ(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        onCStoreRQ(as, pc, rq, data, rsp);
+        doCStore(as, pc, rq, data, rsp);
         as.writeDimseRSP(pc, rsp);
-        onCStoreRSP(as, pc, rq, data, rsp);
+        afterCStoreRSP(as, pc, rq, data, rsp);
     }
 
-    protected void onCStoreRQ(Association as, PresentationContext pc,
+    protected void doCStore(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data, Attributes rsp)
             throws IOException {
         data.skipAll();
     }
 
-    protected void onCStoreRSP(Association as, PresentationContext pc,
+    protected void afterCStoreRSP(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data, Attributes rsp)
             throws IOException {
         data.skipAll();

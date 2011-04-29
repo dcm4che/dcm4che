@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface NGetSCP {
 
-    void nget(Association as, PresentationContext pc, Attributes cmd,
+    void onNGetRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

@@ -36,21 +36,26 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.util;
 
+import java.io.Closeable;
 import java.io.IOException;
-
-import org.dcm4che.data.Attributes;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.pdu.PresentationContext;
+import java.net.Socket;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface CGetSCP {
+public class SafeClose {
 
-    void onCGetRQ(Association as, PresentationContext pc, Attributes cmd,
-            Attributes dataset) throws IOException;
+    public static void close(Closeable io) {
+        if (io != null)
+            try { io.close(); } catch (IOException ignore) {}
+    }
+
+    public static void close(Socket sock) {
+        if (sock != null)
+            try { sock.close(); } catch (IOException ignore) {}
+    }
 
 }

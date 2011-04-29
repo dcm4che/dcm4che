@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +61,7 @@ import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.PDUEncoder;
 import org.dcm4che.util.IntHashMap;
+import org.dcm4che.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,10 +178,6 @@ public class Association {
         return state == State.Sta6;
     }
 
-    final IOException getException() {
-        return ex;
-    }
-
     private void checkIsSCP(String cuid) throws NoRoleSelectionException {
         if (!isSCPFor(cuid))
             throw new NoRoleSelectionException(cuid,
@@ -241,6 +239,7 @@ public class Association {
     }
 
     void write(AAbort aa) {
+        ae.unregisterAssociation(this);
         LOG.info("{} << {}", name, aa);
         enterState(State.Sta13);
         try {
@@ -252,6 +251,7 @@ public class Association {
     }
 
     void writeAReleaseRQ() throws IOException {
+        ae.unregisterAssociation(this);
         LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
         encoder.writeAReleaseRQ();
@@ -279,6 +279,7 @@ public class Association {
         LOG_AARQAC.debug("{}", ac);
         enterState(State.Sta6);
         encoder.write(ac);
+        ae.registerAssociation(this);
     }
 
     private void write(AAssociateRJ e) throws IOException {
@@ -287,14 +288,22 @@ public class Association {
         encoder.write(e);
     }
 
-    void startARTIM(int timeout) throws IOException {
+    void startARTIM(int timeout) {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
-        sock.setSoTimeout(timeout);
+        try {
+            sock.setSoTimeout(timeout);
+        } catch (SocketException e) {
+            LOG.warn(name, e);
+        }
     }
 
-    private void stopARTIM() throws IOException {
-        sock.setSoTimeout(0);
+    private void stopARTIM() {
         LOG.debug("{}: stop ARTIM", name);
+        try {
+            sock.setSoTimeout(0);
+        } catch (SocketException e) {
+            LOG.warn(name, e);
+        }
     }
 
     private void checkException() throws IOException {
@@ -350,7 +359,6 @@ public class Association {
         if (sock == null)
             return;
 
-        clearDimseRSPHandler();
         if (state == State.Sta13) {
             try {
                 Thread.sleep(conn.getSocketCloseDelay());
@@ -358,22 +366,10 @@ public class Association {
                 LOG.warn("Interrupted Socket Close Delay", e);
             }
         }
-        try { out.close(); } catch (IOException ignore) {}
-        try { in.close(); } catch (IOException ignore) {}
         if (sock != null) {
             LOG.info("{}: close {}", name, sock);
-            try { sock.close(); } catch (IOException ignore) {}
+            SafeClose.close(sock);
             sock = null;
-            rspHandlerForMsgId.accept(
-                    new IntHashMap.Visitor<DimseRSPHandler>(){
-
-                        @Override
-                        public boolean visit(int key,
-                                DimseRSPHandler rspHandler) {
-                            rspHandler.onClose(Association.this);
-                            return true;
-                        }
-                    });
         }
         enterState(State.Sta1);
     }
@@ -429,6 +425,7 @@ public class Association {
                 ac.getMaxPDULength(), ae.getMaxPDULengthSend());
         stopARTIM();
         enterState(State.Sta6);
+        ae.registerAssociation(this);
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
@@ -438,7 +435,7 @@ public class Association {
 
     void handle(AAssociateRJ rq) {
         ex = rq;
-        closeSocket();
+        enterState(State.Sta1);
     }
 
     void onAReleaseRQ() throws IOException {
@@ -466,15 +463,14 @@ public class Association {
     }
 
     void handleAReleaseRQCollision() throws IOException {
+        clearDimseRSPHandler();
         if (isRequestor()) {
             enterState(State.Sta9);
-            clearDimseRSPHandler();
             LOG.info("{} << A-RELEASE-RP", name);
             enterState(State.Sta11);
             encoder.writeAReleaseRP();
        } else {
             enterState(State.Sta10);
-            clearDimseRSPHandler();
             try {
                 waitForLeaving(State.Sta10);
             } catch (InterruptedException e) {
@@ -490,11 +486,17 @@ public class Association {
     }
 
     void handleAReleaseRP() throws IOException {
+        clearDimseRSPHandler();
         stopARTIM();
-        closeSocket();
+        enterState(State.Sta1);
     }
 
-    void handleAReleaseRPCollision() throws IOException {
+    void handleAReleaseRPCollisionRequestorSide() throws IOException {
+        stopARTIM();
+        enterState(State.Sta1);
+    }
+
+   void handleAReleaseRPCollisionAcceptorSide() throws IOException {
         stopARTIM();
         enterState(State.Sta12);
     }
@@ -502,7 +504,7 @@ public class Association {
     void onAAbort(AAbort aa) {
         LOG.info("{} << {}", name, aa);
         ex = aa;
-        closeSocket();
+        enterState(State.Sta1);
     }
 
     void unexpectedPDU(String pdu) throws AAbort {
@@ -531,7 +533,7 @@ public class Association {
             PDVInputStream data) throws IOException {
         incPerforming();
         adjustNextMessageID(cmd.getInt(Tag.MessageID, 0));
-        ae.perform(this, pc, cmd, data);
+        ae.onDimseRQ(this, pc, cmd, data);
     }
 
     private synchronized void incPerforming() {
@@ -562,9 +564,7 @@ public class Association {
                 int timeout = Commands.isRetrieveRSP(cmd)
                         ? conn.getRetrieveRSPTimeout()
                         : conn.getDimseRSPTimeout();
-                rspHandler.setTimeout(timeout == 0
-                        ? 0
-                        : (System.currentTimeMillis() + timeout));
+                rspHandler.updateTimeout(timeout);
             }
         }
     }
@@ -592,11 +592,33 @@ public class Association {
         }
     }
 
-    private void clearDimseRSPHandler() {
+    private void clearDimseRSPHandler(
+            IntHashMap.Visitor<DimseRSPHandler> visitor) {
         synchronized (rspHandlerForMsgId ) {
+            rspHandlerForMsgId.accept(visitor);
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
+    }
+
+    private void clearDimseRSPHandler() {
+        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
+
+            @Override
+            public boolean visit(int key, DimseRSPHandler value) {
+                value.onARelease(Association.this);
+                return true;
+            }});
+    }
+
+    private void clearDimseRSPHandler(final AAbort aa) {
+        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
+
+            @Override
+            public boolean visit(int key, DimseRSPHandler value) {
+                value.onAAbort(Association.this, aa);
+                return true;
+            }});
     }
 
     private void updateIdleTimeout() {
@@ -773,6 +795,6 @@ public class Association {
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
-        rspHandler.setTimeout(System.currentTimeMillis() + rspTimeout);
+        rspHandler.updateTimeout(rspTimeout);
     }
 }

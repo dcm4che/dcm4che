@@ -59,6 +59,7 @@ import org.apache.commons.cli.PosixParser;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -381,7 +382,7 @@ public class CLIUtils {
         try {
             p.load(in);
         } finally {
-            try { in.close(); } catch (IOException ignore) {}
+            SafeClose.close(in);
         }
         return p;
     }

@@ -61,6 +61,7 @@ import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.pdu.UserIdentityAC;
 import org.dcm4che.net.pdu.UserIdentityRQ;
 import org.dcm4che.util.ByteUtils;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StreamUtils;
 
 /**
@@ -470,22 +471,22 @@ class PDUDecoder extends PDVInputStream {
     }
 
     private Attributes readCommand() throws IOException {
-        DicomInputStream din =
+        DicomInputStream in =
                 new DicomInputStream(this, UID.ImplicitVRLittleEndian);
         try {
-            return din.readCommand();
+            return in.readCommand();
         } finally {
-            try { din.close(); } catch (IOException ignore) {}
+            SafeClose.close(in);
         }
     }
 
     @Override
     public Attributes readDataset(String tsuid) throws IOException {
-        DicomInputStream din = new DicomInputStream(this, tsuid);
+        DicomInputStream in = new DicomInputStream(this, tsuid);
         try {
-            return din.readDataset(-1, -1);
+            return in.readDataset(-1, -1);
         } finally {
-            try { din.close(); } catch (IOException ignore) {}
+            SafeClose.close(in);
         }
     }
 

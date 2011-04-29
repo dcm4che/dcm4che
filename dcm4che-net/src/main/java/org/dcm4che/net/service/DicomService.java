@@ -38,6 +38,9 @@
 
 package org.dcm4che.net.service;
 
+import org.dcm4che.net.Association;
+import org.dcm4che.net.pdu.AAbort;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
@@ -112,6 +115,14 @@ public class DicomService {
      */
     public final String getServiceClass() {
         return serviceClass;
+    }
+
+    public void onAAbort(Association as, AAbort abort) {
+        // NOOP
+    }
+
+    public void onARelease(Association as) {
+        // NOOP
     }
 
 }

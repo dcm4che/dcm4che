@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface CFindSCP {
 
-    void cfind(Association as, PresentationContext pc, Attributes cmd,
+    void onCFindRQ(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException;
 
 }

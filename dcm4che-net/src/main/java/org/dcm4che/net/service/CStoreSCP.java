@@ -51,7 +51,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public interface CStoreSCP {
 
-    void cstore(Association as, PresentationContext pc, Attributes cmd,
+    void onCStoreRQ(Association as, PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException;
 
 }

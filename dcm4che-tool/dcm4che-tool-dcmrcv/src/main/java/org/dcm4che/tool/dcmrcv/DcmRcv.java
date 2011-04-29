@@ -55,6 +55,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.VerificationService;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.StringUtils;
@@ -79,8 +80,10 @@ public class DcmRcv {
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
-        ae.addDicomService(new VerificationService());
-        ae.addDicomService(storageSCP);
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new VerificationService());
+        serviceRegistry.addDicomService(storageSCP);
+        ae.setDimseRQHandler(serviceRegistry);
     }
 
     private static CommandLine parseComandLine(String[] args)

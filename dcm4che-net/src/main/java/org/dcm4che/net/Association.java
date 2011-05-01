@@ -104,10 +104,11 @@ public class Association {
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
 
-    Association(Connection local, Socket sock, boolean requestor)
+     Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
-        this.requestor = requestor;
+        this.ae = ae;
+        this.requestor = ae != null;
         this.name = "Association" + delim() + serialNo;
         this.conn = local;
         this.device = local.getDevice();
@@ -150,10 +151,6 @@ public class Association {
 
     public final ApplicationEntity getApplicationEntity() {
         return ae;
-    }
-
-    final void setApplicationEntity(ApplicationEntity ae) {
-        this.ae = ae;
     }
 
     public Object getProperty(String key) {
@@ -238,8 +235,7 @@ public class Association {
         state.write(this, aa);
     }
 
-    void write(AAbort aa) {
-        ae.unregisterAssociation(this);
+    void write(AAbort aa)  {
         LOG.info("{} << {}", name, aa);
         enterState(State.Sta13);
         try {
@@ -251,7 +247,6 @@ public class Association {
     }
 
     void writeAReleaseRQ() throws IOException {
-        ae.unregisterAssociation(this);
         LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
         encoder.writeAReleaseRQ();
@@ -288,7 +283,7 @@ public class Association {
         encoder.write(e);
     }
 
-    void startARTIM(int timeout) {
+    private void startARTIM(int timeout) {
         LOG.debug("{}: start ARTIM {}ms", name, timeout);
         try {
             sock.setSoTimeout(timeout);
@@ -325,15 +320,15 @@ public class Association {
     }
 
     void activate() {
-        if (!(state == State.Sta2 || state == State.Sta5))
-                throw new IllegalStateException("state: " + state);
-
         device.execute(new Runnable() {
 
             @Override
             public void run() {
                 decoder = new PDUDecoder(Association.this, in);
                 device.incrementNumberOfOpenConnections();
+                startARTIM(requestor
+                        ? conn.getAcceptTimeout()
+                        : conn.getRequestTimeout());
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
@@ -341,21 +336,47 @@ public class Association {
                     abort(aa);
                 } catch (SocketTimeoutException e) {
                     ex = e;
-                    LOG.warn("{}: ARTIM timer expired in State: {}",
+                    LOG.info("{}: ARTIM timer expired in State: {}",
                             name, state);
                 } catch (IOException e) {
                     ex = e;
-                    LOG.warn("{}: i/o exception: {} in State: {}",
+                    LOG.info("{}: i/o exception: {} in State: {}",
                             new Object[] { name, e, state });
                 } finally {
+                    onClose();
                     device.decrementNumberOfOpenConnections();
                     closeSocket();
                 }
             }
+
         });
     }
 
-    private synchronized void closeSocket() {
+    private void onClose() {
+        // TODO
+    }
+
+    private void clearDimseRSPHandler() {
+        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
+
+            @Override
+            public boolean visit(int key, DimseRSPHandler value) {
+                value.onARelease(Association.this);
+                return true;
+            }});
+    }
+
+    private void clearDimseRSPHandler(final AAbort aa) {
+        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
+
+            @Override
+            public boolean visit(int key, DimseRSPHandler value) {
+                value.onAAbort(Association.this, aa);
+                return true;
+            }});
+    }
+
+    synchronized void closeSocket() {
         if (sock == null)
             return;
 
@@ -445,7 +466,6 @@ public class Association {
 
     void handleAReleaseRQ() throws IOException {
         enterState(State.Sta8);
-        clearDimseRSPHandler();
         waitForPerformingOps();
         LOG.info("{} << A-RELEASE-RP", name);
         enterState(State.Sta13);
@@ -457,13 +477,12 @@ public class Association {
             try {
                 wait();
             } catch (InterruptedException e) {
-                // explicitly interrupted up by another thread; continue
+                Thread.currentThread().interrupt();
             }
         }
     }
 
     void handleAReleaseRQCollision() throws IOException {
-        clearDimseRSPHandler();
         if (isRequestor()) {
             enterState(State.Sta9);
             LOG.info("{} << A-RELEASE-RP", name);
@@ -486,17 +505,11 @@ public class Association {
     }
 
     void handleAReleaseRP() throws IOException {
-        clearDimseRSPHandler();
         stopARTIM();
         enterState(State.Sta1);
     }
 
-    void handleAReleaseRPCollisionRequestorSide() throws IOException {
-        stopARTIM();
-        enterState(State.Sta1);
-    }
-
-   void handleAReleaseRPCollisionAcceptorSide() throws IOException {
+   void handleAReleaseRPCollision() throws IOException {
         stopARTIM();
         enterState(State.Sta12);
     }
@@ -599,26 +612,6 @@ public class Association {
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
-    }
-
-    private void clearDimseRSPHandler() {
-        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
-
-            @Override
-            public boolean visit(int key, DimseRSPHandler value) {
-                value.onARelease(Association.this);
-                return true;
-            }});
-    }
-
-    private void clearDimseRSPHandler(final AAbort aa) {
-        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
-
-            @Override
-            public boolean visit(int key, DimseRSPHandler value) {
-                value.onAAbort(Association.this, aa);
-                return true;
-            }});
     }
 
     private void updateIdleTimeout() {

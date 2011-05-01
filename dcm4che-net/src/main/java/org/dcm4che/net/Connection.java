@@ -591,8 +591,7 @@ public class Connection {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);
                             Association as =
-                                    new Association(Connection.this, s, false);
-                            as.startARTIM(requestTimeout);
+                                    new Association(null, Connection.this, s);
                             as.activate();
                         }
                     }

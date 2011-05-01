@@ -132,14 +132,14 @@ enum State {
 
         @Override
         void onAReleaseRP(Association as) throws IOException {
-            as.handleAReleaseRPCollisionAcceptorSide();
+            as.handleAReleaseRPCollision();
         }
     },
     Sta11("Sta11 - Release collision requestor side; awaiting A-RELEASE-RP PDU"){
 
         @Override
         void onAReleaseRP(Association as) throws IOException {
-            as.handleAReleaseRPCollisionRequestorSide();
+            as.handleAReleaseRP();
         }
     },
     Sta12("Sta12 - Release collision acceptor side; awaiting A-RELEASE response primitive"),
@@ -193,7 +193,7 @@ enum State {
         throw new IOException("State: " + this);
     }
 
-    void write(Association as, AAbort aa) {
+    void write(Association as, AAbort aa)  {
         as.write(aa);
     }
 

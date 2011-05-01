@@ -587,16 +587,19 @@ public class ApplicationEntity {
             AAssociateRQ rq) throws IOException, InterruptedException {
         checkDevice();
         checkInstalled();
-        if (!aet.equals("*"))
+        if (aet.length() != 1 || aet.charAt(0) != '*')
             rq.setCallingAET(aet);
         rq.setMaxOpsInvoked(maxOpsInvoked);
         rq.setMaxOpsPerformed(maxOpsPerformed);
         rq.setMaxPDULength(maxPDULengthReceive);
         Socket sock = local.connect(host, port);
-        Association as = new Association(local, sock, true);
-        as.setApplicationEntity(this);
-        as.write(rq);
-        as.startARTIM(local.getAcceptTimeout());
+        Association as = new Association(this, local, sock);
+        try {
+            as.write(rq);
+        } catch (IOException e) {
+            as.closeSocket();
+            throw e;
+        }
         as.activate();
         as.waitForLeaving(State.Sta5);
         return as;
@@ -608,9 +611,9 @@ public class ApplicationEntity {
         }
     }
 
-    void unregisterAssociation(Association as) {
+    boolean unregisterAssociation(Association as) {
         synchronized (assocs) {
-            assocs.remove(as);
+            return assocs.remove(as);
         }
     }
 }

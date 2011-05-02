@@ -425,15 +425,9 @@ public class DicomServiceRegistry implements DimseRQHandler {
     }
 
     @Override
-    public void onARelease(Association as) {
+    public void onClose(Association as) {
         for (DicomService service : this.services)
-            service.onARelease(as);
-    }
-
-    @Override
-    public void onAAbort(Association as, AAbort aa) {
-        for (DicomService service : this.services)
-            service.onAAbort(as, aa);
+            service.onClose(as);
     }
 
 }

@@ -71,7 +71,7 @@ public enum RecordType {
     SURFACE,
     MEASUREMENT,
     PLAN,
-    STRUCT_DISPLAY,
+    STRUC_DISPLAY,
     PRIVATE;
 
     public String code() {

@@ -41,7 +41,6 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
@@ -53,7 +52,5 @@ public interface DimseRQHandler {
     void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException;
 
-    void onARelease(Association as);
-
-    void onAAbort(Association as, AAbort abort);
+    void onClose(Association as);
 }

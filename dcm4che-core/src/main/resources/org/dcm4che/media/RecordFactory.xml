@@ -442,7 +442,7 @@
     </Item>
     <Item number="30">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
-        <Value number="1">STRUCT_DISPLAY</Value>
+        <Value number="1">STRUC DISPLAY</Value>
       </DicomAttribute>
       <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
         <Value number="1">1.2.840.10008.5.1.4.1.1.131</Value>

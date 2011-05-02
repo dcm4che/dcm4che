@@ -605,15 +605,16 @@ public class ApplicationEntity {
         return as;
     }
 
-    void registerAssociation(Association as) {
+    void onOpen(Association as) {
         synchronized (assocs) {
             assocs.add(as);
         }
     }
 
-    boolean unregisterAssociation(Association as) {
+    void onClose(Association as) {
         synchronized (assocs) {
-            return assocs.remove(as);
+            assocs.remove(as);
         }
+        dimseRQHandler.onClose(as);
     }
 }

@@ -82,11 +82,7 @@ public class DimseRSPHandler {
         // NO OP
     }
 
-    public void onARelease(Association as) {
-        // NO OP
-    }
-
-    public void onAAbort(Association as, AAbort abort) {
+    public void onClose(Association as) {
         // NO OP
     }
 }

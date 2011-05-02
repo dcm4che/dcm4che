@@ -92,18 +92,12 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
     }
 
     @Override
-    public synchronized void onARelease(Association as) {
+    public synchronized void onClose(Association as) {
         if (!finished) {
-            ex = new IOException("Association to " + as.getRemoteAET()
-                        + " released before receive of outstanding DIMSE RSP");
-            notifyAll();
-        }
-    }
-
-    @Override
-    public synchronized void onAAbort(Association as, AAbort abort) {
-        if (!finished) {
-            ex = abort;
+            ex = as.getException();
+            if (ex == null)
+                ex = new IOException("Association to " + as.getRemoteAET()
+                            + " released before receive of outstanding DIMSE RSP");
             notifyAll();
         }
     }

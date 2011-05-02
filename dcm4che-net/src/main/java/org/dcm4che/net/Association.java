@@ -93,6 +93,7 @@ public class Association {
     private AAssociateRQ rq;
     private AAssociateAC ac;
     private IOException ex;
+
     private HashMap<String, Object> properties;
     private int maxOpsInvoked;
     private int maxPDULength;
@@ -147,6 +148,10 @@ public class Association {
 
     public final AAssociateAC getAAssociateAC() {
         return ac;
+    }
+
+    public final IOException getException() {
+        return ex;
     }
 
     public final ApplicationEntity getApplicationEntity() {
@@ -274,7 +279,7 @@ public class Association {
         LOG_AARQAC.debug("{}", ac);
         enterState(State.Sta6);
         encoder.write(ac);
-        ae.registerAssociation(this);
+        ae.onOpen(this);
     }
 
     private void write(AAssociateRJ e) throws IOException {
@@ -353,27 +358,22 @@ public class Association {
     }
 
     private void onClose() {
-        // TODO
-    }
+        synchronized (rspHandlerForMsgId) {
+            IntHashMap.Visitor<DimseRSPHandler> visitor =
+                    new IntHashMap.Visitor<DimseRSPHandler>() {
 
-    private void clearDimseRSPHandler() {
-        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
-
-            @Override
-            public boolean visit(int key, DimseRSPHandler value) {
-                value.onARelease(Association.this);
-                return true;
-            }});
-    }
-
-    private void clearDimseRSPHandler(final AAbort aa) {
-        clearDimseRSPHandler(new IntHashMap.Visitor<DimseRSPHandler>(){
-
-            @Override
-            public boolean visit(int key, DimseRSPHandler value) {
-                value.onAAbort(Association.this, aa);
-                return true;
-            }});
+                @Override
+                public boolean visit(int key, DimseRSPHandler value) {
+                    value.onClose(Association.this);
+                    return true;
+                }
+            };
+            rspHandlerForMsgId.accept(visitor);
+            rspHandlerForMsgId.clear();
+            rspHandlerForMsgId.notifyAll();
+        }
+        if (ae != null)
+            ae.onClose(this);
     }
 
     synchronized void closeSocket() {
@@ -446,7 +446,7 @@ public class Association {
                 ac.getMaxPDULength(), ae.getMaxPDULengthSend());
         stopARTIM();
         enterState(State.Sta6);
-        ae.registerAssociation(this);
+        ae.onOpen(this);
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
@@ -601,15 +601,6 @@ public class Association {
     private void removeDimseRSPHandler(int msgId) {
         synchronized (rspHandlerForMsgId ) {
             rspHandlerForMsgId.remove(msgId);
-            rspHandlerForMsgId.notifyAll();
-        }
-    }
-
-    private void clearDimseRSPHandler(
-            IntHashMap.Visitor<DimseRSPHandler> visitor) {
-        synchronized (rspHandlerForMsgId ) {
-            rspHandlerForMsgId.accept(visitor);
-            rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
     }

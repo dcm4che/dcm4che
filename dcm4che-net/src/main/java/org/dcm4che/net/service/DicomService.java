@@ -117,11 +117,7 @@ public class DicomService {
         return serviceClass;
     }
 
-    public void onAAbort(Association as, AAbort abort) {
-        // NOOP
-    }
-
-    public void onARelease(Association as) {
+    public void onClose(Association as) {
         // NOOP
     }
 

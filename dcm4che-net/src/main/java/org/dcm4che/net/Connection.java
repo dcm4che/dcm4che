@@ -89,6 +89,8 @@ public class Connection {
     private int releaseTimeout;
     private int dimseRSPTimeout;
     private int retrieveRSPTimeout;
+    private int idleTimeout;
+    private int checkForStalenessPeriod;
     private int socketCloseDelay = 50;
     private int sendBufferSize;
     private int receiveBufferSize;
@@ -308,6 +310,22 @@ public class Connection {
 
     public final void setRetrieveRSPTimeout(int retrieveRSPTimeout) {
         this.retrieveRSPTimeout = retrieveRSPTimeout;
+    }
+
+    public final int getIdleTimeout() {
+        return idleTimeout;
+    }
+
+    public final void setIdleTimeout(int idleTimeout) {
+        this.idleTimeout = idleTimeout;
+    }
+
+    public final int getCheckForStalenessPeriod() {
+        return checkForStalenessPeriod;
+    }
+
+    public final void setCheckForStalenessPeriod(int checkForStalenessPeriod) {
+        this.checkForStalenessPeriod = checkForStalenessPeriod;
     }
 
     /**

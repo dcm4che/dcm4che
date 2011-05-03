@@ -363,10 +363,8 @@ public class DcmSnd {
     }
 
     public void close() throws IOException, InterruptedException {
-        if (as != null) {
-            as.waitForOutstandingRSP();
+        if (as != null && as.isReadyForDataTransfer())
             as.release();
-        }
     }
 
     public void open(Executor executor)

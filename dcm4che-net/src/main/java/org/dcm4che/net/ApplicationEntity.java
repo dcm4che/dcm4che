@@ -103,8 +103,6 @@ public class ApplicationEntity {
     private final HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
     private DimseRQHandler dimseRQHandler;
-    private final ArrayList<Association> assocs =
-            new ArrayList<Association>();
 
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
@@ -594,27 +592,14 @@ public class ApplicationEntity {
         rq.setMaxPDULength(maxPDULengthReceive);
         Socket sock = local.connect(host, port);
         Association as = new Association(this, local, sock);
-        try {
-            as.write(rq);
-        } catch (IOException e) {
-            as.closeSocket();
-            throw e;
-        }
+        as.write(rq);
         as.activate();
         as.waitForLeaving(State.Sta5);
         return as;
     }
 
-    void onOpen(Association as) {
-        synchronized (assocs) {
-            assocs.add(as);
-        }
-    }
-
     void onClose(Association as) {
-        synchronized (assocs) {
-            assocs.remove(as);
-        }
-        dimseRQHandler.onClose(as);
+        if (dimseRQHandler != null)
+            dimseRQHandler.onClose(as);
     }
 }

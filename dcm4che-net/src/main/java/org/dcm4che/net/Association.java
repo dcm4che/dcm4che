@@ -43,8 +43,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.HashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcm4che.data.Attributes;
@@ -59,7 +59,6 @@ import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
-import org.dcm4che.net.PDUEncoder;
 import org.dcm4che.util.IntHashMap;
 import org.dcm4che.util.SafeClose;
 import org.slf4j.Logger;
@@ -84,7 +83,7 @@ public class Association {
     private ApplicationEntity ae;
     private final Device device;
     private final Connection conn;
-    private Socket sock;
+    private final Socket sock;
     private final InputStream in;
     private final OutputStream out;
     private final PDUEncoder encoder;
@@ -104,6 +103,7 @@ public class Association {
             new IntHashMap<DimseRSP>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
+    private ScheduledFuture<?> scheduleAtFixedRate;
 
      Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
@@ -236,19 +236,63 @@ public class Association {
         state.writeAReleaseRQ(this);
     }
 
-    public void abort(AAbort aa) {
-        state.write(this, aa);
+    public void abort() {
+        abort(new AAbort());
     }
 
-    void write(AAbort aa)  {
-        LOG.info("{} << {}", name, aa);
-        enterState(State.Sta13);
+    void abort(AAbort aa) {
         try {
-            encoder.write(aa);
+            state.write(this, aa);
         } catch (IOException e) {
-            LOG.debug("{}: failed to write {}", name, aa);
+            // already handled by onExceptionOnWrite()
+            // do not bother user about
         }
-        ex = aa;
+    }
+
+    private synchronized void closeSocket() {
+        state.closeSocket(this);
+    }
+
+    void doCloseSocket() {
+        LOG.info("{}: close {}", name, sock);
+        SafeClose.close(sock);
+        enterState(State.Sta1);
+    }
+
+    synchronized private void closeSocketDelayed() {
+        state.closeSocketDelayed(this);
+    }
+
+    void doCloseSocketDelayed() {
+        enterState(State.Sta13);
+        device.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(conn.getSocketCloseDelay());
+                } catch (InterruptedException e) {
+                    LOG.warn("Interrupted Socket Close Delay", e);
+                }
+                closeSocket();
+            }
+        });
+    }
+
+    synchronized void onIOException(IOException e) {
+        if (ex != null)
+            return;
+
+        ex = e;
+        LOG.info("{}: i/o exception: {} in State: {}",
+                new Object[] { name, e, state });
+        closeSocket();
+    }
+
+    void write(AAbort aa) throws IOException  {
+        LOG.info("{} << {}", name, aa);
+        encoder.write(aa);
+        closeSocketDelayed();
     }
 
     void writeAReleaseRQ() throws IOException {
@@ -279,13 +323,13 @@ public class Association {
         LOG_AARQAC.debug("{}", ac);
         enterState(State.Sta6);
         encoder.write(ac);
-        ae.onOpen(this);
+        startCheckForStaleness();
     }
 
     private void write(AAssociateRJ e) throws IOException {
         Association.LOG.info("{} << {}", name, e);
-        enterState(State.Sta13);
         encoder.write(e);
+        closeSocketDelayed();
     }
 
     private void startARTIM(int timeout) {
@@ -339,21 +383,13 @@ public class Association {
                         decoder.nextPDU();
                 } catch (AAbort aa) {
                     abort(aa);
-                } catch (SocketTimeoutException e) {
-                    ex = e;
-                    LOG.info("{}: ARTIM timer expired in State: {}",
-                            name, state);
                 } catch (IOException e) {
-                    ex = e;
-                    LOG.info("{}: i/o exception: {} in State: {}",
-                            new Object[] { name, e, state });
+                    onIOException(e);
                 } finally {
                     onClose();
                     device.decrementNumberOfOpenConnections();
-                    closeSocket();
                 }
             }
-
         });
     }
 
@@ -372,27 +408,11 @@ public class Association {
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
+        if (scheduleAtFixedRate != null) {
+            scheduleAtFixedRate.cancel(false);
+        }
         if (ae != null)
             ae.onClose(this);
-    }
-
-    synchronized void closeSocket() {
-        if (sock == null)
-            return;
-
-        if (state == State.Sta13) {
-            try {
-                Thread.sleep(conn.getSocketCloseDelay());
-            } catch (InterruptedException e) {
-                LOG.warn("Interrupted Socket Close Delay", e);
-            }
-        }
-        if (sock != null) {
-            LOG.info("{}: close {}", name, sock);
-            SafeClose.close(sock);
-            sock = null;
-        }
-        enterState(State.Sta1);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
@@ -446,7 +466,24 @@ public class Association {
                 ac.getMaxPDULength(), ae.getMaxPDULengthSend());
         stopARTIM();
         enterState(State.Sta6);
-        ae.onOpen(this);
+        startCheckForStaleness();
+    }
+
+    private void startCheckForStaleness() {
+        final int period = conn.getCheckForStalenessPeriod();
+        if (period > 0) {
+            scheduleAtFixedRate = device.scheduleAtFixedRate(new Runnable(){
+
+                @Override
+                public void run() {
+                    checkForStaleness();
+                }}, period);
+        }
+    }
+
+    private void checkForStaleness() {
+        // TODO Auto-generated method stub
+        
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
@@ -456,7 +493,7 @@ public class Association {
 
     void handle(AAssociateRJ rq) {
         ex = rq;
-        enterState(State.Sta1);
+        closeSocket();
     }
 
     void onAReleaseRQ() throws IOException {
@@ -468,8 +505,8 @@ public class Association {
         enterState(State.Sta8);
         waitForPerformingOps();
         LOG.info("{} << A-RELEASE-RP", name);
-        enterState(State.Sta13);
         encoder.writeAReleaseRP();
+        closeSocketDelayed();
     }
 
     private synchronized void waitForPerformingOps() {
@@ -486,16 +523,10 @@ public class Association {
         if (isRequestor()) {
             enterState(State.Sta9);
             LOG.info("{} << A-RELEASE-RP", name);
-            enterState(State.Sta11);
             encoder.writeAReleaseRP();
-       } else {
+            enterState(State.Sta11);
+        } else {
             enterState(State.Sta10);
-            try {
-                waitForLeaving(State.Sta10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            enterState(State.Sta13);
         }
     }
 
@@ -506,18 +537,21 @@ public class Association {
 
     void handleAReleaseRP() throws IOException {
         stopARTIM();
-        enterState(State.Sta1);
+        closeSocket();
     }
 
    void handleAReleaseRPCollision() throws IOException {
         stopARTIM();
         enterState(State.Sta12);
-    }
+        LOG.info("{} << A-RELEASE-RP", name);
+        encoder.writeAReleaseRP();
+        closeSocketDelayed();
+   }
 
     void onAAbort(AAbort aa) {
         LOG.info("{} << {}", name, aa);
         ex = aa;
-        enterState(State.Sta1);
+        closeSocket();
     }
 
     void unexpectedPDU(String pdu) throws AAbort {
@@ -558,13 +592,13 @@ public class Association {
         notifyAll();
     }
 
-    void onDimseRSP(Attributes cmd, Attributes data) throws AAbort {
+    void onDimseRSP(Attributes cmd, Attributes data) {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
         DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
         if (rspHandler == null) {
             LOG.info("{}: unexpected message ID in DIMSE RSP:", name);
             LOG.info("{}", cmd);
-            throw new AAbort();
+            abort();
         }
         try {
             rspHandler.onDimseRSP(this, cmd, data);
@@ -781,4 +815,5 @@ public class Association {
         encoder.writeDIMSE(pc, cmd, data);
         rspHandler.updateTimeout(rspTimeout);
     }
+
 }

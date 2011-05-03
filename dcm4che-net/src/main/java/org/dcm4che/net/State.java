@@ -56,6 +56,16 @@ enum State {
         void write(Association as, AAbort aa) {
             // NO OP
         }
+
+        @Override
+        void closeSocket(Association as) {
+            // NO OP
+        }
+
+        @Override
+        void closeSocketDelayed(Association as) {
+            // NO OP
+        }
     },
     Sta2("Sta2 - Transport connection open") {
 
@@ -149,6 +159,11 @@ enum State {
         void write(Association as, AAbort aa) {
             // NO OP
         }
+
+        @Override
+        void closeSocketDelayed(Association as) {
+            // NO OP
+        }
     };
 
     private String name;
@@ -193,7 +208,7 @@ enum State {
         throw new IOException("State: " + this);
     }
 
-    void write(Association as, AAbort aa)  {
+    void write(Association as, AAbort aa) throws IOException {
         as.write(aa);
     }
 
@@ -201,4 +216,11 @@ enum State {
         throw new IOException("State: " + this);
     }
 
+    void closeSocket(Association as) {
+        as.doCloseSocket();
+    }
+
+    void closeSocketDelayed(Association as) {
+        as.doCloseSocketDelayed();
+    }
 }

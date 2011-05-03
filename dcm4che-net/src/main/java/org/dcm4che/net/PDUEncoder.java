@@ -125,8 +125,13 @@ class PDUEncoder extends PDVOutputStream {
     }
 
     private synchronized void writePDU(int pdulen) throws IOException {
-        out.write(buf, 0, 6 + pdulen);
-        out.flush();
+        try {
+            out.write(buf, 0, 6 + pdulen);
+            out.flush();
+        } catch (IOException e) {
+            as.onIOException(e);
+            throw e;
+        }
         pdvpos = 6;
         pos = 12;
     }

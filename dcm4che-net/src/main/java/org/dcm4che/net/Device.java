@@ -47,6 +47,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -91,6 +94,7 @@ public class Device {
     private final AtomicInteger connCount = new AtomicInteger(0);
 
     private Executor executor;
+    private ScheduledExecutorService scheduledExecutorService;
     private SSLContext sslContext;
 
     public Device(String name) {
@@ -440,6 +444,14 @@ public class Device {
         this.executor = executor;
     }
 
+    public final ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
+    }
+
+    public final void setScheduledExecutorService(ScheduledExecutorService service) {
+        this.scheduledExecutorService = service;
+    }
+
     public void addConnection(Connection conn) {
         conn.setDevice(this);
         conns.add(conn);
@@ -570,5 +582,14 @@ public class Device {
         if (executor == null)
             throw new IllegalStateException("executer not initalized");
         executor.execute(command);
+    }
+
+    ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long period) {
+        if (scheduledExecutorService == null)
+            throw new IllegalStateException(
+                    "scheduled executor service not initalized");
+
+        return scheduledExecutorService.scheduleAtFixedRate(command, 0,
+                period, TimeUnit.SECONDS);
     }
 }

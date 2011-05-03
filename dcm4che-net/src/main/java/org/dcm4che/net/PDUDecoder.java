@@ -42,6 +42,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -156,7 +157,7 @@ class PDUDecoder extends PDVInputStream {
     public void nextPDU() throws IOException {
         checkThread();
         Association.LOG.debug("{}: waiting for PDU", as);
-        StreamUtils.readFully(in, buf, 0, 10);
+        readFully(0, 10);
         pos = 0;
         pdutype = get();
         get();
@@ -217,7 +218,19 @@ class PDUDecoder extends PDVInputStream {
         if (6 + pdulen > buf.length)
             buf = Arrays.copyOf(buf, 6 + pdulen);
 
-        StreamUtils.readFully(in, buf, 10, pdulen - 4);
+        readFully(10, pdulen - 4);
+    }
+
+    private void readFully(int off, int len) throws IOException {
+        try {
+            StreamUtils.readFully(in, buf, off, len);
+        } catch (SocketTimeoutException e) {
+            Association.LOG.info("{}: ARTIM Timer expired", as);
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.REASON_NOT_SPECIFIED);
+        } catch (IOException e) {
+            throw e;
+        }
     }
 
     private void abort(int reason, String logmsg) throws AAbort {
@@ -509,7 +522,7 @@ class PDUDecoder extends PDVInputStream {
             abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
         this.pcid = get();
         this.pdvmch = get();
-        Association.LOG.debug("{} >> PDV[len={}, pcid={}, mch={}",
+        Association.LOG.debug("{} >> PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pcid, pdvmch } );
         if ((pdvmch & PDVType.COMMAND) != expectedPDVType)
             abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_TYPE);

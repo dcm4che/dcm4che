@@ -38,52 +38,14 @@
 
 package org.dcm4che.net;
 
-import java.io.IOException;
-
-import org.dcm4che.data.Attributes;
-import org.dcm4che.net.pdu.AAbort;
-import org.dcm4che.net.pdu.PresentationContext;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DimseRSPHandler {
+public class Priority {
 
-    private final int msgId;
-    private PresentationContext pc;
-    private long timeout;
+    public static final int NORMAL = 0;
+    public static final int HIGH = 1;
+    public static final int LOW = 2;
 
-    public DimseRSPHandler(int msgId) {
-        this.msgId = msgId;
-    }
-
-    final void setPC(PresentationContext pc) {
-        this.pc = pc;
-    }
-
-    public final int getMessageID() {
-        return msgId;
-    }
-
-    final long getTimeout() {
-        return timeout;
-    }
-
-    final void updateTimeout(long timeout) {
-        if (timeout > 0)
-            this.timeout = System.currentTimeMillis() + timeout;
-    }
-
-    public void cancel(Association as) throws IOException {
-        as.cancel(pc, msgId);
-    }
-
-    public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-        // NO OP
-    }
-
-    public void onClose(Association as) {
-        // NO OP
-    }
 }

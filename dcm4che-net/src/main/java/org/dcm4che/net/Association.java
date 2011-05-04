@@ -97,6 +97,7 @@ public class Association {
     private int maxOpsInvoked;
     private int maxPDULength;
     private int performing;
+    private long idleTimeout;
     private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
             new IntHashMap<DimseRSPHandler>();
     private final IntHashMap<DimseRSP> cancelHandlerForMsgId =
@@ -231,8 +232,6 @@ public class Association {
     }
 
     public void release() throws IOException {
-        if (!isRequestor())
-            throw new IllegalStateException("is not association-requestor");
         state.writeAReleaseRQ(this);
     }
 
@@ -244,7 +243,7 @@ public class Association {
         try {
             state.write(this, aa);
         } catch (IOException e) {
-            // already handled by onExceptionOnWrite()
+            // already handled by onIOException()
             // do not bother user about
         }
     }
@@ -265,18 +264,13 @@ public class Association {
 
     void doCloseSocketDelayed() {
         enterState(State.Sta13);
-        device.execute(new Runnable() {
+        device.schedule(new Runnable() {
 
             @Override
             public void run() {
-                try {
-                    Thread.sleep(conn.getSocketCloseDelay());
-                } catch (InterruptedException e) {
-                    LOG.warn("Interrupted Socket Close Delay", e);
-                }
                 closeSocket();
             }
-        });
+        }, conn.getSocketCloseDelay());
     }
 
     synchronized void onIOException(IOException e) {
@@ -482,8 +476,40 @@ public class Association {
     }
 
     private void checkForStaleness() {
-        // TODO Auto-generated method stub
-        
+        if (rspHandlerForMsgId.isEmpty()) {
+            releaseStale("{}: idle timeout expired", idleTimeout);
+        } else
+            synchronized (rspHandlerForMsgId) {
+                IntHashMap.Visitor<DimseRSPHandler> visitor =
+                        new IntHashMap.Visitor<DimseRSPHandler>() {
+    
+                    @Override
+                    public boolean visit(int key, DimseRSPHandler value) {
+                        return !releaseStale("{}: response timeout expired",
+                                value.getTimeout());
+                    }
+                };
+                rspHandlerForMsgId.accept(visitor);
+            }
+    }
+
+    private boolean releaseStale(String logmsg, long timeout) {
+        if (timeout == 0 || timeout > System.currentTimeMillis())
+            return false;
+
+        LOG.info(logmsg, this);
+        try {
+            release();
+        } catch (IOException e) {
+            // already handled by onIOException()
+        }
+        return true;
+    }
+
+    private void updateIdleTimeout() {
+        int timeout = conn.getIdleTimeout();
+        if (timeout > 0)
+            this.idleTimeout = System.currentTimeMillis() + timeout;
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
@@ -578,6 +604,7 @@ public class Association {
 
     void onDimseRQ(PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException {
+        updateIdleTimeout();
         incPerforming();
         adjustNextMessageID(cmd.getInt(Tag.MessageID, 0));
         ae.onDimseRQ(this, pc, cmd, data);
@@ -593,6 +620,7 @@ public class Association {
     }
 
     void onDimseRSP(Attributes cmd, Attributes data) {
+        updateIdleTimeout();
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
         DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
         if (rspHandler == null) {
@@ -604,7 +632,6 @@ public class Association {
             rspHandler.onDimseRSP(this, cmd, data);
         } finally {
             if (!Commands.hasPendingStatus(cmd)) {
-                updateIdleTimeout();
                 removeDimseRSPHandler(msgId);
                 removeCancelRQHandler(msgId);
             } else {
@@ -639,11 +666,6 @@ public class Association {
         }
     }
 
-    private void updateIdleTimeout() {
-        // TODO Auto-generated method stub
-        
-    }
-
     void cancel(PresentationContext pc, int msgId) throws IOException {
         Attributes cmd = Commands.mkCCancelRQ(msgId);
         encoder.writeDIMSE(pc, cmd, null);
@@ -664,18 +686,15 @@ public class Association {
         }
         cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
         encoder.writeDIMSE(pc, cmd, writer);
-        if (!Commands.hasPendingStatus(cmd)) {
-            updateIdleTimeout();
+        if (!Commands.hasPendingStatus(cmd))
             decPerforming();
-        }
     }
 
     void onCancelRQ(Attributes cmd) throws IOException {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
         DimseRSP handler = removeCancelRQHandler(msgId);
-        if (handler != null) {
+        if (handler != null)
             handler.cancel(this);
-        }
     }
 
     public void addCancelRQHandler(int msgId, DimseRSP handler) {
@@ -810,6 +829,7 @@ public class Association {
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
         checkException();
+        updateIdleTimeout();
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);

@@ -102,6 +102,8 @@ public class DcmSnd {
     private int filesSent;
 
     public DcmSnd() {
+        device.setScheduledExecutorService(
+                Executors.newSingleThreadScheduledExecutor());
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);

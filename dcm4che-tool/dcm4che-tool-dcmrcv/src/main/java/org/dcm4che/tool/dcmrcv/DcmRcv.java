@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -76,6 +75,8 @@ public class DcmRcv {
     private final StorageSCP storageSCP = new StorageSCP(this);
 
     public DcmRcv() {
+        device.setScheduledExecutorService(
+                Executors.newSingleThreadScheduledExecutor());
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -166,7 +167,7 @@ public class DcmRcv {
         }
      }
 
-    private void start(Executor executor) throws IOException {
+    private void start(ExecutorService executor) throws IOException {
         device.setExecutor(executor);
         conn.bind();
     }

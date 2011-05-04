@@ -580,8 +580,19 @@ public class Device {
 
     void execute(Runnable command) {
         if (executor == null)
-            throw new IllegalStateException("executer not initalized");
+            throw new IllegalStateException(
+                    "executer not initalized");
+
         executor.execute(command);
+    }
+
+    ScheduledFuture<?> schedule(Runnable command, long delay) {
+        if (scheduledExecutorService == null)
+            throw new IllegalStateException(
+                    "scheduled executor service not initalized");
+
+        return scheduledExecutorService.schedule(command, delay,
+                TimeUnit.SECONDS);
     }
 
     ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long period) {

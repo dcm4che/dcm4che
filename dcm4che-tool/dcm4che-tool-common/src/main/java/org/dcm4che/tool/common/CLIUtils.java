@@ -57,7 +57,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.util.SafeClose;
 
@@ -113,6 +115,85 @@ public class CLIUtils {
                 .withLongOpt("max-ops-performed")
                 .create(null));
         opts.addOption(null, "not-async", false, rb.getString("not-async"));
+        opts.addOption(null, "not-pack-pdv", false, rb.getString("not-pack-pdv"));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addConnectionOptions(Options opts, boolean requestor,
+            boolean acceptor, boolean dimseSCU, boolean retrieveSCU) {
+        if (requestor) {
+            opts.addOption(OptionBuilder
+                    .hasArg()
+                    .withArgName("timeout")
+                    .withDescription(rb.getString("connect-timeout"))
+                    .withLongOpt("connect-timeout")
+                    .create(null));
+            opts.addOption(OptionBuilder
+                    .hasArg()
+                    .withArgName("timeout")
+                    .withDescription(rb.getString("accept-timeout"))
+                    .withLongOpt("accept-timeout")
+                    .create(null));
+        }
+        if (acceptor) {
+            opts.addOption(OptionBuilder
+                    .hasArg()
+                    .withArgName("timeout")
+                    .withDescription(rb.getString("request-timeout"))
+                    .withLongOpt("request-timeout")
+                    .create(null));
+        }
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("timeout")
+                .withDescription(rb.getString("release-timeout"))
+                .withLongOpt("release-timeout")
+                .create(null));
+        if (dimseSCU)
+            opts.addOption(OptionBuilder
+                    .hasArg()
+                    .withArgName("timeout")
+                    .withDescription(rb.getString("dimse-rsp-timeout"))
+                    .withLongOpt("dimse-rsp-timeout")
+                    .create(null));
+        if (retrieveSCU)
+            opts.addOption(OptionBuilder
+                    .hasArg()
+                    .withArgName("timeout")
+                    .withDescription(rb.getString("retrieve-rsp-timeout"))
+                    .withLongOpt("retrieve-rsp-timeout")
+                    .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("timeout")
+                .withDescription(rb.getString("idle-timeout"))
+                .withLongOpt("idle-timeout")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("period")
+                .withDescription(rb.getString("check-staleness"))
+                .withLongOpt("check-staleness")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("delay")
+                .withDescription(rb.getString("soclose-delay"))
+                .withLongOpt("soclose-delay")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("length")
+                .withDescription(rb.getString("sosnd-buffer"))
+                .withLongOpt("sosnd-buffer")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("length")
+                .withDescription(rb.getString("sorcv-buffer"))
+                .withLongOpt("sorcv-buffer")
+                .create(null));
+        opts.addOption(null, "tcp-delay", false, rb.getString("tcp-delay"));
     }
 
     @SuppressWarnings("static-access")
@@ -248,6 +329,43 @@ public class CLIUtils {
         }
     }
 
+    private static void configure(Connection conn, CommandLine cl) {
+        if (cl.hasOption("connect-timeout"))
+            conn.setConnectTimeout(
+                    Integer.parseInt(cl.getOptionValue("connect-timeout")));
+        if (cl.hasOption("request-timeout"))
+            conn.setRequestTimeout(
+                    Integer.parseInt(cl.getOptionValue("request-timeout")));
+        if (cl.hasOption("accept-timeout"))
+            conn.setAcceptTimeout(
+                    Integer.parseInt(cl.getOptionValue("accept-timeout")));
+        if (cl.hasOption("release-timeout"))
+            conn.setReleaseTimeout(
+                    Integer.parseInt(cl.getOptionValue("release-timeout")));
+        if (cl.hasOption("dimse-rsp-timeout"))
+            conn.setDimseRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("dimse-rsp-timeout")));
+        if (cl.hasOption("retrieve-rsp-timeout"))
+            conn.setRetrieveRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("retrieve-rsp-timeout")));
+        if (cl.hasOption("idle-timeout"))
+            conn.setRetrieveRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("idle-timeout")));
+        if (cl.hasOption("check-staleness"))
+            conn.setCheckForStalenessPeriod(
+                    Integer.parseInt(cl.getOptionValue("check-staleness")));
+        if (cl.hasOption("soclose-delay"))
+            conn.setSocketCloseDelay(
+                    Integer.parseInt(cl.getOptionValue("soclose-delay")));
+        if (cl.hasOption("sosnd-buffer"))
+            conn.setSendBufferSize(
+                    Integer.parseInt(cl.getOptionValue("sosnd-buffer")));
+        if (cl.hasOption("sorcv-buffer"))
+            conn.setReceiveBufferSize(
+                    Integer.parseInt(cl.getOptionValue("sorcv-buffer")));
+        conn.setTcpNoDelay(!cl.hasOption("tcp-delay"));
+    }
+
     private static String[] split(String s, char delim, int defPos) {
         String[] s2 = new String[2];
         int pos = s.indexOf(delim);
@@ -282,16 +400,16 @@ public class CLIUtils {
                         cl.getOptionValue("max-ops-performed"));
             ae.setMaxOpsPerformed(maxOpsPerformed);
         }
+        ae.setPackPDV(!cl.hasOption("not-pack-pdv"));
    }
 
     public static int priorityOf(CommandLine cl) {
         return cl.hasOption("prior-high")
-                ? 1
+                ? Priority.HIGH
                 : cl.hasOption("prior-low") 
-                        ? 2
-                        : 0;
+                        ? Priority.LOW
+                        : Priority.NORMAL;
     }
-
 
     public static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {

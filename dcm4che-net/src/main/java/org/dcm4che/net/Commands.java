@@ -51,10 +51,6 @@ import org.dcm4che.util.UIDUtils;
  */
 public class Commands {
 
-    public static final int NORMAL = 0;
-    public static final int HIGH = 1;
-    public static final int LOW = 2;
-    
     public static final int C_STORE_RQ = 0x0001;
     public static final int C_STORE_RSP = 0x8001;
     public static final int C_GET_RQ = 0x0010;

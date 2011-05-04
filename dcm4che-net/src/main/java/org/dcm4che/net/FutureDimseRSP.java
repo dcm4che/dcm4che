@@ -41,7 +41,6 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.net.pdu.AAbort;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

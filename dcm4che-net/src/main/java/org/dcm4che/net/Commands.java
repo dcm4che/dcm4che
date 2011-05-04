@@ -89,11 +89,6 @@ public class Commands {
         return cmd.getInt(Tag.CommandField, 0) == C_CANCEL_RQ;
     }
 
-    public static boolean isRetrieveRSP(Attributes cmd) {
-        int cmdField = cmd.getInt(Tag.CommandField, 0);
-        return cmdField == C_GET_RSP || cmdField == C_MOVE_RSP;
-    }
-
     public static Attributes mkCStoreRQ(int msgId, String cuid, String iuid,
             int priority)  {
        Attributes rq = mkRQ(msgId, C_STORE_RQ, withDatasetType);

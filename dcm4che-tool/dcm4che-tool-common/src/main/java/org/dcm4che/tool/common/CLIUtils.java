@@ -51,13 +51,13 @@ import java.util.ResourceBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.net.ApplicationEntity;
-import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
@@ -80,16 +80,38 @@ public class CLIUtils {
     }
 
     @SuppressWarnings("static-access")
-    public static void addLocalRequestorOption(Options opts, String defAET) {
+    public static void addBindOption(Options opts, String defAET) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("aet[@host][:port]")
-                .withDescription(rb.getString("L").replace("{}", defAET))
-                .create("L"));
+                .withArgName("aet[@ip][:port]")
+                .withDescription(rb.getString("bind").replace("{}", defAET))
+                .withLongOpt("bind")
+                .create("b"));
     }
 
     @SuppressWarnings("static-access")
-    public static void addAEOptions(Options opts) {
+    public static void addBindServerOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("[aet[@ip]:]port")
+                .withDescription(rb.getString("bind-server"))
+                .withLongOpt("bind")
+                .create("b"));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addConnectOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("aet@host:port")
+                .withDescription(rb.getString("connect"))
+                .withLongOpt("connect")
+                .create("c"));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addAEOptions(Options opts, boolean requestor,
+            boolean acceptor) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("length")
@@ -116,11 +138,6 @@ public class CLIUtils {
                 .create(null));
         opts.addOption(null, "not-async", false, rb.getString("not-async"));
         opts.addOption(null, "not-pack-pdv", false, rb.getString("not-pack-pdv"));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addConnectionOptions(Options opts, boolean requestor,
-            boolean acceptor, boolean dimseSCU, boolean retrieveSCU) {
         if (requestor) {
             opts.addOption(OptionBuilder
                     .hasArg()
@@ -137,32 +154,12 @@ public class CLIUtils {
         }
         if (acceptor) {
             opts.addOption(OptionBuilder
-                    .hasArg()
-                    .withArgName("timeout")
-                    .withDescription(rb.getString("request-timeout"))
-                    .withLongOpt("request-timeout")
-                    .create(null));
-        }
-        opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("timeout")
-                .withDescription(rb.getString("release-timeout"))
-                .withLongOpt("release-timeout")
+                .withDescription(rb.getString("request-timeout"))
+                .withLongOpt("request-timeout")
                 .create(null));
-        if (dimseSCU)
-            opts.addOption(OptionBuilder
-                    .hasArg()
-                    .withArgName("timeout")
-                    .withDescription(rb.getString("dimse-rsp-timeout"))
-                    .withLongOpt("dimse-rsp-timeout")
-                    .create(null));
-        if (retrieveSCU)
-            opts.addOption(OptionBuilder
-                    .hasArg()
-                    .withArgName("timeout")
-                    .withDescription(rb.getString("retrieve-rsp-timeout"))
-                    .withLongOpt("retrieve-rsp-timeout")
-                    .create(null));
+        }
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("timeout")
@@ -174,6 +171,12 @@ public class CLIUtils {
                 .withArgName("period")
                 .withDescription(rb.getString("check-staleness"))
                 .withLongOpt("check-staleness")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("timeout")
+                .withDescription(rb.getString("release-timeout"))
+                .withLongOpt("release-timeout")
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
@@ -194,10 +197,41 @@ public class CLIUtils {
                 .withLongOpt("sorcv-buffer")
                 .create(null));
         opts.addOption(null, "tcp-delay", false, rb.getString("tcp-delay"));
+        addTLSOptions(opts);
     }
 
     @SuppressWarnings("static-access")
-    public static void addTLSOptions(Options opts) {
+    public static void addDimseRspOption(Options opts) {
+        opts.addOption(OptionBuilder
+            .hasArg()
+            .withArgName("timeout")
+            .withDescription(rb.getString("dimse-rsp-timeout"))
+            .withLongOpt("dimse-rsp-timeout")
+            .create(null));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addCGetRspOption(Options opts) {
+        opts.addOption(OptionBuilder
+            .hasArg()
+            .withArgName("timeout")
+            .withDescription(rb.getString("cget-rsp-timeout"))
+            .withLongOpt("cget-rsp-timeout")
+            .create(null));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addCMoveRspOption(Options opts) {
+        opts.addOption(OptionBuilder
+            .hasArg()
+            .withArgName("timeout")
+            .withDescription(rb.getString("cmove-rsp-timeout"))
+            .withLongOpt("cmove-rsp-timeout")
+            .create(null));
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addTLSOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("cipher")
@@ -286,26 +320,28 @@ public class CLIUtils {
         return cl;
     }
 
-    public static void configureRemoteAcceptor(Connection conn,
-            AAssociateRQ rq, String aeAtHostPort) {
-        String[] aeHostPort = split(aeAtHostPort, '@', 0);
+    public static void configureConnect(Connection conn,
+            AAssociateRQ rq, CommandLine cl) throws ParseException {
+        if (!cl.hasOption("c"))
+            throw new MissingOptionException("Missing required option -c");
+        String aeAtHostPort = cl.getOptionValue("c");
+        String[] aeHostPort = split(aeAtHostPort , '@', 0);
+        if (aeHostPort[1] == null)
+            throw new ParseException(rb.getString("connect-invalid"));
+        
+        String[] hostPort = split(aeHostPort[1], ':', 0);
+        if (hostPort[1] == null)
+            throw new ParseException(rb.getString("connect-invalid"));
+
         rq.setCalledAET(aeHostPort[0]);
-        if (aeHostPort[1] == null) {
-            conn.setHostname("127.0.0.1");
-            conn.setPort(104);
-        } else {
-            String[] hostPort = split(aeHostPort[1], ':', 0);
-            conn.setHostname(hostPort[0]);
-            conn.setPort((hostPort[1] != null 
-                                    ? Integer.parseInt(hostPort[1])
-                                    : 104));
-        }
+        conn.setHostname(hostPort[0]);
+        conn.setPort(Integer.parseInt(hostPort[1]));
     }
 
-    public static void configureLocalRequestor(Connection conn,
-            ApplicationEntity ae, CommandLine cl) {
-        if (cl.hasOption("L")) {
-            String aeAtHostPort = cl.getOptionValue("L");
+    public static void configureBind(Connection conn,
+            ApplicationEntity ae, CommandLine cl) throws ParseException {
+        if (cl.hasOption("b")) {
+            String aeAtHostPort = cl.getOptionValue("b");
             String[] aeHostPort = split(aeAtHostPort, '@', 0);
             ae.setAETitle(aeHostPort[0]);
             if (aeHostPort[1] != null) {
@@ -317,53 +353,19 @@ public class CLIUtils {
         }
     }
 
-    public static void configureLocalAcceptor(Connection conn,
-            ApplicationEntity ae, String aetAtHostPort) {
-        String[] aetAndPort = split(aetAtHostPort, ':', 1);
-        conn.setPort(Integer.parseInt(aetAndPort[1]));
-        if (aetAndPort[0] != null) {
-            String[] aetAndIP = split(aetAndPort[0], '@', 0);
-            ae.setAETitle(aetAndIP[0]);
-            if (aetAndIP[1] != null)
-                conn.setHostname(aetAndIP[1]);
+    public static void configureBindServer(Connection conn,
+            ApplicationEntity ae, CommandLine cl) throws ParseException {
+        if (!cl.hasOption("b"))
+            throw new MissingOptionException("Missing required option -b");
+        String aeAtHostPort = cl.getOptionValue("b");
+        String[] aeAtHostAndPort = split(aeAtHostPort, ':', 1);
+        conn.setPort(Integer.parseInt(aeAtHostAndPort[1]));
+        if (aeAtHostAndPort[0] != null) {
+            String[] aeHost = split(aeAtHostAndPort[0], '@', 0);
+            ae.setAETitle(aeHost[0]);
+            if (aeHost[1] != null)
+                conn.setHostname(aeHost[1]);
         }
-    }
-
-    private static void configure(Connection conn, CommandLine cl) {
-        if (cl.hasOption("connect-timeout"))
-            conn.setConnectTimeout(
-                    Integer.parseInt(cl.getOptionValue("connect-timeout")));
-        if (cl.hasOption("request-timeout"))
-            conn.setRequestTimeout(
-                    Integer.parseInt(cl.getOptionValue("request-timeout")));
-        if (cl.hasOption("accept-timeout"))
-            conn.setAcceptTimeout(
-                    Integer.parseInt(cl.getOptionValue("accept-timeout")));
-        if (cl.hasOption("release-timeout"))
-            conn.setReleaseTimeout(
-                    Integer.parseInt(cl.getOptionValue("release-timeout")));
-        if (cl.hasOption("dimse-rsp-timeout"))
-            conn.setDimseRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("dimse-rsp-timeout")));
-        if (cl.hasOption("retrieve-rsp-timeout"))
-            conn.setRetrieveRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("retrieve-rsp-timeout")));
-        if (cl.hasOption("idle-timeout"))
-            conn.setRetrieveRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("idle-timeout")));
-        if (cl.hasOption("check-staleness"))
-            conn.setCheckForStalenessPeriod(
-                    Integer.parseInt(cl.getOptionValue("check-staleness")));
-        if (cl.hasOption("soclose-delay"))
-            conn.setSocketCloseDelay(
-                    Integer.parseInt(cl.getOptionValue("soclose-delay")));
-        if (cl.hasOption("sosnd-buffer"))
-            conn.setSendBufferSize(
-                    Integer.parseInt(cl.getOptionValue("sosnd-buffer")));
-        if (cl.hasOption("sorcv-buffer"))
-            conn.setReceiveBufferSize(
-                    Integer.parseInt(cl.getOptionValue("sorcv-buffer")));
-        conn.setTcpNoDelay(!cl.hasOption("tcp-delay"));
     }
 
     private static String[] split(String s, char delim, int defPos) {
@@ -378,7 +380,17 @@ public class CLIUtils {
         return s2;
     }
 
-    public static void configure(ApplicationEntity ae, CommandLine cl) {
+    public static int priorityOf(CommandLine cl) {
+        return cl.hasOption("prior-high")
+                ? Priority.HIGH
+                : cl.hasOption("prior-low") 
+                        ? Priority.LOW
+                        : Priority.NORMAL;
+    }
+
+    public static void configure(Connection conn, ApplicationEntity ae,
+            CommandLine cl)
+            throws ParseException, GeneralSecurityException, IOException {
         if (cl.hasOption("max-pdulen-rcv"))
             ae.setMaxPDULengthReceive(Integer.parseInt(
                     cl.getOptionValue("max-pdulen-rcv")));
@@ -401,17 +413,47 @@ public class CLIUtils {
             ae.setMaxOpsPerformed(maxOpsPerformed);
         }
         ae.setPackPDV(!cl.hasOption("not-pack-pdv"));
-   }
-
-    public static int priorityOf(CommandLine cl) {
-        return cl.hasOption("prior-high")
-                ? Priority.HIGH
-                : cl.hasOption("prior-low") 
-                        ? Priority.LOW
-                        : Priority.NORMAL;
+        if (cl.hasOption("connect-timeout"))
+            conn.setConnectTimeout(
+                    Integer.parseInt(cl.getOptionValue("connect-timeout")));
+        if (cl.hasOption("request-timeout"))
+            conn.setRequestTimeout(
+                    Integer.parseInt(cl.getOptionValue("request-timeout")));
+        if (cl.hasOption("accept-timeout"))
+            conn.setAcceptTimeout(
+                    Integer.parseInt(cl.getOptionValue("accept-timeout")));
+        if (cl.hasOption("release-timeout"))
+            conn.setReleaseTimeout(
+                    Integer.parseInt(cl.getOptionValue("release-timeout")));
+        if (cl.hasOption("dimse-rsp-timeout"))
+            conn.setDimseRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("dimse-rsp-timeout")));
+        if (cl.hasOption("cget-rsp-timeout"))
+            conn.setCGetRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("cget-rsp-timeout")));
+        if (cl.hasOption("cmove-rsp-timeout"))
+            conn.setCMoveRSPTimeout(
+                    Integer.parseInt(cl.getOptionValue("cmove-rsp-timeout")));
+        if (cl.hasOption("idle-timeout"))
+            conn.setIdleTimeout(
+                    Integer.parseInt(cl.getOptionValue("idle-timeout")));
+        if (cl.hasOption("check-staleness"))
+            conn.setCheckForStalenessPeriod(
+                    Integer.parseInt(cl.getOptionValue("check-staleness")));
+        if (cl.hasOption("soclose-delay"))
+            conn.setSocketCloseDelay(
+                    Integer.parseInt(cl.getOptionValue("soclose-delay")));
+        if (cl.hasOption("sosnd-buffer"))
+            conn.setSendBufferSize(
+                    Integer.parseInt(cl.getOptionValue("sosnd-buffer")));
+        if (cl.hasOption("sorcv-buffer"))
+            conn.setReceiveBufferSize(
+                    Integer.parseInt(cl.getOptionValue("sorcv-buffer")));
+        conn.setTcpNoDelay(!cl.hasOption("tcp-delay"));
+        configureTLS(conn, cl);
     }
 
-    public static void configureTLS(Connection conn, CommandLine cl)
+    private static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {
         if (cl.hasOption("tls"))
             conn.setTLSCipherSuite(
@@ -477,6 +519,11 @@ public class CLIUtils {
         return key;
     }
 
+    private static String toKeyStoreType(String fname) {
+        return fname.endsWith(".p12") || fname.endsWith(".P12")
+                 ? "PKCS12" : "JKS";
+    }
+
     public static InputStream openFileOrURL(String url) throws IOException {
         if (url.startsWith("resource:")) {
             return Thread.currentThread().getContextClassLoader()
@@ -487,11 +534,6 @@ public class CLIUtils {
         } catch (MalformedURLException e) {
             return new FileInputStream(url);
         }
-    }
-
-    private static String toKeyStoreType(String fname) {
-        return fname.endsWith(".p12") || fname.endsWith(".P12")
-                 ? "PKCS12" : "JKS";
     }
 
     public static Properties loadProperties(String url) throws IOException {

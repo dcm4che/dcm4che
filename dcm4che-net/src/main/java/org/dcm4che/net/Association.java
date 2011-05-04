@@ -104,7 +104,7 @@ public class Association {
             new IntHashMap<DimseRSP>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
-    private ScheduledFuture<?> scheduleAtFixedRate;
+    private ScheduledFuture<?> checkForStaleness;
 
      Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
@@ -402,9 +402,7 @@ public class Association {
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
-        if (scheduleAtFixedRate != null) {
-            scheduleAtFixedRate.cancel(false);
-        }
+        stopCheckForStaleness();
         if (ae != null)
             ae.onClose(this);
     }
@@ -466,7 +464,7 @@ public class Association {
     private void startCheckForStaleness() {
         final int period = conn.getCheckForStalenessPeriod();
         if (period > 0) {
-            scheduleAtFixedRate = device.scheduleAtFixedRate(new Runnable(){
+            checkForStaleness = device.scheduleAtFixedRate(new Runnable(){
 
                 @Override
                 public void run() {
@@ -475,9 +473,16 @@ public class Association {
         }
     }
 
+    private synchronized void stopCheckForStaleness() {
+        if (checkForStaleness != null) {
+            checkForStaleness.cancel(false);
+            checkForStaleness = null;
+        }
+    }
+
     private void checkForStaleness() {
         if (rspHandlerForMsgId.isEmpty()) {
-            releaseStale("{}: idle timeout expired", idleTimeout);
+            closeIfStale("{}: idle timeout expired", idleTimeout);
         } else
             synchronized (rspHandlerForMsgId) {
                 IntHashMap.Visitor<DimseRSPHandler> visitor =
@@ -485,7 +490,7 @@ public class Association {
     
                     @Override
                     public boolean visit(int key, DimseRSPHandler value) {
-                        return !releaseStale("{}: response timeout expired",
+                        return !closeIfStale("{}: response timeout expired",
                                 value.getTimeout());
                     }
                 };
@@ -493,16 +498,13 @@ public class Association {
             }
     }
 
-    private boolean releaseStale(String logmsg, long timeout) {
+    private boolean closeIfStale(String logmsg, long timeout) {
         if (timeout == 0 || timeout > System.currentTimeMillis())
             return false;
 
         LOG.info(logmsg, this);
-        try {
-            release();
-        } catch (IOException e) {
-            // already handled by onIOException()
-        }
+        stopCheckForStaleness();
+        abort();
         return true;
     }
 
@@ -635,10 +637,9 @@ public class Association {
                 removeDimseRSPHandler(msgId);
                 removeCancelRQHandler(msgId);
             } else {
-                int timeout = Commands.isRetrieveRSP(cmd)
-                        ? conn.getRetrieveRSPTimeout()
-                        : conn.getDimseRSPTimeout();
-                rspHandler.updateTimeout(timeout);
+                rspHandler.updateTimeout(
+                        conn.getDimseRSPTimeout(
+                                cmd.getInt(Tag.CommandField, 0)));
             }
         }
     }

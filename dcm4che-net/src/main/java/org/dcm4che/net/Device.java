@@ -592,7 +592,7 @@ public class Device {
                     "scheduled executor service not initalized");
 
         return scheduledExecutorService.schedule(command, delay,
-                TimeUnit.SECONDS);
+                TimeUnit.MILLISECONDS);
     }
 
     ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long period) {
@@ -601,6 +601,6 @@ public class Device {
                     "scheduled executor service not initalized");
 
         return scheduledExecutorService.scheduleAtFixedRate(command, 0,
-                period, TimeUnit.SECONDS);
+                period, TimeUnit.MILLISECONDS);
     }
 }

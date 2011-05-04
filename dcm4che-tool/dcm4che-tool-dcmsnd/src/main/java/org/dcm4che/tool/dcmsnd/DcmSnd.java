@@ -124,9 +124,10 @@ public class DcmSnd {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        CLIUtils.addTLSOptions(opts);
-        CLIUtils.addLocalRequestorOption(opts, "DCMSND");
-        CLIUtils.addAEOptions(opts);
+        CLIUtils.addConnectOption(opts);
+        CLIUtils.addBindOption(opts, "DCMSND");
+        CLIUtils.addAEOptions(opts, true, false);
+        CLIUtils.addDimseRspOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
         addRelatedSOPClassOptions(opts);
@@ -151,23 +152,17 @@ public class DcmSnd {
         try {
             CommandLine cl = parseComandLine(args);
             DcmSnd dcmsnd = new DcmSnd();
-            List<String> argList = cl.getArgList();
-            if (argList.isEmpty())
-                throw new ParseException(rb.getString("missing"));
-            String remoteAE = argList.get(0);
-            CLIUtils.configureTLS(dcmsnd.conn, cl);
-            CLIUtils.configureRemoteAcceptor(dcmsnd.remote, dcmsnd.rq,
-                    remoteAE);
-            CLIUtils.configureLocalRequestor(dcmsnd.conn, dcmsnd.ae, cl);
-            CLIUtils.configure(dcmsnd.ae, cl);
+            CLIUtils.configureConnect(dcmsnd.remote, dcmsnd.rq, cl);
+            CLIUtils.configureBind(dcmsnd.conn, dcmsnd.ae, cl);
+            CLIUtils.configure(dcmsnd.conn, dcmsnd.ae, cl);
             configureRelatedSOPClass(dcmsnd, cl);
             dcmsnd.setPriority(CLIUtils.priorityOf(cl));
-            int nArgs = argList.size();
-            boolean echo = nArgs == 1;
+            List<String> argList = cl.getArgList();
+            boolean echo = argList.isEmpty();
             if (!echo) {
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
-                dcmsnd.scanFiles(argList.subList(1, nArgs));
+                dcmsnd.scanFiles(argList);
                 t2 = System.currentTimeMillis();
                 int n = dcmsnd.filesScanned;
                 System.out.printf(rb.getString("scanned"), n,
@@ -179,7 +174,8 @@ public class DcmSnd {
                 t1 = System.currentTimeMillis();
                 dcmsnd.open(executorService);
                 t2 = System.currentTimeMillis();
-                System.out.printf(rb.getString("connected"), remoteAE,
+                System.out.printf(rb.getString("connected"),
+                        dcmsnd.as.getRemoteAET(),
                         t2 - t1);
                 if (echo)
                     dcmsnd.echo();

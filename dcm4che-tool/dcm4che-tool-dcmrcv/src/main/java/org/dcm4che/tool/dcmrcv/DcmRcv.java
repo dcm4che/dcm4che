@@ -39,7 +39,6 @@
 package org.dcm4che.tool.dcmrcv;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -90,8 +89,8 @@ public class DcmRcv {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
-        CLIUtils.addTLSOptions(opts);
-        CLIUtils.addAEOptions(opts);
+        CLIUtils.addBindServerOption(opts);
+        CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
         addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmRcv.class);
@@ -109,15 +108,12 @@ public class DcmRcv {
                 .create(null));
     }
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             DcmRcv dcmrcv = new DcmRcv();
-            CLIUtils.configureTLS(dcmrcv.conn, cl);
-            CLIUtils.configureLocalAcceptor(dcmrcv.conn, dcmrcv.ae,
-                    arg1(cl.getArgList()));
-            CLIUtils.configure(dcmrcv.ae, cl);
+            CLIUtils.configureBindServer(dcmrcv.conn, dcmrcv.ae, cl);
+            CLIUtils.configure(dcmrcv.conn, dcmrcv.ae, cl);
             configureTransferCapability(dcmrcv.ae, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             try {
@@ -170,15 +166,6 @@ public class DcmRcv {
     private void start(ExecutorService executor) throws IOException {
         device.setExecutor(executor);
         conn.bind();
-    }
-
-    private static String arg1(List<String> argList) throws ParseException {
-        int numArgs = argList.size();
-        if (numArgs == 0)
-            throw new ParseException(rb.getString("missing"));
-        if (numArgs > 1)
-            throw new ParseException(rb.getString("toomany"));
-        return argList.get(0);
     }
 
 }

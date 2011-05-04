@@ -88,7 +88,8 @@ public class Connection {
     private int acceptTimeout;
     private int releaseTimeout;
     private int dimseRSPTimeout;
-    private int retrieveRSPTimeout;
+    private int cgetRSPTimeout;
+    private int cmoveRSPTimeout;
     private int idleTimeout;
     private int checkForStalenessPeriod;
     private int socketCloseDelay = 50;
@@ -296,20 +297,37 @@ public class Connection {
         this.socketCloseDelay = delay;
     }
 
+
+    public int getDimseRSPTimeout(int cmdfield) {
+        return (cmdfield == Commands.C_GET_RSP)
+                ? cgetRSPTimeout
+                : (cmdfield == Commands.C_MOVE_RSP)
+                        ? cmoveRSPTimeout
+                        : dimseRSPTimeout;
+    }
+
     public final int getDimseRSPTimeout() {
         return dimseRSPTimeout;
     }
 
-    public final void setDimseRSPTimeout(int dimseRSPTimeout) {
-        this.dimseRSPTimeout = dimseRSPTimeout;
+    public final void setDimseRSPTimeout(int timeout) {
+        this.dimseRSPTimeout = timeout;
     }
 
-    public final int getRetrieveRSPTimeout() {
-        return retrieveRSPTimeout;
+    public final int getCGetRSPTimeout() {
+        return cgetRSPTimeout;
     }
 
-    public final void setRetrieveRSPTimeout(int retrieveRSPTimeout) {
-        this.retrieveRSPTimeout = retrieveRSPTimeout;
+    public final void setCGetRSPTimeout(int timeout) {
+        this.cgetRSPTimeout = timeout;
+    }
+
+    public final int getCMoveRSPTimeout() {
+        return cmoveRSPTimeout;
+    }
+
+    public final void setCMoveRSPTimeout(int timeout) {
+        this.cmoveRSPTimeout = timeout;
     }
 
     public final int getIdleTimeout() {

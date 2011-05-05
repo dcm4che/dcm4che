@@ -375,7 +375,7 @@ class PDUEncoder extends PDVOutputStream {
         put(pdvpcid);
         put(pdvcmd | last);
         pos = endpos;
-        Association.LOG.debug("{} << PDV[len={}, pcid={}, mch={}]",
+        Association.LOG.trace("{} << PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pdvpcid, (pdvcmd | last) });
     }
 
@@ -385,7 +385,7 @@ class PDUEncoder extends PDVOutputStream {
         put(PDUType.P_DATA_TF);
         put(0);
         putInt(pdulen);
-        Association.LOG.debug("{} << P-DATA-TF[len={}]",
+        Association.LOG.trace("{} << P-DATA-TF[len={}]",
                 new Object[] { as, pdulen });
         writePDU(pdulen);
     }
@@ -400,9 +400,9 @@ class PDUEncoder extends PDVOutputStream {
             Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG.info(sb.toString());
         }
-        Association.LOG.debug("{}", cmd);
+        Association.LOG.debug("\n{}", cmd);
         if (dataWriter instanceof DataWriterAdapter)
-            Association.LOG.debug("{}",
+            Association.LOG.debug("\n{}",
                     ((DataWriterAdapter) dataWriter).getDataset());
         synchronized (dimseLock) {
             this.th = Thread.currentThread();

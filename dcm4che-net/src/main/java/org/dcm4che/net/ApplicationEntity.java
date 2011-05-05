@@ -437,7 +437,7 @@ public class ApplicationEntity {
             PDVInputStream data) throws IOException {
         if (dimseRQHandler == null) {
             Association.LOG.error("DimseRQHandler not initalized");
-            throw new AAbort();
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER, 0);
         }
         dimseRQHandler.onDimseRQ(as, pc, cmd, data);
     }
@@ -593,7 +593,6 @@ public class ApplicationEntity {
         Socket sock = local.connect(host, port);
         Association as = new Association(this, local, sock);
         as.write(rq);
-        as.activate();
         as.waitForLeaving(State.Sta5);
         return as;
     }

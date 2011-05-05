@@ -42,7 +42,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -156,13 +155,13 @@ class PDUDecoder extends PDVInputStream {
 
     public void nextPDU() throws IOException {
         checkThread();
-        Association.LOG.debug("{}: waiting for PDU", as);
+        Association.LOG.trace("{}: waiting for PDU", as);
         readFully(0, 10);
         pos = 0;
         pdutype = get();
         get();
         pdulen = getInt();
-        Association.LOG.debug("{} >> PDU[type={}, len={}]",
+        Association.LOG.trace("{} >> PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         switch (pdutype) {
         case PDUType.A_ASSOCIATE_RQ:
@@ -224,10 +223,6 @@ class PDUDecoder extends PDVInputStream {
     private void readFully(int off, int len) throws IOException {
         try {
             StreamUtils.readFully(in, buf, off, len);
-        } catch (SocketTimeoutException e) {
-            Association.LOG.info("{}: ARTIM Timer expired", as);
-            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
-                    AAbort.REASON_NOT_SPECIFIED);
         } catch (IOException e) {
             throw e;
         }
@@ -437,14 +432,16 @@ class PDUDecoder extends PDVInputStream {
             Association.LOG.warn(
                     "{}: No Presentation Context with given ID - {}",
                     as, pcid);
-            throw new AAbort();
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.REASON_NOT_SPECIFIED);
         }
 
         if (!pc.isAccepted()) {
             Association.LOG.warn(
                     "{}: No accepted Presentation Context with given ID - {}",
                     as, pcid);
-            throw new AAbort();
+            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
+                    AAbort.REASON_NOT_SPECIFIED);
         }
 
         String tsuid = pc.getTransferSyntax();
@@ -455,7 +452,7 @@ class PDUDecoder extends PDVInputStream {
             Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG.info(sb.toString());
         }
-        Association.LOG.debug("{}", cmd);
+        Association.LOG.debug("\n{}", cmd);
         int cmdField = cmd.getInt(Tag.CommandField, 0);
         if (cmdField == Commands.C_CANCEL_RQ) {
             as.onCancelRQ(cmd);
@@ -463,7 +460,7 @@ class PDUDecoder extends PDVInputStream {
             nextPDV(PDVType.DATA, pcid);
             if (Commands.isRSP(cmdField)) {
                 Attributes data = readDataset(tsuid);
-                Association.LOG.debug("{}", data);
+                Association.LOG.debug("\n{}", data);
                 as.onDimseRSP(cmd, data);
             } else {
                 as.onDimseRQ(pc, cmd, this);
@@ -522,7 +519,7 @@ class PDUDecoder extends PDVInputStream {
             abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
         this.pcid = get();
         this.pdvmch = get();
-        Association.LOG.debug("{} >> PDV[len={}, pcid={}, mch={}]",
+        Association.LOG.trace("{} >> PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pcid, pdvmch } );
         if ((pdvmch & PDVType.COMMAND) != expectedPDVType)
             abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_TYPE);

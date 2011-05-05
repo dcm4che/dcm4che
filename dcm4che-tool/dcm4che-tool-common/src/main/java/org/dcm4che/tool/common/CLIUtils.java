@@ -168,12 +168,6 @@ public class CLIUtils {
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("period")
-                .withDescription(rb.getString("check-staleness"))
-                .withLongOpt("check-staleness")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
                 .withArgName("timeout")
                 .withDescription(rb.getString("release-timeout"))
                 .withLongOpt("release-timeout")
@@ -437,9 +431,6 @@ public class CLIUtils {
         if (cl.hasOption("idle-timeout"))
             conn.setIdleTimeout(
                     Integer.parseInt(cl.getOptionValue("idle-timeout")));
-        if (cl.hasOption("check-staleness"))
-            conn.setCheckForStalenessPeriod(
-                    Integer.parseInt(cl.getOptionValue("check-staleness")));
         if (cl.hasOption("soclose-delay"))
             conn.setSocketCloseDelay(
                     Integer.parseInt(cl.getOptionValue("soclose-delay")));

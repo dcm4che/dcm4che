@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,7 +54,6 @@ import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
-import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
@@ -72,8 +70,6 @@ public class Association {
 
     static final Logger LOG =
             LoggerFactory.getLogger(Association.class);
-    static final Logger LOG_AARQAC =
-            LoggerFactory.getLogger(AAssociateRQAC.class);
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
     private final AtomicInteger messageID = new AtomicInteger();
@@ -97,14 +93,13 @@ public class Association {
     private int maxOpsInvoked;
     private int maxPDULength;
     private int performing;
-    private long idleTimeout;
+    private ScheduledFuture<?> timeout;
     private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
             new IntHashMap<DimseRSPHandler>();
     private final IntHashMap<DimseRSP> cancelHandlerForMsgId =
             new IntHashMap<DimseRSP>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
-    private ScheduledFuture<?> checkForStaleness;
 
      Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
@@ -118,7 +113,13 @@ public class Association {
         this.in = sock.getInputStream();
         this.out = sock.getOutputStream();
         this.encoder = new PDUEncoder(this, out);
-        enterState(requestor ? State.Sta4 : State.Sta2);
+        if (requestor) {
+            enterState(State.Sta4);
+        } else {
+            enterState(State.Sta2);
+            startRequestTimeout();
+        }
+        activate();
     }
 
     public int nextMessageID() {
@@ -236,7 +237,15 @@ public class Association {
     }
 
     public void abort() {
-        abort(new AAbort());
+        abort(AAbort.UL_SERIVE_USER, 0);
+    }
+
+    private void pabort() {
+        abort(AAbort.UL_SERIVE_PROVIDER, AAbort.REASON_NOT_SPECIFIED);
+    }
+
+    private void abort(int source, int reason) {
+        abort(new AAbort(source, reason));
     }
 
     void abort(AAbort aa) {
@@ -264,13 +273,17 @@ public class Association {
 
     void doCloseSocketDelayed() {
         enterState(State.Sta13);
-        device.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                closeSocket();
-            }
-        }, conn.getSocketCloseDelay());
+        int delay = conn.getSocketCloseDelay();
+        if (delay > 0)
+            device.schedule(new Runnable() {
+    
+                @Override
+                public void run() {
+                    closeSocket();
+                }
+            }, delay);
+        else
+            closeSocket();
     }
 
     synchronized void onIOException(IOException e) {
@@ -286,14 +299,86 @@ public class Association {
     void write(AAbort aa) throws IOException  {
         LOG.info("{} << {}", name, aa);
         encoder.write(aa);
+        ex = aa;
         closeSocketDelayed();
     }
 
     void writeAReleaseRQ() throws IOException {
         LOG.info("{} << A-RELEASE-RQ", name);
         enterState(State.Sta7);
+        stopTimeout();
         encoder.writeAReleaseRQ();
-        startARTIM(conn.getReleaseTimeout());
+        startReleaseTimeout();
+    }
+
+    private void startRequestTimeout() {
+        startTimeout("{}: start A-ASSOCIATE-RQ timeout of {}ms",
+                "{}: A-ASSOCIATE-RQ timeout expired",
+                conn.getRequestTimeout(), State.Sta2);
+    }
+
+    private void startAcceptTimeout() {
+        startTimeout("{}: start A-ASSOCIATE-AC timeout of {}ms",
+                "{}: A-ASSOCIATE-AC timeout expired",
+                conn.getAcceptTimeout(), State.Sta5);
+    }
+
+    private void startReleaseTimeout() {
+        startTimeout("{}: start A-RELEASE-RP timeout of {}ms",
+                "{}: A-RELEASE-RP timeout expired",
+                conn.getReleaseTimeout(), State.Sta7);
+    }
+
+    private void startIdleTimeout() {
+        startTimeout("{}: start idle timeout of {}ms",
+                "{}: idle timeout expired",
+                conn.getIdleTimeout(), State.Sta6);
+    }
+
+    private void startTimeout(String start, final String expired,
+            int timeout, State state) {
+        if (timeout > 0 && performing == 0 && rspHandlerForMsgId.isEmpty()) {
+            synchronized (this) {
+                if (this.state == state) {
+                    stopTimeout();
+                    LOG.debug(start, name, timeout);
+                    this.timeout = device.schedule(new Runnable(){
+        
+                        @Override
+                        public void run() {
+                            LOG.info(expired, name);
+                            pabort();
+                        }}, timeout);
+                }
+            }
+        }
+    }
+
+    private void startTimeout(final int msgID, int timeout) {
+        if (timeout > 0) {
+            synchronized (rspHandlerForMsgId) {
+                DimseRSPHandler rspHandler = rspHandlerForMsgId.get(msgID);
+                if (rspHandler != null) {
+                    rspHandler.setTimeout(device.schedule(new Runnable(){
+
+                        @Override
+                        public void run() {
+                            LOG.info("{}: {}:DIMSE-RSP timeout expired", name, msgID);
+                            pabort();
+                        }}, timeout));
+                    LOG.debug("{}: start {}:DIMSE-RSP timeout of {}ms",
+                            new Object[] {name, msgID, timeout});
+                }
+            }
+        }
+    }
+
+    private synchronized void stopTimeout() {
+        if (timeout != null) {
+            LOG.debug("{}: stop timeout", name);
+            timeout.cancel(false);
+            timeout = null;
+        }
     }
 
     public void waitForOutstandingRSP() throws InterruptedException {
@@ -307,41 +392,24 @@ public class Association {
         name = rq.getCalledAET() + delim() + serialNo;
         this.rq = rq;
         LOG.info("{} << A-ASSOCIATE-RQ", name);
-        LOG_AARQAC.debug("{}", rq);
+        LOG.debug("{}", rq);
         enterState(State.Sta5);
         encoder.write(rq);
+        startAcceptTimeout();
     }
 
     private void write(AAssociateAC ac) throws IOException {
         LOG.info("{} << A-ASSOCIATE-AC", name);
-        LOG_AARQAC.debug("{}", ac);
+        LOG.debug("{}", ac);
         enterState(State.Sta6);
         encoder.write(ac);
-        startCheckForStaleness();
+        startIdleTimeout();
     }
 
     private void write(AAssociateRJ e) throws IOException {
         Association.LOG.info("{} << {}", name, e);
         encoder.write(e);
         closeSocketDelayed();
-    }
-
-    private void startARTIM(int timeout) {
-        LOG.debug("{}: start ARTIM {}ms", name, timeout);
-        try {
-            sock.setSoTimeout(timeout);
-        } catch (SocketException e) {
-            LOG.warn(name, e);
-        }
-    }
-
-    private void stopARTIM() {
-        LOG.debug("{}: stop ARTIM", name);
-        try {
-            sock.setSoTimeout(0);
-        } catch (SocketException e) {
-            LOG.warn(name, e);
-        }
     }
 
     private void checkException() throws IOException {
@@ -362,16 +430,13 @@ public class Association {
         checkException();
     }
 
-    void activate() {
+    private void activate() {
         device.execute(new Runnable() {
 
             @Override
             public void run() {
                 decoder = new PDUDecoder(Association.this, in);
                 device.incrementNumberOfOpenConnections();
-                startARTIM(requestor
-                        ? conn.getAcceptTimeout()
-                        : conn.getRequestTimeout());
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
@@ -388,6 +453,7 @@ public class Association {
     }
 
     private void onClose() {
+        stopTimeout();
         synchronized (rspHandlerForMsgId) {
             IntHashMap.Visitor<DimseRSPHandler> visitor =
                     new IntHashMap.Visitor<DimseRSPHandler>() {
@@ -402,21 +468,20 @@ public class Association {
             rspHandlerForMsgId.clear();
             rspHandlerForMsgId.notifyAll();
         }
-        stopCheckForStaleness();
         if (ae != null)
             ae.onClose(this);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
-        LOG_AARQAC.debug("{}", rq);
+        LOG.debug("{}", rq);
+        stopTimeout();
         state.onAAssociateRQ(this, rq);
     }
 
     void handle(AAssociateRQ rq) throws IOException {
         this.rq = rq;
         name = rq.getCallingAET() + delim() + serialNo;
-        stopARTIM();
         enterState(State.Sta3);
         try {
             if ((rq.getProtocolVersion() & 1) == 0)
@@ -446,7 +511,8 @@ public class Association {
 
     void onAAssociateAC(AAssociateAC ac) throws IOException {
         LOG.info("{} >> A-ASSOCIATE-AC", name);
-        LOG_AARQAC.debug("{}", ac);
+        LOG.debug("{}", ac);
+        stopTimeout();
         state.onAAssociateAC(this, ac);
     }
 
@@ -456,62 +522,8 @@ public class Association {
         maxOpsInvoked = ac.getMaxOpsInvoked();
         maxPDULength = ApplicationEntity.minZeroAsMax(
                 ac.getMaxPDULength(), ae.getMaxPDULengthSend());
-        stopARTIM();
         enterState(State.Sta6);
-        startCheckForStaleness();
-    }
-
-    private void startCheckForStaleness() {
-        final int period = conn.getCheckForStalenessPeriod();
-        if (period > 0) {
-            checkForStaleness = device.scheduleAtFixedRate(new Runnable(){
-
-                @Override
-                public void run() {
-                    checkForStaleness();
-                }}, period);
-        }
-    }
-
-    private synchronized void stopCheckForStaleness() {
-        if (checkForStaleness != null) {
-            checkForStaleness.cancel(false);
-            checkForStaleness = null;
-        }
-    }
-
-    private void checkForStaleness() {
-        if (rspHandlerForMsgId.isEmpty()) {
-            closeIfStale("{}: idle timeout expired", idleTimeout);
-        } else
-            synchronized (rspHandlerForMsgId) {
-                IntHashMap.Visitor<DimseRSPHandler> visitor =
-                        new IntHashMap.Visitor<DimseRSPHandler>() {
-    
-                    @Override
-                    public boolean visit(int key, DimseRSPHandler value) {
-                        return !closeIfStale("{}: response timeout expired",
-                                value.getTimeout());
-                    }
-                };
-                rspHandlerForMsgId.accept(visitor);
-            }
-    }
-
-    private boolean closeIfStale(String logmsg, long timeout) {
-        if (timeout == 0 || timeout > System.currentTimeMillis())
-            return false;
-
-        LOG.info(logmsg, this);
-        stopCheckForStaleness();
-        abort();
-        return true;
-    }
-
-    private void updateIdleTimeout() {
-        int timeout = conn.getIdleTimeout();
-        if (timeout > 0)
-            this.idleTimeout = System.currentTimeMillis() + timeout;
+        startIdleTimeout();
     }
 
     void onAAssociateRJ(AAssociateRJ rj) throws IOException {
@@ -526,6 +538,7 @@ public class Association {
 
     void onAReleaseRQ() throws IOException {
         LOG.info("{} >> A-RELEASE-RQ", name);
+        stopTimeout();
         state.onAReleaseRQ(this);
     }
 
@@ -560,16 +573,15 @@ public class Association {
 
     void onAReleaseRP() throws IOException {
         LOG.info("{} >> A-RELEASE-RP", name);
+        stopTimeout();
         state.onAReleaseRP(this);
     }
 
     void handleAReleaseRP() throws IOException {
-        stopARTIM();
         closeSocket();
     }
 
    void handleAReleaseRPCollision() throws IOException {
-        stopARTIM();
         enterState(State.Sta12);
         LOG.info("{} << A-RELEASE-RP", name);
         encoder.writeAReleaseRP();
@@ -578,6 +590,7 @@ public class Association {
 
     void onAAbort(AAbort aa) {
         LOG.info("{} << {}", name, aa);
+        stopTimeout();
         ex = aa;
         closeSocket();
     }
@@ -597,6 +610,7 @@ public class Association {
     }
 
     void writePDataTF() throws IOException {
+        checkException();
         state.writePDataTF(this);
     }
 
@@ -606,7 +620,7 @@ public class Association {
 
     void onDimseRQ(PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException {
-        updateIdleTimeout();
+        stopTimeout();
         incPerforming();
         adjustNextMessageID(cmd.getInt(Tag.MessageID, 0));
         ae.onDimseRQ(this, pc, cmd, data);
@@ -622,26 +636,31 @@ public class Association {
     }
 
     void onDimseRSP(Attributes cmd, Attributes data) {
-        updateIdleTimeout();
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
-        DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
+        int status = cmd.getInt(Tag.Status, 0);
+        boolean pending = Commands.isPending(status);
+        DimseRSPHandler rspHandler = pending ?
+                getDimseRSPHandler(msgId) : removeDimseRSPHandler(msgId);
         if (rspHandler == null) {
             LOG.info("{}: unexpected message ID in DIMSE RSP:", name);
-            LOG.info("{}", cmd);
-            abort();
+            LOG.info("\n{}", cmd);
+            pabort();
         }
-        try {
-            rspHandler.onDimseRSP(this, cmd, data);
-        } finally {
-            if (!Commands.hasPendingStatus(cmd)) {
-                removeDimseRSPHandler(msgId);
-                removeCancelRQHandler(msgId);
-            } else {
-                rspHandler.updateTimeout(
-                        conn.getDimseRSPTimeout(
-                                cmd.getInt(Tag.CommandField, 0)));
-            }
-        }
+        rspHandler.onDimseRSP(this, cmd, data);
+        if (!pending) {
+            removeCancelRQHandler(msgId);
+            if (rspHandlerForMsgId.isEmpty() && performing == 0)
+                startIdleOrReleaseTimeout();
+        } else
+            startTimeout(msgId, conn.getDimseRSPTimeout(
+                    cmd.getInt(Tag.CommandField, 0)));
+    }
+
+    private synchronized void startIdleOrReleaseTimeout() {
+        if (state == State.Sta6)
+            startIdleTimeout();
+        else if (state == State.Sta7)
+            startReleaseTimeout();
     }
 
     private void addDimseRSPHandler(DimseRSPHandler rspHandler)
@@ -660,10 +679,11 @@ public class Association {
         }
     }
 
-    private void removeDimseRSPHandler(int msgId) {
+    private DimseRSPHandler removeDimseRSPHandler(int msgId) {
         synchronized (rspHandlerForMsgId ) {
-            rspHandlerForMsgId.remove(msgId);
+            DimseRSPHandler tmp = rspHandlerForMsgId.remove(msgId);
             rspHandlerForMsgId.notifyAll();
+            return tmp;
         }
     }
 
@@ -687,8 +707,10 @@ public class Association {
         }
         cmd.setInt(Tag.CommandDataSetType, VR.US, datasetType);
         encoder.writeDIMSE(pc, cmd, writer);
-        if (!Commands.hasPendingStatus(cmd))
+        if (!Commands.isPending(cmd.getInt(Tag.Status, 0))) {
             decPerforming();
+            startIdleTimeout();
+        }
     }
 
     void onCancelRQ(Attributes cmd) throws IOException {
@@ -829,12 +851,12 @@ public class Association {
     private void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
+        stopTimeout();
         checkException();
-        updateIdleTimeout();
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
-        rspHandler.updateTimeout(rspTimeout);
+        startTimeout(rspHandler.getMessageID(), rspTimeout);
     }
 
 }

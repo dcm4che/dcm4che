@@ -91,7 +91,6 @@ public class Connection {
     private int cgetRSPTimeout;
     private int cmoveRSPTimeout;
     private int idleTimeout;
-    private int checkForStalenessPeriod;
     private int socketCloseDelay = 50;
     private int sendBufferSize;
     private int receiveBufferSize;
@@ -336,14 +335,6 @@ public class Connection {
 
     public final void setIdleTimeout(int idleTimeout) {
         this.idleTimeout = idleTimeout;
-    }
-
-    public final int getCheckForStalenessPeriod() {
-        return checkForStalenessPeriod;
-    }
-
-    public final void setCheckForStalenessPeriod(int checkForStalenessPeriod) {
-        this.checkForStalenessPeriod = checkForStalenessPeriod;
     }
 
     /**
@@ -626,9 +617,7 @@ public class Connection {
                         } else {
                             LOG.info("Accept connection from {}", s);
                             setSocketOptions(s);
-                            Association as =
-                                    new Association(null, Connection.this, s);
-                            as.activate();
+                            new Association(null, Connection.this, s);
                         }
                     }
                 } catch (Throwable e) {

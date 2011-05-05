@@ -50,7 +50,6 @@ import org.dcm4che.net.Commands;
 import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 

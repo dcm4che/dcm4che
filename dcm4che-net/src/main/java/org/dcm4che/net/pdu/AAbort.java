@@ -89,10 +89,6 @@ public class AAbort extends IOException {
     private final int source;
     private final int reason;
 
-    public AAbort() {
-        this(UL_SERIVE_USER, 0);
-    }
-
     public AAbort(int source, int reason) {
         super("A-ABORT[source: " + toString(SOURCES, source)
                   + ", reason: " + toReason(source, reason)

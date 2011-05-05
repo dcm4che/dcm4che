@@ -1407,11 +1407,13 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+            if (i > 0)
+                sb.append('\n');
             appendAttribute(tag, privateCreator, vrs[i], values[i],
-                    sb.length() + maxWidth, sb).append('\n');
+                    sb.length() + maxWidth, sb);
         }
         if (size > lines)
-            sb.append("...\n");
+            sb.append("\n...");
         return sb;
     }
 

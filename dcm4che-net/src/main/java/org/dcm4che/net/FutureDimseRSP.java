@@ -41,6 +41,7 @@ package org.dcm4che.net;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,7 +78,7 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
             last = last.next;
 
         last.next = new Entry(cmd, data);
-        if (Commands.hasPendingStatus(cmd)) {
+        if (Commands.isPending(cmd.getInt(Tag.Status, 0))) {
             if (autoCancel > 0 && --autoCancel == 0)
                 try {
                     super.cancel(as);
@@ -92,6 +93,7 @@ public class FutureDimseRSP extends DimseRSPHandler implements DimseRSP {
 
     @Override
     public synchronized void onClose(Association as) {
+        super.onClose(as);
         if (!finished) {
             ex = as.getException();
             if (ex == null)

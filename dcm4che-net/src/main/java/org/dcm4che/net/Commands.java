@@ -250,8 +250,8 @@ public class Commands {
         return cmd.getInt(Tag.CommandDataSetType, 0) != NO_DATASET;
     }
 
-    public static boolean hasPendingStatus(Attributes cmd) {
-        return (cmd.getInt(Tag.Status, 0) & Status.Pending) == Status.Pending;
+    public static boolean isPending(int status) {
+        return (status & Status.Pending) == Status.Pending;
     }
 
     public static StringBuilder promptTo(Attributes cmd, int pcid,

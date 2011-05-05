@@ -156,6 +156,21 @@ enum State {
     Sta13("Sta13 - Awaiting Transport Connection Close Indication") {
 
         @Override
+        public void onAReleaseRP(Association as) throws IOException {
+            // NO OP
+        }
+
+        @Override
+        void onAReleaseRQ(Association as) throws IOException {
+            // NO OP
+        }
+
+        @Override
+        void onPDataTF(Association as) throws IOException {
+            // NO OP
+        }
+
+        @Override
         void write(Association as, AAbort aa) {
             // NO OP
         }

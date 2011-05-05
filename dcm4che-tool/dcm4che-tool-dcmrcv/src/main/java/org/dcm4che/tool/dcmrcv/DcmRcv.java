@@ -41,8 +41,10 @@ package org.dcm4che.tool.dcmrcv;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -74,8 +76,6 @@ public class DcmRcv {
     private final StorageSCP storageSCP = new StorageSCP(this);
 
     public DcmRcv() {
-        device.setScheduledExecutorService(
-                Executors.newSingleThreadScheduledExecutor());
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -84,6 +84,10 @@ public class DcmRcv {
         serviceRegistry.addDicomService(new VerificationService());
         serviceRegistry.addDicomService(storageSCP);
         ae.setDimseRQHandler(serviceRegistry);
+    }
+
+    public void setScheduledExecuter(ScheduledExecutorService scheduledExecutor) {
+        device.setScheduledExecutor(scheduledExecutor);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -116,11 +120,16 @@ public class DcmRcv {
             CLIUtils.configure(dcmrcv.conn, dcmrcv.ae, cl);
             configureTransferCapability(dcmrcv.ae, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
+            ScheduledExecutorService scheduledExecutorService = 
+                    Executors.newSingleThreadScheduledExecutor();
+            dcmrcv.setScheduledExecuter(scheduledExecutorService);
+            dcmrcv.setExecutor(executorService);
             try {
-                dcmrcv.start(executorService);
+                dcmrcv.start();
             } catch (Exception e) {
-                executorService.shutdownNow();
-            }
+                executorService.shutdown();
+                scheduledExecutorService.shutdown();
+           }
         } catch (ParseException e) {
             System.err.println("dcmrcv: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -130,6 +139,10 @@ public class DcmRcv {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    public void setExecutor(Executor executor) {
+        device.setExecutor(executor);
     }
 
     private static void configureTransferCapability(ApplicationEntity ae,
@@ -163,8 +176,7 @@ public class DcmRcv {
         }
      }
 
-    private void start(ExecutorService executor) throws IOException {
-        device.setExecutor(executor);
+    private void start() throws IOException {
         conn.bind();
     }
 

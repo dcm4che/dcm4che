@@ -94,7 +94,7 @@ public class Device {
     private final AtomicInteger connCount = new AtomicInteger(0);
 
     private Executor executor;
-    private ScheduledExecutorService scheduledExecutorService;
+    private ScheduledExecutorService scheduledExecutor;
     private SSLContext sslContext;
 
     public Device(String name) {
@@ -444,12 +444,12 @@ public class Device {
         this.executor = executor;
     }
 
-    public final ScheduledExecutorService getScheduledExecutorService() {
-        return scheduledExecutorService;
+    public final ScheduledExecutorService getScheduledExecutor() {
+        return scheduledExecutor;
     }
 
-    public final void setScheduledExecutorService(ScheduledExecutorService service) {
-        this.scheduledExecutorService = service;
+    public final void setScheduledExecutor(ScheduledExecutorService executor) {
+        this.scheduledExecutor = executor;
     }
 
     public void addConnection(Connection conn) {
@@ -587,20 +587,20 @@ public class Device {
     }
 
     ScheduledFuture<?> schedule(Runnable command, long delay) {
-        if (scheduledExecutorService == null)
+        if (scheduledExecutor == null)
             throw new IllegalStateException(
                     "scheduled executor service not initalized");
 
-        return scheduledExecutorService.schedule(command, delay,
+        return scheduledExecutor.schedule(command, delay,
                 TimeUnit.MILLISECONDS);
     }
 
     ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long period) {
-        if (scheduledExecutorService == null)
+        if (scheduledExecutor == null)
             throw new IllegalStateException(
                     "scheduled executor service not initalized");
 
-        return scheduledExecutorService.scheduleAtFixedRate(command, 0,
+        return scheduledExecutor.scheduleAtFixedRate(command, 0,
                 period, TimeUnit.MILLISECONDS);
     }
 }

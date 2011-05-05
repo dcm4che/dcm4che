@@ -39,7 +39,6 @@
 package org.dcm4che.net.service;
 
 import org.dcm4che.net.Association;
-import org.dcm4che.net.pdu.AAbort;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

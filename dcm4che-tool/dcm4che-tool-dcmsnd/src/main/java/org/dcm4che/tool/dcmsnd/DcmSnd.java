@@ -52,6 +52,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -102,11 +103,17 @@ public class DcmSnd {
     private int filesSent;
 
     public DcmSnd() {
-        device.setScheduledExecutorService(
-                Executors.newSingleThreadScheduledExecutor());
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
+    }
+
+    public void setScheduledExecutorService(ScheduledExecutorService service) {
+        device.setScheduledExecutor(service);
+    }
+
+    public void setExecutor(Executor executor) {
+        device.setExecutor(executor);
     }
 
     public final void setPriority(int priority) {
@@ -170,9 +177,13 @@ public class DcmSnd {
             }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
+            ScheduledExecutorService scheduledExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+            dcmsnd.setExecutor(executorService);
+            dcmsnd.setScheduledExecutorService(scheduledExecutorService);
             try {
                 t1 = System.currentTimeMillis();
-                dcmsnd.open(executorService);
+                dcmsnd.open();
                 t2 = System.currentTimeMillis();
                 System.out.printf(rb.getString("connected"),
                         dcmsnd.as.getRemoteAET(),
@@ -187,6 +198,7 @@ public class DcmSnd {
             } finally {
                 dcmsnd.close();
                 executorService.shutdown();
+                scheduledExecutorService.shutdown();
             }
             if (dcmsnd.filesScanned > 0) {
                 float s = (t2 - t1) / 1000F;
@@ -353,6 +365,7 @@ public class DcmSnd {
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
+                super.onDimseRSP(as, cmd, data);
                 DcmSnd.this.onCStoreRSP(cmd, f);
             }
         };
@@ -365,9 +378,8 @@ public class DcmSnd {
             as.release();
     }
 
-    public void open(Executor executor)
+    public void open()
             throws IOException, InterruptedException {
-        device.setExecutor(executor);
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,

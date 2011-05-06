@@ -45,42 +45,32 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.EncodingParams;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Xml2Dcm {
 
-    private static final String USAGE = "xml2dcm [<options>] " +
-        "[-i <dicom-file>] -x <xml-file> [-o <dicom-file>]";
-
-    private static final String DESCRIPTION = 
-        "\nConvert <xml-file> (or the standard input if <xml-file> = '-') " +
-        "into a DICOM stream written to -o <dicom-file> or standard output " +
-        "if no -o option is specified. Optionally load DICOM file specified " +
-        "by -i <dicom-file> and merge attributes parsed from <xml-file> " +
-        "with it." +
-        "\n-\nOptions:";
-
-    private static final String EXAMPLE = null;
+    private static ResourceBundle rb =
+        ResourceBundle.getBundle("org.dcm4che.tool.xml2dcm.xml2dcm");
 
     private boolean includeBulkData = false;
     private boolean includeBulkDataLocator = true;
@@ -92,12 +82,7 @@ public class Xml2Dcm {
     private String tsuid;
     private boolean withfmi;
     private boolean nofmi;
-    private boolean groupLength;
-    private boolean undefSeqLength;
-    private boolean undefEmptySeqLength;
-    private boolean undefItemLength;
-    private boolean undefEmptyItemLength;
-
+    private final EncodingParams encParams = new EncodingParams();
     private List<File> bulkDataFiles;
     private Attributes fmi;
     private Attributes dataset;
@@ -142,217 +127,113 @@ public class Xml2Dcm {
         this.nofmi = nofmi;
     }
 
-    public final void setEncodeGroupLength(boolean groupLength) {
-        this.groupLength = groupLength;
-    }
-
-    public final void setUndefSequenceLength(boolean undefLength) {
-        this.undefSeqLength = undefLength;
-    }
-
-    public final void setUndefEmptySequenceLength(boolean undefLength) {
-        this.undefEmptySeqLength = undefLength;
-    }
-
-    public final void setUndefItemLength(boolean undefLength) {
-        this.undefItemLength = undefLength;
-    }
-
-    public final void setUndefEmptyItemLength(boolean undefLength) {
-        this.undefEmptyItemLength = undefLength;
-    }
-
-    @SuppressWarnings("static-access")
-    private static CommandLine parseComandLine(String[] args)
+     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("xml-file")
-                .withDescription("XML file to convert to DICOM stream; " +
-                     "set <xml-file> = '-' to read XML from standard input.")
-                .create("x"));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("dicom-file")
-                .withDescription("Load DICOM file to be merged with " +
-                     "attributes parsed from -x <xml-file>; " +
-                     "set <dicom-file> = '-' to read DICOM stream from " +
-                     "standard input.")
-                .create("i"));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("dicom-file")
-                .withDescription("Store result into <dicom-file>. " +
-                     "By default write DICOM stream to standard output.")
-                .create("o"));
-        OptionGroup blkGroup = new OptionGroup();
-        blkGroup.addOption(OptionBuilder
-                .withLongOpt("no-bulkdata")
-                .withDescription("do not read bulkdata from -i <dicom-file>")
-                .create("B"));
-        blkGroup.addOption(OptionBuilder
-                .withLongOpt("alloc-bulkdata")
-                .withDescription("load bulkdata from -i <dicom-file> into " +
-                    "memory. At default, bulkdata from -i <dicom-file> is " +
-                    "streamed to -o <dicom-file> and not hold in memory.")
-                .create("b"));
-        opts.addOptionGroup(blkGroup);
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-dir")
-                .hasArg()
-                .withArgName("directory")
-                .withDescription("directory were files with extracted " +
-                     "bulkdata are stored if the DICOM stream to be merged " +
-                     "is read from standard input; if not specified, files " +
-                     "are stored into the default temporary-file directory.")
-                .create("d"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-prefix")
-                .hasArg()
-                .withArgName("prefix")
-                .withDescription("prefix for generating file names for " +
-                     "extracted bulkdata; 'blk' by default.")
-                .create());
-        opts.addOption(OptionBuilder
-                .withLongOpt("blk-file-suffix")
-                .hasArg()
-                .withArgName("suffix")
-                .withDescription("suffix for generating file names for " +
-                     "extracted bulkdata; '.tmp' by default.")
-                .create());
-        opts.addOption("c", "cat-blk-files", false,
-                "concatenate extracted bulkdata into one file.");
-        opts.addOption(OptionBuilder.withLongOpt("blk-spec").hasArg()
-                .withArgName("xml-file").withDescription(
-                     "specify bulkdata attributes explicitly by " +
-                     "XML presentation in <xml-file>.")
-                .create("X"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("keep-blk-files")
-                .withDescription("Do not delete extracted bulkdata after it " +
-                    "was written into the generated DICOM stream.")
-                .create());
+        CLIUtils.addCommonOptions(opts);
+        addIOFileNameOptions(opts);
+        addBulkdataOptions(opts);
+        addFileEncodingOptions(opts);
+        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Xml2Dcm.class);
+        if (!(cl.hasOption("x") || cl.hasOption("i")))
+            throw new ParseException(rb.getString("missing-i-x"));
+        return cl;
+    }
+
+     @SuppressWarnings("static-access")
+     private static void addIOFileNameOptions(Options opts) {
+         opts.addOption(OptionBuilder
+                 .hasArg()
+                 .withArgName("xml-file")
+                 .withDescription(rb.getString("x-file"))
+                 .create("x"));
+         opts.addOption(OptionBuilder
+                 .hasArg()
+                 .withArgName("dicom-file")
+                 .withDescription(rb.getString("i-file"))
+                 .create("i"));
+         opts.addOption(OptionBuilder
+                 .hasArg()
+                 .withArgName("dicom-file")
+                 .withDescription(rb.getString("o-file"))
+                 .create("o"));
+      }
+
+
+     @SuppressWarnings("static-access")
+     private static void addBulkdataOptions(Options opts) {
+         OptionGroup blkGroup = new OptionGroup();
+         blkGroup.addOption(OptionBuilder
+                 .withLongOpt("no-bulkdata")
+                 .withDescription(rb.getString("no-bulkdata"))
+                 .create("B"));
+         blkGroup.addOption(OptionBuilder
+                 .withLongOpt("alloc-bulkdata")
+                 .withDescription(rb.getString("alloc-bulkdata"))
+                 .create("b"));
+         opts.addOptionGroup(blkGroup);
+         opts.addOption(OptionBuilder
+                 .withLongOpt("blk-file-dir")
+                 .hasArg()
+                 .withArgName("directory")
+                 .withDescription(rb.getString("blk-file-dir"))
+                 .create("d"));
+         opts.addOption(OptionBuilder
+                 .withLongOpt("blk-file-prefix")
+                 .hasArg()
+                 .withArgName("prefix")
+                 .withDescription(rb.getString("blk-file-prefix"))
+                 .create());
+         opts.addOption(OptionBuilder
+                 .withLongOpt("blk-file-suffix")
+                 .hasArg()
+                 .withArgName("suffix")
+                 .withDescription(rb.getString("blk-file-suffix"))
+                 .create());
+         opts.addOption("c", "cat-blk-files", false,
+                  rb.getString("cat-blk-files"));
+         opts.addOption(null, "keep-blk-files", false,
+                 rb.getString("keep-blk-files"));
+         opts.addOption(OptionBuilder
+                 .withLongOpt("blk-spec")
+                 .hasArg()
+                 .withArgName("xml-file")
+                 .withDescription(rb.getString("blk-spec"))
+                 .create("X"));
+     }
+
+     @SuppressWarnings("static-access")
+     private static void addFileEncodingOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .withLongOpt("transfer-syntax")
                 .hasArg()
                 .withArgName("uid")
-                .withDescription("Store result with specified Transfer " +
-                    "Syntax. At default use the Transfer Syntax of the " +
-                    "input DICOM file or Explicit VR Little Endian if no " +
-                    "input DICOM file was specified for generated DICOM " +
-                    "Part 10 files, and Implicit VR Little Endian if no " +
-                    "File Meta Information is included in the stored result.")
+                .withDescription(rb.getString("transfer-syntax"))
                 .create("t"));
         OptionGroup fmiGroup = new OptionGroup();
         fmiGroup.addOption(OptionBuilder
                 .withLongOpt("no-fmi")
-                .withDescription("Store result always without File Meta " +
-                    "Information. At default, the result is stored with " +
-                    "File Meta Information if the XML file or the input " +
-                    "DICOM file specified by -i <dicom-file> contains a " +
-                    "File Meta Information.")
+                .withDescription(rb.getString("no-fmi"))
                 .create("F"));
         fmiGroup.addOption(OptionBuilder
                 .withLongOpt("fmi")
-                .withDescription("Store result always as DICOM Part 10 File " +
-                    "with File Meta Information. At default, the result is " +
-                    "only stored with File Meta Information if the XML file " +
-                    "or the input DICOM file specified by -i <dicom-file> " +
-                    "contains a File Meta Information.")
+                .withDescription(rb.getString("fmi"))
                 .create("f"));
         opts.addOptionGroup(fmiGroup);
-        opts.addOption("g", "group-len", false, 
-                "Include (gggg,0000) Group Length attributes. At default, " +
-                "optional Group Length attributes are excluded.");
-        OptionGroup sqlenGroup = new OptionGroup();
-        sqlenGroup.addOption(OptionBuilder
-                .withLongOpt("expl-seq-len")
-                .withDescription("Encode sequences with explicit length. " +
-                    "At default, non-empty sequences are encoded with " +
-                    "undefined length.")
-                .create("E"));
-        sqlenGroup.addOption(OptionBuilder
-                .withLongOpt("undef-seq-len")
-                .withDescription("Encode all sequences with undefined length. " +
-                    "At default, only non-empty sequences are encoded with " +
-                    "undefined length.")
-                .create("U"));
-        opts.addOptionGroup(sqlenGroup);
-        OptionGroup itemlenGroup = new OptionGroup();
-        itemlenGroup.addOption(OptionBuilder
-                .withLongOpt("expl-item-len")
-                .withDescription("Encode sequence items with explicit length. " +
-                    "At default, non-empty sequence items are encoded with " +
-                    "undefined length.")
-                .create("e"));
-        itemlenGroup.addOption(OptionBuilder
-                .withLongOpt("undef-item-len")
-                .withDescription("Encode all sequence items with undefined " +
-                    "length. At default, only non-empty sequence items are " +
-                    "encoded with undefined length.")
-                .create("u"));
-        opts.addOptionGroup(itemlenGroup);
-        opts.addOption("h", "help", false, "display this help and exit");
-        opts.addOption("V", "version", false, 
-                "output version information and exit");
-        CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(opts, args);
-        if (cl.hasOption("h")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
-        }
-        if (cl.hasOption("V")) {
-            System.out.println("xml2dcm " + 
-                    Xml2Dcm.class.getPackage().getImplementationVersion());
-            System.exit(0);
-        }
-        if (!cl.hasOption("x") && !cl.hasOption("i")) {
-            throw new ParseException("Missing required option: x");
-        }
-        return cl;
+        CLIUtils.addEncodingOptions(opts);
     }
 
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             Xml2Dcm xml2dcm = new Xml2Dcm();
-            if (cl.hasOption("b")) {
-                xml2dcm.setIncludeBulkData(true);
-                xml2dcm.setIncludeBulkDataLocator(false);
-            }
-            if (cl.hasOption("B")) {
-                xml2dcm.setIncludeBulkData(false);
-                xml2dcm.setIncludeBulkDataLocator(false);
-            }
-            if (cl.hasOption("blk-file-prefix")) {
-                xml2dcm.setBulkDataFilePrefix(
-                        cl.getOptionValue("blk-file-prefix"));
-            }
-            if (cl.hasOption("blk-file-suffix")) {
-                xml2dcm.setBulkDataFileSuffix(
-                        cl.getOptionValue("blk-file-suffix"));
-            }
-            if (cl.hasOption("d")) {
-                File tempDir = new File(cl.getOptionValue("d"));
-                xml2dcm.setBulkDataDirectory(tempDir);
-            }
-            xml2dcm.setConcatenateBulkDataFiles(cl.hasOption("c"));
-            if (cl.hasOption("X")) {
-                xml2dcm.setBulkDataAttributes(
-                        parseXML(cl.getOptionValue("X")));
-            }
+            configureBulkdata(xml2dcm, cl);
             if (cl.hasOption("t")) {
                 xml2dcm.setTransferSyntax(cl.getOptionValue("t"));
             }
             xml2dcm.setWithFileMetaInformation(cl.hasOption("f"));
             xml2dcm.setNoFileMetaInformation(cl.hasOption("F"));
-            xml2dcm.setEncodeGroupLength(cl.hasOption("g"));
-            xml2dcm.setUndefItemLength(!cl.hasOption("e"));
-            xml2dcm.setUndefSequenceLength(!cl.hasOption("E"));
-            xml2dcm.setUndefEmptyItemLength(cl.hasOption("u"));
-            xml2dcm.setUndefEmptySequenceLength(cl.hasOption("U"));
+            CLIUtils.configure(xml2dcm.encParams, cl);
             try {
                 if (cl.hasOption("i")) {
                     String fname = cl.getOptionValue("i");
@@ -386,12 +267,41 @@ public class Xml2Dcm {
             }
         } catch (ParseException e) {
             System.err.println("xml2dcm: " + e.getMessage());
-            System.err.println("Try `xml2dcm --help' for more information.");
+            System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
             System.err.println("xml2dcm: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    private static void configureBulkdata(Xml2Dcm xml2dcm, CommandLine cl)
+            throws Exception {
+        if (cl.hasOption("b")) {
+            xml2dcm.setIncludeBulkData(true);
+            xml2dcm.setIncludeBulkDataLocator(false);
+        }
+        if (cl.hasOption("B")) {
+            xml2dcm.setIncludeBulkData(false);
+            xml2dcm.setIncludeBulkDataLocator(false);
+        }
+        if (cl.hasOption("blk-file-prefix")) {
+            xml2dcm.setBulkDataFilePrefix(
+                    cl.getOptionValue("blk-file-prefix"));
+        }
+        if (cl.hasOption("blk-file-suffix")) {
+            xml2dcm.setBulkDataFileSuffix(
+                    cl.getOptionValue("blk-file-suffix"));
+        }
+        if (cl.hasOption("d")) {
+            File tempDir = new File(cl.getOptionValue("d"));
+            xml2dcm.setBulkDataDirectory(tempDir);
+        }
+        xml2dcm.setConcatenateBulkDataFiles(cl.hasOption("c"));
+        if (cl.hasOption("X")) {
+            xml2dcm.setBulkDataAttributes(
+                    parseXML(cl.getOptionValue("X")));
         }
     }
 
@@ -411,11 +321,11 @@ public class Xml2Dcm {
                         : tsuid != null 
                                 ? tsuid
                                 : UID.ImplicitVRLittleEndian);
-        dos.setEncodeGroupLength(groupLength);
-        dos.setUndefSequenceLength(undefSeqLength);
-        dos.setUndefEmptySequenceLength(undefEmptySeqLength);
-        dos.setUndefItemLength(undefItemLength);
-        dos.setUndefEmptyItemLength(undefEmptyItemLength);
+        dos.setEncodeGroupLength(encParams.isGroupLength());
+        dos.setUndefSequenceLength(encParams.isUndefSequenceLength());
+        dos.setUndefEmptySequenceLength(encParams.isUndefEmptySequenceLength());
+        dos.setUndefItemLength(encParams.isUndefItemLength());
+        dos.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
         dos.writeDataset(fmi, dataset);
         dos.finish();
         dos.flush();

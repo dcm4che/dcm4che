@@ -538,4 +538,43 @@ public class CLIUtils {
         return p;
     }
 
+    @SuppressWarnings("static-access")
+    public static void addEncodingOptions(Options opts) {
+        opts.addOption(null, "group-len", false, rb.getString("group-len"));
+        OptionGroup sqlenGroup = new OptionGroup();
+        sqlenGroup.addOption(OptionBuilder
+                .withLongOpt("expl-seq-len")
+                .withDescription(rb.getString("expl-seq-len"))
+                .create(null));
+        sqlenGroup.addOption(OptionBuilder
+                .withLongOpt("undef-seq-len")
+                .withDescription(rb.getString("undef-seq-len"))
+                .create(null));
+        opts.addOptionGroup(sqlenGroup);
+        OptionGroup itemlenGroup = new OptionGroup();
+        itemlenGroup.addOption(OptionBuilder
+                .withLongOpt("expl-item-len")
+                .withDescription(rb.getString("expl-item-len"))
+                .create(null));
+        itemlenGroup.addOption(OptionBuilder
+                .withLongOpt("undef-item-len")
+                .withDescription(rb.getString("undef-item-len"))
+                .create(null));
+        opts.addOptionGroup(itemlenGroup);
+    }
+
+    public static void configure(EncodingParams encParams, CommandLine cl)
+            throws ParseException {
+        // workaround for bug in CLI OptionGroup concerning options without short opt string
+        if (cl.hasOption("expl-item-len") && cl.hasOption("undef-item-len")
+            || cl.hasOption("expl-seq-len") && cl.hasOption("undef-seq-len"))
+            throw new ParseException(
+                    rb.getString("conflicting-enc-opts"));
+        encParams.setGroupLength(cl.hasOption("group-len"));
+        encParams.setUndefItemLength(!cl.hasOption("expl-item-len"));
+        encParams.setUndefSequenceLength(!cl.hasOption("expl-seq-len"));
+        encParams.setUndefEmptyItemLength(cl.hasOption("undef-item-len"));
+        encParams.setUndefEmptySequenceLength(cl.hasOption("undef-seq-len"));
+    }
+
 }

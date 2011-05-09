@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -73,6 +74,7 @@ import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -172,8 +174,10 @@ public class DcmSnd {
                 dcmsnd.scanFiles(argList);
                 t2 = System.currentTimeMillis();
                 int n = dcmsnd.filesScanned;
-                System.out.printf(rb.getString("scanned"), n,
-                        (t2 - t1) / 1000F, (t2 - t1) / n);
+                System.out.println();
+                System.out.println(MessageFormat.format(
+                        rb.getString("scanned"), n,
+                        (t2 - t1) / 1000F, (t2 - t1) / n));
             }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -185,9 +189,9 @@ public class DcmSnd {
                 t1 = System.currentTimeMillis();
                 dcmsnd.open();
                 t2 = System.currentTimeMillis();
-                System.out.printf(rb.getString("connected"),
-                        dcmsnd.as.getRemoteAET(),
-                        t2 - t1);
+                System.out.println(MessageFormat.format(
+                        rb.getString("connected"),
+                        dcmsnd.as.getRemoteAET(), t2 - t1));
                 if (echo)
                     dcmsnd.echo();
                 else {
@@ -203,9 +207,9 @@ public class DcmSnd {
             if (dcmsnd.filesScanned > 0) {
                 float s = (t2 - t1) / 1000F;
                 float mb = dcmsnd.totalSize / 1048576F;
-                System.out.printf(rb.getString("sent"),
+                System.out.println(MessageFormat.format(rb.getString("sent"),
                         dcmsnd.filesSent,
-                        mb, s, mb / s);
+                        mb, s, mb / s));
             }
         } catch (ParseException e) {
             System.err.println("dcmsnd: " + e.getMessage());
@@ -400,13 +404,15 @@ public class DcmSnd {
         case 0xB007:
             totalSize += f.length();
             ++filesSent;
-            System.err.format(rb.getString("warning"), status, f);
+            System.err.println(MessageFormat.format(rb.getString("warning"),
+                    TagUtils.shortToHexString(status), f));
             System.err.println(cmd);
             break;
         default:
             System.out.print('E');
-            System.err.format(rb.getString("error"), status, f);
-            System.err.println(cmd);
+            System.err.println(MessageFormat.format(rb.getString("error"),
+                    TagUtils.shortToHexString(status), f));
+                   System.err.println(cmd);
         }
     }
 }

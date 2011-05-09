@@ -40,15 +40,14 @@ package org.dcm4che.tool.dcm2txt;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
@@ -57,6 +56,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputHandler;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.TagUtils;
 
 /**
@@ -64,14 +64,8 @@ import org.dcm4che.util.TagUtils;
  */
 public class Dcm2Txt implements DicomInputHandler {
 
-    private static final String USAGE = "dcm2txt [<options>] <dicom-file>";
-
-    private static final String DESCRIPTION = 
-        "\nParse specified <dicom-file> (or the standard input if the " +
-        "filename provided is - ) and writes a text representation to " +
-        "standard output.\n.\nOptions:";
-
-    private static final String EXAMPLE = null;
+    private static ResourceBundle rb =
+        ResourceBundle.getBundle("org.dcm4che.tool.dcm2txt.dcm2txt");
 
     /** default number of characters per line */
     private static final int DEFAULT_WIDTH = 78;
@@ -237,8 +231,8 @@ public class Dcm2Txt implements DicomInputHandler {
                 try {
                     dcm2txt.setWidth(Integer.parseInt(s));
                 } catch (IllegalArgumentException e) {
-                    throw new ParseException(
-                            "Illegal line length: " + s);
+                    throw new ParseException(MessageFormat.format(
+                            rb.getString("illegal-width"), s));
                 }
             }
             String fname = fname(cl.getArgList());
@@ -255,7 +249,7 @@ public class Dcm2Txt implements DicomInputHandler {
             }
         } catch (ParseException e) {
             System.err.println("dcm2txt: " + e.getMessage());
-            System.err.println("Try `dcm2txt --help' for more information.");
+            System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (IOException e) {
             System.err.println("dcm2txt: " + e.getMessage());
@@ -266,9 +260,9 @@ public class Dcm2Txt implements DicomInputHandler {
     private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
-            throw new ParseException("Missing file operand");
+            throw new ParseException(rb.getString("missing"));
         if (numArgs > 1)
-            throw new ParseException("Too many arguments");
+            throw new ParseException(rb.getString("too-many"));
         return argList.get(0);
     }
 
@@ -276,28 +270,14 @@ public class Dcm2Txt implements DicomInputHandler {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
         opts.addOption(OptionBuilder
                 .withLongOpt("width")
                 .hasArg()
                 .withArgName("col")
-                .withDescription("set line length; default: 78")
+                .withDescription(rb.getString("width"))
                 .create("w"));
-        opts.addOption("h", "help", false, "display this help and exit");
-        opts.addOption("V", "version", false,
-                "output version information and exit");
-        CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(opts, args);
-        if (cl.hasOption("h")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
-        }
-        if (cl.hasOption("V")) {
-            System.out.println("dcm2txt " + 
-                    Dcm2Txt.class.getPackage().getImplementationVersion());
-            System.exit(0);
-        }
-        return cl;
+        return CLIUtils.parseComandLine(args, opts, rb, Dcm2Txt.class);
     }
 
 }

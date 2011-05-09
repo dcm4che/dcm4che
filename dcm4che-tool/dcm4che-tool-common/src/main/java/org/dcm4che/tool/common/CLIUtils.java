@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -84,7 +85,8 @@ public class CLIUtils {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("aet[@ip][:port]")
-                .withDescription(rb.getString("bind").replace("{}", defAET))
+                .withDescription(
+                        MessageFormat.format(rb.getString("bind"), defAET))
                 .withLongOpt("bind")
                 .create("b"));
     }

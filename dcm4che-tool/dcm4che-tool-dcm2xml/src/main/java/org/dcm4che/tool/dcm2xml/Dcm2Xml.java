@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -54,33 +55,24 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.SAXWriter;
+import org.dcm4che.tool.common.CLIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Dcm2Xml {
 
-    private static final String USAGE = "dcm2xml [<options>] <dicom-file>";
+    private static ResourceBundle rb =
+        ResourceBundle.getBundle("org.dcm4che.tool.dcm2xml.dcm2xml");
 
-    private static final String DESCRIPTION = 
-        "\nConvert <dicom-file> (or the standard input if <dicom-file> = '-') " +
-        "in XML presentation and optionally apply XSLT stylesheet on it. " +
-        "Writes result to standard output." +
-        "\n-\nOptions:";
-
-    private static final String EXAMPLE = null;
-    
     private URL xslt;
     private boolean indent = false;
     private boolean includeKeyword = true;
@@ -134,79 +126,60 @@ public class Dcm2Xml {
 
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
-            throws ParseException{
+            throws ParseException {
         Options opts = new Options();
+        CLIUtils.addCommonOptions(opts);
         opts.addOption(OptionBuilder
-                .withLongOpt("xslt")
+                .withLongOpt("xsl")
                 .hasArg()
                 .withArgName("xsl-file")
-                .withDescription("apply specified XSLT stylesheet")
+                .withDescription(rb.getString("xsl"))
                 .create("x"));
-        opts.addOption("I", "indent", false,
-                "use additional whitespace in XML output");
-        opts.addOption("K", "no-keyword", false,
-                "do not include keyword attribute of DicomAttribute element " +
-                "in XML output");
+        opts.addOption("I", "indent", false, rb.getString("indent"));
+        opts.addOption("K", "no-keyword", false, rb.getString("no-keyword"));
+        addBulkdataOptions(opts);
+
+        return CLIUtils.parseComandLine(args, opts, rb, Dcm2Xml.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addBulkdataOptions(Options opts) {
         OptionGroup group = new OptionGroup();
         group.addOption(OptionBuilder
                 .withLongOpt("no-bulkdata")
-                .withDescription("do not include bulkdata in XML output; " +
-                     "by default, references to bulkdata are included.")
+                .withDescription(rb.getString("no-bulkdata"))
                 .create("B"));
         group.addOption(OptionBuilder
                 .withLongOpt("with-bulkdata")
-                .withDescription("include bulkdata directly in XML output; " +
-                    "by default, only references to bulkdata are included.")
+                .withDescription(rb.getString("with-bulkdata"))
                 .create("b"));
         opts.addOptionGroup(group);
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-dir")
                 .hasArg()
                 .withArgName("directory")
-                .withDescription("directory were files with extracted " +
-                     "bulkdata are stored if the DICOM object is read from " +
-                     "standard input; if not specified, files are stored into " +
-                     "the default temporary-file directory.")
+                .withDescription(rb.getString("blk-file-dir"))
                 .create("d"));
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-prefix")
                 .hasArg()
                 .withArgName("prefix")
-                .withDescription("prefix for generating file names for " +
-                     "extracted bulkdata; 'blk' by default.")
+                .withDescription(rb.getString("blk-file-prefix"))
                 .create());
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-file-suffix")
                 .hasArg()
                 .withArgName("suffix")
-                .withDescription("suffix for generating file names for " +
-                     "extracted bulkdata; '.tmp' by default.")
+                .withDescription(rb.getString("blk-file-dir"))
                 .create());
         opts.addOption("c", "cat-blk-files", false,
-                     "concatenate extracted bulkdata into one file.");
+                rb.getString("cat-blk-files"));
         opts.addOption(OptionBuilder
                 .withLongOpt("blk-spec")
                 .hasArg()
                 .withArgName("xml-file")
-                .withDescription("specify bulkdata attributes explicitly by " +
-                     "XML presentation in <xml-file>.")
+                .withDescription(rb.getString("blk-spec"))
                 .create("X"));
-        opts.addOption("h", "help", false, "display this help and exit");
-        opts.addOption("V", "version", false,
-                "output version information and exit");
-        CommandLineParser parser = new PosixParser();
-        CommandLine cl = parser.parse(opts, args);
-        if (cl.hasOption("h")) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
-        }
-        if (cl.hasOption("V")) {
-            System.out.println("dcm2xml " + 
-                    Dcm2Xml.class.getPackage().getImplementationVersion());
-            System.exit(0);
-        }
-        return cl;
     }
 
     @SuppressWarnings("unchecked")
@@ -220,31 +193,7 @@ public class Dcm2Xml {
             }
             dcm2xml.setIndent(cl.hasOption("I"));
             dcm2xml.setIncludeKeyword(!cl.hasOption("K"));
-            if (cl.hasOption("b")) {
-                dcm2xml.setIncludeBulkData(true);
-                dcm2xml.setIncludeBulkDataLocator(false);
-            }
-            if (cl.hasOption("B")) {
-                dcm2xml.setIncludeBulkData(false);
-                dcm2xml.setIncludeBulkDataLocator(false);
-            }
-            if (cl.hasOption("blk-file-prefix")) {
-                dcm2xml.setBulkDataFilePrefix(
-                        cl.getOptionValue("blk-file-prefix"));
-            }
-            if (cl.hasOption("blk-file-suffix")) {
-                dcm2xml.setBulkDataFileSuffix(
-                        cl.getOptionValue("blk-file-suffix"));
-            }
-            if (cl.hasOption("d")) {
-                File tempDir = new File(cl.getOptionValue("d"));
-                dcm2xml.setBulkDataDirectory(tempDir);
-            }
-            dcm2xml.setConcatenateBulkDataFiles(cl.hasOption("c"));
-            if (cl.hasOption("X")) {
-                dcm2xml.setBulkDataAttributes(
-                        parseXML(cl.getOptionValue("X")));
-            }
+            configureBulkdata(dcm2xml, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
                 dcm2xml.parse(new DicomInputStream(System.in));
@@ -259,12 +208,41 @@ public class Dcm2Xml {
             }
         } catch (ParseException e) {
             System.err.println("dcm2xml: " + e.getMessage());
-            System.err.println("Try `dcm2xml --help' for more information.");
+            System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
             System.err.println("dcm2xml: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    private static void configureBulkdata(Dcm2Xml dcm2xml, CommandLine cl)
+            throws Exception {
+        if (cl.hasOption("b")) {
+            dcm2xml.setIncludeBulkData(true);
+            dcm2xml.setIncludeBulkDataLocator(false);
+        }
+        if (cl.hasOption("B")) {
+            dcm2xml.setIncludeBulkData(false);
+            dcm2xml.setIncludeBulkDataLocator(false);
+        }
+        if (cl.hasOption("blk-file-prefix")) {
+            dcm2xml.setBulkDataFilePrefix(
+                    cl.getOptionValue("blk-file-prefix"));
+        }
+        if (cl.hasOption("blk-file-suffix")) {
+            dcm2xml.setBulkDataFileSuffix(
+                    cl.getOptionValue("blk-file-suffix"));
+        }
+        if (cl.hasOption("d")) {
+            File tempDir = new File(cl.getOptionValue("d"));
+            dcm2xml.setBulkDataDirectory(tempDir);
+        }
+        dcm2xml.setConcatenateBulkDataFiles(cl.hasOption("c"));
+        if (cl.hasOption("X")) {
+            dcm2xml.setBulkDataAttributes(
+                    parseXML(cl.getOptionValue("X")));
         }
     }
 

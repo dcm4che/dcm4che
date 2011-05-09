@@ -92,6 +92,11 @@
       <artifactId>dcm4che-tool-dcmdir</artifactId>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
+     <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-findscu</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-storescp</artifactId>

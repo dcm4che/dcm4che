@@ -52,11 +52,11 @@
   <description>DICOM utilities</description>
   <modules>
     <module>dcm4che-tool-common</module>
-    <module>dcm4che-tool-dcm2txt</module>
     <module>dcm4che-tool-dcm2xml</module>
+    <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmdir</module>
-    <module>dcm4che-tool-dcmrcv</module>
-    <module>dcm4che-tool-dcmsnd</module>
+    <module>dcm4che-tool-storescp</module>
+    <module>dcm4che-tool-storescu</module>
     <module>dcm4che-tool-xml2dcm</module>
   </modules>
   <build>

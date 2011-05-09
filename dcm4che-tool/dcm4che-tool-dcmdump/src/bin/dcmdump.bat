@@ -1,13 +1,13 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem xml2dcm  Launcher
+rem dcmdump  Launcher
 rem -------------------------------------------------------------------------
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.tool.xml2dcm.Main
-set MAIN_JAR=dcm4che-tool-xml2dcm-3.0.0-SNAPSHOT.jar
+set MAIN_CLASS=org.dcm4che2.tool.dcmdump.Main
+set MAIN_JAR=dcm4che-tool-dcmdump-3.0.0-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -40,7 +40,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\etc\xml2dcm\
+set CP=%DCM4CHE_HOME%\etc\dcmdump\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.0.0-SNAPSHOT.jar"

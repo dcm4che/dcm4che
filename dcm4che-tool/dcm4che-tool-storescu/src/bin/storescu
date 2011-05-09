@@ -1,10 +1,10 @@
 #!/bin/sh
 # -------------------------------------------------------------------------
-# dcmdir  Launcher
+# storescu  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcmdir.Main
-MAIN_JAR=dcm4che-tool-dcmdir-3.0.0-SNAPSHOT.jar
+MAIN_CLASS=org.dcm4che.tool.storescu.Main
+MAIN_JAR=dcm4che-tool-storescu-3.0.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -37,9 +37,10 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/etc/dcmdir/"
+CP="$DCM4CHE_HOME/etc/storescu/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.0.0-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.0.0-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.0.0-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"

@@ -50,7 +50,11 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.ElementDictionary;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -116,7 +120,14 @@ public class Main {
     private SOPClass sopClass = SOPClass.StudyRoot;
     private String[] tss = IVR_LE_FIRST;
 
+    private Attributes keys = new Attributes();
     private Association as;
+
+    public Main() {
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
+        ae.addConnection(conn);
+    }
 
     public void setScheduledExecutorService(ScheduledExecutorService service) {
         device.setScheduledExecutor(service);
@@ -138,10 +149,21 @@ public class Main {
         this.tss = tss.clone();
     }
 
-    public Main() {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
-        ae.addConnection(conn);
+    public void addKey(int[] tags, String value) {
+        Attributes item = keys;
+        for (int i = 0; i < tags.length-1; i++) {
+            int tag = tags[i];
+            Sequence sq = (Sequence) item.getValue(tag);
+            if (sq == null)
+                sq = item.newSequence(tag, 1);
+            if (sq.isEmpty())
+                sq.add(new Attributes());
+            item = sq.get(0);
+        }
+        int tag = tags[tags.length-1];
+        VR vr = ElementDictionary.vrOf(tag,
+                item.getPrivateCreator(tag));
+        item.setString(tag, vr, value);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -149,6 +171,7 @@ public class Main {
             Options opts = new Options();
             addServiceClassOptions(opts);
             addTransferSyntaxOptions(opts);
+            addKeyOptions(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "STORESCU");
             CLIUtils.addAEOptions(opts, true, false);
@@ -156,6 +179,21 @@ public class Main {
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addKeyOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("matching-key"))
+                .create("q"));
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr")
+                .withDescription(rb.getString("return-key"))
+                .create("r"));
     }
 
     @SuppressWarnings("static-access")
@@ -217,6 +255,7 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            configureKeys(main, cl);
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
@@ -242,6 +281,19 @@ public class Main {
             System.err.println("findscu: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    private static void configureKeys(Main main, CommandLine cl) {
+        if (cl.hasOption("r")) {
+            String[] returnKeys = cl.getOptionValues("r");
+            for (int i = 0; i < returnKeys.length; i++)
+                main.addKey(CLIUtils.toTags(returnKeys[i]), null);
+        }
+        if (cl.hasOption("q")) {
+            String[] matchingKeys = cl.getOptionValues("q");
+            for (int i = 1; i < matchingKeys.length; i++, i++)
+                main.addKey(CLIUtils.toTags(matchingKeys[i - 1]), matchingKeys[i]);
         }
     }
 

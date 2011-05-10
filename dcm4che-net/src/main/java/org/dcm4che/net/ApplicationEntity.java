@@ -58,6 +58,8 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.pdu.UserIdentityAC;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -73,6 +75,9 @@ import org.dcm4che.net.pdu.UserIdentityAC;
  *
  */
 public class ApplicationEntity {
+
+    private static final Logger LOG = 
+            LoggerFactory.getLogger(ApplicationEntity.class);
 
     private Device device;
     private String aet;
@@ -436,7 +441,7 @@ public class ApplicationEntity {
     void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException {
         if (dimseRQHandler == null) {
-            Association.LOG.error("DimseRQHandler not initalized");
+            LOG.error("DimseRQHandler not initalized");
             throw new AAbort(AAbort.UL_SERIVE_PROVIDER, 0);
         }
         dimseRQHandler.onDimseRQ(as, pc, cmd, data);

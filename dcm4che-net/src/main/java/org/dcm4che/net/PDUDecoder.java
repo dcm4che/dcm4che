@@ -155,13 +155,13 @@ class PDUDecoder extends PDVInputStream {
 
     public void nextPDU() throws IOException {
         checkThread();
-        Association.LOG.trace("{}: waiting for PDU", as);
+        Association.LOG_ACSE.trace("{}: waiting for PDU", as);
         readFully(0, 10);
         pos = 0;
         pdutype = get();
         get();
         pdulen = getInt();
-        Association.LOG.trace("{} >> PDU[type={}, len={}]",
+        Association.LOG_ACSE.trace("{} >> PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         switch (pdutype) {
         case PDUType.A_ASSOCIATE_RQ:
@@ -229,7 +229,7 @@ class PDUDecoder extends PDVInputStream {
     }
 
     private void abort(int reason, String logmsg) throws AAbort {
-        Association.LOG.warn(logmsg,
+        Association.LOG_ACSE.warn(logmsg,
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         throw new AAbort(AAbort.UL_SERIVE_PROVIDER, reason);
     }
@@ -429,7 +429,7 @@ class PDUDecoder extends PDVInputStream {
 
         PresentationContext pc = as.getPresentationContext(pcid);
         if (pc == null) {
-            Association.LOG.warn(
+            Association.LOG_ACSE.warn(
                     "{}: No Presentation Context with given ID - {}",
                     as, pcid);
             throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
@@ -437,7 +437,7 @@ class PDUDecoder extends PDVInputStream {
         }
 
         if (!pc.isAccepted()) {
-            Association.LOG.warn(
+            Association.LOG_ACSE.warn(
                     "{}: No accepted Presentation Context with given ID - {}",
                     as, pcid);
             throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
@@ -446,13 +446,13 @@ class PDUDecoder extends PDVInputStream {
 
         String tsuid = pc.getTransferSyntax();
         Attributes cmd = readCommand();
-        if (Association.LOG.isInfoEnabled()) {
+        if (Association.LOG_DIMSE.isInfoEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(as).append(" >> ");
             Commands.promptTo(cmd, pcid, tsuid, sb);
-            Association.LOG.info(sb.toString());
+            Association.LOG_DIMSE.info(sb.toString());
         }
-        Association.LOG.debug("\n{}", cmd);
+        Association.LOG_DIMSE.debug("\n{}", cmd);
         int cmdField = cmd.getInt(Tag.CommandField, 0);
         if (cmdField == Commands.C_CANCEL_RQ) {
             as.onCancelRQ(cmd);
@@ -460,13 +460,13 @@ class PDUDecoder extends PDVInputStream {
             nextPDV(PDVType.DATA, pcid);
             if (Commands.isRSP(cmdField)) {
                 Attributes data = readDataset(tsuid);
-                Association.LOG.debug("\n{}", data);
+                Association.LOG_DIMSE.debug("\n{}", data);
                 as.onDimseRSP(cmd, data);
             } else {
                 as.onDimseRQ(pc, cmd, this);
                 long skipped = skipAll();
                 if (skipped > 0)
-                    Association.LOG.info(
+                    Association.LOG_ACSE.info(
                         "{}: Service User did not consume {} bytes of DIMSE data.",
                         as, skipped);
             }
@@ -505,7 +505,7 @@ class PDUDecoder extends PDVInputStream {
         if (!hasRemaining()) {
             nextPDU();
             if (pdutype != PDUType.P_DATA_TF) {
-                Association.LOG.info(
+                Association.LOG_ACSE.info(
                         "{}: Expected P-DATA-TF PDU but received PDU[type={}]",
                         as, pdutype);
                 throw new EOFException();
@@ -519,7 +519,7 @@ class PDUDecoder extends PDVInputStream {
             abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
         this.pcid = get();
         this.pdvmch = get();
-        Association.LOG.trace("{} >> PDV[len={}, pcid={}, mch={}]",
+        Association.LOG_ACSE.trace("{} >> PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pcid, pdvmch } );
         if ((pdvmch & PDVType.COMMAND) != expectedPDVType)
             abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_TYPE);

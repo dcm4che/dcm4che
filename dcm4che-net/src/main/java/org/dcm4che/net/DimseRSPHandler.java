@@ -84,7 +84,8 @@ public class DimseRSPHandler {
 
     private void stopTimeout(Association as) {
         if (timeout != null) {
-            Association.LOG.debug("{}: stop {}:DIMSE-RSP timeout", as, msgId);
+            Association.LOG_TIMEOUT.debug(
+                    "{}: stop {}:DIMSE-RSP timeout", as, msgId);
             timeout.cancel(false);
             timeout = null;
         }

@@ -122,14 +122,6 @@ public class Main {
         this.priority = priority;
     }
 
-    public void setMaxOpsInvoked(int maxOpsInvoked) {
-        ae.setMaxOpsInvoked(maxOpsInvoked);
-    }
-
-    public void setMaxOpsPerformed(int maxOpsPerformed) {
-        ae.setMaxOpsPerformed(maxOpsPerformed);
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();

@@ -320,7 +320,7 @@ public class Commands {
             break;
         case C_CANCEL_RQ:
             promptHeaderTo(cmd, Tag.MessageIDBeingRespondedTo,
-                    ":N-CANCEL-RQ[pcid=", pcid, sb);
+                    ":C-CANCEL-RQ[pcid=", pcid, sb);
             break;
         case C_STORE_RSP:
             promptHeaderTo(cmd, Tag.MessageIDBeingRespondedTo,

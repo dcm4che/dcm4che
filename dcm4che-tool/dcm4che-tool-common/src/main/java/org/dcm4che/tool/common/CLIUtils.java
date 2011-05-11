@@ -58,11 +58,14 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.dcm4che.data.ElementDictionary;
+import org.dcm4che.data.Tag;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -577,6 +580,25 @@ public class CLIUtils {
         encParams.setUndefSequenceLength(!cl.hasOption("expl-seq-len"));
         encParams.setUndefEmptyItemLength(cl.hasOption("undef-item-len"));
         encParams.setUndefEmptySequenceLength(cl.hasOption("undef-seq-len"));
+    }
+
+    public static int[] toTags(String tagsAsString) {
+        String[] ss = StringUtils.split(tagsAsString, '/');
+        int[] tags = new int[ss.length];
+        for (int i = 0; i < tags.length; i++) {
+            String s = ss[i];
+            try {
+                tags[i] = Integer.parseInt(s, 16);
+            } catch (IllegalArgumentException e) {
+                tags[i] = ElementDictionary.tagForKeyword(s, null);
+            }
+        }
+        return tags;
+    }
+
+    private static boolean isHex(String s) {
+        
+        return false;
     }
 
 }

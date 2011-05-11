@@ -59,7 +59,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.ElementDictionary;
-import org.dcm4che.data.Tag;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
@@ -74,7 +73,7 @@ import org.dcm4che.util.StringUtils;
 public class CLIUtils {
 
     private static ResourceBundle rb =
-        ResourceBundle.getBundle("org.dcm4che.tool.common.common");
+        ResourceBundle.getBundle("org.dcm4che.tool.common.messages");
 
     private static final char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
@@ -322,7 +321,8 @@ public class CLIUtils {
     public static void configureConnect(Connection conn,
             AAssociateRQ rq, CommandLine cl) throws ParseException {
         if (!cl.hasOption("c"))
-            throw new MissingOptionException("Missing required option -c");
+            throw new MissingOptionException(
+                    rb.getString("missing-connect-opt"));
         String aeAtHostPort = cl.getOptionValue("c");
         String[] aeHostPort = split(aeAtHostPort , '@', 0);
         if (aeHostPort[1] == null)
@@ -355,7 +355,7 @@ public class CLIUtils {
     public static void configureBindServer(Connection conn,
             ApplicationEntity ae, CommandLine cl) throws ParseException {
         if (!cl.hasOption("b"))
-            throw new MissingOptionException("Missing required option -b");
+            throw new MissingOptionException(rb.getString("missing-bind-opt"));
         String aeAtHostPort = cl.getOptionValue("b");
         String[] aeAtHostAndPort = split(aeAtHostPort, ':', 1);
         conn.setPort(Integer.parseInt(aeAtHostAndPort[1]));
@@ -532,8 +532,10 @@ public class CLIUtils {
         }
     }
 
-    public static Properties loadProperties(String url) throws IOException {
-        Properties p = new Properties();
+    public static Properties loadProperties(String url, Properties p)
+            throws IOException {
+        if (p == null)
+            p = new Properties();
         InputStream in = openFileOrURL(url);
         try {
             p.load(in);
@@ -594,11 +596,6 @@ public class CLIUtils {
             }
         }
         return tags;
-    }
-
-    private static boolean isHex(String s) {
-        
-        return false;
     }
 
 }

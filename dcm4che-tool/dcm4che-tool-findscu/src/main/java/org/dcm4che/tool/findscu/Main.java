@@ -44,7 +44,6 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -90,7 +89,8 @@ public class Main {
         MWL(UID.ModalityWorklistInformationModelFIND),
         UPSPull(UID.UnifiedProcedureStepPullSOPClass),
         UPSWatch(UID.UnifiedProcedureStepWatchSOPClass),
-        HP(UID.HangingProtocolInformationModelFIND);
+        HANGING_PROTOCOL(UID.HangingProtocolInformationModelFIND),
+        COLOR_PALETTE(UID.ColorPaletteInformationModelFIND);
 
         final String cuid;
 
@@ -267,7 +267,7 @@ public class Main {
                 .hasArgs()
                 .withArgName("num-matches")
                 .withDescription(rb.getString("cancel"))
-                .create("C"));
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -329,9 +329,13 @@ public class Main {
                 .withDescription(rb.getString("ups-watch"))
                 .create("W"));
         group.addOption(OptionBuilder
-                .withLongOpt("hp")
-                .withDescription(rb.getString("hp"))
+                .withLongOpt("hanging-protocol")
+                .withDescription(rb.getString("hanging-protocol"))
                 .create("H"));
+        group.addOption(OptionBuilder
+                .withLongOpt("color-palette")
+                .withDescription(rb.getString("color-palette"))
+                .create("C"));
         opts.addOptionGroup(group);
     }
 
@@ -399,7 +403,7 @@ public class Main {
     }
 
     private static void configureCancel(Main main, CommandLine cl) {
-        if (cl.hasOption("C"))
+        if (cl.hasOption("cancel"))
             main.setCancelAfter(Integer.parseInt(cl.getOptionValue("C")));
     }
 
@@ -445,7 +449,11 @@ public class Main {
         }
         if (cl.hasOption("H")) {
             noQueryLevel("H", cl);
-            return SOPClass.HP;
+            return SOPClass.HANGING_PROTOCOL;
+        }
+        if (cl.hasOption("C")) {
+            noQueryLevel("C", cl);
+            return SOPClass.COLOR_PALETTE;
         }
         throw new ParseException(rb.getString("missing"));
     }

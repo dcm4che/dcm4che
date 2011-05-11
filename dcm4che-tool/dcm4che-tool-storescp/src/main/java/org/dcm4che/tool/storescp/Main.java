@@ -161,9 +161,9 @@ public class Main {
                             TransferCapability.Role.SCP,
                             UID.ImplicitVRLittleEndian));
             Properties p = CLIUtils.loadProperties(
-                    cl.hasOption("sop-classes")
-                        ? cl.getOptionValue("sop-classes")
-                        : "resource:sop-classes.properties");
+                    cl.getOptionValue("sop-classes", 
+                            "resource:sop-classes.properties"),
+                    null);
             for (String cuid : p.stringPropertyNames()) {
                 String ts = p.getProperty(cuid);
                 ae.addTransferCapability(

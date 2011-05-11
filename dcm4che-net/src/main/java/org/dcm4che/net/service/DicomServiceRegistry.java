@@ -324,37 +324,29 @@ public class DicomServiceRegistry implements DimseRQHandler {
 
     private <T> T service(HashMap<String, T> map, Attributes cmd, int tag,
             Association as) throws DicomServiceException {
-        String cuid = cmd.getString(tag, null);
-        T ret = service(map, cmd, cuid);
-        if (ret != null)
-            return ret;
+        if (map != null) {
+            String cuid = cmd.getString(tag, null);
+            T ret = map.get(cuid);
+            if (ret != null)
+                return ret;
 
-        CommonExtendedNegotiation commonExtNeg =
-                as.getCommonExtendedNegotiationFor(cuid);
-        if (commonExtNeg != null) {
-            for (String uid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
-                ret = service(map, cmd, uid);
+            CommonExtendedNegotiation commonExtNeg = as
+                    .getCommonExtendedNegotiationFor(cuid);
+            if (commonExtNeg != null) {
+                for (String uid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
+                    ret = map.get(uid);
+                    if (ret != null)
+                        return ret;
+                }
+                ret = map.get(commonExtNeg.getServiceClassUID());
                 if (ret != null)
                     return ret;
             }
-            ret = service(map, cmd, commonExtNeg.getServiceClassUID());
+            ret = map.get("*");
             if (ret != null)
                 return ret;
-       }
-
-       ret = map.get("*");
-       if (ret != null)
-           return ret;
-
-       throw new DicomServiceException(cmd, Status.NoSuchSOPclass);
-    }
-
-    private <T> T service(HashMap<String, T> map, Attributes cmd, String cuid)
-            throws DicomServiceException {
-        T ret = map != null ? map.get(cuid) : null;
-        if (ret == null && sopCUIDs.contains(cuid))
-            throw new DicomServiceException(cmd, Status.UnrecognizedOperation);
-        return ret;
+        }
+        throw new DicomServiceException(cmd, Status.UnrecognizedOperation);
     }
 
     private void cstore(Association as, PresentationContext pc,

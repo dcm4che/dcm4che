@@ -38,6 +38,7 @@
 
 package org.dcm4che.tool.dcmqrscp;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -48,6 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.UID;
@@ -75,6 +77,9 @@ public class Main {
 
     private final StorageSCP storageSCP = new StorageSCP(this);
 
+    private File storageDir;
+    private File dicomDir;
+
     public Main() {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
@@ -86,8 +91,29 @@ public class Main {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
+    public final void setStorageDirectory(File storageDir) {
+        this.storageDir = storageDir;
+    }
+
+    public final File getStorageDirectory() {
+        return storageDir;
+    }
+
+    public final void setDicomDirectory(File dicomDir) {
+        setStorageDirectory(dicomDir.getParentFile());
+        this.dicomDir = dicomDir;
+    }
+
+    public final File getDicomDirectory() {
+        return dicomDir;
+    }
+
     public void setScheduledExecuter(ScheduledExecutorService scheduledExecutor) {
         device.setScheduledExecutor(scheduledExecutor);
+    }
+
+    public void setExecutor(Executor executor) {
+        device.setExecutor(executor);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -96,20 +122,53 @@ public class Main {
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
+        addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
     }
 
     @SuppressWarnings("static-access")
+    private static void addStorageDirectoryOptions(Options opts) {
+        OptionGroup group = new OptionGroup();
+        group.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file")
+                .withDescription(rb.getString("dicomdir"))
+                .withLongOpt("dicomdir")
+                .create("D"));
+        group.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("directory")
+                .withDescription(rb.getString("storedir"))
+                .withLongOpt("storedir")
+                .create("d"));
+        opts.addOptionGroup(group);
+    }
+
+    @SuppressWarnings("static-access")
     private static void addTransferCapabilityOptions(Options opts) {
-        opts.addOption(null, "accept-unknown", false,
-                rb.getString("accept-unknown"));
+        opts.addOption(null, "all-storage", false, rb.getString("all-storage"));
+        opts.addOption(null, "no-storage", false, rb.getString("no-storage"));
+        opts.addOption(null, "no-query", false, rb.getString("no-query"));
+        opts.addOption(null, "no-retrieve", false, rb.getString("no-retrieve"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("sop-classes"))
-                .withLongOpt("sop-classes")
-                .create(null));
+                .withDescription(rb.getString("storage-sop-classes"))
+                .withLongOpt("storage-sop-classes")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("query-sop-classes"))
+                .withLongOpt("query-sop-classes")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("retrieve-sop-classes"))
+                .withLongOpt("retrieve-sop-classes")
+                .create());
     }
 
     public static void main(String[] args) {
@@ -118,19 +177,14 @@ public class Main {
             Main main = new Main();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            configureTransferCapability(main.ae, cl);
+            configureStorageDirectory(main, cl);
+            configureTransferCapability(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
             main.setScheduledExecuter(scheduledExecutorService);
             main.setExecutor(executorService);
-            try {
-                main.start();
-            } catch (Exception e) {
-        	System.err.println("dcmqrscp: " + e.getMessage());
-                executorService.shutdown();
-                scheduledExecutorService.shutdown();
-           }
+            main.start();
         } catch (ParseException e) {
             System.err.println("dcmqrscp: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -142,13 +196,21 @@ public class Main {
         }
     }
 
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
+    private static void configureStorageDirectory(Main main, CommandLine cl)
+            throws ParseException {
+        if (cl.hasOption("D"))
+            main.setDicomDirectory(new File(cl.getOptionValue("D")));
+        else if (cl.hasOption("d"))
+            main.setStorageDirectory(new File(cl.getOptionValue("d")));
     }
 
-    private static void configureTransferCapability(ApplicationEntity ae,
-            CommandLine cl) throws IOException {
-        if (cl.hasOption("accept-unknown")) {
+    private static void configureTransferCapability(Main main, CommandLine cl)
+            throws IOException {
+        ApplicationEntity ae = main.ae;
+        File dir = main.getStorageDirectory();
+        boolean storage= !cl.hasOption("no-storage")
+                && (dir == null || dir.canWrite());
+        if (storage && cl.hasOption("all-storage")) {
             ae.addTransferCapability(
                     new TransferCapability(null, 
                             "*",
@@ -160,22 +222,50 @@ public class Main {
                             UID.VerificationSOPClass,
                             TransferCapability.Role.SCP,
                             UID.ImplicitVRLittleEndian));
-            Properties p = CLIUtils.loadProperties(
-                    cl.hasOption("sop-classes")
-                        ? cl.getOptionValue("sop-classes")
-                        : "resource:sop-classes.properties");
-            for (String cuid : p.stringPropertyNames()) {
-                String ts = p.getProperty(cuid);
-                ae.addTransferCapability(
-                        ts.equals("*")
-                            ? new TransferCapability(null, cuid,
-                                    TransferCapability.Role.SCP, "*")
-                            : new TransferCapability(null, cuid,
-                                    TransferCapability.Role.SCP,
-                                    StringUtils.split(ts, ',')));
+            Properties storageSOPClasses = CLIUtils.loadProperties(
+                    cl.getOptionValue("storage-sop-classes",
+                            "resource:storage-sop-classes.properties"),
+                    null);
+            if (storage)
+                addTransferCapabilities(ae, storageSOPClasses,
+                        TransferCapability.Role.SCP);
+            if (dir != null && !cl.hasOption("no-retrieve")) {
+                addTransferCapabilities(ae, storageSOPClasses,
+                        TransferCapability.Role.SCU);
+                Properties p = CLIUtils.loadProperties(
+                        cl.getOptionValue("retrieve-sop-classes",
+                                "resource:retrieve-sop-classes.properties"),
+                        null);
+                addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
+            }
+            if (main.getDicomDirectory() != null && !cl.hasOption("no-query")) {
+                Properties p = CLIUtils.loadProperties(
+                        cl.getOptionValue("query-sop-classes",
+                                "resource:query-sop-classes.properties"),
+                        null);
+                addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
             }
         }
      }
+
+    private static void addTransferCapabilities(ApplicationEntity ae,
+            Properties p, TransferCapability.Role role) {
+        for (String cuid : p.stringPropertyNames()) {
+            String ts = p.getProperty(cuid);
+            ae.addTransferCapability(
+                    ts.equals("*")
+                        ? new TransferCapability(null, cuid, role, "*")
+                        : new TransferCapability(null, cuid, role,
+                                toUIDs(StringUtils.split(ts, ','))));
+        }
+    }
+
+    private static String[] toUIDs(String[] names) {
+        String[] uids = new String[names.length];
+        for (int i = 0; i < uids.length; i++)
+            uids[i] = UID.forName(names[i].trim());
+        return uids ;
+    }
 
     private void start() throws IOException {
         conn.bind();

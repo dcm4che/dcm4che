@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -218,10 +219,12 @@ public class Main {
             throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
             storescu.enableSOPClassRelationshipExtNeg(true);
-            storescu.relSOPClasses.init(CLIUtils.loadProperties(
-                    cl.hasOption("rel-sop-classes")
-                            ? cl.getOptionValue("rel-ext-neg")
-                            : "resource:rel-sop-classes.properties"));
+            Properties p = new Properties();
+            CLIUtils.loadProperties(cl.hasOption("rel-sop-classes")
+                    ? cl.getOptionValue("rel-ext-neg")
+                    : "resource:rel-sop-classes.properties",
+                    p);
+            storescu.relSOPClasses.init(p);
         }
     }
 

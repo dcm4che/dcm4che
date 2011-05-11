@@ -82,6 +82,41 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
+      <includes>
+        <include>bin/dcmqrscp</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
+      <includes>
+        <include>bin/dcmqrscp.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
+      <includes>
+        <include>etc/dcmqrscp/log4j.properties</include>
+        <include>etc/dcmqrscp/sop-classes.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
+      <includes>
+        <include>etc/dcmqrscp/key.jks</include>
+        <include>etc/dcmqrscp/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
         <include>bin/findscu</include>
@@ -221,6 +256,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>

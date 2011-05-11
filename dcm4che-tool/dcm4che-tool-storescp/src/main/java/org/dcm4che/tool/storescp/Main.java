@@ -127,6 +127,7 @@ public class Main {
             try {
                 main.start();
             } catch (Exception e) {
+        	System.err.println("storescp: " + e.getMessage());
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
            }

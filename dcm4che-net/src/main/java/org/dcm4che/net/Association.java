@@ -800,6 +800,7 @@ public class Association {
             DataWriter data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority);
         invoke(pc, cstorerq, data, rspHandler, conn.getDimseRSPTimeout());
@@ -852,6 +853,38 @@ public class Association {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
         cstore(asuid, cuid, iuid, priority, moveOriginatorAET,
                 moveOriginatorMsgId, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void cfind(String cuid, int priority, Attributes data,
+            String tsuid, DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        cfind(cuid, cuid, priority, data, tsuid, rspHandler);
+    }
+
+    public void cfind(String asuid, String cuid, int priority,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes cfindrq =
+                Commands.mkCFindRQ(rspHandler.getMessageID(), cuid, priority);
+        invoke(pc, cfindrq, new DataWriterAdapter(data), rspHandler,
+                conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP cfind(String cuid, int priority, Attributes data,
+            String tsuid, int autoCancel) throws IOException,
+            InterruptedException {
+        return cfind(cuid, cuid, priority, data, tsuid, autoCancel);
+    }
+
+    public DimseRSP cfind(String asuid, String cuid, int priority,
+            Attributes data, String tsuid, int autoCancel) throws IOException,
+            InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        rsp.setAutoCancel(autoCancel);
+        cfind(asuid, cuid, priority, data, tsuid, rsp);
         return rsp;
     }
 

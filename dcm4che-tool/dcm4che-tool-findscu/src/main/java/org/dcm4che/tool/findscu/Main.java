@@ -38,8 +38,17 @@
 
 package org.dcm4che.tool.findscu;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,15 +62,19 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Sequence;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -117,11 +130,19 @@ public class Main {
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
     private int priority;
+    private int cancelAfter;
     private SOPClass sopClass = SOPClass.StudyRoot;
     private String[] tss = IVR_LE_FIRST;
 
+    private File outFile;
+    private int[][] outAttrs;
+    private String outFormat;
     private Attributes keys = new Attributes();
+
+    private BufferedWriter out;
     private Association as;
+    private int numMatches;
+
 
     public Main() {
         device.addConnection(conn);
@@ -141,12 +162,52 @@ public class Main {
         this.priority = priority;
     }
 
+    public final void setCancelAfter(int cancelAfter) {
+        this.cancelAfter = cancelAfter;
+    }
+
     public final void setSOPClass(SOPClass sopClass) {
         this.sopClass = sopClass;
     }
 
     public final void setTransferSyntaxes(String[] tss) {
         this.tss = tss.clone();
+    }
+
+    public final void setOutputFile(File outFile) {
+        this.outFile = outFile;
+    }
+
+    private void setOutputFormat(String format) {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<int[]> attrs = new ArrayList<int[]>();
+        StringTokenizer tk = new StringTokenizer(format, "{}", true);
+        boolean expectTag = false;
+        while (tk.hasMoreTokens()) {
+            String s = tk.nextToken();
+            switch (s.charAt(0)) {
+            case '{':
+                if (expectTag )
+                    throw new IllegalArgumentException(format);
+                expectTag = true;
+                continue;
+            case '}':
+                if (!expectTag)
+                    throw new IllegalArgumentException(format);
+                expectTag = false;
+                continue;
+            }
+            if (expectTag) {
+                int[] tags = CLIUtils.toTags(s);
+                addKey(tags, null);
+                sb.append('{').append(attrs.size()).append('}');
+                attrs.add(tags);
+            } else {
+                sb.append(s);
+            }
+        }
+        outAttrs = attrs.toArray(new int[attrs.size()][]);
+        outFormat = sb.toString();
     }
 
     public void addKey(int[] tags, String value) {
@@ -166,14 +227,23 @@ public class Main {
         item.setString(tag, vr, value);
     }
 
+    public void addKey(int tag, String value) {
+        VR vr = ElementDictionary.vrOf(tag,
+                keys.getPrivateCreator(tag));
+        keys.setString(tag, vr, value);
+    }
+
     private static CommandLine parseComandLine(String[] args)
                 throws ParseException {
             Options opts = new Options();
             addServiceClassOptions(opts);
             addTransferSyntaxOptions(opts);
+            addOutputOptions(opts);
             addKeyOptions(opts);
+            addQueryLevelOption(opts);
+            addCancelOption(opts);
             CLIUtils.addConnectOption(opts);
-            CLIUtils.addBindOption(opts, "STORESCU");
+            CLIUtils.addBindOption(opts, "FINDSCU");
             CLIUtils.addAEOptions(opts, true, false);
             CLIUtils.addDimseRspOption(opts);
             CLIUtils.addPriorityOption(opts);
@@ -182,18 +252,53 @@ public class Main {
     }
 
     @SuppressWarnings("static-access")
+    private static void addQueryLevelOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("PATIENT|STUDY|SERIES|IMAGE")
+                .withDescription(rb.getString("level"))
+                .create("L"));
+   }
+
+    @SuppressWarnings("static-access")
+    private static void addCancelOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .withLongOpt("cancel")
+                .hasArgs()
+                .withArgName("num-matches")
+                .withDescription(rb.getString("cancel"))
+                .create("C"));
+    }
+
+    @SuppressWarnings("static-access")
     private static void addKeyOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArgs()
                 .withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
-                .withDescription(rb.getString("matching-key"))
-                .create("q"));
+                .withDescription(rb.getString("match"))
+                .create("m"));
         opts.addOption(OptionBuilder
                 .hasArgs()
                 .withArgName("[seq/]attr")
-                .withDescription(rb.getString("return-key"))
+                .withDescription(rb.getString("return"))
                 .create("r"));
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addOutputOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .withLongOpt("out")
+                .hasArgs()
+                .withArgName("file")
+                .withDescription(rb.getString("o-file"))
+                .create("o"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("out-form")
+                .hasArgs()
+                .withArgName("format")
+                .withDescription(rb.getString("out-form"))
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -255,7 +360,9 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            configureOutput(main, cl);
             configureKeys(main, cl);
+            configureCancel(main, cl);
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
@@ -284,35 +391,77 @@ public class Main {
         }
     }
 
+    private static void configureOutput(Main main, CommandLine cl) {
+        if (cl.hasOption("o"))
+            main.setOutputFile(new File(cl.getOptionValue("o")));
+        if (cl.hasOption("out-form"))
+            main.setOutputFormat(cl.getOptionValue("out-form"));
+    }
+
+    private static void configureCancel(Main main, CommandLine cl) {
+        if (cl.hasOption("C"))
+            main.setCancelAfter(Integer.parseInt(cl.getOptionValue("C")));
+    }
+
     private static void configureKeys(Main main, CommandLine cl) {
         if (cl.hasOption("r")) {
-            String[] returnKeys = cl.getOptionValues("r");
-            for (int i = 0; i < returnKeys.length; i++)
-                main.addKey(CLIUtils.toTags(returnKeys[i]), null);
+            String[] keys = cl.getOptionValues("r");
+            for (int i = 0; i < keys.length; i++)
+                main.addKey(CLIUtils.toTags(keys[i]), null);
         }
-        if (cl.hasOption("q")) {
-            String[] matchingKeys = cl.getOptionValues("q");
-            for (int i = 1; i < matchingKeys.length; i++, i++)
-                main.addKey(CLIUtils.toTags(matchingKeys[i - 1]), matchingKeys[i]);
+        if (cl.hasOption("m")) {
+            String[] keys = cl.getOptionValues("m");
+            for (int i = 1; i < keys.length; i++, i++)
+                main.addKey(CLIUtils.toTags(keys[i - 1]), keys[i]);
         }
+        if (cl.hasOption("L"))
+            main.addKey(Tag.QueryRetrieveLevel, cl.getOptionValue("L"));
     }
 
     private static SOPClass sopClassOf(CommandLine cl) throws ParseException {
-        if (cl.hasOption("P"))
+        if (cl.hasOption("P")) {
+            requiresQueryLevel("P", cl);
             return SOPClass.PatientRoot;
-        if (cl.hasOption("S"))
+        }
+        if (cl.hasOption("S")) {
+            requiresQueryLevel("S", cl);
             return SOPClass.StudyRoot;
-        if (cl.hasOption("O"))
+        }
+        if (cl.hasOption("O")) {
+            requiresQueryLevel("O", cl);
             return SOPClass.PatientStudyOnly;
-        if (cl.hasOption("M"))
+        }
+        if (cl.hasOption("M")) {
+            noQueryLevel("M", cl);
             return SOPClass.MWL;
-        if (cl.hasOption("U"))
+        }
+        if (cl.hasOption("U")) {
+            noQueryLevel("U", cl);
             return SOPClass.UPSPull;
-        if (cl.hasOption("W"))
+        }
+        if (cl.hasOption("W")) {
+            noQueryLevel("W", cl);
             return SOPClass.UPSWatch;
-        if (cl.hasOption("H"))
+        }
+        if (cl.hasOption("H")) {
+            noQueryLevel("H", cl);
             return SOPClass.HP;
+        }
         throw new ParseException(rb.getString("missing"));
+    }
+
+    private static void requiresQueryLevel(String opt, CommandLine cl)
+            throws ParseException {
+        if (!cl.hasOption("L"))
+            throw new ParseException(
+                    MessageFormat.format(rb.getString("missing-level"), opt));
+    }
+
+    private static void noQueryLevel(String opt, CommandLine cl)
+            throws ParseException {
+        if (cl.hasOption("L"))
+            throw new ParseException(
+                    MessageFormat.format(rb.getString("invalid-level"), opt));
     }
 
     private static String[] tssOf(CommandLine cl) {
@@ -334,11 +483,69 @@ public class Main {
     public void close() throws IOException, InterruptedException {
         if (as != null && as.isReadyForDataTransfer())
             as.release();
+        if (out != null)
+            SafeClose.close(out);
     }
 
-    private void query() {
-        // TODO Auto-generated method stub
-        
+    private void query() throws IOException, InterruptedException {
+        if (outFormat != null) {
+            out = new BufferedWriter(
+                    new OutputStreamWriter(
+                            outFile != null 
+                            ? new FileOutputStream(outFile)
+                            : new FileOutputStream(FileDescriptor.out)));
+        }
+        DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
+
+            @Override
+            public void onDimseRSP(Association as, Attributes cmd,
+                    Attributes data) {
+                super.onDimseRSP(as, cmd, data);
+                Main.this.onCFindRSP(cmd, data, this);
+            }
+        };
+
+        as.cfind(sopClass.cuid, priority, keys, null, rspHandler);
+        as.waitForOutstandingRSP();
+    }
+
+    private void onCFindRSP(Attributes cmd, Attributes data, 
+            DimseRSPHandler rspHandler) {
+        int status = cmd.getInt(Tag.Status, -1);
+        if (Commands.isPending(status )) {
+            if (outFormat != null)
+                try {
+                    out.write(MessageFormat.format(outFormat, outValues(data)));
+                    out.newLine();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            ++numMatches;
+            if (cancelAfter != 0 && numMatches >= cancelAfter)
+                try {
+                    rspHandler.cancel(as);
+                    cancelAfter = 0;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        }
+    }
+
+    private Object[] outValues(Attributes data) {
+        Object[] values = new Object[outAttrs.length];
+        for (int i = 0; i < values.length; i++)
+            values[i] = getString(data, outAttrs[i]);
+        return values ;
+    }
+
+    private Object getString(Attributes data, int[] tags) {
+        for (int i = 0; i < tags.length-1; i++) 
+            try {
+                 data = ((Sequence) data.getValue(tags[i])).get(0);
+            } catch (Exception e) {
+                return "";
+            }
+        return data.getString(tags[tags.length-1], "");
     }
 
 }

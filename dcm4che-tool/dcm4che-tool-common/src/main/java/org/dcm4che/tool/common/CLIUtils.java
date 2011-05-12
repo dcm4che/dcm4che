@@ -326,11 +326,11 @@ public class CLIUtils {
         String aeAtHostPort = cl.getOptionValue("c");
         String[] aeHostPort = split(aeAtHostPort , '@', 0);
         if (aeHostPort[1] == null)
-            throw new ParseException(rb.getString("connect-invalid"));
+            throw new ParseException(rb.getString("invalid-connect-opt"));
         
         String[] hostPort = split(aeHostPort[1], ':', 0);
         if (hostPort[1] == null)
-            throw new ParseException(rb.getString("connect-invalid"));
+            throw new ParseException(rb.getString("invalid-connect-opt"));
 
         rq.setCalledAET(aeHostPort[0]);
         conn.setHostname(hostPort[0]);

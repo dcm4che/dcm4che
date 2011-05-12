@@ -36,27 +36,51 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.tool.common;
 
-import org.dcm4che.net.Association;
+import java.io.File;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomService {
-    private final String[] sopClasses;
+public class FilesetInfo {
 
-    protected DicomService(String... sopClasses) {
-        this.sopClasses = sopClasses.clone();
+    private String uid;
+    private String id;
+    private File descFile;
+    private String descFileCharset;
+
+    public final String getFilesetUID() {
+        return uid;
     }
 
-    final String[] getSOPClasses() {
-        return sopClasses;
+    public final void setFilesetUID(String uid) {
+        this.uid = uid;
     }
 
-    public void onClose(Association as) {
-        // NOOP
+    public final String getFilesetID() {
+        return id;
+    }
+
+    public final void setFilesetID(String id) {
+        this.id = id;
+    }
+
+    public final File getDescriptorFile() {
+        return descFile;
+    }
+
+    public final void setDescriptorFile(File descFile) {
+        this.descFile = descFile;
+    }
+
+    public final String getDescriptorFileCharset() {
+        return descFileCharset;
+    }
+
+    public final void setDescriptorFileCharset(String descFileCharset) {
+        this.descFileCharset = descFileCharset;
     }
 
 }

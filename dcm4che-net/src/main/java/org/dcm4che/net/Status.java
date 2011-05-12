@@ -58,4 +58,6 @@ public class Status {
     public static final int Pending               = 0xFF00;
     public static final int PendingWarning        = 0xFF01;
 
+    public static final int IdentifierDoesNotMatchSOPClass = 0xA900;
+
 }

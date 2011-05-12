@@ -38,19 +38,32 @@
 
 package org.dcm4che.tool.dcmqrscp;
 
-import org.dcm4che.net.service.StorageService;
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractCStoreService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class StorageSCP extends StorageService {
+class CStoreService extends AbstractCStoreService {
 
-    private final Main storescp;
+    private final Main main;
 
-    public StorageSCP(Main storescp) {
+    public CStoreService(Main main) {
         super("*");
-        this.storescp = storescp;
+        this.main = main;
+    }
+
+    @Override
+    protected void doCStore(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException {
+        data.skipAll();
     }
 
 }

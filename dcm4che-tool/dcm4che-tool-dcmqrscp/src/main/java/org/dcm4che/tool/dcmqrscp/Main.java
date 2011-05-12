@@ -53,14 +53,18 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.UID;
+import org.dcm4che.media.DicomDirReader;
+import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.net.service.VerificationService;
+import org.dcm4che.net.service.CEchoService;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -75,10 +79,14 @@ public class Main {
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
-    private final StorageSCP storageSCP = new StorageSCP(this);
+    private final CStoreService storageSCP = new CStoreService(this);
+    private final CFindService findSCP = new CFindService(this);
 
     private File storageDir;
     private File dicomDir;
+    private final FilesetInfo fsInfo = new FilesetInfo();
+    private DicomDirReader ddReader;
+    private DicomDirReader ddWriter;
 
     public Main() {
         device.addConnection(conn);
@@ -86,12 +94,19 @@ public class Main {
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-        serviceRegistry.addDicomService(new VerificationService());
+        serviceRegistry.addDicomService(new CEchoService());
         serviceRegistry.addDicomService(storageSCP);
+        serviceRegistry.addDicomService(findSCP);
         ae.setDimseRQHandler(serviceRegistry);
     }
 
+    final Device getDevice() {
+        return device;
+    }
+
     public final void setStorageDirectory(File storageDir) {
+        if (storageDir.mkdirs())
+            System.out.println("M-WRITE " + storageDir);
         this.storageDir = storageDir;
     }
 
@@ -119,6 +134,7 @@ public class Main {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
+        CLIUtils.addFilesetInfoOptions(opts);
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
@@ -175,6 +191,7 @@ public class Main {
         try {
             CommandLine cl = parseComandLine(args);
             Main main = new Main();
+            CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
             configureStorageDirectory(main, cl);
@@ -208,8 +225,9 @@ public class Main {
             throws IOException {
         ApplicationEntity ae = main.ae;
         File dir = main.getStorageDirectory();
-        boolean storage= !cl.hasOption("no-storage")
+        boolean storage = !cl.hasOption("no-storage")
                 && (dir == null || dir.canWrite());
+        boolean dicomdir = main.getDicomDirectory() != null;
         if (storage && cl.hasOption("all-storage")) {
             ae.addTransferCapability(
                     new TransferCapability(null, 
@@ -238,13 +256,19 @@ public class Main {
                         null);
                 addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
             }
-            if (main.getDicomDirectory() != null && !cl.hasOption("no-query")) {
+           if (dicomdir && !cl.hasOption("no-query")) {
                 Properties p = CLIUtils.loadProperties(
                         cl.getOptionValue("query-sop-classes",
                                 "resource:query-sop-classes.properties"),
                         null);
                 addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
             }
+        }
+        if (dicomdir) {
+            if (storage)
+                main.openDicomDir();
+            else
+                main.openDicomDirForReadOnly();
         }
      }
 
@@ -269,6 +293,28 @@ public class Main {
 
     private void start() throws IOException {
         conn.bind();
+    }
+
+    DicomDirReader getDicomDirReader() {
+         return ddReader;
+    }
+
+    DicomDirReader getDicomDirWriter() {
+         return ddWriter;
+    }
+
+    private void openDicomDir() throws IOException {
+        if (!dicomDir.exists())
+            DicomDirWriter.createEmptyDirectory(dicomDir,
+                    UIDUtils.createUIDIfNull(fsInfo.getFilesetUID()),
+                    fsInfo.getFilesetID(),
+                    fsInfo.getDescriptorFile(), 
+                    fsInfo.getDescriptorFileCharset());
+        ddReader = ddWriter = DicomDirWriter.open(dicomDir);
+    }
+
+    private void openDicomDirForReadOnly() throws IOException {
+        ddReader = ddWriter = new DicomDirReader(dicomDir);
     }
 
 }

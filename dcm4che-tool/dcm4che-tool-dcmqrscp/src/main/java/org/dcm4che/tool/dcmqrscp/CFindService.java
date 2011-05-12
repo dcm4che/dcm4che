@@ -36,51 +36,61 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
-
-import java.io.IOException;
+package org.dcm4che.tool.dcmqrscp;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.AttributesValidator;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
-import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.DimseRSP;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractCFindService;
+import org.dcm4che.net.service.DicomServiceException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class StorageService extends DicomService implements CStoreSCP {
+class CFindService extends AbstractCFindService {
 
-    public StorageService(String[] sopClasses) {
-        super(sopClasses, UID.StorageServiceClass);
-    }
+    private final Main main;
+    private final DicomDirReader reader;
 
-    public StorageService(String sopClass) {
-        super(sopClass);
+    public CFindService(Main main) {
+        super(main.getDevice(),
+                UID.PatientRootQueryRetrieveInformationModelFIND,
+                UID.StudyRootQueryRetrieveInformationModelFIND,
+                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired);
+        this.main = main;
+        this.reader = main.getDicomDirReader();
     }
 
     @Override
-    public void onCStoreRQ(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data) throws IOException {
-        Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        doCStore(as, pc, rq, data, rsp);
-        as.writeDimseRSP(pc, rsp);
-        afterCStoreRSP(as, pc, rq, data, rsp);
-    }
-
-    protected void doCStore(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        data.skipAll();
-    }
-
-    protected void afterCStoreRSP(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        data.skipAll();
+    protected DimseRSP doCFind(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys, Attributes rsp)
+            throws DicomServiceException {
+        AttributesValidator validator = new AttributesValidator(keys);
+        String level = validator.getType1String(Tag.QueryRetrieveLevel, 0,
+                "PATIENT", "STUDY", "SERIES", "IMAGE");
+        if (validator.hasOffendingElements())
+            throw new DicomServiceException(rq,
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    validator.getErrorComment())
+                .setOffendingElements(Tag.QueryRetrieveLevel);
+        switch (level.charAt(1)) {
+        case 'A':
+            return new CFindRSP.Patient(main, keys, rsp);
+        case 'T':
+            return new CFindRSP.Study(main, keys, rsp);
+        case 'E':
+            return new CFindRSP.Series(main, keys, rsp);
+        case 'M':
+            return new CFindRSP.Instance(main, keys, rsp);
+        }
+        throw new AssertionError();
     }
 
 }

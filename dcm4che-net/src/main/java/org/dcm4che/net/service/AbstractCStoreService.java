@@ -38,25 +38,43 @@
 
 package org.dcm4che.net.service;
 
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomService {
-    private final String[] sopClasses;
+public abstract class AbstractCStoreService extends DicomService
+        implements CStoreSCP {
 
-    protected DicomService(String... sopClasses) {
-        this.sopClasses = sopClasses.clone();
+    public AbstractCStoreService(String... sopClasses) {
+        super(sopClasses);
     }
 
-    final String[] getSOPClasses() {
-        return sopClasses;
+    @Override
+    public void onCStoreRQ(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data) throws IOException {
+        Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        doCStore(as, pc, rq, data, rsp);
+        as.writeDimseRSP(pc, rsp);
+        afterCStoreRSP(as, pc, rq, data, rsp);
     }
 
-    public void onClose(Association as) {
-        // NOOP
+    protected abstract void doCStore(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException;
+
+    protected void afterCStoreRSP(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException {
+        // NOOP;
     }
 
 }

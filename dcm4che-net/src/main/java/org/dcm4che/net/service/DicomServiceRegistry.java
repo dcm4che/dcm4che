@@ -78,96 +78,71 @@ public class DicomServiceRegistry implements DimseRQHandler {
     public synchronized void addDicomService(DicomService service) {
         services.add(service);
         String[] sopClasses = service.getSOPClasses();
-        String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
             sopCUIDs.add(uid);
-        if (serviceClass != null)
-            sopCUIDs.add(serviceClass);
         if (service instanceof CEchoSCP) {
             for (String uid : sopClasses)
                 cechoSCPs.put(uid, (CEchoSCP) service);
-            if (serviceClass != null)
-                cechoSCPs.put(serviceClass, (CEchoSCP) service);
         }
         if (service instanceof CStoreSCP) {
             if (cstoreSCPs == null)
                 cstoreSCPs = new HashMap<String, CStoreSCP>();
             for (String uid : sopClasses)
                 cstoreSCPs.put(uid, (CStoreSCP) service);
-            if (serviceClass != null)
-                cstoreSCPs.put(serviceClass, (CStoreSCP) service);
         }
         if (service instanceof CGetSCP) {
             if (cgetSCPs == null)
                 cgetSCPs = new HashMap<String, CGetSCP>();
             for (String uid : sopClasses)
                 cgetSCPs.put(uid, (CGetSCP) service);
-            if (serviceClass != null)
-                cgetSCPs.put(serviceClass, (CGetSCP) service);
         }
         if (service instanceof CFindSCP) {
             if (cfindSCPs == null)
                 cfindSCPs = new HashMap<String, CFindSCP>();
             for (String uid : sopClasses)
                 cfindSCPs.put(uid, (CFindSCP) service);
-            if (serviceClass != null)
-                cfindSCPs.put(serviceClass, (CFindSCP) service);
         }
         if (service instanceof CMoveSCP) {
             if (cmoveSCPs == null)
                 cmoveSCPs = new HashMap<String, CMoveSCP>();
             for (String uid : sopClasses)
                 cmoveSCPs.put(uid, (CMoveSCP) service);
-            if (serviceClass != null)
-                cmoveSCPs.put(serviceClass, (CMoveSCP) service);
         }
         if (service instanceof NGetSCP) {
             if (ngetSCPs == null)
                 ngetSCPs = new HashMap<String, NGetSCP>();
             for (String uid : sopClasses)
                 ngetSCPs.put(uid, (NGetSCP) service);
-            if (serviceClass != null)
-                ngetSCPs.put(serviceClass, (NGetSCP) service);
         }
         if (service instanceof NSetSCP) {
             if (nsetSCPs == null)
                 nsetSCPs = new HashMap<String, NSetSCP>();
             for (String uid : sopClasses)
                 nsetSCPs.put(uid, (NSetSCP) service);
-            if (serviceClass != null)
-                nsetSCPs.put(serviceClass, (NSetSCP) service);
         }
         if (service instanceof NCreateSCP) {
             if (ncreateSCPs == null)
                 ncreateSCPs = new HashMap<String, NCreateSCP>();
             for (String uid : sopClasses)
                 ncreateSCPs.put(uid, (NCreateSCP) service);
-            if (serviceClass != null)
-                ncreateSCPs.put(serviceClass, (NCreateSCP) service);
         }
         if (service instanceof NActionSCP) {
             if (nactionSCPs == null)
                 nactionSCPs = new HashMap<String, NActionSCP>();
             for (String uid : sopClasses)
                 nactionSCPs.put(uid, (NActionSCP) service);
-            if (serviceClass != null)
-                nactionSCPs.put(serviceClass, (NActionSCP) service);
         }
         if (service instanceof NEventReportSCU) {
             if (neventReportSCUs == null)
                 neventReportSCUs = new HashMap<String, NEventReportSCU>();
             for (String uid : sopClasses)
                 neventReportSCUs.put(uid, (NEventReportSCU) service);
-            if (serviceClass != null)
-                neventReportSCUs.put(serviceClass, (NEventReportSCU) service);
         }
         if (service instanceof NDeleteSCP) {
             if (ndeleteSCPs == null)
                 ndeleteSCPs = new HashMap<String, NDeleteSCP>();
             for (String uid : sopClasses)
                 ndeleteSCPs.put(uid, (NDeleteSCP) service);
-            if (serviceClass != null)
-                ndeleteSCPs.put(serviceClass, (NDeleteSCP) service);
         }
     }
 
@@ -176,95 +151,70 @@ public class DicomServiceRegistry implements DimseRQHandler {
             return false;
 
         String[] sopClasses = service.getSOPClasses();
-        String serviceClass = service.getServiceClass();
         for (String uid : sopClasses)
             sopCUIDs.remove(uid);
-        if (serviceClass != null)
-            sopCUIDs.remove(serviceClass);
         if (service instanceof CEchoSCP) {
             for (String uid : sopClasses)
                 cechoSCPs.remove(uid);
-            if (serviceClass != null)
-                cechoSCPs.remove(serviceClass);
         }
         if (service instanceof CStoreSCP) {
             if (cstoreSCPs != null) {
                 for (String uid : sopClasses)
                     cstoreSCPs.remove(uid);
-                if (serviceClass != null)
-                    cstoreSCPs.remove(serviceClass);
             }
         }
         if (service instanceof CGetSCP) {
             if (cgetSCPs != null) {
                 for (String uid : sopClasses)
                     cgetSCPs.remove(uid);
-                if (serviceClass != null)
-                    cgetSCPs.remove(serviceClass);
             }
         }
         if (service instanceof CFindSCP) {
             if (cfindSCPs != null) {
                 for (String uid : sopClasses)
                     cfindSCPs.remove(uid);
-                if (serviceClass != null)
-                    cfindSCPs.remove(serviceClass);
             }
         }
         if (service instanceof CMoveSCP) {
             if (cmoveSCPs != null) {
                 for (String uid : sopClasses)
                     cmoveSCPs.remove(uid);
-                if (serviceClass != null)
-                    cmoveSCPs.remove(serviceClass);
             }
         }
         if (service instanceof NGetSCP) {
             if (ngetSCPs != null) {
                 for (String uid : sopClasses)
                     ngetSCPs.remove(uid);
-                if (serviceClass != null)
-                    ngetSCPs.remove(serviceClass);
             }
         }
         if (service instanceof NSetSCP) {
             if (nsetSCPs != null) {
                 for (String uid : sopClasses)
                     nsetSCPs.remove(uid);
-                if (serviceClass != null)
-                    nsetSCPs.remove(serviceClass);
             }
         }
         if (service instanceof NCreateSCP) {
             if (ncreateSCPs != null) {
                 for (String uid : sopClasses)
                     ncreateSCPs.remove(uid);
-                if (serviceClass != null)
-                    ncreateSCPs.remove(serviceClass);
             }
         }
         if (service instanceof NActionSCP) {
             if (nactionSCPs != null) {
                 for (String uid : sopClasses)
                     nactionSCPs.remove(uid);
-                if (serviceClass != null)
-                    nactionSCPs.remove(serviceClass);
             }
         }
         if (service instanceof NEventReportSCU) {
             if (neventReportSCUs != null) {
                 for (String uid : sopClasses)
                     neventReportSCUs.remove(uid);
-                if (serviceClass != null)
-                    neventReportSCUs.remove(serviceClass);
             }
         }
         if (service instanceof NDeleteSCP) {
             if (ndeleteSCPs != null) {
                 for (String uid : sopClasses)
                     ndeleteSCPs.remove(uid);
-                if (serviceClass != null)
-                    ndeleteSCPs.remove(serviceClass);
             }
         }
         return true;
@@ -324,29 +274,37 @@ public class DicomServiceRegistry implements DimseRQHandler {
 
     private <T> T service(HashMap<String, T> map, Attributes cmd, int tag,
             Association as) throws DicomServiceException {
-        if (map != null) {
-            String cuid = cmd.getString(tag, null);
-            T ret = map.get(cuid);
-            if (ret != null)
-                return ret;
+        String cuid = cmd.getString(tag, null);
+        if (map == null)
+            throw new DicomServiceException(cmd, 
+                    sopCUIDs.contains(cuid)
+                        ? Status.UnrecognizedOperation
+                        : Status.NoSuchSOPclass);
 
-            CommonExtendedNegotiation commonExtNeg = as
-                    .getCommonExtendedNegotiationFor(cuid);
-            if (commonExtNeg != null) {
-                for (String uid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
-                    ret = map.get(uid);
-                    if (ret != null)
-                        return ret;
-                }
-                ret = map.get(commonExtNeg.getServiceClassUID());
+        T ret = map.get(cuid);
+        if (ret != null)
+            return ret;
+
+        if (sopCUIDs.contains(cuid))
+            throw new DicomServiceException(cmd, Status.UnrecognizedOperation);
+
+        CommonExtendedNegotiation commonExtNeg = as
+                .getCommonExtendedNegotiationFor(cuid);
+        if (commonExtNeg != null) {
+            for (String uid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
+                ret = map.get(uid);
                 if (ret != null)
                     return ret;
             }
-            ret = map.get("*");
+            ret = map.get(commonExtNeg.getServiceClassUID());
             if (ret != null)
                 return ret;
         }
-        throw new DicomServiceException(cmd, Status.UnrecognizedOperation);
+        ret = map.get("*");
+        if (ret != null)
+            return ret;
+
+        throw new DicomServiceException(cmd, Status.NoSuchSOPclass);
     }
 
     private void cstore(Association as, PresentationContext pc,

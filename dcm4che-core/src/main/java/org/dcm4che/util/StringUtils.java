@@ -205,4 +205,8 @@ public class StringUtils {
         return (s.indexOf('*') >= 0 || s.indexOf('?') >= 0);
     }
 
+    public static String[] maskNull(String[] ss) {
+        return ss == null ? EMPTY_STRING : ss;
+    }
+
 }

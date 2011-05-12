@@ -150,15 +150,15 @@ public class DicomDirWriter extends DicomDirReader {
         return new DicomDirWriter(file);
     }
 
-    public static DicomDirWriter create(File file, String iuid, String id,
-            File descFile, String charset) throws IOException {
+    public static void createEmptyDirectory(File file, String iuid,
+            String id, File descFile, String charset) throws IOException {
         Attributes fmi = Attributes.createFileMetaInformation(iuid,
                 UID.MediaStorageDirectoryStorage, UID.ExplicitVRLittleEndian);
-        return create(file, fmi, id, descFile, charset);
+        createEmptyDirectory(file, fmi, id, descFile, charset);
     }
 
-    public static DicomDirWriter create(File file, Attributes fmi, String id,
-            File descFile, String charset) throws IOException {
+    public static void createEmptyDirectory(File file, Attributes fmi,
+            String id, File descFile, String charset) throws IOException {
         Attributes fsInfo =
                 createFileSetInformation(file, id, descFile, charset);
         DicomOutputStream out = new DicomOutputStream(file);
@@ -167,7 +167,6 @@ public class DicomDirWriter extends DicomDirReader {
         } finally {
             out.close();
         }
-        return new DicomDirWriter(file);
     }
 
     private static Attributes createFileSetInformation(File file, String id,

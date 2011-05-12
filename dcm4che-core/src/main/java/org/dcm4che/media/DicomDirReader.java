@@ -242,39 +242,58 @@ public class DicomDirReader implements Closeable {
                 pk(RecordType.PATIENT, Tag.PatientID, VR.LO, id), false, false);
     }
 
-    public Attributes findStudyRecord(Attributes patRec, String iuid)
+    public Attributes findStudyRecord(Attributes patRec, String... iuids)
             throws IOException {
         return findLowerDirectoryRecord(patRec,
-                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuid),
+                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
-    public Attributes findSeriesRecord(Attributes studyRec, String iuid)
+    public Attributes findNextStudyRecord(Attributes studyRec, String... iuids)
+            throws IOException {
+        return findNextDirectoryRecord(studyRec,
+                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuids),
+                false, false);
+    }
+
+    public Attributes findSeriesRecord(Attributes studyRec, String... iuids)
             throws IOException {
         return findLowerDirectoryRecord(studyRec, 
-                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuid),
+                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
-    public Attributes findInstanceRecord(Attributes seriesRec, String iuid)
+    public Attributes findNextSeriesRecord(Attributes seriesRec, String... iuids)
             throws IOException {
-        return findLowerDirectoryRecord(seriesRec, pk(iuid), false, false);
+        return findNextDirectoryRecord(seriesRec, 
+                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuids),
+                false, false);
     }
 
-    public Attributes findInstanceRecord(String iuid) throws IOException {
-        return findRootDirectoryRecord(pk(iuid), false, false);
+    public Attributes findInstanceRecord(Attributes seriesRec, String... iuids)
+            throws IOException {
+        return findLowerDirectoryRecord(seriesRec, pk(iuids), false, false);
     }
 
-    private Attributes pk(RecordType type, int tag, VR vr, String s) {
+    public Attributes findNextInstanceRecord(Attributes instRec, String... iuids)
+            throws IOException {
+        return findNextDirectoryRecord(instRec, pk(iuids), false, false);
+    }
+
+    public Attributes findInstanceRecord(String... iuids) throws IOException {
+        return findRootDirectoryRecord(pk(iuids), false, false);
+    }
+
+    private Attributes pk(RecordType type, int tag, VR vr, String... ids) {
         Attributes pk = new Attributes(2);
         pk.setString(Tag.DirectoryRecordType, VR.CS, type.code());
-        pk.setString(tag, vr, s);
+        pk.setString(tag, vr, ids);
         return pk;
     }
 
-    private Attributes pk(String iuid) {
+    private Attributes pk(String[] iuids) {
         Attributes pk = new Attributes(1);
-        pk.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.UI, iuid);
+        pk.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.UI, iuids);
         return pk;
     }
 

@@ -38,25 +38,33 @@
 
 package org.dcm4che.net.service;
 
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomService {
-    private final String[] sopClasses;
+public class CEchoService extends DicomService implements CEchoSCP {
 
-    protected DicomService(String... sopClasses) {
-        this.sopClasses = sopClasses.clone();
+    public CEchoService() {
+        super(UID.VerificationSOPClass);
     }
 
-    final String[] getSOPClasses() {
-        return sopClasses;
+    public CEchoService(String... sopClasses) {
+        super(sopClasses);
     }
 
-    public void onClose(Association as) {
-        // NOOP
+    @Override
+    public void onCEchoRQ(Association as, PresentationContext pc,
+            Attributes cmd) throws IOException {
+        as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
     }
 
 }

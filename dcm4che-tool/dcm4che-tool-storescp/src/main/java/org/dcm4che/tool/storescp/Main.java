@@ -56,7 +56,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.net.service.VerificationService;
+import org.dcm4che.net.service.CEchoService;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.StringUtils;
 
@@ -73,7 +73,7 @@ public class Main {
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
-    private final StorageSCP storageSCP = new StorageSCP(this);
+    private final CStoreService storageSCP = new CStoreService(this);
 
     public Main() {
         device.addConnection(conn);
@@ -81,7 +81,7 @@ public class Main {
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-        serviceRegistry.addDicomService(new VerificationService());
+        serviceRegistry.addDicomService(new CEchoService());
         serviceRegistry.addDicomService(storageSCP);
         ae.setDimseRQHandler(serviceRegistry);
     }

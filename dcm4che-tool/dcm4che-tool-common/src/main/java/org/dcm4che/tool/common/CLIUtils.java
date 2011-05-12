@@ -38,6 +38,7 @@
 
 package org.dcm4che.tool.common;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -596,6 +597,41 @@ public class CLIUtils {
             }
         }
         return tags;
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addFilesetInfoOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .withLongOpt("fs-desc")
+                .hasArg()
+                .withArgName("txtfile")
+                .withDescription(rb.getString("fs-desc"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("fs-desc-cs")
+                .hasArg()
+                .withArgName("code")
+                .withDescription(rb.getString("fs-desc-cs"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("fs-id")
+                .hasArg()
+                .withArgName("id")
+                .withDescription(rb.getString("fs-id"))
+                .create());
+        opts.addOption(OptionBuilder
+                .withLongOpt("fs-uid")
+                .hasArg()
+                .withArgName("uid")
+                .withDescription(rb.getString("fs-uid"))
+                .create());
+    }
+
+    public static void configure(FilesetInfo fsInfo, CommandLine cl) {
+        fsInfo.setFilesetUID(cl.getOptionValue("fs-uid"));
+        fsInfo.setFilesetID(cl.getOptionValue("fs-id"));
+        fsInfo.setDescriptorFile(new File(cl.getOptionValue("fs-desc")));
+        fsInfo.setDescriptorFileCharset(cl.getOptionValue("fs-desc-cs"));
     }
 
 }

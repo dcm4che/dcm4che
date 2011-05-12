@@ -36,27 +36,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.tool.storescp;
 
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractCStoreService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomService {
-    private final String[] sopClasses;
+class CStoreService extends AbstractCStoreService {
 
-    protected DicomService(String... sopClasses) {
-        this.sopClasses = sopClasses.clone();
+    private final Main main;
+
+    public CStoreService(Main main) {
+        super("*");
+        this.main = main;
     }
 
-    final String[] getSOPClasses() {
-        return sopClasses;
-    }
-
-    public void onClose(Association as) {
-        // NOOP
+    @Override
+    protected void doCStore(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException {
+        data.skipAll();
     }
 
 }

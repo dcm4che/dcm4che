@@ -90,6 +90,15 @@ public class UIDUtils {
         return doCreateUID(root);
     }
 
+    public static String createUIDIfNull(String uid) {
+        return uid == null ? doCreateUID(root) : uid;
+    }
+
+    public static String createUIDIfNull(String uid, String root) {
+        checkRoot(root);
+        return uid == null ? doCreateUID(root) : uid;
+    }
+
     private static String doCreateUID(String root) {
         byte[] b17 = new byte[17];
         UUID uuid = UUID.randomUUID();

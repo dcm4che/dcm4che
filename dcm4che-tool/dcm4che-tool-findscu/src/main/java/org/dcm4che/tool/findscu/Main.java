@@ -74,6 +74,7 @@ import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -547,13 +548,15 @@ public class Main {
     }
 
     private Object getString(Attributes data, int[] tags) {
-        for (int i = 0; i < tags.length-1; i++) 
-            try {
+        try {
+            for (int i = 0; i < tags.length-1; i++) 
                  data = ((Sequence) data.getValue(tags[i])).get(0);
-            } catch (Exception e) {
-                return "";
-            }
-        return data.getString(tags[tags.length-1], "");
+            String[] ss = data.getStrings(tags[tags.length-1]);
+            if (ss != null && ss.length != 0)
+                return StringUtils.join(ss, '\\');
+        } catch (Exception e) {
+        }
+        return "";
     }
 
 }

@@ -60,6 +60,7 @@ import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.EncodingParams;
+import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.UIDUtils;
 
@@ -75,12 +76,9 @@ public class Main {
     private static final int DEFAULT_WIDTH = 78;
 
     private boolean inUse;
-    private String uid;
-    private String id;
-    private File descFile;
-    private String descFileCharset;
     private int width = DEFAULT_WIDTH;
     private final EncodingParams encParams = new EncodingParams();
+    private final FilesetInfo fsInfo = new FilesetInfo();
     private boolean origSeqLength;
     private boolean checkDuplicate;
 
@@ -94,10 +92,10 @@ public class Main {
             throws ParseException{
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
+        CLIUtils.addFilesetInfoOptions(opts);
         OptionGroup cmdGroup = new OptionGroup();
         addCommandOptions(cmdGroup);
         opts.addOptionGroup(cmdGroup);
-        addFilesetInfoOptions(opts);
         opts.addOption(OptionBuilder
                 .withLongOpt("width")
                 .hasArg()
@@ -112,34 +110,6 @@ public class Main {
         if (cmdGroup.getSelected() == null)
             throw new ParseException(rb.getString("missing"));
         return cl;
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addFilesetInfoOptions(Options opts) {
-        opts.addOption(OptionBuilder
-                .withLongOpt("desc")
-                .hasArg()
-                .withArgName("txtfile")
-                .withDescription(rb.getString("desc"))
-                .create("D"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("desc-charset")
-                .hasArg()
-                .withArgName("code")
-                .withDescription(rb.getString("desc-charset"))
-                .create("C"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("fileset-id")
-                .hasArg()
-                .withArgName("id")
-                .withDescription(rb.getString("fileset-id"))
-                .create("I"));
-        opts.addOption(OptionBuilder
-                .withLongOpt("fileset-uid")
-                .hasArg()
-                .withArgName("uid")
-                .withDescription(rb.getString("fileset-uid"))
-                .create("U"));
     }
 
     @SuppressWarnings("static-access")
@@ -183,15 +153,8 @@ public class Main {
             Main main = new Main();
             main.setInUse(cl.hasOption("in-use"));
             CLIUtils.configure(main.encParams, cl);
+            CLIUtils.configure(main.fsInfo, cl);
             main.setOriginalSequenceLength(cl.hasOption("orig-seq-len"));
-            if (cl.hasOption("U"))
-                main.setFilesetUID(cl.getOptionValue("U"));
-            if (cl.hasOption("I"))
-                main.setFilesetID(cl.getOptionValue("I"));
-            if (cl.hasOption("D"))
-                main.setDescriptorFile(new File(cl.getOptionValue("D")));
-            if (cl.hasOption("C"))
-                main.setDescriptorFileCharset(cl.getOptionValue("C"));
             if (cl.hasOption("w")) {
                 String s = cl.getOptionValue("w");
                 try {
@@ -270,11 +233,11 @@ public class Main {
         File tmp = File.createTempFile("DICOMDIR", null, f.getParentFile());
         DicomDirReader r = new DicomDirReader(f);
         try {
-            setFilesetUID(r.getFileSetUID());
-            setFilesetID(r.getFileSetID());
-            setDescriptorFile(
+            fsInfo.setFilesetUID(r.getFileSetUID());
+            fsInfo.setFilesetID(r.getFileSetID());
+            fsInfo.setDescriptorFile(
                     r.getDescriptorFile());
-            setDescriptorFileCharset(
+            fsInfo.setDescriptorFileCharset(
                     r.getDescriptorFileCharacterSet());
             create(tmp);
             copyFrom(r);
@@ -321,22 +284,6 @@ public class Main {
         this.inUse = inUse;
     }
 
-    public final void setFilesetUID(String uid) {
-        this.uid = uid;
-    }
-
-    public final void setFilesetID(String id) {
-        this.id = id;
-    }
-
-    public final void setDescriptorFile(File descFile) {
-        this.descFile = descFile;
-    }
-
-    public final void setDescriptorFileCharset(String descFileCharset) {
-        this.descFileCharset = descFileCharset;
-    }
-
     public final void setOriginalSequenceLength(boolean origSeqLength) {
         this.origSeqLength = origSeqLength;
     }
@@ -368,8 +315,12 @@ public class Main {
 
     public void create(File file) throws IOException {
         this.file = file;
-        in = out = DicomDirWriter
-                .create(file, uid(), id, descFile, descFileCharset);
+        DicomDirWriter.createEmptyDirectory(file,
+                UIDUtils.createUIDIfNull(fsInfo.getFilesetUID()),
+                fsInfo.getFilesetID(),
+                fsInfo.getDescriptorFile(), 
+                fsInfo.getDescriptorFileCharset());
+        in = out = DicomDirWriter.open(file);
         setEncodeOptions();
         setCheckDuplicate(false);
     }
@@ -390,10 +341,6 @@ public class Main {
             out.setUndefItemLength(encParams.isUndefItemLength());
             out.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
         }
-    }
-
-    private String uid() {
-        return uid == null ? UIDUtils.createUID() : uid;
     }
 
     public void list() throws IOException {

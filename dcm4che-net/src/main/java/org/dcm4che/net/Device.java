@@ -578,7 +578,7 @@ public class Device {
                 new SecureRandom());
     }
 
-    void execute(Runnable command) {
+    public void execute(Runnable command) {
         if (executor == null)
             throw new IllegalStateException(
                     "executer not initalized");
@@ -586,21 +586,12 @@ public class Device {
         executor.execute(command);
     }
 
-    ScheduledFuture<?> schedule(Runnable command, long delay) {
+    public ScheduledFuture<?> schedule(Runnable command, long delay) {
         if (scheduledExecutor == null)
             throw new IllegalStateException(
                     "scheduled executor service not initalized");
 
         return scheduledExecutor.schedule(command, delay,
                 TimeUnit.MILLISECONDS);
-    }
-
-    ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long period) {
-        if (scheduledExecutor == null)
-            throw new IllegalStateException(
-                    "scheduled executor service not initalized");
-
-        return scheduledExecutor.scheduleAtFixedRate(command, 0,
-                period, TimeUnit.MILLISECONDS);
     }
 }

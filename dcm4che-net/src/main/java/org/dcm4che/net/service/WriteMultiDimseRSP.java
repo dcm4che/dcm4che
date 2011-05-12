@@ -36,21 +36,42 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.storescp;
+package org.dcm4che.net.service;
 
-import org.dcm4che.net.service.StorageService;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.DimseRSP;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class StorageSCP extends StorageService {
+class WriteMultiDimseRSP implements Runnable {
 
-    private final Main storescp;
+    private Association as;
+    private PresentationContext pc;
+    private DimseRSP rsp;
 
-    public StorageSCP(Main storescp) {
-        super("*");
-        this.storescp = storescp;
+    public WriteMultiDimseRSP(Association as, PresentationContext pc,
+            DimseRSP rsp) {
+        this.as = as;
+        this.pc = pc;
+        this.rsp = rsp;
+    }
+
+    @Override
+    public void run() {
+        try {
+            try {
+                do
+                    as.writeDimseRSP(pc, rsp.getCommand(), rsp.getDataset());
+                while (rsp.next());
+            } catch (DicomServiceException e) {
+                as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
+            }
+        } catch (Throwable e) {
+            as.abort();
+        }
     }
 
 }

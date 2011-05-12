@@ -67,16 +67,23 @@ public class DicomServiceException extends IOException {
             setErrorComment(message);
     }
 
-    public void setErrorComment(String val) {
+    public DicomServiceException setErrorComment(String val) {
         if (val.length() > 64)
             val = val.substring(0, 64);
         rsp.setString(Tag.ErrorComment, VR.LO, val);
+        return this;
     }
     
-    public void setErrorID(int val) {
+    public DicomServiceException setErrorID(int val) {
         rsp.setInt(Tag.ErrorID, VR.US, val);
+        return this;
     }
-    
+
+    public DicomServiceException setOffendingElements(int... tags) {
+        rsp.setInt(Tag.OffendingElement, VR.AT, tags);
+        return this;
+    }
+
     public final Attributes getCommand() {
         return rsp;
     }

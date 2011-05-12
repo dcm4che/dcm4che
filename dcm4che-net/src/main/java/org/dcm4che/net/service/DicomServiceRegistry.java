@@ -228,9 +228,11 @@ public class DicomServiceRegistry implements DimseRQHandler {
             if (cmdfield == Commands.C_STORE_RQ) {
                 cstore(as, pc, cmd, data);
             } else {
-                Attributes dataset = data != null
-                        ? data.readDataset(pc.getTransferSyntax())
-                        : null;
+                Attributes dataset =  null;
+                if (data != null) {
+                    dataset = data.readDataset(pc.getTransferSyntax());
+                    Association.LOG_DIMSE.debug("Dataset:\n{}", dataset);
+                }
                 switch (cmdfield) {
                 case Commands.C_GET_RQ:
                     cget(as, pc, cmd, dataset);

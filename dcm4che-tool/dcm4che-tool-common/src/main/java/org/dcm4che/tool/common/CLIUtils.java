@@ -630,7 +630,8 @@ public class CLIUtils {
     public static void configure(FilesetInfo fsInfo, CommandLine cl) {
         fsInfo.setFilesetUID(cl.getOptionValue("fs-uid"));
         fsInfo.setFilesetID(cl.getOptionValue("fs-id"));
-        fsInfo.setDescriptorFile(new File(cl.getOptionValue("fs-desc")));
+        if (cl.hasOption("fs-desc"))
+            fsInfo.setDescriptorFile(new File(cl.getOptionValue("fs-desc")));
         fsInfo.setDescriptorFileCharset(cl.getOptionValue("fs-desc-cs"));
     }
 

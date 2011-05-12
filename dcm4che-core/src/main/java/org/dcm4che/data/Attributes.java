@@ -1308,19 +1308,30 @@ public class Attributes implements Serializable {
     }
 
 
-    public void addAll(Attributes other) {
-        addAll(other, null, null);
+    public Attributes addAll(Attributes other) {
+        return addAll(other, null, null, 0, 0);
     }
 
-    public void addSelected(Attributes other, int[] selection) {
-        addAll(other, selection, null);
+    public Attributes addSelected(Attributes other, Attributes selection) {
+        return addSelected(other, selection.tags, 0, selection.size);
     }
 
-    public void addNotSelected(Attributes other, int[] selection) {
-        addAll(other, null, selection);
+    public Attributes addSelected(Attributes other, int[] selection,
+            int fromIndex, int toIndex) {
+        return addAll(other, selection, null, fromIndex, toIndex);
     }
 
-    private void addAll(Attributes other, int[] include, int[] exclude) {
+    public Attributes addNotSelected(Attributes other, Attributes selection) {
+        return addSelected(other, selection.tags, 0, selection.size);
+    }
+
+    public Attributes addNotSelected(Attributes other, int[] selection,
+            int fromIndex, int toIndex) {
+        return addAll(other, null, selection, fromIndex, toIndex);
+    }
+
+    private Attributes addAll(Attributes other, int[] include, int[] exclude,
+            int fromIndex, int toIndex) {
         boolean toggleEndian = bigEndian != other.bigEndian;
         int[] tags = other.tags;
         VR[] srcVRs = other.vrs;
@@ -1331,10 +1342,10 @@ public class Attributes implements Serializable {
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
             if (!TagUtils.isPrivateCreator(tag)
-                    && (include == null
-                            || Arrays.binarySearch(include, tag) >= 0)
-                    && (exclude == null
-                            || Arrays.binarySearch(exclude, tag) < 0)) {
+                    && (include == null || Arrays.binarySearch(
+                            include, fromIndex, toIndex, tag) >= 0)
+                    && (exclude == null || Arrays.binarySearch(
+                            exclude, fromIndex, toIndex, tag) < 0)) {
                 VR vr = srcVRs[i];
                 if (TagUtils.isPrivateGroup(tag)) {
                     int tmp = TagUtils.creatorTagOf(tag);
@@ -1359,6 +1370,7 @@ public class Attributes implements Serializable {
                 }
             }
         }
+        return this;
     }
 
     private void set(int tag, String privateCreator, Sequence src) {
@@ -1630,45 +1642,41 @@ public class Attributes implements Serializable {
 
     private boolean matches(int tag, String privateCreator, VR vr,
             boolean ignorePNCase, boolean matchNoValue, String[] keyVals) {
-        if (keyVals.length > 1)
-            throw new IllegalArgumentException("Keys contain Attribute "
-                    + TagUtils.toString(tag) + " with " + keyVals.length
-                    + " values");
-
         String[] vals = getStrings(tag, privateCreator);
         if (vals == null || vals.length == 0)
             return matchNoValue;
 
         boolean ignoreCase = ignorePNCase && vr == VR.PN;
-        String keyVal = vr == VR.PN
-                ? new PersonName(keyVals[0]).toString()
-                : keyVals[0];
-
-        if (StringUtils.containsWildCard(keyVal)) {
-            Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
-            for (String val : vals) {
-                if (val == null)
-                    if (matchNoValue)
+        for (String keyVal : keyVals) {
+            if (vr == VR.PN)
+                keyVal = new PersonName(keyVals[0]).toString();
+    
+            if (StringUtils.containsWildCard(keyVal)) {
+                Pattern pattern = StringUtils.compilePattern(keyVal, ignoreCase);
+                for (String val : vals) {
+                    if (val == null)
+                        if (matchNoValue)
+                            return true;
+                        else
+                            continue;
+                    if (vr == VR.PN)
+                        val = new PersonName(val).toString();
+                    if (pattern.matcher(val).matches())
                         return true;
-                    else
-                        continue;
-                if (vr == VR.PN)
-                    val = new PersonName(val).toString();
-                if (pattern.matcher(val).matches())
-                    return true;
-            }
-        } else {
-            for (String val : vals) {
-                if (val == null)
-                    if (matchNoValue)
+                }
+            } else {
+                for (String val : vals) {
+                    if (val == null)
+                        if (matchNoValue)
+                            return true;
+                        else
+                            continue;
+                    if (vr == VR.PN)
+                        val = new PersonName(val).toString();
+                    if (ignoreCase ? keyVal.equalsIgnoreCase(val)
+                                   : keyVal.equals(val))
                         return true;
-                    else
-                        continue;
-                if (vr == VR.PN)
-                    val = new PersonName(val).toString();
-                if (ignoreCase ? keyVal.equalsIgnoreCase(val)
-                               : keyVal.equals(val))
-                    return true;
+                }
             }
         }
         return false;

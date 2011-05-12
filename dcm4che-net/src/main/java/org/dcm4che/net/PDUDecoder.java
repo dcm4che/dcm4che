@@ -452,7 +452,7 @@ class PDUDecoder extends PDVInputStream {
             Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG_DIMSE.info(sb.toString());
         }
-        Association.LOG_DIMSE.debug("\n{}", cmd);
+        Association.LOG_DIMSE.debug("Command:\n{}", cmd);
         int cmdField = cmd.getInt(Tag.CommandField, 0);
         if (cmdField == Commands.C_CANCEL_RQ) {
             as.onCancelRQ(cmd);
@@ -460,7 +460,7 @@ class PDUDecoder extends PDVInputStream {
             nextPDV(PDVType.DATA, pcid);
             if (Commands.isRSP(cmdField)) {
                 Attributes data = readDataset(tsuid);
-                Association.LOG_DIMSE.debug("\n{}", data);
+                Association.LOG_DIMSE.debug("Dataset:\n{}", data);
                 as.onDimseRSP(cmd, data);
             } else {
                 as.onDimseRQ(pc, cmd, this);

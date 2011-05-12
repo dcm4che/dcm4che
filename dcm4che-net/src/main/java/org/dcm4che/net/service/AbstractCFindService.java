@@ -66,7 +66,7 @@ public abstract class AbstractCFindService extends DicomService
     @Override
     public void onCFindRQ(Association as, PresentationContext pc,
             Attributes cmd, Attributes data) throws IOException {
-        Attributes cmdrsp = Commands.mkRSP(cmd, Status.Success);
+        Attributes cmdrsp = Commands.mkRSP(cmd, Status.Pending);
         DimseRSP rsp = doCFind(as, pc, cmd, data, cmdrsp);
         try {
             rsp.next();

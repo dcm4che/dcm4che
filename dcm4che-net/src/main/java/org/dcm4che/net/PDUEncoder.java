@@ -400,9 +400,9 @@ class PDUEncoder extends PDVOutputStream {
             Commands.promptTo(cmd, pcid, tsuid, sb);
             Association.LOG_DIMSE.info(sb.toString());
         }
-        Association.LOG_DIMSE.debug("\n{}", cmd);
+        Association.LOG_DIMSE.debug("Command:\n{}", cmd);
         if (dataWriter instanceof DataWriterAdapter)
-            Association.LOG_DIMSE.debug("\n{}",
+            Association.LOG_DIMSE.debug("Dataset:\n{}",
                     ((DataWriterAdapter) dataWriter).getDataset());
         synchronized (dimseLock) {
             this.th = Thread.currentThread();

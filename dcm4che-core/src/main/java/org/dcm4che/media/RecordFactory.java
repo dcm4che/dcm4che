@@ -251,7 +251,7 @@ public class RecordFactory {
             rec.setString(Tag.ReferencedTransferSyntaxUIDInFile, VR.UI,
                     fmi.getString(Tag.TransferSyntaxUID, null));
         }
-        rec.addSelected(dataset, keys);
+        rec.addSelected(dataset, keys, 0, keys.length);
         Sequence contentSeq = (Sequence) dataset.getValue(Tag.ContentSequence);
         if (contentSeq != null)
             copyConceptMod(contentSeq, rec);

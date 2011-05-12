@@ -68,11 +68,11 @@ import org.slf4j.LoggerFactory;
  */
 public class Association {
 
-    static final Logger LOG_ACSE =
+    public static final Logger LOG_ACSE =
             LoggerFactory.getLogger("org.dcm4che.net.Association.acse");
-    static final Logger LOG_DIMSE =
+    public static final Logger LOG_DIMSE =
             LoggerFactory.getLogger("org.dcm4che.net.Association.dimse");
-    static final Logger LOG_TIMEOUT =
+    public static final Logger LOG_TIMEOUT =
             LoggerFactory.getLogger("org.dcm4che.net.Association.timeout");
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();

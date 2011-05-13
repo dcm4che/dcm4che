@@ -102,6 +102,7 @@ class CFindService extends AbstractCFindService {
         Attributes dataset;
         boolean canceled;
         boolean finished;
+        final String qrLevel;
         final String patID;
         Attributes patRec;
 
@@ -109,6 +110,7 @@ class CFindService extends AbstractCFindService {
             this.rq = rq;
             this.keys = keys;
             this.rsp = rsp;
+            this.qrLevel = keys.getString(Tag.QueryRetrieveLevel, null);
             this.patID = keys.getString(Tag.PatientID, null);
             // include Specific Character Set in result
             if (!keys.contains(Tag.SpecificCharacterSet))
@@ -167,7 +169,9 @@ class CFindService extends AbstractCFindService {
         }
 
         protected Attributes result() {
-            return new Attributes(keys.size()).addSelected(patRec, keys);
+            Attributes result = new Attributes(keys.size());
+            result.setString(Tag.QueryRetrieveLevel, VR.CS, qrLevel);
+            return result.addSelected(patRec, keys);
         }
     }
 

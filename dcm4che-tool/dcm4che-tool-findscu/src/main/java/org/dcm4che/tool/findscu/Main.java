@@ -82,7 +82,7 @@ import org.dcm4che.util.StringUtils;
  */
 public class Main {
 
-    private enum SOPClass {
+    private static enum SOPClass {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND),
         PatientStudyOnly(
@@ -239,6 +239,7 @@ public class Main {
             Options opts = new Options();
             addServiceClassOptions(opts);
             addTransferSyntaxOptions(opts);
+            addExtendedNegotionOptions(opts);
             addOutputOptions(opts);
             addKeyOptions(opts);
             addQueryLevelOption(opts);
@@ -340,6 +341,13 @@ public class Main {
         opts.addOptionGroup(group);
     }
 
+    private static void addExtendedNegotionOptions(Options opts) {
+        opts.addOption(null, "relational", false, rb.getString("relational"));
+        opts.addOption(null, "datetime", false, rb.getString("datetime"));
+        opts.addOption(null, "fuzzy", false, rb.getString("fuzzy"));
+        opts.addOption(null, "timezone", false, rb.getString("timezone"));
+    }
+
     @SuppressWarnings("static-access")
     private static void addTransferSyntaxOptions(Options opts) {
         OptionGroup group = new OptionGroup();
@@ -371,6 +379,7 @@ public class Main {
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
+            configureExtendedNegotiation(main, cl);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -394,6 +403,10 @@ public class Main {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static void configureExtendedNegotiation(Main main, CommandLine cl) {
+        //TODO
     }
 
     private static void configureOutput(Main main, CommandLine cl) {

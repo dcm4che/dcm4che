@@ -65,7 +65,6 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
-import org.dcm4che.data.Value;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StreamUtils;
@@ -591,7 +590,7 @@ public class DicomInputStream extends FilterInputStream
         if (length == 0) {
             if (includeBulkData || includeBulkDataLocator ||
                     isBulkDataFragment())
-                frags.add(Value.EMPTY_BYTES);
+                frags.add(ByteUtils.EMPTY_BYTES);
         } else if (length == BulkDataLocator.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkDataLocator.deserializeFrom(

@@ -43,7 +43,6 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;

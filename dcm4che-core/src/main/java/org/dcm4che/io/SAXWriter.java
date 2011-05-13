@@ -48,8 +48,8 @@ import org.dcm4che.data.PersonName;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
-import org.dcm4che.data.Value;
 import org.dcm4che.util.Base64;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.TagUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -188,7 +188,7 @@ public class SAXWriter implements DicomInputHandler {
                 && dis.isBulkDataFragment()) {
             dis.skipFully(len);
         } else try {
-            frags.add(Value.EMPTY_BYTES); // increment size
+            frags.add(ByteUtils.EMPTY_BYTES); // increment size
             if (len > 0) {
                 ch.startElement("", "", "DataFragment",
                         atts("number", Integer.toString(frags.size())));

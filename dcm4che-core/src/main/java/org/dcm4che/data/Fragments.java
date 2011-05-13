@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.ByteUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -81,7 +82,7 @@ public class Fragments extends ArrayList<Object> implements Value {
 
     @Override
     public void add(int index, Object frag) {
-        super.add(index, frag != null ? frag : Value.EMPTY_BYTES);
+        super.add(index, frag != null ? frag : ByteUtils.EMPTY_BYTES);
     }
 
     @Override

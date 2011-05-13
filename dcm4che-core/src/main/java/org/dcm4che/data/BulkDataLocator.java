@@ -46,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
 
 /**
@@ -109,7 +110,7 @@ public class BulkDataLocator implements Value {
     @Override
     public byte[] toBytes(VR vr, boolean bigEndian) throws IOException {
         if (length == 0)
-            return EMPTY_BYTES;
+            return ByteUtils.EMPTY_BYTES;
 
         InputStream in = openStream();
         try {

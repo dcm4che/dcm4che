@@ -36,55 +36,63 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.data;
+package org.dcm4che.net.pdu;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
 
-import org.dcm4che.io.DicomOutputStream;
-import org.dcm4che.util.ByteUtils;
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
+ */
+public class ExtendedNegotiations {
 
-public interface Value {
-    
-    final Value NULL = new Value() {
+    public static enum Query {
+        relational, datetime, fuzzy, timezone;
 
-        @Override
-        public boolean isEmpty() {
-            return true;
+        public static byte[] toInfo(EnumSet<Query> flags) {
+            byte[] info = ExtendedNegotiations.toInfo(flags);
+            return info != null && info.length == 2
+                    ? Arrays.copyOf(info, 3)
+                    : info;
         }
 
-        @Override
-        public int getEncodedLength(DicomOutputStream out, VR vr) {
-            return vr == VR.SQ && out.isUndefEmptySequenceLength() ? -1 : 0;
+        public static byte[] toInfoWorklistIM(EnumSet<Query> flags) {
+            byte[] info = ExtendedNegotiations.toInfo(flags);
+            if (info != null) {
+                if (info.length < 3)
+                    return null;
+                info[0] = info[1] = 1;
+            }
+            return info;
         }
 
-        @Override
-        public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
+        public static EnumSet<Query> toSet(byte[] info) {
+            return ExtendedNegotiations.toSet(info, Query.class);
         }
+    }
 
-        @Override
-        public int calcLength(DicomOutputStream out, VR vr) {
-             return vr == VR.SQ && out.isUndefEmptySequenceLength() ? 8 : 0;
+    private static <E extends Enum<E>> byte[] toInfo(EnumSet<E> flags) {
+        if (flags.isEmpty())
+            return null;
+        int len = Collections.max(flags).ordinal() + 1;
+        byte[] info = new byte[len];
+        for (Enum<E> flag : flags)
+            info[flag.ordinal()] = 1;
+        return info ;
+    }
+
+    private static <E extends Enum<E>> EnumSet<E> toSet(byte[] info,
+            Class<E> elementType) {
+        EnumSet<E> set = EnumSet.allOf(elementType);
+        for (Iterator<E> iter = set.iterator(); iter.hasNext();) {
+            int i = iter.next().ordinal();
+            if (i >= info.length || info[i] == 0)
+                iter.remove();
         }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-
-        @Override
-        public byte[] toBytes(VR vr, boolean bigEndian) {
-            return ByteUtils.EMPTY_BYTES;
-        }
-    };
-
-    boolean isEmpty();
-
-    byte[] toBytes(VR vr, boolean bigEndian) throws IOException;
-
-    void writeTo(DicomOutputStream out, VR vr) throws IOException;
-
-    int calcLength(DicomOutputStream out, VR vr);
-
-    int getEncodedLength(DicomOutputStream out, VR vr);
+        return set ;
+    }
 
 }

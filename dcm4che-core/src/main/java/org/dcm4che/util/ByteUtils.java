@@ -43,6 +43,8 @@ package org.dcm4che.util;
  */
 public class ByteUtils {
 
+    public static final byte[] EMPTY_BYTES = {};
+
     public static int bytesToVR(byte[] bytes, int off) {
         return bytesToUShortBE(bytes, off);
     }

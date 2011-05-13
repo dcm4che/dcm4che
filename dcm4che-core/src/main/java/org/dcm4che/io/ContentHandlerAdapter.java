@@ -50,8 +50,8 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.VR;
-import org.dcm4che.data.Value;
 import org.dcm4che.util.Base64;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.TagUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -194,7 +194,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             dataFragments = items.getLast()
                     .newFragments(tag, privateCreator, vr,  10);
         while (dataFragments.size() < number-1)
-            dataFragments.add(Value.EMPTY_BYTES);
+            dataFragments.add(ByteUtils.EMPTY_BYTES);
     }
 
     private void startItem(int number) {

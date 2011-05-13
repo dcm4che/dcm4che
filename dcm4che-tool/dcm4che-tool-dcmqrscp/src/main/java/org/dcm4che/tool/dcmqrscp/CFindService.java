@@ -61,13 +61,12 @@ import org.dcm4che.util.StringUtils;
 class CFindService extends AbstractCFindService {
 
     private final Main main;
+    private final String[] qrLevels;
 
-    public CFindService(Main main) {
-        super(main.getDevice(),
-                UID.PatientRootQueryRetrieveInformationModelFIND,
-                UID.StudyRootQueryRetrieveInformationModelFIND,
-                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired);
+    public CFindService(Main main, String sopClass, String... qrLevels) {
+        super(main.getDevice(), sopClass);
         this.main = main;
+        this.qrLevels = qrLevels;
     }
 
     @Override
@@ -76,7 +75,7 @@ class CFindService extends AbstractCFindService {
             throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
         String level = validator.getType1String(Tag.QueryRetrieveLevel, 0,
-                "PATIENT", "STUDY", "SERIES", "IMAGE");
+                qrLevels);
         if (validator.hasOffendingElements())
             throw new DicomServiceException(rq,
                     Status.IdentifierDoesNotMatchSOPClass,

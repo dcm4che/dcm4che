@@ -80,7 +80,6 @@ public class Main {
     private final Connection conn = new Connection();
 
     private final CStoreService storageSCP = new CStoreService(this);
-    private final CFindService findSCP = new CFindService(this);
 
     private File storageDir;
     private File dicomDir;
@@ -96,8 +95,19 @@ public class Main {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new CEchoService());
         serviceRegistry.addDicomService(storageSCP);
-        serviceRegistry.addDicomService(findSCP);
-        ae.setDimseRQHandler(serviceRegistry);
+        serviceRegistry.addDicomService(
+                new CFindService(this,
+                        UID.PatientRootQueryRetrieveInformationModelFIND,
+                        "PATIENT", "STUDY", "SERIES", "IMAGE"));
+        serviceRegistry.addDicomService(
+                new CFindService(this,
+                        UID.StudyRootQueryRetrieveInformationModelFIND,
+                        "STUDY", "SERIES", "IMAGE"));
+        serviceRegistry.addDicomService(
+                new CFindService(this,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
+                        "PATIENT", "STUDY"));
+       ae.setDimseRQHandler(serviceRegistry);
     }
 
     final Device getDevice() {

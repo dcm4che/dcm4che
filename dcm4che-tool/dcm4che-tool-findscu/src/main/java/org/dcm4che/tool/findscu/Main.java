@@ -71,6 +71,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
@@ -82,21 +83,28 @@ import org.dcm4che.util.StringUtils;
  */
 public class Main {
 
+    private static final int RELATIONAL_QUERY = 1;
+    private static final int DATETIME_MATCH = 2;
+    private static final int FUZZY_MATCH = 4;
+    private static final int TIMEZONE_MATCH = 8;
+
     private static enum SOPClass {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND),
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, 0),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, 0),
         PatientStudyOnly(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired),
-        MWL(UID.ModalityWorklistInformationModelFIND),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass),
-        HANGING_PROTOCOL(UID.HangingProtocolInformationModelFIND),
-        COLOR_PALETTE(UID.ColorPaletteInformationModelFIND);
+                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, 0),
+        MWL(UID.ModalityWorklistInformationModelFIND, 3),
+        UPSPull(UID.UnifiedProcedureStepPullSOPClass, 3),
+        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, 3),
+        HANGING_PROTOCOL(UID.HangingProtocolInformationModelFIND, 3),
+        COLOR_PALETTE(UID.ColorPaletteInformationModelFIND, 3);
 
         final String cuid;
+        final int defExtNeg;
 
-        SOPClass(String cuid) {
+        SOPClass(String cuid, int defExtNeg) {
             this.cuid = cuid;
+            this.defExtNeg = defExtNeg;
         }
     }
 
@@ -134,6 +142,7 @@ public class Main {
     private int cancelAfter;
     private SOPClass sopClass = SOPClass.StudyRoot;
     private String[] tss = IVR_LE_FIRST;
+    private int extNeg;
 
     private File outFile;
     private int[][] outAttrs;
@@ -173,6 +182,29 @@ public class Main {
 
     public final void setTransferSyntaxes(String[] tss) {
         this.tss = tss.clone();
+    }
+
+    private void setExtendedNegotiation(int flag, boolean enable) {
+        if (enable)
+            extNeg |= flag;
+        else
+            extNeg &= ~flag;
+    }
+
+    public void setRelationalQueries(boolean enable) {
+        setExtendedNegotiation(RELATIONAL_QUERY, enable);
+    }
+
+    public void setDatetimeMatching(boolean enable) {
+        setExtendedNegotiation(DATETIME_MATCH, enable);
+    }
+
+    public void setFuzzySemanticMatching(boolean enable) {
+        setExtendedNegotiation(FUZZY_MATCH, enable);
+    }
+
+    public void setTimezoneQueryAdjustment(boolean enable) {
+        setExtendedNegotiation(TIMEZONE_MATCH, enable);
     }
 
     public final void setOutputFile(File outFile) {
@@ -406,7 +438,10 @@ public class Main {
     }
 
     private static void configureExtendedNegotiation(Main main, CommandLine cl) {
-        //TODO
+        main.setRelationalQueries(cl.hasOption("relational"));
+        main.setDatetimeMatching(cl.hasOption("datetime"));
+        main.setFuzzySemanticMatching(cl.hasOption("fuzzy"));
+        main.setTimezoneQueryAdjustment(cl.hasOption("timezone"));
     }
 
     private static void configureOutput(Main main, CommandLine cl) {
@@ -499,7 +534,20 @@ public class Main {
     public void open() throws IOException, InterruptedException {
         rq.addPresentationContext(
                 new PresentationContext(1, sopClass.cuid, tss));
+        if (extNeg > sopClass.defExtNeg)
+            rq.addExtendedNegotiation(
+                    new ExtendedNegotiation(sopClass.cuid,
+                            toInfo(extNeg | sopClass.defExtNeg)));
         as = ae.connect(conn, remote.getHostname(), remote.getPort(), rq);
+    }
+
+    private static byte[] toInfo(int extNeg) {
+        if (extNeg == 1)
+            return new byte[] { 1 };
+        byte[] info = new byte[(extNeg & 8) == 0 ? 3 : 4];
+        for (int i = 0; i < info.length; i++, extNeg >>>= 1)
+            info[i] = (byte) (extNeg & 1);
+        return info;
     }
 
     public void close() throws IOException, InterruptedException {

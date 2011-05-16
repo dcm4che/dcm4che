@@ -60,30 +60,50 @@ public class AttributesValidator {
         this.attrs = attrs;
     }
 
-    public String getType1String(int tag, int index, String... enumvals) {
-        String s = attrs.getString(tag, index, null);
-        if (s == null)
-            if (attrs.contains(tag))
-                addMissingAttributeValue(tag);
-            else
-                addMissingAttribute(tag);
-            
+    public String getType1String(int tag, int index, int maxvm,
+            String... enumvals) {
+        String[] ss = attrs.getStrings(tag);
+        if (ss == null) {
+            addMissingAttribute(tag);
+            return null;
+        }
+        if (ss.length < index + 1) {
+            addMissingAttributeValue(tag);
+            return null;
+        }
+        if (ss.length > maxvm)
+            addInvalidAttribueValue(tag);
         else
-            checkValue(tag, s, enumvals);
-        return s;
+            checkValue(tag, ss[index], enumvals);
+        return ss[index];
     }
 
-    public String getType2String(int tag, int index, String defval,
+    public String getType2String(int tag, int index, int maxvm, String defval,
             String... enumvals) {
-        String s = attrs.getString(tag, index, null);
-        if (s == null)
-            if (attrs.contains(tag))
-                s = defval;
-            else
-                addMissingAttribute(tag);
-        else 
-            checkValue(tag, s, enumvals);
-        return s;
+        String[] ss = attrs.getStrings(tag);
+        if (ss == null) {
+            addMissingAttribute(tag);
+            return defval;
+        }
+        if (ss.length < index + 1)
+            return defval;
+        if (ss.length > maxvm)
+            addInvalidAttribueValue(tag);
+        else
+            checkValue(tag, ss[index], enumvals);
+        return ss[index];
+    }
+
+    public String getType3String(int tag, int index, int maxvm, String defval,
+            String... enumvals) {
+        String[] ss = attrs.getStrings(tag);
+        if (ss == null || ss.length < index + 1)
+            return defval;
+        if (ss.length > maxvm)
+            addInvalidAttribueValue(tag);
+        else
+            checkValue(tag, ss[index], enumvals);
+        return ss[index];
     }
 
     private void checkValue(int tag, String s, String[] enumvals) {
@@ -104,22 +124,22 @@ public class AttributesValidator {
         return newTags;
     }
 
-    private void addMissingAttribute(int tag) {
+    public void addMissingAttribute(int tag) {
         missingAttributes = addTo(missingAttributes, tag);
         setErrorComment("Missing Attribute ", tag);
     }
 
-    private void addMissingAttributeValue(int tag) {
+    public void addMissingAttributeValue(int tag) {
         missingAttributeValues = addTo(missingAttributeValues, tag);
         setErrorComment("Missing Attribute Value of ", tag);
     }
 
-    private void addInvalidAttribueValue(int tag) {
+    public void addInvalidAttribueValue(int tag) {
         invalidAttributeValues = addTo(invalidAttributeValues, tag);
         setErrorComment("Invalid Attribute Value of ", tag);
     }
 
-    private void setErrorComment(String prompt, int tag) {
+    public void setErrorComment(String prompt, int tag) {
         errorComment = prompt + TagUtils.toString(tag);
     }
 

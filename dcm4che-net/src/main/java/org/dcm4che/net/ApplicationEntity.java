@@ -470,6 +470,15 @@ public class ApplicationEntity {
         }
     }
 
+    public void addExtendedNegotiator(String cuid,
+            ExtendedNegotiator extNegtor) {
+        if (cuid == null)
+            throw new NullPointerException("cuid");
+        if (extNegtor == null)
+            throw new NullPointerException("extNegtor");
+        extNegotiators.put(cuid, extNegtor);
+    }
+
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
         if (!(isInstalled() && acceptor))
@@ -571,19 +580,27 @@ public class ApplicationEntity {
     }
 
     private void extNegotiate(AAssociateRQ rq, AAssociateAC ac, String asuid) {
-        ExtendedNegotiation rqexneg = rq.getExtNegotiationFor(asuid);
-        if (rqexneg == null)
+        ExtendedNegotiator exnegtor = extNegotiators .get(asuid);
+        if (exnegtor == null) {
+            CommonExtendedNegotiation commonExtNeg =
+                rq.getCommonExtendedNegotiationFor(asuid);
+            if (commonExtNeg != null) {
+                for (String cuid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
+                    exnegtor = extNegotiators.get(cuid);
+                    if (exnegtor != null)
+                        break;
+                }
+                exnegtor = extNegotiators.get(commonExtNeg.getServiceClassUID());
+            }
+        }
+        if (exnegtor == null)
             return;
 
-        ExtendedNegotiation acexneg = ac.getExtNegotiationFor(asuid);
-        if (acexneg != null)
-            return;
-
-        ExtendedNegotiator exneg = extNegotiators .get(asuid);
-        if (exneg == null)
-            return;
-
-        ac.addExtendedNegotiation(exneg.negotiate(rqexneg));
+        ExtendedNegotiation exneg = rq.getExtNegotiationFor(asuid);
+        byte[] info = exnegtor.negotiate(asuid, 
+                exneg != null ? exneg.getInformation() : null);
+        if (info != null)
+            ac.addExtendedNegotiation(new ExtendedNegotiation(asuid, info));
     }
 
     public Association connect(Connection local, String host, int port,

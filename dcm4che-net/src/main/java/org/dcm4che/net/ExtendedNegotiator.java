@@ -38,14 +38,12 @@
 
 package org.dcm4che.net;
 
-import org.dcm4che.net.pdu.ExtendedNegotiation;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public interface ExtendedNegotiator {
 
-    ExtendedNegotiation negotiate(ExtendedNegotiation exneg);
+    byte[] negotiate(String cuid, byte[] info);
 
 }

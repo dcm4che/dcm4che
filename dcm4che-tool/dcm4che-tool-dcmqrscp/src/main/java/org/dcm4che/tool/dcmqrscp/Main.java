@@ -56,8 +56,10 @@ import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.ExtendedNegotiator;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.CEchoService;
@@ -177,6 +179,7 @@ public class Main {
         opts.addOption(null, "no-storage", false, rb.getString("no-storage"));
         opts.addOption(null, "no-query", false, rb.getString("no-query"));
         opts.addOption(null, "no-retrieve", false, rb.getString("no-retrieve"));
+        opts.addOption(null, "relational", false, rb.getString("relational"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
@@ -265,13 +268,21 @@ public class Main {
                                 "resource:retrieve-sop-classes.properties"),
                         null);
                 addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
+                if (cl.hasOption("relational"))
+                    addExtendedNegotiator(ae, p,
+                            new BasicExtendedNegotiator(
+                                    toByte(cl.hasOption("relational"))));
             }
-           if (dicomdir && !cl.hasOption("no-query")) {
+            if (dicomdir && !cl.hasOption("no-query")) {
                 Properties p = CLIUtils.loadProperties(
                         cl.getOptionValue("query-sop-classes",
                                 "resource:query-sop-classes.properties"),
                         null);
                 addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
+                if (cl.hasOption("relational"))
+                    addExtendedNegotiator(ae, p,
+                            new BasicExtendedNegotiator(
+                                    toByte(cl.hasOption("relational"))));
             }
         }
         if (dicomdir) {
@@ -281,6 +292,10 @@ public class Main {
                 main.openDicomDirForReadOnly();
         }
      }
+
+    private static byte toByte(boolean b) {
+        return b ? (byte) 1 : (byte) 0;
+    }
 
     private static void addTransferCapabilities(ApplicationEntity ae,
             Properties p, TransferCapability.Role role) {
@@ -292,6 +307,12 @@ public class Main {
                         : new TransferCapability(null, cuid, role,
                                 toUIDs(StringUtils.split(ts, ','))));
         }
+    }
+
+    private static void addExtendedNegotiator(ApplicationEntity ae,
+            Properties p, ExtendedNegotiator extNegtor) {
+        for (String cuid : p.stringPropertyNames())
+            ae.addExtendedNegotiator(cuid, extNegtor);
     }
 
     private static String[] toUIDs(String[] names) {

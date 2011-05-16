@@ -43,11 +43,13 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DimseRSP;
 import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.AbstractCFindService;
 import org.dcm4che.net.service.DicomServiceException;
@@ -73,24 +75,53 @@ class CFindService extends AbstractCFindService {
             Attributes rq, Attributes keys, Attributes rsp)
             throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
-        String level = validator.getType1String(Tag.QueryRetrieveLevel, 0,
-                qrLevels);
-        if (validator.hasOffendingElements())
-            throw new DicomServiceException(rq,
-                    Status.IdentifierDoesNotMatchSOPClass,
-                    validator.getErrorComment())
-                .setOffendingElements(Tag.QueryRetrieveLevel);
+        String level = validator.getType1String(
+                Tag.QueryRetrieveLevel, 0, 1, qrLevels);
+        check(rq, validator);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
+        boolean relational = relational(as, cuid);
+        boolean studyRoot =
+                cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         switch (level.charAt(1)) {
         case 'A':
-            return new PatientQuery(rq, keys, rsp);
+            return new PatientQuery(rq, keys, rsp)
+                    .validate(validator, relational, studyRoot);
         case 'T':
-            return new StudyQuery(rq, keys, rsp);
+            return new StudyQuery(rq, keys, rsp)
+                    .validate(validator, relational, studyRoot);
         case 'E':
-            return new SeriesQuery(rq, keys, rsp);
+            return new SeriesQuery(rq, keys, rsp)
+                    .validate(validator, relational, studyRoot);
         case 'M':
-            return new InstanceQuery(rq, keys, rsp);
+            return new InstanceQuery(rq, keys, rsp)
+                    .validate(validator, relational, studyRoot);
         }
         throw new AssertionError();
+    }
+
+    private void check(Attributes rq, AttributesValidator validator)
+            throws DicomServiceException {
+        if (validator.hasOffendingElements())
+        throw new DicomServiceException(rq,
+                Status.IdentifierDoesNotMatchSOPClass,
+                validator.getErrorComment())
+            .setOffendingElements(validator.getOffendingElements());
+    }
+
+    private boolean relational(Association as, String cuid) {
+        ExtendedNegotiation extNeg = as.getAAssociateAC()
+                .getExtNegotiationFor(cuid);
+        byte[] info = extNeg != null ? extNeg.getInformation() : null;
+        return info != null && info.length > 0 && info[0] == 1;
+    }
+
+    private void validateUniqueKey(AttributesValidator validator, int tag,
+            boolean optional) {
+        if (optional)
+            validator.getType3String(tag, 0, 1, null);
+        else
+            validator.getType1String(tag, 0, 1);
+        
     }
 
     private class PatientQuery implements DimseRSP {
@@ -114,6 +145,13 @@ class CFindService extends AbstractCFindService {
             // include Specific Character Set in result
             if (!keys.contains(Tag.SpecificCharacterSet))
                 keys.setNull(Tag.SpecificCharacterSet, VR.CS);
+        }
+
+        public DimseRSP validate(AttributesValidator validator,
+                boolean relational, boolean studyRoot)
+                throws DicomServiceException {
+            check(rq, validator);
+            return this;
         }
 
         @Override
@@ -186,6 +224,14 @@ class CFindService extends AbstractCFindService {
         }
 
         @Override
+        public DimseRSP validate(AttributesValidator validator,
+                boolean relational, boolean studyRoot)
+                throws DicomServiceException {
+            validateUniqueKey(validator, Tag.PatientID, relational || studyRoot);
+            return super.validate(validator, relational, studyRoot);
+        }
+
+        @Override
         protected boolean nextMatch() throws IOException {
             DicomDirReader ddr = main.getDicomDirReader();
             if (studyRec != null) {
@@ -222,6 +268,14 @@ class CFindService extends AbstractCFindService {
         }
 
         @Override
+        public DimseRSP validate(AttributesValidator validator,
+                boolean relational, boolean studyRoot)
+                throws DicomServiceException {
+            validateUniqueKey(validator, Tag.StudyInstanceUID, relational);
+            return super.validate(validator, relational, studyRoot);
+        }
+
+        @Override
         protected boolean nextMatch() throws IOException {
             DicomDirReader ddr = main.getDicomDirReader();
             if (seriesRec != null) {
@@ -244,7 +298,7 @@ class CFindService extends AbstractCFindService {
         protected Attributes result() {
              return super.result().addSelected(seriesRec, keys);
         }
-}
+    }
 
     private class InstanceQuery extends SeriesQuery {
 
@@ -258,6 +312,14 @@ class CFindService extends AbstractCFindService {
             sopIUIDs = StringUtils.maskNull(keys.getStrings(Tag.SOPInstanceUID));
             selectSOPClassUID = keys.contains(Tag.SOPClassUID);
             selectSOPInstanceUID = keys.contains(Tag.SOPInstanceUID);
+        }
+
+        @Override
+        public DimseRSP validate(AttributesValidator validator,
+                boolean relational, boolean studyRoot)
+                throws DicomServiceException {
+            validateUniqueKey(validator, Tag.SeriesInstanceUID, relational);
+            return super.validate(validator, relational, studyRoot);
         }
 
         @Override

@@ -58,6 +58,7 @@ import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.CEchoService;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.CStoreService;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -73,7 +74,7 @@ public class Main {
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
-    private final CStoreService storageSCP = new CStoreService(this);
+    private final CStoreService storageSCP = new CStoreService("*");
 
     public Main() {
         device.addConnection(conn);

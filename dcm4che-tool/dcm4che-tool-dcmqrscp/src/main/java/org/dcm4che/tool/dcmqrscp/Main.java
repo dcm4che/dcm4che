@@ -64,6 +64,7 @@ import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.CEchoService;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.CStoreService;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
@@ -81,7 +82,7 @@ public class Main {
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
-    private final CStoreService storageSCP = new CStoreService(this);
+    private final CStoreService storageSCP = new CStoreService("*");
 
     private File storageDir;
     private File dicomDir;

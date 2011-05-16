@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.dcmqrscp;
+package org.dcm4che.tool.common;
 
 import java.io.IOException;
 
@@ -50,13 +50,10 @@ import org.dcm4che.net.service.AbstractCStoreService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CStoreService extends AbstractCStoreService {
+public class CStoreService extends AbstractCStoreService {
 
-    private final Main main;
-
-    public CStoreService(Main main) {
-        super("*");
-        this.main = main;
+    public CStoreService(String... sopClasses) {
+        super(sopClasses);
     }
 
     @Override

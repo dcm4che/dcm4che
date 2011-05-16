@@ -85,6 +85,7 @@ public class Main {
 
     private File storageDir;
     private File dicomDir;
+    private String availability;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
     private DicomDirReader ddWriter;
@@ -143,6 +144,15 @@ public class Main {
         device.setExecutor(executor);
     }
 
+
+    public final void setInstanceAvailability(String availability) {
+        this.availability = availability;
+    }
+
+    public final String getInstanceAvailability() {
+        return availability;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -152,7 +162,18 @@ public class Main {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
+        addInstanceAvailabilityOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addInstanceAvailabilityOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("code")
+                .withDescription(rb.getString("availability"))
+                .withLongOpt("availability")
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -209,6 +230,7 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             configureStorageDirectory(main, cl);
             configureTransferCapability(main, cl);
+            configureInstanceAvailability(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -224,6 +246,10 @@ public class Main {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static void configureInstanceAvailability(Main main, CommandLine cl) {
+        main.setInstanceAvailability(cl.getOptionValue("availability"));
     }
 
     private static void configureStorageDirectory(Main main, CommandLine cl)
@@ -347,5 +373,4 @@ public class Main {
     private void openDicomDirForReadOnly() throws IOException {
         ddReader = ddWriter = new DicomDirReader(dicomDir);
     }
-
 }

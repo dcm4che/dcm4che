@@ -1322,7 +1322,7 @@ public class Attributes implements Serializable {
     }
 
     public Attributes addNotSelected(Attributes other, Attributes selection) {
-        return addSelected(other, selection.tags, 0, selection.size);
+        return addNotSelected(other, selection.tags, 0, selection.size);
     }
 
     public Attributes addNotSelected(Attributes other, int[] selection,

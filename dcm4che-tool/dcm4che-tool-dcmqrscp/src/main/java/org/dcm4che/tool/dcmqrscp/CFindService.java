@@ -84,16 +84,16 @@ class CFindService extends AbstractCFindService {
                 cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         switch (level.charAt(1)) {
         case 'A':
-            return new PatientQuery(rq, keys, rsp)
+            return new PatientQuery(as, rq, keys, rsp)
                     .validate(validator, relational, studyRoot);
         case 'T':
-            return new StudyQuery(rq, keys, rsp)
+            return new StudyQuery(as, rq, keys, rsp)
                     .validate(validator, relational, studyRoot);
         case 'E':
-            return new SeriesQuery(rq, keys, rsp)
+            return new SeriesQuery(as, rq, keys, rsp)
                     .validate(validator, relational, studyRoot);
         case 'M':
-            return new InstanceQuery(rq, keys, rsp)
+            return new InstanceQuery(as, rq, keys, rsp)
                     .validate(validator, relational, studyRoot);
         }
         throw new AssertionError();
@@ -133,14 +133,17 @@ class CFindService extends AbstractCFindService {
         boolean canceled;
         boolean finished;
         final String qrLevel;
+        final String retrieveAET;
         final String patID;
         Attributes patRec;
 
-        public PatientQuery(Attributes rq, Attributes keys, Attributes rsp) {
+        public PatientQuery(Association as, Attributes rq, Attributes keys,
+                Attributes rsp) {
             this.rq = rq;
             this.keys = keys;
             this.rsp = rsp;
             this.qrLevel = keys.getString(Tag.QueryRetrieveLevel, null);
+            this.retrieveAET = as.getCalledAET();
             this.patID = keys.getString(Tag.PatientID, null);
             // include Specific Character Set in result
             if (!keys.contains(Tag.SpecificCharacterSet))
@@ -175,20 +178,30 @@ class CFindService extends AbstractCFindService {
                 return false;
 
             try {
+                int status;
                 if (!canceled && nextMatch()) {
                     dataset = result();
+                    status = pendingStatus();
                 } else {
                     dataset = null;
                     finished = true;
-                    rsp.setInt(Tag.Status, VR.US,
-                            canceled ? Status.Cancel : Status.Success);
+                    status = canceled ? Status.Cancel : Status.Success;
                 }
+                rsp.setInt(Tag.Status, VR.US, status);
             } catch (IOException e) {
                 throw new DicomServiceException(rq,
                         Status.ProcessingFailure,
                         e.getMessage());
             }
             return true;
+        }
+
+        private int pendingStatus() {
+            Attributes unsupported = new Attributes();
+            unsupported.addNotSelected(keys, dataset);
+            unsupported.remove(Tag.SpecificCharacterSet);
+            return unsupported.isEmpty() ? Status.Pending
+                    : Status.PendingWarning;
         }
 
         protected boolean nextMatch() throws IOException {
@@ -208,6 +221,15 @@ class CFindService extends AbstractCFindService {
         protected Attributes result() {
             Attributes result = new Attributes(keys.size());
             result.setString(Tag.QueryRetrieveLevel, VR.CS, qrLevel);
+            result.setString(Tag.RetrieveAETitle, VR.AE, retrieveAET);
+            String availability = main.getInstanceAvailability();
+            if (availability != null)
+                result.setString(Tag.InstanceAvailability, VR.CS, availability);
+            DicomDirReader ddr = main.getDicomDirReader();
+            result.setString(Tag.StorageMediaFileSetID, VR.SH,
+                    ddr.getFileSetID());
+            result.setString(Tag.StorageMediaFileSetUID, VR.UI,
+                    ddr.getFileSetUID());
             return result.addSelected(patRec, keys);
         }
     }
@@ -217,8 +239,9 @@ class CFindService extends AbstractCFindService {
         final String[] studyIUIDs;
         Attributes studyRec;
 
-        public StudyQuery(Attributes rq, Attributes keys, Attributes rsp) {
-            super(rq, keys, rsp);
+        public StudyQuery(Association as, Attributes rq, Attributes keys,
+                Attributes rsp) {
+            super(as, rq, keys, rsp);
             studyIUIDs = StringUtils.maskNull(
                     keys.getStrings(Tag.StudyInstanceUID));
         }
@@ -261,8 +284,9 @@ class CFindService extends AbstractCFindService {
         final String[] seriesIUIDs;
         Attributes seriesRec;
 
-        public SeriesQuery(Attributes rq, Attributes keys, Attributes rsp) {
-            super(rq, keys, rsp);
+        public SeriesQuery(Association as, Attributes rq, Attributes keys,
+                Attributes rsp) {
+            super(as, rq, keys, rsp);
             seriesIUIDs = StringUtils.maskNull(
                     keys.getStrings(Tag.SeriesInstanceUID));
         }
@@ -307,8 +331,9 @@ class CFindService extends AbstractCFindService {
         final boolean selectSOPInstanceUID;
         Attributes instRec;
 
-        public InstanceQuery(Attributes rq, Attributes keys, Attributes rsp) {
-            super(rq, keys, rsp);
+        public InstanceQuery(Association as, Attributes rq, Attributes keys,
+                Attributes rsp) {
+            super(as, rq, keys, rsp);
             sopIUIDs = StringUtils.maskNull(keys.getStrings(Tag.SOPInstanceUID));
             selectSOPClassUID = keys.contains(Tag.SOPClassUID);
             selectSOPInstanceUID = keys.contains(Tag.SOPInstanceUID);

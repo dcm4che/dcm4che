@@ -588,17 +588,20 @@ public class CLIUtils {
     public static int[] toTags(String tagsAsString, char delim) {
         String[] ss = StringUtils.split(tagsAsString, delim);
         int[] tags = new int[ss.length];
-        for (int i = 0; i < tags.length; i++) {
-            String s = ss[i];
-            try {
-                tags[i] = Integer.parseInt(s, 16);
-            } catch (IllegalArgumentException e) {
-                tags[i] = ElementDictionary.tagForKeyword(s, null);
-                if (tags[i] == -1)
-                    throw new IllegalArgumentException(tagsAsString);
-            }
-        }
+        for (int i = 0; i < tags.length; i++)
+            tags[i] = toTag(ss[i]);
         return tags;
+    }
+
+    public static int toTag(String tagOrKeyword) {
+        try {
+            return Integer.parseInt(tagOrKeyword, 16);
+        } catch (IllegalArgumentException e) {
+            int tag = ElementDictionary.tagForKeyword(tagOrKeyword, null);
+            if (tag == -1)
+                throw new IllegalArgumentException(tagOrKeyword);
+            return tag;
+        }
     }
 
     @SuppressWarnings("static-access")

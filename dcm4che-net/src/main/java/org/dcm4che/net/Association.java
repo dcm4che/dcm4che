@@ -888,6 +888,38 @@ public class Association {
         return rsp;
     }
 
+    public void cmove(String cuid, int priority, Attributes data,
+            String tsuid, String destination, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        cmove(cuid, cuid, priority, data, tsuid, destination, rspHandler);
+    }
+
+    public void cmove(String asuid, String cuid, int priority,
+            Attributes data, String tsuid, String destination,
+            DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes cfindrq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
+                cuid, priority, destination);
+        invoke(pc, cfindrq, new DataWriterAdapter(data), rspHandler,
+                conn.getCMoveRSPTimeout());
+    }
+
+    public DimseRSP cmove(String cuid, int priority, Attributes data,
+            String tsuid, String destination) throws IOException,
+            InterruptedException {
+        return cmove(cuid, cuid, priority, data, tsuid, destination);
+    }
+
+    public DimseRSP cmove(String asuid, String cuid, int priority,
+            Attributes data, String tsuid, String destination)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        cmove(asuid, cuid, priority, data, tsuid, destination, rsp);
+        return rsp;
+    }
+
     private void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {

@@ -309,7 +309,7 @@ public class DicomDirReader implements Closeable {
         return null;
     }
 
-    private Attributes readRecord(int offset) throws IOException {
+    private synchronized Attributes readRecord(int offset) throws IOException {
         if (offset == 0)
             return null;
 

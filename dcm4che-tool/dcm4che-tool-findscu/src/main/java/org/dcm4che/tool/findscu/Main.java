@@ -38,20 +38,20 @@
 
 package org.dcm4che.tool.findscu;
 
-import java.io.BufferedWriter;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.text.DecimalFormat;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -64,6 +64,8 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Commands;
@@ -75,7 +77,6 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
-import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -144,14 +145,12 @@ public class Main {
     private String[] tss = IVR_LE_FIRST;
     private int extNeg;
 
-    private File outFile;
-    private int[][] outAttrs;
-    private String outFormat;
+    private File outDir;
+    private int[] outFilter;
     private Attributes keys = new Attributes();
 
-    private BufferedWriter out;
     private Association as;
-    private int numMatches;
+    private AtomicInteger totNumMatches = new AtomicInteger();
 
 
     public Main() {
@@ -207,40 +206,14 @@ public class Main {
         setExtendedNegotiation(TIMEZONE_MATCH, enable);
     }
 
-    public final void setOutputFile(File outFile) {
-        this.outFile = outFile;
+    public final void setOutputDirectory(File outDir) {
+        outDir.mkdirs();
+        this.outDir = outDir;
     }
 
-    private void setOutputFormat(String format) {
-        StringBuilder sb = new StringBuilder();
-        ArrayList<int[]> attrs = new ArrayList<int[]>();
-        StringTokenizer tk = new StringTokenizer(format, "{}", true);
-        boolean expectTag = false;
-        while (tk.hasMoreTokens()) {
-            String s = tk.nextToken();
-            switch (s.charAt(0)) {
-            case '{':
-                if (expectTag )
-                    throw new IllegalArgumentException(format);
-                expectTag = true;
-                continue;
-            case '}':
-                if (!expectTag)
-                    throw new IllegalArgumentException(format);
-                expectTag = false;
-                continue;
-            }
-            if (expectTag) {
-                int[] tags = CLIUtils.toTags(s);
-                addKey(tags, null);
-                sb.append('{').append(attrs.size()).append('}');
-                attrs.add(tags);
-            } else {
-                sb.append(s);
-            }
-        }
-        outAttrs = attrs.toArray(new int[attrs.size()][]);
-        outFormat = sb.toString();
+    public void setOutputFilter(int[] outFilter) {
+        Arrays.sort(outFilter);
+        this.outFilter = outFilter;
     }
 
     public void addKey(int[] tags, String value) {
@@ -272,8 +245,8 @@ public class Main {
             addServiceClassOptions(opts);
             addTransferSyntaxOptions(opts);
             addExtendedNegotionOptions(opts);
-            addOutputOptions(opts);
             addKeyOptions(opts);
+            addOutputOptions(opts);
             addQueryLevelOption(opts);
             addCancelOption(opts);
             CLIUtils.addConnectOption(opts);
@@ -288,7 +261,7 @@ public class Main {
     @SuppressWarnings("static-access")
     private static void addQueryLevelOption(Options opts) {
         opts.addOption(OptionBuilder
-                .hasArgs()
+                .hasArg()
                 .withArgName("PATIENT|STUDY|SERIES|IMAGE")
                 .withDescription(rb.getString("level"))
                 .create("L"));
@@ -298,7 +271,7 @@ public class Main {
     private static void addCancelOption(Options opts) {
         opts.addOption(OptionBuilder
                 .withLongOpt("cancel")
-                .hasArgs()
+                .hasArg()
                 .withArgName("num-matches")
                 .withDescription(rb.getString("cancel"))
                 .create());
@@ -307,13 +280,13 @@ public class Main {
     @SuppressWarnings("static-access")
     private static void addKeyOptions(Options opts) {
         opts.addOption(OptionBuilder
-                .hasArgs()
+                .hasArg()
                 .withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("match"))
                 .create("m"));
         opts.addOption(OptionBuilder
-                .hasArgs()
+                .hasArg()
                 .withArgName("[seq/]attr")
                 .withDescription(rb.getString("return"))
                 .create("r"));
@@ -322,16 +295,16 @@ public class Main {
     @SuppressWarnings("static-access")
     private static void addOutputOptions(Options opts) {
         opts.addOption(OptionBuilder
-                .withLongOpt("out")
-                .hasArgs()
-                .withArgName("file")
-                .withDescription(rb.getString("o-file"))
-                .create("o"));
+                .withLongOpt("out-dir")
+                .hasArg()
+                .withArgName("directory")
+                .withDescription(rb.getString("out-dir"))
+                .create());
         opts.addOption(OptionBuilder
-                .withLongOpt("out-form")
-                .hasArgs()
-                .withArgName("format")
-                .withDescription(rb.getString("out-form"))
+                .withLongOpt("out-filter")
+                .hasArg()
+                .withArgName("attr[:attr]...")
+                .withDescription(rb.getString("out-filter"))
                 .create());
     }
 
@@ -398,6 +371,7 @@ public class Main {
        opts.addOptionGroup(group);
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -405,8 +379,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            configureOutput(main, cl);
             configureKeys(main, cl);
+            configureOutput(main, cl);
             configureCancel(main, cl);
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
@@ -420,7 +394,12 @@ public class Main {
             main.setScheduledExecutorService(scheduledExecutorService);
             try {
                 main.open();
-                main.query();
+                List<String> argList = cl.getArgList();
+                if (argList.isEmpty())
+                    main.query();
+                else
+                    for (String arg : argList)
+                        main.query(new File(arg));
             } finally {
                 main.close();
                 executorService.shutdown();
@@ -445,10 +424,10 @@ public class Main {
     }
 
     private static void configureOutput(Main main, CommandLine cl) {
-        if (cl.hasOption("o"))
-            main.setOutputFile(new File(cl.getOptionValue("o")));
-        if (cl.hasOption("out-form"))
-            main.setOutputFormat(cl.getOptionValue("out-form"));
+        if (cl.hasOption("out-dir"))
+            main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
+        if (cl.hasOption("out-filter"))
+            main.setOutputFilter(CLIUtils.toTags(cl.getOptionValue("out-filter"), ':'));
     }
 
     private static void configureCancel(Main main, CommandLine cl) {
@@ -460,12 +439,12 @@ public class Main {
         if (cl.hasOption("r")) {
             String[] keys = cl.getOptionValues("r");
             for (int i = 0; i < keys.length; i++)
-                main.addKey(CLIUtils.toTags(keys[i]), null);
+                main.addKey(CLIUtils.toTags(keys[i], '/'), null);
         }
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTags(keys[i - 1]), keys[i]);
+                main.addKey(CLIUtils.toTags(keys[i - 1], '/'), keys[i]);
         }
         if (cl.hasOption("L"))
             main.addKey(Tag.QueryRetrieveLevel, cl.getOptionValue("L"));
@@ -551,73 +530,78 @@ public class Main {
     }
 
     public void close() throws IOException, InterruptedException {
-        if (as != null && as.isReadyForDataTransfer())
+        if (as != null && as.isReadyForDataTransfer()) {
+            as.waitForOutstandingRSP();
             as.release();
-        if (out != null)
-            SafeClose.close(out);
+        }
     }
 
-    private void query() throws IOException, InterruptedException {
-        if (outFormat != null) {
-            out = new BufferedWriter(
-                    new OutputStreamWriter(
-                            outFile != null 
-                            ? new FileOutputStream(outFile)
-                            : new FileOutputStream(FileDescriptor.out)));
+    public void query(File f) throws IOException, InterruptedException {
+        Attributes attrs;
+        DicomInputStream dis = null;
+        try {
+            attrs = new DicomInputStream(f).readDataset(-1, -1);
+        } finally {
+            SafeClose.close(dis);
         }
-        DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
+        attrs.addAll(keys);
+        query(attrs);
+    }
+
+   public void query() throws IOException, InterruptedException {
+        query(keys);
+    }
+
+    private void query(Attributes keys) throws IOException, InterruptedException {
+         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
+
+            int cancelAfter = Main.this.cancelAfter;
+            int numMatches;
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
-                Main.this.onCFindRSP(cmd, data, this);
+                int status = cmd.getInt(Tag.Status, -1);
+                if (Commands.isPending(status )) {
+                    Main.this.onResult(data);
+                    ++numMatches;
+                    if (cancelAfter != 0 && numMatches >= cancelAfter)
+                        try {
+                            cancel(as);
+                            cancelAfter = 0;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                }
             }
         };
 
         as.cfind(sopClass.cuid, priority, keys, null, rspHandler);
-        as.waitForOutstandingRSP();
     }
 
-    private void onCFindRSP(Attributes cmd, Attributes data, 
-            DimseRSPHandler rspHandler) {
-        int status = cmd.getInt(Tag.Status, -1);
-        if (Commands.isPending(status )) {
-            if (outFormat != null)
-                try {
-                    out.write(MessageFormat.format(outFormat, outValues(data)));
-                    out.newLine();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            ++numMatches;
-            if (cancelAfter != 0 && numMatches >= cancelAfter)
-                try {
-                    rspHandler.cancel(as);
-                    cancelAfter = 0;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+    private void onResult(Attributes data) {
+        int numMatches = totNumMatches.incrementAndGet();
+        if (outDir != null) {
+            File f = new File(outDir, new DecimalFormat("rsp-0000.dcm")
+                    .format(numMatches));
+            DicomOutputStream dos = null;
+            try {
+                dos = new DicomOutputStream(new BufferedOutputStream(
+                        new FileOutputStream(f)), UID.ImplicitVRLittleEndian);
+                dos.writeDataset(null, filter(data));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } finally {
+                SafeClose.close(dos);
+            }
         }
     }
 
-    private Object[] outValues(Attributes data) {
-        Object[] values = new Object[outAttrs.length];
-        for (int i = 0; i < values.length; i++)
-            values[i] = getString(data, outAttrs[i]);
-        return values ;
-    }
-
-    private Object getString(Attributes data, int[] tags) {
-        try {
-            for (int i = 0; i < tags.length-1; i++) 
-                 data = ((Sequence) data.getValue(tags[i])).get(0);
-            String[] ss = data.getStrings(tags[tags.length-1]);
-            if (ss != null && ss.length != 0)
-                return StringUtils.join(ss, '\\');
-        } catch (Exception e) {
-        }
-        return "";
+    private Attributes filter(Attributes data) {
+        return outFilter != null
+                ? new Attributes(outFilter.length).addSelected(data, outFilter)
+                : data;
     }
 
 }

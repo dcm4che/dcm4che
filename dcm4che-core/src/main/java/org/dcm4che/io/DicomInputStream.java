@@ -734,30 +734,33 @@ public class DicomInputStream extends FilterInputStream
         byte[] b128 = new byte[128];
         byte[] buf = buffer;
         mark(132);
-        read(b128);
-        read(buf, 0, 4);
-        if (buf[0] == 'D' && buf[1] == 'I'
-                && buf[2] == 'C' && buf[3] == 'M') {
-            preamble = b128.clone();
-            if (!markSupported()) {
-                hasfmi = true;
-                tsuid = UID.ExplicitVRLittleEndian;
-                bigEndian = false;
-                explicitVR = true;
-                return;
+        int rlen = read(b128);
+        if (rlen == 128) {
+            read(buf, 0, 4);
+            if (buf[0] == 'D' && buf[1] == 'I'
+                    && buf[2] == 'C' && buf[3] == 'M') {
+                preamble = b128.clone();
+                if (!markSupported()) {
+                    hasfmi = true;
+                    tsuid = UID.ExplicitVRLittleEndian;
+                    bigEndian = false;
+                    explicitVR = true;
+                    return;
+                }
+                mark(128);
+                read(b128);
             }
-            mark(128);
-            read(b128);
         }
-        if (!guessTransferSyntax(b128, false)
-                && !guessTransferSyntax(b128, true))
+        if (rlen < 8
+                || !guessTransferSyntax(b128, rlen, false)
+                && !guessTransferSyntax(b128, rlen, true))
             throw new DicomStreamException(NOT_A_DICOM_STREAM);
         reset();
         hasfmi = TagUtils.isFileMetaInformation(
                 ByteUtils.bytesToTag(b128, 0, bigEndian));
     }
 
-    private boolean guessTransferSyntax(byte[] b128, boolean bigEndian)
+    private boolean guessTransferSyntax(byte[] b128, int rlen, boolean bigEndian)
             throws DicomStreamException {
         int tag1 = ByteUtils.bytesToTag(b128, 0, bigEndian);
         VR vr = ElementDictionary.vrOf(tag1, null);
@@ -771,19 +774,16 @@ public class DicomInputStream extends FilterInputStream
             return true;
         }
         int len = ByteUtils.bytesToInt(b128, 4, bigEndian);
-        if (len < 0 || len > 116)
+        if (len < 0 || 8 + len > rlen)
             return false;
-        int tag2 = ByteUtils.bytesToTag(b128, len + 8, bigEndian);
-        if (TagUtils.groupNumber(tag1) == TagUtils.groupNumber(tag2) &&
-            tag1 < tag2) {
-            if (bigEndian)
-                throw new DicomStreamException(IMPLICIT_VR_BIG_ENDIAN);
-            this.tsuid = UID.ImplicitVRLittleEndian;
-            this.bigEndian = false;
-            this.explicitVR = false;
-            return true;
-        }
-        return false;
+
+        if (bigEndian)
+            throw new DicomStreamException(IMPLICIT_VR_BIG_ENDIAN);
+
+        this.tsuid = UID.ImplicitVRLittleEndian;
+        this.bigEndian = false;
+        this.explicitVR = false;
+        return true;
     }
 
 }

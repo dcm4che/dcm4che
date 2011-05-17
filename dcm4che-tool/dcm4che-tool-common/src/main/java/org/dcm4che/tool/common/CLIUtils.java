@@ -585,8 +585,8 @@ public class CLIUtils {
         encParams.setUndefEmptySequenceLength(cl.hasOption("undef-seq-len"));
     }
 
-    public static int[] toTags(String tagsAsString) {
-        String[] ss = StringUtils.split(tagsAsString, '/');
+    public static int[] toTags(String tagsAsString, char delim) {
+        String[] ss = StringUtils.split(tagsAsString, delim);
         int[] tags = new int[ss.length];
         for (int i = 0; i < tags.length; i++) {
             String s = ss[i];
@@ -594,6 +594,8 @@ public class CLIUtils {
                 tags[i] = Integer.parseInt(s, 16);
             } catch (IllegalArgumentException e) {
                 tags[i] = ElementDictionary.tagForKeyword(s, null);
+                if (tags[i] == -1)
+                    throw new IllegalArgumentException(tagsAsString);
             }
         }
         return tags;

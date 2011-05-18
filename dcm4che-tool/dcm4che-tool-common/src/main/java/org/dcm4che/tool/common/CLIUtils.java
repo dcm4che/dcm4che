@@ -65,7 +65,6 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.util.SafeClose;
-import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -585,11 +584,10 @@ public class CLIUtils {
         encParams.setUndefEmptySequenceLength(cl.hasOption("undef-seq-len"));
     }
 
-    public static int[] toTags(String tagsAsString, char delim) {
-        String[] ss = StringUtils.split(tagsAsString, delim);
-        int[] tags = new int[ss.length];
+    public static int[] toTags(String[] tagOrKeywords) {
+        int[] tags = new int[tagOrKeywords.length];
         for (int i = 0; i < tags.length; i++)
-            tags[i] = toTag(ss[i]);
+            tags[i] = toTag(tagOrKeywords[i]);
         return tags;
     }
 

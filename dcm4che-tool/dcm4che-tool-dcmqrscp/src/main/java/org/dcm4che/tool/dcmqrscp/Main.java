@@ -49,7 +49,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.UID;
@@ -118,23 +117,20 @@ public class Main {
         return device;
     }
 
-    public final void setStorageDirectory(File storageDir) {
+    public final void setDicomDirectory(File dicomDir) {
+        File storageDir = dicomDir.getParentFile();
         if (storageDir.mkdirs())
             System.out.println("M-WRITE " + storageDir);
         this.storageDir = storageDir;
-    }
-
-    public final File getStorageDirectory() {
-        return storageDir;
-    }
-
-    public final void setDicomDirectory(File dicomDir) {
-        setStorageDirectory(dicomDir.getParentFile());
         this.dicomDir = dicomDir;
     }
 
     public final File getDicomDirectory() {
         return dicomDir;
+    }
+
+    public boolean isWriteable() {
+        return storageDir.canWrite();
     }
 
     public void setScheduledExecuter(ScheduledExecutorService scheduledExecutor) {
@@ -161,7 +157,7 @@ public class Main {
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
-        addStorageDirectoryOptions(opts);
+        addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
@@ -178,21 +174,13 @@ public class Main {
     }
 
     @SuppressWarnings("static-access")
-    private static void addStorageDirectoryOptions(Options opts) {
-        OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
+    private static void addDicomDirOption(Options opts) {
+        opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file")
                 .withDescription(rb.getString("dicomdir"))
                 .withLongOpt("dicomdir")
-                .create("D"));
-        group.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("directory")
-                .withDescription(rb.getString("storedir"))
-                .withLongOpt("storedir")
-                .create("d"));
-        opts.addOptionGroup(group);
+                .create());
     }
 
     @SuppressWarnings("static-access")
@@ -229,7 +217,7 @@ public class Main {
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            configureStorageDirectory(main, cl);
+            main.setDicomDirectory(dicomDirOf(cl));
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
@@ -253,21 +241,16 @@ public class Main {
         main.setInstanceAvailability(cl.getOptionValue("availability"));
     }
 
-    private static void configureStorageDirectory(Main main, CommandLine cl)
-            throws ParseException {
-        if (cl.hasOption("D"))
-            main.setDicomDirectory(new File(cl.getOptionValue("D")));
-        else if (cl.hasOption("d"))
-            main.setStorageDirectory(new File(cl.getOptionValue("d")));
+    private static File dicomDirOf(CommandLine cl) throws ParseException {
+        if (cl.hasOption("dicomdir"))
+            return new File(cl.getOptionValue("dicomdir"));
+        throw new ParseException("missing-dicomdir");
     }
 
     private static void configureTransferCapability(Main main, CommandLine cl)
             throws IOException {
         ApplicationEntity ae = main.ae;
-        File dir = main.getStorageDirectory();
-        boolean storage = !cl.hasOption("no-storage")
-                && (dir == null || dir.canWrite());
-        boolean dicomdir = main.getDicomDirectory() != null;
+        boolean storage = !cl.hasOption("no-storage") && main.isWriteable();
         if (storage && cl.hasOption("all-storage")) {
             ae.addTransferCapability(
                     new TransferCapability(null, 
@@ -287,7 +270,7 @@ public class Main {
             if (storage)
                 addTransferCapabilities(ae, storageSOPClasses,
                         TransferCapability.Role.SCP);
-            if (dir != null && !cl.hasOption("no-retrieve")) {
+            if (!cl.hasOption("no-retrieve")) {
                 addTransferCapabilities(ae, storageSOPClasses,
                         TransferCapability.Role.SCU);
                 Properties p = CLIUtils.loadProperties(
@@ -300,7 +283,7 @@ public class Main {
                             new BasicExtendedNegotiator(
                                     toByte(cl.hasOption("relational"))));
             }
-            if (dicomdir && !cl.hasOption("no-query")) {
+            if (!cl.hasOption("no-query")) {
                 Properties p = CLIUtils.loadProperties(
                         cl.getOptionValue("query-sop-classes",
                                 "resource:query-sop-classes.properties"),
@@ -312,12 +295,10 @@ public class Main {
                                     toByte(cl.hasOption("relational"))));
             }
         }
-        if (dicomdir) {
-            if (storage)
-                main.openDicomDir();
-            else
-                main.openDicomDirForReadOnly();
-        }
+        if (storage)
+            main.openDicomDir();
+        else
+            main.openDicomDirForReadOnly();
      }
 
     private static byte toByte(boolean b) {

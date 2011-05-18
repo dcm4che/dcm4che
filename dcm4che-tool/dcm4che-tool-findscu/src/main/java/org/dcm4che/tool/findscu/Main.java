@@ -77,6 +77,7 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -90,22 +91,30 @@ public class Main {
     private static final int TIMEZONE_MATCH = 8;
 
     private static enum SOPClass {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, 0),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, 0),
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, 0, null),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, 0, null),
         PatientStudyOnly(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, 0),
-        MWL(UID.ModalityWorklistInformationModelFIND, 3),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, 3),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, 3),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, 3),
-        ColorPalette(UID.ColorPaletteInformationModelFIND, 3);
+                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, 0, null),
+        MWL(UID.ModalityWorklistInformationModelFIND, 3, "sps-0000.dcm"),
+        UPSPull(UID.UnifiedProcedureStepPullSOPClass, 3, "ups-0000.dcm"),
+        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, 3, "ups-0000.dcm"),
+        HangingProtocol(UID.HangingProtocolInformationModelFIND, 3, "hp-0000.dcm"),
+        ColorPalette(UID.ColorPaletteInformationModelFIND, 3, "pal-0000.dcm");
 
         final String cuid;
         final int defExtNeg;
+        final String outputFileFormat;
 
-        SOPClass(String cuid, int defExtNeg) {
+        SOPClass(String cuid, int defExtNeg, String outputFileFormat) {
             this.cuid = cuid;
             this.defExtNeg = defExtNeg;
+            this.outputFileFormat = outputFileFormat;
+        }
+
+        public String outputFileFormatOf(String level) {
+            return outputFileFormat != null
+                    ? outputFileFormat
+                    : level.toLowerCase() + "-0000.dcm";
         }
     }
 
@@ -146,12 +155,12 @@ public class Main {
     private int extNeg;
 
     private File outDir;
+    private DecimalFormat outFileFormat;
     private int[] outFilter;
     private Attributes keys = new Attributes();
 
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
-
 
     public Main() {
         device.addConnection(conn);
@@ -209,6 +218,10 @@ public class Main {
     public final void setOutputDirectory(File outDir) {
         outDir.mkdirs();
         this.outDir = outDir;
+    }
+
+    public void setOutputFileFormat(String outFileFormat) {
+        this.outFileFormat = new DecimalFormat(outFileFormat);
     }
 
     public void setOutputFilter(int[] outFilter) {
@@ -301,11 +314,17 @@ public class Main {
                 .withDescription(rb.getString("out-dir"))
                 .create());
         opts.addOption(OptionBuilder
-                .withLongOpt("out-filter")
+                .withLongOpt("out-file")
                 .hasArg()
-                .withArgName("attr[:attr]...")
-                .withDescription(rb.getString("out-filter"))
+                .withArgName("name")
+                .withDescription(rb.getString("out-file"))
                 .create());
+       opts.addOption(OptionBuilder
+                .withLongOpt("out-attr")
+                .hasArgs()
+                .withArgName("attr")
+                .withDescription(rb.getString("out-attr"))
+                .create("o"));
     }
 
     @SuppressWarnings("static-access")
@@ -379,10 +398,10 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            main.setSOPClass(sopClassOf(cl));
             configureKeys(main, cl);
             configureOutput(main, cl);
             configureCancel(main, cl);
-            main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
             configureExtendedNegotiation(main, cl);
@@ -426,8 +445,11 @@ public class Main {
     private static void configureOutput(Main main, CommandLine cl) {
         if (cl.hasOption("out-dir"))
             main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
-        if (cl.hasOption("out-filter"))
-            main.setOutputFilter(CLIUtils.toTags(cl.getOptionValue("out-filter"), ':'));
+        if (cl.hasOption("o"))
+            main.setOutputFilter(CLIUtils.toTags(cl.getOptionValues("o")));
+        main.setOutputFileFormat(cl.hasOption("out-file")
+                ? cl.getOptionValue("out-file")
+                : main.sopClass.outputFileFormatOf(cl.getOptionValue("L")));
     }
 
     private static void configureCancel(Main main, CommandLine cl) {
@@ -439,12 +461,14 @@ public class Main {
         if (cl.hasOption("r")) {
             String[] keys = cl.getOptionValues("r");
             for (int i = 0; i < keys.length; i++)
-                main.addKey(CLIUtils.toTags(keys[i], '/'), null);
+                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i], '/')),
+                        null);
         }
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTags(keys[i - 1], '/'), keys[i]);
+                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i-1], '/')),
+                        keys[i]);
         }
         if (cl.hasOption("L"))
             main.addKey(Tag.QueryRetrieveLevel, cl.getOptionValue("L"));
@@ -583,8 +607,7 @@ public class Main {
     private void onResult(Attributes data) {
         int numMatches = totNumMatches.incrementAndGet();
         if (outDir != null) {
-            File f = new File(outDir, new DecimalFormat("rsp-0000.dcm")
-                    .format(numMatches));
+            File f = new File(outDir, fname(numMatches));
             DicomOutputStream dos = null;
             try {
                 dos = new DicomOutputStream(new BufferedOutputStream(
@@ -595,6 +618,12 @@ public class Main {
             } finally {
                 SafeClose.close(dos);
             }
+        }
+    }
+
+    private String fname(int i) {
+        synchronized (outFileFormat) {
+            return outFileFormat.format(i);
         }
     }
 

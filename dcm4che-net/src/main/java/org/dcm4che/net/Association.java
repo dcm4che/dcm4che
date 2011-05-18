@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.dcm4che.data.Attributes;
@@ -285,7 +286,7 @@ public class Association {
                 public void run() {
                     closeSocket();
                 }
-            }, delay);
+            }, delay, TimeUnit.MILLISECONDS);
         else
             closeSocket();
     }
@@ -352,7 +353,7 @@ public class Association {
                         public void run() {
                             LOG_TIMEOUT.info(expired, name);
                             pabort();
-                        }}, timeout);
+                        }}, timeout, TimeUnit.MILLISECONDS);
                 }
             }
         }
@@ -371,7 +372,7 @@ public class Association {
                                     "{}: {}:DIMSE-RSP timeout expired",
                                     name, msgID);
                             pabort();
-                        }}, timeout));
+                        }}, timeout, TimeUnit.MILLISECONDS));
                     LOG_TIMEOUT.debug(
                             "{}: start {}:DIMSE-RSP timeout of {}ms",
                             new Object[] {name, msgID, timeout});

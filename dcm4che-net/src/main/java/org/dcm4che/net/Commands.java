@@ -226,7 +226,23 @@ public class Commands {
         return rsp;
     }
 
-    public static boolean isIncludeUIDinRSP() {
+    public static void initNumberOfSuboperations(Attributes rsp,
+            int remaining) {
+        rsp.setInt(Tag.NumberOfRemainingSuboperations, VR.US, remaining);
+        rsp.setInt(Tag.NumberOfCompletedSuboperations, VR.US, 0);
+        rsp.setInt(Tag.NumberOfFailedSuboperations, VR.US, 0);
+        rsp.setInt(Tag.NumberOfWarningSuboperations, VR.US, 0);
+    }
+
+    public static void incNumberOfSuboperations(int tag, Attributes rsp) {
+        synchronized (rsp) {
+            rsp.setInt(tag, VR.US, rsp.getInt(tag, 0) + 1);
+            rsp.setInt(Tag.NumberOfRemainingSuboperations, VR.US, 
+                    rsp.getInt(Tag.NumberOfRemainingSuboperations, 1) - 1);
+        }
+    }
+
+        public static boolean isIncludeUIDinRSP() {
         return includeUIDinRSP;
     }
 

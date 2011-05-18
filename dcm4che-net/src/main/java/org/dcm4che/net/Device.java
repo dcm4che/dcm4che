@@ -586,12 +586,22 @@ public class Device {
         executor.execute(command);
     }
 
-    public ScheduledFuture<?> schedule(Runnable command, long delay) {
+    public ScheduledFuture<?> schedule(Runnable command, long delay,
+            TimeUnit unit) {
         if (scheduledExecutor == null)
             throw new IllegalStateException(
                     "scheduled executor service not initalized");
 
-        return scheduledExecutor.schedule(command, delay,
-                TimeUnit.MILLISECONDS);
+        return scheduledExecutor.schedule(command, delay, unit);
+    }
+
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command,
+            long initialDelay, long period, TimeUnit unit) {
+        if (scheduledExecutor == null)
+            throw new IllegalStateException(
+                    "scheduled executor service not initalized");
+
+        return scheduledExecutor.scheduleAtFixedRate(command,
+                initialDelay, period, unit);
     }
 }

@@ -97,8 +97,8 @@ public class Main {
         MWL(UID.ModalityWorklistInformationModelFIND, 3),
         UPSPull(UID.UnifiedProcedureStepPullSOPClass, 3),
         UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, 3),
-        HANGING_PROTOCOL(UID.HangingProtocolInformationModelFIND, 3),
-        COLOR_PALETTE(UID.ColorPaletteInformationModelFIND, 3);
+        HangingProtocol(UID.HangingProtocolInformationModelFIND, 3),
+        ColorPalette(UID.ColorPaletteInformationModelFIND, 3);
 
         final String cuid;
         final int defExtNeg;
@@ -280,13 +280,13 @@ public class Main {
     @SuppressWarnings("static-access")
     private static void addKeyOptions(Options opts) {
         opts.addOption(OptionBuilder
-                .hasArg()
+                .hasArgs()
                 .withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("match"))
                 .create("m"));
         opts.addOption(OptionBuilder
-                .hasArg()
+                .hasArgs()
                 .withArgName("[seq/]attr")
                 .withDescription(rb.getString("return"))
                 .create("r"));
@@ -477,11 +477,11 @@ public class Main {
         }
         if (cl.hasOption("H")) {
             noQueryLevel("H", cl);
-            return SOPClass.HANGING_PROTOCOL;
+            return SOPClass.HangingProtocol;
         }
         if (cl.hasOption("C")) {
             noQueryLevel("C", cl);
-            return SOPClass.COLOR_PALETTE;
+            return SOPClass.ColorPalette;
         }
         throw new ParseException(rb.getString("missing"));
     }

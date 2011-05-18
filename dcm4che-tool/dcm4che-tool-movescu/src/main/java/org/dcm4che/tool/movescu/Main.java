@@ -77,14 +77,16 @@ import org.dcm4che.util.SafeClose;
 public class Main {
 
     private static final int RELATIONAL_RETRIEVE = 1;
+    public static final String CompositeInstanceRootRetrieveMOVE = "1.2.840.10008.5.1.4.1.2.4.2";
 
     private static enum SOPClass {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, 0),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, 0),
         PatientStudyOnly(
                 UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, 0),
-        HANGING_PROTOCOL(UID.HangingProtocolInformationModelMOVE, 3),
-        COLOR_PALETTE(UID.ColorPaletteInformationModelMOVE, 3);
+        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, 3),
+        HangingProtocol(UID.HangingProtocolInformationModelMOVE, 3),
+        ColorPalette(UID.ColorPaletteInformationModelMOVE, 3);
 
         final String cuid;
         final int defExtNeg;
@@ -206,7 +208,7 @@ public class Main {
     private static void addRetrieveLevelOption(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("PATIENT|STUDY|SERIES|IMAGE")
+                .withArgName("PATIENT|STUDY|SERIES|IMAGE|FRAME")
                 .withDescription(rb.getString("level"))
                 .create("L"));
    }
@@ -225,7 +227,7 @@ public class Main {
     @SuppressWarnings("static-access")
     private static void addKeyOptions(Options opts) {
         opts.addOption(OptionBuilder
-                .hasArg()
+                .hasArgs()
                 .withArgName("attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("match"))
@@ -247,6 +249,10 @@ public class Main {
                 .withLongOpt("patient-study-only")
                 .withDescription(rb.getString("patient-study-only"))
                 .create("O"));
+        group.addOption(OptionBuilder
+                .withLongOpt("instance-root")
+                .withDescription(rb.getString("instance-root"))
+                .create("I"));
         group.addOption(OptionBuilder
                 .withLongOpt("hanging-protocol")
                 .withDescription(rb.getString("hanging-protocol"))
@@ -292,7 +298,7 @@ public class Main {
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
-            main.setDestination(cl.getOptionValue("dest"));
+            main.setDestination(destinationOf(cl));
             configureExtendedNegotiation(main, cl);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -324,6 +330,12 @@ public class Main {
         }
     }
 
+    private static String destinationOf(CommandLine cl) throws ParseException {
+        if (cl.hasOption("dest"))
+            return cl.getOptionValue("dest");
+        throw new ParseException(rb.getString("missing-dest"));
+    }
+
     private static void configureExtendedNegotiation(Main main, CommandLine cl) {
         main.setRelationalQueries(cl.hasOption("relational"));
     }
@@ -351,13 +363,17 @@ public class Main {
             requiresQueryLevel("O", cl);
             return SOPClass.PatientStudyOnly;
         }
+        if (cl.hasOption("I")) {
+            requiresQueryLevel("I", cl);
+            return SOPClass.CompositeInstanceRoot;
+        }
         if (cl.hasOption("H")) {
             noQueryLevel("H", cl);
-            return SOPClass.HANGING_PROTOCOL;
+            return SOPClass.HangingProtocol;
         }
         if (cl.hasOption("C")) {
             noQueryLevel("C", cl);
-            return SOPClass.COLOR_PALETTE;
+            return SOPClass.ColorPalette;
         }
         throw new ParseException(rb.getString("missing"));
     }

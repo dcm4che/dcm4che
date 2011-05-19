@@ -65,19 +65,19 @@ public class BasicCFindService extends DicomService implements CFindSCP {
     public void onCFindRQ(Association as, PresentationContext pc,
             Attributes cmd, Attributes data) throws IOException {
         Attributes cmdrsp = Commands.mkRSP(cmd, Status.Success);
-        Matches rs = doCFind(as, pc, cmd, data, cmdrsp);
-        if (rs.hasMoreMatches()) {
-            as.addCancelRQHandler(cmd.getInt(Tag.MessageID, -1), rs);
-            device.execute(rs);
+        QueryTask queryTask = createQueryTask(as, pc, cmd, data, cmdrsp);
+        if (queryTask.hasMoreMatches()) {
+            as.addCancelRQHandler(cmd.getInt(Tag.MessageID, -1), queryTask);
+            device.execute(queryTask);
         } else {
             as.writeDimseRSP(pc, cmdrsp);
         }
     }
 
-    protected Matches doCFind(Association as, PresentationContext pc,
+    protected QueryTask createQueryTask(Association as, PresentationContext pc,
             Attributes cmd, Attributes data, Attributes cmdrsp)
             throws DicomServiceException {
-        return new BasicMatches(as, pc, cmd, data, cmdrsp);
+        return new BasicQueryTask(as, pc, cmd, data, cmdrsp);
     }
 
 }

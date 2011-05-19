@@ -52,7 +52,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicMatches implements Matches {
+public class BasicQueryTask implements QueryTask {
 
     protected final Association as;
     protected final PresentationContext pc;
@@ -61,7 +61,7 @@ public class BasicMatches implements Matches {
     protected final Attributes rsp;
     protected volatile boolean canceled;
 
-    public BasicMatches(Association as, PresentationContext pc,
+    public BasicQueryTask(Association as, PresentationContext pc,
             Attributes rq, Attributes keys, Attributes rsp) {
         this.as = as;
         this.pc = pc;

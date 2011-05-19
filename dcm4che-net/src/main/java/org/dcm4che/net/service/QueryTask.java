@@ -45,7 +45,7 @@ import org.dcm4che.net.CancelRQHandler;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface Matches
+public interface QueryTask
         extends Runnable, CancelRQHandler {
 
     boolean hasMoreMatches() throws DicomServiceException;

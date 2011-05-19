@@ -51,9 +51,9 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCFindService;
-import org.dcm4che.net.service.BasicMatches;
+import org.dcm4che.net.service.BasicQueryTask;
 import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.net.service.Matches;
+import org.dcm4che.net.service.QueryTask;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -72,7 +72,7 @@ class CFindService extends BasicCFindService {
     }
 
     @Override
-    protected Matches doCFind(Association as, PresentationContext pc,
+    protected QueryTask createQueryTask(Association as, PresentationContext pc,
             Attributes rq, Attributes keys, Attributes rsp)
             throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
@@ -85,16 +85,16 @@ class CFindService extends BasicCFindService {
                 cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         switch (level.charAt(1)) {
         case 'A':
-            return new PatientQuery(as, pc, rq, keys, rsp);
+            return new PatientQueryTask(as, pc, rq, keys, rsp);
         case 'T':
             validateStudyQuery(rq, validator, relational, studyRoot);
-            return new StudyQuery(as, pc, rq, keys, rsp);
+            return new StudyQueryTask(as, pc, rq, keys, rsp);
         case 'E':
             validateSeriesQuery(rq, validator, relational, studyRoot);
-            return new SeriesQuery(as, pc, rq, keys, rsp);
+            return new SeriesQueryTask(as, pc, rq, keys, rsp);
         case 'M':
             validateInstanceQuery(rq, validator, relational, studyRoot);
-            return new InstanceQuery(as, pc, rq, keys, rsp);
+            return new InstanceQueryTask(as, pc, rq, keys, rsp);
         }
         throw new AssertionError();
     }
@@ -148,14 +148,14 @@ class CFindService extends BasicCFindService {
         
     }
 
-    private class PatientQuery extends BasicMatches {
+    private class PatientQueryTask extends BasicQueryTask {
 
         final String qrLevel;
         final String retrieveAET;
         final String patID;
         Attributes patRec;
 
-        public PatientQuery(Association as, PresentationContext pc,
+        public PatientQueryTask(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys, Attributes rsp)
                 throws DicomServiceException {
             super(as, pc, rq, keys, rsp);
@@ -214,12 +214,12 @@ class CFindService extends BasicCFindService {
         }
     }
 
-    private class StudyQuery extends PatientQuery {
+    private class StudyQueryTask extends PatientQueryTask {
 
         final String[] studyIUIDs;
         Attributes studyRec;
 
-        public StudyQuery(Association as, PresentationContext pc,
+        public StudyQueryTask(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys, Attributes rsp)
                 throws DicomServiceException {
             super(as, pc, rq, keys, rsp);
@@ -268,12 +268,12 @@ class CFindService extends BasicCFindService {
         }
     }
 
-    private class SeriesQuery extends StudyQuery {
+    private class SeriesQueryTask extends StudyQueryTask {
 
         final String[] seriesIUIDs;
         Attributes seriesRec;
 
-        public SeriesQuery(Association as, PresentationContext pc,
+        public SeriesQueryTask(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys, Attributes rsp)
                 throws DicomServiceException {
             super(as, pc, rq, keys, rsp);
@@ -322,12 +322,12 @@ class CFindService extends BasicCFindService {
         }
     }
 
-    private class InstanceQuery extends SeriesQuery {
+    private class InstanceQueryTask extends SeriesQueryTask {
 
         final String[] sopIUIDs;
         Attributes instRec;
 
-        public InstanceQuery(Association as, PresentationContext pc,
+        public InstanceQueryTask(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys, Attributes rsp)
                 throws DicomServiceException {
             super(as, pc, rq, keys, rsp);

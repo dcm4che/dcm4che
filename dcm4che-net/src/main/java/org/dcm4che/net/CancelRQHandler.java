@@ -38,9 +38,6 @@
 
 package org.dcm4che.net;
 
-import org.dcm4che.data.Attributes;
-import org.dcm4che.net.service.DicomServiceException;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *

@@ -101,8 +101,8 @@ public class Association {
     private ScheduledFuture<?> timeout;
     private final IntHashMap<DimseRSPHandler> rspHandlerForMsgId =
             new IntHashMap<DimseRSPHandler>();
-    private final IntHashMap<DimseRSP> cancelHandlerForMsgId =
-            new IntHashMap<DimseRSP>();
+    private final IntHashMap<CancelRQHandler> cancelHandlerForMsgId =
+            new IntHashMap<CancelRQHandler>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
 
@@ -723,18 +723,18 @@ public class Association {
 
     void onCancelRQ(Attributes cmd) throws IOException {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
-        DimseRSP handler = removeCancelRQHandler(msgId);
+        CancelRQHandler handler = removeCancelRQHandler(msgId);
         if (handler != null)
-            handler.cancel(this);
+            handler.onCancelRQ(this);
     }
 
-    public void addCancelRQHandler(int msgId, DimseRSP handler) {
+    public void addCancelRQHandler(int msgId, CancelRQHandler handler) {
         synchronized (cancelHandlerForMsgId) {
             cancelHandlerForMsgId.put(msgId, handler);
         }
     }
 
-    private DimseRSP removeCancelRQHandler(int msgId) {
+    private CancelRQHandler removeCancelRQHandler(int msgId) {
         synchronized (cancelHandlerForMsgId) {
             return cancelHandlerForMsgId.remove(msgId);
         }

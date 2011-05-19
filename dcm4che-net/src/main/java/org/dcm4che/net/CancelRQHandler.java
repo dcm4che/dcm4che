@@ -36,54 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
-
-import java.io.IOException;
+package org.dcm4che.net;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.DimseRSP;
-import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.DicomServiceException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class AbstractCFindService extends DicomService
-    implements CFindSCP {
+public interface CancelRQHandler {
 
-    private Device device;
-
-    public AbstractCFindService(Device device, String... sopClasses) {
-        super(sopClasses);
-        this.device = device;
-    }
-
-    @Override
-    public void onCFindRQ(Association as, PresentationContext pc,
-            Attributes cmd, Attributes data) throws IOException {
-        Attributes cmdrsp = Commands.mkRSP(cmd, Status.Pending);
-        DimseRSP rsp = doCFind(as, pc, cmd, data, cmdrsp);
-        try {
-            rsp.next();
-        } catch (InterruptedException e) {
-            throw new DicomServiceException(cmd, Status.ProcessingFailure);
-        }
-        cmdrsp = rsp.getCommand();
-        if (Commands.isPending(cmdrsp.getInt(Tag.Status, -1))) {
-            as.addCancelRQHandler(cmd.getInt(Tag.MessageID, -1), rsp);
-            device.execute(new WriteMultiDimseRSP(as, pc, rsp));
-        } else {
-            as.writeDimseRSP(pc, cmdrsp, rsp.getDataset());
-        }
-    }
-
-    protected abstract DimseRSP doCFind(Association as, PresentationContext pc,
-            Attributes cmd, Attributes data, Attributes cmdrsp)
-            throws DicomServiceException;
+    void onCancelRQ(Association association);
 
 }

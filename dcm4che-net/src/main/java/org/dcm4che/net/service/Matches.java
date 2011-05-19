@@ -38,40 +38,18 @@
 
 package org.dcm4che.net.service;
 
-import org.dcm4che.net.Association;
-import org.dcm4che.net.DimseRSP;
-import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.net.CancelRQHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class WriteMultiDimseRSP implements Runnable {
+public interface Matches
+        extends Runnable, CancelRQHandler {
 
-    private Association as;
-    private PresentationContext pc;
-    private DimseRSP rsp;
+    boolean hasMoreMatches() throws DicomServiceException;
 
-    public WriteMultiDimseRSP(Association as, PresentationContext pc,
-            DimseRSP rsp) {
-        this.as = as;
-        this.pc = pc;
-        this.rsp = rsp;
-    }
-
-    @Override
-    public void run() {
-        try {
-            try {
-                do
-                    as.writeDimseRSP(pc, rsp.getCommand(), rsp.getDataset());
-                while (rsp.next());
-            } catch (DicomServiceException e) {
-                as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
-            }
-        } catch (Throwable e) {
-            as.abort();
-        }
-    }
+    Attributes nextMatch() throws DicomServiceException;
 
 }

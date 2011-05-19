@@ -158,35 +158,35 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
-        <include>bin/movescu</include>
+        <include>bin/findscu</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <fileMode>0755</fileMode>
       <lineEnding>unix</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
-        <include>bin/movescu.bat</include>
+        <include>bin/findscu.bat</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
-        <include>etc/movescu/log4j.properties</include>
+        <include>etc/findscu/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
-        <include>etc/movescu/key.jks</include>
-        <include>etc/movescu/cacerts.jks</include>
+        <include>etc/findscu/key.jks</include>
+        <include>etc/findscu/cacerts.jks</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>keep</lineEnding>

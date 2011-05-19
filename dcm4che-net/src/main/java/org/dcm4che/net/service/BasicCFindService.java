@@ -36,31 +36,48 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.common;
+package org.dcm4che.net.service;
 
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.BasicCStoreService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class CStoreService extends BasicCStoreService {
+public class BasicCFindService extends DicomService implements CFindSCP {
 
-    public CStoreService(String... sopClasses) {
+    private Device device;
+
+    public BasicCFindService(Device device, String... sopClasses) {
         super(sopClasses);
+        this.device = device;
     }
 
     @Override
-    protected void doCStore(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        data.skipAll();
+    public void onCFindRQ(Association as, PresentationContext pc,
+            Attributes cmd, Attributes data) throws IOException {
+        Attributes cmdrsp = Commands.mkRSP(cmd, Status.Success);
+        Matches rs = doCFind(as, pc, cmd, data, cmdrsp);
+        if (rs.hasMoreMatches()) {
+            as.addCancelRQHandler(cmd.getInt(Tag.MessageID, -1), rs);
+            device.execute(rs);
+        } else {
+            as.writeDimseRSP(pc, cmdrsp);
+        }
+    }
+
+    protected Matches doCFind(Association as, PresentationContext pc,
+            Attributes cmd, Attributes data, Attributes cmdrsp)
+            throws DicomServiceException {
+        return new BasicMatches(as, pc, cmd, data, cmdrsp);
     }
 
 }

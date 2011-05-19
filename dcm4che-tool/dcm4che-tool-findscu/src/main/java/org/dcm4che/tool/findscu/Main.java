@@ -454,7 +454,7 @@ public class Main {
 
     private static void configureCancel(Main main, CommandLine cl) {
         if (cl.hasOption("cancel"))
-            main.setCancelAfter(Integer.parseInt(cl.getOptionValue("C")));
+            main.setCancelAfter(Integer.parseInt(cl.getOptionValue("cancel")));
     }
 
     private static void configureKeys(Main main, CommandLine cl) {

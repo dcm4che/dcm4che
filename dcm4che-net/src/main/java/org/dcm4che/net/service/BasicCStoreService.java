@@ -51,10 +51,9 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class AbstractCStoreService extends DicomService
-        implements CStoreSCP {
+public class BasicCStoreService extends DicomService implements CStoreSCP {
 
-    public AbstractCStoreService(String... sopClasses) {
+    public BasicCStoreService(String... sopClasses) {
         super(sopClasses);
     }
 
@@ -67,9 +66,11 @@ public abstract class AbstractCStoreService extends DicomService
         afterCStoreRSP(as, pc, rq, data, rsp);
     }
 
-    protected abstract void doCStore(Association as, PresentationContext pc,
+    protected void doCStore(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException;
+            throws IOException {
+        data.skipAll();
+    }
 
     protected void afterCStoreRSP(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data, Attributes rsp)

@@ -38,64 +38,14 @@
 
 package org.dcm4che.net.service;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Map.Entry;
+import org.dcm4che.net.DataWriter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class InstanceRefs implements Serializable, Iterable<String[]> {
+public interface DataWriterFactory {
 
-    private static final long serialVersionUID = 8788279917089668764L;
+    DataWriter createDataWriter(String uri);
 
-    private final ArrayList<String[]> list;
-
-    public InstanceRefs() {
-        this(10);
-    }
-
-    public InstanceRefs(int initialCapacity) {
-        list = new ArrayList<String[]>(initialCapacity);
-    }
-
-    public void add(String iuid, String cuid, String tsuid, String uri) {
-        list.add(new String[] { iuid, cuid, tsuid, uri } );
-    }
-
-    public Iterator<String[]> iterator() {
-        return list.iterator();
-    }
-
-    public boolean isEmpty() {
-        return list.isEmpty();
-    }
-
-    public String[][] getTransferCapabilities() {
-        HashMap<String, HashSet<String>> map =
-            new HashMap<String, HashSet<String>>();
-        for (String[] uids : list) {
-            HashSet<String> tss = map.get(uids[1]);
-            if (tss == null)
-                map.put(uids[1], tss = new HashSet<String>(4));
-            tss.add(uids[2]);
-        }
-        String[][] tcs = new String[map.size()][];
-        Set<Entry<String, HashSet<String>>> entrySet = map.entrySet();
-        for (Entry<String, HashSet<String>> entry : entrySet) {
-            String cuid = entry.getKey();
-            HashSet<String> tss = entry.getValue();
-            String[] tc = new String[tss.size() + 1];
-            tc[0] = cuid;
-            Iterator<String> iter = tss.iterator();
-            for (int i = 1; i < tc.length; i++)
-                tc[i] = iter.next();
-        }
-        return tcs ;
-    }
 }

@@ -294,6 +294,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            main.remote.setTLSProtocol(main.conn.getTLSProtocols());
+            main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
             configureKeys(main, cl);
             main.setSOPClass(sopClassOf(cl));
             main.setTransferSyntaxes(tssOf(cl));
@@ -409,7 +411,7 @@ public class Main {
             rq.addExtendedNegotiation(
                     new ExtendedNegotiation(sopClass.cuid,
                             toInfo(extNeg | sopClass.defExtNeg)));
-        as = ae.connect(conn, remote.getHostname(), remote.getPort(), rq);
+        as = ae.connect(conn, remote, rq);
     }
 
     private static byte[] toInfo(int extNeg) {

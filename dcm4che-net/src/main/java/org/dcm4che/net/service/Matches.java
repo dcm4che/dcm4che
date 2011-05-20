@@ -38,44 +38,17 @@
 
 package org.dcm4che.net.service;
 
-import java.io.IOException;
-
 import org.dcm4che.data.Attributes;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
-import org.dcm4che.net.PDVInputStream;
-import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCStoreService extends DicomService implements CStoreSCP {
+public interface Matches {
 
-    public BasicCStoreService(String... sopClasses) {
-        super(sopClasses);
-    }
+    boolean hasMoreMatches() throws DicomServiceException;
 
-    @Override
-    public void onCStoreRQ(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data) throws IOException {
-        Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        doCStore(as, pc, rq, data, rsp);
-        as.writeDimseRSP(pc, rsp);
-        afterCStoreRSP(as, pc, rq, data, rsp);
-    }
+    Attributes nextMatch() throws DicomServiceException;
 
-    protected void doCStore(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        data.skipAll();
-    }
-
-    protected void afterCStoreRSP(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        // NOOP;
-    }
-
+    boolean optionalKeyNotSupported();
 }

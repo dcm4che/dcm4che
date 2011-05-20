@@ -38,18 +38,12 @@
 
 package org.dcm4che.net.service;
 
-import org.dcm4che.data.Attributes;
 import org.dcm4che.net.CancelRQHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface QueryTask
-        extends Runnable, CancelRQHandler {
-
-    boolean hasMoreMatches() throws DicomServiceException;
-
-    Attributes nextMatch() throws DicomServiceException;
+public interface QueryTask extends Runnable, CancelRQHandler {
 
 }

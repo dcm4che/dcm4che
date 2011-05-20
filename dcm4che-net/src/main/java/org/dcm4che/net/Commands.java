@@ -79,8 +79,6 @@ public class Commands {
     public static final int NO_DATASET = 0x0101;
     private static int withDatasetType = 0x0000;
 
-    private static boolean includeUIDinRSP;
-
     public static boolean isRSP(int cmdField) {
         return (cmdField & RSP) != 0;
     }
@@ -211,19 +209,20 @@ public class Commands {
         rsp.setInt(Tag.Status, VR.US, status);
         rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US,
                 rq.getInt(Tag.MessageID, 0));
-        if (includeUIDinRSP) {
-            String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
-            if (cuid == null)
-                cuid = rq.getString(Tag.RequestedSOPClassUID, null);
-            rsp.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
-            if (iuid == null)
-                iuid = rq.getString(Tag.RequestedSOPInstanceUID, null);
-            if (iuid != null) {
-                rsp.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
-            }
-        }
         return rsp;
+    }
+
+    public static void includeUIDsinRSP(Attributes rq, Attributes rsp) {
+        String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
+        if (cuid == null)
+            cuid = rq.getString(Tag.RequestedSOPClassUID, null);
+        rsp.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+        String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
+        if (iuid == null)
+            iuid = rq.getString(Tag.RequestedSOPInstanceUID, null);
+        if (iuid != null) {
+            rsp.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        }
     }
 
     public static void initNumberOfSuboperations(Attributes rsp,
@@ -240,14 +239,6 @@ public class Commands {
             rsp.setInt(Tag.NumberOfRemainingSuboperations, VR.US, 
                     rsp.getInt(Tag.NumberOfRemainingSuboperations, 1) - 1);
         }
-    }
-
-        public static boolean isIncludeUIDinRSP() {
-        return includeUIDinRSP;
-    }
-
-    public static void setIncludeUIDinRSP(boolean includeUIDinRSP) {
-        Commands.includeUIDinRSP = includeUIDinRSP;
     }
 
     public static int getWithDatasetType() {

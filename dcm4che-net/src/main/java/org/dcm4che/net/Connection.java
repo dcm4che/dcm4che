@@ -581,6 +581,11 @@ public class Connection {
             throw new IllegalStateException("Not installed");
     }
 
+    private void checkCompatible(Connection remoteConn) {
+        if (!isCompatible(remoteConn))
+            throw new IllegalArgumentException("Not compatible " + remoteConn);
+    }
+
     private void checkDevice() {
         if (device == null)
             throw new IllegalStateException("Not attached to Device");
@@ -655,22 +660,13 @@ public class Connection {
         server = null;
     }
 
-    /**
-     * Create a socket as an SCU and connect to a peer network connection (the
-     * SCP).
-     * 
-     * @param peerConfig
-     *            The peer <code>NetworkConnection</code> object that this
-     *            network connection is connecting to.
-     * @return Socket The created socket object.
-     * @throws IOException
-     *             If the connection cannot be made due to network IO reasons.
-     */
-    public Socket connect(String host, int port) throws IOException {
+    public Socket connect(Connection remoteConn) throws IOException {
         checkInstalled();
-        Socket s = isTLS() ? createTLSSocket() : new Socket();
+        checkCompatible(remoteConn);
+        Socket s = isTLS() ? createTLSSocket(remoteConn) : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
-        InetSocketAddress endpoint = new InetSocketAddress(host, port);
+        InetSocketAddress endpoint = new InetSocketAddress(
+                remoteConn.getHostname(), remoteConn.getPort());
         LOG.info("Initiate connection from {} to {}", bindPoint, endpoint);
         s.bind(bindPoint);
         setSocketOptions(s);
@@ -678,13 +674,52 @@ public class Connection {
         return s;
     }
 
-    private Socket createTLSSocket() throws IOException {
+    private Socket createTLSSocket(Connection remoteConn) throws IOException {
         SSLContext sslContext = device.getSSLContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
-        s.setEnabledProtocols(tlsProtocols);
-        s.setEnabledCipherSuites(tlsCipherSuites);
+        s.setEnabledProtocols(
+                intersect(remoteConn.tlsProtocols, tlsProtocols));
+        s.setEnabledCipherSuites(
+                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
         return s;
+    }
+
+    public boolean isCompatible(Connection remoteConn) {
+        return remoteConn.isTLS() 
+                ? isTLS()
+                        && hasCommon(remoteConn.tlsProtocols, tlsProtocols)
+                        && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites)
+                : !isTLS();
+    }
+
+    private static boolean hasCommon(String[] ss1, String[] ss2) {
+        for (String s1 : ss1)
+            if (!contains(ss2, s1))
+                return false;
+        return true;
+    }
+
+    private static boolean contains(String[] ss2, String s1) {
+        for (String s2 : ss2)
+            if (s2.equals(s1))
+                return true;
+        return false;
+    }
+
+    private static String[] intersect(String[] ss1, String[] ss2) {
+        String[] intersect = new String[Math.min(ss1.length, ss2.length)];
+        int n = 0;
+        for (String s1 : ss1)
+            for (String s2 : ss2)
+                if (s1.equals(s2))
+                    intersect[n++] = s1;
+        if (n < intersect.length) {
+            String[] tmp = new String[n];
+            System.arraycopy(intersect, 0, tmp, 0, n);
+            intersect = tmp;
+        }
+        return intersect;
     }
 
     private InetSocketAddress getBindPoint() throws UnknownHostException {

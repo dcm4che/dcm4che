@@ -157,6 +157,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            main.remote.setTLSProtocol(main.conn.getTLSProtocols());
+            main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
             configureRelatedSOPClass(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
@@ -383,7 +385,7 @@ public class Main {
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,
                             UID.ImplicitVRLittleEndian));
-        as = ae.connect(conn, remote.getHostname(), remote.getPort(), rq);
+        as = ae.connect(conn, remote, rq);
     }
 
     private void onCStoreRSP(Attributes cmd, File f) {

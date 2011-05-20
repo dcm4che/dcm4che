@@ -41,10 +41,9 @@ package org.dcm4che.net.service;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Commands;
-import org.dcm4che.net.Device;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -52,32 +51,31 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCFindService extends DicomService implements CFindSCP {
+public class BasicCStoreSCP extends DicomService implements CStoreSCP {
 
-    private Device device;
-
-    public BasicCFindService(Device device, String... sopClasses) {
+    public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
-        this.device = device;
     }
 
     @Override
-    public void onCFindRQ(Association as, PresentationContext pc,
-            Attributes cmd, Attributes data) throws IOException {
-        Attributes cmdrsp = Commands.mkRSP(cmd, Status.Success);
-        QueryTask queryTask = createQueryTask(as, pc, cmd, data, cmdrsp);
-        if (queryTask.hasMoreMatches()) {
-            as.addCancelRQHandler(cmd.getInt(Tag.MessageID, -1), queryTask);
-            device.execute(queryTask);
-        } else {
-            as.writeDimseRSP(pc, cmdrsp);
-        }
+    public void onCStoreRQ(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data) throws IOException {
+        Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        doCStore(as, pc, rq, data, rsp);
+        as.writeDimseRSP(pc, rsp);
+        afterCStoreRSP(as, pc, rq, data, rsp);
     }
 
-    protected QueryTask createQueryTask(Association as, PresentationContext pc,
-            Attributes cmd, Attributes data, Attributes cmdrsp)
-            throws DicomServiceException {
-        return new BasicQueryTask(as, pc, cmd, data, cmdrsp);
+    protected void doCStore(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException {
+        data.skipAll();
+    }
+
+    protected void afterCStoreRSP(Association as, PresentationContext pc,
+            Attributes rq, PDVInputStream data, Attributes rsp)
+            throws IOException {
+        // NOOP;
     }
 
 }

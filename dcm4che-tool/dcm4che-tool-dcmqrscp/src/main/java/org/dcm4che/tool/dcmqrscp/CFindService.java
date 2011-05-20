@@ -49,18 +49,16 @@ import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
-import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.BasicCFindService;
-import org.dcm4che.net.service.BasicQueryTask;
+import org.dcm4che.net.service.BasicCFindSCP;
 import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.net.service.QueryTask;
+import org.dcm4che.net.service.Matches;
 import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CFindService extends BasicCFindService {
+class CFindService extends BasicCFindSCP {
 
     private final Main main;
     private final String[] qrLevels;
@@ -72,29 +70,29 @@ class CFindService extends BasicCFindService {
     }
 
     @Override
-    protected QueryTask createQueryTask(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys, Attributes rsp)
-            throws DicomServiceException {
+    protected Matches calculateMatches(Association as, Attributes rq,
+            Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
         String level = validator.getType1String(
                 Tag.QueryRetrieveLevel, 0, 1, qrLevels);
         check(rq, validator);
+        DicomDirReader ddr = main.getDicomDirReader();
         String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
         boolean relational = relational(as, cuid);
         boolean studyRoot =
                 cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         switch (level.charAt(1)) {
         case 'A':
-            return new PatientQueryTask(as, pc, rq, keys, rsp);
+            return new PatientMatches(ddr, rq, keys);
         case 'T':
             validateStudyQuery(rq, validator, relational, studyRoot);
-            return new StudyQueryTask(as, pc, rq, keys, rsp);
+            return new StudyMatches(ddr, rq, keys);
         case 'E':
             validateSeriesQuery(rq, validator, relational, studyRoot);
-            return new SeriesQueryTask(as, pc, rq, keys, rsp);
+            return new SeriesMatches(ddr, rq, keys);
         case 'M':
             validateInstanceQuery(rq, validator, relational, studyRoot);
-            return new InstanceQueryTask(as, pc, rq, keys, rsp);
+            return new InstanceMatches(ddr, rq, keys);
         }
         throw new AssertionError();
     }
@@ -148,19 +146,54 @@ class CFindService extends BasicCFindService {
         
     }
 
-    private class PatientQueryTask extends BasicQueryTask {
+    @Override
+    protected Attributes adjust(Attributes match, Attributes keys,
+            Association as) {
+        Attributes adjust = super.adjust(match, keys, as);
+        String qrlevel = keys.getString(Tag.QueryRetrieveLevel, null);
+        if ("IMAGE".equals(qrlevel)) {
+            copy(match, Tag.ReferencedSOPClassUIDInFile, adjust,
+                    Tag.SOPClassUID, VR.UI, keys);
+            copy(match, Tag.ReferencedSOPInstanceUIDInFile, adjust,
+                    Tag.SOPInstanceUID, VR.UI, keys);
+        }
+        adjust.setString(Tag.QueryRetrieveLevel, VR.CS, qrlevel);
+        adjust.setString(Tag.RetrieveAETitle, VR.AE, as.getCalledAET());
+        String availability = main.getInstanceAvailability();
+        if (availability != null)
+            adjust.setString(Tag.InstanceAvailability, VR.CS, availability);
+        DicomDirReader ddr = main.getDicomDirReader();
+        adjust.setString(Tag.StorageMediaFileSetID, VR.SH,
+                ddr.getFileSetID());
+        adjust.setString(Tag.StorageMediaFileSetUID, VR.UI,
+                ddr.getFileSetUID());
+        match.setString(Tag.SOPClassUID, VR.UI,
+                match.getString(Tag.ReferencedSOPClassUIDInFile, null));
+        match.setString(Tag.SOPInstanceUID, VR.UI,
+                match.getString(Tag.ReferencedSOPInstanceUIDInFile, null));
 
-        final String qrLevel;
-        final String retrieveAET;
+        return adjust;
+    }
+
+    private static void copy(Attributes src, int srcTag,
+            Attributes dst, int dstTag, VR vr, Attributes keys) {
+         if (keys.contains(dstTag))
+             dst.setString(dstTag, vr, src.getString(srcTag, null));
+    }
+
+    private static class PatientMatches implements Matches {
+
+        final DicomDirReader ddr;
+        final Attributes rq;
+        final Attributes keys;
         final String patID;
         Attributes patRec;
 
-        public PatientQueryTask(Association as, PresentationContext pc,
-                Attributes rq, Attributes keys, Attributes rsp)
-                throws DicomServiceException {
-            super(as, pc, rq, keys, rsp);
-            this.qrLevel = keys.getString(Tag.QueryRetrieveLevel, null);
-            this.retrieveAET = as.getCalledAET();
+        public PatientMatches(DicomDirReader ddr, Attributes rq,
+                Attributes keys) throws DicomServiceException {
+            this.ddr = ddr;
+            this.rq = rq;
+            this.keys = keys;
             this.patID = keys.getString(Tag.PatientID, null);
             wrappedFindNextPatient();
         }
@@ -181,12 +214,16 @@ class CFindService extends BasicCFindService {
             try {
                 findNextPatient();
             } catch (IOException e) {
-                throw new DicomServiceException(rq, Status.ProcessingFailure);
+                unableToProcess(e);
             }
         }
 
+        protected void unableToProcess(IOException e)
+                throws DicomServiceException {
+            throw new DicomServiceException(rq, Status.UnableToProcess, e);
+        }
+
         protected boolean findNextPatient() throws IOException {
-            DicomDirReader ddr = main.getDicomDirReader();
             patRec = patRec == null
                 ? patID == null
                     ? ddr.findRootDirectoryRecord(keys, true, true)
@@ -198,31 +235,19 @@ class CFindService extends BasicCFindService {
         }
 
         @Override
-        protected Attributes adjust(Attributes match) {
-            Attributes adjust = super.adjust(match);
-            adjust.setString(Tag.QueryRetrieveLevel, VR.CS, qrLevel);
-            adjust.setString(Tag.RetrieveAETitle, VR.AE, retrieveAET);
-            String availability = main.getInstanceAvailability();
-            if (availability != null)
-                adjust.setString(Tag.InstanceAvailability, VR.CS, availability);
-            DicomDirReader ddr = main.getDicomDirReader();
-            adjust.setString(Tag.StorageMediaFileSetID, VR.SH,
-                    ddr.getFileSetID());
-            adjust.setString(Tag.StorageMediaFileSetUID, VR.UI,
-                    ddr.getFileSetUID());
-            return adjust;
+        public boolean optionalKeyNotSupported() {
+            return false;
         }
     }
 
-    private class StudyQueryTask extends PatientQueryTask {
+    private static class StudyMatches extends PatientMatches {
 
         final String[] studyIUIDs;
         Attributes studyRec;
 
-        public StudyQueryTask(Association as, PresentationContext pc,
-                Attributes rq, Attributes keys, Attributes rsp)
-                throws DicomServiceException {
-            super(as, pc, rq, keys, rsp);
+        public StudyMatches(DicomDirReader ddr, Attributes rq,
+                Attributes keys) throws DicomServiceException {
+            super(ddr, rq, keys);
             studyIUIDs = StringUtils.maskNull(
                     keys.getStrings(Tag.StudyInstanceUID));
             wrappedFindNextStudy();
@@ -244,7 +269,7 @@ class CFindService extends BasicCFindService {
             try {
                 findNextStudy();
             } catch (IOException e) {
-                throw new DicomServiceException(rq, Status.ProcessingFailure);
+                unableToProcess(e);
             }
         }
 
@@ -252,7 +277,6 @@ class CFindService extends BasicCFindService {
             if (patRec == null)
                 return false;
 
-            DicomDirReader ddr = main.getDicomDirReader();
             if (studyRec != null) {
                 studyRec = studyIUIDs.length == 1
                     ? null
@@ -268,15 +292,14 @@ class CFindService extends BasicCFindService {
         }
     }
 
-    private class SeriesQueryTask extends StudyQueryTask {
+    private static class SeriesMatches extends StudyMatches {
 
         final String[] seriesIUIDs;
         Attributes seriesRec;
 
-        public SeriesQueryTask(Association as, PresentationContext pc,
-                Attributes rq, Attributes keys, Attributes rsp)
-                throws DicomServiceException {
-            super(as, pc, rq, keys, rsp);
+        public SeriesMatches(DicomDirReader ddr, Attributes rq,
+                Attributes keys) throws DicomServiceException {
+            super(ddr, rq, keys);
             seriesIUIDs = StringUtils.maskNull(
                     keys.getStrings(Tag.SeriesInstanceUID));
             wrappedFindNextSeries();
@@ -298,7 +321,7 @@ class CFindService extends BasicCFindService {
             try {
                 findNextSeries();
             } catch (IOException e) {
-                throw new DicomServiceException(rq, Status.ProcessingFailure);
+                unableToProcess(e);
             }
         }
 
@@ -306,7 +329,6 @@ class CFindService extends BasicCFindService {
             if (studyRec == null)
                 return false;
 
-            DicomDirReader ddr = main.getDicomDirReader();
             if (seriesRec != null) {
                 seriesRec = seriesIUIDs.length == 1
                     ? null
@@ -322,15 +344,14 @@ class CFindService extends BasicCFindService {
         }
     }
 
-    private class InstanceQueryTask extends SeriesQueryTask {
+    private static class InstanceMatches extends SeriesMatches {
 
         final String[] sopIUIDs;
         Attributes instRec;
 
-        public InstanceQueryTask(Association as, PresentationContext pc,
-                Attributes rq, Attributes keys, Attributes rsp)
-                throws DicomServiceException {
-            super(as, pc, rq, keys, rsp);
+        public InstanceMatches(DicomDirReader ddr, Attributes rq,
+                Attributes keys) throws DicomServiceException {
+            super(ddr, rq, keys);
             sopIUIDs = StringUtils.maskNull(keys.getStrings(Tag.SOPInstanceUID));
             wrappedFindNextInstance();
         }
@@ -351,7 +372,7 @@ class CFindService extends BasicCFindService {
             try {
                 findNextInstance();
             } catch (IOException e) {
-                throw new DicomServiceException(rq, Status.ProcessingFailure);
+                unableToProcess(e);
             }
         }
 
@@ -359,7 +380,6 @@ class CFindService extends BasicCFindService {
             if (seriesRec == null)
                 return false;
 
-            DicomDirReader ddr = main.getDicomDirReader();
             if (instRec != null) {
                 instRec = sopIUIDs.length == 1
                     ? null
@@ -372,15 +392,6 @@ class CFindService extends BasicCFindService {
                         ? ddr.findLowerDirectoryRecord(seriesRec, keys, true, true)
                         : ddr.findInstanceRecord(seriesRec, sopIUIDs);
             return instRec != null;
-        }
-
-        @Override
-        protected Attributes adjust(Attributes match) {
-            match.setString(Tag.SOPClassUID, VR.UI,
-                    match.getString(Tag.ReferencedSOPClassUIDInFile, null));
-            match.setString(Tag.SOPInstanceUID, VR.UI,
-                    match.getString(Tag.ReferencedSOPInstanceUIDInFile, null));
-            return super.adjust(match);
         }
     }
 

@@ -455,6 +455,10 @@ public class ApplicationEntity {
         conns.add(conn);
     }
 
+    public List<Connection> getConnections() {
+        return conns;
+    }
+
     public void addTransferCapability(TransferCapability tc) {
         String sopClass = tc.getSopClass();
         TransferCapability.Role role = tc.getRole();
@@ -603,7 +607,7 @@ public class ApplicationEntity {
             ac.addExtendedNegotiation(new ExtendedNegotiation(asuid, info));
     }
 
-    public Association connect(Connection local, String host, int port,
+    public Association connect(Connection local, Connection remote,
             AAssociateRQ rq) throws IOException, InterruptedException {
         checkDevice();
         checkInstalled();
@@ -612,7 +616,7 @@ public class ApplicationEntity {
         rq.setMaxOpsInvoked(maxOpsInvoked);
         rq.setMaxOpsPerformed(maxOpsPerformed);
         rq.setMaxPDULength(maxPDULengthReceive);
-        Socket sock = local.connect(host, port);
+        Socket sock = local.connect(remote);
         Association as = new Association(this, local, sock);
         as.write(rq);
         as.waitForLeaving(State.Sta5);

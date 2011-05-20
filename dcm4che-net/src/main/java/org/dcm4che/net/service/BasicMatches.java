@@ -38,33 +38,39 @@
 
 package org.dcm4che.net.service;
 
-import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.UID;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
-import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class CEchoService extends DicomService implements CEchoSCP {
+public class BasicMatches implements Matches {
 
-    public CEchoService() {
-        super(UID.VerificationSOPClass);
-    }
+    private final Iterator<Attributes> matches;
+    private final boolean optKeysNotSupported;
 
-    public CEchoService(String... sopClasses) {
-        super(sopClasses);
+    public BasicMatches(Collection<Attributes> matches,
+            boolean optKeysNotSupported) {
+        this.matches = matches.iterator();
+        this.optKeysNotSupported = optKeysNotSupported;
     }
 
     @Override
-    public void onCEchoRQ(Association as, PresentationContext pc,
-            Attributes cmd) throws IOException {
-        as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
+    public boolean hasMoreMatches() throws DicomServiceException {
+        return matches.hasNext();
+    }
+
+    @Override
+    public Attributes nextMatch() throws DicomServiceException {
+        return matches.next();
+    }
+
+    @Override
+    public boolean optionalKeyNotSupported() {
+        return optKeysNotSupported;
     }
 
 }

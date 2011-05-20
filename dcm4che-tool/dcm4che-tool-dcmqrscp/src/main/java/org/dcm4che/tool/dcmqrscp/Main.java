@@ -61,7 +61,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.net.service.CEchoService;
+import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.CStoreService;
 import org.dcm4che.tool.common.FilesetInfo;
@@ -96,7 +96,7 @@ public class Main {
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-        serviceRegistry.addDicomService(new CEchoService());
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
         serviceRegistry.addDicomService(storageSCP);
         serviceRegistry.addDicomService(
                 new CFindService(this,

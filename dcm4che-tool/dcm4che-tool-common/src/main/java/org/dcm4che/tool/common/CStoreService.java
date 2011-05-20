@@ -44,13 +44,13 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.BasicCStoreService;
+import org.dcm4che.net.service.BasicCStoreSCP;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class CStoreService extends BasicCStoreService {
+public class CStoreService extends BasicCStoreSCP {
 
     public CStoreService(String... sopClasses) {
         super(sopClasses);

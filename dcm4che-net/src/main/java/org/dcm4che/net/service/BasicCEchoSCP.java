@@ -36,30 +36,35 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
+
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.UID;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Status {
+public class BasicCEchoSCP extends DicomService implements CEchoSCP {
 
-    public static final int Success               = 0x0000;
+    public BasicCEchoSCP() {
+        super(UID.VerificationSOPClass);
+    }
 
-    public static final int ProcessingFailure     = 0x0110;
-    public static final int DuplicateSOPinstance  = 0x0111;
-    public static final int NoSuchObjectInstance  = 0x0112;
-    public static final int NoSuchSOPclass        = 0x0118;
-    public static final int SOPclassNotSupported  = 0x0122;
-    public static final int UnrecognizedOperation = 0x0211;
-    
-    public static final int Cancel                = 0xFE00;
-    
-    public static final int Pending               = 0xFF00;
-    public static final int PendingWarning        = 0xFF01;
+    public BasicCEchoSCP(String... sopClasses) {
+        super(sopClasses);
+    }
 
-    public static final int MoveDestinationUnknown = 0xA801;
-    public static final int IdentifierDoesNotMatchSOPClass = 0xA900;
-    public static final int UnableToProcess = 0xC000;
+    @Override
+    public void onCEchoRQ(Association as, PresentationContext pc,
+            Attributes cmd) throws IOException {
+        as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
+    }
 
 }

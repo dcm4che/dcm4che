@@ -65,12 +65,16 @@ public class InstanceRefs implements Serializable {
         list = new ArrayList<String[]>(initialCapacity);
     }
 
-    public void add(String iuid, String cuid, String tsuid) {
-        list.add(new String[] { iuid, cuid, tsuid} );
+    public void add(String iuid, String cuid, String tsuid, String uri) {
+        list.add(new String[] { iuid, cuid, tsuid, uri } );
     }
 
     public List<String[]> list() {
         return list;
+    }
+
+    public boolean isEmpty() {
+        return list.isEmpty();
     }
 
     public String[][] getTransferCapabilities() {

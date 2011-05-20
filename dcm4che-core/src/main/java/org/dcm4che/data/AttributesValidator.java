@@ -67,7 +67,7 @@ public class AttributesValidator {
             addMissingAttribute(tag);
             return null;
         }
-        if (ss.length < index + 1) {
+        if (ss.length <= index) {
             addMissingAttributeValue(tag);
             return null;
         }
@@ -85,7 +85,7 @@ public class AttributesValidator {
             addMissingAttribute(tag);
             return defval;
         }
-        if (ss.length < index + 1)
+        if (ss.length <= index)
             return defval;
         if (ss.length > maxvm)
             addInvalidAttribueValue(tag);
@@ -97,7 +97,7 @@ public class AttributesValidator {
     public String getType3String(int tag, int index, int maxvm, String defval,
             String... enumvals) {
         String[] ss = attrs.getStrings(tag);
-        if (ss == null || ss.length < index + 1)
+        if (ss == null || ss.length <= index)
             return defval;
         if (ss.length > maxvm)
             addInvalidAttribueValue(tag);

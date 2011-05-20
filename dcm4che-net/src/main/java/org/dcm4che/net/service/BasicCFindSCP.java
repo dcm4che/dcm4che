@@ -39,12 +39,16 @@
 package org.dcm4che.net.service;
 
 import java.io.IOException;
-import java.util.NoSuchElementException;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.CancelRQHandler;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -52,75 +56,93 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicQueryTask implements QueryTask {
+public class BasicCFindSCP extends DicomService implements CFindSCP {
 
-    protected final Association as;
-    protected final PresentationContext pc;
-    protected final Attributes rq;
-    protected final Attributes keys;
-    protected final Attributes rsp;
-    protected volatile boolean canceled;
+    private final Device device;
 
-    public BasicQueryTask(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys, Attributes rsp) {
-        this.as = as;
-        this.pc = pc;
-        this.rq = rq;
-        this.keys = keys;
-        this.rsp = rsp;
+    public BasicCFindSCP(Device device, String... sopClasses) {
+        super(sopClasses);
+        this.device = device;
     }
 
     @Override
-    public boolean hasMoreMatches() throws DicomServiceException {
-        return false;
+    public void onCFindRQ(final Association as, final PresentationContext pc,
+            final Attributes rq, final Attributes keys) throws IOException {
+        final Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        final Matches matches = calculateMatches(as, rq, keys);
+        if (matches.hasMoreMatches()) {
+            final DimseRSPWriter writer = new DimseRSPWriter();
+            as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), writer);
+            device.execute(new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        writer.write(as, pc, keys, rsp, matches);
+                    } catch (IOException e) {
+                        // already handled by Association
+                    }
+                }
+            });
+        } else {
+            as.writeDimseRSP(pc, rsp);
+        }
     }
 
-    @Override
-    public Attributes nextMatch() throws DicomServiceException {
-        throw new NoSuchElementException();
+    protected Matches calculateMatches(Association as, Attributes rq,
+            Attributes keys) throws DicomServiceException {
+        Collection<Attributes> matches = Collections.emptyList();
+        return new BasicMatches(matches, false);
     }
 
-    @Override
-    public void onCancelRQ(Association association) {
-        canceled = true;
-    }
+    private final class DimseRSPWriter implements CancelRQHandler {
 
-    @Override
-    public void run() {
-        try {
+        volatile boolean canceled;
+
+        @Override
+        public void onCancelRQ(Association association) {
+            canceled = true;
+        }
+
+        public void write(Association as, PresentationContext pc,
+                Attributes keys, Attributes rsp, Matches matches)
+                throws IOException {
             try {
-                while (hasMoreMatches() && !canceled) {
-                    Attributes match = adjust(nextMatch());
+                while (matches.hasMoreMatches() && !canceled) {
+                    Attributes match = adjust(matches.nextMatch(), keys, as);
                     rsp.setInt(Tag.Status, VR.US,
-                            optionalKeyNotSupported(match)
+                            matches.optionalKeyNotSupported()
+                                 || optionalKeyNotSupported(match, keys)
                                     ? Status.PendingWarning
                                     : Status.Pending);
                     as.writeDimseRSP(pc, rsp, match);
                 }
                 rsp.setInt(Tag.Status, VR.US,
-                        hasMoreMatches() ? Status.Cancel : Status.Success);
+                        matches.hasMoreMatches() 
+                                ? Status.Cancel
+                                : Status.Success);
                 as.writeDimseRSP(pc, rsp);
             } catch (DicomServiceException e) {
                 as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
             }
-        } catch (IOException e) {
-            // already handled by Association
         }
+
     }
 
-    protected Attributes adjust(Attributes match) {
-        Attributes rspData = new Attributes(match.size());
-        // ensure to copy SpecificCharacterSet to rspData
+    protected Attributes adjust(Attributes match, Attributes keys,
+            Association as) {
+        Attributes filtered = new Attributes(match.size());
+        // include SpecificCharacterSet also if not in keys
         if (!keys.contains(Tag.SpecificCharacterSet)) {
             String[] ss = match.getStrings(Tag.SpecificCharacterSet);
             if (ss != null)
-                rspData.setString(Tag.SpecificCharacterSet, VR.CS, ss);
+                filtered.setString(Tag.SpecificCharacterSet, VR.CS, ss);
         }
-        rspData.addSelected(match, keys);
-        return rspData;
+        filtered.addSelected(match, keys);
+        return filtered;
     }
 
-    protected boolean optionalKeyNotSupported(Attributes match) {
+    protected boolean optionalKeyNotSupported(Attributes match, Attributes keys) {
         Attributes notSupported = new Attributes(keys.size());
         notSupported.addNotSelected(keys, match);
         notSupported.remove(Tag.SpecificCharacterSet);

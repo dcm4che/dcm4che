@@ -55,9 +55,9 @@ public class DicomServiceException extends IOException {
 
     private final Attributes rsp;
     private Attributes data;
-    
+
     public DicomServiceException(Attributes rq, int status) {
-        this(rq, status, null);
+        rsp = Commands.mkRSP(rq, status);
     }
 
     public DicomServiceException(Attributes rq, int status, String message) {
@@ -67,7 +67,14 @@ public class DicomServiceException extends IOException {
             setErrorComment(message);
     }
 
-    public DicomServiceException setErrorComment(String val) {
+    public DicomServiceException(Attributes rq, int status, Throwable cause) {
+        super(cause);
+        rsp = Commands.mkRSP(rq, status);
+        if (cause != null)
+            setErrorComment(getMessage());
+    }
+
+   public DicomServiceException setErrorComment(String val) {
         if (val.length() > 64)
             val = val.substring(0, 64);
         rsp.setString(Tag.ErrorComment, VR.LO, val);

@@ -123,6 +123,32 @@ public class PersonName {
         return new String(ch); 
     }
 
+
+    public String toNormalizedString(Group g) {
+        int totLen = 0;
+        for (Component c : Component.values()) {
+            String s = get(g, c);
+            if (s != null)
+                totLen += s.length();
+        }
+        if (totLen == 0)
+            return null;
+
+        char[] ch = new char[totLen+4];
+        int wpos = 0;
+        for (Component c : Component.values()) {
+            String s = get(g, c);
+            if (s != null) {
+                int d = s.length();
+                s.getChars(0, d, ch, wpos);
+                wpos += d;
+            }
+            if (wpos < ch.length)
+                ch[wpos++] = '^';
+        }
+        return new String(ch); 
+    }
+
     public String get(Component c) {
         return get(Group.Alphabetic, c);
     }

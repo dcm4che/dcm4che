@@ -47,8 +47,16 @@ public class ItemPointer {
     public final String privateCreator;
     public final int itemIndex;
 
+    public ItemPointer(int sequenceTag) {
+        this(sequenceTag, null, 0);
+    }
+
     public ItemPointer(int sequenceTag, int itemIndex) {
         this(sequenceTag, null, itemIndex);
+    }
+
+    public ItemPointer(int sequenceTag, String privateCreator) {
+        this(sequenceTag, privateCreator, 0);
     }
 
     public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {

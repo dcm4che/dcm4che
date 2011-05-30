@@ -124,7 +124,7 @@ public class PersonName {
     }
 
 
-    public String toNormalizedString(Group g) {
+    public String getNormalizedString(Group g, String defVal) {
         int totLen = 0;
         for (Component c : Component.values()) {
             String s = get(g, c);
@@ -132,7 +132,7 @@ public class PersonName {
                 totLen += s.length();
         }
         if (totLen == 0)
-            return null;
+            return defVal;
 
         char[] ch = new char[totLen+4];
         int wpos = 0;
@@ -147,6 +147,40 @@ public class PersonName {
                 ch[wpos++] = '^';
         }
         return new String(ch); 
+    }
+
+    public String getNormalizedQueryString(Group g) {
+        if (isEmpty(g))
+            return "*";
+
+        int totLen = 0;
+        for (Component c : Component.values()) {
+            String s = get(g, c);
+            totLen += s != null ? s.length() : 1;
+        }
+
+        char[] ch = new char[totLen+4];
+        int wpos = 0;
+        for (Component c : Component.values()) {
+            String s = get(g, c);
+            if (s != null) {
+                int d = s.length();
+                s.getChars(0, d, ch, wpos);
+                wpos += d;
+            } else {
+                ch[wpos++] = '*';
+            }
+            if (wpos < ch.length)
+                ch[wpos++] = '^';
+        }
+        return (totLen == 5
+                && ch[0] == '*'
+                && ch[2] == '*'
+                && ch[4] == '*'
+                && ch[6] == '*'
+                && ch[8] == '*')
+            ? "*"
+            : new String(ch); 
     }
 
     public String get(Component c) {

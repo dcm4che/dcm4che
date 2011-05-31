@@ -263,8 +263,7 @@ public class Attributes implements Serializable {
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
-            Sequence sq = (Sequence) item.getValue(ip.sequenceTag,
-                    ip.privateCreator);
+            Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
             if (sq == null || ip.itemIndex >= sq.size())
                 return null;
             item = sq.get(ip.itemIndex);
@@ -413,6 +412,25 @@ public class Attributes implements Serializable {
             ItemPointer... itemPointers) {
         Attributes item = getNestedDataset(itemPointers);
         return item != null ? item.getValue(tag, privateCreator) : null;
+    }
+
+    public Sequence getSequence(int tag) {
+        return getSequence(tag, null);
+    }
+
+    public Sequence getSequence(int tag, String privateCreator) {
+        Object value = getValue(tag, privateCreator);
+        return value instanceof Sequence ? (Sequence) value : null;
+    }
+
+    public Sequence getNestedSequence(int tag, ItemPointer... itemPointers) {
+        return getNestedSequence(tag, null, itemPointers);
+    }
+
+    public Sequence getNestedSequence(int tag, String privateCreator,
+            ItemPointer... itemPointers) {
+        Object value = getNestedValue(tag, privateCreator, itemPointers);
+        return value instanceof Sequence ? (Sequence) value : null;
     }
 
     public byte[] getBytes(int tag) throws IOException {

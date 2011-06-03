@@ -128,7 +128,7 @@ public class StringUtils {
             beginIndex++;
         while (beginIndex < endIndex && s.charAt(endIndex - 1) <= ' ')
             endIndex--;
-        return beginIndex < endIndex ? s.substring(beginIndex, endIndex) : null;
+        return beginIndex < endIndex ? s.substring(beginIndex, endIndex) : "";
     }
 
     public static String trimTrailing(String s) {

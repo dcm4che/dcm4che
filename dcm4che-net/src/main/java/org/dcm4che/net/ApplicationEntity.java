@@ -448,11 +448,11 @@ public class ApplicationEntity {
     }
 
     public void addConnection(Connection conn) {
-        checkDevice();
-        if (device != conn.getDevice())
-            throw new IllegalArgumentException(
-                    "" + conn + " is not a connection of " + device);
         conns.add(conn);
+    }
+
+    public boolean removeConnection(Connection conn) {
+        return conns.remove(conn);
     }
 
     public List<Connection> getConnections() {
@@ -485,7 +485,7 @@ public class ApplicationEntity {
 
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
-        if (!(isInstalled() && acceptor))
+        if (!(isInstalled() && acceptor && conns.contains(as.getConnection())))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);

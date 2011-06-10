@@ -90,7 +90,7 @@ public class Main {
     private DicomDirReader ddReader;
     private DicomDirReader ddWriter;
 
-    public Main() {
+    public Main() throws IOException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -110,7 +110,7 @@ public class Main {
                 new CFindService(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
                         "PATIENT", "STUDY"));
-       ae.setDimseRQHandler(serviceRegistry);
+        ae.setDimseRQHandler(serviceRegistry);
     }
 
     final Device getDevice() {
@@ -133,7 +133,7 @@ public class Main {
         return storageDir.canWrite();
     }
 
-    public void setScheduledExecuter(ScheduledExecutorService scheduledExecutor) {
+    public void setScheduledExecutor(ScheduledExecutorService scheduledExecutor) {
         device.setScheduledExecutor(scheduledExecutor);
     }
 
@@ -223,9 +223,9 @@ public class Main {
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
-            main.setScheduledExecuter(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             main.setExecutor(executorService);
-            main.start();
+            main.activate();
         } catch (ParseException e) {
             System.err.println("dcmqrscp: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -330,8 +330,8 @@ public class Main {
         return uids ;
     }
 
-    private void start() throws IOException {
-        conn.bind();
+    private void activate() throws IOException {
+        device.activate();
     }
 
     DicomDirReader getDicomDirReader() {

@@ -105,7 +105,7 @@ public class Main {
     private int filesScanned;
     private int filesSent;
 
-    public Main() {
+    public Main() throws IOException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);

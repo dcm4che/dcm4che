@@ -137,9 +137,7 @@ public class Main {
 
     private Association as;
 
-
-
-    public Main() {
+    public Main() throws IOException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);

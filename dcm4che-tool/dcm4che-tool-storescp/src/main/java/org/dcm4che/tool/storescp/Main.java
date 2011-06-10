@@ -76,7 +76,7 @@ public class Main {
 
     private final CStoreService storageSCP = new CStoreService("*");
 
-    public Main() {
+    public Main() throws IOException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -87,7 +87,7 @@ public class Main {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
-    public void setScheduledExecuter(ScheduledExecutorService scheduledExecutor) {
+    public void setScheduledExecutor(ScheduledExecutorService scheduledExecutor) {
         device.setScheduledExecutor(scheduledExecutor);
     }
 
@@ -123,15 +123,9 @@ public class Main {
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
-            main.setScheduledExecuter(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             main.setExecutor(executorService);
-            try {
-                main.start();
-            } catch (Exception e) {
-        	System.err.println("storescp: " + e.getMessage());
-                executorService.shutdown();
-                scheduledExecutorService.shutdown();
-           }
+            main.activate();
         } catch (ParseException e) {
             System.err.println("storescp: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -178,8 +172,8 @@ public class Main {
         }
      }
 
-    private void start() throws IOException {
-        conn.bind();
+    private void activate() throws IOException {
+        device.activate();
     }
 
 }

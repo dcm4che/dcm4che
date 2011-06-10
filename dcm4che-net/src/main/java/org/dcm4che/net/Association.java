@@ -149,6 +149,10 @@ public class Association {
         return sock;
     }
 
+    public final Connection getConnection() {
+        return conn;
+    }
+
     public final AAssociateRQ getAAssociateRQ() {
         return rq;
     }

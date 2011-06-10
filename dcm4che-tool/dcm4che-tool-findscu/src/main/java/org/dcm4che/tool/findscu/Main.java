@@ -162,7 +162,7 @@ public class Main {
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
 
-    public Main() {
+    public Main() throws IOException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);

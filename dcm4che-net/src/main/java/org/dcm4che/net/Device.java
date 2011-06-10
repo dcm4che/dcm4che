@@ -38,6 +38,7 @@
 
 package org.dcm4che.net;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -86,6 +87,7 @@ public class Device {
     private X509Certificate[] thisNodeCertificate = {};
     private Object vendorDeviceData;
     private boolean installed = true;
+    private boolean activated = false;
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
@@ -431,9 +433,58 @@ public class Device {
      * 
      * @param installed
      *                A boolean which will be true if this device is installed.
+     * @throws IOException 
      */
-    public final void setInstalled(boolean installed) {
+    public final void setInstalled(boolean installed) throws IOException {
+        if (this.installed == installed)
+            return;
+
         this.installed = installed;
+        if (activated)
+            if (installed)
+                try {
+                    activateConnections();
+                } catch (IOException e) {
+                    this.installed = false;
+                    throw e;
+                }
+            else
+                deactivateConnections();
+    }
+
+    public final boolean isActivated() {
+        return activated;
+    }
+
+    public void activate() throws IOException {
+        if (activated)
+            throw new IllegalStateException("already activated");
+
+        activateConnections();
+        activated = true;
+    }
+
+    public void deactivate() {
+        if (!activated)
+            return;
+
+        deactivateConnections();
+        activated = false;
+    }
+
+    private void activateConnections() throws IOException {
+        try {
+            for (Connection con : conns)
+                con.activate();
+        } catch (IOException e) {
+            deactivateConnections();
+            throw e;
+        }
+    }
+
+    private void deactivateConnections() {
+        for (Connection con : conns)
+            con.unbind();
     }
 
     public final Executor getExecutor() {
@@ -452,9 +503,16 @@ public class Device {
         this.scheduledExecutor = executor;
     }
 
-    public void addConnection(Connection conn) {
+    public void addConnection(Connection conn) throws IOException {
         conn.setDevice(this);
         conns.add(conn);
+        if (activated)
+            try {
+                conn.activate();
+            } catch (IOException e) {
+                removeConnection(conn);
+                throw e;
+            }
     }
 
     public boolean removeConnection(Connection conn) {
@@ -462,6 +520,7 @@ public class Device {
             return false;
 
         conn.setDevice(null);
+        conn.unbind();
         return true;
     }
 

@@ -121,7 +121,7 @@ public class Connection {
      * @param device
      *            The owning <code>Device</code> object.
      */
-    public final void setDevice(Device device) {
+    final void setDevice(Device device) {
         if (device != null && this.device != null)
             throw new IllegalStateException("already owned by " + device);
         this.device = device;
@@ -473,8 +473,32 @@ public class Connection {
      * @param installed
      *                True if the NetworkConnection is installed on the network.
      */
-    public void setInstalled(Boolean installed) {
+    public void setInstalled(Boolean installed) throws IOException {
+        if (this.installed == null
+                ? installed == null 
+                : this.installed.equals(installed))
+            return;
+
+        Boolean prev = this.installed;
         this.installed = installed;
+        if (device != null && device.isInstalled() && device.isActivated()
+                && isServer()) {
+            if (isInstalled()) {
+                if (server == null)
+                    try {
+                         bind();
+                    } catch (IOException e) {
+                        this.installed = prev;
+                        throw e;
+                    }
+            } else
+                unbind();
+        }
+    }
+
+    void activate() throws IOException {
+        if (isInstalled() && isServer() && server == null)
+            bind();
     }
 
     /**

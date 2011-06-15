@@ -51,4 +51,6 @@ public interface Matches {
     Attributes nextMatch() throws DicomServiceException;
 
     boolean optionalKeyNotSupported();
+
+    void close();
 }

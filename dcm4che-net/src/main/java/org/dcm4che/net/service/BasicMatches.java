@@ -73,4 +73,8 @@ public class BasicMatches implements Matches {
         return optKeysNotSupported;
     }
 
+    @Override
+    public void close() {
+    }
+
 }

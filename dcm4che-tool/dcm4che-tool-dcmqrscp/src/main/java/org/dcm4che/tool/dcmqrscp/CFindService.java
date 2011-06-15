@@ -238,6 +238,10 @@ class CFindService extends BasicCFindSCP {
         public boolean optionalKeyNotSupported() {
             return false;
         }
+
+        @Override
+        public void close() {
+        }
     }
 
     private static class StudyMatches extends PatientMatches {

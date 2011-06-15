@@ -58,7 +58,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicCFindSCP extends DicomService implements CFindSCP {
 
-    private final Device device;
+    protected final Device device;
 
     public BasicCFindSCP(Device device, String... sopClasses) {
         super(sopClasses);
@@ -69,23 +69,30 @@ public class BasicCFindSCP extends DicomService implements CFindSCP {
     public void onCFindRQ(final Association as, final PresentationContext pc,
             final Attributes rq, final Attributes keys) throws IOException {
         final Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        boolean closeMatches = true;
         final Matches matches = calculateMatches(as, rq, keys);
-        if (matches.hasMoreMatches()) {
-            final DimseRSPWriter writer = new DimseRSPWriter();
-            as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), writer);
-            device.execute(new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        writer.write(as, pc, keys, rsp, matches);
-                    } catch (IOException e) {
-                        // already handled by Association
+        try {
+            if (matches.hasMoreMatches()) {
+                final DimseRSPWriter writer = new DimseRSPWriter();
+                as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), writer);
+                device.execute(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        try {
+                            writer.write(as, pc, keys, rsp, matches);
+                        } catch (IOException e) {
+                            // already handled by Association
+                        }
                     }
-                }
-            });
-        } else {
-            as.writeDimseRSP(pc, rsp);
+                });
+                closeMatches = false;
+            } else {
+                as.writeDimseRSP(pc, rsp);
+            }
+        } finally {
+            if (closeMatches)
+                matches.close();
         }
     }
 
@@ -124,6 +131,8 @@ public class BasicCFindSCP extends DicomService implements CFindSCP {
                 as.writeDimseRSP(pc, rsp);
             } catch (DicomServiceException e) {
                 as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
+            } finally {
+                matches.close();
             }
         }
 

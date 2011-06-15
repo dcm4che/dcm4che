@@ -115,10 +115,12 @@ public class BasicCFindSCP extends DicomService implements CFindSCP {
                 Attributes keys, Attributes rsp, Matches matches)
                 throws IOException {
             try {
+                boolean optionalKeyNotSupported =
+                        matches.optionalKeyNotSupported();
                 while (matches.hasMoreMatches() && !canceled) {
                     Attributes match = adjust(matches.nextMatch(), keys, as);
                     rsp.setInt(Tag.Status, VR.US,
-                            matches.optionalKeyNotSupported()
+                            optionalKeyNotSupported
                                  || optionalKeyNotSupported(match, keys)
                                     ? Status.PendingWarning
                                     : Status.Pending);

@@ -63,6 +63,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
@@ -285,22 +286,19 @@ public class Main {
         try {
             in = new DicomInputStream(f);
             Attributes fmi = in.readFileMetaInformation();
-            if (fmi != null) {
-                addFile(fileInfos, f, in.getPosition(),
-                        fmi.getString(Tag.MediaStorageSOPClassUID, null),
-                        fmi.getString(Tag.MediaStorageSOPInstanceUID, null),
-                        fmi.getString(Tag.TransferSyntaxUID, null));
-            } else {
-                Attributes ds = in.readDataset(-1, Tag.SOPInstanceUID);
-                addFile(fileInfos, f, 0,
-                        ds.getString(Tag.SOPClassUID, null),
-                        ds.getString(Tag.SOPInstanceUID, null),
-                        in.explicitVR() 
-                                ? in.bigEndian()
-                                        ? UID.ExplicitVRBigEndian
-                                        : UID.ExplicitVRLittleEndian
-                                : UID.ImplicitVRLittleEndian);
-            }
+            long dsPos = in.getPosition();
+            Attributes ds = in.readDataset(-1, Tag.SOPInstanceUID);
+            ds.setBytes(Tag.SOPInstanceUID, VR.UI, in.readValue());
+            addFile(fileInfos, f, dsPos,
+                    ds.getString(Tag.SOPClassUID, null),
+                    ds.getString(Tag.SOPInstanceUID, null),
+                    fmi != null
+                            ? fmi.getString(Tag.TransferSyntaxUID, null)
+                            : in.explicitVR() 
+                                    ? in.bigEndian()
+                                            ? UID.ExplicitVRBigEndian
+                                            : UID.ExplicitVRLittleEndian
+                                    : UID.ImplicitVRLittleEndian);
             filesScanned++;
             System.out.print('.');
         } catch (IOException e) {

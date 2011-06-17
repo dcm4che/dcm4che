@@ -483,6 +483,10 @@ public class ApplicationEntity {
         extNegotiators.put(cuid, extNegtor);
     }
 
+    public ExtendedNegotiator removeExtendedNegotiator(String cuid) {
+        return extNegotiators.remove(cuid);
+    }
+
     AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws AAssociateRJ {
         if (!(isInstalled() && acceptor && conns.contains(as.getConnection())))

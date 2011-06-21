@@ -40,10 +40,15 @@ package org.dcm4che.data;
 
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class PersonName {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PersonName.class);
 
     public static enum Component {
         FamilyName, GivenName, MiddleName, NamePrefix, NameSuffix
@@ -58,11 +63,15 @@ public class PersonName {
     public PersonName() {}
 
     public PersonName(String s) {
-        if (s != null)
-            parse(s);
+        this(s, false);
     }
 
-    private void parse(String s) {
+    public PersonName(String s, boolean lenient) {
+        if (s != null)
+            parse(s, lenient);
+    }
+
+    private void parse(String s, boolean lenient) {
         int gindex = 0;
         int cindex = 0;
         StringTokenizer stk = new StringTokenizer(s, "^=", true);
@@ -71,15 +80,27 @@ public class PersonName {
             switch (tk.charAt(0)) {
             case '=':
                 if (++gindex > 2)
-                    throw new IllegalArgumentException(s);
+                    if (lenient) {
+                        LOG.info(
+                            "illegal PN: {} - truncate illegal component group(s)", s);
+                        return;
+                    } else
+                        throw new IllegalArgumentException(s);
                 cindex = 0;
                 break;
             case '^':
                 if (++cindex > 4)
-                    throw new IllegalArgumentException(s);
+                    if (lenient) {
+                        if (cindex == 5)
+                            LOG.info(
+                                "illegal PN: {} - ignore illegal component(s)", s);
+                        break;
+                    } else
+                        throw new IllegalArgumentException(s);
                 break;
             default:
-                set(gindex, cindex, tk);
+                if (cindex <= 4)
+                    set(gindex, cindex, tk);
             }
         }
     }

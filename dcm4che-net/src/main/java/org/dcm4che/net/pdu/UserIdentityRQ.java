@@ -39,9 +39,6 @@
 package org.dcm4che.net.pdu;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 
 import org.dcm4che.util.StringUtils;
 
@@ -84,7 +81,8 @@ public class UserIdentityRQ {
     }
 
     public UserIdentityRQ(String username, char[] passcode) {
-        this(USERNAME_PASSCODE, true, toBytes(username), toBytes(passcode));
+        this(USERNAME_PASSCODE, true, toBytes(username),
+                toBytes(new String(passcode)));
     }
 
     public UserIdentityRQ(String username, boolean rspReq) {
@@ -120,7 +118,7 @@ public class UserIdentityRQ {
     }
 
     public final char[] getPasscode() {
-        return toChars(secondaryField);
+        return toString(secondaryField).toCharArray();
     }
 
     private static byte[] toBytes(String s) {
@@ -137,18 +135,6 @@ public class UserIdentityRQ {
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
-    }
-
-    private static Charset utf8() {
-        return Charset.forName("UTF-8");
-    }
-    
-    private static byte[] toBytes(char[] ca) {
-        return utf8().encode(CharBuffer.wrap(ca)).array();
-    }
-
-    private static char[] toChars(byte[] b) {
-        return utf8().decode(ByteBuffer.wrap(b)).array();
     }
 
     public int length() {

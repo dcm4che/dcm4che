@@ -123,6 +123,7 @@ public class Main {
             System.out.println("M-WRITE " + storageDir);
         this.storageDir = storageDir;
         this.dicomDir = dicomDir;
+        storageSCP.setDirectory(storageDir);
     }
 
     public final File getDicomDirectory() {

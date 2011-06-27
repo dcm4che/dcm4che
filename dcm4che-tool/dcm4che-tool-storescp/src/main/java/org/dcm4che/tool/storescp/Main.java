@@ -38,6 +38,7 @@
 
 package org.dcm4che.tool.storescp;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -59,6 +60,7 @@ import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.CStoreService;
+import org.dcm4che.util.FilePathFormat;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -91,14 +93,47 @@ public class Main {
         device.setScheduledExecutor(scheduledExecutor);
     }
 
+    public void setExecutor(Executor executor) {
+        device.setExecutor(executor);
+    }
+
+    public void setStorageDirectory(File storageDir) {
+        if (storageDir.mkdirs())
+            System.out.println("M-WRITE " + storageDir);
+        storageSCP.setDirectory(storageDir);
+    }
+
+    public void setStorageFilePathFormat(String pattern) {
+        storageSCP.setFilePathFormat(new FilePathFormat(pattern));
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
+        addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addStorageDirectoryOptions(Options opts) {
+        opts.addOption(null, "ignore", false,
+                rb.getString("ignore"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("path")
+                .withDescription(rb.getString("directory"))
+                .withLongOpt("directory")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("pattern")
+                .withDescription(rb.getString("file-path"))
+                .withLongOpt("file-path")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -120,6 +155,7 @@ public class Main {
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
             configureTransferCapability(main.ae, cl);
+            configureStorageDirectory(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -137,8 +173,13 @@ public class Main {
         }
     }
 
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
+    private static void configureStorageDirectory(Main main, CommandLine cl) {
+        if (!cl.hasOption("ignore")) {
+            main.setStorageDirectory(
+                    new File(cl.getOptionValue("directory", ".")));
+            if (cl.hasOption("file-path"))
+                main.setStorageFilePathFormat(cl.getOptionValue("file-path"));
+        }
     }
 
     private static void configureTransferCapability(ApplicationEntity ae,

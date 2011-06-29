@@ -44,22 +44,29 @@ package org.dcm4che.net;
  */
 public class Status {
 
-    public static final int Success               = 0x0000;
+    public static final int Success                            = 0x0000;
 
-    public static final int ProcessingFailure     = 0x0110;
-    public static final int DuplicateSOPinstance  = 0x0111;
-    public static final int NoSuchObjectInstance  = 0x0112;
-    public static final int NoSuchSOPclass        = 0x0118;
-    public static final int SOPclassNotSupported  = 0x0122;
-    public static final int UnrecognizedOperation = 0x0211;
-    
-    public static final int Cancel                = 0xFE00;
-    
-    public static final int Pending               = 0xFF00;
-    public static final int PendingWarning        = 0xFF01;
+    public static final int Pending                            = 0xFF00;
+    public static final int PendingWarning                     = 0xFF01;
 
-    public static final int MoveDestinationUnknown = 0xA801;
-    public static final int IdentifierDoesNotMatchSOPClass = 0xA900;
-    public static final int UnableToProcess = 0xC000;
+    public static final int Cancel                             = 0xFE00;
 
+    public static final int ProcessingFailure                  = 0x0110;
+    public static final int DuplicateSOPinstance               = 0x0111;
+    public static final int NoSuchObjectInstance               = 0x0112;
+    public static final int NoSuchSOPclass                     = 0x0118;
+    public static final int SOPclassNotSupported               = 0x0122;
+    public static final int UnrecognizedOperation              = 0x0211;
+
+    public static final int OutOfResources                     = 0xA700;
+    public static final int MoveDestinationUnknown             = 0xA801;
+    public static final int IdentifierDoesNotMatchSOPClass     = 0xA900;
+    public static final int DataSetDoesNotMatchSOPClassError   = 0xA900;
+
+    public static final int UnableToProcess                    = 0xC000;
+    public static final int CannotUnderstand                   = 0xC000;
+
+    public static final int CoercionOfDataElements             = 0xB000;
+    public static final int ElementsDiscarded                  = 0xB006;
+    public static final int DataSetDoesNotMatchSOPClassWarning = 0xB007;
 }

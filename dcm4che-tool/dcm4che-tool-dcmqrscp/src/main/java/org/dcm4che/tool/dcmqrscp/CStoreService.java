@@ -36,70 +36,33 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.tool.dcmqrscp;
 
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
-import org.dcm4che.data.VR;
-import org.dcm4che.net.Commands;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.service.BasicCStoreSCP;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomServiceException extends IOException {
+class CStoreService extends BasicCStoreSCP {
 
-    private static final long serialVersionUID = -8680017798403768406L;
+    private final Main main;
 
-    private final Attributes rsp;
-    private Attributes data;
-
-    public DicomServiceException(Attributes rq, int status) {
-        rsp = Commands.mkRSP(rq, status);
+    public CStoreService(Main main) {
+        super("*");
+        this.main = main;
     }
 
-    public DicomServiceException(Attributes rq, int status, String message) {
-        super(message);
-        rsp = Commands.mkRSP(rq, status);
-        if (message != null)
-            setErrorComment(message);
+    @Override
+    protected void store(Association as, Attributes rq, PDVInputStream data,
+            String tsuid, Attributes rsp) throws IOException {
+        data.skipAll();
     }
 
-    public DicomServiceException(Attributes rq, int status, Throwable cause) {
-        super(cause);
-        rsp = Commands.mkRSP(rq, status);
-        if (cause != null)
-            setErrorComment(cause.getMessage());
-    }
-
-   public DicomServiceException setErrorComment(String val) {
-        if (val.length() > 64)
-            val = val.substring(0, 64);
-        rsp.setString(Tag.ErrorComment, VR.LO, val);
-        return this;
-    }
-    
-    public DicomServiceException setErrorID(int val) {
-        rsp.setInt(Tag.ErrorID, VR.US, val);
-        return this;
-    }
-
-    public DicomServiceException setOffendingElements(int... tags) {
-        rsp.setInt(Tag.OffendingElement, VR.AT, tags);
-        return this;
-    }
-
-    public final Attributes getCommand() {
-        return rsp;
-    }
-
-    public final Attributes getDataset() {
-        return data;
-    }
-
-    public final void setDataset(Attributes data) {
-        this.data = data;
-    }
 }

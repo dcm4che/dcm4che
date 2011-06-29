@@ -51,16 +51,23 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.tool.common.CStoreService;
 import org.dcm4che.util.FilePathFormat;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -75,8 +82,58 @@ public class Main {
     private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
+    private File storageDir;
+    private FilePathFormat filePathFormat;
 
-    private final CStoreService storageSCP = new CStoreService("*");
+    private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
+
+        @Override
+        protected void configure(DicomInputStream in) {
+            in.setIncludeBulkDataLocator(true);
+        }
+
+        @Override
+        protected File selectDirectory(Association as, Attributes rq,
+                Attributes ds) {
+            return storageDir;
+        }
+
+        @Override
+        protected File createFile(File dir, Association as, Attributes rq,
+                Attributes ds) {
+            File f = new File(dir, filePathFormat.format(ds));
+            mkdirs(f.getParentFile());
+            return f;
+        }
+
+        @Override
+        protected void store(Association as, Attributes rq,
+                PDVInputStream data, String tsuid, Attributes rsp)
+                throws IOException {
+            if (storageDir == null)
+                data.skipAll();
+            else if (filePathFormat == null)
+                storeVerbatim(rq, data, tsuid);
+            else
+                super.store(as, rq, data, tsuid, rsp);
+        }
+
+        private void storeVerbatim(Attributes rq, PDVInputStream data, String tsuid)
+                throws IOException {
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
+            Attributes fmi = Attributes.createFileMetaInformation(
+                    iuid, rq.getString(Tag.AffectedSOPClassUID, null), tsuid);
+            File f = new File(storageDir, iuid);
+            DicomOutputStream out = new DicomOutputStream(f);
+            try { 
+                out.writeFileMetaInformation(fmi);
+                data.copyTo(out);
+            } finally {
+                SafeClose.close(out);
+            }
+        }
+
+    };
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -98,13 +155,18 @@ public class Main {
     }
 
     public void setStorageDirectory(File storageDir) {
-        if (storageDir.mkdirs())
-            System.out.println("M-WRITE " + storageDir);
-        storageSCP.setDirectory(storageDir);
+        if (storageDir != null)
+            mkdirs(storageDir);
+        this.storageDir = storageDir;
+    }
+
+    private static void mkdirs(File dir) {
+        if (dir.mkdirs())
+            System.out.println("M-WRITE " + dir);
     }
 
     public void setStorageFilePathFormat(String pattern) {
-        storageSCP.setFilePathFormat(new FilePathFormat(pattern));
+        this.filePathFormat = new FilePathFormat(pattern);
     }
 
     private static CommandLine parseComandLine(String[] args)

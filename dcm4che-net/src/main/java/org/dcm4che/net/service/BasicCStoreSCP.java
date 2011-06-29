@@ -38,14 +38,19 @@
 
 package org.dcm4che.net.service;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,21 +66,76 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     public void onCStoreRQ(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        doCStore(as, pc, rq, data, rsp);
+        store(as, rq, data, pc.getTransferSyntax(), rsp);
         as.writeDimseRSP(pc, rsp);
-        afterCStoreRSP(as, pc, rq, data, rsp);
     }
 
-    protected void doCStore(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        data.skipAll();
+    protected void store(Association as, Attributes rq, PDVInputStream data,
+            String tsuid, Attributes rsp) throws IOException {
+        DicomInputStream in = new DicomInputStream(data, tsuid);
+        configure(in);
+        try {
+            Attributes ds = in.readDataset(-1, -1);
+            store(as, rq, ds, tsuid, rsp);
+        } finally {
+            dispose(in);
+        }
     }
 
-    protected void afterCStoreRSP(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data, Attributes rsp)
-            throws IOException {
-        // NOOP;
+    protected void configure(DicomInputStream in) {
+        
     }
+
+    protected void dispose(DicomInputStream in) {
+        for (File f : in.getBulkDataFiles()) {
+            f.delete();
+        }
+    }
+
+    protected void store(Association as, Attributes rq, Attributes ds,
+            String tsuid, Attributes rsp) throws DicomServiceException {
+        Attributes fmi = createFileMetaInformation(as, rq, ds, tsuid);
+        File dir = selectDirectory(as, rq, ds);
+        File file = createFile(dir, as, rq, ds);
+        try {
+            store(as, rq, ds, fmi, dir, file, rsp);
+            file = null;
+        } finally {
+            if (file != null)
+                file.delete();
+        }
+    }
+
+    protected void store(Association as, Attributes rq, Attributes ds,
+            Attributes fmi, File dir, File file, Attributes rsp)
+            throws DicomServiceException {
+        DicomOutputStream out = null;
+        try {
+            out = new DicomOutputStream(file);
+            out.writeDataset(fmi, ds);
+        } catch (IOException e) {
+            throw new DicomServiceException(rq, Status.OutOfResources, e);
+        } finally {
+            SafeClose.close(out);
+        }
+    }
+
+    protected Attributes createFileMetaInformation(Association as, Attributes rq,
+            Attributes ds, String tsuid) {
+        return Attributes.createFileMetaInformation(
+                rq.getString(Tag.AffectedSOPInstanceUID, null),
+                rq.getString(Tag.AffectedSOPClassUID, null),
+                tsuid);
+    }
+
+    protected File selectDirectory(Association as, Attributes rq, Attributes ds) {
+        return new File(".");
+    }
+
+    protected File createFile(File dir, Association as, Attributes rq,
+            Attributes ds) {
+        return new File(dir, rq.getString(Tag.AffectedSOPInstanceUID, null));
+    }
+
 
 }

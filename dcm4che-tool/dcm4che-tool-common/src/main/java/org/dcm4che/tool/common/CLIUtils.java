@@ -60,6 +60,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.ElementDictionary;
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
@@ -570,18 +571,18 @@ public class CLIUtils {
         opts.addOptionGroup(itemlenGroup);
     }
 
-    public static void configure(EncodingParams encParams, CommandLine cl)
+    public static DicomEncodingOptions encodingOptionsOf(CommandLine cl)
             throws ParseException {
-        // workaround for bug in CLI OptionGroup concerning options without short opt string
         if (cl.hasOption("expl-item-len") && cl.hasOption("undef-item-len")
-            || cl.hasOption("expl-seq-len") && cl.hasOption("undef-seq-len"))
-            throw new ParseException(
-                    rb.getString("conflicting-enc-opts"));
-        encParams.setGroupLength(cl.hasOption("group-len"));
-        encParams.setUndefItemLength(!cl.hasOption("expl-item-len"));
-        encParams.setUndefSequenceLength(!cl.hasOption("expl-seq-len"));
-        encParams.setUndefEmptyItemLength(cl.hasOption("undef-item-len"));
-        encParams.setUndefEmptySequenceLength(cl.hasOption("undef-seq-len"));
+                || cl.hasOption("expl-seq-len") && cl.hasOption("undef-seq-len"))
+                throw new ParseException(
+                        rb.getString("conflicting-enc-opts"));
+        return new DicomEncodingOptions(
+                cl.hasOption("group-len"),
+                !cl.hasOption("expl-seq-len"),
+                cl.hasOption("undef-seq-len"),
+                !cl.hasOption("expl-item-len"),
+                cl.hasOption("undef-item-len"));
     }
 
     public static int[] toTags(String[] tagOrKeywords) {
@@ -637,5 +638,6 @@ public class CLIUtils {
             fsInfo.setDescriptorFile(new File(cl.getOptionValue("fs-desc")));
         fsInfo.setDescriptorFileCharset(cl.getOptionValue("fs-desc-cs"));
     }
+
 
 }

@@ -59,10 +59,10 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.ContentHandlerAdapter;
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.tool.common.EncodingParams;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -82,7 +82,7 @@ public class Main {
     private String tsuid;
     private boolean withfmi;
     private boolean nofmi;
-    private final EncodingParams encParams = new EncodingParams();
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private List<File> bulkDataFiles;
     private Attributes fmi;
     private Attributes dataset;
@@ -125,6 +125,10 @@ public class Main {
 
     public final void setNoFileMetaInformation(boolean nofmi) {
         this.nofmi = nofmi;
+    }
+
+    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+        this.encOpts = encOpts;
     }
 
      private static CommandLine parseComandLine(String[] args)
@@ -233,7 +237,7 @@ public class Main {
             }
             main.setWithFileMetaInformation(cl.hasOption("f"));
             main.setNoFileMetaInformation(cl.hasOption("F"));
-            CLIUtils.configure(main.encParams, cl);
+            main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             try {
                 if (cl.hasOption("i")) {
                     String fname = cl.getOptionValue("i");
@@ -321,11 +325,7 @@ public class Main {
                         : tsuid != null 
                                 ? tsuid
                                 : UID.ImplicitVRLittleEndian);
-        dos.setEncodeGroupLength(encParams.isGroupLength());
-        dos.setUndefSequenceLength(encParams.isUndefSequenceLength());
-        dos.setUndefEmptySequenceLength(encParams.isUndefEmptySequenceLength());
-        dos.setUndefItemLength(encParams.isUndefItemLength());
-        dos.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
+        dos.setEncodingOptions(encOpts);
         dos.writeDataset(fmi, dataset);
         dos.finish();
         dos.flush();

@@ -53,13 +53,13 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.tool.common.EncodingParams;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.UIDUtils;
@@ -77,7 +77,7 @@ public class Main {
 
     private boolean inUse;
     private int width = DEFAULT_WIDTH;
-    private final EncodingParams encParams = new EncodingParams();
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private boolean origSeqLength;
     private boolean checkDuplicate;
@@ -152,7 +152,7 @@ public class Main {
             CommandLine cl = parseComandLine(args);
             Main main = new Main();
             main.setInUse(cl.hasOption("in-use"));
-            CLIUtils.configure(main.encParams, cl);
+            main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             CLIUtils.configure(main.fsInfo, cl);
             main.setOriginalSequenceLength(cl.hasOption("orig-seq-len"));
             if (cl.hasOption("w")) {
@@ -288,6 +288,10 @@ public class Main {
         this.origSeqLength = origSeqLength;
     }
 
+    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+        this.encOpts = encOpts;
+    }
+
     public final void setWidth(int width) {
         if (width < 40)
             throw new IllegalArgumentException();
@@ -321,26 +325,16 @@ public class Main {
                 fsInfo.getDescriptorFile(), 
                 fsInfo.getDescriptorFileCharset());
         in = out = DicomDirWriter.open(file);
-        setEncodeOptions();
+        out.setEncodingOptions(encOpts);
         setCheckDuplicate(false);
     }
 
     public void open(File file) throws IOException {
         this.file = file;
         in = out = DicomDirWriter.open(file);
-        setEncodeOptions();
+        if (!origSeqLength)
+            out.setEncodingOptions(encOpts);
         setCheckDuplicate(true);
-    }
-
-    private void setEncodeOptions() {
-        out.setEncodeGroupLength(encParams.isGroupLength());
-        if (!origSeqLength) {
-            out.setUndefSequenceLength(encParams.isUndefSequenceLength());
-            out.setUndefEmptySequenceLength(
-                    encParams.isUndefEmptySequenceLength());
-            out.setUndefItemLength(encParams.isUndefItemLength());
-            out.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
-        }
     }
 
     public void list() throws IOException {

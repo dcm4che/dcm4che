@@ -54,6 +54,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
@@ -68,7 +69,6 @@ import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.tool.common.EncodingParams;
 import org.dcm4che.util.FilePathFormat;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
@@ -87,7 +87,7 @@ public class Main {
     private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
-    private final EncodingParams encParams = new EncodingParams();
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private File storageDir;
     private FilePathFormat filePathFormat;
 
@@ -100,12 +100,7 @@ public class Main {
 
         @Override
         protected void configure(Association as, DicomOutputStream out) {
-            out.setEncodeGroupLength(encParams.isGroupLength());
-            out.setUndefSequenceLength(encParams.isUndefSequenceLength());
-            out.setUndefEmptySequenceLength(
-                    encParams.isUndefEmptySequenceLength());
-            out.setUndefItemLength(encParams.isUndefItemLength());
-            out.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
+            out.setEncodingOptions(encOpts);
         }
 
         @Override
@@ -213,6 +208,10 @@ public class Main {
         this.filePathFormat = new FilePathFormat(pattern);
     }
 
+    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+        this.encOpts = encOpts;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -263,7 +262,7 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
-            CLIUtils.configure(main.encParams, cl);
+            main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();

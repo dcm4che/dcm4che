@@ -50,6 +50,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.io.RAFOutputStreamAdapter;
 import org.dcm4che.util.ByteUtils;
@@ -91,8 +92,12 @@ public class DicomDirWriter extends DicomDirReader {
                 super.getTransferSyntaxUID());
         int seqLen = in.length();
         boolean undefSeqLen = seqLen <= 0;
-        setUndefSequenceLength(undefSeqLen);
-        setUndefItemLength(undefSeqLen);
+        setEncodingOptions(
+                new DicomEncodingOptions(false, 
+                        undefSeqLen,
+                        false,
+                        undefSeqLen,
+                        false));
         this.nextRecordPos = this.firstRecordPos = (int) in.getPosition();
         if (!isEmpty()) {
             if (seqLen > 0)
@@ -103,44 +108,12 @@ public class DicomDirWriter extends DicomDirReader {
         updateDirInfoHeader();
     }
 
-    public boolean isEncodeGroupLength() {
-        return out.isEncodeGroupLength();
+    public DicomEncodingOptions getEncodingOptions() {
+        return out.getEncodingOptions();
     }
 
-    public void setEncodeGroupLength(boolean groupLength) {
-        out.setEncodeGroupLength(groupLength);
-    }
-
-    public boolean isUndefSequenceLength() {
-        return out.isUndefSequenceLength();
-    }
-
-    public void setUndefSequenceLength(boolean undefLength) {
-        out.setUndefSequenceLength(undefLength);
-    }
-
-    public boolean isUndefEmptySequenceLength() {
-        return out.isUndefEmptySequenceLength();
-    }
-
-    public void setUndefEmptySequenceLength(boolean undefLength) {
-        out.setUndefEmptySequenceLength(undefLength);
-    }
-
-    public boolean isUndefItemLength() {
-        return out.isUndefItemLength();
-    }
-
-    public void setUndefItemLength(boolean undefLength) {
-        out.setUndefItemLength(undefLength);
-    }
-
-    public boolean isUndefEmptyItemLength() {
-        return out.isUndefEmptyItemLength();
-    }
-
-    public void setUndefEmptyItemLength(boolean undefLength) {
-        out.setUndefEmptyItemLength(undefLength);
+    public void setEncodingOptions(DicomEncodingOptions encOpts) {
+        out.setEncodingOptions(encOpts);
     }
 
     public static DicomDirWriter open(File file) throws IOException {
@@ -245,7 +218,7 @@ public class DicomDirWriter extends DicomDirReader {
         if (rollbackLen != -1) {
             restoreDirInfo();
             nextRecordPos = rollbackLen;
-            if (out.isUndefSequenceLength()) {
+            if (getEncodingOptions().undefSequenceLength) {
                 writeSequenceDelimitationItem();
                 raf.setLength(raf.getFilePointer());
             } else {
@@ -273,7 +246,7 @@ public class DicomDirWriter extends DicomDirReader {
 
         dirtyRecords.clear();
 
-        if (rollbackLen != -1 && out.isUndefSequenceLength())
+        if (rollbackLen != -1 && getEncodingOptions().undefSequenceLength)
             writeSequenceDelimitationItem();
 
         writeDirInfoHeader();
@@ -310,7 +283,8 @@ public class DicomDirWriter extends DicomDirReader {
                 getOffsetOfLastRootDirectoryRecord(),
                 dirInfoHeader, 20);
         ByteUtils.intToBytesLE(
-                isUndefSequenceLength() ? -1 : nextRecordPos - firstRecordPos,
+                getEncodingOptions().undefSequenceLength 
+                        ? -1 : nextRecordPos - firstRecordPos,
                 dirInfoHeader, 42);
     }
 

@@ -94,23 +94,24 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDatasetWithGroupLength() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        out.setEncodeGroupLength(true);
+        out.setEncodingOptions(
+                new DicomEncodingOptions(true, true, false, true, false));
         testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithoutUndefLength() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        out.setUndefEmptyItemLength(false);
-        out.setUndefEmptySequenceLength(false);
+        out.setEncodingOptions(
+                new DicomEncodingOptions(false, false, false, false, false));
         testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 
     @Test
     public void testWriteDatasetWithUndefEmptyLength() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        out.setUndefEmptyItemLength(true);
-        out.setUndefEmptySequenceLength(true);
+        out.setEncodingOptions(
+                new DicomEncodingOptions(false, true, true, true, true));
         testWriteDataset(out, UID.ExplicitVRLittleEndian);
     }
 

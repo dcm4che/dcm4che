@@ -69,12 +69,7 @@ public class DicomOutputStream extends FilterOutputStream {
 
     private boolean explicitVR;
     private boolean bigEndian;
-
-    private boolean groupLength = false;
-    private boolean undefSeqLength = true;
-    private boolean undefEmptySeqLength = false;
-    private boolean undefItemLength = true;
-    private boolean undefEmptyItemLength = false;
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
     private final byte[] buf = new byte[12];
 
@@ -104,56 +99,14 @@ public class DicomOutputStream extends FilterOutputStream {
         return bigEndian;
     }
 
-    public final boolean isEncodeGroupLength() {
-        return groupLength;
+    public final DicomEncodingOptions getEncodingOptions() {
+        return encOpts;
     }
 
-    public final void setEncodeGroupLength(boolean groupLength) {
-        this.groupLength = groupLength;
-    }
-
-    public final boolean isUndefSequenceLength() {
-        return undefSeqLength;
-    }
-
-    public final void setUndefSequenceLength(boolean undefLength) {
-        this.undefSeqLength = undefLength;
-        if (!undefLength)
-            undefEmptySeqLength = false;
-    }
-
-    public final boolean isUndefEmptySequenceLength() {
-        return undefEmptySeqLength;
-    }
-
-    public final void setUndefEmptySequenceLength(boolean undefLength) {
-        this.undefEmptySeqLength = undefLength;
-        if (undefLength)
-            undefSeqLength = true;
-    }
-
-    public final boolean isUndefItemLength() {
-        return undefItemLength;
-    }
-
-    public final void setUndefItemLength(boolean undefLength) {
-        this.undefItemLength = undefLength;
-        if (!undefLength)
-            undefEmptyItemLength = false;
-    }
-
-    public final boolean isUndefEmptyItemLength() {
-        return undefEmptyItemLength;
-    }
-
-    public final void setUndefEmptyItemLength(boolean undefLength) {
-        this.undefEmptyItemLength = undefLength;
-        if (undefLength)
-            undefItemLength = true;
-    }
-
-    public final boolean needCalcLength() {
-        return groupLength || !undefSeqLength || !undefItemLength;
+    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+        if (encOpts == null)
+            throw new NullPointerException();
+        this.encOpts = encOpts;
     }
 
     @Override
@@ -183,7 +136,7 @@ public class DicomOutputStream extends FilterOutputStream {
             throws IOException {
         if (fmi != null)
             writeFileMetaInformation(fmi);
-        boolean needCalcLength = needCalcLength();
+        boolean needCalcLength = encOpts.needCalcLength();
         if (needCalcLength || dataset.bigEndian() != bigEndian)
             dataset = new Attributes(dataset, bigEndian);
         if (needCalcLength)

@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.DateUtils;
@@ -1473,7 +1474,7 @@ public class Attributes implements Serializable {
         if (isEmpty())
             return 0;
 
-        this.groupLengths = out.isEncodeGroupLength() 
+        this.groupLengths = out.getEncodingOptions().groupLength 
                 ? new int[countGroups()]
                 : null;
         this.length = calcLength(out, getSpecificCharacterSet(), groupLengths);
@@ -1527,28 +1528,29 @@ public class Attributes implements Serializable {
         return count;
     }
 
-    public void writeTo(DicomOutputStream dos)
+    public void writeTo(DicomOutputStream out)
             throws IOException {
         if (isEmpty())
             return;
 
-        if (dos.isEncodeGroupLength() && groupLengths == null)
+        if (groupLengths == null && out.getEncodingOptions().groupLength)
             throw new IllegalStateException(
                     "groupLengths not initialized by calcLength()");
 
         SpecificCharacterSet cs = getSpecificCharacterSet();
         if (tags[0] < 0) {
             int index0 = -(1 + indexOf(0));
-            writeTo(dos, cs, index0, size, groupLengthIndex0);
-            writeTo(dos, cs, 0, index0, 0);
+            writeTo(out, cs, index0, size, groupLengthIndex0);
+            writeTo(out, cs, 0, index0, 0);
         } else {
-            writeTo(dos, cs, 0, size, 0);
+            writeTo(out, cs, 0, size, 0);
         }
     }
 
      public void writeItemTo(DicomOutputStream out) throws IOException {
-         int len = isEmpty() ? out.isUndefEmptyItemLength() ? -1 : 0
-                 : out.isUndefItemLength() ? -1 : length;
+         DicomEncodingOptions encOpts = out.getEncodingOptions();
+         int len = isEmpty() ? encOpts.undefEmptyItemLength ? -1 : 0
+                 : encOpts.undefItemLength ? -1 : length;
          out.writeHeader(Tag.Item, null, len);
          writeTo(out);
          if (len == -1)

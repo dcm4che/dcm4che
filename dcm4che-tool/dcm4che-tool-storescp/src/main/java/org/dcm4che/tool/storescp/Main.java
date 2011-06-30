@@ -68,6 +68,7 @@ import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.EncodingParams;
 import org.dcm4che.util.FilePathFormat;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
@@ -86,6 +87,7 @@ public class Main {
     private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
+    private final EncodingParams encParams = new EncodingParams();
     private File storageDir;
     private FilePathFormat filePathFormat;
 
@@ -94,6 +96,16 @@ public class Main {
         @Override
         protected void configure(Association as, DicomInputStream in) {
             in.setIncludeBulkDataLocator(true);
+        }
+
+        @Override
+        protected void configure(Association as, DicomOutputStream out) {
+            out.setEncodeGroupLength(encParams.isGroupLength());
+            out.setUndefSequenceLength(encParams.isUndefSequenceLength());
+            out.setUndefEmptySequenceLength(
+                    encParams.isUndefEmptySequenceLength());
+            out.setUndefItemLength(encParams.isUndefItemLength());
+            out.setUndefEmptyItemLength(encParams.isUndefEmptyItemLength());
         }
 
         @Override
@@ -209,6 +221,7 @@ public class Main {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
+        CLIUtils.addEncodingOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
     }
 
@@ -250,6 +263,7 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
+            CLIUtils.configure(main.encParams, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();

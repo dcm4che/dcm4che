@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 
 
@@ -141,14 +142,15 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     @Override
     public int calcLength(DicomOutputStream out, VR vr) {
         int len = 0;
+        DicomEncodingOptions encOpts = out.getEncodingOptions();
         for (Attributes item : this) {
             len += 8 + item.calcLength(out);
-            if (item.isEmpty() ? out.isUndefEmptyItemLength()
-                               : out.isUndefItemLength())
+            if (item.isEmpty() ? encOpts.undefEmptyItemLength
+                               : encOpts.undefItemLength)
                 len += 8;
         }
-        if (isEmpty() ? out.isUndefEmptySequenceLength()
-                      : out.isUndefSequenceLength())
+        if (isEmpty() ? encOpts.undefEmptySequenceLength
+                      : encOpts.undefSequenceLength)
             len += 8;
         length = len;
         return len;
@@ -156,8 +158,9 @@ public class Sequence extends ArrayList<Attributes> implements Value {
 
     @Override
     public int getEncodedLength(DicomOutputStream out, VR vr) {
-        return isEmpty() ? out.isUndefEmptySequenceLength() ? -1 : 0
-                         : out.isUndefSequenceLength() ? -1 : length;
+        DicomEncodingOptions encOpts = out.getEncodingOptions();
+        return isEmpty() ? encOpts.undefEmptySequenceLength ? -1 : 0
+                         : encOpts.undefSequenceLength ? -1 : length;
     }
 
     @Override

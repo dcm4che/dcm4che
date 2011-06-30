@@ -36,59 +36,41 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.data;
+package org.dcm4che.io;
 
-import java.io.IOException;
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
+ */
+public class DicomEncodingOptions {
 
-import org.dcm4che.io.DicomOutputStream;
-import org.dcm4che.util.ByteUtils;
+    public static final DicomEncodingOptions DEFAULT =
+            new DicomEncodingOptions(false, true, false, true, false);
 
-public interface Value {
-    
-    final Value NULL = new Value() {
+    public final boolean groupLength;
+    public final boolean undefSequenceLength;
+    public final boolean undefEmptySequenceLength;
+    public final boolean undefItemLength;
+    public final boolean undefEmptyItemLength;
 
-        @Override
-        public boolean isEmpty() {
-            return true;
-        }
+    public DicomEncodingOptions(boolean groupLength, boolean undefSeqLength,
+            boolean undefEmptySeqLength, boolean undefItemLength,
+            boolean undefEmptyItemLength) {
+        if (undefEmptySeqLength && !undefSeqLength)
+            throw new IllegalArgumentException(
+                    "undefEmptySeqLength && !undefSeqLength");
+        if (undefEmptyItemLength && !undefItemLength)
+            throw new IllegalArgumentException(
+                    "undefEmptyItemLength && !undefItemLength");
+        this.groupLength = groupLength;
+        this.undefSequenceLength = undefSeqLength;
+        this.undefEmptySequenceLength = undefEmptySeqLength;
+        this.undefItemLength = undefItemLength;
+        this.undefEmptyItemLength = undefEmptyItemLength;
+    }
 
-        @Override
-        public int getEncodedLength(DicomOutputStream out, VR vr) {
-            return vr == VR.SQ
-                    && out.getEncodingOptions().undefEmptySequenceLength
-                            ? -1 : 0;
-        }
-
-        @Override
-        public void writeTo(DicomOutputStream dos, VR vr) throws IOException {
-        }
-
-        @Override
-        public int calcLength(DicomOutputStream out, VR vr) {
-             return vr == VR.SQ
-                     && out.getEncodingOptions().undefEmptySequenceLength
-                             ? 8 : 0;
-        }
-
-        @Override
-        public String toString() {
-            return "";
-        }
-
-        @Override
-        public byte[] toBytes(VR vr, boolean bigEndian) {
-            return ByteUtils.EMPTY_BYTES;
-        }
-    };
-
-    boolean isEmpty();
-
-    byte[] toBytes(VR vr, boolean bigEndian) throws IOException;
-
-    void writeTo(DicomOutputStream out, VR vr) throws IOException;
-
-    int calcLength(DicomOutputStream out, VR vr);
-
-    int getEncodedLength(DicomOutputStream out, VR vr);
+    public final boolean needCalcLength() {
+        return groupLength || !undefSequenceLength || !undefItemLength;
+    }
 
 }

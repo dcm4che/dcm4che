@@ -466,10 +466,11 @@ class PDUDecoder extends PDVInputStream {
                 as.onDimseRQ(pc, cmd, this);
                 long skipped = skipAll();
                 if (skipped > 0)
-                    Association.LOG_ACSE.info(
+                    Association.LOG_ACSE.debug(
                         "{}: Service User did not consume {} bytes of DIMSE data.",
                         as, skipped);
             }
+            skipAll();
         } else {
             if (Commands.isRSP(cmdField)) {
                 as.onDimseRSP(cmd, null);

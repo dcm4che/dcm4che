@@ -43,6 +43,7 @@ import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
@@ -51,12 +52,17 @@ import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.util.SafeClose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class BasicCStoreSCP extends DicomService implements CStoreSCP {
+
+    public static final Logger LOG =
+            LoggerFactory.getLogger(BasicCStoreSCP.class);
 
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
@@ -66,54 +72,69 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     public void onCStoreRQ(Association as, PresentationContext pc,
             Attributes rq, PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        store(as, rq, data, pc.getTransferSyntax(), rsp);
+        String tsuid = pc.getTransferSyntax();
+        if (!discard(as, rq, tsuid))
+            store(as, rq, data, tsuid, rsp);
         as.writeDimseRSP(pc, rsp);
     }
 
     protected void store(Association as, Attributes rq, PDVInputStream data,
             String tsuid, Attributes rsp) throws IOException {
         DicomInputStream in = new DicomInputStream(data, tsuid);
-        configure(in);
+        configure(as, in);
         try {
             Attributes ds = in.readDataset(-1, -1);
             store(as, rq, ds, tsuid, rsp);
         } finally {
-            dispose(in);
+            dispose(as, in);
         }
     }
 
-    protected void configure(DicomInputStream in) {
+    protected boolean discard(Association as, Attributes rq, String tsuid) {
+        return false;
+    }
+
+    protected void configure(Association as, DicomInputStream in) {
         
     }
 
-    protected void dispose(DicomInputStream in) {
-        for (File f : in.getBulkDataFiles()) {
+    protected void dispose(Association as, DicomInputStream in) {
+        for (File f : in.getBulkDataFiles())
             f.delete();
-        }
+    }
+
+    protected void configure(Association as, DicomOutputStream out) {
     }
 
     protected void store(Association as, Attributes rq, Attributes ds,
             String tsuid, Attributes rsp) throws DicomServiceException {
-        Attributes fmi = createFileMetaInformation(as, rq, ds, tsuid);
         File dir = selectDirectory(as, rq, ds);
         File file = createFile(dir, as, rq, ds);
         try {
-            store(as, rq, ds, fmi, dir, file, rsp);
+            store(as, rq, ds, tsuid, dir, file, rsp);
             file = null;
         } finally {
             if (file != null)
-                file.delete();
+                if (file.delete())
+                    LOG.info("{}: M-DELETE {}", as, file);
+                else
+                    LOG.warn("{}: Failed to M-DELETE {}", as, file);
+
         }
     }
 
     protected void store(Association as, Attributes rq, Attributes ds,
-            Attributes fmi, File dir, File file, Attributes rsp)
+            String tsuid, File dir, File file, Attributes rsp)
             throws DicomServiceException {
+        Attributes fmi = createFileMetaInformation(as, rq, ds, tsuid);
         DicomOutputStream out = null;
         try {
+            LOG.info("{}: M-WRITE {}", as, file);
             out = new DicomOutputStream(file);
+            configure(as, out);
             out.writeDataset(fmi, ds);
         } catch (IOException e) {
+            LOG.warn("M-WRITE failed:", e);
             throw new DicomServiceException(rq, Status.OutOfResources, e);
         } finally {
             SafeClose.close(out);
@@ -122,10 +143,12 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
 
     protected Attributes createFileMetaInformation(Association as, Attributes rq,
             Attributes ds, String tsuid) {
-        return Attributes.createFileMetaInformation(
-                rq.getString(Tag.AffectedSOPInstanceUID, null),
-                rq.getString(Tag.AffectedSOPClassUID, null),
-                tsuid);
+        Attributes fmi = Attributes.createFileMetaInformation(
+                        rq.getString(Tag.AffectedSOPInstanceUID, null),
+                        rq.getString(Tag.AffectedSOPClassUID, null),
+                        tsuid);
+        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE, as.getLocalAET());
+        return fmi;
     }
 
     protected File selectDirectory(Association as, Attributes rq, Attributes ds) {
@@ -136,6 +159,5 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
             Attributes ds) {
         return new File(dir, rq.getString(Tag.AffectedSOPInstanceUID, null));
     }
-
 
 }

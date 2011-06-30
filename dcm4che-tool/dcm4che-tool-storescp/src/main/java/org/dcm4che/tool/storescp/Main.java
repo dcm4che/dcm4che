@@ -61,8 +61,10 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCStoreSCP;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
@@ -79,6 +81,8 @@ public class Main {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.storescp.messages");
 
+    private static final String PART_EXT = ".part";
+
     private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
@@ -88,7 +92,7 @@ public class Main {
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void configure(DicomInputStream in) {
+        protected void configure(Association as, DicomInputStream in) {
             in.setIncludeBulkDataLocator(true);
         }
 
@@ -101,36 +105,69 @@ public class Main {
         @Override
         protected File createFile(File dir, Association as, Attributes rq,
                 Attributes ds) {
-            File f = new File(dir, filePathFormat.format(ds));
-            mkdirs(f.getParentFile());
+            File f = new File(dir, filePathFormat.format(ds) + PART_EXT);
+            mkdirs(as, f.getParentFile());
             return f;
+        }
+
+        private boolean mkdirs(Association as, File d) {
+            boolean mkdirs = d.mkdirs();
+            if (mkdirs)
+                LOG.info("{}: M-WRITE {}", as, d);
+            return mkdirs;
         }
 
         @Override
         protected void store(Association as, Attributes rq,
                 PDVInputStream data, String tsuid, Attributes rsp)
                 throws IOException {
-            if (storageDir == null)
-                data.skipAll();
-            else if (filePathFormat == null)
-                storeVerbatim(rq, data, tsuid);
+            if (filePathFormat == null)
+                storeVerbatim(as, rq, data, tsuid);
             else
                 super.store(as, rq, data, tsuid, rsp);
         }
 
-        private void storeVerbatim(Attributes rq, PDVInputStream data, String tsuid)
-                throws IOException {
+        private void storeVerbatim(Association as, Attributes rq,
+                PDVInputStream data, String tsuid)  throws IOException {
             String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
-            Attributes fmi = Attributes.createFileMetaInformation(
-                    iuid, rq.getString(Tag.AffectedSOPClassUID, null), tsuid);
-            File f = new File(storageDir, iuid);
+            File f = new File(storageDir, iuid + PART_EXT);
+            Attributes fmi = createFileMetaInformation(as, rq, null, tsuid);
             DicomOutputStream out = new DicomOutputStream(f);
+            boolean stored = false;
             try { 
+                LOG.info("{}: M-WRITE {}", as, f);
                 out.writeFileMetaInformation(fmi);
                 data.copyTo(out);
+                stored = true;
+            } catch (IOException e) {
+                LOG.warn("M-WRITE failed:", e);
+                throw new DicomServiceException(rq, Status.OutOfResources, e);
             } finally {
                 SafeClose.close(out);
+                if (!stored)
+                    f.delete();
             }
+            removeExt(as, f);
+        }
+
+        @Override
+        protected void store(Association as, Attributes rq, Attributes ds,
+                String tsuid, File dir, File file, Attributes rsp)
+                throws DicomServiceException {
+            super.store(as, rq, ds, tsuid, dir, file, rsp);
+            removeExt(as, file);
+        }
+
+        private void removeExt(Association as, File file) {
+            String fname = file.getName();
+            File dest = new File(file.getParent(),
+                    fname.substring(0, fname.lastIndexOf('.')));
+            if (file.renameTo(dest))
+                LOG.info("{}: M-RENAME {} to {}",
+                        new Object[] {as, file, dest });
+            else
+                LOG.warn("{}: Failed to M-RENAME {} to {} ",
+                        new Object[] { as, file, dest });
         }
 
     };
@@ -156,13 +193,8 @@ public class Main {
 
     public void setStorageDirectory(File storageDir) {
         if (storageDir != null)
-            mkdirs(storageDir);
+            storageDir.mkdirs();
         this.storageDir = storageDir;
-    }
-
-    private static void mkdirs(File dir) {
-        if (dir.mkdirs())
-            System.out.println("M-WRITE " + dir);
     }
 
     public void setStorageFilePathFormat(String pattern) {
@@ -193,8 +225,8 @@ public class Main {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("pattern")
-                .withDescription(rb.getString("file-path"))
-                .withLongOpt("file-path")
+                .withDescription(rb.getString("filepath"))
+                .withLongOpt("filepath")
                 .create(null));
     }
 
@@ -239,8 +271,8 @@ public class Main {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(
                     new File(cl.getOptionValue("directory", ".")));
-            if (cl.hasOption("file-path"))
-                main.setStorageFilePathFormat(cl.getOptionValue("file-path"));
+            if (cl.hasOption("filepath"))
+                main.setStorageFilePathFormat(cl.getOptionValue("filepath"));
         }
     }
 

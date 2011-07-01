@@ -184,6 +184,7 @@
         <Value number="3">1.2.840.10008.5.1.4.1.1.11.3</Value>
         <Value number="4">1.2.840.10008.5.1.4.1.1.11.4</Value>
         <Value number="5">1.2.840.10008.5.1.4.1.1.11.5</Value>
+        <Value number="6">1.2.840.10008.5.1.4.1.1.131</Value>
       </DicomAttribute>
       <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
       <DicomAttribute keyword="ReferencedSeriesSequence" tag="00081115" vr="SQ"/>
@@ -441,21 +442,6 @@
       </DicomAttribute>
     </Item>
     <Item number="30">
-      <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
-        <Value number="1">STRUC DISPLAY</Value>
-      </DicomAttribute>
-      <DicomAttribute keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI">
-        <Value number="1">1.2.840.10008.5.1.4.1.1.131</Value>
-      </DicomAttribute>
-      <DicomAttribute keyword="SpecificCharacterSet" tag="00080005" vr="CS"/>
-      <DicomAttribute keyword="ContentDate" tag="00080023" vr="DA"/>
-      <DicomAttribute keyword="ContentTime" tag="00080033" vr="TM"/>
-      <DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS"/>
-      <DicomAttribute keyword="ContentLabel" tag="00700080" vr="CS"/>
-      <DicomAttribute keyword="ContentDescription" tag="00700081" vr="LO"/>
-      <DicomAttribute keyword="ContentCreatorName" tag="00700084" vr="PN"/>
-    </Item>
-    <Item number="31">
       <DicomAttribute keyword="DirectoryRecordType" tag="00041430" vr="CS">
         <Value number="1">PRIVATE</Value>
       </DicomAttribute>

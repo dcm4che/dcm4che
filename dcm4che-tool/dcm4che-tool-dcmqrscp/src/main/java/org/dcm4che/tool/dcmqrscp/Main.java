@@ -51,20 +51,34 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomEncodingOptions;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
+import org.dcm4che.media.RecordFactory;
+import org.dcm4che.media.RecordType;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.BasicCStoreSCP;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
+import org.dcm4che.util.FilePathFormat;
 import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.TagUtils;
 import org.dcm4che.util.UIDUtils;
 
 /**
@@ -79,15 +93,76 @@ public class Main {
     private final Device device = new Device("dcmqrscp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
+    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
+    private FilePathFormat filePathFormat;
 
-    private final CStoreService storageSCP = new CStoreService(this);
+    private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
+
+        @Override
+        protected void configure(Association as, DicomInputStream in) {
+            in.setIncludeBulkDataLocator(true);
+        }
+
+        @Override
+        protected void configure(Association as, DicomOutputStream out) {
+            out.setEncodingOptions(encOpts);
+        }
+
+        @Override
+        protected File selectDirectory(Association as, Attributes rq,
+                Attributes ds) {
+            return storageDir;
+        }
+
+        @Override
+        protected File createFile(File dir, Association as, Attributes rq,
+                Attributes ds) throws DicomServiceException {
+            File f = new File(dir, filePathFormat.format(ds));
+            File subdir = f.getParentFile();
+            mkdirs(as, subdir);
+            try {
+                if (!f.createNewFile()) {
+                    int hash = (int) Long.parseLong(f.getName());
+                    do {
+                        f = new File(subdir, TagUtils.toHexString(++hash));
+                    } while (!f.createNewFile());
+                }
+            } catch (IOException e) {
+                LOG.warn("M-WRITE " + f + " failed:", e);
+                throw new DicomServiceException(rq, Status.OutOfResources, e);
+            }
+            return f;
+        }
+
+        private boolean mkdirs(Association as, File d) {
+            boolean mkdirs = d.mkdirs();
+            if (mkdirs)
+                LOG.info("{}: M-WRITE {}", as, d);
+            return mkdirs;
+        }
+
+        @Override
+        protected boolean store(Association as, Attributes rq, Attributes ds,
+                Attributes fmi, File dir, File file, Attributes rsp)
+                throws DicomServiceException {
+            super.store(as, rq, ds, fmi, dir, file, rsp);
+            try {
+                return addDicomDirRecords(as, ds, fmi, file);
+            } catch (IOException e) {
+                LOG.warn("M-UPDATE " + dicomDir + " failed:", e);
+                throw new DicomServiceException(rq, Status.OutOfResources, e);
+            }
+        }
+    };
 
     private File storageDir;
     private File dicomDir;
     private String availability;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
-    private DicomDirReader ddWriter;
+    private DicomDirWriter ddWriter;
+
+    private RecordFactory recFact;
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -124,6 +199,10 @@ public class Main {
         this.dicomDir = dicomDir;
     }
 
+    public void setFilePathFormat(String pattern) {
+        this.filePathFormat = new FilePathFormat(pattern);
+    }
+
     public final File getDicomDirectory() {
         return dicomDir;
     }
@@ -140,13 +219,20 @@ public class Main {
         device.setExecutor(executor);
     }
 
-
     public final void setInstanceAvailability(String availability) {
         this.availability = availability;
     }
 
     public final String getInstanceAvailability() {
         return availability;
+    }
+
+    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
+        this.encOpts = encOpts;
+    }
+
+    public final void setRecordFactory(RecordFactory recFact) {
+        this.recFact = recFact;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -156,6 +242,7 @@ public class Main {
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
+        CLIUtils.addEncodingOptions(opts);
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
@@ -180,6 +267,12 @@ public class Main {
                 .withDescription(rb.getString("dicomdir"))
                 .withLongOpt("dicomdir")
                 .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("pattern")
+                .withDescription(rb.getString("filepath"))
+                .withLongOpt("filepath")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -216,7 +309,7 @@ public class Main {
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            main.setDicomDirectory(dicomDirOf(cl));
+            configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
@@ -236,14 +329,17 @@ public class Main {
         }
     }
 
-    private static void configureInstanceAvailability(Main main, CommandLine cl) {
-        main.setInstanceAvailability(cl.getOptionValue("availability"));
+    private static void configureDicomFileSet(Main main, CommandLine cl)
+            throws ParseException {
+        main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
+        main.setFilePathFormat(cl.getOptionValue("filepath", 
+                        "DICOM/#{0020000D}/#{0020000E}/#{00080018}"));
+        main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
+        main.setRecordFactory(new RecordFactory());
     }
 
-    private static File dicomDirOf(CommandLine cl) throws ParseException {
-        if (cl.hasOption("dicomdir"))
-            return new File(cl.getOptionValue("dicomdir"));
-        throw new ParseException("missing-dicomdir");
+    private static void configureInstanceAvailability(Main main, CommandLine cl) {
+        main.setInstanceAvailability(cl.getOptionValue("availability"));
     }
 
     private static void configureTransferCapability(Main main, CommandLine cl)
@@ -352,6 +448,45 @@ public class Main {
     }
 
     private void openDicomDirForReadOnly() throws IOException {
-        ddReader = ddWriter = new DicomDirReader(dicomDir);
+        ddReader = new DicomDirReader(dicomDir);
     }
+
+    private boolean addDicomDirRecords(Association as, Attributes ds,
+            Attributes fmi, File f) throws IOException {
+        String pid = ds.getString(Tag.PatientID, null);
+        String styuid = ds.getString(Tag.StudyInstanceUID, null);
+        String seruid = ds.getString(Tag.SeriesInstanceUID, null);
+        String iuid = fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
+        if (pid == null) {
+            ds.setString(Tag.PatientID, VR.LO, pid = styuid);
+        }
+        Attributes patRec = ddReader.findPatientRecord(pid);
+        if (patRec == null) {
+            patRec = recFact.createRecord(RecordType.PATIENT, null,
+                    ds, null, null);
+            ddWriter.addRootDirectoryRecord(patRec);
+        }
+        Attributes studyRec = ddReader.findStudyRecord(patRec, styuid);
+        if (studyRec == null) {
+            studyRec = recFact.createRecord(RecordType.STUDY, null,
+                    ds, null, null);
+            ddWriter.addLowerDirectoryRecord(patRec, studyRec);
+        }
+        Attributes seriesRec = ddReader.findSeriesRecord(studyRec, seruid);
+        if (seriesRec == null) {
+            seriesRec = recFact.createRecord(RecordType.SERIES, null,
+                    ds, null, null);
+            ddWriter.addLowerDirectoryRecord(studyRec, seriesRec);
+        }
+        Attributes instRec;
+        instRec = ddReader.findInstanceRecord(seriesRec, iuid);
+        if (instRec != null) {
+            return false;
+        }
+        instRec = recFact.createRecord(ds, fmi, ddWriter.toFileIDs(f));
+        ddWriter.addLowerDirectoryRecord(seriesRec, instRec);
+        ddWriter.commit();
+        return true;
+    }
+
 }

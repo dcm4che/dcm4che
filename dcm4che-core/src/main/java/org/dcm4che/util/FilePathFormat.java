@@ -48,10 +48,6 @@ import org.dcm4che.data.Attributes;
  */
 public class FilePathFormat {
 
-    private static final char[] HEX = {
-        '0', '1', '2', '3', '4', '5', '6', '7',
-        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-
     private final String[] strs;
     private final int[] tags;
     private final boolean[] hash;
@@ -97,7 +93,7 @@ public class FilePathFormat {
                 if (s == null)
                     sb.append("00000000");
                 else {
-                    appendHex(s.hashCode(), sb);
+                    sb.append(TagUtils.toHexString(s.hashCode()));
                 }
             } else {
                 sb.append(s == null ? "null" : s);
@@ -105,17 +101,6 @@ public class FilePathFormat {
         }
         sb.append(strs[n]);
         return sb.toString();
-    }
-
-    private static void appendHex(int i, StringBuilder sb) {
-        sb.append(HEX[(i >>> 28) & 15])
-          .append(HEX[(i >>> 24) & 15])
-          .append(HEX[(i >>> 20) & 15])
-          .append(HEX[(i >>> 16) & 15])
-          .append(HEX[(i >>> 12) & 15])
-          .append(HEX[(i >>> 8) & 15])
-          .append(HEX[(i >>> 4) & 15])
-          .append(HEX[i & 15]);
     }
 
     @Override
@@ -127,7 +112,7 @@ public class FilePathFormat {
             if (hash[i])
                 sb.append('#');
             sb.append('{');
-            appendHex(tags[i], sb);
+            sb.append(TagUtils.toHexString(tags[i]));
             sb.append('}');
         }
         sb.append(strs[n]);

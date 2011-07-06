@@ -55,11 +55,16 @@ import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.io.RAFOutputStreamAdapter;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class DicomDirWriter extends DicomDirReader {
+
+    private final static Logger LOG = 
+            LoggerFactory.getLogger(DicomDirWriter.class);
 
     private final static int KNOWN_INCONSISTENCIES = 0xFFFF;
     private final static int NO_KNOWN_INCONSISTENCIES = 0;
@@ -328,6 +333,10 @@ public class DicomDirWriter extends DicomDirReader {
     }
 
     private void writeRecord(int offset, Attributes rec) throws IOException {
+        if (LOG.isInfoEnabled())
+            LOG.info("M-UPDATE {}: add {} Record", file,
+                    rec.getString(Tag.DirectoryRecordType, null));
+        LOG.debug("Directory Record:\n{}", rec);
         rec.setItemPosition(offset);
         if (rollbackLen == -1) {
             rollbackLen = offset;

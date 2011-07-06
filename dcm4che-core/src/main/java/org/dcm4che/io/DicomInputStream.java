@@ -51,6 +51,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Inflater;
@@ -226,7 +227,10 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final List<File> getBulkDataFiles() {
-        return blkFiles;
+        if (blkFiles != null)
+            return blkFiles;
+        else
+            return Collections.emptyList();
     }
 
     public final Attributes getBulkDataAttributes() {

@@ -104,6 +104,11 @@ public class Main {
         }
 
         @Override
+        protected boolean discard(Association as, Attributes rq, String tsuid) {
+            return storageDir == null;
+        }
+
+        @Override
         protected File selectDirectory(Association as, Attributes rq,
                 Attributes ds) {
             return storageDir;
@@ -158,11 +163,12 @@ public class Main {
         }
 
         @Override
-        protected void store(Association as, Attributes rq, Attributes ds,
-                String tsuid, File dir, File file, Attributes rsp)
+        protected boolean store(Association as, Attributes rq, Attributes ds,
+                Attributes fmi, File dir, File file, Attributes rsp)
                 throws DicomServiceException {
-            super.store(as, rq, ds, tsuid, dir, file, rsp);
+            super.store(as, rq, ds, fmi, dir, file, rsp);
             removeExt(as, file);
+            return true;
         }
 
         private void removeExt(Association as, File file) {

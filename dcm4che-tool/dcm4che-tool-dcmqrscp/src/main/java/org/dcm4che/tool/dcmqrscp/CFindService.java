@@ -264,9 +264,11 @@ class CFindService extends BasicCFindSCP {
 
         @Override
         public Attributes nextMatch() throws DicomServiceException {
-            Attributes tmp = studyRec;
+            Attributes ret = new Attributes(patRec.size() + studyRec.size());
+            ret.addAll(patRec);
+            ret.addAll(studyRec);
             wrappedFindNextStudy();
-            return tmp;
+            return ret;
         }
 
         private void wrappedFindNextStudy() throws DicomServiceException {
@@ -316,9 +318,14 @@ class CFindService extends BasicCFindSCP {
 
         @Override
         public Attributes nextMatch() throws DicomServiceException {
-            Attributes tmp = seriesRec;
+            Attributes ret = new Attributes(patRec.size()
+                    + studyRec.size()
+                    + seriesRec.size());
+            ret.addAll(patRec);
+            ret.addAll(studyRec);
+            ret.addAll(seriesRec);
             wrappedFindNextSeries();
-            return tmp;
+            return ret;
         }
 
         private void wrappedFindNextSeries() throws DicomServiceException {
@@ -367,9 +374,16 @@ class CFindService extends BasicCFindSCP {
 
         @Override
         public Attributes nextMatch() throws DicomServiceException {
-            Attributes tmp = instRec;
+            Attributes ret = new Attributes(patRec.size()
+                    + studyRec.size()
+                    + seriesRec.size()
+                    + instRec.size());
+            ret.addAll(patRec);
+            ret.addAll(studyRec);
+            ret.addAll(seriesRec);
+            ret.addAll(instRec);
             wrappedFindNextInstance();
-            return tmp;
+            return ret;
         }
 
         private void wrappedFindNextInstance() throws DicomServiceException {

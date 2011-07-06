@@ -95,63 +95,43 @@ public enum VR {
         this.xmlbase64 = xmlbase64;
     }
 
+    private static final VR[] VALUE_OF = new VR[0x5554 - 0x4145 + 1];
+    static {
+        VALUE_OF[0x4145 - 0x4145] = AE;
+        VALUE_OF[0x4153 - 0x4145] = AS;
+        VALUE_OF[0x4154 - 0x4145] = AT;
+        VALUE_OF[0x4353 - 0x4145] = CS;
+        VALUE_OF[0x4441 - 0x4145] = DA;
+        VALUE_OF[0x4453 - 0x4145] = DS;
+        VALUE_OF[0x4454 - 0x4145] = DT;
+        VALUE_OF[0x4644 - 0x4145] = FD;
+        VALUE_OF[0x464c - 0x4145] = FL;
+        VALUE_OF[0x4953 - 0x4145] = IS;
+        VALUE_OF[0x4c4f - 0x4145] = LO;
+        VALUE_OF[0x4c54 - 0x4145] = LT;
+        VALUE_OF[0x4f42 - 0x4145] = OB;
+        VALUE_OF[0x4f46 - 0x4145] = OF;
+        VALUE_OF[0x4f57 - 0x4145] = OW;
+        VALUE_OF[0x504e - 0x4145] = PN;
+        VALUE_OF[0x5348 - 0x4145] = SH;
+        VALUE_OF[0x534c - 0x4145] = SL;
+        VALUE_OF[0x5351 - 0x4145] = SQ;
+        VALUE_OF[0x5353 - 0x4145] = SS;
+        VALUE_OF[0x5354 - 0x4145] = ST;
+        VALUE_OF[0x544d - 0x4145] = TM;
+        VALUE_OF[0x5549 - 0x4145] = UI;
+        VALUE_OF[0x554c - 0x4145] = UL;
+        VALUE_OF[0x554e - 0x4145] = UN;
+        VALUE_OF[0x5553 - 0x4145] = US;
+        VALUE_OF[0x5554 - 0x4145] = UT;
+    }
+
     public static VR valueOf(int code) {
-        switch (code) {
-        case 0x4145:
-            return AE;
-        case 0x4153:
-            return AS;
-        case 0x4154:
-            return AT;
-        case 0x4353:
-            return CS;
-        case 0x4441:
-            return DA;
-        case 0x4453:
-            return DS;
-        case 0x4454:
-            return DT;
-        case 0x4644:
-            return FD;
-        case 0x464c:
-            return FL;
-        case 0x4953:
-            return IS;
-        case 0x4c4f:
-            return LO;
-        case 0x4c54:
-            return LT;
-        case 0x4f42:
-            return OB;
-        case 0x4f46:
-            return OF;
-        case 0x4f57:
-            return OW;
-        case 0x504e:
-            return PN;
-        case 0x5348:
-            return SH;
-        case 0x534c:
-            return SL;
-        case 0x5351:
-            return SQ;
-        case 0x5353:
-            return SS;
-        case 0x5354:
-            return ST;
-        case 0x544d:
-            return TM;
-        case 0x5549:
-            return UI;
-        case 0x554c:
-            return UL;
-        case 0x554e:
-            return UN;
-        case 0x5553:
-            return US;
-        case 0x5554:
-            return UT;
-        }
+        try {
+            VR vr = VALUE_OF[code - 0x4145];
+            if (vr != null)
+                return vr;
+        } catch (IndexOutOfBoundsException e) {}
         LOG.warn("Unrecogniced VR code: {0}H - treat as UN",
                 Integer.toHexString(code));
         return UN;

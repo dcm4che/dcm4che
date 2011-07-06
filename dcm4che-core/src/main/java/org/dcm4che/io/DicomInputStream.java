@@ -52,7 +52,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
@@ -119,8 +118,8 @@ public class DicomInputStream extends FilterInputStream
     private DicomInputHandler handler = this;
     private Attributes bulkData;
     private final byte[] buffer = new byte[12];
-    private final LinkedList<ItemPointer> itemPointers = 
-            new LinkedList<ItemPointer>();
+    private ItemPointer[] itemPointers = {};
+    private int level;
 
     private boolean catBlkFiles;
     private String blkFilePrefix = "blk";
@@ -261,11 +260,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final int level() {
-        return itemPointers.size();
-    }
-
-    public final LinkedList<ItemPointer> getItemPointers() {
-        return itemPointers;
+        return level;
     }
 
     public final int tag() {
@@ -640,9 +635,9 @@ public class DicomInputStream extends FilterInputStream
         for (int i = 0; undefLen || pos < endPos; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                itemPointers.add(new ItemPointer(sqtag, privateCreator, i));
+                addItemPointer(sqtag, privateCreator, i);
                 handler.readValue(this, seq);
-                itemPointers.removeLast();
+                removeItemPointer();
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
@@ -656,6 +651,15 @@ public class DicomInputStream extends FilterInputStream
             seq.trimToSize();
     }
 
+    private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {
+        if (itemPointers.length <= level)
+            itemPointers = Arrays.copyOf(itemPointers, level + 1);
+        itemPointers[level++] = new ItemPointer(sqtag, privateCreator, itemIndex);
+    }
+
+    private void removeItemPointer() {
+        itemPointers[--level] = null;
+    }
 
     public Attributes readItem() throws IOException {
         readHeader();
@@ -676,9 +680,9 @@ public class DicomInputStream extends FilterInputStream
         for (int i = 0; true; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                itemPointers.add(new ItemPointer(fragsTag, privateCreator, i));
+                addItemPointer(fragsTag, privateCreator, i);
                 handler.readValue(this, frags);
-                itemPointers.removeLast();
+                removeItemPointer();
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);

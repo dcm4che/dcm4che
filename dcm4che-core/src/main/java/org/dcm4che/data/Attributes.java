@@ -1096,10 +1096,11 @@ public class Attributes implements Serializable {
 
     public Attributes addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return addAll(other, selection, null, fromIndex, toIndex);
+        return addSelected(other, selection, fromIndex, toIndex);
     }
 
     public Attributes addSelected(Attributes other, int... selection) {
+        Arrays.sort(selection);
         return addAll(other, selection, null, 0, selection.length);
     }
 
@@ -1108,11 +1109,12 @@ public class Attributes implements Serializable {
     }
 
     public Attributes addNotSelected(Attributes other, int... selection) {
-        return addAll(other, null, selection, 0, selection.length);
+        return addNotSelected(other, selection, 0, selection.length);
     }
 
     public Attributes addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
+        Arrays.sort(selection);
         return addAll(other, null, selection, fromIndex, toIndex);
     }
 
@@ -1127,7 +1129,7 @@ public class Attributes implements Serializable {
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
-            if (!TagUtils.isPrivateCreator(tag)
+            if (!TagUtils.isPrivateCreator(tag) 
                     && (include == null || Arrays.binarySearch(
                             include, fromIndex, toIndex, tag) >= 0)
                     && (exclude == null || Arrays.binarySearch(

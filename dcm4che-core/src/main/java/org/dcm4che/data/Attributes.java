@@ -332,16 +332,6 @@ public class Attributes implements Serializable {
         return indexOf(tag) >= 0;
     }
 
-    public boolean containsNested(int tag, ItemPointer... itemPointers) {
-        return containsNested(tag, null, itemPointers);
-    }
-
-    public boolean containsNested(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null && item.contains(tag, privateCreator);
-    }
-
     public boolean containsValue(int tag) {
         return containsValue(tag, (String) null);
     }
@@ -355,16 +345,6 @@ public class Attributes implements Serializable {
         }
         int index = indexOf(tag);
         return index >= 0 && !isEmpty(values[index]);
-    }
-
-    public boolean containsNestedValue(int tag, ItemPointer... itemPointers) {
-        return containsNestedValue(tag, null, itemPointers);
-    }
-
-    public boolean containsNestedValue(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null && item.containsValue(tag, privateCreator);
     }
 
     public String privateCreatorOf(int tag) {
@@ -405,16 +385,6 @@ public class Attributes implements Serializable {
         return values[index];
     }
 
-    public Object getNestedValue(int tag, ItemPointer... itemPointers) {
-        return getNestedValue(tag, null, itemPointers);
-    }
-
-    public Object getNestedValue(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getValue(tag, privateCreator) : null;
-    }
-
     public Sequence getSequence(int tag) {
         return getSequence(tag, null);
     }
@@ -422,20 +392,6 @@ public class Attributes implements Serializable {
     public Sequence getSequence(int tag, String privateCreator) {
         Object value = getValue(tag, privateCreator);
         return value instanceof Sequence ? (Sequence) value : null;
-    }
-
-    public Sequence getNestedSequence(int tag, ItemPointer... itemPointers) {
-        return getNestedSequence(tag, null, itemPointers);
-    }
-
-    public Sequence getNestedSequence(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Object value = getNestedValue(tag, privateCreator, itemPointers);
-        return value instanceof Sequence ? (Sequence) value : null;
-    }
-
-    public byte[] getBytes(int tag) throws IOException {
-        return getBytes(tag, null);
     }
 
     public byte[] getBytes(int tag, String privateCreator) throws IOException {
@@ -456,17 +412,6 @@ public class Attributes implements Serializable {
             return ((Value) value).toBytes(vr, bigEndian);
 
         return vr.toBytes(value, getSpecificCharacterSet());
-    }
-
-    public byte[] getNestedBytes(int tag, ItemPointer... itemPointers)
-            throws IOException {
-        return getNestedBytes(tag, null, itemPointers);
-    }
-
-    public byte[] getNestedBytes(int tag, String privateCreator,
-            ItemPointer... itemPointers) throws IOException {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getBytes(tag, privateCreator) : null;
     }
 
     public String getString(int tag, String defVal) {
@@ -504,29 +449,6 @@ public class Attributes implements Serializable {
         return vr.toString(value, bigEndian, valueIndex, defVal);
     }
 
-    public String getNestedString(int tag, String defVal,
-            ItemPointer... itemPointers) {
-        return getNestedString(tag, null, 0, defVal, itemPointers);
-    }
-
-    public String getNestedString(int tag, int valueIndex, String defVal,
-            ItemPointer... itemPointers) {
-        return getNestedString(tag, null, valueIndex, defVal, itemPointers);
-    }
-
-    public String getNestedString(int tag, String privateCreator, String defVal,
-            ItemPointer... itemPointers) {
-        return getNestedString(tag, privateCreator, 0, defVal, itemPointers);
-    }
-
-    public String getNestedString(int tag, String privateCreator,
-            int valueIndex, String defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getString(tag, privateCreator, valueIndex, defVal)
-                : defVal;
-    }
-
     public String[] getStrings(int tag) {
         return getStrings(tag, null);
     }
@@ -556,16 +478,6 @@ public class Attributes implements Serializable {
         return (val instanceof String) 
                 ? new String[] { (String) val } 
                 : (String[]) val;
-    }
-
-    public String[] getNestedStrings(int tag, ItemPointer... itemPointers) {
-        return getNestedStrings(tag, null, itemPointers);
-    }
-
-    public String[] getNestedStrings(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getStrings(tag, privateCreator) : null;
     }
 
     public int getInt(int tag, int defVal) {
@@ -603,28 +515,6 @@ public class Attributes implements Serializable {
         return vr.toInt(value, bigEndian, valueIndex, defVal);
     }
 
-    public int getNestedInt(int tag, int defVal, ItemPointer... itemPointers) {
-        return getNestedInt(tag, null, 0, defVal, itemPointers);
-    }
-
-    public int getNestedInt(int tag, int valueIndex, int defVal,
-            ItemPointer... itemPointers) {
-        return getNestedInt(tag, null, valueIndex, defVal, itemPointers);
-    }
-
-    public int getNestedInt(int tag, String privateCreator, int defVal,
-            ItemPointer... itemPointers) {
-        return getNestedInt(tag, privateCreator, 0, defVal, itemPointers);
-    }
-
-    public int getNestedInt(int tag, String privateCreator,
-            int valueIndex, int defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getInt(tag, privateCreator, valueIndex, defVal)
-                : defVal;
-    }
-
     public int[] getInts(int tag) {
         return getInts(tag, null);
     }
@@ -649,16 +539,6 @@ public class Attributes implements Serializable {
             value = decodeStringValue(index);
 
         return vr.toInts(value, bigEndian);
-    }
-
-    public int[] getNestedInts(int tag, ItemPointer... itemPointers) {
-        return getNestedInts(tag, null, itemPointers);
-    }
-
-    public int[] getNestedInts(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getInts(tag, privateCreator) : null;
     }
 
     public float getFloat(int tag, float defVal) {
@@ -696,29 +576,6 @@ public class Attributes implements Serializable {
         return vr.toFloat(value, bigEndian, valueIndex, defVal);
     }
 
-    public float getNestedFloat(int tag, float defVal,
-            ItemPointer... itemPointers) {
-        return getNestedFloat(tag, null, 0, defVal, itemPointers);
-    }
-
-    public float getNestedFloat(int tag, int valueIndex, float defVal,
-            ItemPointer... itemPointers) {
-        return getNestedFloat(tag, null, valueIndex, defVal, itemPointers);
-    }
-
-    public float getNestedFloat(int tag, String privateCreator, float defVal,
-            ItemPointer... itemPointers) {
-        return getNestedFloat(tag, privateCreator, 0, defVal, itemPointers);
-    }
-
-    public float getNestedFloat(int tag, String privateCreator,
-            int valueIndex, float defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getFloat(tag, privateCreator, valueIndex, defVal)
-                : defVal;
-    }
-
     public float[] getFloats(int tag) {
         return getFloats(tag, null);
     }
@@ -743,16 +600,6 @@ public class Attributes implements Serializable {
             value = decodeStringValue(index);
 
         return vr.toFloats(value, bigEndian);
-    }
-
-    public float[] getNestedFloats(int tag, ItemPointer... itemPointers) {
-        return getNestedFloats(tag, null, itemPointers);
-    }
-
-    public float[] getNestedFloats(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getFloats(tag, privateCreator) : null;
     }
 
     public double getDouble(int tag, double defVal) {
@@ -790,29 +637,6 @@ public class Attributes implements Serializable {
         return vr.toDouble(value, bigEndian, valueIndex, defVal);
     }
 
-    public double getNestedDouble(int tag, double defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDouble(tag, null, 0, defVal, itemPointers);
-    }
-
-    public double getNestedDouble(int tag, int valueIndex, double defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDouble(tag, null, valueIndex, defVal, itemPointers);
-    }
-
-    public double getNestedDouble(int tag, String privateCreator, double defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDouble(tag, privateCreator, 0, defVal, itemPointers);
-    }
-
-    public double getNestedDouble(int tag, String privateCreator,
-            int valueIndex, double defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getDouble(tag, privateCreator, valueIndex, defVal)
-                : defVal;
-    }
-
     public double[] getDoubles(int tag) {
         return getDoubles(tag, null);
     }
@@ -837,16 +661,6 @@ public class Attributes implements Serializable {
             value = decodeStringValue(index);
 
         return vr.toDoubles(value, bigEndian);
-    }
-
-    public double[] getNestedDoubles(int tag, ItemPointer... itemPointers) {
-        return getNestedDoubles(tag, null, itemPointers);
-    }
-
-    public double[] getNestedDoubles(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getDoubles(tag, privateCreator) : null;
     }
 
     public Date getDate(int tag, Date defVal) {
@@ -885,29 +699,6 @@ public class Attributes implements Serializable {
                 getTimeZone(), valueIndex, false, defVal);
     }
 
-    public Date getNestedDate(int tag, Date defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDate(tag, null, 0, defVal, itemPointers);
-    }
-
-    public Date getNestedDate(int tag, int valueIndex, Date defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDate(tag, null, valueIndex, defVal, itemPointers);
-    }
-
-    public Date getNestedDate(int tag, String privateCreator, Date defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDate(tag, privateCreator, 0, defVal, itemPointers);
-    }
-
-    public Date getNestedDate(int tag, String privateCreator,
-            int valueIndex, Date defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getDate(tag, privateCreator, valueIndex, defVal)
-                : defVal;
-    }
-
     public Date getDate(long tag, Date defVal) {
         return getDate(tag, null, defVal);
     }
@@ -925,19 +716,6 @@ public class Attributes implements Serializable {
             return defVal;
 
         return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
-    }
-
-    public Date getNestedDate(long tag, Date defVal,
-            ItemPointer... itemPointers) {
-        return getNestedDate(tag, null, defVal, itemPointers);
-    }
-
-    public Date getNestedDate(long tag, String privateCreator,
-            Date defVal, ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null
-                ? item.getDate(tag, privateCreator, defVal)
-                : defVal;
     }
 
     public Date[] getDates(int tag) {
@@ -964,16 +742,6 @@ public class Attributes implements Serializable {
             throw new UnsupportedOperationException();
 
         return vr.toDates(decodeStringValue(index), getTimeZone(), false);
-    }
-
-    public Date[] getNestedDates(int tag, ItemPointer... itemPointers) {
-        return getNestedDates(tag, null, itemPointers);
-    }
-
-    public Date[] getNestedDates(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.getDates(tag, privateCreator) : null;
     }
 
     public DateRange getDateRange(int tag, DateRange defVal) {
@@ -1136,16 +904,6 @@ public class Attributes implements Serializable {
         }
 
         return value;
-    }
-
-    public Object removeNested(int tag, ItemPointer... itemPointers) {
-        return removeNested(tag, null, itemPointers);
-    }
-
-    public Object removeNested(int tag, String privateCreator,
-            ItemPointer... itemPointers) {
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.remove(tag, privateCreator) : null;
     }
 
     public Object setNull(int tag, VR vr) {

@@ -427,8 +427,16 @@ public class Attributes implements Serializable {
         return vr.toBytes(value, getSpecificCharacterSet());
     }
 
+    public String getString(int tag) {
+        return getString(tag, null, 0, null);
+    }
+
     public String getString(int tag, String defVal) {
         return getString(tag, null, 0, defVal);
+    }
+
+    public String getString(int tag, int valueIndex) {
+        return getString(tag, null, valueIndex, null);
     }
 
     public String getString(int tag, int valueIndex, String defVal) {

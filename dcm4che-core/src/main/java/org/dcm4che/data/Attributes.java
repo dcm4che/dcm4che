@@ -261,6 +261,27 @@ public class Attributes implements Serializable {
         }
     }
 
+    public Attributes getNestedDataset(int sequenceTag) {
+        return getNestedDataset(sequenceTag, null, 0);
+    }
+
+    public Attributes getNestedDataset(int sequenceTag, int itemIndex) {
+        return getNestedDataset(sequenceTag, null, itemIndex);
+    }
+
+    public Attributes getNestedDataset(int sequenceTag, String privateCreator) {
+        return getNestedDataset(sequenceTag, privateCreator, 0);
+    }
+
+    public Attributes getNestedDataset(int sequenceTag, String privateCreator,
+            int itemIndex) {
+        Sequence sq = getSequence(sequenceTag, privateCreator);
+        if (sq == null || itemIndex >= sq.size())
+            return null;
+
+        return sq.get(itemIndex);
+    }
+
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
@@ -357,14 +378,6 @@ public class Attributes implements Serializable {
             return null;
         
         return VR.LO.toString(decodeStringValue(index), false, 0, null);
-    }
-
-    public String privateCreatorOf(int tag, ItemPointer... itemPointers) {
-        if (!TagUtils.isPrivateTag(tag))
-            return null;
-
-        Attributes item = getNestedDataset(itemPointers);
-        return item != null ? item.privateCreatorOf(tag) : null;
     }
 
     public Object getValue(int tag) {
@@ -1096,11 +1109,10 @@ public class Attributes implements Serializable {
 
     public Attributes addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return addSelected(other, selection, fromIndex, toIndex);
+        return addAll(other, selection, null, fromIndex, toIndex);
     }
 
     public Attributes addSelected(Attributes other, int... selection) {
-        Arrays.sort(selection);
         return addAll(other, selection, null, 0, selection.length);
     }
 

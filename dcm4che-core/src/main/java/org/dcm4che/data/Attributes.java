@@ -123,8 +123,12 @@ public class Attributes implements Serializable {
         addAll(other);
     }
 
-    public Object getProperty(String key) {
-        return properties != null ? properties.get(key) : null;
+    public Object getProperty(String key, Object defVal) {
+        if (properties == null)
+            return defVal;
+
+        Object val = properties.get(key);
+        return val != null ? val : defVal;
     }
 
     public Object setProperty(String key, Object value) {

@@ -44,7 +44,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -87,7 +86,6 @@ public class Attributes implements Serializable {
 
     private boolean bigEndian;
     private long itemPosition = -1;
-    private HashMap<String, Object> properties;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -118,23 +116,7 @@ public class Attributes implements Serializable {
 
     public Attributes(Attributes other, boolean bigEndian) {
         this(bigEndian, other.size);
-        if (other.properties != null)
-            properties = new HashMap<String, Object>(other.properties);
         addAll(other);
-    }
-
-    public Object getProperty(String key) {
-        return properties != null ? properties.get(key) : null;
-    }
-
-    public Object setProperty(String key, Object value) {
-        if (properties == null)
-            properties = new HashMap<String, Object>();
-        return properties.put(key, value);
-    }
-
-    public Object clearProperty(String key) {
-        return properties != null ? properties.remove(key) : null;
     }
 
     public final boolean isRoot() {

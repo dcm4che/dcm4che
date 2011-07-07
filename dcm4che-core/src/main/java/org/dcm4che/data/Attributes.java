@@ -1112,20 +1112,21 @@ public class Attributes implements Serializable {
     }
 
     public Attributes addSelected(Attributes other, Attributes selection) {
-        return addSelected(other, selection.tags, 0, selection.size);
+        return addAll(other, selection.tags, null, 0, selection.size);
+    }
+
+    public Attributes addSelected(Attributes other, int... selection) {
+        return addSelected(other, selection, 0, selection.length);
     }
 
     public Attributes addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
+        Arrays.sort(selection);
         return addAll(other, selection, null, fromIndex, toIndex);
     }
 
-    public Attributes addSelected(Attributes other, int... selection) {
-        return addAll(other, selection, null, 0, selection.length);
-    }
-
     public Attributes addNotSelected(Attributes other, Attributes selection) {
-        return addNotSelected(other, selection.tags, 0, selection.size);
+        return addAll(other, null, selection.tags, 0, selection.size);
     }
 
     public Attributes addNotSelected(Attributes other, int... selection) {

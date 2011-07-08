@@ -781,20 +781,6 @@ public class Association {
         return ac.getCommonExtendedNegotiationFor(cuid);
     }
 
-    public DimseRSP cecho() throws IOException, InterruptedException {
-        return cecho(UID.VerificationSOPClass);
-    }
-
-    public DimseRSP cecho(String cuid)
-            throws IOException, InterruptedException {
-        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        PresentationContext pc = pcFor(cuid, null);
-        checkIsSCU(cuid);
-        Attributes cechorq = Commands.mkCEchoRQ(rsp.getMessageID(), cuid);
-        invoke(pc, cechorq, null, rsp, conn.getDimseRSPTimeout());
-        return rsp;
-    }
-
     public void cstore(String cuid, String iuid, int priority, DataWriter data,
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
@@ -893,6 +879,38 @@ public class Association {
         return rsp;
     }
 
+    public void cget(String cuid, int priority, Attributes data,
+            String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        cget(cuid, cuid, priority, data, tsuid, rspHandler);
+    }
+
+    public void cget(String asuid, String cuid, int priority,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException,
+            InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes cgetrq = Commands.mkCGetRQ(rspHandler.getMessageID(),
+                cuid, priority);
+        invoke(pc, cgetrq, new DataWriterAdapter(data), rspHandler,
+                conn.getCMoveRSPTimeout());
+    }
+
+    public DimseRSP cget(String cuid, int priority, Attributes data,
+            String tsuid) throws IOException,
+            InterruptedException {
+        return cget(cuid, cuid, priority, data, tsuid);
+    }
+
+    public DimseRSP cget(String asuid, String cuid, int priority,
+            Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        cget(asuid, cuid, priority, data, tsuid, rsp);
+        return rsp;
+    }
+
     public void cmove(String cuid, int priority, Attributes data,
             String tsuid, String destination, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
@@ -905,9 +923,9 @@ public class Association {
             InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         checkIsSCU(cuid);
-        Attributes cfindrq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
+        Attributes cmoverq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
                 cuid, priority, destination);
-        invoke(pc, cfindrq, new DataWriterAdapter(data), rspHandler,
+        invoke(pc, cmoverq, new DataWriterAdapter(data), rspHandler,
                 conn.getCMoveRSPTimeout());
     }
 
@@ -925,6 +943,200 @@ public class Association {
         return rsp;
     }
 
+    public DimseRSP cecho() throws IOException, InterruptedException {
+        return cecho(UID.VerificationSOPClass);
+    }
+
+    public DimseRSP cecho(String cuid) throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        PresentationContext pc = pcFor(cuid, null);
+        checkIsSCU(cuid);
+        Attributes cechorq = Commands.mkCEchoRQ(rsp.getMessageID(), cuid);
+        invoke(pc, cechorq, null, rsp, conn.getDimseRSPTimeout());
+        return rsp;
+    }
+
+    public void nevent(String cuid, String iuid, int eventTypeId,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nevent(cuid, cuid, iuid, eventTypeId, data, tsuid, rspHandler);
+    }
+
+    public void nevent(String asuid, String cuid, String iuid, int eventTypeId,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCP(cuid);
+        Attributes neventrq =
+                Commands.mkNEventReportRQ(rspHandler.getMessageID(), cuid, iuid,
+                        eventTypeId, data);
+        invoke(pc, neventrq, new DataWriterAdapter(data), rspHandler,
+                conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
+            Attributes data, String tsuid) throws IOException,
+            InterruptedException {
+        return nevent(cuid, cuid, iuid, eventTypeId, data, tsuid);
+    }
+
+    public DimseRSP nevent(String asuid, String cuid, String iuid,
+            int eventTypeId, Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        nevent(asuid, cuid, iuid, eventTypeId, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void nget(String cuid, String iuid, int[] tags,
+            DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nget(cuid, cuid, iuid, tags, rspHandler);
+    }
+
+    public void nget(String asuid, String cuid, String iuid, int[] tags,
+            DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, null);
+        checkIsSCU(cuid);
+        Attributes ngetrq =
+                Commands.mkNGetRQ(rspHandler.getMessageID(), cuid, iuid, tags);
+        invoke(pc, ngetrq, null, rspHandler, conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP nget(String cuid, String iuid, int[] tags)
+            throws IOException, InterruptedException {
+        return nget(cuid, cuid, iuid, tags);
+    }
+
+    public DimseRSP nget(String asuid, String cuid, String iuid, int[] tags)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        nget(asuid, cuid, iuid, tags, rsp);
+        return rsp;
+    }
+
+    public void nset(String cuid, String iuid,  Attributes data,
+            String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nset(cuid, cuid, iuid, data, tsuid, rspHandler);
+    }
+
+    public void nset(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes nsetrq =
+                Commands.mkNSetRQ(rspHandler.getMessageID(), cuid, iuid);
+        invoke(pc, nsetrq, new DataWriterAdapter(data), rspHandler,
+                conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP nset(String cuid, String iuid, Attributes data,
+            String tsuid) throws IOException,
+            InterruptedException {
+        return nset(cuid, cuid, iuid, data, tsuid);
+    }
+
+    public DimseRSP nset(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        nset(asuid, cuid, iuid, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void naction(String cuid, String iuid, int actionTypeId,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        naction(cuid, cuid, iuid, actionTypeId, data, tsuid, rspHandler);
+    }
+
+    public void naction(String asuid, String cuid, String iuid, int actionTypeId,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes nactionrq =
+                Commands.mkNActionRQ(rspHandler.getMessageID(), cuid, iuid,
+                        actionTypeId, data);
+        invoke(pc, nactionrq, new DataWriterAdapter(data), rspHandler,
+                conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP naction(String cuid, String iuid, int actionTypeId,
+            Attributes data, String tsuid) throws IOException,
+            InterruptedException {
+        return naction(cuid, cuid, iuid, actionTypeId, data, tsuid);
+    }
+
+    public DimseRSP naction(String asuid, String cuid, String iuid,
+            int actionTypeId, Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        naction(asuid, cuid, iuid, actionTypeId, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void ncreate(String cuid, String iuid,  Attributes data,
+            String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        ncreate(cuid, cuid, iuid, data, tsuid, rspHandler);
+    }
+
+    public void ncreate(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        checkIsSCU(cuid);
+        Attributes ncreaterq =
+                Commands.mkNCreateRQ(rspHandler.getMessageID(), cuid, iuid);
+        invoke(pc, ncreaterq, new DataWriterAdapter(data), rspHandler,
+                conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP ncreate(String cuid, String iuid, Attributes data,
+            String tsuid) throws IOException,
+            InterruptedException {
+        return ncreate(cuid, cuid, iuid, data, tsuid);
+    }
+
+    public DimseRSP ncreate(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        ncreate(asuid, cuid, iuid, data, tsuid, rsp);
+        return rsp;
+    }
+
+    public void ndelete(String cuid, String iuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        ndelete(cuid, cuid, iuid, rspHandler);
+    }
+
+    public void ndelete(String asuid, String cuid, String iuid,
+            DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        PresentationContext pc = pcFor(asuid, null);
+        checkIsSCU(cuid);
+        Attributes ndeleterq =
+                Commands.mkNDeleteRQ(rspHandler.getMessageID(), cuid, iuid);
+        invoke(pc, ndeleterq, null, rspHandler, conn.getDimseRSPTimeout());
+    }
+
+    public DimseRSP ndelete(String cuid, String iuid)
+            throws IOException, InterruptedException {
+        return ndelete(cuid, cuid, iuid);
+    }
+
+    public DimseRSP ndelete(String asuid, String cuid, String iuid)
+            throws IOException, InterruptedException {
+        FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
+        ndelete(asuid, cuid, iuid, rsp);
+        return rsp;
+    }
+
     private void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
@@ -937,3 +1149,4 @@ public class Association {
     }
 
 }
+

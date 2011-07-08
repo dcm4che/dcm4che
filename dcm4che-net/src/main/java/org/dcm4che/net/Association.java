@@ -42,7 +42,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -197,7 +199,7 @@ public class Association {
                     TransferCapability.Role.SCP);
     }
 
-    private boolean isSCPFor(String cuid) {
+    public boolean isSCPFor(String cuid) {
         RoleSelection rolsel = ac.getRoleSelectionFor(cuid);
         if (rolsel == null)
             return !requestor;
@@ -210,7 +212,7 @@ public class Association {
                     TransferCapability.Role.SCU);
     }
 
-    private boolean isSCUFor(String cuid) {
+    public boolean isSCUFor(String cuid) {
         RoleSelection rolsel = ac.getRoleSelectionFor(cuid);
         if (rolsel == null)
             return requestor;
@@ -770,6 +772,13 @@ public class Association {
         if (pc == null)
             throw new NoPresentationContextException(cuid, tsuid);
         return pc;
+    }
+
+    public Set<String> getTransferSyntaxesFor(String cuid) {
+        HashMap<String, PresentationContext> tsMap = pcMap.get(cuid);
+        if (tsMap == null)
+            return Collections.emptySet();
+        return Collections.unmodifiableSet(tsMap.keySet());
     }
 
     PresentationContext getPresentationContext(int pcid) {

@@ -74,8 +74,7 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
             Attributes rq, PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
         String tsuid = pc.getTransferSyntax();
-        if (!discard(as, rq, tsuid))
-            store(as, rq, data, tsuid, rsp);
+        store(as, rq, data, tsuid, rsp);
         as.writeDimseRSP(pc, rsp);
     }
 
@@ -89,10 +88,6 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
         } finally {
             dispose(as, in);
         }
-    }
-
-    protected boolean discard(Association as, Attributes rq, String tsuid) {
-        return false;
     }
 
     protected void configure(Association as, DicomInputStream in) {

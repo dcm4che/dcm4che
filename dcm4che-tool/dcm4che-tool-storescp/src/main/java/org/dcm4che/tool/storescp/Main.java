@@ -103,12 +103,7 @@ public class Main {
             out.setEncodingOptions(encOpts);
         }
 
-        @Override
-        protected boolean discard(Association as, Attributes rq, String tsuid) {
-            return storageDir == null;
-        }
-
-        @Override
+         @Override
         protected File selectDirectory(Association as, Attributes rq,
                 Attributes ds) {
             return storageDir;
@@ -133,10 +128,11 @@ public class Main {
         protected void store(Association as, Attributes rq,
                 PDVInputStream data, String tsuid, Attributes rsp)
                 throws IOException {
-            if (filePathFormat == null)
-                storeVerbatim(as, rq, data, tsuid);
-            else
-                super.store(as, rq, data, tsuid, rsp);
+            if (storageDir != null)
+                if (filePathFormat == null)
+                    storeVerbatim(as, rq, data, tsuid);
+                else
+                    super.store(as, rq, data, tsuid, rsp);
         }
 
         private void storeVerbatim(Association as, Attributes rq,

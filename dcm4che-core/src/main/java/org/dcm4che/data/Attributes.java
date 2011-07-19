@@ -51,11 +51,13 @@ import java.util.regex.Pattern;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.io.SAXWriter;
 import org.dcm4che.util.DateUtils;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -243,8 +245,7 @@ public class Attributes implements Serializable {
         VR vr;
         SpecificCharacterSet cs = getSpecificCharacterSet();
         for (int i = 0; i < values.length; i++) {
-            if ((value = values[i]) == null)
-                continue;
+            value = values[i];
             if (value instanceof Sequence) {
                 for (Attributes item : (Sequence) value)
                     item.decodeStringValues();
@@ -1360,7 +1361,6 @@ public class Attributes implements Serializable {
         }
     }
 
-
     public void writeGroupTo(DicomOutputStream out, int groupLengthTag)
             throws IOException {
         if (isEmpty())
@@ -1383,6 +1383,31 @@ public class Attributes implements Serializable {
                             TagUtils.groupNumber(groupLengthTag))
                     + ",eeee).");
         
+    }
+
+    public void writeTo(SAXWriter out) throws SAXException {
+        if (isEmpty())
+            return;
+
+        SpecificCharacterSet cs = getSpecificCharacterSet();
+        if (tags[0] < 0) {
+            int index0 = -(1 + indexOf(0));
+            writeTo(out, cs, index0, size);
+            writeTo(out, cs, 0, index0);
+        } else {
+            writeTo(out, cs, 0, size);
+        }
+    }
+
+    private void writeTo(SAXWriter out, SpecificCharacterSet cs,
+            int start, int end) throws SAXException {
+        for (int i = start; i < end; i++) {
+            VR vr = vrs[i];
+            Object value = values[i];
+            if (vr.isStringType() && value instanceof byte[])
+                values[i] = value = vr.toStrings((byte[]) value, bigEndian, cs);
+            out.writeAttribute(tags[i], vr, value, cs, this);
+        }
     }
 
     public Attributes createFileMetaInformation(String tsuid) {

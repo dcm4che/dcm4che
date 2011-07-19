@@ -46,8 +46,10 @@ import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.data.Sequence;
+import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.data.Value;
 import org.dcm4che.util.Base64;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.TagUtils;
@@ -83,12 +85,17 @@ public class SAXWriter implements DicomInputHandler {
         this.includeKeyword = includeKeyword;
     }
 
+    public void write(Attributes attrs)
+            throws SAXException, IOException {
+        startDocument();
+        attrs.writeTo(this);
+        endDocument();
+    }
+
     @Override
     public void startDataset(DicomInputStream dis) throws IOException {
         try {
-            ch.startDocument();
-            ch.startElement("", "", "NativeDicomModel",
-                    atts("xml-space", "preserved"));
+            startDocument();
         } catch (SAXException e) {
             throw new IOException(e);
         }
@@ -97,10 +104,75 @@ public class SAXWriter implements DicomInputHandler {
     @Override
     public void endDataset(DicomInputStream dis) throws IOException {
         try {
-            ch.endElement("", "", "NativeDicomModel");
-            ch.endDocument();
+            endDocument();
         } catch (SAXException e) {
             throw new IOException(e);
+        }
+    }
+
+    private void startDocument() throws SAXException {
+        ch.startDocument();
+        ch.startElement("", "", "NativeDicomModel",
+                atts("xml-space", "preserved"));
+    }
+
+    private void endDocument() throws SAXException {
+        ch.endElement("", "", "NativeDicomModel");
+        ch.endDocument();
+    }
+
+    public void writeAttribute(int tag, VR vr, Object value,
+            SpecificCharacterSet cs, Attributes attrs) throws SAXException {
+        if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag))
+            return;
+
+        String privateCreator = attrs.getPrivateCreator(tag);
+        ch.startElement("", "", "DicomAttribute",
+                atts(privateCreator != null ? tag & 0xffff00ff : tag,
+                        privateCreator, vr));
+        if (value instanceof Value) {
+            writeAttribute((Value) value, attrs.bigEndian());
+        } else {
+            vr.toXML(value, attrs.bigEndian(), cs, this);
+        }
+        ch.endElement("", "", "DicomAttribute");
+    }
+
+    private void writeAttribute(Value value, boolean bigEndian)
+            throws SAXException {
+        if (value.isEmpty())
+            return;
+
+        if (value instanceof Sequence) {
+            Sequence seq = (Sequence) value;
+            int number = 0;
+            for (Attributes item : seq) {
+                ch.startElement("", "", "Item",
+                        atts("number", Integer.toString(++number)));
+                item.writeTo(this);
+                ch.endElement("", "", "Item");
+            }
+        } else if (value instanceof Fragments) {
+            Fragments frags = (Fragments) value;
+            int number = 0;
+            for (Object frag : frags) {
+                ++number;
+                if (frag instanceof Value && ((Value) frag).isEmpty())
+                    continue;
+                ch.startElement("", "", "DataFragment",
+                        atts("number", Integer.toString(number)));
+                if (frag instanceof BulkDataLocator)
+                    writeBulkDataLocator((BulkDataLocator) frag);
+                else {
+                    byte[] b = (byte[]) frag;
+                    if (bigEndian)
+                        frags.vr().toggleEndian(b, true);
+                    writeValueBase64(b);
+                }
+                ch.endElement("", "", "DataFragment");
+            }
+        } else if (value instanceof BulkDataLocator) {
+            writeBulkDataLocator((BulkDataLocator) value);
         }
     }
 

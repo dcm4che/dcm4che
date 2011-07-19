@@ -45,6 +45,7 @@ import java.security.KeyStoreException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -91,6 +92,9 @@ public class Device {
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
+
+    private DimseRQHandler dimseRQHandler;
+    private HashMap<String,Object> properties = new HashMap<String,Object>();
 
     private int connLimit = DEF_CONN_LIMIT;
     private final AtomicInteger connCount = new AtomicInteger(0);
@@ -454,6 +458,26 @@ public class Device {
 
     public final boolean isActivated() {
         return activated;
+    }
+
+    public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
+        this.dimseRQHandler = dimseRQHandler;
+    }
+
+    public final DimseRQHandler getDimseRQHandler() {
+        return dimseRQHandler;
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public Object setProperty(String key, Object value) {
+        return properties.put(key, value);
+    }
+
+    public Object clearProperty(String key) {
+        return properties.remove(key);
     }
 
     public void activate() throws IOException {

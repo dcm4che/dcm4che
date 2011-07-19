@@ -108,6 +108,7 @@ public class ApplicationEntity {
     private final HashMap<String, ExtendedNegotiator> extNegotiators =
             new HashMap<String, ExtendedNegotiator>();
     private DimseRQHandler dimseRQHandler;
+    private HashMap<String,Object> properties = new HashMap<String,Object>();
 
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
@@ -420,12 +421,38 @@ public class ApplicationEntity {
         this.packPDV = packPDV;
     }
 
+    public DimseRQHandler getDimseRQHandler() {
+        DimseRQHandler handler = dimseRQHandler;
+        if (handler != null)
+            return handler;
+
+        Device device = this.device;
+        return device != null
+                ? device.getDimseRQHandler()
+                : null;
+    }
+
     public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
         this.dimseRQHandler = dimseRQHandler;
     }
 
-    public final DimseRQHandler getDimseRQHandler() {
-        return dimseRQHandler;
+    public Object getProperty(String key) {
+        Object value = properties.get(key);
+        if (value != null)
+            return value;
+
+        Device device = this.device;
+        return device != null
+                ? device.getProperty(key)
+                : null;
+    }
+
+    public Object setProperty(String key, Object value) {
+        return properties.put(key, value);
+    }
+
+    public Object clearProperty(String key) {
+        return properties.remove(key);
     }
 
     private void checkInstalled() {
@@ -440,11 +467,12 @@ public class ApplicationEntity {
 
     void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
             PDVInputStream data) throws IOException {
-        if (dimseRQHandler == null) {
+        DimseRQHandler tmp = getDimseRQHandler();
+        if (tmp == null) {
             LOG.error("DimseRQHandler not initalized");
             throw new AAbort(AAbort.UL_SERIVE_PROVIDER, 0);
         }
-        dimseRQHandler.onDimseRQ(as, pc, cmd, data);
+        tmp.onDimseRQ(as, pc, cmd, data);
     }
 
     public void addConnection(Connection conn) {
@@ -628,7 +656,8 @@ public class ApplicationEntity {
     }
 
     void onClose(Association as) {
-        if (dimseRQHandler != null)
-            dimseRQHandler.onClose(as);
+        DimseRQHandler tmp = getDimseRQHandler();
+        if (tmp != null)
+            tmp.onClose(as);
     }
 }

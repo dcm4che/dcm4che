@@ -540,7 +540,8 @@ public class DicomInputStream extends FilterInputStream
         if (bulkData == null)
             bulkData = DicomInputStream.defaultBulkData();
         Attributes item = bulkData;
-        for (ItemPointer ip : itemPointers) {
+        for (int i = 0; i < level; i++) {
+            ItemPointer ip = itemPointers[i];
             Sequence sq = (Sequence)
                     item.getValue(ip.sequenceTag, ip.privateCreator);
             if (sq == null)
@@ -558,7 +559,8 @@ public class DicomInputStream extends FilterInputStream
         if (bulkData == null)
             bulkData = DicomInputStream.defaultBulkData();
         Attributes item = bulkData;
-        for (ItemPointer ip : itemPointers) {
+        for (int i = 0; i < level; i++) {
+            ItemPointer ip = itemPointers[i];
             Object value = item.getValue(ip.sequenceTag, ip.privateCreator);
             if (value instanceof Sequence)
                 item = ((Sequence) value).get(0);

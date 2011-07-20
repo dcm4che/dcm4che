@@ -56,7 +56,20 @@ public enum QueryOption {
         return info;
     }
 
-    public static boolean hasOption(ExtendedNegotiation extNeg, QueryOption opt) {
-        return extNeg != null && extNeg.getField(opt.ordinal(), 0) == 1;
+    public static EnumSet<QueryOption> toOptions(ExtendedNegotiation extNeg) {
+        EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
+        if (extNeg != null) {
+            toOption(extNeg, QueryOption.RELATIONAL, opts);
+            toOption(extNeg, QueryOption.DATETIME, opts);
+            toOption(extNeg, QueryOption.FUZZY, opts);
+            toOption(extNeg, QueryOption.TIMEZONE, opts);
+        }
+        return opts ;
+    }
+
+    private static void toOption(ExtendedNegotiation extNeg,
+            QueryOption opt, EnumSet<QueryOption> opts) {
+        if (extNeg.getField(opt.ordinal(), 0) == 1)
+            opts.add(opt);
     }
 }

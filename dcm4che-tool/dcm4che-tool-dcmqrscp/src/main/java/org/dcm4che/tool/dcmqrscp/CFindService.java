@@ -82,7 +82,7 @@ class CFindService extends BasicCFindSCP {
         boolean studyRoot =
             cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
-        boolean relational = QueryOption.hasOption(extNeg, QueryOption.RELATIONAL);
+        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
         switch (level.charAt(1)) {
         case 'A':
             return new PatientMatches(ddr, rq, keys);

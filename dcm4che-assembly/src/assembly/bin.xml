@@ -46,6 +46,33 @@
   </formats>
   <fileSets>
     <fileSet>
+      <directory>../dcm4che-soundex/src</directory>
+      <includes>
+        <include>bin/soundex</include>
+        <include>bin/esoundex</include>
+        <include>bin/esoundex9</include>
+        <include>bin/kphonetik</include>
+        <include>bin/metaphone</include>
+        <include>bin/phonem</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-soundex/src</directory>
+      <includes>
+        <include>bin/soundex.bat</include>
+        <include>bin/esoundex.bat</include>
+        <include>bin/esoundex9.bat</include>
+        <include>bin/kphonetik.bat</include>
+        <include>bin/metaphone.bat</include>
+        <include>bin/phonem.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmdump/src</directory>
       <includes>
         <include>bin/dcmdump</include>
@@ -327,6 +354,7 @@
       <includes>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-net</include>
+        <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>

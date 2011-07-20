@@ -38,59 +38,25 @@
 
 package org.dcm4che.net.pdu;
 
-import org.dcm4che.util.StringUtils;
-import org.dcm4che.util.UIDUtils;
+import java.util.EnumSet;
 
-/**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
- */
-public class ExtendedNegotiation {
 
-    private final String cuid;
-    private final byte[] info;
+public enum QueryOption {
+    RELATIONAL,
+    DATETIME,
+    FUZZY,
+    TIMEZONE;
 
-    public ExtendedNegotiation(String cuid, byte[] info) {
-        if (cuid == null)
-            throw new NullPointerException();
-
-        this.cuid = cuid;
-        this.info = info.clone();
+    public static byte[] toExtendedNegotiationInformation(EnumSet<QueryOption> opts) {
+        byte[] info = new byte[opts.contains(TIMEZONE) ? 4
+                : opts.contains(FUZZY) || opts.contains(DATETIME) ? 3
+                : 1];
+        for (QueryOption query : opts)
+            info[query.ordinal()] = 1;
+        return info;
     }
 
-    public final String getSOPClassUID() {
-        return cuid;
+    public static boolean hasOption(ExtendedNegotiation extNeg, QueryOption opt) {
+        return extNeg != null && extNeg.getField(opt.ordinal(), 0) == 1;
     }
-
-    public final byte[] getInformation() {
-        return info.clone();
-    }
-
-    public final int getField(int index, int def) {
-        return index < info.length ? info[index] : def;
-    }
-
-    public int length() {
-        return cuid.length() + info.length + 2;
-    }
-
-    @Override
-    public String toString() {
-        return promptTo(new StringBuilder()).toString();
-    }
-
-    StringBuilder promptTo(StringBuilder sb) {
-        sb.append("  ExtendedNegotiation[")
-          .append(StringUtils.LINE_SEPARATOR)
-          .append("    sopClass: ");
-        UIDUtils.promptTo(cuid, sb)
-          .append(StringUtils.LINE_SEPARATOR)
-          .append("    info: [");
-        for (byte b : info)
-            sb.append(b).append(", ");
-        return sb.append(']')
-                 .append(StringUtils.LINE_SEPARATOR)
-                 .append("  ]");
-    }
-
 }

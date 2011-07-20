@@ -49,6 +49,7 @@ import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
+import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCFindSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.Matches;
@@ -78,9 +79,10 @@ class CFindService extends BasicCFindSCP {
         check(rq, validator);
         DicomDirReader ddr = main.getDicomDirReader();
         String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
-        boolean relational = relational(as, cuid);
         boolean studyRoot =
-                cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
+            cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        boolean relational = QueryOption.hasOption(extNeg, QueryOption.RELATIONAL);
         switch (level.charAt(1)) {
         case 'A':
             return new PatientMatches(ddr, rq, keys);
@@ -128,13 +130,6 @@ class CFindService extends BasicCFindSCP {
                     Status.IdentifierDoesNotMatchSOPClass,
                     validator.getErrorComment())
                 .setOffendingElements(validator.getOffendingElements());
-    }
-
-    private boolean relational(Association as, String cuid) {
-        ExtendedNegotiation extNeg = as.getAAssociateAC()
-                .getExtNegotiationFor(cuid);
-        byte[] info = extNeg != null ? extNeg.getInformation() : null;
-        return info != null && info.length > 0 && info[0] == 1;
     }
 
     private static void validateUniqueKey(AttributesValidator validator,

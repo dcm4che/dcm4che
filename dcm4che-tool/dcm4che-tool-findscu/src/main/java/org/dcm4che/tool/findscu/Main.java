@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -75,6 +76,7 @@ import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
@@ -85,29 +87,21 @@ import org.dcm4che.util.StringUtils;
  */
 public class Main {
 
-    private static final int RELATIONAL_QUERY = 1;
-    private static final int DATETIME_MATCH = 2;
-    private static final int FUZZY_MATCH = 4;
-    private static final int TIMEZONE_MATCH = 8;
-
     private static enum SOPClass {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, 0, null),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, 0, null),
-        PatientStudyOnly(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, 0, null),
-        MWL(UID.ModalityWorklistInformationModelFIND, 3, "sps-0000.dcm"),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, 3, "ups-0000.dcm"),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, 3, "ups-0000.dcm"),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, 3, "hp-0000.dcm"),
-        ColorPalette(UID.ColorPaletteInformationModelFIND, 3, "pal-0000.dcm");
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, null),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, null),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, null),
+        MWL(UID.ModalityWorklistInformationModelFIND, "sps-0000.dcm"),
+        UPSPull(UID.UnifiedProcedureStepPullSOPClass, "ups-0000.dcm"),
+        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, "ups-0000.dcm"),
+        HangingProtocol(UID.HangingProtocolInformationModelFIND, "hp-0000.dcm"),
+        ColorPalette(UID.ColorPaletteInformationModelFIND, "pal-0000.dcm");
 
         final String cuid;
-        final int defExtNeg;
         final String outputFileFormat;
 
-        SOPClass(String cuid, int defExtNeg, String outputFileFormat) {
+        SOPClass(String cuid, String outputFileFormat) {
             this.cuid = cuid;
-            this.defExtNeg = defExtNeg;
             this.outputFileFormat = outputFileFormat;
         }
 
@@ -115,6 +109,13 @@ public class Main {
             return outputFileFormat != null
                     ? outputFileFormat
                     : level.toLowerCase() + "-0000.dcm";
+        }
+
+        public void adjustQueryOptions(EnumSet<QueryOption> queryOptions) {
+            if (outputFileFormat != null) {
+                queryOptions.add(QueryOption.RELATIONAL);
+                queryOptions.add(QueryOption.DATETIME);
+            }
         }
     }
 
@@ -152,7 +153,6 @@ public class Main {
     private int cancelAfter;
     private SOPClass sopClass = SOPClass.StudyRoot;
     private String[] tss = IVR_LE_FIRST;
-    private int extNeg;
 
     private File outDir;
     private DecimalFormat outFileFormat;
@@ -161,6 +161,7 @@ public class Main {
 
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
+    private EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -192,27 +193,8 @@ public class Main {
         this.tss = tss.clone();
     }
 
-    private void setExtendedNegotiation(int flag, boolean enable) {
-        if (enable)
-            extNeg |= flag;
-        else
-            extNeg &= ~flag;
-    }
-
-    public void setRelationalQueries(boolean enable) {
-        setExtendedNegotiation(RELATIONAL_QUERY, enable);
-    }
-
-    public void setDatetimeMatching(boolean enable) {
-        setExtendedNegotiation(DATETIME_MATCH, enable);
-    }
-
-    public void setFuzzySemanticMatching(boolean enable) {
-        setExtendedNegotiation(FUZZY_MATCH, enable);
-    }
-
-    public void setTimezoneQueryAdjustment(boolean enable) {
-        setExtendedNegotiation(TIMEZONE_MATCH, enable);
+    private void addQueryOption(QueryOption opt) {
+        queryOptions.add(opt);
     }
 
     public final void setOutputDirectory(File outDir) {
@@ -438,10 +420,14 @@ public class Main {
     }
 
     private static void configureExtendedNegotiation(Main main, CommandLine cl) {
-        main.setRelationalQueries(cl.hasOption("relational"));
-        main.setDatetimeMatching(cl.hasOption("datetime"));
-        main.setFuzzySemanticMatching(cl.hasOption("fuzzy"));
-        main.setTimezoneQueryAdjustment(cl.hasOption("timezone"));
+        if (cl.hasOption("relational"))
+            main.addQueryOption(QueryOption.RELATIONAL);
+        if (cl.hasOption("datetime"))
+            main.addQueryOption(QueryOption.DATETIME);
+        if (cl.hasOption("fuzzy"))
+            main.addQueryOption(QueryOption.FUZZY);
+        if (cl.hasOption("timezone"))
+            main.addQueryOption(QueryOption.TIMEZONE);
     }
 
     private static void configureOutput(Main main, CommandLine cl) {
@@ -539,20 +525,13 @@ public class Main {
     public void open() throws IOException, InterruptedException {
         rq.addPresentationContext(
                 new PresentationContext(1, sopClass.cuid, tss));
-        if (extNeg > sopClass.defExtNeg)
+        if (!queryOptions.isEmpty()) {
+            sopClass.adjustQueryOptions(queryOptions);
             rq.addExtendedNegotiation(
                     new ExtendedNegotiation(sopClass.cuid,
-                            toInfo(extNeg | sopClass.defExtNeg)));
+                            QueryOption.toExtendedNegotiationInformation(queryOptions)));
+        }
         as = ae.connect(conn, remote, rq);
-    }
-
-    private static byte[] toInfo(int extNeg) {
-        if (extNeg == 1)
-            return new byte[] { 1 };
-        byte[] info = new byte[(extNeg & 8) == 0 ? 3 : 4];
-        for (int i = 0; i < info.length; i++, extNeg >>>= 1)
-            info[i] = (byte) (extNeg & 1);
-        return info;
     }
 
     public void close() throws IOException, InterruptedException {

@@ -144,7 +144,7 @@ public class KPhonetik implements FuzzyStr {
                 curout = '8';
                 break;
             default:
-                prevout = '0';
+                prevout = 0;
                 continue;
             }
             if (prevout != curout)

@@ -91,7 +91,7 @@ public class KPhonetik implements FuzzyStr {
                 break;
             case 'D':
             case 'T':
-                curout = (next == 'C' || next == 'X' || next == 'Z') 
+                curout = (next == 'C' || next == 'S' || next == 'Z') 
                         ? '8' : '2';
                 break;
             case 'F':

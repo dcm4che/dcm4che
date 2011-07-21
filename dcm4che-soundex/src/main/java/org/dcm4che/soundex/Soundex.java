@@ -67,11 +67,6 @@ public class Soundex implements FuzzyStr {
     }
 
     @Override
-    public boolean isTrailingWildCardMatchingSupported() {
-        return false;
-    }
-
-    @Override
     public String toFuzzy(String s) {
         if (s == null || s.length() == 0)
             return "";

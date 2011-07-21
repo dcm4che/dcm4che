@@ -44,11 +44,6 @@ package org.dcm4che.soundex;
 public class Metaphone implements FuzzyStr {
 
     @Override
-    public boolean isTrailingWildCardMatchingSupported() {
-        return true;
-    }
-
-    @Override
     public String toFuzzy(String s) {
         if (s == null || s.length() == 0)
             return "";

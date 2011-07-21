@@ -47,11 +47,6 @@ public class ESoundex extends Soundex {
         super(true, Integer.MAX_VALUE, 0, MAP_6);
     }
 
-    @Override
-    public boolean isTrailingWildCardMatchingSupported() {
-        return true;
-    }
-
     public static void main(String[] args) {
         ESoundex inst = new ESoundex();
         for (String arg : args)

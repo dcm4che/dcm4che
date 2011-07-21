@@ -43,7 +43,5 @@ package org.dcm4che.soundex;
  */
 public interface FuzzyStr {
 
-    boolean isTrailingWildCardMatchingSupported();
-
     String toFuzzy(String in);
 }

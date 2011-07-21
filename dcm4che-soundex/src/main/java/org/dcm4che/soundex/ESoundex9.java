@@ -47,11 +47,6 @@ public class ESoundex9 extends Soundex {
         super(true, Integer.MAX_VALUE, 0, MAP_9);
     }
 
-    @Override
-    public boolean isTrailingWildCardMatchingSupported() {
-        return true;
-    }
-
     public static void main(String[] args) {
         ESoundex9 inst = new ESoundex9();
         for (String arg : args)

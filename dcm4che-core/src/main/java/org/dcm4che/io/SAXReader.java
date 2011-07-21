@@ -61,4 +61,9 @@ public class SAXReader {
         parser.parse(uri, new ContentHandlerAdapter(attrs));
         return attrs;
     }
+
+    public static Attributes parse(String uri)
+            throws ParserConfigurationException, SAXException, IOException {
+        return parse(uri, null);
+    }
 }

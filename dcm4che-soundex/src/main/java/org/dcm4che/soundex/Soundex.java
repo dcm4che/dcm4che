@@ -80,8 +80,7 @@ public class Soundex implements FuzzyStr {
             while (!Character.isLetter(in[i]))
                 if (++i >= in.length)
                     return "";
-            prevout = map(in[i]);
-            out[j++] = Character.toUpperCase(in[i++]);
+            prevout = map(out[j++] = Character.toUpperCase(in[i++]));
         }
 
         char curout = 0;

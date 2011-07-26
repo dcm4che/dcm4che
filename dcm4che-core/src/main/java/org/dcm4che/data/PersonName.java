@@ -242,6 +242,10 @@ public class PersonName {
     public boolean isEmpty(Group g, Component c) {
         return get(g, c) == null;
     }
+    
+    public boolean isEmpty(Component c) {
+        return isEmpty(Group.Alphabetic, c);
+    }
 
     private static String trim(String s) {
         return s == null || (s = s.trim()).isEmpty() ? null : s;

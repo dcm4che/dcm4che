@@ -1069,6 +1069,9 @@ public class Attributes implements Serializable {
     }
 
     private Object set(int tag, String privateCreator, VR vr, Object value) {
+        if (vr == null)
+            throw new NullPointerException("vr");
+
         if (TagUtils.isGroupLength(tag))
             return null;
 

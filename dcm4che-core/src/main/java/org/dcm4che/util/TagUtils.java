@@ -103,7 +103,7 @@ public class TagUtils {
     public static boolean isPrivateCreator(int tag) {
         return (tag & 0x00010000) != 0
             && (tag & 0x0000FF00) == 0
-            && (tag & 0x000000FF) != 0;
+            && (tag & 0x000000F0) != 0;
     }
 
     public static boolean isPrivateGroup(int tag) {

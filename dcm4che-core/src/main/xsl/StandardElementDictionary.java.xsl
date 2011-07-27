@@ -62,7 +62,10 @@ public class StandardElementDictionary extends ElementDictionary {
         if ((tag &amp; 0x0000FFFF) == 0)
             return VR.UL;
         if ((tag &amp; 0x00010000) != 0)
-            return ((tag &amp; 0x0000FF00) == 0) ? VR.LO : VR.UN;
+            return ((tag &amp; 0x0000FF00) == 0
+                    &amp;&amp; (tag &amp; 0x000000F0) != 0)
+                  ? VR.LO
+                  : VR.UN;
         if ((tag &amp; 0xFFFFFF00) == Tag.SourceImageIDs)
             return VR.CS;
         int tmp = tag &amp; 0xFFE00000;

@@ -332,7 +332,7 @@ public class SAXWriter implements DicomInputHandler {
 
     private void writePNGroup(String qname, PersonName pn,
             PersonName.Group group) throws SAXException {
-        if (!pn.isEmpty(group)) {
+        if (pn.contains(group)) {
             ch.startElement("", "", qname, NO_ATTS); 
             writeElement("FamilyName", NO_ATTS,
                     pn.get(group, PersonName.Component.FamilyName));

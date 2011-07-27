@@ -171,7 +171,7 @@ public class PersonName {
     }
 
     public String getNormalizedQueryString(Group g) {
-        if (isEmpty(g))
+        if (!contains(g))
             return "*";
 
         int totLen = 0;
@@ -227,24 +227,24 @@ public class PersonName {
 
     public boolean isEmpty() {
         for (Group g : Group.values())
-            if (!isEmpty(g))
+            if (contains(g))
                 return false;
         return true;
     }
 
-    public boolean isEmpty(Group g) {
+    public boolean contains(Group g) {
         for (Component c : Component.values())
-            if (!isEmpty(g, c))
+            if (contains(g, c))
                 return false;
         return true;
     }
 
-    public boolean isEmpty(Group g, Component c) {
-        return get(g, c) == null;
+    public boolean contains(Group g, Component c) {
+        return get(g, c) != null;
     }
     
-    public boolean isEmpty(Component c) {
-        return isEmpty(Group.Alphabetic, c);
+    public boolean containst(Component c) {
+        return contains(Group.Alphabetic, c);
     }
 
     private static String trim(String s) {

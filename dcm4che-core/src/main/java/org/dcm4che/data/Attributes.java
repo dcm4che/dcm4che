@@ -412,6 +412,10 @@ public class Attributes implements Serializable {
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
+    public byte[] getBytes(int tag) throws IOException {
+        return getBytes(tag, null);
+    }
+
     public byte[] getBytes(int tag, String privateCreator) throws IOException {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);

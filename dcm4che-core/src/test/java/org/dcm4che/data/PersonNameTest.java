@@ -87,6 +87,12 @@ public class PersonNameTest {
         pn.set(PersonName.Group.Ideographic, PersonName.Component.FamilyName, "王");
         pn.set(PersonName.Group.Ideographic, PersonName.Component.GivenName, "小東");
         assertEquals("Wang^XiaoDong=王^小東", pn.toString());
+        assertEquals("Wang^XiaoDong", pn.toString(PersonName.Group.Alphabetic, true));
+        assertEquals("王^小東", pn.toString(PersonName.Group.Ideographic, true));
+        assertEquals("", pn.toString(PersonName.Group.Phonetic, true));
+        assertEquals("Wang^XiaoDong^^^", pn.toString(PersonName.Group.Alphabetic, false));
+        assertEquals("王^小東^^^", pn.toString(PersonName.Group.Ideographic, false));
+        assertEquals("^^^^", pn.toString(PersonName.Group.Phonetic, false));
     }
 
 }

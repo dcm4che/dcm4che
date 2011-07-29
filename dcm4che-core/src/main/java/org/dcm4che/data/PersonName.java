@@ -145,18 +145,18 @@ public class PersonName {
         return new String(ch); 
     }
 
-
-    public String getNormalizedString(Group g, String defVal) {
+    public String toString(Group g, boolean trim) {
         int totLen = 0;
+        Component lastCompOfGroup = Component.FamilyName;
         for (Component c : Component.values()) {
             String s = get(g, c);
-            if (s != null)
+            if (s != null) {
                 totLen += s.length();
+                lastCompOfGroup = c;
+            }
         }
-        if (totLen == 0)
-            return defVal;
-
-        char[] ch = new char[totLen+4];
+        totLen += trim ? lastCompOfGroup.ordinal() : 4;
+        char[] ch = new char[totLen];
         int wpos = 0;
         for (Component c : Component.values()) {
             String s = get(g, c);
@@ -165,44 +165,12 @@ public class PersonName {
                 s.getChars(0, d, ch, wpos);
                 wpos += d;
             }
+            if (trim && c == lastCompOfGroup)
+                break;
             if (wpos < ch.length)
                 ch[wpos++] = '^';
         }
-        return new String(ch); 
-    }
-
-    public String getNormalizedQueryString(Group g) {
-        if (!contains(g))
-            return "*";
-
-        int totLen = 0;
-        for (Component c : Component.values()) {
-            String s = get(g, c);
-            totLen += s != null ? s.length() : 1;
-        }
-
-        char[] ch = new char[totLen+4];
-        int wpos = 0;
-        for (Component c : Component.values()) {
-            String s = get(g, c);
-            if (s != null) {
-                int d = s.length();
-                s.getChars(0, d, ch, wpos);
-                wpos += d;
-            } else {
-                ch[wpos++] = '*';
-            }
-            if (wpos < ch.length)
-                ch[wpos++] = '^';
-        }
-        return (totLen == 5
-                && ch[0] == '*'
-                && ch[2] == '*'
-                && ch[4] == '*'
-                && ch[6] == '*'
-                && ch[8] == '*')
-            ? "*"
-            : new String(ch); 
+        return new String(ch);
     }
 
     public String get(Component c) {
@@ -212,7 +180,6 @@ public class PersonName {
     public String get(Group g, Component c) {
         return fields[g.ordinal() * 5 + c.ordinal()];
     }
-
 
     public void set(Component c, String s) {
         set(Group.Alphabetic, c, s);
@@ -236,8 +203,8 @@ public class PersonName {
     public boolean contains(Group g) {
         for (Component c : Component.values())
             if (contains(g, c))
-                return false;
-        return true;
+                return true;
+        return false;
     }
 
     public boolean contains(Group g, Component c) {

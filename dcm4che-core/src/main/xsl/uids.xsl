@@ -45,19 +45,32 @@
   <xsl:template match="/article">
     <uids>
       <xsl:apply-templates select="//row[(count(entry)=4) and starts-with(entry/para,'1.')]" />
+      <xsl:apply-templates select="//row[(count(entry)=3) and starts-with(entry/para,'1.2.840.10008.6.1.') and entry[2]/para!='']" >
+        <xsl:with-param name="namepos">3</xsl:with-param>
+        <xsl:with-param name="type">Context Group Name</xsl:with-param>
+      </xsl:apply-templates>
     </uids>
   </xsl:template>
   <xsl:template match="row">
+    <xsl:param name="namepos">2</xsl:param>
+    <xsl:param name="type" select="entry[3]/para" />
     <xsl:variable name="uid" select="entry[1]/para" />
     <xsl:variable name="name">
       <xsl:call-template name="skipAfterColon">
-         <xsl:with-param name="name" select="entry[2]/para" />
+         <xsl:with-param name="name" select="entry[$namepos]/para" />
       </xsl:call-template>
     </xsl:variable>
     <xsl:variable name="keyword">
       <xsl:choose>
         <xsl:when test="$uid='1.2.840.10008.1.2.4.70'">JPEGLosslessNonHierarchicalProcess14SelectionValue1</xsl:when>
         <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.9.1.1'">TwelveLeadECGWaveformStorage</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.175'">CardiovascularAnatomicLocations2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.243'">PercutaneousEntry2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.586'">BloodVelocityMeasurements2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.526'">VolumeMeasurements2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.762'">StressTestProcedurePhases2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.928'">ECGControlVariablesNumeric2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.6.1.929'">ECGControlVariablesText2</xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="removeSpaces">
             <xsl:with-param name="name">
@@ -69,7 +82,6 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="type" select="entry[3]/para" />
     <uid uid="{$uid}" name="{$name}" keyword="{$keyword}" type="{$type}" />
   </xsl:template>
   <xsl:template name="skipAfterColon">
@@ -86,7 +98,7 @@
   </xsl:template>
   <xsl:template name="replaceNonAlpha">
     <xsl:param name="name"/>
-    <xsl:value-of select="normalize-space(translate($name,'-,.@/()&amp;','        '))"/>
+    <xsl:value-of select="normalize-space(translate($name,'-,.@/()&amp;®','        '))"/>
   </xsl:template>
   <xsl:template name="removeSpaces">
     <xsl:param name="name"/>

@@ -86,7 +86,7 @@
   </xsl:template>
   <xsl:template name="replaceNonAlpha">
     <xsl:param name="name"/>
-    <xsl:value-of select="normalize-space(translate($name,'-,@/()&amp;','       '))"/>
+    <xsl:value-of select="normalize-space(translate($name,'-,.@/()&amp;','        '))"/>
   </xsl:template>
   <xsl:template name="removeSpaces">
     <xsl:param name="name"/>

@@ -2,8 +2,9 @@
 <!DOCTYPE article
   PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <article lang="">
-   <para>PS 3.7-2009Page 119</para>
-   <para>PS 3.7-2009</para>
+   <para>09</para>
+   <para>PS 3.7-2011Page 115</para>
+   <para>PS 3.7-2011</para>
    <para/>
    <para/>
    <para/>
@@ -27,37 +28,18 @@
    <para>Published by</para>
    <para>National Electrical Manufacturers Association1300 N.  17th StreetRosslyn, Virginia 22209  USA</para>
    <para/>
-   <para>© Copyright 2009 by the National Electrical Manufacturers Association.  All rights including translation into other languages, reserved under the Universal Copyright Convention, the Berne Convention for the Protection of Literacy and Artistic Works, and the International and Pan American Copyright Conventions.</para><sect1><title>NOTICE AND DISCLAIMER</title>
+   <para>© Copyright 2011 by the National Electrical Manufacturers Association.  All rights including translation into other languages, reserved under the Universal Copyright Convention, the Berne Convention for the Protection of Literacy and Artistic Works, and the International and Pan American Copyright Conventions.</para><sect1><title>NOTICE AND DISCLAIMER</title>
    <para>The information in this publication was considered technically sound by the consensus of persons engaged in the development and approval of the document at the time it was developed.  Consensus does not necessarily mean that there is unanimous agreement among every person participating in the development of this document.</para>
    <para>NEMA standards and guideline publications, of which the document contained herein is one, are developed through a voluntary consensus standards development process.  This process brings together volunteers and/or seeks out the views of persons who have an interest in the topic covered by this publication.  While NEMA administers the process and establishes rules to promote fairness in the development of consensus, it does not write the document and it does not independently test, evaluate, or verify the accuracy or completeness of any information or the soundness of any judgments contained in its standards and guideline publications.</para>
    <para>NEMA disclaims liability for any personal injury, property, or other damages of any nature whatsoever, whether special, indirect, consequential, or compensatory, directly or indirectly resulting from the publication, use of, application, or reliance on this document.  NEMA disclaims and makes no guaranty or warranty, expressed or implied, as to the accuracy or completeness of any information published herein, and disclaims and makes no warranty that the information in this document will fulfill any of your particular purposes or needs.  NEMA does not undertake to guarantee the performance of any individual manufacturer or seller’s products or services by virtue of this standard or guide.</para>
    <para>In publishing and making this document available, NEMA is not undertaking to render professional or other services for or on behalf of any person or entity, nor is NEMA undertaking to perform any duty owed by any person or entity to someone else.  Anyone using this document should rely on his or her own independent judgment or, as appropriate, seek the advice of a competent professional in determining the exercise of reasonable care in any given circumstances.  Information and other standards on the topic covered by this publication may be available from other sources, which the user may wish to consult for additional views or information not covered by this publication.</para>
    <para>NEMA has no power, nor does it undertake to police or enforce compliance with the contents of this document.  NEMA does not certify, test, or inspect products, designs, or installations for safety or health purposes.  Any certification or other statement of compliance with any health or safety–related information in this document shall not be attributable to NEMA and is solely the responsibility of the certifier or maker of the statement.</para></sect1><sect1><title>CONTENTS</title></sect1><sect1><title>FOREWORD</title>
-   <para>The American College of Radiology (ACR) and the National Electrical Manufacturers Association (NEMA) formed a joint committee to develop a standard for Digital Imaging and Communications in Medicine (DICOM). This DICOM Standard was developed according to the NEMA procedures.</para>
-   <para>This Standard is developed in liaison with other standardization organizations including CEN TC251 in Europe and JIRA in Japan, with review also by other organizations including IEEE, HL7 and ANSI in the USA.</para>
+   <para>This DICOM Standard was developed according to the procedures of the DICOM Standards Committee.</para>
+   <para/>
    <para>The DICOM Standard is structured as a multi-part document using the guidelines established in the following document:</para>
    <para>        ISO/IEC Directives, 1989 Part 3 : Drafting and Presentation of International Standards.</para>
-   <para>This document is one part of the DICOM Standard which consists of the following parts:</para>
-   <para>        PS 3.1: Introduction and Overview</para>
-   <para>        PS 3.2: Conformance</para>
-   <para>        PS 3.3: Information Object Definitions</para>
-   <para>        PS 3.4: Service Class Specifications</para>
-   <para>        PS 3.5: Data Structures and Encoding</para>
-   <para>        PS 3.6: Data Dictionary</para>
-   <para>        PS 3.7: Message Exchange</para>
-   <para>        PS 3.8: Network Communication Support for Message Exchange</para>
-   <para>        PS 3.9: Retired</para>
-   <para>        PS 3.10: Media Storage and File Format for Media Interchange</para>
-   <para>        PS 3.11: Media Storage Application Profiles</para>
-   <para>        PS 3.12: Media Format and Physical Media for Media Interchange</para>
-   <para>        PS 3.13: Retired</para>
-   <para>        PS 3.14: Grayscale Standard Display Function</para>
-   <para>        PS 3.15: Security and System Management Profiles</para>
-   <para>        PS 3.16: Content Mapping Resource</para>
-   <para>        PS 3.17: Explanatory Information</para>
-   <para>        PS 3.18: Web Access to DICOM Persistent Objects (WADO)</para>
    <para/>
-   <para>These parts are related but independent documents. Their development level and approval status may differ. Additional parts may be added to this multi-part Standard. PS 3.1 should be used as the base reference for the current parts of this Standard.</para>
+   <para>PS 3.1 should be used as the base reference for the current parts of this Standard.</para>
    <para/></sect1><sect1><title>1        Scope and field of application</title>
    <para>This Part of the DICOM Standard specifies the DICOM Message Service Element (DIMSE). The DIMSE defines an Application Service Element (both the service and protocol) used by peer DICOM Application Entities for the purpose of exchanging medical images and related information.  </para>
    <para>The DIMSE provides its services by relying on the DIMSE protocol. The DIMSE protocol defines the encoding rules necessary to construct Messages. A Message  is composed of a Command Set (defined in this part of the DICOM Standard) followed by a conditional Data Set (defined in PS 3.5).</para>
@@ -88,7 +70,7 @@
    <para>ISO 8649, Information Processing Systems - Open Systems Interconnection - Service Definition for the Association Control Service Element</para>
    <para>ISO 8822, Information Processing Systems - Open Systems Interconnection - Connection-Oriented Presentation Service Definition</para>
    <para>ISO/IEC 9595:1991, Information Technology - Open Systems Interconnection - Common Management Information Service Definition</para>
-   <para>ISO/IEC 9834-3, Information Processing Systems - Open Systems Interconnection - Part 3: Procedures for the Assignment of Object Identifier Component Values for Joint OSI-CCITT Use</para>
+   <para>ISO/IEC 9834-1, Information technology - Open Systems Interconnection - Procedures for the operation of OSI Registration Authorities: General procedures and top arcs of the ASN.1 Object Identifier tree</para>
    <para>RFC-1510        The Kerberos Network Authentication Service (V5)</para>
    <para>RFC-2289        A One-Time Password System</para>
    <para>SAML        Assertions and Protocols for the OASIS Security Assertion Markup Language (SAML) V2.0 OASIS Standard, 15 March 2005</para></sect1><sect1><title>3        Definitions</title>
@@ -167,7 +149,7 @@
    <para>HL7                        Health Level 7</para>
    <para>IEEE                Institute of Electrical and Electronics Engineers</para>
    <para>ISO                        International Standards Organization</para>
-   <para>JIRA                Japan Industries Association of Radiation Apparatus</para>
+   <para>JIRA                Japan Industries Association of Radiological Systems</para>
    <para>NEMA                National Electrical Manufacturers Association</para>
    <para>OSI                        Open Systems Interconnection</para>
    <para>PDU                        Protocol Data Unit</para>
@@ -1563,7 +1545,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -1746,7 +1728,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -1931,7 +1913,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -1965,7 +1947,7 @@
          </row></tbody></tgroup>
    </informaltable>
    <para/>
-   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
+   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Command Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
    <para/></sect4><sect4><title>9.3.2.2        C-FIND-RSP</title>
    <para>The C-FIND-RSP Message contains fields as defined in Table 9.3-4 and in Annex C. Each field shall conform to DICOM encoding and Value Representation as defined in PS 3.5. Fields are required as specified in the C-FIND service definition unless otherwise noted in Table 9.3-4. Fields not specified in the C-FIND service definition but present in Table 9.3-4 are required by the DIMSE-C protocol.</para>
    <para>Table 9.3-4C-FIND-RSP MESSAGE FIELDS</para>
@@ -2063,7 +2045,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2197,7 +2179,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2352,7 +2334,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2386,7 +2368,7 @@
          </row></tbody></tgroup>
    </informaltable>
    <para/>
-   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
+   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Command Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
    <para/></sect4><sect4><title>9.3.3.2        C-GET-RSP</title>
    <para>The C-GET-RSP Message contains fields as defined in Table 9.3-7 and in Annex C. Each field shall conform to DICOM encoding and Value Representation as defined in PS 3.5. Fields are required as specified in the C-GET service definition unless otherwise noted in Table 9.3-7. Fields not specified in the C-GET service definition but present in Table 9.3-7 are required by the DIMSE-C protocol.</para>
    <para>Table 9.3-7C-GET-RSP MESSAGE FIELDS</para>
@@ -2484,7 +2466,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2694,7 +2676,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2849,7 +2831,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -2900,7 +2882,7 @@
          </row></tbody></tgroup>
    </informaltable>
    <para/>
-   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
+   <para>Note:        Implementations which require compatibility to previous versions of this Standard must set the Command Data Set Type (0000,0800) Field to 0102H (Identifier).</para>
    <para/></sect4><sect4><title>9.3.4.2        C-MOVE-RSP</title>
    <para>The C-MOVE-RSP Message contains fields as defined in Table 9.3-10 and in Annex C. Each field shall conform to DICOM encoding and Value Representation as defined in PS 3.5. Fields are required as specified in the C-MOVE service definition unless otherwise noted in Table 9.3-10. Fields not specified in the C-MOVE service definition but present in Table 9.3-10 are required by the DIMSE-C protocol.</para>
    <para>Table 9.3-10C-MOVE-RSP MESSAGE FIELDS</para>
@@ -2998,7 +2980,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -3205,7 +3187,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -3337,7 +3319,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -3444,7 +3426,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -3486,7 +3468,8 @@
    <para>On receipt of a C-ECHO response primitive, issued by the performing DIMSE-service-user, the DIMSE-C protocol machine shall:</para>
    <para>        construct a Message conveying the C-ECHO-RSP</para>
    <para>        send the Message using the P-DATA request service (See 8.1)</para>
-   <para>On receipt of a Message conveying a C-ECHO-RSP the DIMSE protocol machine shall issue a C-ECHO confirmation primitive to the invoking DIMSE-service-user, thus completing the C-ECHO procedure.</para></sect4></sect3></sect2></sect1><sect1><title>10 DIMSE-N</title><sect2><title>10.1        Services</title><sect3><title>10.1.1        N-EVENT-REPORT SERVICE</title>
+   <para>On receipt of a Message conveying a C-ECHO-RSP the DIMSE protocol machine shall issue a C-ECHO confirmation primitive to the invoking DIMSE-service-user, thus completing the C-ECHO procedure.</para></sect4></sect3></sect2></sect1><sect1><title>10 DIMSE-N</title><sect2><title>10.1        Services</title>
+   <para>The following sections describe the DIMSE-N Services. The behavior of these services is also described in PS 3.4. The Affected SOP Class UID in the DIMSE-N command need not match the SOP Class UID in the Presentation Context negotiated for the association over which the DIMSE-N command has been sent. PS 3.4 specifies which combinations are valid.</para><sect3><title>10.1.1        N-EVENT-REPORT SERVICE</title>
    <para>The N-EVENT-REPORT service is used by a DIMSE-service-user to report an event to a peer DIMSE-service-user. It is a confirmed service.</para><sect4><title>10.1.1.1         N-EVENT-REPORT parameters</title>
    <para>Table 10.1-1 lists the parameters for this service.</para>
    <para>Table 10.1-1N-EVENT-REPORT PARAMETERS</para>
@@ -4422,7 +4405,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -4586,7 +4569,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -4777,7 +4760,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -4918,7 +4901,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5091,7 +5074,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5238,7 +5221,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5413,7 +5396,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5578,7 +5561,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5778,7 +5761,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -5924,7 +5907,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -6099,7 +6082,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -6227,7 +6210,7 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>(0000,0800)</para>
@@ -6289,11 +6272,11 @@
    <para>On receipt of a Message conveying an N-DELETE-RSP the DIMSE-N protocol machine shall issue an N-DELETE confirmation primitive to the invoking DIMSE-service-user, thus completing the N-DELETE procedure.</para></sect4></sect3></sect2></sect1><sect1><title>Annex A        Application Context Usage(Normative)</title><sect2><title>A.1        Application context definition</title>
    <para>An Application Context explicitly defines the set of application service elements, related options and any other information necessary for the inter working of Application Entities on an Association; in particular, it specifies the DIMSE Protocol used by the Application Layer.</para>
    <para>Two Application Entities establish an Association by agreeing on an Application Context. The requester of an Association proposes an Application Context Name and the acceptor returns either the same or a different Application Context Name. The returned name specifies the Application Context to be used for this Association. The offer of an alternate Application Context by the acceptor provides a mechanism for limited negotiation. If the requester cannot operate in the acceptor's Application Context, it shall issue an A-Abort request primitive. Such a negotiation will facilitate the introduction of new versions of the DICOM Message Exchange Protocol in the future.</para></sect2><sect2><title>A.2        DICOM application context name encoding and registration</title>
-   <para>The Application Context Name structure is based on the OSI Object Identification (numeric form) as defined by ISO 8824. Specific rules are defined in PS 3.5. Application Context Names are registered values as defined by ISO 9834-3 to ensure global uniqueness. Application Context Names shall be encoded as defined in PS 3.8.</para><sect3><title>A.2.1        DICOM Registered Application Context Names</title>
+   <para>The Application Context Name structure is based on the OSI Object Identification (numeric form) as defined by ISO 8824. Specific rules are defined in PS 3.5. Application Context Names are registered values as defined by ISO 9834-1 to ensure global uniqueness. Application Context Names shall be encoded as defined in PS 3.8.</para><sect3><title>A.2.1        DICOM Registered Application Context Names</title>
    <para>The organization responsible for the definition and registration of DICOM Application Context Names is ACR-NEMA. ACR-NEMA guarantees uniqueness for all DICOM Application Context Names. A choice of DICOM registered Application Context Names related to a specific version of DIMSE, as well as the associated negotiation rules, are defined in this annex.</para>
    <para>A single DICOM Application Context Name is defined for this version of this Standard. This name is "1.2.840.10008.3.1.1.1"</para></sect3><sect3><title>A.2.2        Privately defined application context names</title>
-   <para>Privately defined Application Context Names may also be used, but they will not be registered by ACR-NEMA. Organizations which define private Application Context Names are responsible to obtain their proper registration as defined for OSI Object Identifiers. National Standards Organizations representing a number of countries (e.g. UK, France, Germany, Japan, USA, etc.) to the International Standards Organization act as a registration authority as defined by ISO 9834-3.</para>
-   <para>Note        For example, in the USA, ANSI assigns Organization Identifiers to any requesting organization. This identifier is made of a series of four numeric elements; 1 (identifies ISO), 2 (identifies the ISO member bodies branch), 840 (identifies ANSI as the ISO member body representing the USA), and xxxxxx (identifies a specific organization and is issued by ANSI). Such an identifier may be used by the identified organization as a root to  which it may add a suffix made of one or more numeric elements. The identified organization accepts the responsibility to properly register these suffixes to ensure uniqueness.</para>
+   <para>Privately defined Application Context Names may also be used, but they will not be registered by ACR-NEMA. Organizations which define private Application Context Names are responsible to obtain their proper registration as defined for OSI Object Identifiers. National Standards Organizations representing a number of countries (e.g. UK, France, Germany, Japan, USA, etc.) to the International Standards Organization act as a registration authority as defined by ISO 9834-1.</para>
+   <para>Note        For example, in the USA, ANSI assigns Organization Identifiers to any requesting organization. This identifier is made of a series of four numeric elements; 1 (identifies ISO), 2 (identifies the ISO member bodies branch), 840 (identifies ANSI as the ISO member body representing the USA), and xxxxxx (identifies a specific organization and is issued by ANSI). Such an identifier may be used by the identified organization as a root to which it may add a suffix made of one or more numeric elements. The identified organization accepts the responsibility to properly register these suffixes to ensure uniqueness.</para>
    <para/>
    <para>Privately defined Application Context Names shall be encoded as defined in PS 3.8. The Organization identifier "1.2.840.10008" is reserved for DICOM and shall not be used for privately defined Application Context Names. </para></sect3></sect2><sect2><title>A.3 Association initialization for DICOM application entity</title>
    <para>The establishment of an Association involves two DICOM AEs, one that is the Association-requester and one that is the Association-acceptor.</para>
@@ -8281,6 +8264,63 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
+   <para/></sect3><sect3><title>C.5.25         Refused: Not Authorized</title>
+   <informaltable frame="all">
+      <tgroup cols="3">
+         <colspec colnum="1" colname="c1"/>
+         <colspec colnum="2" colname="c2"/>
+         <colspec colnum="3" colname="c3"/><tbody><row>
+            <entry>
+               <para>Status Field</para>
+            </entry>
+            <entry>
+               <para>Tag</para>
+            </entry>
+            <entry>
+               <para>VR</para>
+            </entry>
+            <entry>
+               <para>VM</para>
+            </entry>
+            <entry>
+               <para>Description of Field</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>Status</para>
+            </entry>
+            <entry>
+               <para>(0000,0900)</para>
+            </entry>
+            <entry>
+               <para>US</para>
+            </entry>
+            <entry>
+               <para>1</para>
+            </entry>
+            <entry>
+               <para>Confirmation status of the operation. The value of this required field shall be set to 0124H.</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>Error Comment</para>
+            </entry>
+            <entry>
+               <para>(0000,0902)</para>
+            </entry>
+            <entry>
+               <para>LO</para>
+            </entry>
+            <entry>
+               <para>1</para>
+            </entry>
+            <entry>
+               <para>This optional field contains an application-specific text description of the error detected.</para>
+            </entry>
+         </row></tbody></tgroup>
+   </informaltable>
    <para/></sect3></sect2></sect1><sect1><title>Annex D        Association Negotiation(Normative)</title>
    <para>Association establishment is the first phase of any instance of communication between peer DICOM AEs. The AEs use the Association establishment to negotiate how data will be encoded and the type of data to be exchanged. This Annex provides an overview of the negotiation mechanisms plus a discussion of each concept, its objectives, relationships, usage principles and specifications.</para><sect2><title>D.1        Abstract syntax</title>
    <para>Abstract Syntaxes specify the Application Layer Data Elements and Application Layer protocol control information (with associated semantics) which are independent of the encoding technique used to represent them.</para>
@@ -9495,13 +9535,13 @@
          <colspec colnum="2" colname="c2"/>
          <colspec colnum="3" colname="c3"/><tbody><row>
             <entry>
+               <para>Tag</para>
+            </entry>
+            <entry>
                <para>Message Field</para>
             </entry>
             <entry>
                <para>Keyword</para>
-            </entry>
-            <entry>
-               <para>Tag</para>
             </entry>
             <entry>
                <para>VR</para>
@@ -9515,13 +9555,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0000)</para>
+            </entry>
+            <entry>
                <para>Command Group Length</para>
             </entry>
             <entry>
                <para>CommandGroupLength</para>
-            </entry>
-            <entry>
-               <para>(0000,0000)</para>
             </entry>
             <entry>
                <para>UL</para>
@@ -9535,13 +9575,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0002)</para>
+            </entry>
+            <entry>
                <para>Affected SOP Class UID</para>
             </entry>
             <entry>
                <para>AffectedSOPClassUID</para>
-            </entry>
-            <entry>
-               <para>(0000,0002)</para>
             </entry>
             <entry>
                <para>UI</para>
@@ -9555,13 +9595,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0003)</para>
+            </entry>
+            <entry>
                <para>Requested SOP Class UID</para>
             </entry>
             <entry>
                <para>RequestedSOPClassUID</para>
-            </entry>
-            <entry>
-               <para>(0000,0003)</para>
             </entry>
             <entry>
                <para>UI</para>
@@ -9575,13 +9615,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0100)</para>
+            </entry>
+            <entry>
                <para>Command Field</para>
             </entry>
             <entry>
                <para>CommandField</para>
-            </entry>
-            <entry>
-               <para>(0000,0100)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9618,13 +9658,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0110)</para>
+            </entry>
+            <entry>
                <para>Message ID</para>
             </entry>
             <entry>
                <para>MessageID</para>
-            </entry>
-            <entry>
-               <para>(0000,0110)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9638,13 +9678,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0120)</para>
+            </entry>
+            <entry>
                <para>Message ID Being Responded To</para>
             </entry>
             <entry>
                <para>MessageIDBeingRespondedTo</para>
-            </entry>
-            <entry>
-               <para>(0000,0120)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9658,13 +9698,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0600)</para>
+            </entry>
+            <entry>
                <para>Move Destination</para>
             </entry>
             <entry>
                <para>MoveDestination</para>
-            </entry>
-            <entry>
-               <para>(0000,0600)</para>
             </entry>
             <entry>
                <para>AE</para>
@@ -9678,13 +9718,13 @@
          </row>
          <row>
             <entry>
-               <para>Priority</para>
-            </entry>
-            <entry>
-               <para>Priority</para>
-            </entry>
-            <entry>
                <para>(0000,0700)</para>
+            </entry>
+            <entry>
+               <para>Priority</para>
+            </entry>
+            <entry>
+               <para>Priority</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9701,13 +9741,13 @@
          </row>
          <row>
             <entry>
-               <para>Data Set Type</para>
+               <para>(0000,0800)</para>
+            </entry>
+            <entry>
+               <para>Command Data Set Type</para>
             </entry>
             <entry>
                <para>CommandDataSetType</para>
-            </entry>
-            <entry>
-               <para>(0000,0800)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9721,13 +9761,13 @@
          </row>
          <row>
             <entry>
-               <para>Status</para>
-            </entry>
-            <entry>
-               <para>Status</para>
-            </entry>
-            <entry>
                <para>(0000,0900)</para>
+            </entry>
+            <entry>
+               <para>Status</para>
+            </entry>
+            <entry>
+               <para>Status</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9741,13 +9781,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0901)</para>
+            </entry>
+            <entry>
                <para>Offending Element</para>
             </entry>
             <entry>
                <para>OffendingElement</para>
-            </entry>
-            <entry>
-               <para>(0000,0901)</para>
             </entry>
             <entry>
                <para>AT</para>
@@ -9762,13 +9802,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0902)</para>
+            </entry>
+            <entry>
                <para>Error Comment</para>
             </entry>
             <entry>
                <para>ErrorComment</para>
-            </entry>
-            <entry>
-               <para>(0000,0902)</para>
             </entry>
             <entry>
                <para>LO</para>
@@ -9782,13 +9822,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0903)</para>
+            </entry>
+            <entry>
                <para>Error ID</para>
             </entry>
             <entry>
                <para>ErrorID</para>
-            </entry>
-            <entry>
-               <para>(0000,0903)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9802,13 +9842,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1000)</para>
+            </entry>
+            <entry>
                <para>Affected SOP Instance UID</para>
             </entry>
             <entry>
                <para>AffectedSOPInstanceUID</para>
-            </entry>
-            <entry>
-               <para>(0000,1000)</para>
             </entry>
             <entry>
                <para>UI</para>
@@ -9821,6 +9861,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,1001)</para>
+            </entry>
             <entry>
                <para>Requested SOP Instance UID</para>
             </entry>
@@ -9828,9 +9871,6 @@
                <para>RequestedSOPInstanceUID</para>
             </entry>
             <entry>
-               <para>(0000,1001)</para>
-            </entry>
-            <entry>
                <para>UI</para>
             </entry>
             <entry>
@@ -9842,13 +9882,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1002)</para>
+            </entry>
+            <entry>
                <para>Event Type ID</para>
             </entry>
             <entry>
                <para>EventTypeID</para>
-            </entry>
-            <entry>
-               <para>(0000,1002)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9862,13 +9902,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1005)</para>
+            </entry>
+            <entry>
                <para>Attribute Identifier List</para>
             </entry>
             <entry>
                <para>AttributeIdentifierList</para>
-            </entry>
-            <entry>
-               <para>(0000,1005)</para>
             </entry>
             <entry>
                <para>AT</para>
@@ -9882,13 +9922,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1008)</para>
+            </entry>
+            <entry>
                <para>Action Type ID</para>
             </entry>
             <entry>
                <para>ActionTypeID</para>
-            </entry>
-            <entry>
-               <para>(0000,1008)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -9902,14 +9942,14 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1020)</para>
+               <para/>
+            </entry>
+            <entry>
                <para>Number of Remaining Sub-operations</para>
             </entry>
             <entry>
                <para>NumberOfRemainingSuboperations</para>
-            </entry>
-            <entry>
-               <para>(0000,1020)</para>
-               <para/>
             </entry>
             <entry>
                <para>US</para>
@@ -9923,14 +9963,14 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1021)</para>
+               <para/>
+            </entry>
+            <entry>
                <para>Number of Completed Sub-operations</para>
             </entry>
             <entry>
                <para>NumberOfCompletedSuboperations</para>
-            </entry>
-            <entry>
-               <para>(0000,1021)</para>
-               <para/>
             </entry>
             <entry>
                <para>US</para>
@@ -9944,14 +9984,14 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1022)</para>
+               <para/>
+            </entry>
+            <entry>
                <para>Number of Failed Sub-operations</para>
             </entry>
             <entry>
                <para>NumberOfFailedSuboperations</para>
-            </entry>
-            <entry>
-               <para>(0000,1022)</para>
-               <para/>
             </entry>
             <entry>
                <para>US</para>
@@ -9965,14 +10005,14 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1023)</para>
+               <para/>
+            </entry>
+            <entry>
                <para>Number of Warning Sub-operations</para>
             </entry>
             <entry>
                <para>NumberOfWarningSuboperations</para>
-            </entry>
-            <entry>
-               <para>(0000,1023)</para>
-               <para/>
             </entry>
             <entry>
                <para>US</para>
@@ -9986,13 +10026,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1030)</para>
+            </entry>
+            <entry>
                <para>Move Originator Application Entity Title</para>
             </entry>
             <entry>
                <para>MoveOriginatorApplicationEntityTitle</para>
-            </entry>
-            <entry>
-               <para>(0000,1030)</para>
             </entry>
             <entry>
                <para>AE</para>
@@ -10006,13 +10046,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,1031)</para>
+            </entry>
+            <entry>
                <para>Move Originator Message ID</para>
             </entry>
             <entry>
                <para>MoveOriginatorMessageID</para>
-            </entry>
-            <entry>
-               <para>(0000,1031)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -10031,13 +10071,13 @@
    <informaltable frame="all">
       <tgroup cols="5"><tbody><row>
             <entry>
+               <para>Tag</para>
+            </entry>
+            <entry>
                <para>Message Field</para>
             </entry>
             <entry>
                <para>Keyword</para>
-            </entry>
-            <entry>
-               <para>Tag</para>
             </entry>
             <entry>
                <para>VR</para>
@@ -10048,13 +10088,13 @@
          </row>
          <row>
             <entry>
-               <para>Length to End</para>
+               <para>(0000,0001)</para>
+            </entry>
+            <entry>
+               <para>Command Length to End</para>
             </entry>
             <entry>
                <para>CommandLengthToEnd</para>
-            </entry>
-            <entry>
-               <para>(0000,0001)</para>
             </entry>
             <entry>
                <para>UL</para>
@@ -10065,32 +10105,32 @@
          </row>
          <row>
             <entry>
-               <para>Recognition Code</para>
+               <para>(0000,0010)</para>
+            </entry>
+            <entry>
+               <para>Command Recognition Code</para>
             </entry>
             <entry>
                <para>CommandRecognitionCode</para>
             </entry>
             <entry>
-               <para>(0000,0010)</para>
-            </entry>
-            <entry>
-               <para>CS</para>
+               <para>SH</para>
             </entry>
             <entry>
                <para>1</para>
             </entry>
          </row>
          <row>
-            <entry>
-               <para>Initiator</para>
-            </entry>
-            <entry>
-               <para>Initiator</para>
-            </entry>
             <entry>
                <para>(0000,0200)</para>
             </entry>
             <entry>
+               <para>Initiator</para>
+            </entry>
+            <entry>
+               <para>Initiator</para>
+            </entry>
+            <entry>
                <para>AE</para>
             </entry>
             <entry>
@@ -10098,16 +10138,16 @@
             </entry>
          </row>
          <row>
-            <entry>
-               <para>Receiver</para>
-            </entry>
-            <entry>
-               <para>Receiver</para>
-            </entry>
             <entry>
                <para>(0000,0300)</para>
             </entry>
             <entry>
+               <para>Receiver</para>
+            </entry>
+            <entry>
+               <para>Receiver</para>
+            </entry>
+            <entry>
                <para>AE</para>
             </entry>
             <entry>
@@ -10115,6 +10155,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,0400)</para>
+            </entry>
             <entry>
                <para>Find Location</para>
             </entry>
@@ -10122,9 +10165,6 @@
                <para>FindLocation</para>
             </entry>
             <entry>
-               <para>(0000,0400)</para>
-            </entry>
-            <entry>
                <para>AE</para>
             </entry>
             <entry>
@@ -10133,13 +10173,13 @@
          </row>
          <row>
             <entry>
+               <para>(0000,0850)</para>
+            </entry>
+            <entry>
                <para>Number of Matches</para>
             </entry>
             <entry>
                <para>NumberOfMatches</para>
-            </entry>
-            <entry>
-               <para>(0000,0850)</para>
             </entry>
             <entry>
                <para>US</para>
@@ -10149,6 +10189,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,0860)</para>
+            </entry>
             <entry>
                <para>Response Sequence Number</para>
             </entry>
@@ -10156,9 +10199,6 @@
                <para>ResponseSequenceNumber</para>
             </entry>
             <entry>
-               <para>(0000,0860)</para>
-            </entry>
-            <entry>
                <para>US</para>
             </entry>
             <entry>
@@ -10167,22 +10207,25 @@
          </row>
          <row>
             <entry>
-               <para>DIALOG Receiver</para>
+               <para>(0000,4000)</para>
+            </entry>
+            <entry>
+               <para>Dialog Receiver</para>
             </entry>
             <entry>
                <para>DialogReceiver</para>
             </entry>
             <entry>
-               <para>(0000,4000)</para>
-            </entry>
-            <entry>
-               <para>AT</para>
+               <para>LT</para>
             </entry>
             <entry>
                <para>1</para>
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,4010)</para>
+            </entry>
             <entry>
                <para>Terminal Type</para>
             </entry>
@@ -10190,16 +10233,16 @@
                <para>TerminalType</para>
             </entry>
             <entry>
-               <para>(0000,4010)</para>
-            </entry>
-            <entry>
-               <para>AT</para>
+               <para>LT</para>
             </entry>
             <entry>
                <para>1</para>
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5010)</para>
+            </entry>
             <entry>
                <para>Message Set ID</para>
             </entry>
@@ -10207,9 +10250,6 @@
                <para>MessageSetID</para>
             </entry>
             <entry>
-               <para>(0000,5010)</para>
-            </entry>
-            <entry>
                <para>SH</para>
             </entry>
             <entry>
@@ -10217,6 +10257,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5020)</para>
+            </entry>
             <entry>
                <para>End Message ID</para>
             </entry>
@@ -10224,9 +10267,6 @@
                <para>EndMessageID</para>
             </entry>
             <entry>
-               <para>(0000,5020)</para>
-            </entry>
-            <entry>
                <para>SH</para>
             </entry>
             <entry>
@@ -10235,22 +10275,25 @@
          </row>
          <row>
             <entry>
+               <para>(0000,5110)</para>
+            </entry>
+            <entry>
                <para>Display Format</para>
             </entry>
             <entry>
                <para>DisplayFormat</para>
             </entry>
             <entry>
-               <para>(0000,5110)</para>
-            </entry>
-            <entry>
-               <para>AT</para>
+               <para>LT</para>
             </entry>
             <entry>
                <para>1</para>
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5120)</para>
+            </entry>
             <entry>
                <para>Page Position ID</para>
             </entry>
@@ -10258,16 +10301,16 @@
                <para>PagePositionID</para>
             </entry>
             <entry>
-               <para>(0000,5120)</para>
-            </entry>
-            <entry>
-               <para>AT</para>
+               <para>LT</para>
             </entry>
             <entry>
                <para>1</para>
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5130)</para>
+            </entry>
             <entry>
                <para>Text Format ID</para>
             </entry>
@@ -10275,9 +10318,6 @@
                <para>TextFormatID</para>
             </entry>
             <entry>
-               <para>(0000,5130)</para>
-            </entry>
-            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10285,6 +10325,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5140)</para>
+            </entry>
             <entry>
                <para>Normal/Reverse</para>
             </entry>
@@ -10292,9 +10335,6 @@
                <para>NormalReverse</para>
             </entry>
             <entry>
-               <para>(0000,5140)</para>
-            </entry>
-            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10302,6 +10342,9 @@
             </entry>
          </row>
          <row>
+            <entry>
+               <para>(0000,5150)</para>
+            </entry>
             <entry>
                <para>Add Gray Scale</para>
             </entry>
@@ -10309,9 +10352,6 @@
                <para>AddGrayScale</para>
             </entry>
             <entry>
-               <para>(0000,5150)</para>
-            </entry>
-            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10319,16 +10359,16 @@
             </entry>
          </row>
          <row>
-            <entry>
-               <para>Borders</para>
-            </entry>
-            <entry>
-               <para>Borders</para>
-            </entry>
             <entry>
                <para>(0000,5160)</para>
             </entry>
             <entry>
+               <para>Borders</para>
+            </entry>
+            <entry>
+               <para>Borders</para>
+            </entry>
+            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10337,13 +10377,13 @@
          </row>
          <row>
             <entry>
-               <para>Copies</para>
-            </entry>
-            <entry>
-               <para>Copies</para>
-            </entry>
-            <entry>
                <para>(0000,5170)</para>
+            </entry>
+            <entry>
+               <para>Copies</para>
+            </entry>
+            <entry>
+               <para>Copies</para>
             </entry>
             <entry>
                <para>IS</para>
@@ -10354,15 +10394,15 @@
          </row>
          <row>
             <entry>
-               <para>Magnification Type</para>
+               <para>(0000,5180)</para>
+            </entry>
+            <entry>
+               <para>Command Magnification Type</para>
             </entry>
             <entry>
                <para>CommandMagnificationType</para>
             </entry>
             <entry>
-               <para>(0000,5180)</para>
-            </entry>
-            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10370,16 +10410,16 @@
             </entry>
          </row>
          <row>
-            <entry>
-               <para>Erase</para>
-            </entry>
-            <entry>
-               <para>Erase</para>
-            </entry>
             <entry>
                <para>(0000,5190)</para>
             </entry>
             <entry>
+               <para>Erase</para>
+            </entry>
+            <entry>
+               <para>Erase</para>
+            </entry>
+            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10387,16 +10427,16 @@
             </entry>
          </row>
          <row>
-            <entry>
-               <para>Print</para>
-            </entry>
-            <entry>
-               <para>Print</para>
-            </entry>
             <entry>
                <para>(0000,51A0)</para>
             </entry>
             <entry>
+               <para>Print</para>
+            </entry>
+            <entry>
+               <para>Print</para>
+            </entry>
+            <entry>
                <para>CS</para>
             </entry>
             <entry>
@@ -10405,13 +10445,13 @@
          </row>
          <row>
             <entry>
-               <para>Overlays</para>
-            </entry>
-            <entry>
-               <para>Overlays</para>
-            </entry>
-            <entry>
                <para>(0000,51B0)</para>
+            </entry>
+            <entry>
+               <para>Overlays</para>
+            </entry>
+            <entry>
+               <para>Overlays</para>
             </entry>
             <entry>
                <para>US</para>
@@ -10428,5 +10468,6 @@
    <para>Note:        Identical text to that in PS 3.8 was formerly duplicated here.</para>
    <para/></sect1><sect1><title>Annex G        Command Element Cross Reference(Informative)</title>
    <para>Command Element        Document Page Numbers</para>
-   <para/></sect1><para>- Standard -</para>
+   <para/></sect1><para>Standard </para>
+   <para>- Draft -</para>
 </article>

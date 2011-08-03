@@ -1546,7 +1546,8 @@ public class Attributes implements Serializable {
         if (value instanceof Sequence) {
             Sequence sq = (Sequence) value;
             for (Attributes item : sq)
-                if (item.matches(keys, ignorePNCase, matchNoValue));
+                if (item.matches(keys, ignorePNCase, matchNoValue))
+                    return true;
         }
         return false;
     }

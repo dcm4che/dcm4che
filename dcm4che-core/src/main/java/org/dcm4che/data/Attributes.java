@@ -322,11 +322,11 @@ public class Attributes implements Serializable {
                 setString(creatorTag, VR.LO, privateCreator);
                 return creatorTag;
            }
-           if (privateCreator.equals(VR.LO.toString(
-                   decodeStringValue(index), false, 0, null)))
+           if (privateCreator.equals(values[index] == Value.NULL
+                   ? ""
+                   : VR.LO.toString(decodeStringValue(index), false, 0, null)))
                return creatorTag;
         }
-        
         throw new IllegalStateException("No free block for Private Element "
                 + TagUtils.toString(tag));
     }

@@ -45,31 +45,22 @@ public class ValueSelector {
 
     private final int tag;
     private final String privateCreator;
+    private final VR vr;
     private final int index;
     private final ItemPointer[] itemPointers;
 
-    public ValueSelector(int tag, String privateCreator, int index, ItemPointer... itemPointers) {
+    public ValueSelector(int tag, String privateCreator, VR vr, int index,
+            ItemPointer... itemPointers) {
         this.tag = tag;
         this.privateCreator = privateCreator;
+        this.vr = vr;
         this.index = index;
         this.itemPointers = itemPointers.clone();
     }
 
-    public ValueSelector(int tag, int index, ItemPointer... itemPointers) {
-        this(tag, null, index, itemPointers);
-    }
-
-    public ValueSelector(int tag, String privateCreator, ItemPointer... itemPointers) {
-        this(tag, privateCreator, 0, itemPointers);
-    }
-
-    public ValueSelector(int tag, ItemPointer... itemPointers) {
-        this(tag, null, 0, itemPointers);
-    }
-
     public String selectStringValue(Attributes attrs, String defVal) {
         Attributes item = attrs.getNestedDataset(itemPointers);
-        return item != null ? item.getString(tag, privateCreator, index, defVal) : defVal;
+        return item != null ? item.getString(tag, privateCreator, vr, index, defVal) : defVal;
     }
 
     public final int tag() {
@@ -101,6 +92,8 @@ public class ValueSelector {
         sb.append("DicomAttribute[@tag=\"").append(tag);
         if (privateCreator != null)
             sb.append("\" and @privateCreator=\"").append(privateCreator);
+        if (vr != null)
+            sb.append("\" and @vr=\"").append(vr);
         sb.append(valueOrItem).append(index + 1).append(suffix);
     }
 }

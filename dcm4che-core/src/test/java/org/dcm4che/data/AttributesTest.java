@@ -58,7 +58,7 @@ public class AttributesTest {
     public void testGetDateLongDate() {
         Attributes a = new Attributes();
         a.setString(Tag.StudyDate, VR.DA, "20110404");
-        a.setString(Tag.StudyTime, VR.DT, "15");
+        a.setString(Tag.StudyTime, VR.TM, "15");
         Date d = a.getDate(Tag.StudyDateAndTime, null);
         assertEquals("20110404150000.000", DateUtils.formatDT(null, d));
     }
@@ -84,7 +84,7 @@ public class AttributesTest {
     public void testGetDateRangeLongDateRange() {
         Attributes a = new Attributes();
         a.setString(Tag.StudyDate, VR.DA, "20110404");
-        a.setString(Tag.StudyTime, VR.DT, "15-20");
+        a.setString(Tag.StudyTime, VR.TM, "15-20");
         DateRange range = a.getDateRange(Tag.StudyDateAndTime, null);
         assertEquals("20110404150000.000",
                 DateUtils.formatDT(null, range.getStartDate()));

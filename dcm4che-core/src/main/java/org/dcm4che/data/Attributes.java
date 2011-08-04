@@ -340,12 +340,24 @@ public class Attributes implements Serializable {
         return value;
     }
 
+    private void updateVR(int index, VR vr) {
+        VR prev = vrs[index];
+        if (vr == prev)
+            return;
+
+        Object value = values[index];
+        if (!(value instanceof byte[] || value == Value.NULL))
+            throw new IllegalStateException("value instanceof " + value.getClass());
+
+        vrs[index] = vr;
+    }
+
     private static boolean isEmpty(Object value) {
         return (value instanceof Value) && ((Value) value).isEmpty();
     }
 
     public boolean contains(int tag) {
-        return contains(tag, (String) null);
+        return indexOf(tag) >= 0;
     }
 
     public boolean contains(int tag, String privateCreator) {
@@ -355,11 +367,12 @@ public class Attributes implements Serializable {
                 return false;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
         }
-        return indexOf(tag) >= 0;
+        return contains(tag);
     }
 
     public boolean containsValue(int tag) {
-        return containsValue(tag, (String) null);
+        int index = indexOf(tag);
+        return index >= 0 && !isEmpty(values[index]);
     }
 
     public boolean containsValue(int tag, String privateCreator) {
@@ -369,8 +382,7 @@ public class Attributes implements Serializable {
                 return false;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
         }
-        int index = indexOf(tag);
-        return index >= 0 && !isEmpty(values[index]);
+        return containsValue(tag);
     }
 
     public String privateCreatorOf(int tag) {
@@ -386,7 +398,11 @@ public class Attributes implements Serializable {
     }
 
     public Object getValue(int tag) {
-        return getValue(tag, null);
+        int index = indexOf(tag);
+        if (index < 0)
+            return null;
+
+        return values[index];
     }
 
     public Object getValue(int tag, String privateCreator) {
@@ -396,11 +412,7 @@ public class Attributes implements Serializable {
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
         }
-        int index = indexOf(tag);
-        if (index < 0)
-            return null;
-
-        return values[index];
+        return getValue(tag);
     }
 
     public Sequence getSequence(int tag) {
@@ -413,16 +425,6 @@ public class Attributes implements Serializable {
     }
 
     public byte[] getBytes(int tag) throws IOException {
-        return getBytes(tag, null);
-    }
-
-    public byte[] getBytes(int tag, String privateCreator) throws IOException {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
         int index = indexOf(tag);
         if (index < 0)
             return null;
@@ -436,27 +438,37 @@ public class Attributes implements Serializable {
         return vr.toBytes(value, getSpecificCharacterSet());
     }
 
+    public byte[] getBytes(int tag, String privateCreator) throws IOException {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            if (creatorTag == -1)
+                return null;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return getBytes(tag);
+    }
+
     public String getString(int tag) {
-        return getString(tag, null, 0, null);
+        return getString(tag, null, null, 0, null);
     }
 
     public String getString(int tag, String defVal) {
-        return getString(tag, null, 0, defVal);
+        return getString(tag, null, null, 0, defVal);
     }
 
     public String getString(int tag, int valueIndex) {
-        return getString(tag, null, valueIndex, null);
+        return getString(tag, null, null, valueIndex, null);
     }
 
     public String getString(int tag, int valueIndex, String defVal) {
-        return getString(tag, null, valueIndex, defVal);
+        return getString(tag, null, null, valueIndex, defVal);
     }
 
-    public String getString(int tag, String privateCreator, String defVal) {
-        return getString(tag, privateCreator, 0, defVal);
+    public String getString(int tag, String privateCreator, VR vr, String defVal) {
+        return getString(tag, privateCreator, vr, 0, defVal);
     }
 
-    public String getString(int tag, String privateCreator, int valueIndex,
+    public String getString(int tag, String privateCreator, VR vr, int valueIndex,
             String defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -472,7 +484,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr.isStringType())
             value = decodeStringValue(index);
 
@@ -480,10 +495,10 @@ public class Attributes implements Serializable {
     }
 
     public String[] getStrings(int tag) {
-        return getStrings(tag, null);
+        return getStrings(tag, null, null);
     }
 
-    public String[] getStrings(int tag, String privateCreator) {
+    public String[] getStrings(int tag, String privateCreator, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -498,7 +513,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return StringUtils.EMPTY_STRING;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         return toStrings(vr.isStringType()
                 ? decodeStringValue(index) 
                 : vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
@@ -511,18 +529,18 @@ public class Attributes implements Serializable {
     }
 
     public int getInt(int tag, int defVal) {
-        return getInt(tag, null, 0, defVal);
+        return getInt(tag, null, null, 0, defVal);
     }
 
     public int getInt(int tag, int valueIndex, int defVal) {
-        return getInt(tag, null, valueIndex, defVal);
+        return getInt(tag, null, null, valueIndex, defVal);
     }
 
-    public int getInt(int tag, String privateCreator, int defVal) {
-        return getInt(tag, privateCreator, 0, defVal);
+    public int getInt(int tag, String privateCreator, VR vr, int defVal) {
+        return getInt(tag, privateCreator, vr, 0, defVal);
     }
 
-    public int getInt(int tag, String privateCreator, int valueIndex,
+    public int getInt(int tag, String privateCreator, VR vr, int valueIndex,
             int defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -538,7 +556,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.IS)
             value = decodeStringValue(index);
 
@@ -546,10 +567,10 @@ public class Attributes implements Serializable {
     }
 
     public int[] getInts(int tag) {
-        return getInts(tag, null);
+        return getInts(tag, null, null);
     }
 
-    public int[] getInts(int tag, String privateCreator) {
+    public int[] getInts(int tag, String privateCreator, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -564,7 +585,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return EMPTY_INTS;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.IS)
             value = decodeStringValue(index);
 
@@ -572,18 +596,18 @@ public class Attributes implements Serializable {
     }
 
     public float getFloat(int tag, float defVal) {
-        return getFloat(tag, null, 0, defVal);
+        return getFloat(tag, null, null, 0, defVal);
     }
 
     public float getFloat(int tag, int valueIndex, float defVal) {
-        return getFloat(tag, null, valueIndex, defVal);
+        return getFloat(tag, null, null, valueIndex, defVal);
     }
 
-    public float getFloat(int tag, String privateCreator, float defVal) {
-        return getFloat(tag, privateCreator, 0, defVal);
+    public float getFloat(int tag, String privateCreator, VR vr, float defVal) {
+        return getFloat(tag, privateCreator, vr, 0, defVal);
     }
 
-    public float getFloat(int tag, String privateCreator, int valueIndex,
+    public float getFloat(int tag, String privateCreator, VR vr, int valueIndex,
             float defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -599,7 +623,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
@@ -607,10 +634,10 @@ public class Attributes implements Serializable {
     }
 
     public float[] getFloats(int tag) {
-        return getFloats(tag, null);
+        return getFloats(tag, null, null);
     }
 
-    public float[] getFloats(int tag, String privateCreator) {
+    public float[] getFloats(int tag, String privateCreator, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -625,7 +652,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return EMPTY_FLOATS;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
@@ -633,18 +663,18 @@ public class Attributes implements Serializable {
     }
 
     public double getDouble(int tag, double defVal) {
-        return getDouble(tag, null, 0, defVal);
+        return getDouble(tag, null, null, 0, defVal);
     }
 
     public double getDouble(int tag, int valueIndex, double defVal) {
-        return getDouble(tag, null, valueIndex, defVal);
+        return getDouble(tag, null, null, valueIndex, defVal);
     }
 
-    public double getDouble(int tag, String privateCreator, double defVal) {
-        return getDouble(tag, privateCreator, 0, defVal);
+    public double getDouble(int tag, String privateCreator, VR vr, double defVal) {
+        return getDouble(tag, privateCreator, vr, 0, defVal);
     }
 
-    public double getDouble(int tag, String privateCreator, int valueIndex,
+    public double getDouble(int tag, String privateCreator, VR vr, int valueIndex,
             double defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -660,7 +690,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
@@ -668,10 +701,10 @@ public class Attributes implements Serializable {
     }
 
     public double[] getDoubles(int tag) {
-        return getDoubles(tag, null);
+        return getDoubles(tag, null, null);
     }
 
-    public double[] getDoubles(int tag, String privateCreator) {
+    public double[] getDoubles(int tag, String privateCreator, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -686,7 +719,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return EMPTY_DOUBLES;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
@@ -694,18 +730,18 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag, Date defVal) {
-        return getDate(tag, null, 0, defVal);
+        return getDate(tag, null, null, 0, defVal);
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal) {
-        return getDate(tag, null, valueIndex, defVal);
+        return getDate(tag, null, null, valueIndex, defVal);
     }
 
-    public Date getDate(int tag, String privateCreator, Date defVal) {
-        return getDate(tag, privateCreator, 0, defVal);
+    public Date getDate(int tag, String privateCreator, VR vr, Date defVal) {
+        return getDate(tag, privateCreator, vr, 0, defVal);
     }
 
-    public Date getDate(int tag, String privateCreator, int valueIndex,
+    public Date getDate(int tag, String privateCreator, VR vr, int valueIndex,
             Date defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -721,7 +757,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (!vr.isTemporalType())
             throw new UnsupportedOperationException();
 
@@ -737,11 +776,11 @@ public class Attributes implements Serializable {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
-        String tm = getString(tmTag, privateCreator, null);
+        String tm = getString(tmTag, privateCreator, VR.TM, null);
         if (tm == null)
             return getDate(daTag, defVal);
 
-        String da = getString(daTag, privateCreator, null);
+        String da = getString(daTag, privateCreator, VR.DA, null);
         if (da == null)
             return defVal;
 
@@ -749,10 +788,10 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(int tag) {
-        return getDates(tag, null);
+        return getDates(tag, null, null);
     }
 
-    public Date[] getDates(int tag, String privateCreator) {
+    public Date[] getDates(int tag, String privateCreator, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
             if (creatorTag == -1)
@@ -767,7 +806,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return EMPTY_DATES;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (!vr.isTemporalType())
             throw new UnsupportedOperationException();
 
@@ -775,10 +817,10 @@ public class Attributes implements Serializable {
     }
 
     public DateRange getDateRange(int tag, DateRange defVal) {
-        return getDateRange(tag, null, defVal);
+        return getDateRange(tag, null, null, defVal);
     }
 
-    public DateRange getDateRange(int tag, String privateCreator,
+    public DateRange getDateRange(int tag, String privateCreator, VR vr,
             DateRange defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, false);
@@ -794,7 +836,10 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        VR vr = vrs[index];
+        if (vr == null)
+            vr = vrs[index];
+        else
+            updateVR(index, vr);
         if (!vr.isTemporalType())
             throw new UnsupportedOperationException();
 
@@ -831,11 +876,11 @@ public class Attributes implements Serializable {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
-        String tm = getString(tmTag, privateCreator, null);
+        String tm = getString(tmTag, privateCreator, VR.TM, null);
         if (tm == null)
             return getDateRange(daTag, defVal);
 
-        String da = getString(daTag, privateCreator, null);
+        String da = getString(daTag, privateCreator, VR.DA, null);
         if (da == null)
             return defVal;
 
@@ -1472,7 +1517,7 @@ public class Attributes implements Serializable {
 
             if (keyVrs[i].isStringType()) {
                 if (!matches(tag, privateCreator, keyVrs[i], ignorePNCase,
-                        matchNoValue, keys.getStrings(tag, privateCreator)))
+                        matchNoValue, keys.getStrings(tag, privateCreator, null)))
                     return false;
             } else if (keyValue instanceof Sequence) {
                 if (!matches(tag, privateCreator, ignorePNCase, matchNoValue,
@@ -1488,7 +1533,7 @@ public class Attributes implements Serializable {
 
     private boolean matches(int tag, String privateCreator, VR vr,
             boolean ignorePNCase, boolean matchNoValue, String[] keyVals) {
-        String[] vals = getStrings(tag, privateCreator);
+        String[] vals = getStrings(tag, privateCreator, null);
         if (vals == null || vals.length == 0)
             return matchNoValue;
 

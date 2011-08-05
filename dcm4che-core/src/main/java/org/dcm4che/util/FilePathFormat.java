@@ -39,6 +39,8 @@
 package org.dcm4che.util;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.dcm4che.data.Attributes;
 
@@ -71,23 +73,57 @@ public class FilePathFormat {
         int index = 0;
         for (int i = 0; i < n; i++) {
             strs[i] = tokens.get(index++);
-            try {
-                tags[i] = (int) Long.parseLong(tokens.get(index++), 16);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(pattern);
-            }
             if (hash[i] = strs[i].endsWith("#")) {
                 strs[i] = strs[i].substring(0, strs[i].length() - 1);
+            }
+            String s = tokens.get(index++);
+            if (s.length() < 5) {
+                if (s.equals("yyyy")) {
+                    tags[i] = Calendar.YEAR;
+                    continue;
+                }
+                if (s.equals("MM")) {
+                    tags[i] = Calendar.MONTH;
+                    continue;
+                }
+                if (s.equals("dd")) {
+                    tags[i] = Calendar.DATE;
+                    continue;
+                }
+                if (s.equals("HH")) {
+                    tags[i] = Calendar.HOUR_OF_DAY;
+                    continue;
+                }
+            }
+            try {
+                tags[i] = (int) Long.parseLong(s, 16);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(pattern);
             }
         }
         strs[n] = tokens.get(index);
     }
 
-    public String format(Attributes attrs) {
+    @SuppressWarnings("deprecation")
+    public String format(Date date, Attributes attrs) {
         StringBuilder sb = new StringBuilder(64);
         final int n = tags.length;
         for (int i = 0; i < n; i++) {
             sb.append(strs[i]);
+            switch (tags[i]) {
+            case Calendar.YEAR:
+                sb.append(date.getYear() + 1900);
+                continue;
+            case Calendar.MONTH:
+                appendNN(date.getMonth() + 1, sb);
+                continue;
+            case Calendar.DATE:
+                appendNN(date.getDate(), sb);
+                continue;
+            case Calendar.HOUR_OF_DAY:
+                appendNN(date.getHours(), sb);
+                continue;
+            }
             String s = attrs.getString(tags[i], null);
             if (hash[i]) {
                 if (s == null)
@@ -103,6 +139,12 @@ public class FilePathFormat {
         return sb.toString();
     }
 
+    private void appendNN(int i, StringBuilder sb) {
+        if (i < 10)
+            sb.append('0');
+        sb.append(i);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -112,7 +154,22 @@ public class FilePathFormat {
             if (hash[i])
                 sb.append('#');
             sb.append('{');
-            sb.append(TagUtils.toHexString(tags[i]));
+            switch (tags[i]) {
+            case Calendar.YEAR:
+                sb.append("yyyy");
+                break;
+            case Calendar.MONTH:
+                sb.append("MM");
+                break;
+            case Calendar.DATE:
+                sb.append("dd");
+                break;
+            case Calendar.HOUR_OF_DAY:
+                sb.append("HH");
+                break;
+            default:
+                sb.append(TagUtils.toHexString(tags[i]));
+            }
             sb.append('}');
         }
         sb.append(strs[n]);

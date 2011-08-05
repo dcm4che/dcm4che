@@ -40,6 +40,8 @@ package org.dcm4che.util;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
+
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
@@ -52,16 +54,18 @@ import org.junit.Test;
 public class FilePathFormatTest {
 
     private static final String TEST_PATTERN = 
-        "DICOM/#{0020000D}/#{0020000E}/{00080018}.dcm";
+        "{yyyy}/{MM}/{dd}/{HH}/#{0020000D}/#{0020000E}/{00080018}.dcm";
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testFormat() {
+        Date date = new Date(111, 6, 5, 15, 0);
         Attributes attrs = new Attributes();
         attrs.setString(Tag.StudyInstanceUID, VR.UI, "1.2.3");
         attrs.setString(Tag.SeriesInstanceUID, VR.UI, "1.2.3.4");
         attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4.5");
-        assertEquals("DICOM/02C82A3A/71668980/1.2.3.4.5.dcm",
-                new FilePathFormat(TEST_PATTERN).format(attrs));
+        assertEquals("2011/07/05/15/02C82A3A/71668980/1.2.3.4.5.dcm",
+                new FilePathFormat(TEST_PATTERN).format(date, attrs));
     }
 
     @Test

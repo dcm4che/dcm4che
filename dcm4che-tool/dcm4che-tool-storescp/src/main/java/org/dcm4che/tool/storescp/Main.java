@@ -40,6 +40,7 @@ package org.dcm4che.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -112,7 +113,7 @@ public class Main {
         @Override
         protected File createFile(File dir, Association as, Attributes rq,
                 Attributes ds) {
-            File f = new File(dir, filePathFormat.format(ds) + PART_EXT);
+            File f = new File(dir, filePathFormat.format(new Date(), ds) + PART_EXT);
             mkdirs(as, f.getParentFile());
             return f;
         }

@@ -40,6 +40,7 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.Properties;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -110,7 +111,7 @@ public class Main {
 
         @Override
         protected File process(Association as, Attributes rq, String tsuid,
-                Attributes rsp, Object storage, File file)
+                Attributes rsp, Object storage, File file, MessageDigest digest)
                 throws DicomServiceException {
             Attributes fmi, ds;
             DicomInputStream in = null;

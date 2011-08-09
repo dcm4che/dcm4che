@@ -72,6 +72,15 @@ public class TagUtils {
         return new String(s);
     }
 
+    public static String toHexString(byte[] b) {
+        char[] s = new char[b.length << 1];
+        for (int i = 0, j = 0; i < b.length; i++) {
+            s[j++] = HEX_DIGITS[(b[i] >>> 4) & 0xF];
+            s[j++] = HEX_DIGITS[b[i] & 0xF];
+        }
+        return new String(s);
+    }
+
     public static String toString(int tag) {
         char[] s = {
                 '(',

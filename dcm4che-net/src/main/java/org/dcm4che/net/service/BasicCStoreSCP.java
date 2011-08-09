@@ -38,11 +38,16 @@
 
 package org.dcm4che.net.service;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
@@ -81,14 +86,18 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
         File file = createFile(as, rq, storage);
         LOG.info("{}: M-WRITE {}", as, file);
         try {
-            DicomOutputStream out = new DicomOutputStream(file);
+            FileOutputStream fout = new FileOutputStream(file);
+            MessageDigest digest = getMessageDigest(as);
+            BufferedOutputStream bout = new BufferedOutputStream(
+                    digest == null ? fout : new DigestOutputStream(fout, digest));
+            DicomOutputStream out = new DicomOutputStream(bout, UID.ExplicitVRLittleEndian);
             out.writeFileMetaInformation(createFileMetaInformation(as, rq, tsuid));
             try {
                 data.copyTo(out);
             } finally {
                 out.close();
             }
-            file = process(as, rq, tsuid, rsp, storage, file);
+            file = process(as, rq, tsuid, rsp, storage, file, digest);
         } finally {
             if (file != null)
                 if (file.delete())
@@ -96,6 +105,10 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
                 else
                     LOG.warn("{}: Failed to M-DELETE {}", as, file);
         }
+    }
+
+    protected MessageDigest getMessageDigest(Association as) {
+        return null;
     }
 
     protected Object selectStorage(Association as, Attributes rq) throws DicomServiceException {
@@ -123,7 +136,7 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     }
 
     protected File process(Association as, Attributes rq, String tsuid, Attributes rsp,
-            Object storage, File file) throws DicomServiceException {
+            Object storage, File file, MessageDigest digest) throws DicomServiceException {
         return null;
     }
 

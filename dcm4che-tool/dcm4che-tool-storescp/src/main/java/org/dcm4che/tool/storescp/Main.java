@@ -40,7 +40,6 @@ package org.dcm4che.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -55,9 +54,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
-import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -65,10 +62,10 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.FilePathFormat;
 import org.dcm4che.util.SafeClose;
@@ -88,96 +85,58 @@ public class Main {
     private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
-    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private File storageDir;
     private FilePathFormat filePathFormat;
 
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void configure(Association as, DicomInputStream in) {
-            in.setIncludeBulkDataLocator(true);
-        }
-
-        @Override
-        protected void configure(Association as, DicomOutputStream out) {
-            out.setEncodingOptions(encOpts);
-        }
-
-         @Override
-        protected File selectDirectory(Association as, Attributes rq,
-                Attributes ds) {
-            return storageDir;
-        }
-
-        @Override
-        protected File createFile(File dir, Association as, Attributes rq,
-                Attributes ds) {
-            File f = new File(dir, filePathFormat.format(new Date(), ds) + PART_EXT);
-            mkdirs(as, f.getParentFile());
-            return f;
-        }
-
-        private boolean mkdirs(Association as, File d) {
-            boolean mkdirs = d.mkdirs();
-            if (mkdirs)
-                LOG.info("{}: M-WRITE {}", as, d);
-            return mkdirs;
-        }
-
-        @Override
         protected void store(Association as, Attributes rq,
                 PDVInputStream data, String tsuid, Attributes rsp)
                 throws IOException {
             if (storageDir != null)
-                if (filePathFormat == null)
-                    storeVerbatim(as, rq, data, tsuid);
-                else
-                    super.store(as, rq, data, tsuid, rsp);
-        }
-
-        private void storeVerbatim(Association as, Attributes rq,
-                PDVInputStream data, String tsuid)  throws IOException {
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
-            File f = new File(storageDir, iuid + PART_EXT);
-            Attributes fmi = createFileMetaInformation(as, rq, null, tsuid);
-            DicomOutputStream out = new DicomOutputStream(f);
-            boolean stored = false;
-            try { 
-                LOG.info("{}: M-WRITE {}", as, f);
-                out.writeFileMetaInformation(fmi);
-                data.copyTo(out);
-                stored = true;
-            } catch (IOException e) {
-                LOG.warn("M-WRITE failed:", e);
-                throw new DicomServiceException(rq, Status.OutOfResources, e);
-            } finally {
-                SafeClose.close(out);
-                if (!stored)
-                    f.delete();
-            }
-            removeExt(as, f);
+                super.store(as, rq, data, tsuid, rsp);
         }
 
         @Override
-        protected boolean store(Association as, Attributes rq, Attributes ds,
-                Attributes fmi, File dir, File file, Attributes rsp)
+        protected File createFile(Association as, Attributes rq, Object storage)
                 throws DicomServiceException {
-            super.store(as, rq, ds, fmi, dir, file, rsp);
-            removeExt(as, file);
-            return true;
+            return new File(storageDir, rq.getString(Tag.AffectedSOPInstanceUID) + PART_EXT);
         }
 
-        private void removeExt(Association as, File file) {
-            String fname = file.getName();
-            File dest = new File(file.getParent(),
-                    fname.substring(0, fname.lastIndexOf('.')));
-            if (file.renameTo(dest))
-                LOG.info("{}: M-RENAME {} to {}",
-                        new Object[] {as, file, dest });
-            else
-                LOG.warn("{}: Failed to M-RENAME {} to {} ",
-                        new Object[] { as, file, dest });
+        @Override
+        protected File process(Association as, Attributes rq, String tsuid,
+                Attributes rsp, Object storage, File file)
+                throws DicomServiceException {
+            File dst;
+            if (filePathFormat == null) {
+                String fname = file.getName();
+                dst = new File(storageDir, fname.substring(0, fname.lastIndexOf('.')));
+            } else {
+                Attributes ds;
+                DicomInputStream in = null;
+                try {
+                    in = new DicomInputStream(file);
+                    in.setIncludeBulkData(false);
+                    ds = in.readDataset(-1, Tag.PixelData);
+                } catch (IOException e) {
+                    LOG.warn(as + ": Failed to decode dataset:", e);
+                    throw new DicomServiceException(rq, Status.CannotUnderstand);
+                } finally {
+                    SafeClose.close(in);
+                }
+                dst = new File(storageDir, filePathFormat.format(ds));
+            }
+            File dir = dst.getParentFile();
+            dir.mkdirs();
+            dst.delete();
+            if (file.renameTo(dst))
+                LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
+            else {
+                LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
+                throw new DicomServiceException(rq, Status.OutOfResources, "Failed to rename file");
+            }
+            return null;
         }
 
     };
@@ -211,10 +170,6 @@ public class Main {
         this.filePathFormat = new FilePathFormat(pattern);
     }
 
-    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
-        this.encOpts = encOpts;
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
@@ -223,7 +178,6 @@ public class Main {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
-        CLIUtils.addEncodingOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
     }
 
@@ -265,7 +219,6 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
-            main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();

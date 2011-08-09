@@ -40,8 +40,8 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Properties;
+import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -56,9 +56,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
-import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
@@ -71,13 +69,14 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.FilePathFormat;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 import org.dcm4che.util.UIDUtils;
@@ -94,65 +93,65 @@ public class Main {
     private final Device device = new Device("dcmqrscp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
-    private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
     private FilePathFormat filePathFormat;
 
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void configure(Association as, DicomInputStream in) {
-            in.setIncludeBulkDataLocator(true);
-        }
-
-        @Override
-        protected void configure(Association as, DicomOutputStream out) {
-            out.setEncodingOptions(encOpts);
-        }
-
-        @Override
-        protected File selectDirectory(Association as, Attributes rq,
-                Attributes ds) {
-            return storageDir;
-        }
-
-        @Override
-        protected File createFile(File dir, Association as, Attributes rq,
-                Attributes ds) throws DicomServiceException {
-            File f = new File(dir, filePathFormat.format(new Date(), ds));
-            File subdir = f.getParentFile();
-            mkdirs(as, subdir);
-            try {
-                if (!f.createNewFile()) {
-                    int hash = (int) Long.parseLong(f.getName());
-                    do {
-                        f = new File(subdir, TagUtils.toHexString(++hash));
-                    } while (!f.createNewFile());
-                }
-            } catch (IOException e) {
-                LOG.warn("M-WRITE " + f + " failed:", e);
-                throw new DicomServiceException(rq, Status.OutOfResources, e);
-            }
-            return f;
-        }
-
-        private boolean mkdirs(Association as, File d) {
-            boolean mkdirs = d.mkdirs();
-            if (mkdirs)
-                LOG.info("{}: M-WRITE {}", as, d);
-            return mkdirs;
-        }
-
-        @Override
-        protected boolean store(Association as, Attributes rq, Attributes ds,
-                Attributes fmi, File dir, File file, Attributes rsp)
+        protected File createFile(Association as, Attributes rq, Object storage)
                 throws DicomServiceException {
-            super.store(as, rq, ds, fmi, dir, file, rsp);
             try {
-                return addDicomDirRecords(as, ds, fmi, file);
+                return File.createTempFile("dcm", ".dcm", storageDir);
             } catch (IOException e) {
-                LOG.warn("M-UPDATE " + dicomDir + " failed:", e);
+                LOG.warn(as + ": Failed to create temp file:", e);
                 throw new DicomServiceException(rq, Status.OutOfResources, e);
             }
+        }
+
+        @Override
+        protected File process(Association as, Attributes rq, String tsuid,
+                Attributes rsp, Object storage, File file)
+                throws DicomServiceException {
+            Attributes fmi, ds;
+            DicomInputStream in = null;
+            try {
+                in = new DicomInputStream(file);
+                in.setIncludeBulkData(false);
+                fmi = in.readFileMetaInformation();
+                ds = in.readDataset(-1, Tag.PixelData);
+            } catch (IOException e) {
+                LOG.warn(as + ": Failed to decode dataset:", e);
+                throw new DicomServiceException(rq, Status.CannotUnderstand);
+            } finally {
+                SafeClose.close(in);
+            }
+            File dst = new File(storageDir, filePathFormat.format(ds));
+            File dir = dst.getParentFile();
+            dir.mkdirs();
+            while (dst.exists()) {
+                dst = new File(dir, TagUtils.toHexString(new Random().nextInt()));
+            }
+            if (file.renameTo(dst))
+                LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
+            else {
+                LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
+                throw new DicomServiceException(rq, Status.OutOfResources, "Failed to rename file");
+            }
+            try {
+                if (addDicomDirRecords(as, ds, fmi, file)) {
+                    LOG.info("{}: M-UPDATE {}", as, dicomDir);
+                    return null;
+                }
+                LOG.info("{}: ignore received object", as);
+            } catch (IOException e) {
+                LOG.warn(as + ": Failed to M-UPDATE " + dicomDir, e);
+                String errorComment = e.getMessage();
+                if (errorComment.length() > 64)
+                    errorComment = errorComment.substring(0, 64);
+                rsp.setInt(Tag.Status, VR.US, Status.OutOfResources);
+                rsp.setString(Tag.ErrorComment, VR.LO, errorComment);
+            }
+            return dst;
         }
     };
 
@@ -228,10 +227,6 @@ public class Main {
         return availability;
     }
 
-    public final void setEncodingOptions(DicomEncodingOptions encOpts) {
-        this.encOpts = encOpts;
-    }
-
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -243,7 +238,6 @@ public class Main {
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
-        CLIUtils.addEncodingOptions(opts);
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
@@ -335,7 +329,6 @@ public class Main {
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
                         "DICOM/#{0020000D}/#{0020000E}/#{00080018}"));
-        main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
         main.setRecordFactory(new RecordFactory());
     }
 

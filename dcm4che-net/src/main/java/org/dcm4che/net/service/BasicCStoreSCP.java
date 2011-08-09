@@ -40,19 +40,16 @@ package org.dcm4che.net.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,94 +67,146 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     }
 
     @Override
-    public void onCStoreRQ(Association as, PresentationContext pc,
-            Attributes rq, PDVInputStream data) throws IOException {
+    public void onCStoreRQ(Association as, PresentationContext pc, Attributes rq,
+            PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
         String tsuid = pc.getTransferSyntax();
         store(as, rq, data, tsuid, rsp);
         as.writeDimseRSP(pc, rsp);
     }
 
-    protected void store(Association as, Attributes rq, PDVInputStream data,
-            String tsuid, Attributes rsp) throws IOException {
-        DicomInputStream in = new DicomInputStream(data, tsuid);
-        configure(as, in);
+    protected void store(Association as, Attributes rq, PDVInputStream data, String tsuid,
+            Attributes rsp) throws IOException {
+        Object storage = selectStorage(as, rq);
+        File file = createFile(as, rq, storage);
+        LOG.info("{}: M-WRITE {}", as, file);
         try {
-            Attributes ds = in.readDataset(-1, -1);
-            store(as, rq, ds, tsuid, rsp);
-        } finally {
-            dispose(as, in);
-        }
-    }
-
-    protected void configure(Association as, DicomInputStream in) {
-        
-    }
-
-    protected void dispose(Association as, DicomInputStream in) {
-        List<File> bulkDataFiles = in.getBulkDataFiles();
-        for (File f : bulkDataFiles)
-            f.delete();
-    }
-
-    protected void configure(Association as, DicomOutputStream out) {
-    }
-
-    protected void store(Association as, Attributes rq, Attributes ds,
-            String tsuid, Attributes rsp) throws DicomServiceException {
-        File dir = selectDirectory(as, rq, ds);
-        File file = createFile(dir, as, rq, ds);
-        try {
-            if (store(as, rq, ds,
-                    createFileMetaInformation(as, rq, ds, tsuid),
-                    dir, file, rsp))
-                file = null;
+            DicomOutputStream out = new DicomOutputStream(file);
+            out.writeFileMetaInformation(createFileMetaInformation(as, rq, tsuid));
+            try {
+                data.copyTo(out);
+            } finally {
+                out.close();
+            }
+            file = process(as, rq, tsuid, rsp, storage, file);
         } finally {
             if (file != null)
                 if (file.delete())
                     LOG.info("{}: M-DELETE {}", as, file);
                 else
                     LOG.warn("{}: Failed to M-DELETE {}", as, file);
-
         }
     }
 
-    protected boolean store(Association as, Attributes rq, Attributes ds,
-            Attributes fmi, File dir, File file, Attributes rsp)
+    protected Object selectStorage(Association as, Attributes rq) throws DicomServiceException {
+        return null;
+    }
+
+    protected File createFile(Association as, Attributes rq, Object storage)
             throws DicomServiceException {
-        DicomOutputStream out = null;
-        try {
-            LOG.info("{}: M-WRITE {}", as, file);
-            out = new DicomOutputStream(file);
-            configure(as, out);
-            out.writeDataset(fmi, ds);
-            return true;
-        } catch (IOException e) {
-            LOG.warn("M-WRITE failed:", e);
-            throw new DicomServiceException(rq, Status.OutOfResources, e);
-        } finally {
-            SafeClose.close(out);
-        }
+        return new File(rq.getString(Tag.AffectedSOPInstanceUID));
     }
 
-    protected Attributes createFileMetaInformation(Association as, Attributes rq,
-            Attributes ds, String tsuid) throws DicomServiceException {
-        Attributes fmi = Attributes.createFileMetaInformation(
-                        rq.getString(Tag.AffectedSOPInstanceUID, null),
-                        rq.getString(Tag.AffectedSOPClassUID, null),
-                        tsuid);
-        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE, as.getLocalAET());
+    protected Attributes createFileMetaInformation(Association as, Attributes rq, String tsuid) {
+        Attributes fmi = new Attributes(7);
+        fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB, new byte[]{ 0, 1 });
+        fmi.setString(Tag.MediaStorageSOPClassUID, VR.UI, rq.getString(Tag.AffectedSOPClassUID));
+        fmi.setString(Tag.MediaStorageSOPInstanceUID, VR.UI,
+                rq.getString(Tag.AffectedSOPInstanceUID));
+        fmi.setString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        fmi.setString(Tag.ImplementationClassUID, VR.UI, as.getRemoteImplClassUID());
+        String versionName = as.getRemoteImplVersionName();
+        if (versionName != null)
+            fmi.setString(Tag.ImplementationVersionName, VR.SH, versionName);
+        fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH, as.getRemoteAET());
         return fmi;
     }
 
-    protected File selectDirectory(Association as, Attributes rq, Attributes ds)
-            throws DicomServiceException {
-        return new File(".");
+    protected File process(Association as, Attributes rq, String tsuid, Attributes rsp,
+            Object storage, File file) throws DicomServiceException {
+        return null;
     }
 
-    protected File createFile(File dir, Association as, Attributes rq,
-            Attributes ds) throws DicomServiceException {
-        return new File(dir, rq.getString(Tag.AffectedSOPInstanceUID, null));
-    }
+//    protected void store(Association as, Attributes rq, PDVInputStream data,
+//            String tsuid, Attributes rsp) throws IOException {
+//        DicomInputStream in = new DicomInputStream(data, tsuid);
+//        configure(as, in);
+//        try {
+//            Attributes ds = in.readDataset(-1, -1);
+//            store(as, rq, ds, tsuid, rsp);
+//        } finally {
+//            dispose(as, in);
+//        }
+//    }
+//
+//    protected void configure(Association as, DicomInputStream in) {
+//        
+//    }
+//
+//    protected void dispose(Association as, DicomInputStream in) {
+//        List<File> bulkDataFiles = in.getBulkDataFiles();
+//        for (File f : bulkDataFiles)
+//            f.delete();
+//    }
+//
+//    protected void configure(Association as, DicomOutputStream out) {
+//    }
+//
+//    protected void store(Association as, Attributes rq, Attributes ds,
+//            String tsuid, Attributes rsp) throws DicomServiceException {
+//        File dir = selectDirectory(as, rq, ds);
+//        File file = createFile(dir, as, rq, ds);
+//        try {
+//            if (store(as, rq, ds,
+//                    createFileMetaInformation(as, rq, ds, tsuid),
+//                    dir, file, rsp))
+//                file = null;
+//        } finally {
+//            if (file != null)
+//                if (file.delete())
+//                    LOG.info("{}: M-DELETE {}", as, file);
+//                else
+//                    LOG.warn("{}: Failed to M-DELETE {}", as, file);
+//
+//        }
+//    }
+//
+//    protected boolean store(Association as, Attributes rq, Attributes ds,
+//            Attributes fmi, File dir, File file, Attributes rsp)
+//            throws DicomServiceException {
+//        DicomOutputStream out = null;
+//        try {
+//            LOG.info("{}: M-WRITE {}", as, file);
+//            out = new DicomOutputStream(file);
+//            configure(as, out);
+//            out.writeDataset(fmi, ds);
+//            return true;
+//        } catch (IOException e) {
+//            LOG.warn("M-WRITE failed:", e);
+//            throw new DicomServiceException(rq, Status.OutOfResources, e);
+//        } finally {
+//            SafeClose.close(out);
+//        }
+//    }
+//
+//    protected Attributes createFileMetaInformation(Association as, Attributes rq,
+//            Attributes ds, String tsuid) throws DicomServiceException {
+//        Attributes fmi = Attributes.createFileMetaInformation(
+//                        rq.getString(Tag.AffectedSOPInstanceUID, null),
+//                        rq.getString(Tag.AffectedSOPClassUID, null),
+//                        tsuid);
+//        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE, as.getLocalAET());
+//        return fmi;
+//    }
+//
+//    protected File selectDirectory(Association as, Attributes rq, Attributes ds)
+//            throws DicomServiceException {
+//        return new File(".");
+//    }
+//
+//    protected File createFile(File dir, Association as, Attributes rq,
+//            Attributes ds) throws DicomServiceException {
+//        return new File(dir, rq.getString(Tag.AffectedSOPInstanceUID, null));
+//    }
 
 }

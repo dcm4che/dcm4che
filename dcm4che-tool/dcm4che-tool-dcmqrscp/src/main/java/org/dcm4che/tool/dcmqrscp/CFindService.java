@@ -278,7 +278,9 @@ class CFindService extends BasicCFindSCP {
             if (patRec == null)
                 return false;
 
-            if (studyRec != null) {
+            if (studyRec == null)
+                findFirstStudy();
+            else {
                 studyRec = studyIUIDs.length == 1
                     ? null
                     : studyIUIDs.length == 0
@@ -286,10 +288,14 @@ class CFindService extends BasicCFindSCP {
                         : ddr.findNextStudyRecord(studyRec, studyIUIDs);
             }
             while (studyRec == null && super.findNextPatient())
-                studyRec = studyIUIDs.length == 0
-                        ? ddr.findLowerDirectoryRecord(patRec, keys, true, true)
-                        : ddr.findStudyRecord(patRec, studyIUIDs);
+                findFirstStudy();
             return studyRec != null;
+        }
+
+        private void findFirstStudy() throws IOException {
+            studyRec = studyIUIDs.length == 0
+                    ? ddr.findLowerDirectoryRecord(patRec, keys, true, true)
+                    : ddr.findStudyRecord(patRec, studyIUIDs);
         }
     }
 
@@ -335,7 +341,9 @@ class CFindService extends BasicCFindSCP {
             if (studyRec == null)
                 return false;
 
-            if (seriesRec != null) {
+            if (seriesRec == null) 
+                findFirstSeries();
+            else {
                 seriesRec = seriesIUIDs.length == 1
                     ? null
                     : seriesIUIDs.length == 0
@@ -343,10 +351,14 @@ class CFindService extends BasicCFindSCP {
                         : ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
             }
             while (seriesRec == null && super.findNextStudy())
-                seriesRec = seriesIUIDs.length == 0
-                    ? ddr.findLowerDirectoryRecord(studyRec, keys, true, true)
-                    : ddr.findSeriesRecord(studyRec, seriesIUIDs);
+                findFirstSeries();
             return seriesRec != null;
+        }
+
+        private void findFirstSeries() throws IOException {
+            seriesRec = seriesIUIDs.length == 0
+                ? ddr.findLowerDirectoryRecord(studyRec, keys, true, true)
+                : ddr.findSeriesRecord(studyRec, seriesIUIDs);
         }
     }
 
@@ -393,7 +405,9 @@ class CFindService extends BasicCFindSCP {
             if (seriesRec == null)
                 return false;
 
-            if (instRec != null) {
+            if (instRec == null) 
+                findFirstInstance();
+            else {
                 instRec = sopIUIDs.length == 1
                     ? null
                     : sopIUIDs.length == 0
@@ -401,11 +415,15 @@ class CFindService extends BasicCFindSCP {
                         : ddr.findNextInstanceRecord(instRec, sopIUIDs);
             }
             while (instRec == null && super.findNextSeries())
-                instRec = sopIUIDs.length == 0
-                        ? ddr.findLowerDirectoryRecord(seriesRec, keys, true, true)
-                        : ddr.findInstanceRecord(seriesRec, sopIUIDs);
+                findFirstInstance();
             return instRec != null;
         }
-    }
 
+        private void findFirstInstance() throws IOException {
+            instRec = sopIUIDs.length == 0
+                    ? ddr.findLowerDirectoryRecord(seriesRec, keys, true, true)
+                    : ddr.findInstanceRecord(seriesRec, sopIUIDs);
+        }
+    }
 }
+

@@ -53,10 +53,24 @@ public class FilePathFormat {
     private final String[] strs;
     private final int[] tags;
     private final boolean[] hash;
+    private final int dateTag;
 
     public FilePathFormat(String pattern) {
-        int tagStart;
         int tagEnd = -1;
+        if (pattern.startsWith("{{")) {
+            tagEnd = pattern.indexOf("}}");
+            if (tagEnd == -1)
+                throw new IllegalArgumentException(pattern);
+            try {
+                dateTag = (int) Long.parseLong(pattern.substring(2, tagEnd), 16);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(pattern);
+            }
+            tagEnd++;
+        } else {
+            dateTag = 0;
+        }
+        int tagStart;
         ArrayList<String> tokens = new ArrayList<String>();
         while ((tagStart = pattern.indexOf('{', tagEnd + 1)) != -1) {
             tokens.add(pattern.substring(tagEnd + 1, tagStart));
@@ -105,23 +119,24 @@ public class FilePathFormat {
     }
 
     @SuppressWarnings("deprecation")
-    public String format(Date date, Attributes attrs) {
+    public String format(Attributes attrs) {
         StringBuilder sb = new StringBuilder(64);
+        Date date = dateTag > 0 ? attrs.getDate(dateTag, null) : new Date();
         final int n = tags.length;
         for (int i = 0; i < n; i++) {
             sb.append(strs[i]);
             switch (tags[i]) {
             case Calendar.YEAR:
-                sb.append(date.getYear() + 1900);
+                appendNNNN(date != null ? (date.getYear() + 1900) : 0, sb);
                 continue;
             case Calendar.MONTH:
-                appendNN(date.getMonth() + 1, sb);
+                appendNN(date != null ? (date.getMonth() + 1) : 0, sb);
                 continue;
             case Calendar.DATE:
-                appendNN(date.getDate(), sb);
+                appendNN(date != null ? date.getDate() : 0, sb);
                 continue;
             case Calendar.HOUR_OF_DAY:
-                appendNN(date.getHours(), sb);
+                appendNN(date != null ? date.getHours() : 0, sb);
                 continue;
             }
             String s = attrs.getString(tags[i], null);
@@ -139,6 +154,19 @@ public class FilePathFormat {
         return sb.toString();
     }
 
+    private void appendNNNN(int i, StringBuilder sb) {
+        if (i < 1000) {
+            sb.append('0');
+            if (i < 100) {
+                sb.append('0');
+                if (i < 10) {
+                    sb.append('0');
+                }
+            }
+        }
+        sb.append(i);
+    }
+
     private void appendNN(int i, StringBuilder sb) {
         if (i < 10)
             sb.append('0');
@@ -148,6 +176,8 @@ public class FilePathFormat {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if (dateTag > 0)
+            sb.append("{{").append(TagUtils.toHexString(dateTag)).append("}}");
         int n = tags.length;
         for (int i = 0; i < n; i++) {
             sb.append(strs[i]);

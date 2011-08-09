@@ -235,6 +235,22 @@ public class Association {
         return requestor ? getCallingAET() : getCalledAET();
     }
 
+    public String getRemoteImplVersionName() {
+        return (requestor ? ac : rq).getImplVersionName();
+    }
+
+    public String getRemoteImplClassUID() {
+        return (requestor ? ac : rq).getImplClassUID();
+    }
+
+    public String getLocalImplVersionName() {
+        return (requestor ? rq : ac).getImplVersionName();
+    }
+
+    public String getLocalImplClassUID() {
+        return (requestor ? rq : ac).getImplClassUID();
+    }
+
     final int getMaxPDULengthSend() {
         return maxPDULength;
     }

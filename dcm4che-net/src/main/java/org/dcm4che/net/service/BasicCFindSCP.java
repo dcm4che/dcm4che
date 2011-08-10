@@ -39,17 +39,11 @@
 package org.dcm4che.net.service;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.CancelRQHandler;
-import org.dcm4che.net.Commands;
 import org.dcm4che.net.Device;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
@@ -66,98 +60,15 @@ public class BasicCFindSCP extends DicomService implements CFindSCP {
     }
 
     @Override
-    public void onCFindRQ(final Association as, final PresentationContext pc,
-            final Attributes rq, final Attributes keys) throws IOException {
-        final Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        boolean closeMatches = true;
-        final Matches matches = calculateMatches(as, rq, keys);
-        try {
-            if (matches.hasMoreMatches()) {
-                final DimseRSPWriter writer = new DimseRSPWriter();
-                as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), writer);
-                device.execute(new Runnable() {
-                    
-                    @Override
-                    public void run() {
-                        try {
-                            writer.write(as, pc, keys, rsp, matches);
-                        } catch (IOException e) {
-                            // already handled by Association
-                        }
-                    }
-                });
-                closeMatches = false;
-            } else {
-                as.writeDimseRSP(pc, rsp);
-            }
-        } finally {
-            if (closeMatches)
-                matches.close();
-        }
+    public void onCFindRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
+            throws IOException {
+        QueryTask queryTask = calculateMatches(as, pc, rq, keys);
+        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), queryTask);
+        device.execute(queryTask);
     }
 
-    protected Matches calculateMatches(Association as, Attributes rq,
-            Attributes keys) throws DicomServiceException {
-        Collection<Attributes> matches = Collections.emptyList();
-        return new BasicMatches(matches, false);
+    protected QueryTask calculateMatches(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys) throws DicomServiceException {
+        return new BasicQueryTask(as, pc, rq, keys);
     }
-
-    private final class DimseRSPWriter implements CancelRQHandler {
-
-        volatile boolean canceled;
-
-        @Override
-        public void onCancelRQ(Association association) {
-            canceled = true;
-        }
-
-        public void write(Association as, PresentationContext pc,
-                Attributes keys, Attributes rsp, Matches matches)
-                throws IOException {
-            try {
-                boolean optionalKeyNotSupported =
-                        matches.optionalKeyNotSupported();
-                while (matches.hasMoreMatches() && !canceled) {
-                    Attributes match = adjust(matches.nextMatch(), keys, as);
-                    rsp.setInt(Tag.Status, VR.US,
-                            optionalKeyNotSupported
-                                 || optionalKeyNotSupported(match, keys)
-                                    ? Status.PendingWarning
-                                    : Status.Pending);
-                    as.writeDimseRSP(pc, rsp, match);
-                }
-                rsp.setInt(Tag.Status, VR.US,
-                        matches.hasMoreMatches() 
-                                ? Status.Cancel
-                                : Status.Success);
-                as.writeDimseRSP(pc, rsp);
-            } catch (DicomServiceException e) {
-                as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
-            } finally {
-                matches.close();
-            }
-        }
-
-    }
-
-    protected Attributes adjust(Attributes match, Attributes keys,
-            Association as) {
-        Attributes filtered = new Attributes(match.size());
-        // include SpecificCharacterSet also if not in keys
-        if (!keys.contains(Tag.SpecificCharacterSet)) {
-            String[] ss = match.getStrings(Tag.SpecificCharacterSet);
-            if (ss != null)
-                filtered.setString(Tag.SpecificCharacterSet, VR.CS, ss);
-        }
-        filtered.addSelected(match, keys);
-        return filtered;
-    }
-
-    protected boolean optionalKeyNotSupported(Attributes match, Attributes keys) {
-        Attributes notSupported = new Attributes(keys.size());
-        notSupported.addNotSelected(keys, match);
-        notSupported.remove(Tag.SpecificCharacterSet);
-        return !notSupported.isEmpty();
-    }
-
 }

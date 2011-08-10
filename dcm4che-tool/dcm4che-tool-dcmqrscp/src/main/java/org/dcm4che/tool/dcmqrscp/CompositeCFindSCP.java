@@ -57,12 +57,12 @@ import org.dcm4che.net.service.QueryTask;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CFindService extends BasicCFindSCP {
+class CompositeCFindSCP extends BasicCFindSCP {
 
     private final Main main;
     private final String[] qrLevels;
 
-    public CFindService(Main main, String sopClass, String... qrLevels) {
+    public CompositeCFindSCP(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;

@@ -174,15 +174,15 @@ public class Main {
         serviceRegistry.addDicomService(new BasicCEchoSCP());
         serviceRegistry.addDicomService(storageSCP);
         serviceRegistry.addDicomService(
-                new CFindService(this,
+                new CompositeCFindSCP(this,
                         UID.PatientRootQueryRetrieveInformationModelFIND,
                         "PATIENT", "STUDY", "SERIES", "IMAGE"));
         serviceRegistry.addDicomService(
-                new CFindService(this,
+                new CompositeCFindSCP(this,
                         UID.StudyRootQueryRetrieveInformationModelFIND,
                         "STUDY", "SERIES", "IMAGE"));
         serviceRegistry.addDicomService(
-                new CFindService(this,
+                new CompositeCFindSCP(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
                         "PATIENT", "STUDY"));
         ae.setDimseRQHandler(serviceRegistry);

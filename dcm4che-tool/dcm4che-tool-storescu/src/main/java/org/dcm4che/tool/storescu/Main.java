@@ -71,7 +71,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.DataWriter;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
-import org.dcm4che.net.PDVOutputStream;
+import org.dcm4che.net.InputStreamDataWriter;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
@@ -348,22 +348,14 @@ public class Main {
 
     public void send(final File f, long fmiEndPos, String cuid, String iuid,
             String ts) throws IOException, InterruptedException {
-        final FileInputStream in = new FileInputStream(f);
+        FileInputStream in = new FileInputStream(f);
         in.skip(fmiEndPos);
-        DataWriter data = new DataWriter() {
-
-            @Override
-            public void writeTo(PDVOutputStream out, String tsuid)
-                    throws IOException {
-                out.copyFrom(in);
-            }
-        };
+        DataWriter data = new InputStreamDataWriter(in);
 
         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
             @Override
-            public void onDimseRSP(Association as, Attributes cmd,
-                    Attributes data) {
+            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
                 super.onDimseRSP(as, cmd, data);
                 Main.this.onCStoreRSP(cmd, f);
             }

@@ -36,40 +36,36 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Status {
+public class InstanceLocator {
+    
+    public final String cuid;
+    public final String iuid;
+    public final String tsuid;
+    public final String uri;
 
-    public static final int Success                            = 0x0000;
+    public InstanceLocator(String cuid, String iuid, String tsuid, String uri) {
+        this.cuid = cuid;
+        this.iuid = iuid;
+        this.tsuid = tsuid;
+        this.uri = uri;
+    }
 
-    public static final int Pending                            = 0xFF00;
-    public static final int PendingWarning                     = 0xFF01;
-
-    public static final int Cancel                             = 0xFE00;
-
-    public static final int ProcessingFailure                  = 0x0110;
-    public static final int DuplicateSOPinstance               = 0x0111;
-    public static final int NoSuchObjectInstance               = 0x0112;
-    public static final int NoSuchSOPclass                     = 0x0118;
-    public static final int SOPclassNotSupported               = 0x0122;
-    public static final int UnrecognizedOperation              = 0x0211;
-
-    public static final int OutOfResources                     = 0xA700;
-    public static final int UnableToCalculateNumberOfMatches   = 0xA701;
-    public static final int UnableToPerformSubOperations       = 0xA702;
-    public static final int MoveDestinationUnknown             = 0xA801;
-    public static final int IdentifierDoesNotMatchSOPClass     = 0xA900;
-    public static final int DataSetDoesNotMatchSOPClassError   = 0xA900;
-
-    public static final int OneOrMoreFailures                  = 0xB000;
-    public static final int CoercionOfDataElements             = 0xB000;
-    public static final int ElementsDiscarded                  = 0xB006;
-    public static final int DataSetDoesNotMatchSOPClassWarning = 0xB007;
-
-    public static final int UnableToProcess                    = 0xC000;
-    public static final int CannotUnderstand                   = 0xC000;
+    public File getFile() {
+        try {
+            return new File(new URI(uri));
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

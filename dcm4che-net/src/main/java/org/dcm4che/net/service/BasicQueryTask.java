@@ -78,7 +78,8 @@ public class BasicQueryTask implements QueryTask {
             try {
                 while (!canceled && hasMoreMatches()) {
                     Attributes match = adjust(nextMatch(), keys, as);
-                    int status = optionalKeyNotSupported(match, keys) ? Status.PendingWarning
+                    int status = optionalKeyNotSupported(match, keys)
+                            ? Status.PendingWarning
                             : Status.Pending;
                     as.writeDimseRSP(pc, Commands.mkRSP(rq, status), match);
                 }

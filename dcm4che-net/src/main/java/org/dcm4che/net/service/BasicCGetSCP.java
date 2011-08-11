@@ -36,40 +36,39 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
+
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Status {
+public class BasicCGetSCP extends DicomService implements CGetSCP {
 
-    public static final int Success                            = 0x0000;
+    protected final Device device;
 
-    public static final int Pending                            = 0xFF00;
-    public static final int PendingWarning                     = 0xFF01;
+    public BasicCGetSCP(Device device, String... sopClasses) {
+        super(sopClasses);
+        this.device = device;
+    }
 
-    public static final int Cancel                             = 0xFE00;
+    @Override
+    public void onCGetRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
+            throws IOException {
+        RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
+        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
+        device.execute(retrieveTask);
+    }
 
-    public static final int ProcessingFailure                  = 0x0110;
-    public static final int DuplicateSOPinstance               = 0x0111;
-    public static final int NoSuchObjectInstance               = 0x0112;
-    public static final int NoSuchSOPclass                     = 0x0118;
-    public static final int SOPclassNotSupported               = 0x0122;
-    public static final int UnrecognizedOperation              = 0x0211;
-
-    public static final int OutOfResources                     = 0xA700;
-    public static final int UnableToCalculateNumberOfMatches   = 0xA701;
-    public static final int UnableToPerformSubOperations       = 0xA702;
-    public static final int MoveDestinationUnknown             = 0xA801;
-    public static final int IdentifierDoesNotMatchSOPClass     = 0xA900;
-    public static final int DataSetDoesNotMatchSOPClassError   = 0xA900;
-
-    public static final int OneOrMoreFailures                  = 0xB000;
-    public static final int CoercionOfDataElements             = 0xB000;
-    public static final int ElementsDiscarded                  = 0xB006;
-    public static final int DataSetDoesNotMatchSOPClassWarning = 0xB007;
-
-    public static final int UnableToProcess                    = 0xC000;
-    public static final int CannotUnderstand                   = 0xC000;
+    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys) throws DicomServiceException {
+        return new BasicRetrieveTask(as, pc, rq);
+    }
 }

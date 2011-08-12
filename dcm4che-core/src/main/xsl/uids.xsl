@@ -59,18 +59,16 @@
       <xsl:call-template name="skipAfterColon">
          <xsl:with-param name="name" select="entry[$namepos]/para" />
       </xsl:call-template>
+      <xsl:if test="$namepos = 3">
+         <xsl:text> (</xsl:text>
+         <xsl:value-of select="entry[2]/para" />
+         <xsl:text>)</xsl:text>
+      </xsl:if>
     </xsl:variable>
     <xsl:variable name="keyword">
       <xsl:choose>
         <xsl:when test="$uid='1.2.840.10008.1.2.4.70'">JPEGLosslessNonHierarchicalProcess14SelectionValue1</xsl:when>
         <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.9.1.1'">TwelveLeadECGWaveformStorage</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.175'">CardiovascularAnatomicLocations2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.243'">PercutaneousEntry2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.586'">BloodVelocityMeasurements2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.526'">VolumeMeasurements2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.762'">StressTestProcedurePhases2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.928'">ECGControlVariablesNumeric2</xsl:when>
-        <xsl:when test="$uid='1.2.840.10008.6.1.929'">ECGControlVariablesText2</xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="removeSpaces">
             <xsl:with-param name="name">

@@ -142,6 +142,10 @@ public class StringUtils {
         return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
     }
 
+    public static double parseDS(String s) {
+        return Double.parseDouble(s.replace(',', '.'));
+    }
+
     public static String formatDS(float f) {
         String s = Float.toString(f);
         int l = s.length();

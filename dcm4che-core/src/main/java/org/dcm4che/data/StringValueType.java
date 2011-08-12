@@ -93,13 +93,13 @@ enum StringValueType implements ValueType {
                 float defVal) {
             if (val instanceof String) {
                 return valueIndex == 0
-                    ? Float.parseFloat((String) val)
+                    ? (float) StringUtils.parseDS((String) val)
                     : defVal;
             }
             if (val instanceof String[]) {
                 String[] ss = (String[]) val;
                 return (valueIndex < ss.length && ss[valueIndex] != null)
-                    ? Float.parseFloat(ss[valueIndex])
+                    ? (float) StringUtils.parseDS(ss[valueIndex])
                     : defVal;
             }
             throw new UnsupportedOperationException();
@@ -108,14 +108,14 @@ enum StringValueType implements ValueType {
         @Override
         public float[] toFloats(Object val, boolean bigEndian) {
             if (val instanceof String) {
-                return new float[] { Float.parseFloat((String) val) };
+                return new float[] { (float) StringUtils.parseDS((String) val) };
             }
             if (val instanceof String[]) {
                 String[] ss = (String[]) val;
                 float[] fs = new float[ss.length];
                 for (int i = 0; i < fs.length; i++) {
                     if (ss[i] != null)
-                        fs[i] = Float.parseFloat(ss[i]);
+                        fs[i] = (float) StringUtils.parseDS(ss[i]);
                 }
                 return fs;
             }
@@ -127,13 +127,13 @@ enum StringValueType implements ValueType {
                 double defVal) {
             if (val instanceof String) {
                 return valueIndex == 0
-                    ? Double.parseDouble((String) val)
+                    ? StringUtils.parseDS((String) val)
                     : defVal;
             }
             if (val instanceof String[]) {
                 String[] ss = (String[]) val;
                 return (valueIndex < ss.length && ss[valueIndex] != null)
-                    ? Double.parseDouble(ss[valueIndex])
+                    ? StringUtils.parseDS(ss[valueIndex])
                     : defVal;
             }
             throw new UnsupportedOperationException();
@@ -142,14 +142,14 @@ enum StringValueType implements ValueType {
         @Override
         public double[] toDoubles(Object val, boolean bigEndian) {
             if (val instanceof String) {
-                return new double[] { Double.parseDouble((String) val) };
+                return new double[] { StringUtils.parseDS((String) val) };
             }
             if (val instanceof String[]) {
                 String[] ss = (String[]) val;
                 double[] ds = new double[ss.length];
                 for (int i = 0; i < ds.length; i++) {
                     if (ss[i] != null)
-                        ds[i] = Double.parseDouble(ss[i]);
+                        ds[i] = StringUtils.parseDS(ss[i]);
                 }
                 return ds;
             }

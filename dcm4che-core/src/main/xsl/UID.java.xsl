@@ -118,7 +118,7 @@ public class UID {
   <xsl:template match="uid">
     <xsl:text>
     /** </xsl:text>
-    <xsl:value-of select="@name" />
+    <xsl:value-of select="text()" />
     <xsl:text>, </xsl:text>
     <xsl:value-of select="@type" />
     <xsl:text> */

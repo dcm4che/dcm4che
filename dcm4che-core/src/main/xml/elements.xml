@@ -38,10 +38,10 @@
    - ***** END LICENSE BLOCK *****  -->
 
 <!DOCTYPE elements [
-<!ENTITY commandElements SYSTEM "../../../target/generated-resources/xml/xslt/commandElements.xml">
-<!ENTITY dataElements SYSTEM "../../../target/generated-resources/xml/xslt/dataElements.xml">
+<!ENTITY p7 SYSTEM "../../../target/generated-resources/xml/xslt/p7_element.xml">
+<!ENTITY p6 SYSTEM "../../../target/generated-resources/xml/xslt/p6_element.xml">
 ]>
 <elements>
-  &commandElements;
-  &dataElements;
+  &p7;
+  &p6;
 </elements>

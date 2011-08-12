@@ -38,10 +38,10 @@
    - ***** END LICENSE BLOCK *****  -->
 
 <!DOCTYPE elements [
-<!ENTITY uids SYSTEM "../../../target/generated-resources/xml/xslt/uids.xml">
-<!ENTITY private-uids SYSTEM "private-uids.xml">
+<!ENTITY p6 SYSTEM "../../../target/generated-resources/xml/xslt/p6_uid.xml">
+<!ENTITY private SYSTEM "private-uids.xml">
 ]>
 <uids>
-  &uids;
-  &private-uids;
+  &p6;
+  &private;
 </uids>

@@ -159,7 +159,7 @@ public class StandardElementDictionary extends ElementDictionary {
 
   <xsl:template match="element">
     <xsl:param name="vr" select="@vr" />
-    <xsl:if test="not(starts-with(@tag,'(0028,04x'))">
+    <xsl:if test="not(starts-with(@tag,'002804x'))">
       <xsl:text>
         case Tag.</xsl:text>
       <xsl:value-of select="@keyword"/>

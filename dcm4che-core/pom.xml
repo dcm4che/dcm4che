@@ -80,11 +80,11 @@
               <includes>
                 <include>part7.xml</include>
               </includes>
-              <stylesheet>src/main/xsl/commandElements.xsl</stylesheet>
+              <stylesheet>src/main/xsl/p7_element.xsl</stylesheet>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>commandElements.xml</targetName>
+                  <targetName>p7_element.xml</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
@@ -93,11 +93,11 @@
               <includes>
                 <include>part6.xml</include>
               </includes>
-              <stylesheet>src/main/xsl/dataElements.xsl</stylesheet>
+              <stylesheet>src/main/xsl/p6_element.xsl</stylesheet>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>dataElements.xml</targetName>
+                  <targetName>p6_element.xml</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
@@ -106,11 +106,11 @@
               <includes>
                 <include>part6.xml</include>
               </includes>
-              <stylesheet>src/main/xsl/uids.xsl</stylesheet>
+              <stylesheet>src/main/xsl/p6_uid.xsl</stylesheet>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>uids.xml</targetName>
+                  <targetName>p6_uid.xml</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

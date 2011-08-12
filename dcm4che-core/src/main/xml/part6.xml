@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article
-  PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <article lang="">
    <para>6        Registry of DICOM data elements</para>
    <para>Note:        For attributes that were present in ACR-NEMA 1.0 and 2.0 and that have been retired, the specifications of Value Representation and Value Multiplicity provided are recommendations for the purpose of interpreting their values in objects created in accordance with earlier versions of this standard. These recommendations are suggested as most appropriate for a particular attribute; however, there is no guarantee that historical objects will not violate some requirements or specified VR and/or VM.</para>
@@ -26973,7 +26971,7 @@
                <para>(0024,0069)</para>
             </entry>
             <entry>
-               <para>Patient Reliability Indicator  </para>
+               <para>Patient Reliability Indicator</para>
             </entry>
             <entry>
                <para>PatientReliabilityIndicator</para>
@@ -55813,7 +55811,7 @@
                <para>(2010,0080)</para>
             </entry>
             <entry>
-               <para>Smoothing Type  </para>
+               <para>Smoothing Type</para>
             </entry>
             <entry>
                <para>SmoothingType</para>
@@ -75194,7 +75192,7 @@
                <para>RFC 2557 MIME encapsulation</para>
             </entry>
             <entry>
-               <para>Transfer Syntax        </para>
+               <para>Transfer Syntax</para>
             </entry>
             <entry>
                <para>PS 3.10</para>
@@ -75208,7 +75206,7 @@
                <para>XML Encoding</para>
             </entry>
             <entry>
-               <para>Transfer Syntax        </para>
+               <para>Transfer Syntax</para>
             </entry>
             <entry>
                <para>PS 3.10</para>

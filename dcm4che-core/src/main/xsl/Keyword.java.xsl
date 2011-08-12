@@ -100,7 +100,7 @@ public class Keyword {
         switch (tag) {
 </xsl:text>
     <xsl:apply-templates 
-      select="element[@keyword!='' and not(starts-with(@tag,'(0028,04x'))]" />
+      select="element[@keyword!='' and not(starts-with(@tag,'002804x'))]" />
     <xsl:text>        }
         return "";
     }

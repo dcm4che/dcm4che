@@ -258,14 +258,16 @@ public class Tag {
   </xsl:template>
   <xsl:template match="element">
     <xsl:text>
-    /** </xsl:text>
-    <xsl:value-of select="@tag" />
-    <xsl:text> VR=</xsl:text>
+    /** (</xsl:text>
+    <xsl:value-of select="substring(@tag,1,4)" />
+    <xsl:text>,</xsl:text>
+    <xsl:value-of select="substring(@tag,5,4)" />
+    <xsl:text>) VR=</xsl:text>
     <xsl:value-of select="@vr" />
     <xsl:text> VM=</xsl:text>
     <xsl:value-of select="@vm" />
     <xsl:text> </xsl:text>
-    <xsl:value-of select="@name" />
+    <xsl:value-of select="text()" />
     <xsl:if test="@retired='true'">
       <xsl:text> (retired)</xsl:text>
     </xsl:if>
@@ -273,7 +275,7 @@ public class Tag {
     public static final int </xsl:text>
     <xsl:value-of select="@keyword" />
     <xsl:text> = 0x</xsl:text>
-    <xsl:value-of select="translate(@tag,'x(,)','0')" />
+    <xsl:value-of select="translate(@tag,'x','0')" />
     <xsl:text>;
 </xsl:text>
   </xsl:template>

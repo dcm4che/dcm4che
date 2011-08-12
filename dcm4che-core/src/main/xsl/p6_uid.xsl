@@ -37,8 +37,7 @@
    -
    - ***** END LICENSE BLOCK *****  -->
 
-<xsl:stylesheet version="1.0"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" indent="yes" />
   <xsl:variable name="LOWER">abcdefghijklmnopqrstuvwxyz</xsl:variable>
   <xsl:variable name="UPPER">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
@@ -65,7 +64,32 @@
     </xsl:variable>
     <xsl:variable name="keyword">
       <xsl:choose>
-        <xsl:when test="$uid='1.2.840.10008.1.2.4.70'">JPEGLosslessNonHierarchicalProcess14SelectionValue1</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.50'">JPEGBaseline1</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.51'">JPEGExtended24</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.52'">JPEGExtended35Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.53'">JPEGSpectralSelectionNonHierarchical68Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.54'">JPEGSpectralSelectionNonHierarchical79Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.55'">JPEGFullProgressionNonHierarchical1012Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.56'">JPEGFullProgressionNonHierarchical1113Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.57'">JPEGLosslessNonHierarchical14</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.58'">JPEGLosslessNonHierarchical15Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.59'">JPEGExtendedHierarchical1618Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.60'">JPEGExtendedHierarchical1719Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.61'">JPEGSpectralSelectionHierarchical2022Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.62'">JPEGSpectralSelectionHierarchical2123Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.63'">JPEGFullProgressionHierarchical2426Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.64'">JPEGFullProgressionHierarchical2527Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.65'">JPEGLosslessHierarchical28Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.66'">JPEGLosslessHierarchical29Retired</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.70'">JPEGLossless</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.80'">JPEGLSLossless</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.81'">JPEGLSLossyNearLossless</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.90'">JPEG2000LosslessOnly</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.91'">JPEG2000</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.92'">JPEG2000Part2MultiComponentLosslessOnly</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.93'">JPEG2000Part2MultiComponent</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.100'">MPEG2</xsl:when>
+        <xsl:when test="$uid='1.2.840.10008.1.2.4.101'">MPEG2MainProfileHighLevel</xsl:when>
         <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.9.1.1'">TwelveLeadECGWaveformStorage</xsl:when>
         <xsl:otherwise>
           <xsl:call-template name="removeSpaces">
@@ -78,7 +102,9 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <uid uid="{$uid}" name="{$name}" keyword="{$keyword}" type="{$type}" />
+    <uid uid="{$uid}" keyword="{$keyword}" type="{$type}">
+      <xsl:value-of select="$name" />
+    </uid>
   </xsl:template>
   <xsl:template name="skipAfterColon">
     <xsl:param name="name"/>

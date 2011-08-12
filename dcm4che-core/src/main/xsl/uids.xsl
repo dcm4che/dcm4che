@@ -43,13 +43,11 @@
   <xsl:variable name="LOWER">abcdefghijklmnopqrstuvwxyz</xsl:variable>
   <xsl:variable name="UPPER">ABCDEFGHIJKLMNOPQRSTUVWXYZ</xsl:variable>
   <xsl:template match="/article">
-    <uids>
-      <xsl:apply-templates select="//row[(count(entry)=4) and starts-with(entry/para,'1.')]" />
-      <xsl:apply-templates select="//row[(count(entry)=3) and starts-with(entry/para,'1.2.840.10008.6.1.') and entry[2]/para!='']" >
-        <xsl:with-param name="namepos">3</xsl:with-param>
-        <xsl:with-param name="type">Context Group Name</xsl:with-param>
-      </xsl:apply-templates>
-    </uids>
+    <xsl:apply-templates select="//row[(count(entry)=4) and starts-with(entry/para,'1.')]" />
+    <xsl:apply-templates select="//row[(count(entry)=3) and starts-with(entry/para,'1.2.840.10008.6.1.') and entry[2]/para!='']" >
+      <xsl:with-param name="namepos">3</xsl:with-param>
+      <xsl:with-param name="type">Context Group Name</xsl:with-param>
+    </xsl:apply-templates>
   </xsl:template>
   <xsl:template match="row">
     <xsl:param name="namepos">2</xsl:param>

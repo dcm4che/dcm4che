@@ -93,11 +93,11 @@
               <includes>
                 <include>part6.xml</include>
               </includes>
-              <stylesheet>src/main/xsl/elements.xsl</stylesheet>
+              <stylesheet>src/main/xsl/dataElements.xsl</stylesheet>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>elements.xml</targetName>
+                  <targetName>dataElements.xml</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
@@ -115,7 +115,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>target/generated-resources/xml/xslt</dir>
+              <dir>src/main/xml</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -129,7 +129,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>target/generated-resources/xml/xslt</dir>
+              <dir>src/main/xml</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -143,7 +143,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>target/generated-resources/xml/xslt</dir>
+              <dir>src/main/xml</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -157,7 +157,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>target/generated-resources/xml/xslt</dir>
+              <dir>src/main/xml</dir>
               <includes>
                 <include>uids.xml</include>
               </includes>
@@ -171,7 +171,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>target/generated-resources/xml/xslt</dir>
+              <dir>src/main/xml</dir>
               <includes>
                 <include>uids.xml</include>
               </includes>

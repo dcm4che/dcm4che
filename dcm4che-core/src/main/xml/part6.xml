@@ -29330,26 +29330,6 @@
          </row>
          <row>
             <entry>
-               <para>(0028,0304)</para>
-            </entry>
-            <entry>
-               <para>Referenced Color Palette Instance UID</para>
-            </entry>
-            <entry>
-               <para>ReferencedColorPaletteInstanceUID</para>
-            </entry>
-            <entry>
-               <para>UI</para>
-            </entry>
-            <entry>
-               <para>1</para>
-            </entry>
-            <entry>
-               <para/>
-            </entry>
-         </row>
-         <row>
-            <entry>
                <para>(0028,0400)</para>
             </entry>
             <entry>
@@ -75254,7 +75234,6 @@
             </entry>
             <entry>
                <para>Talairach Brain Atlas Frame of Reference</para>
-               <para/>
             </entry>
             <entry>
                <para>Well-known frame of reference</para>
@@ -82359,7 +82338,7 @@
                <para>3746</para>
             </entry>
             <entry>
-               <para>Percutaneous Entry</para>
+               <para>Percutaneous Entry Site</para>
             </entry>
          </row>
          <row>
@@ -82821,7 +82800,7 @@
                <para>3835</para>
             </entry>
             <entry>
-               <para>Volume Measurements</para>
+               <para>Cardiac Volume Measurements</para>
             </entry>
          </row>
          <row>
@@ -86132,7 +86111,7 @@
                <para>12120</para>
             </entry>
             <entry>
-               <para>Blood Velocity Measurements</para>
+               <para>Blood Velocity Measurements by Ultrasound</para>
             </entry>
          </row>
          <row>
@@ -87002,17 +86981,6 @@
             </entry>
             <entry>
                <para>Non-invasive Cardiac Imaging Procedures</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>1.2.840.10008.6.1.762</para>
-            </entry>
-            <entry>
-               <para>3207</para>
-            </entry>
-            <entry>
-               <para>Stress Test Procedure Phases</para>
             </entry>
          </row>
          <row>
@@ -88249,17 +88217,6 @@
          </row>
          <row>
             <entry>
-               <para>1.2.840.10008.6.1.875</para>
-            </entry>
-            <entry>
-               <para/>
-            </entry>
-            <entry>
-               <para/>
-            </entry>
-         </row>
-         <row>
-            <entry>
                <para>1.2.840.10008.6.1.876</para>
             </entry>
             <entry>
@@ -88828,28 +88785,6 @@
             </entry>
             <entry>
                <para>ECG Global Waveform Durations</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>1.2.840.10008.6.1.928</para>
-            </entry>
-            <entry>
-               <para>3690</para>
-            </entry>
-            <entry>
-               <para>ECG Control Variables Numeric</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>1.2.840.10008.6.1.929</para>
-            </entry>
-            <entry>
-               <para>3691</para>
-            </entry>
-            <entry>
-               <para>ECG Control Variables Text</para>
             </entry>
          </row>
          <row>

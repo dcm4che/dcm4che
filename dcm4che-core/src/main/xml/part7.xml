@@ -2,7 +2,8 @@
 <!DOCTYPE article
   PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <article lang="">
-   <sect1><title>Annex E        Command Dictionary(Normative)</title><sect2><title>E.1        Registry of DICOM command elements</title>
+   <title>Annex E        Command Dictionary(Normative)</title>
+   <title>E.1        Registry of DICOM command elements</title>
    <para>Table E.1-1COMMAND FIELDS (PART 1)</para>
    <informaltable frame="all">
       <tgroup cols="3">
@@ -540,7 +541,8 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
-   <para/></sect2><sect2><title>E.2        Retired command fields</title>
+   <para/>
+   <title>E.2        Retired command fields</title>
    <para>The following command fields have been retired but are listed here for compatibility with previous versions of this Standard. Reference PS 3.5 for more information on retired Data Elements and Command Elements.</para>
    <para>Table E.2-1RETIRED COMMAND FIELDS</para>
    <informaltable frame="all">
@@ -938,5 +940,5 @@
    </informaltable>
    <para/>
    <para>Note:        For attributes that were present in ACR-NEMA 1.0 and 2.0 and that have been retired, the specifications of Value Representation and Value Multiplicity provided are recommendations for the purpose of interpreting their values in objects created in accordance with earlier versions of this standard. These recommendations are suggested as most appropriate for a particular attribute; however, there is no guarantee that historical objects will not violate some requirements or specified VR and/or VM.</para>
-   <para/></sect2></sect1>
+   <para/>
 </article>

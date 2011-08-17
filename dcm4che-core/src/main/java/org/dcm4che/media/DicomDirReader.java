@@ -202,107 +202,124 @@ public class DicomDirReader implements Closeable {
         return lower;
     }
 
-    public Attributes findFirstRootDirectoryRecordInUse() throws IOException {
-        return findRootDirectoryRecord(null, false, false);
+    public Attributes findFirstRootDirectoryRecordInUse(boolean ignorePrivate) throws IOException {
+        return findRootDirectoryRecord(ignorePrivate, null, false, false);
     }
 
-    public Attributes findRootDirectoryRecord(Attributes keys,
-            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
-        return findRecordInUse(
-                getOffsetOfFirstRootDirectoryRecord(),
-                keys, ignoreCaseOfPN, matchNoValue);
-    }
-
-    public Attributes findNextDirectoryRecordInUse(Attributes rec)
+    public Attributes findRootDirectoryRecord(Attributes keys, boolean ignorePrivate,
+            boolean ignoreCaseOfPN, boolean matchNoValue)
             throws IOException {
-        return findNextDirectoryRecord(rec, null, false, false);
-    }
-
-    public Attributes findNextDirectoryRecord(Attributes rec, Attributes keys,
-            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
-        return findRecordInUse(
-                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0),
+        return findRecordInUse(getOffsetOfFirstRootDirectoryRecord(), ignorePrivate,
                 keys, ignoreCaseOfPN, matchNoValue);
     }
 
-    public Attributes findLowerDirectoryRecordInUse(Attributes rec)
+    public Attributes findRootDirectoryRecord(boolean ignorePrivate, Attributes keys,
+            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+        return findRootDirectoryRecord(keys, ignorePrivate, ignoreCaseOfPN, matchNoValue);
+    }
+
+    public Attributes findNextDirectoryRecordInUse(Attributes rec, boolean ignorePrivate)
             throws IOException {
-        return findLowerDirectoryRecord(rec, null, false, false);
+        return findNextDirectoryRecord(rec, ignorePrivate, null, false, false);
     }
 
-    public Attributes findLowerDirectoryRecord(Attributes rec, Attributes keys,
-            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+    public Attributes findNextDirectoryRecord(Attributes rec, boolean ignorePrivate,
+            Attributes keys, boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
         return findRecordInUse(
-                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0),
+                rec.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0), ignorePrivate,
                 keys, ignoreCaseOfPN, matchNoValue);
     }
 
-    public Attributes findPatientRecord(String id) throws IOException {
-        return findRootDirectoryRecord(
-                pk(RecordType.PATIENT, Tag.PatientID, VR.LO, id), false, false);
+    public Attributes findLowerDirectoryRecordInUse(Attributes rec, boolean ignorePrivate)
+            throws IOException {
+        return findLowerDirectoryRecord(rec, ignorePrivate, null, false, false);
+    }
+
+    public Attributes findLowerDirectoryRecord(Attributes rec, boolean ignorePrivate,
+            Attributes keys, boolean ignoreCaseOfPN, boolean matchNoValue)
+            throws IOException {
+        return findRecordInUse(
+                rec.getInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, 0), ignorePrivate,
+                keys, ignoreCaseOfPN, matchNoValue);
+    }
+
+    public Attributes findPatientRecord(String... ids) throws IOException {
+        return findRootDirectoryRecord(false,
+                pk("PATIENT", Tag.PatientID, VR.LO, ids), false, false);
+    }
+
+    public Attributes findNextPatientRecord(Attributes patRec, String... ids) throws IOException {
+        return findNextDirectoryRecord(patRec, false,
+                pk("PATIENT", Tag.PatientID, VR.LO, ids), false, false);
     }
 
     public Attributes findStudyRecord(Attributes patRec, String... iuids)
             throws IOException {
-        return findLowerDirectoryRecord(patRec,
-                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuids),
+        return findLowerDirectoryRecord(patRec, false,
+                pk("STUDY", Tag.StudyInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
     public Attributes findNextStudyRecord(Attributes studyRec, String... iuids)
             throws IOException {
-        return findNextDirectoryRecord(studyRec,
-                pk(RecordType.STUDY, Tag.StudyInstanceUID, VR.UI, iuids),
+        return findNextDirectoryRecord(studyRec, false,
+                pk("STUDY", Tag.StudyInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
     public Attributes findSeriesRecord(Attributes studyRec, String... iuids)
             throws IOException {
-        return findLowerDirectoryRecord(studyRec, 
-                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuids),
+        return findLowerDirectoryRecord(studyRec, false, 
+                pk("SERIES", Tag.SeriesInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
     public Attributes findNextSeriesRecord(Attributes seriesRec, String... iuids)
             throws IOException {
-        return findNextDirectoryRecord(seriesRec, 
-                pk(RecordType.SERIES, Tag.SeriesInstanceUID, VR.UI, iuids),
+        return findNextDirectoryRecord(seriesRec, false, 
+                pk("SERIES", Tag.SeriesInstanceUID, VR.UI, iuids),
                 false, false);
     }
 
-    public Attributes findInstanceRecord(Attributes seriesRec, String... iuids)
+    public Attributes findLowerInstanceRecord(Attributes seriesRec, boolean ignorePrivate,
+            String... iuids) throws IOException {
+        return findLowerDirectoryRecord(seriesRec, ignorePrivate, pk(iuids), false, false);
+    }
+
+    public Attributes findNextInstanceRecord(Attributes instRec, boolean ignorePrivate,
+            String... iuids) throws IOException {
+        return findNextDirectoryRecord(instRec, ignorePrivate, pk(iuids), false, false);
+    }
+
+    public Attributes findRootInstanceRecord(boolean ignorePrivate, String... iuids)
             throws IOException {
-        return findLowerDirectoryRecord(seriesRec, pk(iuids), false, false);
+        return findRootDirectoryRecord(ignorePrivate, pk(iuids), false, false);
     }
 
-    public Attributes findNextInstanceRecord(Attributes instRec, String... iuids)
-            throws IOException {
-        return findNextDirectoryRecord(instRec, pk(iuids), false, false);
-    }
-
-    public Attributes findInstanceRecord(String... iuids) throws IOException {
-        return findRootDirectoryRecord(pk(iuids), false, false);
-    }
-
-    private Attributes pk(RecordType type, int tag, VR vr, String... ids) {
+    private Attributes pk(String type, int tag, VR vr, String... ids) {
         Attributes pk = new Attributes(2);
-        pk.setString(Tag.DirectoryRecordType, VR.CS, type.code());
-        pk.setString(tag, vr, ids);
+        pk.setString(Tag.DirectoryRecordType, VR.CS, type);
+        if (ids != null && ids.length != 0)
+            pk.setString(tag, vr, ids);
         return pk;
     }
 
-    private Attributes pk(String[] iuids) {
+    private Attributes pk(String... iuids) {
+        if (iuids == null || iuids.length == 0)
+            return null;
+
         Attributes pk = new Attributes(1);
         pk.setString(Tag.ReferencedSOPInstanceUIDInFile, VR.UI, iuids);
         return pk;
     }
 
-    private Attributes findRecordInUse(int offset, Attributes keys,
-            boolean ignoreCaseOfPN, boolean matchNoValue) throws IOException {
+    private Attributes findRecordInUse(int offset, boolean ignorePrivate, Attributes keys,
+            boolean ignoreCaseOfPN, boolean matchNoValue)
+            throws IOException {
         while (offset != 0) {
             Attributes item = readRecord(offset);
-            if (inUse(item) && (keys == null
-                    || item.matches(keys, ignoreCaseOfPN, matchNoValue)))
+            if (inUse(item) && !(ignorePrivate && isPrivate(item))
+                    && (keys == null || item.matches(keys, ignoreCaseOfPN, matchNoValue)))
                 return item;
             offset = item.getInt(Tag.OffsetOfTheNextDirectoryRecord, 0);
         }
@@ -327,4 +344,9 @@ public class DicomDirReader implements Closeable {
     public static boolean inUse(Attributes rec) {
         return rec.getInt(Tag.RecordInUseFlag, 0) != 0;
     }
+
+    public static boolean isPrivate(Attributes rec) {
+        return "PRIVATE".equals(rec.getString(Tag.DirectoryRecordType));
+    }
+
 }

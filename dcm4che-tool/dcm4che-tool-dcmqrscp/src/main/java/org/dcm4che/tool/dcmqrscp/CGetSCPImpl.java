@@ -38,65 +38,52 @@
 
 package org.dcm4che.tool.dcmqrscp;
 
-import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
-import org.dcm4che.media.DicomDirReader;
+import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.QueryOption;
+import org.dcm4che.net.service.BasicCGetSCP;
 import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.util.StringUtils;
+import org.dcm4che.net.service.RetrieveTask;
 
-class StudyQueryTask extends PatientQueryTask {
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
+ */
+class CGetSCPImpl extends BasicCGetSCP {
 
-    protected final String[] studyIUIDs;
-    protected Attributes studyRec;
+    private final Main main;
+    private final String[] qrLevels;
 
-    public StudyQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
-            DicomDirReader ddr, String availability) throws DicomServiceException {
-        super(as, pc, rq, keys, ddr, availability);
-        studyIUIDs = StringUtils.maskNull(keys.getStrings(Tag.StudyInstanceUID));
-        wrappedFindNextStudy();
+    public CGetSCPImpl(Main main, String sopClass, String... qrLevels) {
+        super(main.getDevice(), sopClass);
+        this.main = main;
+        this.qrLevels = qrLevels;
     }
 
     @Override
-    public boolean hasMoreMatches() throws DicomServiceException {
-        return studyRec != null;
+    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys) throws DicomServiceException {
+        AttributesValidator validator = new AttributesValidator(keys);
+        String qrLevel = validator.getType1String(Tag.QueryRetrieveLevel, 0, 1, qrLevels);
+        QueryRetrieveLevel.check(rq, validator);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        boolean studyRoot = cuid.equals(UID.StudyRootQueryRetrieveInformationModelGET);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(qrLevel);
+        level.validate(validator, studyRoot, relational, true);
+        QueryRetrieveLevel.check(rq, validator);
+        RetrieveTaskImpl retrieveTask =
+                new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader());
+        retrieveTask.setSendPendingRSP(main.isSendPendingCGet());
+        return retrieveTask;
     }
 
-    @Override
-    public Attributes nextMatch() throws DicomServiceException {
-        Attributes ret = new Attributes(patRec.size() + studyRec.size());
-        ret.addAll(patRec);
-        ret.addAll(studyRec);
-        wrappedFindNextStudy();
-        return ret;
-    }
-
-    private void wrappedFindNextStudy() throws DicomServiceException {
-        try {
-            findNextStudy();
-        } catch (IOException e) {
-            throw wrapException(Status.UnableToProcess, e);
-        }
-    }
-
-    protected boolean findNextStudy() throws IOException {
-        if (patRec == null)
-            return false;
-
-        if (studyRec == null)
-            studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
-        else if (studyIUIDs != null && studyIUIDs.length == 1)
-            studyRec = null;
-        else
-            studyRec = ddr.findNextStudyRecord(studyRec, studyIUIDs);
-
-        while (studyRec == null && super.findNextPatient())
-            studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
-
-        return studyRec != null;
-    }
 }
+

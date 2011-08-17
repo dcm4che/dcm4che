@@ -213,4 +213,8 @@ public class StringUtils {
         return ss == null ? EMPTY_STRING : ss;
     }
 
+    public static String truncate(String s, int maxlen) {
+        return s.length() > maxlen ? s.substring(0, 64) : s;
+    }
+
 }

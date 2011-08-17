@@ -54,7 +54,7 @@ class PatientQueryTask extends BasicQueryTask {
 
     protected final DicomDirReader ddr;
     protected final String availability;
-    protected final String patID;
+    protected final String[] patIDs;
     protected Attributes patRec;
 
     public PatientQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys,
@@ -62,7 +62,7 @@ class PatientQueryTask extends BasicQueryTask {
         super(as, pc, rq, keys);
         this.ddr = ddr;
         this.availability = availability;
-        this.patID = keys.getString(Tag.PatientID, null);
+        this.patIDs = keys.getStrings(Tag.PatientID);
         wrappedFindNextPatient();
     }
 
@@ -81,25 +81,24 @@ class PatientQueryTask extends BasicQueryTask {
     @Override
     protected Attributes adjust(Attributes match, Attributes keys, Association as) {
         Attributes adjust = super.adjust(match, keys, as);
-        String qrlevel = keys.getString(Tag.QueryRetrieveLevel, null);
-        if ("IMAGE".equals(qrlevel)) {
-            if (keys.contains(Tag.SOPClassUID))
-                 adjust.setString(Tag.SOPClassUID, VR.UI, 
-                         match.getString(Tag.ReferencedSOPClassUIDInFile, null));
-            if (keys.contains(Tag.SOPInstanceUID))
-                 adjust.setString(Tag.SOPInstanceUID, VR.UI,
-                         match.getString(Tag.ReferencedSOPInstanceUIDInFile, null));
-        }
-        adjust.setString(Tag.QueryRetrieveLevel, VR.CS, qrlevel);
+        adjust.remove(Tag.DirectoryRecordType);
+        if (keys.contains(Tag.SOPClassUID))
+             adjust.setString(Tag.SOPClassUID, VR.UI,
+                     match.getString(Tag.ReferencedSOPClassUIDInFile));
+        if (keys.contains(Tag.SOPInstanceUID))
+             adjust.setString(Tag.SOPInstanceUID, VR.UI,
+                     match.getString(Tag.ReferencedSOPInstanceUIDInFile));
+        adjust.setString(Tag.QueryRetrieveLevel, VR.CS,
+                keys.getString(Tag.QueryRetrieveLevel));
         adjust.setString(Tag.RetrieveAETitle, VR.AE, as.getCalledAET());
         if (availability != null)
             adjust.setString(Tag.InstanceAvailability, VR.CS, availability);
         adjust.setString(Tag.StorageMediaFileSetID, VR.SH, ddr.getFileSetID());
         adjust.setString(Tag.StorageMediaFileSetUID, VR.UI, ddr.getFileSetUID());
         match.setString(Tag.SOPClassUID, VR.UI,
-                match.getString(Tag.ReferencedSOPClassUIDInFile, null));
+                match.getString(Tag.ReferencedSOPClassUIDInFile));
         match.setString(Tag.SOPInstanceUID, VR.UI,
-                match.getString(Tag.ReferencedSOPInstanceUIDInFile, null));
+                match.getString(Tag.ReferencedSOPInstanceUIDInFile));
 
         return adjust;
     }
@@ -113,13 +112,13 @@ class PatientQueryTask extends BasicQueryTask {
     }
 
     protected boolean findNextPatient() throws IOException {
-        patRec = patRec == null
-            ? patID == null
-                ? ddr.findRootDirectoryRecord(keys, true, true)
-                : ddr.findPatientRecord(patID)
-            : patID == null
-                ? ddr.findNextDirectoryRecord(patRec, keys, true, true)
-                : null;
+        if (patRec == null)
+            patRec = ddr.findPatientRecord(patIDs);
+        else if (patIDs != null && patIDs.length == 1)
+            patRec = null;
+        else
+            patRec = ddr.findNextPatientRecord(patRec, patIDs);
+
         return patRec != null;
     }
 }

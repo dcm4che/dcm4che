@@ -258,21 +258,21 @@ public class Main {
     }
 
     public void copyFrom(DicomDirReader r) throws IOException {
-        Attributes rec = r.findFirstRootDirectoryRecordInUse();
+        Attributes rec = r.findFirstRootDirectoryRecordInUse(false);
         while (rec != null) {
             copyChildsFrom(r, rec,
                     out.addRootDirectoryRecord(new Attributes(rec)));
-            rec = r.findNextDirectoryRecordInUse(rec);
+            rec = r.findNextDirectoryRecordInUse(rec, false);
         }
     }
 
     private void copyChildsFrom(DicomDirReader r, Attributes src,
             Attributes dst) throws IOException {
-        Attributes rec = r.findLowerDirectoryRecordInUse(src);
+        Attributes rec = r.findLowerDirectoryRecordInUse(src, false);
         while (rec != null) {
             copyChildsFrom(r, rec,
                     out.addLowerDirectoryRecord(dst, new Attributes(rec)));
-            rec = r.findNextDirectoryRecordInUse(rec);
+            rec = r.findNextDirectoryRecordInUse(rec, false);
         }
     }
 
@@ -342,7 +342,7 @@ public class Main {
         list("File Meta Information:", in.getFileMetaInformation());
         list("File-set Information:", in.getFileSetInformation());
         list(inUse
-                ? in.findFirstRootDirectoryRecordInUse()
+                ? in.findFirstRootDirectoryRecordInUse(false)
                 : in.readFirstRootDirectoryRecord(),
              new StringBuilder());
     }
@@ -360,11 +360,11 @@ public class Main {
             index.append(i++).append('.');
             list(heading(rec, index), rec);
             list(inUse
-                    ? in.findLowerDirectoryRecordInUse(rec)
+                    ? in.findLowerDirectoryRecordInUse(rec, false)
                     : in.readLowerDirectoryRecord(rec),
                     index);
             rec = inUse
-                    ? in.findNextDirectoryRecordInUse(rec)
+                    ? in.findNextDirectoryRecordInUse(rec, false)
                     : in.readNextDirectoryRecord(rec);
             index.setLength(indexLen);
         };
@@ -455,7 +455,7 @@ public class Main {
             }
             Attributes instRec;
             if (checkDuplicate) {
-                instRec = in.findInstanceRecord(seriesRec, iuid);
+                instRec = in.findLowerInstanceRecord(seriesRec, false, iuid);
                 if (instRec != null) {
                     System.out.print('-');
                     return 0;
@@ -465,7 +465,7 @@ public class Main {
             out.addLowerDirectoryRecord(seriesRec, instRec);
         } else {
             if (checkDuplicate) {
-                if (in.findInstanceRecord(iuid) != null) {
+                if (in.findRootInstanceRecord(false, iuid) != null) {
                     System.out.print('-');
                     return 0;
                 }
@@ -534,9 +534,9 @@ public class Main {
             if (seriesRec == null) {
                 return 0;
             }
-            instRec = in.findInstanceRecord(seriesRec, iuid);
+            instRec = in.findLowerInstanceRecord(seriesRec, false, iuid);
         } else {
-            instRec = in.findInstanceRecord(iuid);
+            instRec = in.findRootInstanceRecord(false, iuid);
         }
         if (instRec == null) {
             return 0;

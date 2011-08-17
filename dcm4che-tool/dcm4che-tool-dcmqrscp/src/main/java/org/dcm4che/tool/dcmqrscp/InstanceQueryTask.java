@@ -92,23 +92,16 @@ class InstanceQueryTask extends SeriesQueryTask {
         if (seriesRec == null)
             return false;
 
-        if (instRec == null) 
-            findFirstInstance();
-        else {
-            instRec = sopIUIDs.length == 1
-                ? null
-                : sopIUIDs.length == 0
-                    ? ddr.findNextDirectoryRecord(instRec, keys, true, true)
-                    : ddr.findNextInstanceRecord(instRec, sopIUIDs);
-        }
-        while (instRec == null && super.findNextSeries())
-            findFirstInstance();
-        return instRec != null;
-    }
+        if (instRec == null)
+            instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+        else if (sopIUIDs != null && sopIUIDs.length == 1)
+            instRec = null;
+        else
+            instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
 
-    private void findFirstInstance() throws IOException {
-        instRec = sopIUIDs.length == 0
-                ? ddr.findLowerDirectoryRecord(seriesRec, keys, true, true)
-                : ddr.findInstanceRecord(seriesRec, sopIUIDs);
+        while (instRec == null && super.findNextSeries())
+            instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+
+        return instRec != null;
     }
 }

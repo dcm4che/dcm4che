@@ -44,6 +44,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.net.Commands;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -75,9 +76,7 @@ public class DicomServiceException extends IOException {
     }
 
    public DicomServiceException setErrorComment(String val) {
-        if (val.length() > 64)
-            val = val.substring(0, 64);
-        rsp.setString(Tag.ErrorComment, VR.LO, val);
+        rsp.setString(Tag.ErrorComment, VR.LO, StringUtils.truncate(val, 64));
         return this;
     }
     

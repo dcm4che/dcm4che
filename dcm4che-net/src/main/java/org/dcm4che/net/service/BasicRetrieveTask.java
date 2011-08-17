@@ -52,12 +52,16 @@ import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.InputStreamDataWriter;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class BasicRetrieveTask implements RetrieveTask {
+
+    public static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
 
     protected final Association as;
     protected Association storeas;
@@ -105,7 +109,11 @@ public class BasicRetrieveTask implements RetrieveTask {
             for (InstanceLocator inst : insts) {
                 if (!storeas.isReadyForDataTransfer()) {
                     failed.add(inst.iuid);
-                    status = Status.UnableToPerformSubOperations;
+                    if (status != Status.UnableToPerformSubOperations) {
+                        status = Status.UnableToPerformSubOperations;
+                        LOG.warn("{}: Unable to perform sub-operation: association to {} in state: {}",
+                                new Object[]{ as, storeas.getRemoteAET(), storeas.getState()});
+                    }
                     continue;
                 }
                 if (canceled) {
@@ -119,21 +127,23 @@ public class BasicRetrieveTask implements RetrieveTask {
                 } catch (Exception e) {
                     failed.add(inst.iuid);
                     status = Status.UnableToPerformSubOperations;
+                    LOG.warn(as + ": Unable to perform sub-operation on association to "
+                            + storeas.getRemoteAET(), e);
                 }
             }
             if (storeas.isReadyForDataTransfer()) {
                 try {
                     storeas.waitForOutstandingRSP();
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    LOG.warn(as + ": failed to wait for outstanding RSP on association to "
+                            + storeas.getRemoteAET(), e);
                 }
                 if (release)
                     try {
                         storeas.release();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        LOG.warn(as + ": failed to release association to "
+                                + storeas.getRemoteAET(), e);
                     }
             }
             writeRSP(status);
@@ -185,8 +195,12 @@ public class BasicRetrieveTask implements RetrieveTask {
     }
 
     private void writeRSP(int status) {
-        if (!as.isReadyForDataTransfer())
+        if (!as.isReadyForDataTransfer()) {
+            pendingRSP = false;
+            LOG.warn("{}: Unable to send C-GET or C-MOVE RSP: association to {} in state: {}",
+                    new Object[]{ as, as.getRemoteAET(), as.getState()});
             return;
+        }
 
         Attributes cmd = Commands.mkRSP(rq, status);
         if (status == Status.Pending || status == Status.Cancel)

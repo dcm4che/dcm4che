@@ -91,23 +91,16 @@ class SeriesQueryTask extends StudyQueryTask {
         if (studyRec == null)
             return false;
 
-        if (seriesRec == null) 
-            findFirstSeries();
-        else {
-            seriesRec = seriesIUIDs.length == 1
-                ? null
-                : seriesIUIDs.length == 0
-                    ? ddr.findNextDirectoryRecord(seriesRec, keys, true, true)
-                    : ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
-        }
-        while (seriesRec == null && super.findNextStudy())
-            findFirstSeries();
-        return seriesRec != null;
-    }
+        if (seriesRec == null)
+            seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
+        else if (seriesIUIDs != null && seriesIUIDs.length == 1)
+            seriesRec = null;
+        else
+            seriesRec = ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
 
-    private void findFirstSeries() throws IOException {
-        seriesRec = seriesIUIDs.length == 0
-            ? ddr.findLowerDirectoryRecord(studyRec, keys, true, true)
-            : ddr.findSeriesRecord(studyRec, seriesIUIDs);
+        while (seriesRec == null && super.findNextStudy())
+            seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
+
+        return seriesRec != null;
     }
 }

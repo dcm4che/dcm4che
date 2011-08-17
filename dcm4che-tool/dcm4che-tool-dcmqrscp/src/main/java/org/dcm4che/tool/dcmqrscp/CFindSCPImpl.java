@@ -45,7 +45,6 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.QueryOption;
@@ -57,12 +56,12 @@ import org.dcm4che.net.service.QueryTask;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CompositeCFindSCP extends BasicCFindSCP {
+class CFindSCPImpl extends BasicCFindSCP {
 
     private final Main main;
     private final String[] qrLevels;
 
-    public CompositeCFindSCP(Main main, String sopClass, String... qrLevels) {
+    public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
@@ -72,72 +71,29 @@ class CompositeCFindSCP extends BasicCFindSCP {
     protected QueryTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
-        String level = validator.getType1String(
-                Tag.QueryRetrieveLevel, 0, 1, qrLevels);
-        check(rq, validator);
-        DicomDirReader ddr = main.getDicomDirReader();
-        String availability = main.getInstanceAvailability();
-        String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
-        boolean studyRoot =
-            cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
+        String qrLevel = validator.getType1String(Tag.QueryRetrieveLevel, 0, 1, qrLevels);
+        QueryRetrieveLevel.check(rq, validator);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        boolean studyRoot = cuid.equals(UID.StudyRootQueryRetrieveInformationModelFIND);
         ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
         boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
-        switch (level.charAt(1)) {
-        case 'A':
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(qrLevel);
+        level.validate(validator, studyRoot, relational, false);
+        QueryRetrieveLevel.check(rq, validator);
+        DicomDirReader ddr = main.getDicomDirReader();
+        String availability =  main.getInstanceAvailability();
+        switch(level) {
+        case PATIENT:
             return new PatientQueryTask(as, pc, rq, keys, ddr, availability);
-        case 'T':
-            validateStudyQuery(rq, validator, relational, studyRoot);
+        case STUDY:
             return new StudyQueryTask(as, pc, rq, keys, ddr, availability);
-        case 'E':
-            validateSeriesQuery(rq, validator, relational, studyRoot);
+        case SERIES:
             return new SeriesQueryTask(as, pc, rq, keys, ddr, availability);
-        case 'M':
-            validateInstanceQuery(rq, validator, relational, studyRoot);
+        case IMAGE:
             return new InstanceQueryTask(as, pc, rq, keys, ddr, availability);
         }
         throw new AssertionError();
     }
 
-    private static void validateStudyQuery(Attributes rq,
-            AttributesValidator validator, boolean relational,
-            boolean studyRoot) throws DicomServiceException {
-        validateUniqueKey(validator, Tag.PatientID, relational || studyRoot);
-        check(rq, validator);
-    }
-
-    private void validateSeriesQuery(Attributes rq,
-            AttributesValidator validator, boolean relational,
-            boolean studyRoot) throws DicomServiceException {
-        validateUniqueKey(validator, Tag.StudyInstanceUID, relational);
-        validateUniqueKey(validator, Tag.PatientID, relational || studyRoot);
-        check(rq, validator);
-    }
-
-    private void validateInstanceQuery(Attributes rq,
-            AttributesValidator validator, boolean relational,
-            boolean studyRoot) throws DicomServiceException {
-        validateUniqueKey(validator, Tag.SeriesInstanceUID, relational);
-        validateUniqueKey(validator, Tag.StudyInstanceUID, relational);
-        validateUniqueKey(validator, Tag.PatientID, relational || studyRoot);
-        check(rq, validator);
-    }
-
-    private static void check(Attributes rq, AttributesValidator validator)
-            throws DicomServiceException {
-        if (validator.hasOffendingElements())
-            throw new DicomServiceException(rq,
-                    Status.IdentifierDoesNotMatchSOPClass,
-                    validator.getErrorComment())
-                .setOffendingElements(validator.getOffendingElements());
-    }
-
-    private static void validateUniqueKey(AttributesValidator validator,
-            int tag, boolean optional) {
-        if (optional)
-            validator.getType3String(tag, 0, 1, null);
-        else
-            validator.getType1String(tag, 0, 1);
-        
-    }
 }
 

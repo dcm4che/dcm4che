@@ -64,8 +64,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BasicCStoreSCP extends DicomService implements CStoreSCP {
 
-    public static final Logger LOG =
-            LoggerFactory.getLogger(BasicCStoreSCP.class);
+    public static final Logger LOG = LoggerFactory.getLogger(BasicCStoreSCP.class);
 
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
@@ -139,87 +138,5 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
             Object storage, File file, MessageDigest digest) throws DicomServiceException {
         return null;
     }
-
-//    protected void store(Association as, Attributes rq, PDVInputStream data,
-//            String tsuid, Attributes rsp) throws IOException {
-//        DicomInputStream in = new DicomInputStream(data, tsuid);
-//        configure(as, in);
-//        try {
-//            Attributes ds = in.readDataset(-1, -1);
-//            store(as, rq, ds, tsuid, rsp);
-//        } finally {
-//            dispose(as, in);
-//        }
-//    }
-//
-//    protected void configure(Association as, DicomInputStream in) {
-//        
-//    }
-//
-//    protected void dispose(Association as, DicomInputStream in) {
-//        List<File> bulkDataFiles = in.getBulkDataFiles();
-//        for (File f : bulkDataFiles)
-//            f.delete();
-//    }
-//
-//    protected void configure(Association as, DicomOutputStream out) {
-//    }
-//
-//    protected void store(Association as, Attributes rq, Attributes ds,
-//            String tsuid, Attributes rsp) throws DicomServiceException {
-//        File dir = selectDirectory(as, rq, ds);
-//        File file = createFile(dir, as, rq, ds);
-//        try {
-//            if (store(as, rq, ds,
-//                    createFileMetaInformation(as, rq, ds, tsuid),
-//                    dir, file, rsp))
-//                file = null;
-//        } finally {
-//            if (file != null)
-//                if (file.delete())
-//                    LOG.info("{}: M-DELETE {}", as, file);
-//                else
-//                    LOG.warn("{}: Failed to M-DELETE {}", as, file);
-//
-//        }
-//    }
-//
-//    protected boolean store(Association as, Attributes rq, Attributes ds,
-//            Attributes fmi, File dir, File file, Attributes rsp)
-//            throws DicomServiceException {
-//        DicomOutputStream out = null;
-//        try {
-//            LOG.info("{}: M-WRITE {}", as, file);
-//            out = new DicomOutputStream(file);
-//            configure(as, out);
-//            out.writeDataset(fmi, ds);
-//            return true;
-//        } catch (IOException e) {
-//            LOG.warn("M-WRITE failed:", e);
-//            throw new DicomServiceException(rq, Status.OutOfResources, e);
-//        } finally {
-//            SafeClose.close(out);
-//        }
-//    }
-//
-//    protected Attributes createFileMetaInformation(Association as, Attributes rq,
-//            Attributes ds, String tsuid) throws DicomServiceException {
-//        Attributes fmi = Attributes.createFileMetaInformation(
-//                        rq.getString(Tag.AffectedSOPInstanceUID, null),
-//                        rq.getString(Tag.AffectedSOPClassUID, null),
-//                        tsuid);
-//        fmi.setString(Tag.SourceApplicationEntityTitle, VR.AE, as.getLocalAET());
-//        return fmi;
-//    }
-//
-//    protected File selectDirectory(Association as, Attributes rq, Attributes ds)
-//            throws DicomServiceException {
-//        return new File(".");
-//    }
-//
-//    protected File createFile(File dir, Association as, Attributes rq,
-//            Attributes ds) throws DicomServiceException {
-//        return new File(dir, rq.getString(Tag.AffectedSOPInstanceUID, null));
-//    }
 
 }

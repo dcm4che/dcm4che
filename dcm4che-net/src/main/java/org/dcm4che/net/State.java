@@ -49,7 +49,7 @@ import org.dcm4che.net.pdu.AAssociateRQ;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum State {
+public enum State {
     Sta1("Sta1 - Idle") {
 
         @Override

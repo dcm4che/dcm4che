@@ -40,9 +40,7 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.Properties;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -53,33 +51,22 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
-import org.dcm4che.media.RecordType;
 import org.dcm4che.net.ApplicationEntity;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.BasicCStoreSCP;
-import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.FilePathFormat;
-import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
-import org.dcm4che.util.TagUtils;
 import org.dcm4che.util.UIDUtils;
 
 /**
@@ -94,76 +81,16 @@ public class Main {
     private final Device device = new Device("dcmqrscp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
-    private FilePathFormat filePathFormat;
-
-    private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
-
-        @Override
-        protected File createFile(Association as, Attributes rq, Object storage)
-                throws DicomServiceException {
-            try {
-                return File.createTempFile("dcm", ".dcm", storageDir);
-            } catch (IOException e) {
-                LOG.warn(as + ": Failed to create temp file:", e);
-                throw new DicomServiceException(rq, Status.OutOfResources, e);
-            }
-        }
-
-        @Override
-        protected File process(Association as, Attributes rq, String tsuid,
-                Attributes rsp, Object storage, File file, MessageDigest digest)
-                throws DicomServiceException {
-            Attributes fmi, ds;
-            DicomInputStream in = null;
-            try {
-                in = new DicomInputStream(file);
-                in.setIncludeBulkData(false);
-                fmi = in.readFileMetaInformation();
-                ds = in.readDataset(-1, Tag.PixelData);
-            } catch (IOException e) {
-                LOG.warn(as + ": Failed to decode dataset:", e);
-                throw new DicomServiceException(rq, Status.CannotUnderstand);
-            } finally {
-                SafeClose.close(in);
-            }
-            File dst = new File(storageDir, filePathFormat.format(ds));
-            File dir = dst.getParentFile();
-            dir.mkdirs();
-            while (dst.exists()) {
-                dst = new File(dir, TagUtils.toHexString(new Random().nextInt()));
-            }
-            if (file.renameTo(dst))
-                LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
-            else {
-                LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
-                throw new DicomServiceException(rq, Status.OutOfResources, "Failed to rename file");
-            }
-            try {
-                if (addDicomDirRecords(as, ds, fmi, file)) {
-                    LOG.info("{}: M-UPDATE {}", as, dicomDir);
-                    return null;
-                }
-                LOG.info("{}: ignore received object", as);
-            } catch (IOException e) {
-                LOG.warn(as + ": Failed to M-UPDATE " + dicomDir, e);
-                String errorComment = e.getMessage();
-                if (errorComment.length() > 64)
-                    errorComment = errorComment.substring(0, 64);
-                rsp.setInt(Tag.Status, VR.US, Status.OutOfResources);
-                rsp.setString(Tag.ErrorComment, VR.LO, errorComment);
-            }
-            return dst;
-        }
-    };
 
     private File storageDir;
     private File dicomDir;
+    private FilePathFormat filePathFormat;
+    private RecordFactory recFact;
     private String availability;
+    private boolean sendPendingCGet;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
-
-    private RecordFactory recFact;
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -172,18 +99,30 @@ public class Main {
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
-        serviceRegistry.addDicomService(storageSCP);
+        serviceRegistry.addDicomService(new CStoreSCPImpl(this));
         serviceRegistry.addDicomService(
-                new CompositeCFindSCP(this,
+                new CFindSCPImpl(this,
                         UID.PatientRootQueryRetrieveInformationModelFIND,
                         "PATIENT", "STUDY", "SERIES", "IMAGE"));
         serviceRegistry.addDicomService(
-                new CompositeCFindSCP(this,
+                new CFindSCPImpl(this,
                         UID.StudyRootQueryRetrieveInformationModelFIND,
                         "STUDY", "SERIES", "IMAGE"));
         serviceRegistry.addDicomService(
-                new CompositeCFindSCP(this,
+                new CFindSCPImpl(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
+                        "PATIENT", "STUDY"));
+        serviceRegistry.addDicomService(
+                new CGetSCPImpl(this,
+                        UID.PatientRootQueryRetrieveInformationModelGET,
+                        "PATIENT", "STUDY", "SERIES", "IMAGE"));
+        serviceRegistry.addDicomService(
+                new CGetSCPImpl(this,
+                        UID.StudyRootQueryRetrieveInformationModelGET,
+                        "STUDY", "SERIES", "IMAGE"));
+        serviceRegistry.addDicomService(
+                new CGetSCPImpl(this,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
                         "PATIENT", "STUDY"));
         ae.setDimseRQHandler(serviceRegistry);
     }
@@ -198,6 +137,14 @@ public class Main {
             System.out.println("M-WRITE " + storageDir);
         this.storageDir = storageDir;
         this.dicomDir = dicomDir;
+    }
+
+    public final File getStorageDirectory() {
+        return storageDir;
+    }
+
+    public final FilePathFormat getFilePathFormat() {
+        return filePathFormat;
     }
 
     public void setFilePathFormat(String pattern) {
@@ -228,8 +175,20 @@ public class Main {
         return availability;
     }
 
+    public final void setSendPendingCGet(boolean sendPendingCGet) {
+        this.sendPendingCGet = sendPendingCGet;
+    }
+
+    public final boolean isSendPendingCGet() {
+        return sendPendingCGet;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
+    }
+
+    public final RecordFactory getRecordFactory() {
+        return recFact;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -242,6 +201,7 @@ public class Main {
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
+        addSendingPendingOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
     }
 
@@ -253,6 +213,10 @@ public class Main {
                 .withDescription(rb.getString("availability"))
                 .withLongOpt("availability")
                 .create());
+    }
+
+    private static void addSendingPendingOptions(Options opts) {
+        opts.addOption(null, "pending-cget", false, rb.getString("pending-cget"));
     }
 
     @SuppressWarnings("static-access")
@@ -308,6 +272,7 @@ public class Main {
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
+            configureSendPending(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -335,6 +300,10 @@ public class Main {
 
     private static void configureInstanceAvailability(Main main, CommandLine cl) {
         main.setInstanceAvailability(cl.getOptionValue("availability"));
+    }
+
+    private static void configureSendPending(Main main, CommandLine cl) {
+        main.setSendPendingCGet(cl.hasOption("pending-cget"));
     }
 
     private static void configureTransferCapability(Main main, CommandLine cl)
@@ -424,11 +393,11 @@ public class Main {
         device.activate();
     }
 
-    DicomDirReader getDicomDirReader() {
+    final DicomDirReader getDicomDirReader() {
          return ddReader;
     }
 
-    DicomDirReader getDicomDirWriter() {
+    final DicomDirWriter getDicomDirWriter() {
          return ddWriter;
     }
 
@@ -444,44 +413,6 @@ public class Main {
 
     private void openDicomDirForReadOnly() throws IOException {
         ddReader = new DicomDirReader(dicomDir);
-    }
-
-    private boolean addDicomDirRecords(Association as, Attributes ds,
-            Attributes fmi, File f) throws IOException {
-        String pid = ds.getString(Tag.PatientID, null);
-        String styuid = ds.getString(Tag.StudyInstanceUID, null);
-        String seruid = ds.getString(Tag.SeriesInstanceUID, null);
-        String iuid = fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
-        if (pid == null) {
-            ds.setString(Tag.PatientID, VR.LO, pid = styuid);
-        }
-        Attributes patRec = ddReader.findPatientRecord(pid);
-        if (patRec == null) {
-            patRec = recFact.createRecord(RecordType.PATIENT, null,
-                    ds, null, null);
-            ddWriter.addRootDirectoryRecord(patRec);
-        }
-        Attributes studyRec = ddReader.findStudyRecord(patRec, styuid);
-        if (studyRec == null) {
-            studyRec = recFact.createRecord(RecordType.STUDY, null,
-                    ds, null, null);
-            ddWriter.addLowerDirectoryRecord(patRec, studyRec);
-        }
-        Attributes seriesRec = ddReader.findSeriesRecord(studyRec, seruid);
-        if (seriesRec == null) {
-            seriesRec = recFact.createRecord(RecordType.SERIES, null,
-                    ds, null, null);
-            ddWriter.addLowerDirectoryRecord(studyRec, seriesRec);
-        }
-        Attributes instRec;
-        instRec = ddReader.findInstanceRecord(seriesRec, iuid);
-        if (instRec != null) {
-            return false;
-        }
-        instRec = recFact.createRecord(ds, fmi, ddWriter.toFileIDs(f));
-        ddWriter.addLowerDirectoryRecord(seriesRec, instRec);
-        ddWriter.commit();
-        return true;
     }
 
 }

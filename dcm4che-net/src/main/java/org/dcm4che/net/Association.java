@@ -453,6 +453,10 @@ public class Association {
         notifyAll();
     }
 
+    public final State getState() {
+        return state;
+    }
+
     synchronized void waitForLeaving(State state)
             throws InterruptedException, IOException {
         while (this.state == state)

@@ -40,7 +40,6 @@ package org.dcm4che.tool.movescu;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -344,44 +343,24 @@ public class Main {
 
     private static SOPClass sopClassOf(CommandLine cl) throws ParseException {
         if (cl.hasOption("P")) {
-            requiresQueryLevel("P", cl);
             return SOPClass.PatientRoot;
         }
         if (cl.hasOption("S")) {
-            requiresQueryLevel("S", cl);
             return SOPClass.StudyRoot;
         }
         if (cl.hasOption("O")) {
-            requiresQueryLevel("O", cl);
             return SOPClass.PatientStudyOnly;
         }
         if (cl.hasOption("I")) {
-            requiresQueryLevel("I", cl);
             return SOPClass.CompositeInstanceRoot;
         }
         if (cl.hasOption("H")) {
-            noQueryLevel("H", cl);
             return SOPClass.HangingProtocol;
         }
         if (cl.hasOption("C")) {
-            noQueryLevel("C", cl);
             return SOPClass.ColorPalette;
         }
         throw new ParseException(rb.getString("missing"));
-    }
-
-    private static void requiresQueryLevel(String opt, CommandLine cl)
-            throws ParseException {
-        if (!cl.hasOption("L"))
-            throw new ParseException(
-                    MessageFormat.format(rb.getString("missing-level"), opt));
-    }
-
-    private static void noQueryLevel(String opt, CommandLine cl)
-            throws ParseException {
-        if (cl.hasOption("L"))
-            throw new ParseException(
-                    MessageFormat.format(rb.getString("invalid-level"), opt));
     }
 
     private static String[] tssOf(CommandLine cl) {

@@ -41,6 +41,7 @@ package org.dcm4che.tool.movescu;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -67,6 +68,7 @@ import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 
@@ -76,24 +78,20 @@ import org.dcm4che.util.SafeClose;
  */
 public class Main {
 
-    private static final int RELATIONAL_RETRIEVE = 1;
     public static final String CompositeInstanceRootRetrieveMOVE = "1.2.840.10008.5.1.4.1.2.4.2";
 
     private static enum SOPClass {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, 0),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, 0),
-        PatientStudyOnly(
-                UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, 0),
-        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, 3),
-        HangingProtocol(UID.HangingProtocolInformationModelMOVE, 3),
-        ColorPalette(UID.ColorPaletteInformationModelMOVE, 3);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired),
+        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE),
+        HangingProtocol(UID.HangingProtocolInformationModelMOVE),
+        ColorPalette(UID.ColorPaletteInformationModelMOVE);
 
         final String cuid;
-        final int defExtNeg;
 
-        SOPClass(String cuid, int defExtNeg) {
+        SOPClass(String cuid) {
             this.cuid = cuid;
-            this.defExtNeg = defExtNeg;
         }
     }
 
@@ -130,8 +128,8 @@ public class Main {
     private int priority;
     private String destination;
     private SOPClass sopClass = SOPClass.StudyRoot;
+    private EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
     private String[] tss = IVR_LE_FIRST;
-    private int extNeg;
 
     private Attributes keys = new Attributes();
 
@@ -163,19 +161,12 @@ public class Main {
         this.tss = tss.clone();
     }
 
+    private void addQueryOption(QueryOption opt) {
+        queryOptions.add(opt);
+    }
+
     public final void setDestination(String destination) {
         this.destination = destination;
-    }
-
-    private void setExtendedNegotiation(int flag, boolean enable) {
-        if (enable)
-            extNeg |= flag;
-        else
-            extNeg &= ~flag;
-    }
-
-    public void setRelationalQueries(boolean enable) {
-        setExtendedNegotiation(RELATIONAL_RETRIEVE, enable);
     }
 
     public void addKey(int tag, String value) {
@@ -337,7 +328,8 @@ public class Main {
     }
 
     private static void configureExtendedNegotiation(Main main, CommandLine cl) {
-        main.setRelationalQueries(cl.hasOption("relational"));
+        if (cl.hasOption("relational"))
+            main.addQueryOption(QueryOption.RELATIONAL);
     }
 
     private static void configureKeys(Main main, CommandLine cl) {
@@ -405,20 +397,12 @@ public class Main {
     public void open() throws IOException, InterruptedException {
         rq.addPresentationContext(
                 new PresentationContext(1, sopClass.cuid, tss));
-        if (extNeg > sopClass.defExtNeg)
+        if (!queryOptions.isEmpty()) {
             rq.addExtendedNegotiation(
                     new ExtendedNegotiation(sopClass.cuid,
-                            toInfo(extNeg | sopClass.defExtNeg)));
+                            QueryOption.toExtendedNegotiationInformation(queryOptions)));
+        }
         as = ae.connect(conn, remote, rq);
-    }
-
-    private static byte[] toInfo(int extNeg) {
-        if (extNeg == 1)
-            return new byte[] { 1 };
-        byte[] info = new byte[(extNeg & 8) == 0 ? 3 : 4];
-        for (int i = 0; i < info.length; i++, extNeg >>>= 1)
-            info[i] = (byte) (extNeg & 1);
-        return info;
     }
 
     public void close() throws IOException, InterruptedException {

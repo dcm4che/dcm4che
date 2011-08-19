@@ -40,13 +40,8 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.AttributesValidator;
-import org.dcm4che.data.Tag;
-import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCGetSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.RetrieveTask;
@@ -69,16 +64,7 @@ class CGetSCPImpl extends BasicCGetSCP {
     @Override
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        AttributesValidator validator = new AttributesValidator(keys);
-        String qrLevel = validator.getType1String(Tag.QueryRetrieveLevel, 0, 1, qrLevels);
-        QueryRetrieveLevel.check(rq, validator);
-        String cuid = rq.getString(Tag.AffectedSOPClassUID);
-        boolean studyRoot = cuid.equals(UID.StudyRootQueryRetrieveInformationModelGET);
-        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
-        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
-        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(qrLevel);
-        level.validate(validator, studyRoot, relational, true);
-        QueryRetrieveLevel.check(rq, validator);
+        QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, true);
         RetrieveTaskImpl retrieveTask =
                 new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader());
         retrieveTask.setSendPendingRSP(main.isSendPendingCGet());

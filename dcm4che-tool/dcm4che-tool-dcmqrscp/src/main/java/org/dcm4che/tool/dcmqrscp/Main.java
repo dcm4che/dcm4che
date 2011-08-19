@@ -40,6 +40,8 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -51,6 +53,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
@@ -60,8 +64,10 @@ import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
@@ -75,8 +81,14 @@ import org.dcm4che.util.UIDUtils;
  */
 public class Main {
 
+    private static final String[] PATIENT_ROOT_LEVELS = {
+        "PATIENT", "STUDY", "SERIES", "IMAGE" };
+    private static final String[] STUDY_ROOT_LEVELS = {
+        "STUDY", "SERIES", "IMAGE" };
+    private static final String[] PATIENT_STUDY_ONLY_LEVELS = {
+        "PATIENT", "STUDY" };
     private static ResourceBundle rb =
-        ResourceBundle.getBundle("org.dcm4che.tool.dcmqrscp.messages");
+         ResourceBundle.getBundle("org.dcm4che.tool.dcmqrscp.messages");
 
     private final Device device = new Device("dcmqrscp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
@@ -88,9 +100,11 @@ public class Main {
     private RecordFactory recFact;
     private String availability;
     private boolean sendPendingCGet;
+    private long sendPendingCMoveInterval;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
+    private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -103,27 +117,39 @@ public class Main {
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(this,
                         UID.PatientRootQueryRetrieveInformationModelFIND,
-                        "PATIENT", "STUDY", "SERIES", "IMAGE"));
+                        PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(this,
                         UID.StudyRootQueryRetrieveInformationModelFIND,
-                        "STUDY", "SERIES", "IMAGE"));
+                        STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
-                        "PATIENT", "STUDY"));
+                        PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(this,
                         UID.PatientRootQueryRetrieveInformationModelGET,
-                        "PATIENT", "STUDY", "SERIES", "IMAGE"));
+                        PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(this,
                         UID.StudyRootQueryRetrieveInformationModelGET,
-                        "STUDY", "SERIES", "IMAGE"));
+                        STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
                 new CGetSCPImpl(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
-                        "PATIENT", "STUDY"));
+                        PATIENT_STUDY_ONLY_LEVELS));
+        serviceRegistry.addDicomService(
+                new CMoveSCPImpl(this,
+                        UID.PatientRootQueryRetrieveInformationModelMOVE,
+                        PATIENT_ROOT_LEVELS));
+        serviceRegistry.addDicomService(
+                new CMoveSCPImpl(this,
+                        UID.StudyRootQueryRetrieveInformationModelMOVE,
+                        STUDY_ROOT_LEVELS));
+        serviceRegistry.addDicomService(
+                new CMoveSCPImpl(this,
+                        UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired,
+                        PATIENT_STUDY_ONLY_LEVELS));
         ae.setDimseRQHandler(serviceRegistry);
     }
 
@@ -183,6 +209,14 @@ public class Main {
         return sendPendingCGet;
     }
 
+    public final void setSendPendingCMoveInterval(long sendPendingCMoveInterval) {
+        this.sendPendingCMoveInterval = sendPendingCMoveInterval;
+    }
+
+    public final long getSendPendingCMoveInterval() {
+        return sendPendingCMoveInterval;
+    }
+
     public final void setRecordFactory(RecordFactory recFact) {
         this.recFact = recFact;
     }
@@ -202,6 +236,7 @@ public class Main {
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
         addSendingPendingOptions(opts);
+        addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
     }
 
@@ -215,9 +250,16 @@ public class Main {
                 .create());
     }
 
+    @SuppressWarnings("static-access")
     private static void addSendingPendingOptions(Options opts) {
         opts.addOption(null, "pending-cget", false, rb.getString("pending-cget"));
-    }
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("pending-cmove"))
+                .withLongOpt("pending-cmove")
+                .create());
+   }
 
     @SuppressWarnings("static-access")
     private static void addDicomDirOption(Options opts) {
@@ -262,6 +304,16 @@ public class Main {
                 .create());
     }
 
+    @SuppressWarnings("static-access")
+    private static void addRemoteConnectionsOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("ae-config"))
+                .withLongOpt("ae-config")
+                .create());
+     }
+
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -273,6 +325,7 @@ public class Main {
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
             configureSendPending(main, cl);
+            configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -304,6 +357,9 @@ public class Main {
 
     private static void configureSendPending(Main main, CommandLine cl) {
         main.setSendPendingCGet(cl.hasOption("pending-cget"));
+        if (cl.hasOption("pending-cmove"))
+                main.setSendPendingCMoveInterval(
+                        Long.parseLong(cl.getOptionValue("pending-cmove")));
     }
 
     private static void configureTransferCapability(Main main, CommandLine cl)
@@ -389,6 +445,28 @@ public class Main {
         return uids ;
     }
 
+    private static void configureRemoteConnections(Main main, CommandLine cl) throws Exception {
+        String file = cl.getOptionValue("ae-config", "resource:ae.properties");
+        Properties aeConfig = CLIUtils.loadProperties(file, null);
+        for (Map.Entry<Object, Object> entry : aeConfig.entrySet()) {
+            String aet = (String) entry.getKey();
+            String value = (String) entry.getValue();
+            try {
+                String[] hostPortCiphers = StringUtils.split(value, ':');
+                String[] ciphers = new String[hostPortCiphers.length-2];
+                System.arraycopy(hostPortCiphers, 2, ciphers, 0, ciphers.length);
+                Connection remote = new Connection();
+                remote.setHostname(hostPortCiphers[0]);
+                remote.setPort(Integer.parseInt(hostPortCiphers[1]));
+                remote.setTLSCipherSuite(ciphers);
+                main.addRemoteConnection(aet, remote);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Invalid entry in " + file + ": " + aet + "=" + value);
+            }
+        }
+    }
+
     private void activate() throws IOException {
         device.activate();
     }
@@ -399,6 +477,14 @@ public class Main {
 
     final DicomDirWriter getDicomDirWriter() {
          return ddWriter;
+    }
+
+    final ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
+
+    final Connection getConnection() {
+        return conn;
     }
 
     private void openDicomDir() throws IOException {
@@ -413,6 +499,18 @@ public class Main {
 
     private void openDicomDirForReadOnly() throws IOException {
         ddReader = new DicomDirReader(dicomDir);
+    }
+
+    public void addRemoteConnection(String aet, Connection remote) {
+        remoteConnections.put(aet, remote);
+    }
+
+    Connection getRemoteConnection(Attributes rq) throws DicomServiceException {
+        String dest = rq.getString(Tag.MoveDestination);
+        Connection remote = remoteConnections.get(dest);
+        if (remote == null)
+            throw new DicomServiceException(rq, Status.MoveDestinationUnknown, dest);
+        return remote;
     }
 
 }

@@ -56,6 +56,20 @@ public class AAssociateRQ extends AAssociateRQAC {
         this.userIdentity = userIdentity;
     }
 
+    public boolean containsPresentationContextFor(String as) {
+        for (PresentationContext pc : pcs)
+            if (as.equals(pc.getAbstractSyntax()))
+                return true;
+        return false;
+    }
+
+    public boolean containsPresentationContextFor(String as, String ts) {
+        for (PresentationContext pc : pcs)
+            if (as.equals(pc.getAbstractSyntax()) && pc.containsTransferSyntax(ts))
+                return true;
+        return false;
+    }
+
     @Override
     public String toString() {
         return promptTo(new StringBuilder(512)).toString();

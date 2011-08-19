@@ -317,15 +317,10 @@ public class Main {
         fileInfos.writeUTF(iuid);
         fileInfos.writeUTF(ts);
 
-        boolean firstPCforCUID = true;
-        for (PresentationContext pc : rq.getPresentationContexts())
-            if (cuid.equals(pc.getAbstractSyntax())) {
-                firstPCforCUID = false;
-                if (ts.equals(pc.getTransferSyntax()))
-                    return;
-            }
+        if (rq.containsPresentationContextFor(cuid, ts))
+            return;
 
-        if (firstPCforCUID) {
+        if (!rq.containsPresentationContextFor(cuid)) {
             if (relExtNeg)
                 rq.addCommonExtendedNegotiation(
                         relSOPClasses.getCommonExtendedNegotiation(cuid));
@@ -335,7 +330,6 @@ public class Main {
                                 rq.getNumberOfPresentationContexts() * 2 + 1,
                                 cuid, UID.ImplicitVRLittleEndian));
         }
-
         rq.addPresentationContext(
                 new PresentationContext(
                         rq.getNumberOfPresentationContexts() * 2 + 1,

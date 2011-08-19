@@ -36,51 +36,39 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.dcmqrscp;
+package org.dcm4che.net.service;
 
+import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.media.DicomDirReader;
+import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.BasicCFindSCP;
-import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.net.service.QueryTask;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CFindSCPImpl extends BasicCFindSCP {
+public class BasicCMoveSCP extends DicomService implements CMoveSCP {
 
-    private final Main main;
-    private final String[] qrLevels;
+    protected final Device device;
 
-    public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
-        super(main.getDevice(), sopClass);
-        this.main = main;
-        this.qrLevels = qrLevels;
+    public BasicCMoveSCP(Device device, String... sopClasses) {
+        super(sopClasses);
+        this.device = device;
     }
 
     @Override
-    protected QueryTask calculateMatches(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys) throws DicomServiceException {
-        QueryRetrieveLevel level =
-                QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, false);
-        DicomDirReader ddr = main.getDicomDirReader();
-        String availability =  main.getInstanceAvailability();
-        switch(level) {
-        case PATIENT:
-            return new PatientQueryTask(as, pc, rq, keys, ddr, availability);
-        case STUDY:
-            return new StudyQueryTask(as, pc, rq, keys, ddr, availability);
-        case SERIES:
-            return new SeriesQueryTask(as, pc, rq, keys, ddr, availability);
-        case IMAGE:
-            return new InstanceQueryTask(as, pc, rq, keys, ddr, availability);
-        }
-        throw new AssertionError();
+    public void onCMoveRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
+            throws IOException {
+        RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
+        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
+        device.execute(retrieveTask);
     }
 
+    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys) throws DicomServiceException {
+        return new BasicRetrieveTask(as, pc, rq);
+    }
 }
-

@@ -38,7 +38,6 @@
 
 package org.dcm4che.net.service;
 
-import org.dcm4che.net.Association;
 import org.dcm4che.net.CancelRQHandler;
 
 /**
@@ -46,9 +45,5 @@ import org.dcm4che.net.CancelRQHandler;
  *
  */
 public interface RetrieveTask extends Runnable, CancelRQHandler {
-
-    void setStoreAssociation(Association dest, boolean release);
-
-    boolean isEmpty();
 
 }

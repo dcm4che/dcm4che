@@ -167,6 +167,7 @@
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
       <includes>
+        <include>etc/dcmqrscp/ae.properties</include>
         <include>etc/dcmqrscp/log4j.properties</include>
         <include>etc/dcmqrscp/storage-sop-classes.properties</include>
         <include>etc/dcmqrscp/query-sop-classes.properties</include>

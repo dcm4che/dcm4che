@@ -109,6 +109,13 @@ public class PresentationContext {
         return tss;
     }
 
+    public boolean containsTransferSyntax(String ts) {
+        for (String ts0 : tss)
+            if (ts.equals(ts0))
+                return true;
+        return false;
+    }
+
     public String getTransferSyntax() {
         return tss[0];
     }

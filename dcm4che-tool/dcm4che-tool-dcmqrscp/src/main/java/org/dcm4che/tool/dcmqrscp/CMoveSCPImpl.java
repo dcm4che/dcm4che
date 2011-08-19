@@ -39,47 +39,55 @@
 package org.dcm4che.tool.dcmqrscp;
 
 
+import java.io.IOException;
+
 import org.dcm4che.data.Attributes;
-import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Connection;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.dcm4che.net.service.BasicCFindSCP;
+import org.dcm4che.net.service.BasicCMoveSCP;
 import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.net.service.QueryTask;
+import org.dcm4che.net.service.RetrieveTask;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-class CFindSCPImpl extends BasicCFindSCP {
+class CMoveSCPImpl extends BasicCMoveSCP {
 
     private final Main main;
     private final String[] qrLevels;
 
-    public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
+    public CMoveSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
     }
 
     @Override
-    protected QueryTask calculateMatches(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys) throws DicomServiceException {
-        QueryRetrieveLevel level =
-                QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, false);
-        DicomDirReader ddr = main.getDicomDirReader();
-        String availability =  main.getInstanceAvailability();
-        switch(level) {
-        case PATIENT:
-            return new PatientQueryTask(as, pc, rq, keys, ddr, availability);
-        case STUDY:
-            return new StudyQueryTask(as, pc, rq, keys, ddr, availability);
-        case SERIES:
-            return new SeriesQueryTask(as, pc, rq, keys, ddr, availability);
-        case IMAGE:
-            return new InstanceQueryTask(as, pc, rq, keys, ddr, availability);
-        }
-        throw new AssertionError();
+    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
+            final Attributes rq, Attributes keys) throws DicomServiceException {
+        QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, true);
+        final Connection remote = main.getRemoteConnection(rq);
+        RetrieveTaskImpl retrieveTask =
+                new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader()) {
+
+            @Override
+            protected Association getStoreAssociation() throws DicomServiceException {
+                try {
+                    return main.getApplicationEntity()
+                            .connect(main.getConnection(), remote, makeAAssociateRQ());
+                } catch (IOException e) {
+                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                } catch (InterruptedException e) {
+                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                }
+            }
+
+        };
+        retrieveTask.setSendPendingRSPInterval(main.getSendPendingCMoveInterval());
+        return retrieveTask;
     }
 
 }

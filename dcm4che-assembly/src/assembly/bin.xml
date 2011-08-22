@@ -220,6 +220,41 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
+      <includes>
+        <include>bin/getscu</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
+      <includes>
+        <include>bin/getscu.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
+      <includes>
+        <include>etc/getscu/log4j.properties</include>
+        <include>etc/getscu/storage-sop-classes.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
+      <includes>
+        <include>etc/getscu/key.jks</include>
+        <include>etc/getscu/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
       <includes>
         <include>bin/movescu</include>
@@ -274,7 +309,7 @@
       <directory>../dcm4che-tool/dcm4che-tool-storescp/src</directory>
       <includes>
         <include>etc/storescp/log4j.properties</include>
-        <include>etc/storescp/sop-classes.properties</include>
+        <include>etc/storescp/storage-sop-classes.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -362,6 +397,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>

@@ -207,8 +207,8 @@ public class Main {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("sop-classes"))
-                .withLongOpt("sop-classes")
+                .withDescription(rb.getString("storage-sop-classes"))
+                .withLongOpt("storage-sop-classes")
                 .create(null));
     }
 
@@ -261,8 +261,8 @@ public class Main {
                             TransferCapability.Role.SCP,
                             UID.ImplicitVRLittleEndian));
             Properties p = CLIUtils.loadProperties(
-                    cl.getOptionValue("sop-classes", 
-                            "resource:sop-classes.properties"),
+                    cl.getOptionValue("storage-sop-classes", 
+                            "resource:storage-sop-classes.properties"),
                     null);
             for (String cuid : p.stringPropertyNames()) {
                 String ts = p.getProperty(cuid);

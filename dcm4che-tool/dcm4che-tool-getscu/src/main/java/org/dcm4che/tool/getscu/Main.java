@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -272,21 +274,15 @@ public class Main {
         opts.addOptionGroup(group);
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("cuids[:tsuids]")
-                .withDescription(rb.getString("pc"))
-                .withLongOpt("pc")
-                .create());
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("cuids[:tsuids]")
-                .withDescription(rb.getString("pcs"))
-                .withLongOpt("pcs")
+                .withArgName("cuid:tsuid[(,|;)...]")
+                .withDescription(rb.getString("store-tc"))
+                .withLongOpt("store-tc")
                 .create());
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("storage-sop-classes"))
-                .withLongOpt("storage-sop-classes")
+                .withDescription(rb.getString("store-tcs"))
+                .withLongOpt("store-tcs")
                 .create());
     }
 
@@ -338,57 +334,40 @@ public class Main {
     private static void configureServiceClass(Main main, CommandLine cl)
             throws Exception {
         main.setInformationModel(informationModelOf(cl), tssOf(cl), cl.hasOption("relational"));
-        Properties p = CLIUtils.loadProperties(
-                cl.getOptionValue("storage-sop-classes",
-                "resource:storage-sop-classes.properties"),
-                null);
-        configureStorageSOPClasses(main, cl.getOptionValues("pc"), false, p);
-        configureStorageSOPClasses(main, cl.getOptionValues("pcs"), true, p);
-    }
-
-    private static void configureStorageSOPClasses(Main main, String[] pcs, boolean oneTSperPC,
-            Properties p) throws ParseException {
-        if (pcs == null)
-            return;
-
-        for (String pc : pcs) {
-            try {
+        String[] pcs = cl.getOptionValues("store-tc");
+        if (pcs != null)
+            for (String pc : pcs) {
                 String[] ss = StringUtils.split(pc, ':');
-                String[] cuids = toUIDs(ss[0], p);
-                if (ss.length > 1) {
-                    String[] tsuids = toUIDs(ss[1], p);
-                    for (String cuid : cuids) {
-                        if (oneTSperPC)
-                            for (String tsuid : tsuids)
-                                main.addOfferedStorageSOPClass(cuid, tsuid);
-                        else
-                            main.addOfferedStorageSOPClass(cuid, tsuids);
-                    }
-                } else {
-                    for (String cuid : cuids) {
-                       String[] tsuids = toUIDs(p.getProperty(cuid), p);
-                       if (oneTSperPC)
-                           for (String tsuid : tsuids)
-                               main.addOfferedStorageSOPClass(cuid, tsuid);
-                       else
-                           main.addOfferedStorageSOPClass(cuid, tsuids);
-                    }
-                }
-            } catch (NullPointerException e) {
-                throw new ParseException("Undefined alias in " + pc);
+                configureStorageSOPClass(main, ss[0], ss[1]);
             }
+        if (cl.hasOption("store-tcs")) {
+            Properties p = CLIUtils.loadProperties(cl.getOptionValue("store-tcs"), null);
+            Set<Entry<Object, Object>> entrySet = p.entrySet();
+            for (Entry<Object, Object> entry : entrySet)
+                configureStorageSOPClass(main, (String) entry.getKey(), (String) entry.getValue());
         }
     }
 
-    public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
+    private static void configureStorageSOPClass(Main main, String cuid, String tsuids0) {
+        cuid = toUID(cuid);
+        String[] tsuids1 = StringUtils.split(tsuids0, ';');
+        for (String tsuids2 : tsuids1) {
+            String[] tsuids = StringUtils.split(tsuids2, ',');
+            for (int i = 0; i < tsuids.length; i++)
+                tsuids[i] = toUID(tsuids[i]);
+            main.addOfferedStorageSOPClass(cuid, tsuids);
+        }
+    }
+
+    private static String toUID(String uid) {
+        return uid.startsWith("1") ? uid : UID.forName(uid);
+    }
+
+     public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
         if (!rq.containsPresentationContextFor(cuid))
             rq.addRoleSelection(new RoleSelection(cuid, false, true));
         rq.addPresentationContext(new PresentationContext(
                 2 * rq.getNumberOfPresentationContexts() + 1, cuid, tsuids));
-    }
-
-    private static String[] toUIDs(String s, Properties p) {
-        return StringUtils.split(Character.isDigit(s.charAt(0)) ? s : p.getProperty(s), ',');
     }
 
     private static void configureStorageDirectory(Main main, CommandLine cl) {

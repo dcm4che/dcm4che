@@ -240,7 +240,7 @@
       <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
       <includes>
         <include>etc/getscu/log4j.properties</include>
-        <include>etc/getscu/common-store-tcs.properties</include>
+        <include>etc/getscu/store-tcs.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

@@ -105,7 +105,9 @@ public class Main {
         ResourceBundle.getBundle("org.dcm4che.tool.getscu.messages");
 
     private static final int[] UNIQUE_KEYS = {
+        Tag.SpecificCharacterSet,
         Tag.SOPInstanceUID,
+        Tag.QueryRetrieveLevel,
         Tag.PatientID,
         Tag.StudyInstanceUID,
         Tag.SeriesInstanceUID
@@ -139,7 +141,7 @@ public class Main {
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
     private int priority;
-    private InformationModel model = InformationModel.StudyRoot;
+    private InformationModel model;
     private File storageDir;
     private Attributes keys = new Attributes();
     private Association as;
@@ -347,12 +349,16 @@ public class Main {
                 String[] ss = StringUtils.split(pc, ':');
                 configureStorageSOPClass(main, ss[0], ss[1]);
             }
-        if (cl.hasOption("store-tcs")) {
-            Properties p = CLIUtils.loadProperties(cl.getOptionValue("store-tcs"), null);
-            Set<Entry<Object, Object>> entrySet = p.entrySet();
-            for (Entry<Object, Object> entry : entrySet)
-                configureStorageSOPClass(main, (String) entry.getKey(), (String) entry.getValue());
-        }
+        String[] files = cl.getOptionValues("store-tcs");
+        if (pcs == null && files == null)
+            files = new String[] { "resource:store-tcs.properties" };
+        if (files != null)
+            for (String file : files) {
+                Properties p = CLIUtils.loadProperties(file, null);
+                Set<Entry<Object, Object>> entrySet = p.entrySet();
+                for (Entry<Object, Object> entry : entrySet)
+                    configureStorageSOPClass(main, (String) entry.getKey(), (String) entry.getValue());
+            }
     }
 
     private static void configureStorageSOPClass(Main main, String cuid, String tsuids0) {

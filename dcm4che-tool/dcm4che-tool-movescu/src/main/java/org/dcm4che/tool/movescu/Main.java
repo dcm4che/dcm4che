@@ -96,7 +96,9 @@ public class Main {
         ResourceBundle.getBundle("org.dcm4che.tool.movescu.messages");
 
     private static final int[] UNIQUE_KEYS = {
+        Tag.SpecificCharacterSet,
         Tag.SOPInstanceUID,
+        Tag.QueryRetrieveLevel,
         Tag.PatientID,
         Tag.StudyInstanceUID,
         Tag.SeriesInstanceUID
@@ -131,7 +133,7 @@ public class Main {
     private final AAssociateRQ rq = new AAssociateRQ();
     private int priority;
     private String destination;
-    private InformationModel model = InformationModel.StudyRoot;
+    private InformationModel model;
 
     private Attributes keys = new Attributes();
 

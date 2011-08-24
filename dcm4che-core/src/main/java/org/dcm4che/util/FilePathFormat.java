@@ -39,8 +39,6 @@
 package org.dcm4che.util;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.dcm4che.data.Attributes;
 
@@ -53,23 +51,9 @@ public class FilePathFormat {
     private final String[] strs;
     private final int[] tags;
     private final boolean[] hash;
-    private final int dateTag;
 
     public FilePathFormat(String pattern) {
         int tagEnd = -1;
-        if (pattern.startsWith("{{")) {
-            tagEnd = pattern.indexOf("}}");
-            if (tagEnd == -1)
-                throw new IllegalArgumentException(pattern);
-            try {
-                dateTag = (int) Long.parseLong(pattern.substring(2, tagEnd), 16);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(pattern);
-            }
-            tagEnd++;
-        } else {
-            dateTag = 0;
-        }
         int tagStart;
         ArrayList<String> tokens = new ArrayList<String>();
         while ((tagStart = pattern.indexOf('{', tagEnd + 1)) != -1) {
@@ -91,24 +75,6 @@ public class FilePathFormat {
                 strs[i] = strs[i].substring(0, strs[i].length() - 1);
             }
             String s = tokens.get(index++);
-            if (s.length() < 5) {
-                if (s.equals("yyyy")) {
-                    tags[i] = Calendar.YEAR;
-                    continue;
-                }
-                if (s.equals("MM")) {
-                    tags[i] = Calendar.MONTH;
-                    continue;
-                }
-                if (s.equals("dd")) {
-                    tags[i] = Calendar.DATE;
-                    continue;
-                }
-                if (s.equals("HH")) {
-                    tags[i] = Calendar.HOUR_OF_DAY;
-                    continue;
-                }
-            }
             try {
                 tags[i] = (int) Long.parseLong(s, 16);
             } catch (NumberFormatException e) {
@@ -118,27 +84,11 @@ public class FilePathFormat {
         strs[n] = tokens.get(index);
     }
 
-    @SuppressWarnings("deprecation")
     public String format(Attributes attrs) {
         StringBuilder sb = new StringBuilder(64);
-        Date date = dateTag > 0 ? attrs.getDate(dateTag, null) : new Date();
         final int n = tags.length;
         for (int i = 0; i < n; i++) {
             sb.append(strs[i]);
-            switch (tags[i]) {
-            case Calendar.YEAR:
-                appendNNNN(date != null ? (date.getYear() + 1900) : 0, sb);
-                continue;
-            case Calendar.MONTH:
-                appendNN(date != null ? (date.getMonth() + 1) : 0, sb);
-                continue;
-            case Calendar.DATE:
-                appendNN(date != null ? date.getDate() : 0, sb);
-                continue;
-            case Calendar.HOUR_OF_DAY:
-                appendNN(date != null ? date.getHours() : 0, sb);
-                continue;
-            }
             String s = attrs.getString(tags[i], null);
             if (hash[i]) {
                 if (s == null)
@@ -154,53 +104,15 @@ public class FilePathFormat {
         return sb.toString();
     }
 
-    private void appendNNNN(int i, StringBuilder sb) {
-        if (i < 1000) {
-            sb.append('0');
-            if (i < 100) {
-                sb.append('0');
-                if (i < 10) {
-                    sb.append('0');
-                }
-            }
-        }
-        sb.append(i);
-    }
-
-    private void appendNN(int i, StringBuilder sb) {
-        if (i < 10)
-            sb.append('0');
-        sb.append(i);
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (dateTag > 0)
-            sb.append("{{").append(TagUtils.toHexString(dateTag)).append("}}");
         int n = tags.length;
         for (int i = 0; i < n; i++) {
             sb.append(strs[i]);
             if (hash[i])
                 sb.append('#');
-            sb.append('{');
-            switch (tags[i]) {
-            case Calendar.YEAR:
-                sb.append("yyyy");
-                break;
-            case Calendar.MONTH:
-                sb.append("MM");
-                break;
-            case Calendar.DATE:
-                sb.append("dd");
-                break;
-            case Calendar.HOUR_OF_DAY:
-                sb.append("HH");
-                break;
-            default:
-                sb.append(TagUtils.toHexString(tags[i]));
-            }
-            sb.append('}');
+            sb.append('{').append(TagUtils.toHexString(tags[i])).append('}');
         }
         sb.append(strs[n]);
         return sb.toString();

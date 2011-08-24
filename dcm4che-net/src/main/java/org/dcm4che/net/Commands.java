@@ -285,7 +285,7 @@ public class Commands {
         case C_MOVE_RQ:
             promptHeaderTo(cmd, Tag.MessageID, ":C-MOVE-RQ[pcid=", pcid, sb);
             promptIntTo(cmd, ", prior=", Tag.Priority, sb);
-            promptStringTo(cmd, "  dest=", Tag.MoveDestination, sb);
+            promptStringTo(cmd, ", dest=", Tag.MoveDestination, sb);
             promptUIDTo(cmd, "  cuid=", Tag.AffectedSOPClassUID, sb);
             break;
         case C_ECHO_RQ:
@@ -413,7 +413,7 @@ public class Commands {
             StringBuilder sb) {
         String s = cmd.getString(tag, null);
         if (s != null)
-            sb.append(StringUtils.LINE_SEPARATOR).append(name).append(s);
+            sb.append(name).append(s);
     }
 
     private static void promptUIDTo(Attributes cmd, String name, int tag,
@@ -436,7 +436,7 @@ public class Commands {
             sb.append(StringUtils.LINE_SEPARATOR)
               .append("  orig=")
               .append(aet)
-              .append(">>")
+              .append(" >> ")
               .append(cmd.getInt(Tag.MoveOriginatorMessageID, -1))
               .append(":C-MOVE-RQ");
     }
@@ -468,7 +468,7 @@ public class Commands {
           .append(Integer.toHexString(cmd.getInt(Tag.Status, -1)))
           .append('H');
         promptIntTo(cmd, ", errorID=", Tag.ErrorID, sb);
-        promptStringTo(cmd, "  errorComment=", Tag.ErrorComment, sb);
+        promptStringTo(cmd, ", errorComment=", Tag.ErrorComment, sb);
         promptUIDTo(cmd, "  cuid=", Tag.AffectedSOPClassUID, sb);
         promptUIDTo(cmd, "  iuid=", Tag.AffectedSOPInstanceUID, sb);
     }

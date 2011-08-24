@@ -509,7 +509,8 @@ public class Main {
         String dest = rq.getString(Tag.MoveDestination);
         Connection remote = remoteConnections.get(dest);
         if (remote == null)
-            throw new DicomServiceException(rq, Status.MoveDestinationUnknown, dest);
+            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
+                    "Move Destination: " + dest + " unknown");
         return remote;
     }
 

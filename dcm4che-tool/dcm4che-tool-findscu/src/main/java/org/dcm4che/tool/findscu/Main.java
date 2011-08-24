@@ -86,32 +86,35 @@ import org.dcm4che.util.StringUtils;
  */
 public class Main {
 
-    private static enum SOPClass {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, null),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, null),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, null),
-        MWL(UID.ModalityWorklistInformationModelFIND, "sps-0000.dcm"),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, "ups-0000.dcm"),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, "ups-0000.dcm"),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, "hp-0000.dcm"),
-        ColorPalette(UID.ColorPaletteInformationModelFIND, "pal-0000.dcm");
+    private static enum InformationModel {
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY", null),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY", null),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY", null),
+        MWL(UID.ModalityWorklistInformationModelFIND, null, "sps"),
+        UPSPull(UID.UnifiedProcedureStepPullSOPClass, null, "ups"),
+        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null, "ups"),
+        HangingProtocol(UID.HangingProtocolInformationModelFIND, null, "hp"),
+        ColorPalette(UID.ColorPaletteInformationModelFIND, null, "pal");
 
         final String cuid;
-        final String outputFileFormat;
+        final String level;
+        final String outputFilePrefix;
 
-        SOPClass(String cuid, String outputFileFormat) {
+        InformationModel(String cuid, String level, String outputFilePrefix) {
             this.cuid = cuid;
-            this.outputFileFormat = outputFileFormat;
-        }
+            this.level = level;
+            this.outputFilePrefix = outputFilePrefix;
+       }
 
         public String outputFileFormatOf(String level) {
-            return outputFileFormat != null
-                    ? outputFileFormat
-                    : level.toLowerCase() + "-0000.dcm";
+            return (outputFilePrefix != null
+                        ? outputFilePrefix
+                        : (level != null  ? level : this.level).toLowerCase())
+                    + "-0000.dcm";
         }
 
         public void adjustQueryOptions(EnumSet<QueryOption> queryOptions) {
-            if (outputFileFormat != null) {
+            if (level == null) {
                 queryOptions.add(QueryOption.RELATIONAL);
                 queryOptions.add(QueryOption.DATETIME);
             }
@@ -150,8 +153,7 @@ public class Main {
     private final AAssociateRQ rq = new AAssociateRQ();
     private int priority;
     private int cancelAfter;
-    private SOPClass sopClass = SOPClass.StudyRoot;
-    private String[] tss = IVR_LE_FIRST;
+    private InformationModel model;
 
     private File outDir;
     private DecimalFormat outFileFormat;
@@ -160,7 +162,6 @@ public class Main {
 
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
-    private EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
 
     public Main() throws IOException {
         device.addConnection(conn);
@@ -180,20 +181,25 @@ public class Main {
         this.priority = priority;
     }
 
+    public final void setInformationModel(InformationModel model, String[] tss,
+            EnumSet<QueryOption> queryOptions) {
+       this.model = model;
+       rq.addPresentationContext(new PresentationContext(1, model.cuid, tss));
+       if (!queryOptions.isEmpty()) {
+           model.adjustQueryOptions(queryOptions);
+           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, 
+                   QueryOption.toExtendedNegotiationInformation(queryOptions)));
+       }
+       if (model.level != null)
+           addLevel(model.level);
+    }
+
+    public void addLevel(String value) {
+        keys.setString(Tag.QueryRetrieveLevel, VR.CS, value);
+    }
+
     public final void setCancelAfter(int cancelAfter) {
         this.cancelAfter = cancelAfter;
-    }
-
-    public final void setSOPClass(SOPClass sopClass) {
-        this.sopClass = sopClass;
-    }
-
-    public final void setTransferSyntaxes(String[] tss) {
-        this.tss = tss.clone();
-    }
-
-    private void addQueryOption(QueryOption opt) {
-        queryOptions.add(opt);
     }
 
     public final void setOutputDirectory(File outDir) {
@@ -237,8 +243,6 @@ public class Main {
                 throws ParseException {
             Options opts = new Options();
             addServiceClassOptions(opts);
-            addTransferSyntaxOptions(opts);
-            addExtendedNegotionOptions(opts);
             addKeyOptions(opts);
             addOutputOptions(opts);
             addQueryLevelOption(opts);
@@ -250,6 +254,34 @@ public class Main {
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addServiceClassOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("name")
+                .withDescription(rb.getString("model"))
+                .create("M"));
+        opts.addOption(null, "relational", false, rb.getString("relational"));
+        OptionGroup group = new OptionGroup();
+        group.addOption(OptionBuilder
+                .withLongOpt("explicit-vr")
+                .withDescription(rb.getString("explicit-vr"))
+                .create());
+        group.addOption(OptionBuilder
+                .withLongOpt("big-endian")
+                .withDescription(rb.getString("big-endian"))
+                .create());
+        group.addOption(OptionBuilder
+                .withLongOpt("implicit-vr")
+                .withDescription(rb.getString("implicit-vr"))
+                .create());
+        opts.addOptionGroup(group);
+        opts.addOption(null, "relational", false, rb.getString("relational"));
+        opts.addOption(null, "datetime", false, rb.getString("datetime"));
+        opts.addOption(null, "fuzzy", false, rb.getString("fuzzy"));
+        opts.addOption(null, "timezone", false, rb.getString("timezone"));
     }
 
     @SuppressWarnings("static-access")
@@ -308,69 +340,6 @@ public class Main {
                 .create("o"));
     }
 
-    @SuppressWarnings("static-access")
-    private static void addServiceClassOptions(Options opts) {
-        OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("patient-root")
-                .withDescription(rb.getString("patient-root"))
-                .create("P"));
-        group.addOption(OptionBuilder
-                .withLongOpt("study-root")
-                .withDescription(rb.getString("study-root"))
-                .create("S"));
-        group.addOption(OptionBuilder
-                .withLongOpt("patient-study-only")
-                .withDescription(rb.getString("patient-study-only"))
-                .create("O"));
-        group.addOption(OptionBuilder
-                .withLongOpt("mwl")
-                .withDescription(rb.getString("mwl"))
-                .create("M"));
-        group.addOption(OptionBuilder
-                .withLongOpt("ups-pull")
-                .withDescription(rb.getString("ups-pull"))
-                .create("U"));
-        group.addOption(OptionBuilder
-                .withLongOpt("ups-watch")
-                .withDescription(rb.getString("ups-watch"))
-                .create("W"));
-        group.addOption(OptionBuilder
-                .withLongOpt("hanging-protocol")
-                .withDescription(rb.getString("hanging-protocol"))
-                .create("H"));
-        group.addOption(OptionBuilder
-                .withLongOpt("color-palette")
-                .withDescription(rb.getString("color-palette"))
-                .create("C"));
-        opts.addOptionGroup(group);
-    }
-
-    private static void addExtendedNegotionOptions(Options opts) {
-        opts.addOption(null, "relational", false, rb.getString("relational"));
-        opts.addOption(null, "datetime", false, rb.getString("datetime"));
-        opts.addOption(null, "fuzzy", false, rb.getString("fuzzy"));
-        opts.addOption(null, "timezone", false, rb.getString("timezone"));
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addTransferSyntaxOptions(Options opts) {
-        OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("explicit-vr")
-                .withDescription(rb.getString("explicit-vr"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("big-endian")
-                .withDescription(rb.getString("big-endian"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("implicit-vr")
-                .withDescription(rb.getString("implicit-vr"))
-                .create());
-       opts.addOptionGroup(group);
-    }
-
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
@@ -381,13 +350,11 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             main.remote.setTLSProtocol(main.conn.getTLSProtocols());
             main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
-            main.setSOPClass(sopClassOf(cl));
             configureKeys(main, cl);
+            configureServiceClass(main, cl);
             configureOutput(main, cl);
             configureCancel(main, cl);
-            main.setTransferSyntaxes(tssOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
-            configureExtendedNegotiation(main, cl);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -418,15 +385,17 @@ public class Main {
         }
     }
 
-    private static void configureExtendedNegotiation(Main main, CommandLine cl) {
+    private static EnumSet<QueryOption> queryOptionsOf(Main main, CommandLine cl) {
+        EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
         if (cl.hasOption("relational"))
-            main.addQueryOption(QueryOption.RELATIONAL);
+            queryOptions.add(QueryOption.RELATIONAL);
         if (cl.hasOption("datetime"))
-            main.addQueryOption(QueryOption.DATETIME);
+            queryOptions.add(QueryOption.DATETIME);
         if (cl.hasOption("fuzzy"))
-            main.addQueryOption(QueryOption.FUZZY);
+            queryOptions.add(QueryOption.FUZZY);
         if (cl.hasOption("timezone"))
-            main.addQueryOption(QueryOption.TIMEZONE);
+            queryOptions.add(QueryOption.TIMEZONE);
+        return queryOptions;
     }
 
     private static void configureOutput(Main main, CommandLine cl) {
@@ -436,7 +405,7 @@ public class Main {
             main.setOutputFilter(CLIUtils.toTags(cl.getOptionValues("o")));
         main.setOutputFileFormat(cl.hasOption("out-file")
                 ? cl.getOptionValue("out-file")
-                : main.sopClass.outputFileFormatOf(cl.getOptionValue("L")));
+                : main.model.outputFileFormatOf(cl.getOptionValue("L")));
     }
 
     private static void configureCancel(Main main, CommandLine cl) {
@@ -458,35 +427,21 @@ public class Main {
                         keys[i]);
         }
         if (cl.hasOption("L"))
-            main.addKey(Tag.QueryRetrieveLevel, cl.getOptionValue("L"));
+            main.addLevel(cl.getOptionValue("L"));
     }
 
-    private static SOPClass sopClassOf(CommandLine cl) throws ParseException {
-        if (cl.hasOption("P")) {
-            return SOPClass.PatientRoot;
+    private static void configureServiceClass(Main main, CommandLine cl) throws ParseException {
+        main.setInformationModel(informationModelOf(cl), tssOf(cl), queryOptionsOf(main, cl));
+    }
+
+    private static InformationModel informationModelOf(CommandLine cl) throws ParseException {
+        try {
+            return cl.hasOption("M")
+                    ? InformationModel.valueOf(cl.getOptionValue("M"))
+                    : InformationModel.StudyRoot;
+        } catch(IllegalArgumentException e) {
+            throw new ParseException(rb.getString("invalid-model"));
         }
-        if (cl.hasOption("S")) {
-            return SOPClass.StudyRoot;
-        }
-        if (cl.hasOption("O")) {
-            return SOPClass.PatientStudyOnly;
-        }
-        if (cl.hasOption("M")) {
-            return SOPClass.MWL;
-        }
-        if (cl.hasOption("U")) {
-            return SOPClass.UPSPull;
-        }
-        if (cl.hasOption("W")) {
-            return SOPClass.UPSWatch;
-        }
-        if (cl.hasOption("H")) {
-            return SOPClass.HangingProtocol;
-        }
-        if (cl.hasOption("C")) {
-            return SOPClass.ColorPalette;
-        }
-        throw new ParseException(rb.getString("missing"));
     }
 
     private static String[] tssOf(CommandLine cl) {
@@ -500,14 +455,6 @@ public class Main {
     }
 
     public void open() throws IOException, InterruptedException {
-        rq.addPresentationContext(
-                new PresentationContext(1, sopClass.cuid, tss));
-        if (!queryOptions.isEmpty()) {
-            sopClass.adjustQueryOptions(queryOptions);
-            rq.addExtendedNegotiation(
-                    new ExtendedNegotiation(sopClass.cuid,
-                            QueryOption.toExtendedNegotiationInformation(queryOptions)));
-        }
         as = ae.connect(conn, remote, rq);
     }
 
@@ -559,7 +506,7 @@ public class Main {
             }
         };
 
-        as.cfind(sopClass.cuid, priority, keys, null, rspHandler);
+        as.cfind(model.cuid, priority, keys, null, rspHandler);
     }
 
     private void onResult(Attributes data) {

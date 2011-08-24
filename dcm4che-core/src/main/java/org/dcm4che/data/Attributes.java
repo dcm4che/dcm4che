@@ -391,7 +391,7 @@ public class Attributes implements Serializable {
 
         int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
         int index = indexOf(creatorTag);
-        if (index < 0)
+        if (index < 0 || vrs[index] != VR.LO)
             return null;
         
         return VR.LO.toString(decodeStringValue(index), false, 0, null);
@@ -1207,17 +1207,17 @@ public class Attributes implements Serializable {
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
-            if (!TagUtils.isPrivateCreator(tag) 
+            VR vr = srcVRs[i];
+            if (!(TagUtils.isPrivateCreator(tag) && vr == VR.LO)
                     && (include == null || Arrays.binarySearch(
                             include, fromIndex, toIndex, tag) >= 0)
                     && (exclude == null || Arrays.binarySearch(
                             exclude, fromIndex, toIndex, tag) < 0)) {
-                VR vr = srcVRs[i];
-                if (TagUtils.isPrivateGroup(tag)) {
+                if (TagUtils.isPrivateTag(tag)) {
                     int tmp = TagUtils.creatorTagOf(tag);
                     if (creatorTag != tmp) {
                         creatorTag = tmp;
-                        privateCreator = other.getString(creatorTag, null);
+                        privateCreator = other.privateCreatorOf(tag);
                     }
                 } else {
                     creatorTag = 0;

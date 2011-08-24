@@ -96,14 +96,6 @@ public class Main {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.movescu.messages");
 
-    private static final int[] UNIQUE_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.SOPInstanceUID,
-        Tag.PatientID,
-        Tag.StudyInstanceUID,
-        Tag.SeriesInstanceUID
-    };
-
     private static String[] IVR_LE_FIRST = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
@@ -126,7 +118,13 @@ public class Main {
         UID.ImplicitVRLittleEndian
     };
 
-    private final Device device = new Device("movescu");
+    private static final int[] DEF_IN_FILTER = {
+        Tag.SOPInstanceUID,
+        Tag.StudyInstanceUID,
+        Tag.SeriesInstanceUID
+    };
+
+   private final Device device = new Device("movescu");
     private final ApplicationEntity ae = new ApplicationEntity("MOVESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -134,9 +132,8 @@ public class Main {
     private int priority;
     private String destination;
     private InformationModel model;
-
     private Attributes keys = new Attributes();
-
+    private int[] inFilter = DEF_IN_FILTER;
     private Association as;
 
     public Main() throws IOException {
@@ -178,6 +175,10 @@ public class Main {
     public void addKey(int tag, String... ss) {
         VR vr = ElementDictionary.vrOf(tag, keys.getPrivateCreator(tag));
         keys.setString(tag, vr, ss);
+    }
+
+    public final void setInputFilter(int[] inFilter) {
+        this.inFilter  = inFilter;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -224,6 +225,11 @@ public class Main {
                 .withValueSeparator('=')
                 .withDescription(rb.getString("match"))
                 .create("m"));
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("attr")
+                .withDescription(rb.getString("in-attr"))
+                .create("i"));
     }
 
     @SuppressWarnings("static-access")
@@ -312,6 +318,8 @@ public class Main {
         }
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
+        if (cl.hasOption("i"))
+            main.setInputFilter(CLIUtils.toTags(cl.getOptionValues("i")));
     }
 
     private static InformationModel informationModelOf(CommandLine cl) throws ParseException {
@@ -349,7 +357,7 @@ public class Main {
         Attributes attrs = new Attributes();
         DicomInputStream dis = null;
         try {
-            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), UNIQUE_KEYS);
+            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), inFilter);
         } finally {
             SafeClose.close(dis);
         }

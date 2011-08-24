@@ -104,14 +104,6 @@ public class Main {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.getscu.messages");
 
-    private static final int[] UNIQUE_KEYS = {
-        Tag.SpecificCharacterSet,
-        Tag.SOPInstanceUID,
-        Tag.PatientID,
-        Tag.StudyInstanceUID,
-        Tag.SeriesInstanceUID
-    };
-
     private static String[] IVR_LE_FIRST = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
@@ -134,6 +126,12 @@ public class Main {
         UID.ImplicitVRLittleEndian
     };
 
+    private static final int[] DEF_IN_FILTER = {
+        Tag.SOPInstanceUID,
+        Tag.StudyInstanceUID,
+        Tag.SeriesInstanceUID
+    };
+
     private final Device device = new Device("getscu");
     private final ApplicationEntity ae = new ApplicationEntity("GETSCU");
     private final Connection conn = new Connection();
@@ -143,6 +141,7 @@ public class Main {
     private InformationModel model;
     private File storageDir;
     private Attributes keys = new Attributes();
+    private int[] inFilter = DEF_IN_FILTER;
     private Association as;
 
     private BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
@@ -210,6 +209,10 @@ public class Main {
         keys.setString(tag, vr, ss);
     }
 
+    public final void setInputFilter(int[] inFilter) {
+        this.inFilter  = inFilter;
+    }
+
     private static CommandLine parseComandLine(String[] args)
                 throws ParseException {
             Options opts = new Options();
@@ -255,6 +258,11 @@ public class Main {
                 .withValueSeparator('=')
                 .withDescription(rb.getString("match"))
                 .create("m"));
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("attr")
+                .withDescription(rb.getString("in-attr"))
+                .create("i"));
     }
 
     @SuppressWarnings("static-access")
@@ -396,6 +404,8 @@ public class Main {
         }
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
+        if (cl.hasOption("i"))
+            main.setInputFilter(CLIUtils.toTags(cl.getOptionValues("i")));
     }
 
     private static InformationModel informationModelOf(CommandLine cl) throws ParseException {
@@ -433,7 +443,7 @@ public class Main {
         Attributes attrs = new Attributes();
         DicomInputStream dis = null;
         try {
-            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), UNIQUE_KEYS);
+            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), inFilter);
         } finally {
             SafeClose.close(dis);
         }

@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -87,31 +86,22 @@ import org.dcm4che.util.StringUtils;
 public class Main {
 
     private static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY", null),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY", null),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY", null),
-        MWL(UID.ModalityWorklistInformationModelFIND, null, "sps"),
-        UPSPull(UID.UnifiedProcedureStepPullSOPClass, null, "ups"),
-        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null, "ups"),
-        HangingProtocol(UID.HangingProtocolInformationModelFIND, null, "hp"),
-        ColorPalette(UID.ColorPaletteInformationModelFIND, null, "pal");
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),
+        MWL(UID.ModalityWorklistInformationModelFIND, null),
+        UPSPull(UID.UnifiedProcedureStepPullSOPClass, null),
+        UPSWatch(UID.UnifiedProcedureStepWatchSOPClass, null),
+        HangingProtocol(UID.HangingProtocolInformationModelFIND, null),
+        ColorPalette(UID.ColorPaletteInformationModelFIND, null);
 
         final String cuid;
         final String level;
-        final String outputFilePrefix;
 
-        InformationModel(String cuid, String level, String outputFilePrefix) {
+        InformationModel(String cuid, String level) {
             this.cuid = cuid;
             this.level = level;
-            this.outputFilePrefix = outputFilePrefix;
        }
-
-        public String outputFileFormatOf(String level) {
-            return (outputFilePrefix != null
-                        ? outputFilePrefix
-                        : (level != null  ? level : this.level).toLowerCase())
-                    + "-0000.dcm";
-        }
 
         public void adjustQueryOptions(EnumSet<QueryOption> queryOptions) {
             if (level == null) {
@@ -157,7 +147,7 @@ public class Main {
 
     private File outDir;
     private DecimalFormat outFileFormat;
-    private int[] outFilter;
+    private int[] inFilter;
     private Attributes keys = new Attributes();
 
     private Association as;
@@ -207,13 +197,12 @@ public class Main {
         this.outDir = outDir;
     }
 
-    public void setOutputFileFormat(String outFileFormat) {
+    public final void setOutputFileFormat(String outFileFormat) {
         this.outFileFormat = new DecimalFormat(outFileFormat);
     }
 
-    public void setOutputFilter(int[] outFilter) {
-        Arrays.sort(outFilter);
-        this.outFilter = outFilter;
+    public final void setInputFilter(int[] inFilter) {
+        this.inFilter = inFilter;
     }
 
     public void addKey(int[] tags, String... ss) {
@@ -309,6 +298,11 @@ public class Main {
                 .withArgName("[seq/]attr")
                 .withDescription(rb.getString("return"))
                 .create("r"));
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("attr")
+                .withDescription(rb.getString("in-attr"))
+                .create("i"));
     }
 
     @SuppressWarnings("static-access")
@@ -325,12 +319,6 @@ public class Main {
                 .withArgName("name")
                 .withDescription(rb.getString("out-file"))
                 .create());
-       opts.addOption(OptionBuilder
-                .withLongOpt("out-attr")
-                .hasArgs()
-                .withArgName("attr")
-                .withDescription(rb.getString("out-attr"))
-                .create("o"));
     }
 
     @SuppressWarnings("unchecked")
@@ -394,11 +382,7 @@ public class Main {
     private static void configureOutput(Main main, CommandLine cl) {
         if (cl.hasOption("out-dir"))
             main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
-        if (cl.hasOption("o"))
-            main.setOutputFilter(CLIUtils.toTags(cl.getOptionValues("o")));
-        main.setOutputFileFormat(cl.hasOption("out-file")
-                ? cl.getOptionValue("out-file")
-                : main.model.outputFileFormatOf(cl.getOptionValue("L")));
+        main.setOutputFileFormat(cl.getOptionValue("out-file", "000.dcm"));
     }
 
     private static void configureCancel(Main main, CommandLine cl) {
@@ -420,6 +404,8 @@ public class Main {
         }
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
+        if (cl.hasOption("i"))
+            main.setInputFilter(CLIUtils.toTags(cl.getOptionValues("i")));
     }
 
     private static void configureServiceClass(Main main, CommandLine cl) throws ParseException {
@@ -462,6 +448,8 @@ public class Main {
         DicomInputStream dis = null;
         try {
             attrs = new DicomInputStream(f).readDataset(-1, -1);
+            if (inFilter != null)
+                attrs = new Attributes(inFilter.length + 1).addSelected(attrs, inFilter);
         } finally {
             SafeClose.close(dis);
         }
@@ -509,7 +497,7 @@ public class Main {
             try {
                 dos = new DicomOutputStream(new BufferedOutputStream(
                         new FileOutputStream(f)), UID.ImplicitVRLittleEndian);
-                dos.writeDataset(null, filter(data));
+                dos.writeDataset(null, data);
             } catch (IOException e1) {
                 e1.printStackTrace();
             } finally {
@@ -522,12 +510,6 @@ public class Main {
         synchronized (outFileFormat) {
             return outFileFormat.format(i);
         }
-    }
-
-    private Attributes filter(Attributes data) {
-        return outFilter != null
-                ? new Attributes(outFilter.length).addSelected(data, outFilter)
-                : data;
     }
 
 }

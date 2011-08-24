@@ -139,11 +139,15 @@ public class StringUtils {
     }
 
     public static int parseIS(String s) {
-        return Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s);
+        return s != null && s.length() != 0
+                ? Integer.parseInt(s.charAt(0) == '+' ? s.substring(1) : s)
+                : 0;
     }
 
     public static double parseDS(String s) {
-        return Double.parseDouble(s.replace(',', '.'));
+        return s != null && s.length() != 0
+                ? Double.parseDouble(s.replace(',', '.'))
+                : 0;
     }
 
     public static String formatDS(float f) {

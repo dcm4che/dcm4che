@@ -107,7 +107,6 @@ public class Main {
     private static final int[] UNIQUE_KEYS = {
         Tag.SpecificCharacterSet,
         Tag.SOPInstanceUID,
-        Tag.QueryRetrieveLevel,
         Tag.PatientID,
         Tag.StudyInstanceUID,
         Tag.SeriesInstanceUID
@@ -202,14 +201,13 @@ public class Main {
            addLevel(model.level);
     }
 
-    public void addLevel(String value) {
-        keys.setString(Tag.QueryRetrieveLevel, VR.CS, value);
+    public void addLevel(String s) {
+        keys.setString(Tag.QueryRetrieveLevel, VR.CS, s);
     }
 
-    public void addKey(int tag, String value) {
-        VR vr = ElementDictionary.vrOf(tag,
-                keys.getPrivateCreator(tag));
-        keys.setString(tag, vr, value);
+    public void addKey(int tag, String... ss) {
+        VR vr = ElementDictionary.vrOf(tag, keys.getPrivateCreator(tag));
+        keys.setString(tag, vr, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -306,9 +304,9 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             main.remote.setTLSProtocol(main.conn.getTLSProtocols());
             main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
+            configureServiceClass(main, cl);
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
-            configureServiceClass(main, cl);
             configureStorageDirectory(main, cl);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -391,13 +389,13 @@ public class Main {
     }
 
     private static void configureKeys(Main main, CommandLine cl) {
-        if (cl.hasOption("L"))
-            main.addLevel(cl.getOptionValue("L"));
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTag(keys[i - 1]), keys[i]);
+                main.addKey(CLIUtils.toTag(keys[i - 1]), StringUtils.split(keys[i], '\\'));
         }
+        if (cl.hasOption("L"))
+            main.addLevel(cl.getOptionValue("L"));
     }
 
     private static InformationModel informationModelOf(CommandLine cl) throws ParseException {
@@ -432,14 +430,14 @@ public class Main {
     }
 
     public void retrieve(File f) throws IOException, InterruptedException {
-        Attributes attrs;
+        Attributes attrs = new Attributes();
         DicomInputStream dis = null;
         try {
-            attrs = new DicomInputStream(f).readDataset(-1, -1);
+            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), UNIQUE_KEYS);
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addSelected(keys, UNIQUE_KEYS);
+        attrs.addAll(keys);
         retrieve(attrs);
     }
 

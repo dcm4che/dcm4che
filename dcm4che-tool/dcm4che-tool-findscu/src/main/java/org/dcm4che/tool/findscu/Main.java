@@ -194,8 +194,8 @@ public class Main {
            addLevel(model.level);
     }
 
-    public void addLevel(String value) {
-        keys.setString(Tag.QueryRetrieveLevel, VR.CS, value);
+    public void addLevel(String s) {
+        keys.setString(Tag.QueryRetrieveLevel, VR.CS, s);
     }
 
     public final void setCancelAfter(int cancelAfter) {
@@ -216,7 +216,7 @@ public class Main {
         this.outFilter = outFilter;
     }
 
-    public void addKey(int[] tags, String value) {
+    public void addKey(int[] tags, String... ss) {
         Attributes item = keys;
         for (int i = 0; i < tags.length-1; i++) {
             int tag = tags[i];
@@ -230,13 +230,7 @@ public class Main {
         int tag = tags[tags.length-1];
         VR vr = ElementDictionary.vrOf(tag,
                 item.getPrivateCreator(tag));
-        item.setString(tag, vr, value);
-    }
-
-    public void addKey(int tag, String value) {
-        VR vr = ElementDictionary.vrOf(tag,
-                keys.getPrivateCreator(tag));
-        keys.setString(tag, vr, value);
+        item.setString(tag, vr, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -350,8 +344,8 @@ public class Main {
             CLIUtils.configure(main.conn, main.ae, cl);
             main.remote.setTLSProtocol(main.conn.getTLSProtocols());
             main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
-            configureKeys(main, cl);
             configureServiceClass(main, cl);
+            configureKeys(main, cl);
             configureOutput(main, cl);
             configureCancel(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
@@ -417,14 +411,13 @@ public class Main {
         if (cl.hasOption("r")) {
             String[] keys = cl.getOptionValues("r");
             for (int i = 0; i < keys.length; i++)
-                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i], '/')),
-                        null);
+                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i], '/')));
         }
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
                 main.addKey(CLIUtils.toTags(StringUtils.split(keys[i-1], '/')),
-                        keys[i]);
+                        StringUtils.split(keys[i], '/'));
         }
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));

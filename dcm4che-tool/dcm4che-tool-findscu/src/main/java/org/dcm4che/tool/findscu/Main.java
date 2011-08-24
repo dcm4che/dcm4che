@@ -257,7 +257,6 @@ public class Main {
                 .withArgName("name")
                 .withDescription(rb.getString("model"))
                 .create("M"));
-        opts.addOption(null, "relational", false, rb.getString("relational"));
         OptionGroup group = new OptionGroup();
         group.addOption(OptionBuilder
                 .withLongOpt("explicit-vr")

@@ -104,6 +104,13 @@ public class Main {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.getscu.messages");
 
+    private static final int[] UNIQUE_KEYS = {
+        Tag.SOPInstanceUID,
+        Tag.PatientID,
+        Tag.StudyInstanceUID,
+        Tag.SeriesInstanceUID
+    };
+
     private static String[] IVR_LE_FIRST = {
         UID.ImplicitVRLittleEndian,
         UID.ExplicitVRLittleEndian,
@@ -426,7 +433,7 @@ public class Main {
         } finally {
             SafeClose.close(dis);
         }
-        attrs.addAll(keys);
+        attrs.addSelected(keys, UNIQUE_KEYS);
         retrieve(attrs);
     }
 

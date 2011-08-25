@@ -38,6 +38,6 @@
    - ***** END LICENSE BLOCK *****  -->
 <uid uid="1.2.40.0.13.1.3.1.2.3.1.1" keyword="Dcm4cheAttributesModificationNotificationSOPClass" type="SOP Class">Dcm4che Attributes Modification Notification SOP Class</uid>
 <uid uid="1.2.40.0.13.1.5.1.4.1.2.2.1" keyword="Dcm4cheStudyRootQueryRetrieveInformationModelFIND" type="SOP Class">Dcm4che Study Root Query/Retrieve Information Model - FIND</uid>
-<uid uid="1.2.40.0.13.1.5.1.4.1.2.2.1.1" keyword="Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND" type="SOP Class">Dcm4che Virtual Multiframe Study Root Query/Retrieve Information Model - FIND</uid>
-<uid uid="1.2.40.0.13.1.5.1.4.1.2.2.1.2" keyword="Dcm4cheVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND" type="SOP Class"></uid>
+<uid uid="1.2.40.0.13.1.5.1.4.1.2.2.1.1" keyword="Dcm4cheBlockedStudyRootQueryRetrieveInformationModelFIND" type="SOP Class">Dcm4che Blocked Study Root Query/Retrieve Information Model - FIND</uid>
+<uid uid="1.2.40.0.13.1.5.1.4.1.2.2.1.2" keyword="Dcm4cheVirtualMultiframeStudyRootQueryRetrieveInformationModelFIND" type="SOP Class">Dcm4che Virtual Multi-frame Study Root Query/Retrieve Information Model - FIND</uid>
 <uid uid="1.3.12.2.1107.5.9.1" keyword="SiemensCSANonImageStorage" type="SOP Class" >Siemens CSA Non-Image Storage</uid>

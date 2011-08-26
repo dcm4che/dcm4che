@@ -72,7 +72,7 @@ public class DicomServiceException extends IOException {
         super(cause);
         rsp = Commands.mkRSP(rq, status);
         if (cause != null)
-            setErrorComment(cause.getMessage());
+            setErrorComment(getMessage());
     }
 
    public DicomServiceException setErrorComment(String val) {

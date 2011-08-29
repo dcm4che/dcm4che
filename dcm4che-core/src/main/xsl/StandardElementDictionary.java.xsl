@@ -139,7 +139,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="element[@vr='SH']"/>
     <xsl:apply-templates select="element[@vr='SL']"/>
     <xsl:apply-templates select="element[@vr='SQ']"/>
-    <xsl:apply-templates select="element[@vr='SS' or @vr='US or SS']">
+    <xsl:apply-templates select="element[@vr='SS' or @vr='US|SS']">
         <xsl:with-param name="vr">SS</xsl:with-param>
     </xsl:apply-templates>
     <xsl:apply-templates select="element[@vr='ST']"/>

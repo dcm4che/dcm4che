@@ -548,7 +548,7 @@ public class DicomInputStream extends FilterInputStream
                 return false;
             item = sq.get(0);
         }
-        int tag0 = ((grtag &= 0xff00) == 0x5000 || grtag == 0x6000)
+        int tag0 = ((grtag &= 0xff01) == 0x5000 || grtag == 0x6000)
                 ? tag & 0xff00ffff : tag;
         return item.contains(tag0, attrs.getPrivateCreator(tag));
     }

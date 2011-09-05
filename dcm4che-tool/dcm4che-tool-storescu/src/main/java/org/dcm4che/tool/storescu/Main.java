@@ -71,6 +71,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.DataWriter;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
+import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.InputStreamDataWriter;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -158,8 +159,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            main.remote.setTLSProtocol(main.conn.getTLSProtocols());
-            main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
+            main.remote.setTlsProtocol(main.conn.getTlsProtocols());
+            main.remote.setTlsCipherSuite(main.conn.getTlsCipherSuite());
             configureRelatedSOPClass(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
@@ -364,7 +365,7 @@ public class Main {
     }
 
     public void open()
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, IncompatibleConnectionException {
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,

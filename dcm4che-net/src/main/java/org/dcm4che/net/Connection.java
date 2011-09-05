@@ -344,7 +344,7 @@ public class Connection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public String[] getTLSCipherSuite() {
+    public String[] getTlsCipherSuite() {
         return tlsCipherSuites.clone();
     }
 
@@ -356,22 +356,22 @@ public class Connection {
      * @param tlsCipherSuite
      *            A String array containing the supported cipher suites
      */
-    public void setTLSCipherSuite(String... tlsCipherSuite) {
+    public void setTlsCipherSuite(String... tlsCipherSuite) {
         for (String s : tlsCipherSuite)
             if (s == null)
                 throw new NullPointerException();
         this.tlsCipherSuites = tlsCipherSuite.clone();
     }
 
-    public final boolean isTLS() {
+    public final boolean isTls() {
         return tlsCipherSuites.length > 0;
     }
 
-    public String[] getTLSProtocols() {
+    public String[] getTlsProtocols() {
         return tlsProtocols.clone();
     }
 
-    public void setTLSProtocol(String... tlsProtocols) {
+    public void setTlsProtocol(String... tlsProtocols) {
         if (tlsProtocols.length == 0)
             throw new IllegalArgumentException("no TLS protocol specified");
         for (String s : tlsProtocols)
@@ -380,11 +380,11 @@ public class Connection {
         this.tlsProtocols = tlsProtocols.clone();
     }
 
-    public final boolean isTLSNeedClientAuth() {
+    public final boolean isTlsNeedClientAuth() {
         return tlsNeedClientAuth;
     }
 
-    public final void setTLSNeedClientAuth(boolean tlsNeedClientAuth) {
+    public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
         this.tlsNeedClientAuth = tlsNeedClientAuth;
     }
 
@@ -533,7 +533,7 @@ public class Connection {
             .append(hostname)
             .append(':')
             .append(port);
-        if (isTLS()) {
+        if (isTls()) {
             sb.append(", tls=[");
             for (String s : tlsCipherSuites)
                 sb.append(s).append(", ");
@@ -629,7 +629,7 @@ public class Connection {
             throw new IllegalStateException("Does not accept connections");
         if (server != null)
             throw new IllegalStateException("Already listening - " + server);
-        server = isTLS() ? createTLSServerSocket() : new ServerSocket();
+        server = isTls() ? createTLSServerSocket() : new ServerSocket();
         server.bind(getEndPoint(), backlog);
         device.execute(new Runnable() {
 
@@ -688,7 +688,7 @@ public class Connection {
             throws IOException, IncompatibleConnectionException {
         checkInstalled();
         checkCompatible(remoteConn);
-        Socket s = isTLS() ? createTLSSocket(remoteConn) : new Socket();
+        Socket s = isTls() ? createTLSSocket(remoteConn) : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
         InetSocketAddress endpoint = new InetSocketAddress(
                 remoteConn.getHostname(), remoteConn.getPort());
@@ -711,11 +711,11 @@ public class Connection {
     }
 
     public boolean isCompatible(Connection remoteConn) {
-        return remoteConn.isTLS() 
-                ? isTLS()
+        return remoteConn.isTls() 
+                ? isTls()
                         && hasCommon(remoteConn.tlsProtocols, tlsProtocols)
                         && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites)
-                : !isTLS();
+                : !isTls();
     }
 
     private static boolean hasCommon(String[] ss1, String[] ss2) {

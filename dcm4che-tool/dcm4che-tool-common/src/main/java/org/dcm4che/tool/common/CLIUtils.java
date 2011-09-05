@@ -453,33 +453,33 @@ public class CLIUtils {
     private static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {
         if (cl.hasOption("tls"))
-            conn.setTLSCipherSuite(
+            conn.setTlsCipherSuite(
                     "SSL_RSA_WITH_NULL_SHA",
                     "TLS_RSA_WITH_AES_128_CBC_SHA",
                     "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-null"))
-            conn.setTLSCipherSuite("SSL_RSA_WITH_NULL_SHA");
+            conn.setTlsCipherSuite("SSL_RSA_WITH_NULL_SHA");
         else if (cl.hasOption("tls-3des"))
-            conn.setTLSCipherSuite("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+            conn.setTlsCipherSuite("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-aes"))
-            conn.setTLSCipherSuite(
+            conn.setTlsCipherSuite(
                     "TLS_RSA_WITH_AES_128_CBC_SHA",
                     "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-cipher"))
-            conn.setTLSCipherSuite(cl.getOptionValues("tls-cipher"));
+            conn.setTlsCipherSuite(cl.getOptionValues("tls-cipher"));
         else
             return;
 
         if (cl.hasOption("tls1"))
-            conn.setTLSProtocol("TLSv1");
+            conn.setTlsProtocol("TLSv1");
         else if (cl.hasOption("ssl3"))
-            conn.setTLSProtocol("SSLv3");
+            conn.setTlsProtocol("SSLv3");
         else if (cl.hasOption("ssl2Hello"))
-            conn.setTLSProtocol("SSLv2Hello", "SSLv3", "TLSv1");
+            conn.setTlsProtocol("SSLv2Hello", "SSLv3", "TLSv1");
         else if (cl.hasOption("tls-protocol"))
-            conn.setTLSProtocol(cl.getOptionValues("tls-protocol"));
+            conn.setTlsProtocol(cl.getOptionValues("tls-protocol"));
 
-        conn.setTLSNeedClientAuth(!cl.hasOption("tls-noauth"));
+        conn.setTlsNeedClientAuth(!cl.hasOption("tls-noauth"));
 
         String keyStoreURL = cl.hasOption("key")
                 ? cl.getOptionValue("key")

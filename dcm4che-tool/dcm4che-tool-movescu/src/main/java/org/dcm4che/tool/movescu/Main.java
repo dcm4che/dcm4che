@@ -63,6 +63,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
+import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -264,8 +265,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            main.remote.setTLSProtocol(main.conn.getTLSProtocols());
-            main.remote.setTLSCipherSuite(main.conn.getTLSCipherSuite());
+            main.remote.setTlsProtocol(main.conn.getTlsProtocols());
+            main.remote.setTlsCipherSuite(main.conn.getTlsCipherSuite());
             configureServiceClass(main, cl);
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
@@ -342,7 +343,7 @@ public class Main {
         return IVR_LE_FIRST;
     }
 
-    public void open() throws IOException, InterruptedException {
+    public void open() throws IOException, InterruptedException, IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
 

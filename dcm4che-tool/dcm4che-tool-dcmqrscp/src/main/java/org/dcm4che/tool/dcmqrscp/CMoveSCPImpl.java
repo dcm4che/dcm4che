@@ -82,7 +82,11 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
         boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
         level.validateRetrieveKeys(rq, validator, studyRoot, relational);
-        final Connection remote = main.getRemoteConnection(rq);
+        String dest = rq.getString(Tag.MoveDestination);
+        final Connection remote = main.getRemoteConnection(dest);
+        if (remote == null)
+            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
+                    "Move Destination: " + dest + " unknown");
         RetrieveTaskImpl retrieveTask =
                 new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader()) {
 

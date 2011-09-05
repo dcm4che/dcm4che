@@ -53,8 +53,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
@@ -64,10 +62,8 @@ import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
@@ -497,13 +493,8 @@ public class Main {
         remoteConnections.put(aet, remote);
     }
 
-    Connection getRemoteConnection(Attributes rq) throws DicomServiceException {
-        String dest = rq.getString(Tag.MoveDestination);
-        Connection remote = remoteConnections.get(dest);
-        if (remote == null)
-            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
-                    "Move Destination: " + dest + " unknown");
-        return remote;
+    Connection getRemoteConnection(String dest) {
+        return remoteConnections.get(dest);
     }
 
 }

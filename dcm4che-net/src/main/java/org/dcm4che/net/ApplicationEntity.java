@@ -639,8 +639,8 @@ public class ApplicationEntity {
             ac.addExtendedNegotiation(new ExtendedNegotiation(asuid, info));
     }
 
-    public Association connect(Connection local, Connection remote,
-            AAssociateRQ rq) throws IOException, InterruptedException {
+    public Association connect(Connection local, Connection remote, AAssociateRQ rq)
+            throws IOException, InterruptedException, IncompatibleConnectionException {
         checkDevice();
         checkInstalled();
         if (aet.length() != 1 || aet.charAt(0) != '*')
@@ -655,9 +655,38 @@ public class ApplicationEntity {
         return as;
     }
 
+    public Association connect(Connection remote, AAssociateRQ rq)
+            throws IOException, InterruptedException, IncompatibleConnectionException {
+        return connect(findCompatibelConnection(remote), remote, rq);
+    }
+
+    public Connection findCompatibelConnection(Connection remoteConn)
+            throws IncompatibleConnectionException {
+        for (Connection conn : conns)
+            if (conn.isCompatible(remoteConn))
+                return conn;
+        throw new IncompatibleConnectionException(
+                "No compatible connection to " + remoteConn + " available on " + this);
+    }
+
+    public Association connect(ApplicationEntity remote, AAssociateRQ rq)
+        throws IOException, InterruptedException, IncompatibleConnectionException {
+        for (Connection remoteConn : remote.conns)
+            for (Connection conn : conns)
+                if (conn.isCompatible(remoteConn))
+                    return connect(conn, remoteConn, rq);
+        throw new IncompatibleConnectionException(
+                "No compatible connection to " + remote + " available on " + this);
+    }
+
     void onClose(Association as) {
         DimseRQHandler tmp = getDimseRQHandler();
         if (tmp != null)
             tmp.onClose(as);
+    }
+
+    @Override
+    public String toString() {
+        return getAETitle();
     }
 }

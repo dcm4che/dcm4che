@@ -46,6 +46,7 @@ import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -88,11 +89,13 @@ class CMoveSCPImpl extends BasicCMoveSCP {
             @Override
             protected Association getStoreAssociation() throws DicomServiceException {
                 try {
-                    return main.getApplicationEntity()
-                            .connect(main.getConnection(), remote, makeAAssociateRQ());
+                    return as.getApplicationEntity().connect(
+                            as.getConnection(), remote, makeAAssociateRQ());
                 } catch (IOException e) {
                     throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
                 } catch (InterruptedException e) {
+                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                } catch (IncompatibleConnectionException e) {
                     throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
                 }
             }

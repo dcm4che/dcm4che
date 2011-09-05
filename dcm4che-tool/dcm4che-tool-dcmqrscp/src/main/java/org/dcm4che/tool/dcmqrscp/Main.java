@@ -479,14 +479,6 @@ public class Main {
          return ddWriter;
     }
 
-    final ApplicationEntity getApplicationEntity() {
-        return ae;
-    }
-
-    final Connection getConnection() {
-        return conn;
-    }
-
     private void openDicomDir() throws IOException {
         if (!dicomDir.exists())
             DicomDirWriter.createEmptyDirectory(dicomDir,

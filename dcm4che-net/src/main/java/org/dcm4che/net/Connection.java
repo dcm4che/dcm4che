@@ -605,9 +605,9 @@ public class Connection {
             throw new IllegalStateException("Not installed");
     }
 
-    private void checkCompatible(Connection remoteConn) {
+    private void checkCompatible(Connection remoteConn) throws IncompatibleConnectionException {
         if (!isCompatible(remoteConn))
-            throw new IllegalArgumentException("Not compatible " + remoteConn);
+            throw new IncompatibleConnectionException(remoteConn.toString());
     }
 
     private void checkDevice() {
@@ -684,7 +684,8 @@ public class Connection {
         server = null;
     }
 
-    public Socket connect(Connection remoteConn) throws IOException {
+    public Socket connect(Connection remoteConn)
+            throws IOException, IncompatibleConnectionException {
         checkInstalled();
         checkCompatible(remoteConn);
         Socket s = isTLS() ? createTLSSocket(remoteConn) : new Socket();

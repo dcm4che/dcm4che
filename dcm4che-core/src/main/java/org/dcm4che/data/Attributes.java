@@ -391,7 +391,7 @@ public class Attributes implements Serializable {
 
         int creatorTag = (tag & 0xffff0000) | ((tag >>> 8) & 0xff);
         int index = indexOf(creatorTag);
-        if (index < 0 || vrs[index] != VR.LO)
+        if (index < 0 || vrs[index] != VR.LO || values[index] == Value.NULL)
             return null;
         
         return VR.LO.toString(decodeStringValue(index), false, 0, null);

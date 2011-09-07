@@ -53,12 +53,22 @@ public class InstanceLocator {
     public final String iuid;
     public final String tsuid;
     public final String uri;
+    private Object obj;
 
     public InstanceLocator(String cuid, String iuid, String tsuid, String uri) {
         this.cuid = cuid;
         this.iuid = iuid;
         this.tsuid = tsuid;
         this.uri = uri;
+    }
+
+    public final Object getObject() {
+        return obj;
+    }
+
+    public final InstanceLocator setObject(Object obj) {
+        this.obj = obj;
+        return this;
     }
 
     public File getFile() {

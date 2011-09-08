@@ -40,7 +40,9 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -53,6 +55,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
@@ -65,6 +69,7 @@ import org.dcm4che.net.ExtendedNegotiator;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomServiceRegistry;
+import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.FilePathFormat;
@@ -497,4 +502,47 @@ public class Main {
         return remoteConnections.get(dest);
     }
 
+    public List<InstanceLocator> calculateMatches(Attributes keys) throws IOException {
+        List<InstanceLocator> list = new ArrayList<InstanceLocator>();
+        String[] patIDs = keys.getStrings(Tag.PatientID);
+        String[] studyIUIDs = keys.getStrings(Tag.StudyInstanceUID);
+        String[] seriesIUIDs = keys.getStrings(Tag.SeriesInstanceUID);
+        String[] sopIUIDs = keys.getStrings(Tag.SOPInstanceUID);
+        DicomDirReader ddr = ddReader;
+        Attributes patRec = ddr.findPatientRecord(patIDs);
+        while (patRec != null) {
+            Attributes studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
+            while (studyRec != null) {
+                Attributes seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
+                while (seriesRec != null) {
+                    Attributes instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+                    while (instRec != null) {
+                        String cuid = instRec.getString(Tag.ReferencedSOPClassUIDInFile);
+                        String iuid = instRec.getString(Tag.ReferencedSOPInstanceUIDInFile);
+                        String tsuid = instRec.getString(Tag.ReferencedTransferSyntaxUIDInFile);
+                        String[] fileIDs = instRec.getStrings(Tag.ReferencedFileID);
+                        String uri = ddr.toFile(fileIDs).toURI().toString();
+                        list.add(new InstanceLocator(cuid, iuid, tsuid, uri));
+                        if (sopIUIDs != null && sopIUIDs.length == 1)
+                            break;
+
+                        instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+                    }
+                    if (seriesIUIDs != null && seriesIUIDs.length == 1)
+                        break;
+
+                    seriesRec = ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
+                }
+                if (studyIUIDs != null && studyIUIDs.length == 1)
+                    break;
+
+                studyRec = ddr.findNextStudyRecord(studyRec, studyIUIDs);
+            }
+            if (patIDs != null && patIDs.length == 1)
+                break;
+
+            patRec = ddr.findNextPatientRecord(patRec, patIDs);
+        }
+        return list;
+    }
 }

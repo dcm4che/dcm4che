@@ -40,6 +40,7 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.AttributesValidator;
@@ -52,7 +53,9 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCMoveSCP;
+import org.dcm4che.net.service.BasicRetrieveTask;
 import org.dcm4che.net.service.DicomServiceException;
+import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.RetrieveTask;
 
@@ -87,8 +90,8 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         if (remote == null)
             throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
                     "Move Destination: " + dest + " unknown");
-        RetrieveTaskImpl retrieveTask =
-                new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader()) {
+        List<InstanceLocator> matches = calculateMatches(rq, keys);
+        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches ) {
 
             @Override
             protected Association getStoreAssociation() throws DicomServiceException {
@@ -109,5 +112,13 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         return retrieveTask;
     }
 
+    private List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
+            throws DicomServiceException {
+        try {
+            return main.calculateMatches(keys);
+        } catch (IOException e) {
+            throw new DicomServiceException(rq, Status.UnableToCalculateNumberOfMatches, e);
+        }
+    }
 }
 

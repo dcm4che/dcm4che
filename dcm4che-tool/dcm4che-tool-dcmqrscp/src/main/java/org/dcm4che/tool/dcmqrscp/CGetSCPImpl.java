@@ -39,15 +39,21 @@
 package org.dcm4che.tool.dcmqrscp;
 
 
+import java.io.IOException;
+import java.util.List;
+
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCGetSCP;
+import org.dcm4che.net.service.BasicRetrieveTask;
 import org.dcm4che.net.service.DicomServiceException;
+import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.RetrieveTask;
 
@@ -77,10 +83,19 @@ class CGetSCPImpl extends BasicCGetSCP {
         ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
         boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
         level.validateRetrieveKeys(rq, validator, studyRoot, relational);
-        RetrieveTaskImpl retrieveTask =
-                new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader());
+        List<InstanceLocator> matches = calculateMatches(rq, keys);
+        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches);
         retrieveTask.setSendPendingRSP(main.isSendPendingCGet());
         return retrieveTask;
+    }
+
+    private List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
+            throws DicomServiceException {
+        try {
+            return main.calculateMatches(keys);
+        } catch (IOException e) {
+            throw new DicomServiceException(rq, Status.UnableToCalculateNumberOfMatches, e);
+        }
     }
 
 }

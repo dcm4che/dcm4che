@@ -40,14 +40,23 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import java.io.IOException;
+import java.util.List;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.AttributesValidator;
+import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCMoveSCP;
+import org.dcm4che.net.service.BasicRetrieveTask;
 import org.dcm4che.net.service.DicomServiceException;
+import org.dcm4che.net.service.InstanceLocator;
+import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.RetrieveTask;
 
 /**
@@ -58,29 +67,42 @@ class CMoveSCPImpl extends BasicCMoveSCP {
 
     private final Main main;
     private final String[] qrLevels;
+    private final boolean studyRoot;
 
     public CMoveSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
+        this.studyRoot = "STUDY".equals(qrLevels[0]);
     }
 
     @Override
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             final Attributes rq, Attributes keys) throws DicomServiceException {
-        QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, true);
-        final Connection remote = main.getRemoteConnection(rq);
-        RetrieveTaskImpl retrieveTask =
-                new RetrieveTaskImpl(as, pc, rq, keys, main.getDicomDirReader()) {
+        AttributesValidator validator = new AttributesValidator(keys);
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
+        level.validateRetrieveKeys(rq, validator, studyRoot, relational);
+        String dest = rq.getString(Tag.MoveDestination);
+        final Connection remote = main.getRemoteConnection(dest);
+        if (remote == null)
+            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
+                    "Move Destination: " + dest + " unknown");
+        List<InstanceLocator> matches = calculateMatches(rq, keys);
+        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches ) {
 
             @Override
             protected Association getStoreAssociation() throws DicomServiceException {
                 try {
-                    return main.getApplicationEntity()
-                            .connect(main.getConnection(), remote, makeAAssociateRQ());
+                    return as.getApplicationEntity().connect(
+                            as.getConnection(), remote, makeAAssociateRQ());
                 } catch (IOException e) {
                     throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
                 } catch (InterruptedException e) {
+                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                } catch (IncompatibleConnectionException e) {
                     throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
                 }
             }
@@ -90,5 +112,13 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         return retrieveTask;
     }
 
+    private List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
+            throws DicomServiceException {
+        try {
+            return main.calculateMatches(keys);
+        } catch (IOException e) {
+            throw new DicomServiceException(rq, Status.UnableToCalculateNumberOfMatches, e);
+        }
+    }
 }
 

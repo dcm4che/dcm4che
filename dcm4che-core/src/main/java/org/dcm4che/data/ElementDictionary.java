@@ -58,14 +58,18 @@ public abstract class ElementDictionary {
     public static ElementDictionary getElementDictionary(
             String privateCreator) {
         if (privateCreator != null)
-            for (ElementDictionary dict : loader)
-                if (privateCreator.equals(dict.getPrivateCreator()))
-                    return dict;
+            synchronized (loader) {
+                for (ElementDictionary dict : loader)
+                    if (privateCreator.equals(dict.getPrivateCreator()))
+                        return dict;
+            }
         return getStandardElementDictionary();
     }
 
     public static void reload() {
-        loader.reload();
+        synchronized (loader) {
+            loader.reload();
+        }
     }
 
     public static VR vrOf(int tag, String privateCreator) {

@@ -40,7 +40,9 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -64,11 +66,10 @@ import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
+import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.FilePathFormat;
@@ -458,7 +459,7 @@ public class Main {
                 Connection remote = new Connection();
                 remote.setHostname(hostPortCiphers[0]);
                 remote.setPort(Integer.parseInt(hostPortCiphers[1]));
-                remote.setTLSCipherSuite(ciphers);
+                remote.setTlsCipherSuite(ciphers);
                 main.addRemoteConnection(aet, remote);
             } catch (Exception e) {
                 throw new IllegalArgumentException(
@@ -479,14 +480,6 @@ public class Main {
          return ddWriter;
     }
 
-    final ApplicationEntity getApplicationEntity() {
-        return ae;
-    }
-
-    final Connection getConnection() {
-        return conn;
-    }
-
     private void openDicomDir() throws IOException {
         if (!dicomDir.exists())
             DicomDirWriter.createEmptyDirectory(dicomDir,
@@ -505,13 +498,51 @@ public class Main {
         remoteConnections.put(aet, remote);
     }
 
-    Connection getRemoteConnection(Attributes rq) throws DicomServiceException {
-        String dest = rq.getString(Tag.MoveDestination);
-        Connection remote = remoteConnections.get(dest);
-        if (remote == null)
-            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
-                    "Move Destination: " + dest + " unknown");
-        return remote;
+    Connection getRemoteConnection(String dest) {
+        return remoteConnections.get(dest);
     }
 
+    public List<InstanceLocator> calculateMatches(Attributes keys) throws IOException {
+        List<InstanceLocator> list = new ArrayList<InstanceLocator>();
+        String[] patIDs = keys.getStrings(Tag.PatientID);
+        String[] studyIUIDs = keys.getStrings(Tag.StudyInstanceUID);
+        String[] seriesIUIDs = keys.getStrings(Tag.SeriesInstanceUID);
+        String[] sopIUIDs = keys.getStrings(Tag.SOPInstanceUID);
+        DicomDirReader ddr = ddReader;
+        Attributes patRec = ddr.findPatientRecord(patIDs);
+        while (patRec != null) {
+            Attributes studyRec = ddr.findStudyRecord(patRec, studyIUIDs);
+            while (studyRec != null) {
+                Attributes seriesRec = ddr.findSeriesRecord(studyRec, seriesIUIDs);
+                while (seriesRec != null) {
+                    Attributes instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+                    while (instRec != null) {
+                        String cuid = instRec.getString(Tag.ReferencedSOPClassUIDInFile);
+                        String iuid = instRec.getString(Tag.ReferencedSOPInstanceUIDInFile);
+                        String tsuid = instRec.getString(Tag.ReferencedTransferSyntaxUIDInFile);
+                        String[] fileIDs = instRec.getStrings(Tag.ReferencedFileID);
+                        String uri = ddr.toFile(fileIDs).toURI().toString();
+                        list.add(new InstanceLocator(cuid, iuid, tsuid, uri));
+                        if (sopIUIDs != null && sopIUIDs.length == 1)
+                            break;
+
+                        instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+                    }
+                    if (seriesIUIDs != null && seriesIUIDs.length == 1)
+                        break;
+
+                    seriesRec = ddr.findNextSeriesRecord(seriesRec, seriesIUIDs);
+                }
+                if (studyIUIDs != null && studyIUIDs.length == 1)
+                    break;
+
+                studyRec = ddr.findNextStudyRecord(studyRec, studyIUIDs);
+            }
+            if (patIDs != null && patIDs.length == 1)
+                break;
+
+            patRec = ddr.findNextPatientRecord(patRec, patIDs);
+        }
+        return list;
+    }
 }

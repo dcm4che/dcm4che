@@ -40,6 +40,7 @@ package org.dcm4che.net.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -76,16 +77,18 @@ public class BasicRetrieveTask implements RetrieveTask {
     protected int warning;
     protected int completed;
     protected final ArrayList<String> failed = new ArrayList<String>();
-    protected final ArrayList<InstanceLocator> insts = new ArrayList<InstanceLocator>();
+    protected final List<InstanceLocator> insts;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
     private ScheduledFuture<?> writePendingRSP;
 
-    public BasicRetrieveTask(Association as, PresentationContext pc, Attributes rq) {
+    public BasicRetrieveTask(Association as, PresentationContext pc, Attributes rq,
+            List<InstanceLocator> insts) {
         this.as = as;
         this.pc = pc;
         this.rq = rq;
+        this.insts = insts;
     }
 
     public void setSendPendingRSP(boolean pendingRSP) {

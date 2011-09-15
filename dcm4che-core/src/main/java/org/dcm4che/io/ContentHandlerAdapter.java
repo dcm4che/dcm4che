@@ -82,7 +82,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private int blklen;
     private BulkDataLocator bulkDataLocator;
     private Fragments dataFragments;
-    private boolean text;
+    private boolean processCharacters;
     private boolean base64;
 
     public ContentHandlerAdapter(Attributes attrs) {
@@ -170,12 +170,14 @@ public class ContentHandlerAdapter extends DefaultHandler {
    }
 
     private void startBase64() {
+        processCharacters = true;
         base64 = true;
         bout.reset();
     }
 
     private void startText() {
-        text = true;
+        processCharacters = true;
+        base64 = false;
         sb.setLength(0);
     }
 
@@ -223,26 +225,26 @@ public class ContentHandlerAdapter extends DefaultHandler {
     @Override
     public void characters(char[] ch, int offset, int len)
             throws SAXException {
-        if (text)
-            sb.append(ch, offset, len);
-        else if (base64) {
-            try {
-                if (carryLen != 0) {
-                    int copy = 4 - carryLen;
-                    System.arraycopy(ch, offset, carry, carryLen, copy);
-                    Base64.decode(carry, 0, 4, bout);
-                    offset += copy;
-                    len -= copy;
+        if (processCharacters)
+            if (base64)
+                try {
+                    if (carryLen != 0) {
+                        int copy = 4 - carryLen;
+                        System.arraycopy(ch, offset, carry, carryLen, copy);
+                        Base64.decode(carry, 0, 4, bout);
+                        offset += copy;
+                        len -= copy;
+                    }
+                    if ((carryLen = len & 3) != 0) {
+                        len -= carryLen;
+                        System.arraycopy(ch, offset + len, carry, 0, carryLen);
+                    }
+                    Base64.decode(ch, offset, len, bout);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                if ((carryLen = len & 3) != 0) {
-                    len -= carryLen;
-                    System.arraycopy(ch, offset + len, carry, 0, carryLen);
-                }
-                Base64.decode(ch, offset, len, bout);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+            else
+                sb.append(ch, offset, len);
     }
 
     @Override
@@ -309,8 +311,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             }
             break;
         }
-        text = false;
-        base64 = false;
+        processCharacters = false;
     }
 
     @Override

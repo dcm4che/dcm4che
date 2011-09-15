@@ -40,11 +40,16 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.AttributesValidator;
+import org.dcm4che.data.Tag;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCFindSCP;
 import org.dcm4che.net.service.DicomServiceException;
+import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.QueryTask;
 
 /**
@@ -55,18 +60,24 @@ class CFindSCPImpl extends BasicCFindSCP {
 
     private final Main main;
     private final String[] qrLevels;
+    private final boolean studyRoot;
 
     public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
+        this.studyRoot = "STUDY".equals(qrLevels[0]);
     }
 
     @Override
     protected QueryTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        QueryRetrieveLevel level =
-                QueryRetrieveLevel.checkIdentifier(as, rq, keys, qrLevels, false);
+        AttributesValidator validator = new AttributesValidator(keys);
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
+        level.validateQueryKeys(rq, validator, studyRoot, relational);
         DicomDirReader ddr = main.getDicomDirReader();
         String availability =  main.getInstanceAvailability();
         switch(level) {

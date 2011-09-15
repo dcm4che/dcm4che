@@ -36,40 +36,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
-
-import java.io.IOException;
-import java.util.Collections;
-
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.pdu.PresentationContext;
+package org.dcm4che.net;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
-public class BasicCGetSCP extends DicomService implements CGetSCP {
+public class IncompatibleConnectionException extends Exception {
 
-    protected final Device device;
+    private static final long serialVersionUID = -4894618815669458800L;
 
-    public BasicCGetSCP(Device device, String... sopClasses) {
-        super(sopClasses);
-        this.device = device;
+    public IncompatibleConnectionException() {
     }
 
-    @Override
-    public void onCGetRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
-            throws IOException {
-        RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
-        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
-        device.execute(retrieveTask);
+    public IncompatibleConnectionException(String message) {
+        super(message);
     }
 
-    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(as, pc, rq, Collections.<InstanceLocator>emptyList());
-    }
 }

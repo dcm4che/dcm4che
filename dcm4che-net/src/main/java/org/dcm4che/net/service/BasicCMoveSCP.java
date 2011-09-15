@@ -39,6 +39,7 @@
 package org.dcm4che.net.service;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
@@ -69,6 +70,6 @@ public class BasicCMoveSCP extends DicomService implements CMoveSCP {
 
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(as, pc, rq);
+        return new BasicRetrieveTask(as, pc, rq, Collections.<InstanceLocator>emptyList());
     }
 }

@@ -220,7 +220,13 @@ public class Main {
         int tag = tags[tags.length-1];
         VR vr = ElementDictionary.vrOf(tag,
                 item.getPrivateCreator(tag));
-        item.setString(tag, vr, ss);
+        if (ss.length == 0)
+            if (vr == VR.SQ)
+                item.newSequence(tag, 1).add(new Attributes(0));
+            else
+                item.setNull(tag, vr);
+        else
+            item.setString(tag, vr, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)

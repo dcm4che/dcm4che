@@ -286,8 +286,11 @@ public abstract class AAssociateRQAC {
         for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
             len += 4 + cen.length();
         }
+        len += userIdentityLength();
         return len;
     }
+
+    protected abstract int userIdentityLength();
 
     protected StringBuilder promptTo(String header, StringBuilder sb) {
         sb.append(header)

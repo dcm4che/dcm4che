@@ -72,4 +72,8 @@ public class AAssociateAC extends AAssociateRQAC {
             userIdentity.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
     }
 
+    @Override
+    protected int userIdentityLength() {
+        return userIdentity != null ? 4 + userIdentity.length() : 0;
+    }
 }

@@ -65,6 +65,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
+import org.dcm4che.net.pdu.UserIdentityRQ;
 import org.dcm4che.util.SafeClose;
 
 /**
@@ -112,6 +113,19 @@ public class CLIUtils {
                 .withDescription(rb.getString("connect"))
                 .withLongOpt("connect")
                 .create("c"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("name")
+                .withDescription(rb.getString("user"))
+                .withLongOpt("user")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("password")
+                .withDescription(rb.getString("user-pass"))
+                .withLongOpt("user-pass")
+                .create(null));
+        opts.addOption(null, "user-rsp", false, rb.getString("user-rsp"));
     }
 
     @SuppressWarnings("static-access")
@@ -336,6 +350,13 @@ public class CLIUtils {
         rq.setCalledAET(aeHostPort[0]);
         conn.setHostname(hostPort[0]);
         conn.setPort(Integer.parseInt(hostPort[1]));
+
+        if (cl.hasOption("user"))
+            rq.setUserIdentity(cl.hasOption("user-pass")
+                    ? new UserIdentityRQ(cl.getOptionValue("user"),
+                            cl.getOptionValue("user-pass").toCharArray())
+                    : new UserIdentityRQ(cl.getOptionValue("user"),
+                            cl.hasOption("user-rsp")));
     }
 
     public static void configureBind(Connection conn,

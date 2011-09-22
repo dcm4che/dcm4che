@@ -1121,13 +1121,13 @@ public class Attributes implements Serializable {
         if (vr == null)
             throw new NullPointerException("vr");
 
-        if (TagUtils.isGroupLength(tag))
-            return null;
-
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(tag, privateCreator, true);
             tag = TagUtils.toPrivateTag(creatorTag, tag);
         }
+
+        if (TagUtils.isGroupLength(tag))
+            return null;
 
         Object oldValue = set(tag, vr, value);
 

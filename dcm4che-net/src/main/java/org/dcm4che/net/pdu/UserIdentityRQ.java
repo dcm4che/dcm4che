@@ -86,7 +86,7 @@ public class UserIdentityRQ {
     }
 
     public UserIdentityRQ(String username, boolean rspReq) {
-        this(USERNAME_PASSCODE, rspReq, toBytes(username));
+        this(USERNAME, rspReq, toBytes(username));
     }
 
     private static String typeAsString(int type) {

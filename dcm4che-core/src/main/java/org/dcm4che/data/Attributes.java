@@ -319,7 +319,7 @@ public class Attributes implements Serializable {
         if (index < 0)
             index = -index-1;
         while (index < size && (tags[index] & 0xffffff00) == group) {
-            if (vrs[index] == VR.LO
+            if (vrs[index] == VR.LO && values[index] != Value.NULL
                     && privateCreator.equals(
                             VR.LO.toString(decodeStringValue(index), false, 0, null)))
                 return tags[index];

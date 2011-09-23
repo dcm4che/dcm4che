@@ -133,6 +133,7 @@ public class AttributesTest {
         Attributes a = new Attributes();
         a.setString(0x00090010, VR.LO, "CREATOR1");
         a.setString(0x00091010, VR.LO, "VALUE1");
+        a.setNull(0x00090015, VR.LO);
         a.setString(0x00090020, VR.LO, "CREATOR2");
         a.setString(0x00092010, VR.LO, "VALUE2");
         a.setNull(0x00090010, "CREATOR3", VR.LO);

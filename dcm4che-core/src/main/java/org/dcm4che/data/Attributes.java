@@ -313,22 +313,28 @@ public class Attributes implements Serializable {
             throw new IllegalArgumentException(TagUtils.toString(tag)
                     + " is not a private Data Element");
 
-        for (int creatorTag = tag & 0xffff0000 | 0x10;
-                (creatorTag & 0xff) != 0; creatorTag++) {
-            int index = indexOf(creatorTag);
-            if (index < 0) {
-                if (!reserve)
-                    return -1;
-                setString(creatorTag, VR.LO, privateCreator);
-                return creatorTag;
-           }
-           if (privateCreator.equals(values[index] == Value.NULL
-                   ? ""
-                   : VR.LO.toString(decodeStringValue(index), false, 0, null)))
-               return creatorTag;
+        int group = tag & 0xffff0000;
+        int creatorTag = group | 0x10;
+        int index = indexOf(creatorTag);
+        if (index < 0)
+            index = -index-1;
+        while (index < size && (tags[index] & 0xffffff00) == group) {
+            if (vrs[index] == VR.LO
+                    && privateCreator.equals(
+                            VR.LO.toString(decodeStringValue(index), false, 0, null)))
+                return tags[index];
+            index++;
         }
-        throw new IllegalStateException("No free block for Private Element "
-                + TagUtils.toString(tag));
+        if (!reserve)
+            return -1;
+
+        if (index > 0 && (tags[index-1] & 0xffffff00) == group) {
+            if (((creatorTag = tags[index-1] + 1) & 0xff00) != 0)
+                throw new IllegalStateException("No free block for Private Element "
+                        + TagUtils.toString(tag));
+        }
+        setString(creatorTag, VR.LO, privateCreator);
+        return creatorTag;
     }
 
     private Object decodeStringValue(int index) {

@@ -1275,11 +1275,18 @@ public class Attributes implements Serializable {
         return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb);
     }
 
-    public StringBuilder toStringBuilder(int lines, int maxWidth,
-            StringBuilder sb) {
+    public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb) {
+        appendAttributes(limit, maxWidth, sb, "");
+        return sb;
+    }
+
+    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+        int lines = 0;
         int creatorTag = 0;
         String privateCreator = null;
-        for (int i = 0, n = Math.min(size, lines); i < n; i++) {
+        for (int i = 0; i < size; i++) {
+            if (++lines > limit)
+                break;
             int tag = tags[i];
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);
@@ -1291,25 +1298,39 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
-            if (i > 0)
-                sb.append('\n');
-            appendAttribute(tag, privateCreator, vrs[i], values[i],
-                    sb.length() + maxWidth, sb);
+            Object value = values[i];
+            appendAttribute(tag, privateCreator, vrs[i], value,
+                    sb.length() + maxWidth, sb, prefix);
+            if (value instanceof Sequence)
+                lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>');
         }
-        if (size > lines)
-            sb.append("\n...");
-        return sb;
+        if (prefix.isEmpty() && lines > limit)
+            sb.append("...\n");
+        return lines;
+    }
+
+    private int appendItems(Sequence sq, int limit, int maxWidth, StringBuilder sb,
+            String prefix) {
+        int lines = 0;
+        int itemNo = 0;
+        for (Attributes item : sq) {
+            if (++lines > limit)
+                return lines;
+            sb.append(prefix).append("Item #").append(++itemNo).append('\n');
+            lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix);
+        }
+        return lines ;
     }
 
     private StringBuilder appendAttribute(int tag, String privateCreator,
-            VR vr, Object value, int maxLength, StringBuilder sb) {
-        sb.append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
+            VR vr, Object value, int maxLength, StringBuilder sb, String prefix) {
+        sb.append(prefix).append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
         if (vr.prompt(value, bigEndian, getSpecificCharacterSet(),
                 maxLength - sb.length() - 1, sb)) {
-            sb.append("] ").append(ElementDictionary.keywordOf(
-                        tag, privateCreator));
+            sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)
                 sb.setLength(maxLength);
+            sb.append('\n');
         }
         return sb;
     }

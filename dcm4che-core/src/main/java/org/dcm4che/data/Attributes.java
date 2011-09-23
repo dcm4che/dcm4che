@@ -1214,32 +1214,40 @@ public class Attributes implements Serializable {
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
             VR vr = srcVRs[i];
-            if (!(TagUtils.isPrivateCreator(tag) && vr == VR.LO)
-                    && (include == null || Arrays.binarySearch(
-                            include, fromIndex, toIndex, tag) >= 0)
-                    && (exclude == null || Arrays.binarySearch(
-                            exclude, fromIndex, toIndex, tag) < 0)) {
-                if (TagUtils.isPrivateTag(tag)) {
-                    int tmp = TagUtils.creatorTagOf(tag);
-                    if (creatorTag != tmp) {
-                        creatorTag = tmp;
-                        privateCreator = other.privateCreatorOf(tag);
-                    }
-                } else {
-                    creatorTag = 0;
-                    privateCreator = null;
+            Object value = srcValues[i];
+            if (TagUtils.isPrivateCreator(tag)) {
+                if (contains(tag))
+                    continue; // do not overwrite private creator IDs
+                if (vr == VR.LO && value != Value.NULL
+                        && creatorTagOf(tag,
+                                VR.LO.toString(other.decodeStringValue(i), false, 0, null),
+                                false)
+                           != -1)
+                    continue; // do not add duplicate private creator ID
+            }
+            if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) >= 0)
+                continue;
+            if (exclude != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
+                continue;
+            if (TagUtils.isPrivateTag(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    privateCreator = other.privateCreatorOf(tag);
                 }
-                Object value = srcValues[i];
-                if (value instanceof Sequence) {
-                    set(tag, privateCreator, (Sequence) value);
-                } else if (value instanceof Fragments) {
-                    set(tag, privateCreator, (Fragments) value);
-                } else {
-                    set(tag, privateCreator, vr,
-                            (value instanceof byte[] && toggleEndian)
-                                    ? vr.toggleEndian((byte[]) value, true)
-                                    : value);
-                }
+            } else {
+                creatorTag = 0;
+                privateCreator = null;
+            }
+            if (value instanceof Sequence) {
+                set(tag, privateCreator, (Sequence) value);
+            } else if (value instanceof Fragments) {
+                set(tag, privateCreator, (Fragments) value);
+            } else {
+                set(tag, privateCreator, vr,
+                        (value instanceof byte[] && toggleEndian)
+                                ? vr.toggleEndian((byte[]) value, true)
+                                : value);
             }
         }
         return this;
@@ -1276,7 +1284,8 @@ public class Attributes implements Serializable {
     }
 
     public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb) {
-        appendAttributes(limit, maxWidth, sb, "");
+        if (appendAttributes(limit, maxWidth, sb, "") > limit)
+            sb.append("...\n");
         return sb;
     }
 
@@ -1304,8 +1313,6 @@ public class Attributes implements Serializable {
             if (value instanceof Sequence)
                 lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>');
         }
-        if (prefix.isEmpty() && lines > limit)
-            sb.append("...\n");
         return lines;
     }
 
@@ -1315,7 +1322,7 @@ public class Attributes implements Serializable {
         int itemNo = 0;
         for (Attributes item : sq) {
             if (++lines > limit)
-                return lines;
+                break;
             sb.append(prefix).append("Item #").append(++itemNo).append('\n');
             lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix);
         }

@@ -1225,9 +1225,9 @@ public class Attributes implements Serializable {
                            != -1)
                     continue; // do not add duplicate private creator ID
             }
-            if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) >= 0)
+            if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
-            if (exclude != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
+            if (exclude != null && Arrays.binarySearch(exclude, fromIndex, toIndex, tag) >= 0)
                 continue;
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);

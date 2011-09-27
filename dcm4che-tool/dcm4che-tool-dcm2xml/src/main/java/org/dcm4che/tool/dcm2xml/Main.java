@@ -76,6 +76,7 @@ public class Main {
     private URL xslt;
     private boolean indent = false;
     private boolean includeKeyword = true;
+    private boolean includeNamespaceDeclaration = false;
     private boolean includeBulkData = false;
     private boolean includeBulkDataLocator = true;
     private boolean catBlkFiles = false;
@@ -94,6 +95,10 @@ public class Main {
 
     public final void setIncludeKeyword(boolean includeKeyword) {
         this.includeKeyword = includeKeyword;
+    }
+
+    public final void setIncludeNamespaceDeclaration(boolean includeNamespaceDeclaration) {
+        this.includeNamespaceDeclaration = includeNamespaceDeclaration;
     }
 
     public final void setIncludeBulkData(boolean includeBulkData) {
@@ -137,6 +142,7 @@ public class Main {
                 .create("x"));
         opts.addOption("I", "indent", false, rb.getString("indent"));
         opts.addOption("K", "no-keyword", false, rb.getString("no-keyword"));
+        opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
         addBulkdataOptions(opts);
 
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
@@ -193,7 +199,8 @@ public class Main {
             }
             main.setIndent(cl.hasOption("I"));
             main.setIncludeKeyword(!cl.hasOption("K"));
-            configureBulkdata(main, cl);
+            main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns"));
+           configureBulkdata(main, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
                 main.parse(new DicomInputStream(System.in));
@@ -279,6 +286,7 @@ public class Main {
         th.setResult(new StreamResult(System.out));
         SAXWriter saxWriter = new SAXWriter(th);
         saxWriter.setIncludeKeyword(includeKeyword);
+        saxWriter.setIncludeNamespaceDeclaration(includeNamespaceDeclaration);
         dis.setDicomInputHandler(saxWriter);
         dis.readDataset(-1, -1);
     }

@@ -136,9 +136,9 @@ public class AttributesTest {
         a.setNull(0x00090015, VR.LO);
         a.setString(0x00090020, VR.LO, "CREATOR2");
         a.setString(0x00092010, VR.LO, "VALUE2");
-        a.setNull(0x00090010, "CREATOR3", VR.LO);
-        assertEquals("VALUE1", a.getString(0x00090010, "CREATOR1", null, null));
-        assertEquals("VALUE2", a.getString(0x00090010, "CREATOR2", null, null));
+        a.setNull("CREATOR3", 0x00090010, VR.LO);
+        assertEquals("VALUE1", a.getString("CREATOR1", 0x00090010, null, null));
+        assertEquals("VALUE2", a.getString("CREATOR2", 0x00090010, null, null));
         assertEquals("CREATOR3", a.getString(0x00090021));
     }
 }

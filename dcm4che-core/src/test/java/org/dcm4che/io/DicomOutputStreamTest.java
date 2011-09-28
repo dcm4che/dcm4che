@@ -169,7 +169,7 @@ public class DicomOutputStreamTest {
         BulkDataLocator bdl = new BulkDataLocator(uri("OT-PAL-8-face"), 
                         UID.ImplicitVRLittleEndian, 1654, 307200);
         ds.setValue(Tag.PixelData, VR.OW, bdl);
-        Fragments frags = ds.newFragments(0x99990010, "DicomOutputStreamTest", VR.OB, 3);
+        Fragments frags = ds.newFragments("DicomOutputStreamTest", 0x99990010, VR.OB, 3);
         frags.add(null);
         frags.add(new byte[] { 1, 2, 3, 4 });
         frags.add(bdl);

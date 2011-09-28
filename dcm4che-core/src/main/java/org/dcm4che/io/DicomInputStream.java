@@ -543,14 +543,14 @@ public class DicomInputStream extends FilterInputStream
         for (int i = 0; i < level; i++) {
             ItemPointer ip = itemPointers[i];
             Sequence sq = (Sequence)
-                    item.getValue(ip.sequenceTag, ip.privateCreator);
+                    item.getValue(ip.privateCreator, ip.sequenceTag);
             if (sq == null)
                 return false;
             item = sq.get(0);
         }
         int tag0 = ((grtag &= 0xff01) == 0x5000 || grtag == 0x6000)
                 ? tag & 0xff00ffff : tag;
-        return item.contains(tag0, attrs.getPrivateCreator(tag));
+        return item.contains(attrs.getPrivateCreator(tag), tag0);
     }
 
     public boolean isBulkDataFragment() {
@@ -561,7 +561,7 @@ public class DicomInputStream extends FilterInputStream
         Attributes item = bulkData;
         for (int i = 0; i < level; i++) {
             ItemPointer ip = itemPointers[i];
-            Object value = item.getValue(ip.sequenceTag, ip.privateCreator);
+            Object value = item.getValue(ip.privateCreator, ip.sequenceTag);
             if (value instanceof Sequence)
                 item = ((Sequence) value).get(0);
             else

@@ -267,20 +267,19 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(int sequenceTag) {
-        return getNestedDataset(sequenceTag, null, 0);
+        return getNestedDataset(null, sequenceTag, 0);
     }
 
     public Attributes getNestedDataset(int sequenceTag, int itemIndex) {
-        return getNestedDataset(sequenceTag, null, itemIndex);
+        return getNestedDataset(null, sequenceTag, itemIndex);
     }
 
-    public Attributes getNestedDataset(int sequenceTag, String privateCreator) {
-        return getNestedDataset(sequenceTag, privateCreator, 0);
+    public Attributes getNestedDataset(String privateCreator, int sequenceTag) {
+        return getNestedDataset(privateCreator, sequenceTag, 0);
     }
 
-    public Attributes getNestedDataset(int sequenceTag, String privateCreator,
-            int itemIndex) {
-        Sequence sq = getSequence(sequenceTag, privateCreator);
+    public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
+        Sequence sq = getSequence(privateCreator, sequenceTag);
         if (sq == null || itemIndex >= sq.size())
             return null;
 
@@ -290,7 +289,7 @@ public class Attributes implements Serializable {
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
-            Sequence sq = item.getSequence(ip.sequenceTag, ip.privateCreator);
+            Sequence sq = item.getSequence(ip.privateCreator, ip.sequenceTag);
             if (sq == null || ip.itemIndex >= sq.size())
                 return null;
             item = sq.get(ip.itemIndex);
@@ -308,7 +307,7 @@ public class Attributes implements Serializable {
         return Arrays.binarySearch(tags, 0, size, tag);
     }
 
-    private int creatorTagOf(int tag, String privateCreator, boolean reserve) {
+    private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
         if (!TagUtils.isPrivateGroup(tag))
             throw new IllegalArgumentException(TagUtils.toString(tag)
                     + " is not a private Data Element");
@@ -366,9 +365,9 @@ public class Attributes implements Serializable {
         return indexOf(tag) >= 0;
     }
 
-    public boolean contains(int tag, String privateCreator) {
+    public boolean contains(String privateCreator, int tag) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return false;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -381,9 +380,9 @@ public class Attributes implements Serializable {
         return index >= 0 && !isEmpty(values[index]);
     }
 
-    public boolean containsValue(int tag, String privateCreator) {
+    public boolean containsValue(String privateCreator, int tag) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return false;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -411,9 +410,9 @@ public class Attributes implements Serializable {
         return values[index];
     }
 
-    public Object getValue(int tag, String privateCreator) {
+    public Object getValue(String privateCreator, int tag) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -422,11 +421,11 @@ public class Attributes implements Serializable {
     }
 
     public Sequence getSequence(int tag) {
-        return getSequence(tag, null);
+        return getSequence(null, tag);
     }
 
-    public Sequence getSequence(int tag, String privateCreator) {
-        Object value = getValue(tag, privateCreator);
+    public Sequence getSequence(String privateCreator, int tag) {
+        Object value = getValue(privateCreator, tag);
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
@@ -444,9 +443,9 @@ public class Attributes implements Serializable {
         return vr.toBytes(value, getSpecificCharacterSet());
     }
 
-    public byte[] getBytes(int tag, String privateCreator) throws IOException {
+    public byte[] getBytes(String privateCreator, int tag) throws IOException {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -455,29 +454,29 @@ public class Attributes implements Serializable {
     }
 
     public String getString(int tag) {
-        return getString(tag, null, null, 0, null);
+        return getString(null, tag, null, 0, null);
     }
 
     public String getString(int tag, String defVal) {
-        return getString(tag, null, null, 0, defVal);
+        return getString(null, tag, null, 0, defVal);
     }
 
     public String getString(int tag, int valueIndex) {
-        return getString(tag, null, null, valueIndex, null);
+        return getString(null, tag, null, valueIndex, null);
     }
 
     public String getString(int tag, int valueIndex, String defVal) {
-        return getString(tag, null, null, valueIndex, defVal);
+        return getString(null, tag, null, valueIndex, defVal);
     }
 
-    public String getString(int tag, String privateCreator, VR vr, String defVal) {
-        return getString(tag, privateCreator, vr, 0, defVal);
+    public String getString(String privateCreator, int tag, VR vr, String defVal) {
+        return getString(privateCreator, tag, vr, 0, defVal);
     }
 
-    public String getString(int tag, String privateCreator, VR vr, int valueIndex,
+    public String getString(String privateCreator, int tag, VR vr, int valueIndex,
             String defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -501,12 +500,12 @@ public class Attributes implements Serializable {
     }
 
     public String[] getStrings(int tag) {
-        return getStrings(tag, null, null);
+        return getStrings(null, tag, null);
     }
 
-    public String[] getStrings(int tag, String privateCreator, VR vr) {
+    public String[] getStrings(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -535,21 +534,21 @@ public class Attributes implements Serializable {
     }
 
     public int getInt(int tag, int defVal) {
-        return getInt(tag, null, null, 0, defVal);
+        return getInt(null, tag, null, 0, defVal);
     }
 
     public int getInt(int tag, int valueIndex, int defVal) {
-        return getInt(tag, null, null, valueIndex, defVal);
+        return getInt(null, tag, null, valueIndex, defVal);
     }
 
-    public int getInt(int tag, String privateCreator, VR vr, int defVal) {
-        return getInt(tag, privateCreator, vr, 0, defVal);
+    public int getInt(String privateCreator, int tag, VR vr, int defVal) {
+        return getInt(privateCreator, tag, vr, 0, defVal);
     }
 
-    public int getInt(int tag, String privateCreator, VR vr, int valueIndex,
+    public int getInt(String privateCreator, int tag, VR vr, int valueIndex,
             int defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -573,12 +572,12 @@ public class Attributes implements Serializable {
     }
 
     public int[] getInts(int tag) {
-        return getInts(tag, null, null);
+        return getInts(null, tag, null);
     }
 
-    public int[] getInts(int tag, String privateCreator, VR vr) {
+    public int[] getInts(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -602,21 +601,21 @@ public class Attributes implements Serializable {
     }
 
     public float getFloat(int tag, float defVal) {
-        return getFloat(tag, null, null, 0, defVal);
+        return getFloat(null, tag, null, 0, defVal);
     }
 
     public float getFloat(int tag, int valueIndex, float defVal) {
-        return getFloat(tag, null, null, valueIndex, defVal);
+        return getFloat(null, tag, null, valueIndex, defVal);
     }
 
-    public float getFloat(int tag, String privateCreator, VR vr, float defVal) {
-        return getFloat(tag, privateCreator, vr, 0, defVal);
+    public float getFloat(String privateCreator, int tag, VR vr, float defVal) {
+        return getFloat(privateCreator, tag, vr, 0, defVal);
     }
 
-    public float getFloat(int tag, String privateCreator, VR vr, int valueIndex,
+    public float getFloat(String privateCreator, int tag, VR vr, int valueIndex,
             float defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -640,12 +639,12 @@ public class Attributes implements Serializable {
     }
 
     public float[] getFloats(int tag) {
-        return getFloats(tag, null, null);
+        return getFloats(null, tag, null);
     }
 
-    public float[] getFloats(int tag, String privateCreator, VR vr) {
+    public float[] getFloats(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -669,21 +668,21 @@ public class Attributes implements Serializable {
     }
 
     public double getDouble(int tag, double defVal) {
-        return getDouble(tag, null, null, 0, defVal);
+        return getDouble(null, tag, null, 0, defVal);
     }
 
     public double getDouble(int tag, int valueIndex, double defVal) {
-        return getDouble(tag, null, null, valueIndex, defVal);
+        return getDouble(null, tag, null, valueIndex, defVal);
     }
 
-    public double getDouble(int tag, String privateCreator, VR vr, double defVal) {
-        return getDouble(tag, privateCreator, vr, 0, defVal);
+    public double getDouble(String privateCreator, int tag, VR vr, double defVal) {
+        return getDouble(privateCreator, tag, vr, 0, defVal);
     }
 
-    public double getDouble(int tag, String privateCreator, VR vr, int valueIndex,
+    public double getDouble(String privateCreator, int tag, VR vr, int valueIndex,
             double defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -707,12 +706,12 @@ public class Attributes implements Serializable {
     }
 
     public double[] getDoubles(int tag) {
-        return getDoubles(tag, null, null);
+        return getDoubles(null, tag, null);
     }
 
-    public double[] getDoubles(int tag, String privateCreator, VR vr) {
+    public double[] getDoubles(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -736,21 +735,21 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag, Date defVal) {
-        return getDate(tag, null, null, 0, defVal);
+        return getDate(null, tag, null, 0, defVal);
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal) {
-        return getDate(tag, null, null, valueIndex, defVal);
+        return getDate(null, tag, null, valueIndex, defVal);
     }
 
-    public Date getDate(int tag, String privateCreator, VR vr, Date defVal) {
-        return getDate(tag, privateCreator, vr, 0, defVal);
+    public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
+        return getDate(privateCreator, tag, vr, 0, defVal);
     }
 
-    public Date getDate(int tag, String privateCreator, VR vr, int valueIndex,
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
             Date defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -775,18 +774,18 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(long tag, Date defVal) {
-        return getDate(tag, null, defVal);
+        return getDate(null, tag, defVal);
     }
 
-    public Date getDate(long tag, String privateCreator, Date defVal) {
+    public Date getDate(String privateCreator, long tag, Date defVal) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
-        String tm = getString(tmTag, privateCreator, VR.TM, null);
+        String tm = getString(privateCreator, tmTag, VR.TM, null);
         if (tm == null)
             return getDate(daTag, defVal);
 
-        String da = getString(daTag, privateCreator, VR.DA, null);
+        String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)
             return defVal;
 
@@ -794,12 +793,12 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(int tag) {
-        return getDates(tag, null, null);
+        return getDates(null, tag, null);
     }
 
-    public Date[] getDates(int tag, String privateCreator, VR vr) {
+    public Date[] getDates(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -823,13 +822,13 @@ public class Attributes implements Serializable {
     }
 
     public DateRange getDateRange(int tag, DateRange defVal) {
-        return getDateRange(tag, null, null, defVal);
+        return getDateRange(null, tag, null, defVal);
     }
 
-    public DateRange getDateRange(int tag, String privateCreator, VR vr,
+    public DateRange getDateRange(String privateCreator, int tag, VR vr,
             DateRange defVal) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return defVal;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -874,19 +873,19 @@ public class Attributes implements Serializable {
     }
 
     public DateRange getDateRange(long tag, DateRange defVal) {
-        return getDateRange(tag, null, defVal);
+        return getDateRange(null, tag, defVal);
     }
 
-    public DateRange getDateRange(long tag, String privateCreator,
+    public DateRange getDateRange(String privateCreator, long tag,
             DateRange defVal) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
-        String tm = getString(tmTag, privateCreator, VR.TM, null);
+        String tm = getString(privateCreator, tmTag, VR.TM, null);
         if (tm == null)
             return getDateRange(daTag, defVal);
 
-        String da = getString(daTag, privateCreator, VR.DA, null);
+        String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)
             return defVal;
 
@@ -952,12 +951,12 @@ public class Attributes implements Serializable {
      }
 
     public Object remove(int tag) {
-        return remove(tag, null);
+        return remove(null, tag);
     }
 
-    public Object remove(int tag, String privateCreator) {
+    public Object remove(String privateCreator, int tag) {
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, false);
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
                 return null;
             tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -988,89 +987,85 @@ public class Attributes implements Serializable {
     }
 
     public Object setNull(int tag, VR vr) {
-        return setNull(tag, null, vr);
+        return setNull(null, tag, vr);
     }
 
-    public Object setNull(int tag, String privateCreator, VR vr) {
-        return set(tag, privateCreator, vr, Value.NULL);
+    public Object setNull(String privateCreator, int tag, VR vr) {
+        return set(privateCreator, tag, vr, Value.NULL);
     }
 
     public Object setBytes(int tag, VR vr, byte[] b) {
-        return setBytes(tag, null, vr, b);
+        return setBytes(null, tag, vr, b);
     }
 
-    public Object setBytes(int tag, String privateCreator, VR vr, byte[] b) {
-        return set(tag, privateCreator, vr, vr.toValue(b));
+    public Object setBytes(String privateCreator, int tag, VR vr, byte[] b) {
+        return set(privateCreator, tag, vr, vr.toValue(b));
     }
 
     public Object setString(int tag, VR vr, String s) {
-        return setString(tag, null, vr, s);
+        return setString(null, tag, vr, s);
     }
 
-    public Object setString(int tag, String privateCreator, VR vr, String s) {
-        return set(tag, privateCreator, vr, vr.toValue(s, bigEndian));
+    public Object setString(String privateCreator, int tag, VR vr, String s) {
+        return set(privateCreator, tag, vr, vr.toValue(s, bigEndian));
     }
 
     public Object setString(int tag, VR vr, String... ss) {
-        return setString(tag, null, vr, ss);
+        return setString(null, tag, vr, ss);
     }
 
-    public Object setString(int tag, String privateCreator, VR vr,
-            String... ss) {
-        return set(tag, privateCreator, vr, vr.toValue(ss, bigEndian));
+    public Object setString(String privateCreator, int tag, VR vr, String... ss) {
+        return set(privateCreator, tag, vr, vr.toValue(ss, bigEndian));
     }
 
     public Object setInt(int tag, VR vr, int... is) {
-        return setInt(tag, null, vr, is);
+        return setInt(null, tag, vr, is);
     }
 
-    public Object setInt(int tag, String privateCreator, VR vr, int... is) {
-        return set(tag, privateCreator, vr, vr.toValue(is, bigEndian));
+    public Object setInt(String privateCreator, int tag, VR vr, int... is) {
+        return set(privateCreator, tag, vr, vr.toValue(is, bigEndian));
     }
 
     public Object setFloat(int tag, VR vr, float... fs) {
-        return setFloat(tag, null, vr, fs);
+        return setFloat(null, tag, vr, fs);
     }
 
-    public Object setFloat(int tag, String privateCreator, VR vr,
-            float... fs) {
-        return set(tag, privateCreator, vr, vr.toValue(fs, bigEndian));
+    public Object setFloat(String privateCreator, int tag, VR vr, float... fs) {
+        return set(privateCreator, tag, vr, vr.toValue(fs, bigEndian));
     }
 
     public Object setDouble(int tag, VR vr, double... ds) {
-        return setDouble(tag, null, vr, ds);
+        return setDouble(null, tag, vr, ds);
     }
 
-    public Object setDouble(int tag, String privateCreator, VR vr,
-            double... ds) {
-        return set(tag, privateCreator, vr, vr.toValue(ds, bigEndian));
+    public Object setDouble(String privateCreator, int tag, VR vr, double... ds) {
+        return set(privateCreator, tag, vr, vr.toValue(ds, bigEndian));
     }
 
     public Object setDate(int tag, VR vr, Date... ds) {
-        return setDate(tag, null, vr, ds);
+        return setDate(null, tag, vr, ds);
     }
 
-    public Object setDate(int tag, String privateCreator, VR vr, Date... ds) {
-        return set(tag, privateCreator, vr, vr.toValue(ds, getTimeZone()));
+    public Object setDate(String privateCreator, int tag, VR vr, Date... ds) {
+        return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone()));
     }
 
     public void setDate(long tag, Date dt) {
-        setDate(tag, null, dt);
+        setDate(null, tag, dt);
     }
 
-    public void setDate(long tag, String privateCreator, Date dt) {
+    public void setDate(String privateCreator, long tag, Date dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
-        setDate(daTag, privateCreator, VR.DA, dt);
-        setDate(tmTag, privateCreator, VR.TM, dt);
+        setDate(privateCreator, daTag, VR.DA, dt);
+        setDate(privateCreator, tmTag, VR.TM, dt);
     }
 
     public Object setDateRange(int tag, VR vr, DateRange range) {
-        return setDateRange(tag, null, vr, range);
+        return setDateRange(null, tag, vr, range);
     }
 
-    public Object setDateRange(int tag, String privateCreator, VR vr,
-            DateRange range) {
+    public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
         TimeZone tz = getTimeZone();
         String start = range.getStartDate() != null
                 ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz)
@@ -1078,57 +1073,56 @@ public class Attributes implements Serializable {
         String end = range.getEndDate() != null
                 ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz)
                 : "";
-        return set(tag, privateCreator, vr,
+        return set(privateCreator, tag, vr,
                 start.equals(end) ? start : (start + '-' + end));
     }
 
     public void setDateRange(long tag, DateRange dr) {
-        setDateRange(tag, null, dr);
+        setDateRange(null, tag, dr);
     }
 
-    public void setDateRange(long tag, String privateCreator, DateRange range) {
+    public void setDateRange(String privateCreator, long tag, DateRange range) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
-        setDateRange(daTag, privateCreator, VR.DA, range);
-        setDateRange(tmTag, privateCreator, VR.TM, range);
+        setDateRange(privateCreator, daTag, VR.DA, range);
+        setDateRange(privateCreator, tmTag, VR.TM, range);
     }
 
     public Object setValue(int tag, VR vr, Value value) {
-        return setValue(tag, null, vr, value);
+        return setValue(null, tag, vr, value);
     }
 
-    public Object setValue(int tag, String privateCreator, VR vr, Value value) {
-        return set(tag, privateCreator, vr, value != null ? value : Value.NULL);
+    public Object setValue(String privateCreator, int tag, VR vr, Value value) {
+        return set(privateCreator, tag, vr, value != null ? value : Value.NULL);
     }
 
     public Sequence newSequence(int tag, int initialCapacity) {
-        return newSequence(tag, null, initialCapacity);
+        return newSequence(null, tag, initialCapacity);
     }
 
-    public Sequence newSequence(int tag, String privateCreator,
-            int initialCapacity) {
+    public Sequence newSequence(String privateCreator, int tag, int initialCapacity) {
         Sequence seq = new Sequence(this, initialCapacity);
-        set(tag, privateCreator, VR.SQ, seq);
+        set(privateCreator, tag, VR.SQ, seq);
         return seq;
     }
 
     public Fragments newFragments(int tag, VR vr, int initialCapacity) {
-        return newFragments(tag, null, vr, initialCapacity);
+        return newFragments(null, tag, vr, initialCapacity);
     }
 
-    public Fragments newFragments(int tag, String privateCreator, VR vr,
+    public Fragments newFragments(String privateCreator, int tag, VR vr,
             int initialCapacity) {
         Fragments frags = new Fragments(vr, bigEndian, initialCapacity);
-        set(tag, privateCreator, vr, frags);
+        set(privateCreator, tag, vr, frags);
         return frags;
     }
 
-    private Object set(int tag, String privateCreator, VR vr, Object value) {
+    private Object set(String privateCreator, int tag, VR vr, Object value) {
         if (vr == null)
             throw new NullPointerException("vr");
 
         if (privateCreator != null) {
-            int creatorTag = creatorTagOf(tag, privateCreator, true);
+            int creatorTag = creatorTagOf(privateCreator, tag, true);
             tag = TagUtils.toPrivateTag(creatorTag, tag);
         }
 
@@ -1219,8 +1213,8 @@ public class Attributes implements Serializable {
                 if (contains(tag))
                     continue; // do not overwrite private creator IDs
                 if (vr == VR.LO && value != Value.NULL
-                        && creatorTagOf(tag,
-                                VR.LO.toString(other.decodeStringValue(i), false, 0, null),
+                        && creatorTagOf(VR.LO.toString(other.decodeStringValue(i), false, 0, null),
+                                tag,
                                 false)
                            != -1)
                     continue; // do not add duplicate private creator ID
@@ -1240,11 +1234,11 @@ public class Attributes implements Serializable {
                 privateCreator = null;
             }
             if (value instanceof Sequence) {
-                set(tag, privateCreator, (Sequence) value);
+                set(privateCreator, tag, (Sequence) value);
             } else if (value instanceof Fragments) {
-                set(tag, privateCreator, (Fragments) value);
+                set(privateCreator, tag, (Fragments) value);
             } else {
-                set(tag, privateCreator, vr,
+                set(privateCreator, tag, vr,
                         (value instanceof byte[] && toggleEndian)
                                 ? vr.toggleEndian((byte[]) value, true)
                                 : value);
@@ -1253,16 +1247,16 @@ public class Attributes implements Serializable {
         return this;
     }
 
-    private void set(int tag, String privateCreator, Sequence src) {
-        Sequence dst = newSequence(tag, privateCreator, src.size());
+    private void set(String privateCreator, int tag, Sequence src) {
+        Sequence dst = newSequence(privateCreator, tag, src.size());
         for (Attributes item : src)
             dst.add(new Attributes(item, bigEndian));
     }
 
-    private void set(int tag, String privateCreator, Fragments src) {
+    private void set(String privateCreator, int tag, Fragments src) {
         boolean toogleEndian = src.bigEndian() != bigEndian;
         VR vr = src.vr();
-        Fragments dst = newFragments(tag, privateCreator, vr, src.size());
+        Fragments dst = newFragments(privateCreator, tag, vr, src.size());
         for (Object frag : src)
             dst.add((frag instanceof byte[] && toogleEndian) 
                     ? vr.toggleEndian((byte[]) frag, true)
@@ -1308,7 +1302,7 @@ public class Attributes implements Serializable {
                 privateCreator = null;
             }
             Object value = values[i];
-            appendAttribute(tag, privateCreator, vrs[i], value,
+            appendAttribute(privateCreator, tag, vrs[i], value,
                     sb.length() + maxWidth, sb, prefix);
             if (value instanceof Sequence)
                 lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>');
@@ -1329,8 +1323,8 @@ public class Attributes implements Serializable {
         return lines ;
     }
 
-    private StringBuilder appendAttribute(int tag, String privateCreator,
-            VR vr, Object value, int maxLength, StringBuilder sb, String prefix) {
+    private StringBuilder appendAttribute(String privateCreator, int tag, VR vr, Object value,
+            int maxLength, StringBuilder sb, String prefix) {
         sb.append(prefix).append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
         if (vr.prompt(value, bigEndian, getSpecificCharacterSet(),
                 maxLength - sb.length() - 1, sb)) {
@@ -1550,11 +1544,11 @@ public class Attributes implements Serializable {
                 continue;
 
             if (keyVrs[i].isStringType()) {
-                if (!matches(tag, privateCreator, keyVrs[i], ignorePNCase,
-                        matchNoValue, keys.getStrings(tag, privateCreator, null)))
+                if (!matches(privateCreator, tag, keyVrs[i], ignorePNCase,
+                        matchNoValue, keys.getStrings(privateCreator, tag, null)))
                     return false;
             } else if (keyValue instanceof Sequence) {
-                if (!matches(tag, privateCreator, ignorePNCase, matchNoValue,
+                if (!matches(privateCreator, tag, ignorePNCase, matchNoValue,
                         (Sequence) keyValue))
                     return false;
             } else {
@@ -1565,9 +1559,9 @@ public class Attributes implements Serializable {
         return true;
     }
 
-    private boolean matches(int tag, String privateCreator, VR vr,
+    private boolean matches(String privateCreator, int tag, VR vr,
             boolean ignorePNCase, boolean matchNoValue, String[] keyVals) {
-        String[] vals = getStrings(tag, privateCreator, null);
+        String[] vals = getStrings(privateCreator, tag, null);
         if (vals == null || vals.length == 0)
             return matchNoValue;
 
@@ -1607,8 +1601,8 @@ public class Attributes implements Serializable {
         return false;
     }
 
-    private boolean matches(int tag, String privateCreator,
-            boolean ignorePNCase, boolean matchNoValue, Sequence keySeq) {
+    private boolean matches(String privateCreator, int tag, boolean ignorePNCase, 
+            boolean matchNoValue, Sequence keySeq) {
         int n = keySeq.size();
         if (n > 1)
             throw new IllegalArgumentException("Keys contain Sequence "
@@ -1618,7 +1612,7 @@ public class Attributes implements Serializable {
         if (keys.isEmpty())
             return true;
 
-        Object value = getValue(tag, privateCreator);
+        Object value = getValue(privateCreator, tag);
         if (value == null || isEmpty(value))
             return matchNoValue;
 

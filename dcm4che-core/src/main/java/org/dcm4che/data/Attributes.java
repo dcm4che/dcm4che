@@ -469,12 +469,35 @@ public class Attributes implements Serializable {
         return getString(null, tag, null, valueIndex, defVal);
     }
 
+    public String getString(String privateCreator, int tag) {
+        return getString(privateCreator, tag, null, 0, null);
+    }
+
+    public String getString(String privateCreator, int tag, String defVal) {
+        return getString(privateCreator, tag, null, 0, defVal);
+    }
+
+    public String getString(String privateCreator, int tag, VR vr) {
+        return getString(privateCreator, tag, vr, 0, null);
+    }
+
     public String getString(String privateCreator, int tag, VR vr, String defVal) {
         return getString(privateCreator, tag, vr, 0, defVal);
     }
 
-    public String getString(String privateCreator, int tag, VR vr, int valueIndex,
-            String defVal) {
+    public String getString(String privateCreator, int tag, int valueIndex) {
+        return getString(privateCreator, tag, null, valueIndex, null);
+    }
+
+    public String getString(String privateCreator, int tag, int valueIndex, String defVal) {
+        return getString(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public String getString(String privateCreator, int tag, VR vr, int valueIndex) {
+        return getString(privateCreator, tag, vr, valueIndex, null);
+    }
+
+    public String getString(String privateCreator, int tag, VR vr, int valueIndex, String defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -501,6 +524,10 @@ public class Attributes implements Serializable {
 
     public String[] getStrings(int tag) {
         return getStrings(null, tag, null);
+    }
+
+    public String[] getStrings(String privateCreator, int tag) {
+        return getStrings(privateCreator, tag, null);
     }
 
     public String[] getStrings(String privateCreator, int tag, VR vr) {
@@ -541,12 +568,19 @@ public class Attributes implements Serializable {
         return getInt(null, tag, null, valueIndex, defVal);
     }
 
+    public int getInt(String privateCreator, int tag, int defVal) {
+        return getInt(privateCreator, tag, null, 0, defVal);
+    }
+
     public int getInt(String privateCreator, int tag, VR vr, int defVal) {
         return getInt(privateCreator, tag, vr, 0, defVal);
     }
 
-    public int getInt(String privateCreator, int tag, VR vr, int valueIndex,
-            int defVal) {
+    public int getInt(String privateCreator, int tag, int valueIndex, int defVal) {
+        return getInt(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public int getInt(String privateCreator, int tag, VR vr, int valueIndex, int defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -573,6 +607,10 @@ public class Attributes implements Serializable {
 
     public int[] getInts(int tag) {
         return getInts(null, tag, null);
+    }
+
+    public int[] getInts(String privateCreator, int tag) {
+        return getInts(privateCreator, tag, null);
     }
 
     public int[] getInts(String privateCreator, int tag, VR vr) {
@@ -608,12 +646,19 @@ public class Attributes implements Serializable {
         return getFloat(null, tag, null, valueIndex, defVal);
     }
 
+    public float getFloat(String privateCreator, int tag, float defVal) {
+        return getFloat(privateCreator, tag, null, 0, defVal);
+    }
+
     public float getFloat(String privateCreator, int tag, VR vr, float defVal) {
         return getFloat(privateCreator, tag, vr, 0, defVal);
     }
 
-    public float getFloat(String privateCreator, int tag, VR vr, int valueIndex,
-            float defVal) {
+    public float getFloat(String privateCreator, int tag, int valueIndex, float defVal) {
+        return getFloat(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public float getFloat(String privateCreator, int tag, VR vr, int valueIndex, float defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -640,6 +685,10 @@ public class Attributes implements Serializable {
 
     public float[] getFloats(int tag) {
         return getFloats(null, tag, null);
+    }
+
+    public float[] getFloats(String privateCreator, int tag) {
+        return getFloats(privateCreator, tag, null);
     }
 
     public float[] getFloats(String privateCreator, int tag, VR vr) {
@@ -675,12 +724,19 @@ public class Attributes implements Serializable {
         return getDouble(null, tag, null, valueIndex, defVal);
     }
 
+    public double getDouble(String privateCreator, int tag, double defVal) {
+        return getDouble(privateCreator, tag, null, 0, defVal);
+    }
+
     public double getDouble(String privateCreator, int tag, VR vr, double defVal) {
         return getDouble(privateCreator, tag, vr, 0, defVal);
     }
 
-    public double getDouble(String privateCreator, int tag, VR vr, int valueIndex,
-            double defVal) {
+    public double getDouble(String privateCreator, int tag, int valueIndex, double defVal) {
+        return getDouble(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public double getDouble(String privateCreator, int tag, VR vr, int valueIndex, double defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -707,6 +763,10 @@ public class Attributes implements Serializable {
 
     public double[] getDoubles(int tag) {
         return getDoubles(null, tag, null);
+    }
+
+    public double[] getDoubles(String privateCreator, int tag) {
+        return getDoubles(privateCreator, tag, null);
     }
 
     public double[] getDoubles(String privateCreator, int tag, VR vr) {
@@ -742,12 +802,19 @@ public class Attributes implements Serializable {
         return getDate(null, tag, null, valueIndex, defVal);
     }
 
+    public Date getDate(String privateCreator, int tag, Date defVal) {
+        return getDate(privateCreator, tag, null, 0, defVal);
+    }
+
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
         return getDate(privateCreator, tag, vr, 0, defVal);
     }
 
-    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
-            Date defVal) {
+    public Date getDate(String privateCreator, int tag, int valueIndex, Date defVal) {
+        return getDate(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex, Date defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -796,6 +863,10 @@ public class Attributes implements Serializable {
         return getDates(null, tag, null);
     }
 
+    public Date[] getDates(String privateCreator, int tag) {
+        return getDates(privateCreator, tag, null);
+    }
+
     public Date[] getDates(String privateCreator, int tag, VR vr) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
@@ -825,8 +896,11 @@ public class Attributes implements Serializable {
         return getDateRange(null, tag, null, defVal);
     }
 
-    public DateRange getDateRange(String privateCreator, int tag, VR vr,
-            DateRange defVal) {
+    public DateRange getDateRange(String privateCreator, int tag, DateRange defVal) {
+        return getDateRange(privateCreator, tag, null, defVal);
+    }
+
+    public DateRange getDateRange(String privateCreator, int tag, VR vr, DateRange defVal) {
         if (privateCreator != null) {
             int creatorTag = creatorTagOf(privateCreator, tag, false);
             if (creatorTag == -1)
@@ -876,8 +950,7 @@ public class Attributes implements Serializable {
         return getDateRange(null, tag, defVal);
     }
 
-    public DateRange getDateRange(String privateCreator, long tag,
-            DateRange defVal) {
+    public DateRange getDateRange(String privateCreator, long tag, DateRange defVal) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 

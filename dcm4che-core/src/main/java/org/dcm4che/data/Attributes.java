@@ -794,24 +794,48 @@ public class Attributes implements Serializable {
         return vr.toDoubles(value, bigEndian);
     }
 
+    public Date getDate(int tag) {
+        return getDate(null, tag, null, 0, null);
+    }
+
     public Date getDate(int tag, Date defVal) {
         return getDate(null, tag, null, 0, defVal);
+    }
+
+    public Date getDate(int tag, int valueIndex) {
+        return getDate(null, tag, null, valueIndex, null);
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal) {
         return getDate(null, tag, null, valueIndex, defVal);
     }
 
+    public Date getDate(String privateCreator, int tag) {
+        return getDate(privateCreator, tag, null, 0, null);
+    }
+
     public Date getDate(String privateCreator, int tag, Date defVal) {
         return getDate(privateCreator, tag, null, 0, defVal);
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr) {
+        return getDate(privateCreator, tag, vr, 0, null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
         return getDate(privateCreator, tag, vr, 0, defVal);
     }
 
+    public Date getDate(String privateCreator, int tag, int valueIndex) {
+        return getDate(privateCreator, tag, null, valueIndex, null);
+    }
+
     public Date getDate(String privateCreator, int tag, int valueIndex, Date defVal) {
         return getDate(privateCreator, tag, null, valueIndex, defVal);
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex) {
+        return getDate(privateCreator, tag, vr, valueIndex, null);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex, Date defVal) {
@@ -840,8 +864,16 @@ public class Attributes implements Serializable {
                 getTimeZone(), valueIndex, false, defVal);
     }
 
+    public Date getDate(long tag) {
+        return getDate(null, tag, null);
+    }
+
     public Date getDate(long tag, Date defVal) {
         return getDate(null, tag, defVal);
+    }
+
+    public Date getDate(String privateCreator, long tag) {
+        return getDate(privateCreator, tag, null);
     }
 
     public Date getDate(String privateCreator, long tag, Date defVal) {
@@ -892,12 +924,24 @@ public class Attributes implements Serializable {
         return vr.toDates(decodeStringValue(index), getTimeZone(), false);
     }
 
+    public DateRange getDateRange(int tag) {
+        return getDateRange(null, tag, null, null);
+    }
+
     public DateRange getDateRange(int tag, DateRange defVal) {
         return getDateRange(null, tag, null, defVal);
     }
 
+    public DateRange getDateRange(String privateCreator, int tag) {
+        return getDateRange(privateCreator, tag, null, null);
+    }
+
     public DateRange getDateRange(String privateCreator, int tag, DateRange defVal) {
         return getDateRange(privateCreator, tag, null, defVal);
+    }
+
+    public DateRange getDateRange(String privateCreator, int tag, VR vr) {
+        return getDateRange(privateCreator, tag, vr, null);
     }
 
     public DateRange getDateRange(String privateCreator, int tag, VR vr, DateRange defVal) {
@@ -946,8 +990,16 @@ public class Attributes implements Serializable {
         return range;
     }
 
+    public DateRange getDateRange(long tag) {
+        return getDateRange(null, tag, null);
+    }
+
     public DateRange getDateRange(long tag, DateRange defVal) {
         return getDateRange(null, tag, defVal);
+    }
+
+    public DateRange getDateRange(String privateCreator, long tag) {
+        return getDateRange(privateCreator, tag, null);
     }
 
     public DateRange getDateRange(String privateCreator, long tag, DateRange defVal) {

@@ -188,13 +188,13 @@ public class ContentHandlerAdapter extends DefaultHandler {
         this.vr = vr != null ? VR.valueOf(vr)
                              : ElementDictionary.vrOf(tag, privateCreator);
         if (this.vr == VR.SQ)
-            seqs.add(items.getLast().newSequence(tag, privateCreator, 10));
+            seqs.add(items.getLast().newSequence(privateCreator, tag, 10));
     }
 
     private void startDataFragment(int number) {
         if (dataFragments == null)
             dataFragments = items.getLast()
-                    .newFragments(tag, privateCreator, vr,  10);
+                    .newFragments(privateCreator, tag, vr,  10);
         while (dataFragments.size() < number-1)
             dataFragments.add(ByteUtils.EMPTY_BYTES);
     }
@@ -347,12 +347,12 @@ public class ContentHandlerAdapter extends DefaultHandler {
             attrs = fmi;
         }
         if (bulkDataLocator != null) {
-            attrs.setValue(tag, privateCreator, vr, bulkDataLocator);
+            attrs.setValue(privateCreator, tag, vr, bulkDataLocator);
             bulkDataLocator = null;
         } else if (base64) {
-            attrs.setBytes(tag, privateCreator, vr, getBytes());
+            attrs.setBytes(privateCreator, tag, vr, getBytes());
         } else {
-            attrs.setString(tag, privateCreator, vr, getStrings());
+            attrs.setString(privateCreator, tag, vr, getStrings());
         }
     }
 

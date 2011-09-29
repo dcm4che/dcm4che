@@ -60,7 +60,7 @@ public class ValueSelector {
 
     public String selectStringValue(Attributes attrs, String defVal) {
         Attributes item = attrs.getNestedDataset(itemPointers);
-        return item != null ? item.getString(tag, privateCreator, vr, index, defVal) : defVal;
+        return item != null ? item.getString(privateCreator, tag, vr, index, defVal) : defVal;
     }
 
     public final int tag() {

@@ -211,7 +211,7 @@ public class PersonName {
         return get(g, c) != null;
     }
     
-    public boolean containst(Component c) {
+    public boolean contains(Component c) {
         return contains(Group.Alphabetic, c);
     }
 

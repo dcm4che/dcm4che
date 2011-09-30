@@ -199,7 +199,24 @@ public class DicomDirWriter extends DicomDirReader {
         return rec;
     }
  
-    public synchronized boolean deleteRecord(Attributes rec)
+    public synchronized Attributes findOrAddPatientRecord(Attributes rec) throws IOException {
+        Attributes patRec = super.findPatientRecord(rec.getString(Tag.PatientID));
+        return patRec != null ? patRec : addRootDirectoryRecord(rec);
+    }
+
+    public synchronized Attributes findOrAddStudyRecord(Attributes patRec, Attributes rec)
+            throws IOException {
+        Attributes studyRec = super.findStudyRecord(patRec, rec.getString(Tag.StudyInstanceUID));
+        return studyRec != null ? studyRec : addLowerDirectoryRecord(patRec, rec);
+    }
+
+    public synchronized Attributes findOrAddSeriesRecord(Attributes studyRec, Attributes rec)
+            throws IOException {
+        Attributes seriesRec = super.findSeriesRecord(studyRec, rec.getString(Tag.SeriesInstanceUID));
+        return seriesRec != null ? seriesRec : addLowerDirectoryRecord(studyRec, rec);
+    }
+
+   public synchronized boolean deleteRecord(Attributes rec)
             throws IOException {
         if (rec.getInt(Tag.RecordInUseFlag, 0) == INACTIVE)
             return false; // already disabled

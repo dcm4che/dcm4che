@@ -214,7 +214,11 @@ public class StringUtils {
     }
 
     public static String[] maskNull(String[] ss) {
-        return ss == null ? EMPTY_STRING : ss;
+        return maskNull(ss, EMPTY_STRING);
+    }
+
+    public static <T> T maskNull(T o, T mask) {
+        return o == null ? mask : o;
     }
 
     public static String truncate(String s, int maxlen) {

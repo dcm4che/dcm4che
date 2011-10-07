@@ -125,6 +125,17 @@ public class Attributes implements Serializable {
         addAll(other);
     }
 
+    public Attributes(Attributes other, int... selection) {
+        this(other, other.bigEndian, selection);
+    }
+
+    public Attributes(Attributes other, boolean bigEndian, int... selection) {
+        this(bigEndian, selection.length);
+        if (other.properties != null)
+            properties = new HashMap<String, Object>(other.properties);
+        addSelected(other, selection);
+    }
+
     public Object getProperty(String key, Object defVal) {
         if (properties == null)
             return defVal;
@@ -1289,45 +1300,59 @@ public class Attributes implements Serializable {
     }
 
 
-    public Attributes addAll(Attributes other) {
-        return addAll(other, null, null, 0, 0);
+    public boolean addAll(Attributes other) {
+        return addAll(other, null, null, 0, 0, null, false);
     }
 
-    public Attributes addSelected(Attributes other, Attributes selection) {
-        return addAll(other, selection.tags, null, 0, selection.size);
+    public boolean merge(Attributes other) {
+        return addAll(other, null, null, 0, 0, null, true);
     }
 
-    public Attributes addSelected(Attributes other, int... selection) {
+    public boolean addAll(Attributes other, Attributes original) {
+        return addAll(other, null, null, 0, 0, original, false);
+    }
+
+    public boolean addSelected(Attributes other, Attributes selection) {
+        return addAll(other, selection.tags, null, 0, selection.size, null, false);
+    }
+
+    public boolean addSelected(Attributes other, int... selection) {
         return addSelected(other, selection, 0, selection.length);
     }
 
-    public Attributes addSelected(Attributes other, int[] selection,
+    public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         Arrays.sort(selection);
-        return addAll(other, selection, null, fromIndex, toIndex);
+        return addAll(other, selection, null, fromIndex, toIndex, null, false);
     }
 
-    public Attributes addNotSelected(Attributes other, Attributes selection) {
-        return addAll(other, null, selection.tags, 0, selection.size);
+    public boolean mergeSelected(Attributes other, int... selection) {
+        Arrays.sort(selection);
+        return addAll(other, selection, null, 0, selection.length, null, true);
     }
 
-    public Attributes addNotSelected(Attributes other, int... selection) {
+    public boolean addNotSelected(Attributes other, Attributes selection) {
+        return addAll(other, null, selection.tags, 0, selection.size, null, false);
+    }
+
+    public boolean addNotSelected(Attributes other, int... selection) {
         return addNotSelected(other, selection, 0, selection.length);
     }
 
-    public Attributes addNotSelected(Attributes other, int[] selection,
+    public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         Arrays.sort(selection);
-        return addAll(other, null, selection, fromIndex, toIndex);
+        return addAll(other, null, selection, fromIndex, toIndex, null, false);
     }
 
-    private Attributes addAll(Attributes other, int[] include, int[] exclude,
-            int fromIndex, int toIndex) {
-        boolean toggleEndian = bigEndian != other.bigEndian;
-        int[] tags = other.tags;
-        VR[] srcVRs = other.vrs;
-        Object[] srcValues = other.values;
-        int otherSize = other.size;
+    private boolean addAll(Attributes other, int[] include, int[] exclude,
+            int fromIndex, int toIndex, Attributes original, boolean merge) {
+        final boolean toggleEndian = bigEndian != other.bigEndian;
+        final int[] tags = other.tags;
+        final VR[] srcVRs = other.vrs;
+        final Object[] srcValues = other.values;
+        final int otherSize = other.size;
+        int numAdd = 0;
         String privateCreator = null;
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
@@ -1358,18 +1383,28 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+            if (merge && containsValue(privateCreator, tag))
+                continue;
+            Object oldValue = null;
             if (value instanceof Sequence) {
+                if (original != null)
+                    oldValue  = setNull(privateCreator, tag, vr);
                 set(privateCreator, tag, (Sequence) value);
             } else if (value instanceof Fragments) {
+                if (original != null)
+                    oldValue = setNull(privateCreator, tag, vr);
                 set(privateCreator, tag, (Fragments) value);
             } else {
-                set(privateCreator, tag, vr,
+                oldValue = set(privateCreator, tag, vr,
                         (value instanceof byte[] && toggleEndian)
                                 ? vr.toggleEndian((byte[]) value, true)
                                 : value);
             }
+            if (original != null && oldValue != null)
+                original.set(privateCreator, tag, vr, oldValue);
+            numAdd++;
         }
-        return this;
+        return numAdd  != 0;
     }
 
     private void set(String privateCreator, int tag, Sequence src) {

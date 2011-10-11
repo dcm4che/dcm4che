@@ -440,6 +440,16 @@ public class Attributes implements Serializable {
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
+    public Sequence ensureSequence(int tag, int initialCapacity) {
+        return ensureSequence(null, tag, initialCapacity);
+    }
+
+    public Sequence ensureSequence(String privateCreator, int tag, int initialCapacity) {
+        Object value = getValue(privateCreator, tag);
+        return value instanceof Sequence ? (Sequence) value : newSequence(privateCreator, tag,
+                initialCapacity);
+    }
+
     public byte[] getBytes(int tag) throws IOException {
         int index = indexOf(tag);
         if (index < 0)
@@ -1301,19 +1311,15 @@ public class Attributes implements Serializable {
 
 
     public boolean addAll(Attributes other) {
-        return addAll(other, null, null, 0, 0, null, false);
+        return addAll(other, null, null, 0, 0, false);
     }
 
     public boolean merge(Attributes other) {
-        return addAll(other, null, null, 0, 0, null, true);
-    }
-
-    public boolean addAll(Attributes other, Attributes original) {
-        return addAll(other, null, null, 0, 0, original, false);
+        return addAll(other, null, null, 0, 0, true);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return addAll(other, selection.tags, null, 0, selection.size, null, false);
+        return addAll(other, selection.tags, null, 0, selection.size, false);
     }
 
     public boolean addSelected(Attributes other, int... selection) {
@@ -1323,16 +1329,16 @@ public class Attributes implements Serializable {
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         Arrays.sort(selection);
-        return addAll(other, selection, null, fromIndex, toIndex, null, false);
+        return addAll(other, selection, null, fromIndex, toIndex, false);
     }
 
     public boolean mergeSelected(Attributes other, int... selection) {
         Arrays.sort(selection);
-        return addAll(other, selection, null, 0, selection.length, null, true);
+        return addAll(other, selection, null, 0, selection.length, true);
     }
 
     public boolean addNotSelected(Attributes other, Attributes selection) {
-        return addAll(other, null, selection.tags, 0, selection.size, null, false);
+        return addAll(other, null, selection.tags, 0, selection.size, false);
     }
 
     public boolean addNotSelected(Attributes other, int... selection) {
@@ -1342,11 +1348,11 @@ public class Attributes implements Serializable {
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
         Arrays.sort(selection);
-        return addAll(other, null, selection, fromIndex, toIndex, null, false);
+        return addAll(other, null, selection, fromIndex, toIndex, false);
     }
 
     private boolean addAll(Attributes other, int[] include, int[] exclude,
-            int fromIndex, int toIndex, Attributes original, boolean merge) {
+            int fromIndex, int toIndex, boolean merge) {
         final boolean toggleEndian = bigEndian != other.bigEndian;
         final int[] tags = other.tags;
         final VR[] srcVRs = other.vrs;
@@ -1385,26 +1391,158 @@ public class Attributes implements Serializable {
             }
             if (merge && containsValue(privateCreator, tag))
                 continue;
-            Object oldValue = null;
             if (value instanceof Sequence) {
-                if (original != null)
-                    oldValue  = setNull(privateCreator, tag, vr);
                 set(privateCreator, tag, (Sequence) value);
             } else if (value instanceof Fragments) {
-                if (original != null)
-                    oldValue = setNull(privateCreator, tag, vr);
                 set(privateCreator, tag, (Fragments) value);
             } else {
-                oldValue = set(privateCreator, tag, vr,
-                        (value instanceof byte[] && toggleEndian)
-                                ? vr.toggleEndian((byte[]) value, true)
-                                : value);
+                set(privateCreator, tag, vr, toggleEndian(vr, value, toggleEndian));
             }
-            if (original != null && oldValue != null)
-                original.set(privateCreator, tag, vr, oldValue);
             numAdd++;
         }
-        return numAdd  != 0;
+        return numAdd != 0;
+    }
+
+    public boolean coerceAttributes(Attributes other, Attributes modified) {
+         boolean toggleEndian = bigEndian != other.bigEndian;
+         boolean modifiedToggleEndian = bigEndian != modified.bigEndian;
+         int numModified = 0;
+         final int[] tags = other.tags;
+         final VR[] srcVRs = other.vrs;
+         final Object[] srcValues = other.values;
+         final int otherSize = other.size;
+         String privateCreator = null;
+         int otherCreatorTag = 0;
+         int creatorTag = 0;
+         for (int i = 0; i < otherSize; i++) {
+             int tag = tags[i];
+             VR vr = srcVRs[i];
+             Object value = srcValues[i];
+             if (TagUtils.isPrivateCreator(tag)) {
+                 if (contains(tag))
+                     continue; // do not overwrite private creator IDs
+                 if (vr == VR.LO && value != Value.NULL
+                         && creatorTagOf(VR.LO.toString(other.decodeStringValue(i), false, 0, null),
+                                 tag,
+                                 false)
+                            != -1)
+                     continue; // do not add duplicate private creator ID
+             }
+             if (TagUtils.isPrivateTag(tag)) {
+                 int tmp = TagUtils.creatorTagOf(tag);
+                 if (otherCreatorTag != tmp) {
+                     otherCreatorTag = tmp;
+                     privateCreator = other.privateCreatorOf(tag);
+                     creatorTag = creatorTagOf(privateCreator, tag, true);
+                 }
+                 tag = TagUtils.toPrivateTag(creatorTag, tag);
+             } else {
+                 creatorTag = 0;
+                 privateCreator = null;
+             }
+             int j = indexOf(tag);
+             if (j >= 0 && equalValues(other, j, i))
+                 continue;
+             if (value instanceof Sequence) {
+                 if (j >= 0)
+                     modified.set(privateCreator, tag, (Sequence) values[j]);
+                 set(privateCreator, tag, (Sequence) value);
+             } else if (value instanceof Fragments) {
+                 if (j >= 0)
+                     modified.set(privateCreator, tag, (Fragments) values[j]);
+                 set(privateCreator, tag, (Fragments) value);
+             } else {
+                 if (j >= 0)
+                     modified.set(privateCreator, tag, vr,
+                             toggleEndian(vr, values[j], modifiedToggleEndian));
+                 set(privateCreator, tag, vr,
+                         toggleEndian(vr, value, toggleEndian));
+             }
+             numModified++;
+         }
+         return numModified  != 0;
+    }
+
+    private static Object toggleEndian(VR vr, Object value, boolean toggleEndian) {
+        return (toggleEndian && value instanceof byte[])
+                ? vr.toggleEndian((byte[]) value, true)
+                : value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+
+        if (!(o instanceof Attributes))
+            return false;
+
+        final Attributes other = (Attributes) o;
+        if (size != other.size)
+            return false;
+
+        int creatorTag = 0;
+        int otherCreatorTag = 0;
+        for (int i = 0; i < size; i++) {
+            int tag = tags[i];
+            if (!TagUtils.isPrivateGroup(tag)) {
+                if (tag != other.tags[i] || !equalValues(other, i, i))
+                    return false;
+            } else if (TagUtils.isPrivateTag(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    otherCreatorTag = other.creatorTagOf(privateCreatorOf(tag), tag, false);
+                    if (otherCreatorTag == -1)
+                        return false;
+                }
+                int j = other.indexOf(TagUtils.toPrivateTag(otherCreatorTag, tag));
+                if (j < 0 || !equalValues(other, i, j))
+                    return false;
+            }
+        }
+        return true;
+   }
+
+    private boolean equalValues(Attributes other, int index, int otherIndex) {
+        VR vr = vrs[index];
+        if (vr != other.vrs[otherIndex])
+            return false;
+        if (vr.isStringType())
+            return equalStringValues(other, index, otherIndex);
+        Object v1 = values[index];
+        Object v2 = other.values[otherIndex];
+        if (v1 instanceof byte[]) {
+            if (v2 instanceof byte[] && ((byte[]) v1).length == ((byte[]) v2).length) {
+                if (bigEndian != other.bigEndian)
+                    v2 = vr.toggleEndian((byte[]) v2, true);
+                return Arrays.equals((byte[]) v1, (byte[]) v2);
+            }
+        } else
+            return v1.equals(v2);
+        return false;
+    }
+
+    private boolean equalStringValues(Attributes other, int index, int otherIndex) {
+        Object v1 = decodeStringValue(index);
+        Object v2 = decodeStringValue(index);
+        if (v1 instanceof String[]) {
+            if (v2 instanceof String[])
+                return Arrays.equals((String[]) v1, (String[]) v2);
+        } else
+            return v1.equals(v2);
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 0;
+        for (int i = 0; i < size; i++) {
+            int tag = tags[i];
+            if (!TagUtils.isPrivateGroup(tag))
+                h = 31*h + tag;
+        }
+        return h;
     }
 
     private void set(String privateCreator, int tag, Sequence src) {
@@ -1418,9 +1556,7 @@ public class Attributes implements Serializable {
         VR vr = src.vr();
         Fragments dst = newFragments(privateCreator, tag, vr, src.size());
         for (Object frag : src)
-            dst.add((frag instanceof byte[] && toogleEndian) 
-                    ? vr.toggleEndian((byte[]) frag, true)
-                    : frag);
+            dst.add(toggleEndian(vr, frag, toogleEndian));
     }
 
     @Override

@@ -49,24 +49,26 @@ import org.junit.Test;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class FilePathFormatTest {
+public class AttributesFormatTest {
 
     private static final String TEST_PATTERN = 
-        "#{0020000D}/#{0020000E}/{00080018}.dcm";
+        "date:yyyy/MM/dd(0008,0020)/date:HH(0008,0030)/#(0020,000D)/#(0020,000E)/(0008,0018).dcm";
 
     @Test
     public void testFormat() {
         Attributes attrs = new Attributes();
+        attrs.setString(Tag.StudyDate, VR.DA, "20111012");
+        attrs.setString(Tag.StudyTime, VR.TM, "0930");
         attrs.setString(Tag.StudyInstanceUID, VR.UI, "1.2.3");
         attrs.setString(Tag.SeriesInstanceUID, VR.UI, "1.2.3.4");
         attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4.5");
-        assertEquals("02C82A3A/71668980/1.2.3.4.5.dcm",
-                new FilePathFormat(TEST_PATTERN).format(attrs));
+        assertEquals("2011/10/12/09/02C82A3A/71668980/1.2.3.4.5.dcm",
+                new AttributesFormat(TEST_PATTERN).format(attrs));
     }
 
     @Test
     public void testToString() {
-        assertEquals(TEST_PATTERN, new FilePathFormat(TEST_PATTERN).toString());
+        assertEquals(TEST_PATTERN, new AttributesFormat(TEST_PATTERN).toString());
     }
 
 }

@@ -455,8 +455,10 @@ public class Main {
         DicomInputStream dis = null;
         try {
             attrs = new DicomInputStream(f).readDataset(-1, -1);
-            if (inFilter != null)
-                attrs = new Attributes(inFilter.length + 1).addSelected(attrs, inFilter);
+            if (inFilter != null) {
+                attrs = new Attributes(inFilter.length + 1);
+                attrs.addSelected(attrs, inFilter);
+            }
         } finally {
             SafeClose.close(dis);
         }

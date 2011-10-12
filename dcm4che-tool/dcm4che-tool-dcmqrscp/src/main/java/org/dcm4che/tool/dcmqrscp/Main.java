@@ -72,7 +72,7 @@ import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
-import org.dcm4che.util.FilePathFormat;
+import org.dcm4che.util.AttributesFormat;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
 
@@ -97,7 +97,7 @@ public class Main {
 
     private File storageDir;
     private File dicomDir;
-    private FilePathFormat filePathFormat;
+    private AttributesFormat filePathFormat;
     private RecordFactory recFact;
     private String availability;
     private boolean sendPendingCGet;
@@ -170,12 +170,12 @@ public class Main {
         return storageDir;
     }
 
-    public final FilePathFormat getFilePathFormat() {
+    public final AttributesFormat getFilePathFormat() {
         return filePathFormat;
     }
 
     public void setFilePathFormat(String pattern) {
-        this.filePathFormat = new FilePathFormat(pattern);
+        this.filePathFormat = new AttributesFormat(pattern);
     }
 
     public final File getDicomDirectory() {
@@ -348,7 +348,7 @@ public class Main {
             throws ParseException {
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
-                        "DICOM/#{0020000D}/#{0020000E}/#{00080018}"));
+                        "DICOM/#(0020,000D)/#(0020,000E)/#(0008,0018)"));
         main.setRecordFactory(new RecordFactory());
     }
 

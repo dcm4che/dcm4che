@@ -38,6 +38,9 @@
 
 package org.dcm4che.net;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * DICOM Standard, Part 15, Annex H: Transfer Capability - The description of
  * the SOP classes and syntaxes supported by a Network AE.
@@ -58,24 +61,29 @@ public class TransferCapability {
     private final String commonName;
     private final String sopClass;
     private final Role role;
-    private final String[] transferSyntax ;
+    private final List<String> transferSyntaxes ;
 
 
     public TransferCapability(String commonName, String sopClass, Role role,
-            String... transferSyntax) {
+            String... transferSyntaxes) {
+        this(commonName, sopClass, role, Arrays.asList(transferSyntaxes));
+    }
+
+    public TransferCapability(String commonName, String sopClass, Role role,
+            List<String> transferSyntaxes) {
         if (sopClass.isEmpty())
             throw new IllegalArgumentException("empty sopClass");
         if (role == null)
             throw new NullPointerException("missing tole");
-        if (transferSyntax.length == 0)
+        if (transferSyntaxes.isEmpty())
             throw new IllegalArgumentException("missing transferSyntax");
-        for (String ts : transferSyntax)
+        for (String ts : transferSyntaxes)
             if (ts.isEmpty())
                 throw new IllegalArgumentException("empty transferSyntax");
         this.commonName = commonName;
         this.sopClass = sopClass;
         this.role = role;
-        this.transferSyntax = transferSyntax.clone();
+        this.transferSyntaxes = transferSyntaxes;
     }
 
     /**
@@ -110,23 +118,17 @@ public class TransferCapability {
      * Get the transfer syntax(es) that may be requested as an SCU or that are
      * offered as an SCP.
      * 
-     * @return String array containing the transfer syntaxes.
+     * @return list of transfer syntaxes.
      */
-    public final String[] getTransferSyntax() {
-        return transferSyntax.clone();
+    public final List<String> getTransferSyntaxes() {
+        return transferSyntaxes;
     }
 
     public boolean containsTransferSyntax(String ts) {
-        String[] ss = this.transferSyntax;
-        String s0 = ss[0];
-        if (s0.length() == 1 && s0.charAt(0) == '*')
-            return true;
+        return isAnyTransferSyntax() || transferSyntaxes.contains(ts);
+    }
 
-        int hc = ts.hashCode();
-        for (String s : ss)
-            if (s.hashCode() == hc && s.equals(ts))
-                return true;
-
-        return false;
+    private boolean isAnyTransferSyntax() {
+        return "*".equals(transferSyntaxes.get(0));
     }
 }

@@ -57,52 +57,56 @@ public class AttributesFormat extends Format {
 
     private static final long serialVersionUID = 1901510733531643054L;
 
+    private static final Pattern pattern = Pattern.compile(
+            "\\(\\p{XDigit}{4},\\p{XDigit}{4}\\)(\\[\\d+\\])?");
+
     private final String[] strs;
     private final int[] tags;
+    private final int[] index;
     private final boolean[] hash;
     private final SimpleDateFormat[] dateFormat;
 
-    private static class LazyInitialization {
-        static final Pattern pattern = Pattern.compile("\\(\\p{XDigit}{4},\\p{XDigit}{4}\\)");
-    }
-
-    public AttributesFormat(String pattern) {
-        Matcher m = LazyInitialization.pattern.matcher(pattern);
+    public AttributesFormat(String s) {
+        Matcher m = pattern.matcher(s);
         ArrayList<String> tokens = new ArrayList<String>();
         int tagStart, tagEnd = 0;
         while (m.find()) {
             tagStart = m.start();
-            tokens.add(pattern.substring(tagEnd, tagStart));
-            tokens.add(pattern.substring(tagStart + 1, tagStart + 5));
-            tokens.add(pattern.substring(tagStart + 6, tagStart + 10));
+            tokens.add(s.substring(tagEnd, tagStart));
+            tokens.add(m.group());
             tagEnd = m.end();
         }
-        tokens.add(pattern.substring(tagEnd));
-        final int n = tokens.size() / 3;
+        tokens.add(s.substring(tagEnd));
+        final int n = tokens.size() / 2;
         strs = new String[n + 1];
         tags = new int[n];
+        index = new int[n];
         hash = new boolean[n];
         dateFormat = new SimpleDateFormat[n];
-        int index = 0;
+        int j = 0;
         for (int i = 0; i < n; i++) {
-            String s;
-            strs[i] = s = tokens.get(index++);
+            String str = tokens.get(j++);
+            String tagStr = tokens.get(j++);
+            int tagStrLen = tagStr.length();
             tags[i] = TagUtils.toTag(
-                    Integer.parseInt(tokens.get(index++), 16), 
-                    Integer.parseInt(tokens.get(index++), 16));
-            if (s.endsWith("#")) {
+                    Integer.parseInt(tagStr.substring(1,5), 16), 
+                    Integer.parseInt(tagStr.substring(6,10), 16));
+            if (tagStrLen > 13)
+                index[i] = Integer.parseInt(tagStr.substring(12, tagStrLen-1));
+            if (str.endsWith("#")) {
                 hash[i] = true;
-                strs[i] = s.substring(0, s.length()-1);
+                str = str.substring(0, str.length()-1);
             } else {
-                int datePos = s.lastIndexOf("date:");
+                int datePos = str.lastIndexOf("date:");
                 if (datePos != -1)
                     try {
-                        dateFormat[i] = new SimpleDateFormat(s.substring(datePos+5));
-                        strs[i] = s.substring(0, datePos);
+                        dateFormat[i] = new SimpleDateFormat(str.substring(datePos+5));
+                        str = str.substring(0, datePos);
                     } catch (IllegalArgumentException e) {}
             }
+            strs[i] = str;
         }
-        strs[n] = tokens.get(index);
+        strs[n] = tokens.get(j);
     }
 
     @Override
@@ -112,13 +116,13 @@ public class AttributesFormat extends Format {
         for (int i = 0; i < n; i++) {
             toAppendTo.append(strs[i]);
             if (dateFormat[i] != null) {
-                Date d = attrs.getDate(tags[i]);
+                Date d = tags[i] != 0 ? attrs.getDate(tags[i], index[i]) : new Date();
                 if (d == null)
                     toAppendTo.append(dateFormat[i].toPattern());
                 else
                     dateFormat[i].format(d, toAppendTo, pos);
             } else {
-                String s = attrs.getString(tags[i]);
+                String s = attrs.getString(tags[i], index[i]);
                 if (hash[i]) {
                     if (s == null)
                         toAppendTo.append("00000000");
@@ -149,6 +153,8 @@ public class AttributesFormat extends Format {
             else if (dateFormat[i] != null)
                 sb.append("date:").append(dateFormat[i].toPattern());
             sb.append(TagUtils.toString(tags[i]));
+            if (index[i] != 0)
+                sb.append('[').append(index[i]).append(']');
         }
         sb.append(strs[n]);
         return sb.toString();

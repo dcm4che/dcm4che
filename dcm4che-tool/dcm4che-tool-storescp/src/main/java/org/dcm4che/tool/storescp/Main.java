@@ -68,7 +68,7 @@ import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.util.FilePathFormat;
+import org.dcm4che.util.AttributesFormat;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -87,7 +87,7 @@ public class Main {
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
     private File storageDir;
-    private FilePathFormat filePathFormat;
+    private AttributesFormat filePathFormat;
 
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
@@ -168,7 +168,7 @@ public class Main {
     }
 
     public void setStorageFilePathFormat(String pattern) {
-        this.filePathFormat = new FilePathFormat(pattern);
+        this.filePathFormat = new AttributesFormat(pattern);
     }
 
     private static CommandLine parseComandLine(String[] args)

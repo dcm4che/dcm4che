@@ -39,9 +39,9 @@
 package org.dcm4che.net.service;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Status;
+import org.dcm4che.util.AttributesValidator;
 
 public enum QueryRetrieveLevel {
     PATIENT {

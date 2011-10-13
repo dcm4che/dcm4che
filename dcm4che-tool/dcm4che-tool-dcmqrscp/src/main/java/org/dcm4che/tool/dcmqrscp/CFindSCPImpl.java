@@ -40,7 +40,6 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.net.Association;
@@ -51,6 +50,7 @@ import org.dcm4che.net.service.BasicCFindSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.QueryTask;
+import org.dcm4che.util.AttributesValidator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

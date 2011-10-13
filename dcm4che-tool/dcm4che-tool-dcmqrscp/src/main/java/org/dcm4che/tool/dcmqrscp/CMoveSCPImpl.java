@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.AttributesValidator;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -58,6 +57,7 @@ import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.net.service.QueryRetrieveLevel;
 import org.dcm4che.net.service.RetrieveTask;
+import org.dcm4che.util.AttributesValidator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

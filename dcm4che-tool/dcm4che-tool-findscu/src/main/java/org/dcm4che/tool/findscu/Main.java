@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -425,7 +426,10 @@ public class Main {
                     ? InformationModel.valueOf(cl.getOptionValue("M"))
                     : InformationModel.StudyRoot;
         } catch(IllegalArgumentException e) {
-            throw new ParseException(rb.getString("invalid-model"));
+            throw new ParseException(
+                    MessageFormat.format(
+                            rb.getString("invalid-model-name"),
+                            cl.getOptionValue("M")));
         }
     }
 

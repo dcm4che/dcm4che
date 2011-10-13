@@ -40,6 +40,7 @@ package org.dcm4che.tool.movescu;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
@@ -329,7 +330,9 @@ public class Main {
                     ? InformationModel.valueOf(cl.getOptionValue("M"))
                     : InformationModel.StudyRoot;
         } catch(IllegalArgumentException e) {
-            throw new ParseException(rb.getString("invalid-model"));
+            throw new ParseException(MessageFormat.format(
+                    rb.getString("invalid-model-name"),
+                    cl.getOptionValue("M")));
         }
     }
 

@@ -38,8 +38,6 @@
 
 package org.dcm4che.net.service;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Status;

@@ -38,6 +38,8 @@
 
 package org.dcm4che.net.service;
 
+import javax.naming.OperationNotSupportedException;
+
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Status;
@@ -47,12 +49,12 @@ public enum QueryRetrieveLevel {
     PATIENT {
         @Override
         public void validateQueryKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
         }
 
         @Override
         public void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
             validator.getType1String(Tag.StudyInstanceUID, 0, Integer.MAX_VALUE);
             check(rq, validator);
         }
@@ -61,29 +63,29 @@ public enum QueryRetrieveLevel {
     STUDY {
         @Override
         public void validateQueryKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
-            if (relational || studyRoot)
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            else
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
                 validator.getType1String(Tag.PatientID, 0, 1);
+            else
+                validator.getType3String(Tag.PatientID, 0, 1, null);
             check(rq, validator);
         }
 
         @Override
         public void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
             validator.getType1String(Tag.StudyInstanceUID, 0, Integer.MAX_VALUE);
-            validateQueryKeys(rq, validator, studyRoot, relational);
+            validateQueryKeys(rq, validator, rootLevel, relational);
         }
     },
     SERIES {
         @Override
         public void validateQueryKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
-            if (relational || studyRoot)
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            else
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
                 validator.getType1String(Tag.PatientID, 0, 1);
+            else
+                validator.getType3String(Tag.PatientID, 0, 1, null);
             if (relational)
                 validator.getType3String(Tag.StudyInstanceUID, 0, 1, null);
             else
@@ -93,19 +95,19 @@ public enum QueryRetrieveLevel {
 
         @Override
         public void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
             validator.getType1String(Tag.SeriesInstanceUID, 0, Integer.MAX_VALUE);
-            validateQueryKeys(rq, validator, studyRoot, relational);
+            validateQueryKeys(rq, validator, rootLevel, relational);
         }
     },
     IMAGE {
         @Override
         public void validateQueryKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
-            if (relational || studyRoot)
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            else
+            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
                 validator.getType1String(Tag.PatientID, 0, 1);
+            else
+                validator.getType3String(Tag.PatientID, 0, 1, null);
             if (relational) {
                 validator.getType3String(Tag.StudyInstanceUID, 0, 1, null);
                 validator.getType3String(Tag.SeriesInstanceUID, 0, 1, null);
@@ -118,9 +120,26 @@ public enum QueryRetrieveLevel {
 
         @Override
         public void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
-                boolean studyRoot, boolean relational) throws DicomServiceException {
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
             validator.getType1String(Tag.SOPInstanceUID, 0, Integer.MAX_VALUE);
-            validateQueryKeys(rq, validator, studyRoot, relational);
+            if (rootLevel != QueryRetrieveLevel.IMAGE)
+                validateQueryKeys(rq, validator, rootLevel, relational);
+            else
+                check(rq, validator);
+        }
+    },
+    FRAME {
+        @Override
+        public void validateQueryKeys(Attributes rq, AttributesValidator validator,
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
+                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+            validator.getType1String(Tag.SOPInstanceUID, 0, 1);
+            check(rq, validator);
         }
     };
 
@@ -132,10 +151,10 @@ public enum QueryRetrieveLevel {
     }
 
     public abstract void validateQueryKeys(Attributes rq, AttributesValidator validator,
-            boolean studyRoot, boolean relational) throws DicomServiceException;
+            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException;
 
     public abstract void validateRetrieveKeys(Attributes rq, AttributesValidator validator,
-            boolean studyRoot, boolean relational) throws DicomServiceException;
+            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException;
 
     private static void check(Attributes rq, AttributesValidator validator)
             throws DicomServiceException {

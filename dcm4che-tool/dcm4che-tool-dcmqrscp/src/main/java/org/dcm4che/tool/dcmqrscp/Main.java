@@ -66,8 +66,10 @@ import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.ExtendedNegotiator;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.tool.common.CLIUtils;
@@ -139,6 +141,9 @@ public class Main {
                 new CGetSCPImpl(this,
                         UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
                         PATIENT_STUDY_ONLY_LEVELS));
+        serviceRegistry.addDicomService(
+                new CGetSCPImpl(this,
+                        UID.CompositeInstanceRetrieveWithoutBulkDataGET));
         serviceRegistry.addDicomService(
                 new CMoveSCPImpl(this,
                         UID.PatientRootQueryRetrieveInformationModelMOVE,
@@ -500,6 +505,16 @@ public class Main {
 
     Connection getRemoteConnection(String dest) {
         return remoteConnections.get(dest);
+    }
+
+    List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
+            throws DicomServiceException {
+        try {
+            return calculateMatches(keys);
+        } catch (IOException e) {
+            throw new DicomServiceException(rq,
+                    Status.UnableToCalculateNumberOfMatches, e);
+        }
     }
 
     public List<InstanceLocator> calculateMatches(Attributes keys) throws IOException {

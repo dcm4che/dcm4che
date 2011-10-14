@@ -60,13 +60,13 @@ class CFindSCPImpl extends BasicCFindSCP {
 
     private final Main main;
     private final String[] qrLevels;
-    private final boolean studyRoot;
+    private final QueryRetrieveLevel rootLevel;
 
     public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
-        this.studyRoot = "STUDY".equals(qrLevels[0]);
+        this.rootLevel = QueryRetrieveLevel.valueOf(qrLevels[0]);
     }
 
     @Override
@@ -74,10 +74,7 @@ class CFindSCPImpl extends BasicCFindSCP {
             Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        String cuid = rq.getString(Tag.AffectedSOPClassUID);
-        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
-        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
-        level.validateQueryKeys(rq, validator, studyRoot, relational);
+        level.validateQueryKeys(rq, validator, rootLevel, relational(as, rq));
         DicomDirReader ddr = main.getDicomDirReader();
         String availability =  main.getInstanceAvailability();
         switch(level) {
@@ -93,5 +90,10 @@ class CFindSCPImpl extends BasicCFindSCP {
         throw new AssertionError();
     }
 
+    private boolean relational(Association as, Attributes rq) {
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        return QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
+    }
 }
 

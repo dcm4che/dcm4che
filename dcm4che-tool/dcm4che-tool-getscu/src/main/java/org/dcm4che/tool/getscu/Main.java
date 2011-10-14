@@ -91,6 +91,7 @@ public class Main {
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
+        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
         HangingProtocol(UID.HangingProtocolInformationModelGET, null),
         ColorPalette(UID.ColorPaletteInformationModelGET, null);
 
@@ -402,7 +403,7 @@ public class Main {
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTag(keys[i - 1]), StringUtils.split(keys[i], '\\'));
+                main.addKey(CLIUtils.toTag(keys[i - 1]), StringUtils.split(keys[i], '/'));
         }
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));

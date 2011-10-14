@@ -67,13 +67,13 @@ class CMoveSCPImpl extends BasicCMoveSCP {
 
     private final Main main;
     private final String[] qrLevels;
-    private final boolean studyRoot;
+    private final QueryRetrieveLevel rootLevel;
 
     public CMoveSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
-        this.studyRoot = "STUDY".equals(qrLevels[0]);
+        this.rootLevel = QueryRetrieveLevel.valueOf(qrLevels[0]);
     }
 
     @Override
@@ -81,16 +81,13 @@ class CMoveSCPImpl extends BasicCMoveSCP {
             final Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        String cuid = rq.getString(Tag.AffectedSOPClassUID);
-        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
-        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
-        level.validateRetrieveKeys(rq, validator, studyRoot, relational);
+        level.validateRetrieveKeys(rq, validator, rootLevel, relational(as, rq));
         String dest = rq.getString(Tag.MoveDestination);
         final Connection remote = main.getRemoteConnection(dest);
         if (remote == null)
             throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
                     "Move Destination: " + dest + " unknown");
-        List<InstanceLocator> matches = calculateMatches(rq, keys);
+        List<InstanceLocator> matches = main.calculateMatches(rq, keys);
         BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches ) {
 
             @Override
@@ -112,13 +109,10 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         return retrieveTask;
     }
 
-    private List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
-            throws DicomServiceException {
-        try {
-            return main.calculateMatches(keys);
-        } catch (IOException e) {
-            throw new DicomServiceException(rq, Status.UnableToCalculateNumberOfMatches, e);
-        }
+    private boolean relational(Association as, Attributes rq) {
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        return QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
     }
 }
 

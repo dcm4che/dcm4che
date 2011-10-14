@@ -39,18 +39,15 @@
 package org.dcm4che.tool.dcmqrscp;
 
 
-import java.io.IOException;
 import java.util.List;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.QueryOption;
 import org.dcm4che.net.service.BasicCGetSCP;
-import org.dcm4che.net.service.BasicRetrieveTask;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.InstanceLocator;
 import org.dcm4che.net.service.QueryRetrieveLevel;
@@ -65,37 +62,37 @@ class CGetSCPImpl extends BasicCGetSCP {
 
     private final Main main;
     private final String[] qrLevels;
-    private final boolean studyRoot;
+    private final boolean withoutBulkData;
+    private final QueryRetrieveLevel rootLevel;
 
     public CGetSCPImpl(Main main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;
-        this.studyRoot = "STUDY".equals(qrLevels[0]);
+        this.withoutBulkData = qrLevels.length == 0;
+        this.rootLevel = withoutBulkData
+                ? QueryRetrieveLevel.IMAGE
+                : QueryRetrieveLevel.valueOf(qrLevels[0]);
     }
 
     @Override
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
-        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        String cuid = rq.getString(Tag.AffectedSOPClassUID);
-        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
-        boolean relational = QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
-        level.validateRetrieveKeys(rq, validator, studyRoot, relational);
-        List<InstanceLocator> matches = calculateMatches(rq, keys);
-        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches);
+        QueryRetrieveLevel level = withoutBulkData 
+                ? QueryRetrieveLevel.IMAGE
+                : QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
+        level.validateRetrieveKeys(rq, validator, rootLevel, relational(as, rq));
+        List<InstanceLocator> matches = main.calculateMatches(rq, keys);
+        RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
         retrieveTask.setSendPendingRSP(main.isSendPendingCGet());
         return retrieveTask;
     }
 
-    private List<InstanceLocator> calculateMatches(Attributes rq, Attributes keys)
-            throws DicomServiceException {
-        try {
-            return main.calculateMatches(keys);
-        } catch (IOException e) {
-            throw new DicomServiceException(rq, Status.UnableToCalculateNumberOfMatches, e);
-        }
+    private boolean relational(Association as, Attributes rq) {
+        String cuid = rq.getString(Tag.AffectedSOPClassUID);
+        ExtendedNegotiation extNeg = as.getAAssociateAC().getExtNegotiationFor(cuid);
+        return QueryOption.toOptions(extNeg).contains(QueryOption.RELATIONAL);
     }
 
 }

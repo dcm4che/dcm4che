@@ -1405,7 +1405,7 @@ public class Attributes implements Serializable {
 
     public boolean coerceAttributes(Attributes other, Attributes modified) {
          boolean toggleEndian = bigEndian != other.bigEndian;
-         boolean modifiedToggleEndian = bigEndian != modified.bigEndian;
+         boolean modifiedToggleEndian = modified != null && bigEndian != modified.bigEndian;
          int numModified = 0;
          final int[] tags = other.tags;
          final VR[] srcVRs = other.vrs;
@@ -1443,16 +1443,17 @@ public class Attributes implements Serializable {
              int j = indexOf(tag);
              if (j >= 0 && equalValues(other, j, i))
                  continue;
+             boolean updateModified = modified != null && j >= 0;
              if (value instanceof Sequence) {
-                 if (j >= 0)
+                 if (updateModified)
                      modified.set(privateCreator, tag, (Sequence) values[j]);
                  set(privateCreator, tag, (Sequence) value);
              } else if (value instanceof Fragments) {
-                 if (j >= 0)
+                 if (updateModified)
                      modified.set(privateCreator, tag, (Fragments) values[j]);
                  set(privateCreator, tag, (Fragments) value);
              } else {
-                 if (j >= 0)
+                 if (updateModified)
                      modified.set(privateCreator, tag, vr,
                              toggleEndian(vr, values[j], modifiedToggleEndian));
                  set(privateCreator, tag, vr,

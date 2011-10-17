@@ -999,7 +999,7 @@ public class Association {
         Attributes neventrq =
                 Commands.mkNEventReportRQ(rspHandler.getMessageID(), cuid, iuid,
                         eventTypeId, data);
-        invoke(pc, neventrq, new DataWriterAdapter(data), rspHandler,
+        invoke(pc, neventrq, DataWriterAdapter.forAttributes(data), rspHandler,
                 conn.getDimseRSPTimeout());
     }
 
@@ -1090,7 +1090,7 @@ public class Association {
         Attributes nactionrq =
                 Commands.mkNActionRQ(rspHandler.getMessageID(), cuid, iuid,
                         actionTypeId, data);
-        invoke(pc, nactionrq, new DataWriterAdapter(data), rspHandler,
+        invoke(pc, nactionrq, DataWriterAdapter.forAttributes(data), rspHandler,
                 conn.getDimseRSPTimeout());
     }
 
@@ -1121,7 +1121,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes ncreaterq =
                 Commands.mkNCreateRQ(rspHandler.getMessageID(), cuid, iuid);
-        invoke(pc, ncreaterq, new DataWriterAdapter(data), rspHandler,
+        invoke(pc, ncreaterq, DataWriterAdapter.forAttributes(data), rspHandler,
                 conn.getDimseRSPTimeout());
     }
 

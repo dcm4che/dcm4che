@@ -87,7 +87,7 @@ public class Attributes implements Serializable {
     private transient int[] groupLengths;
     private transient int groupLengthIndex0;
 
-    private boolean bigEndian;
+    private final boolean bigEndian;
     private long itemPosition = -1;
     private HashMap<String, Object> properties;
 
@@ -1441,19 +1441,22 @@ public class Attributes implements Serializable {
                  privateCreator = null;
              }
              int j = indexOf(tag);
-             if (j >= 0 && equalValues(other, j, i))
-                 continue;
-             boolean updateModified = modified != null && j >= 0;
+             boolean replace = j >= 0;
+             if (replace) {
+                 if (equalValues(other, j, i))
+                     continue;
+             } else if (modified != null)
+                 modified.setNull(tag, vr);
              if (value instanceof Sequence) {
-                 if (updateModified)
+                 if (replace && modified != null)
                      modified.set(privateCreator, tag, (Sequence) values[j]);
                  set(privateCreator, tag, (Sequence) value);
              } else if (value instanceof Fragments) {
-                 if (updateModified)
+                 if (replace && modified != null)
                      modified.set(privateCreator, tag, (Fragments) values[j]);
                  set(privateCreator, tag, (Fragments) value);
              } else {
-                 if (updateModified)
+                 if (replace && modified != null)
                      modified.set(privateCreator, tag, vr,
                              toggleEndian(vr, values[j], modifiedToggleEndian));
                  set(privateCreator, tag, vr,
@@ -1461,7 +1464,7 @@ public class Attributes implements Serializable {
              }
              numModified++;
          }
-         return numModified  != 0;
+         return numModified != 0;
     }
 
     private static Object toggleEndian(VR vr, Object value, boolean toggleEndian) {

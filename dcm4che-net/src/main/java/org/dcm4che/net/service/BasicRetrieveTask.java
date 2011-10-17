@@ -142,7 +142,7 @@ public class BasicRetrieveTask implements RetrieveTask {
             }
             writeRSP(status);
         } catch (DicomServiceException e) {
-            writeRSP(e.getCommand(), e.getDataset());
+            writeRSP(e.mkRSP(rq), e.getDataset());
         } finally {
             close();
         }

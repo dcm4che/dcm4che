@@ -265,12 +265,11 @@ public class DicomServiceRegistry implements DimseRQHandler {
                     ndelete(as, pc, cmd, dataset);
                     break;
                 default:
-                    throw new DicomServiceException(cmd,
-                            Status.UnrecognizedOperation);
+                    throw new DicomServiceException(Status.UnrecognizedOperation);
                 }
             }
         } catch (DicomServiceException e) {
-            as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
+            as.writeDimseRSP(pc, e.mkRSP(cmd), e.getDataset());
         }
     }
 
@@ -278,8 +277,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
             Association as) throws DicomServiceException {
         String cuid = cmd.getString(tag, null);
         if (map == null)
-            throw new DicomServiceException(cmd, 
-                    sopCUIDs.contains(cuid)
+            throw new DicomServiceException(sopCUIDs.contains(cuid)
                         ? Status.UnrecognizedOperation
                         : Status.NoSuchSOPclass);
 
@@ -288,7 +286,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
             return ret;
 
         if (sopCUIDs.contains(cuid))
-            throw new DicomServiceException(cmd, Status.UnrecognizedOperation);
+            throw new DicomServiceException(Status.UnrecognizedOperation);
 
         CommonExtendedNegotiation commonExtNeg = as
                 .getCommonExtendedNegotiationFor(cuid);
@@ -306,7 +304,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
         if (ret != null)
             return ret;
 
-        throw new DicomServiceException(cmd, Status.NoSuchSOPclass);
+        throw new DicomServiceException(Status.NoSuchSOPclass);
     }
 
     private void cstore(Association as, PresentationContext pc,

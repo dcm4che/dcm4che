@@ -512,8 +512,7 @@ public class Main {
         try {
             return calculateMatches(keys);
         } catch (IOException e) {
-            throw new DicomServiceException(rq,
-                    Status.UnableToCalculateNumberOfMatches, e);
+            throw new DicomServiceException(Status.UnableToCalculateNumberOfMatches, e);
         }
     }
 

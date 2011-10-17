@@ -57,26 +57,32 @@ public class DicomServiceException extends IOException {
     private final Attributes rsp;
     private Attributes data;
 
-    public DicomServiceException(Attributes rq, int status) {
-        rsp = Commands.mkRSP(rq, status);
+    public DicomServiceException(int status) {
+        rsp = new Attributes();
+        setStatus(status);
     }
 
-    public DicomServiceException(Attributes rq, int status, String message) {
+    public DicomServiceException(int status, String message) {
         super(message);
-        rsp = Commands.mkRSP(rq, status);
-        if (message != null)
-            setErrorComment(message);
+        rsp = new Attributes();
+        setStatus(status);
+        setErrorComment(getMessage());
     }
 
-    public DicomServiceException(Attributes rq, int status, Throwable cause) {
+    public DicomServiceException(int status, Throwable cause) {
         super(cause);
-        rsp = Commands.mkRSP(rq, status);
-        if (cause != null)
-            setErrorComment(getMessage());
+        rsp = new Attributes();
+        setStatus(status);
+        setErrorComment(getMessage());
     }
 
-   public DicomServiceException setErrorComment(String val) {
-        rsp.setString(Tag.ErrorComment, VR.LO, StringUtils.truncate(val, 64));
+    private void setStatus(int status) {
+        rsp.setInt(Tag.Status, VR.US, status);
+    }
+
+    public DicomServiceException setErrorComment(String val) {
+        if (val != null)
+            rsp.setString(Tag.ErrorComment, VR.LO, StringUtils.truncate(val, 64));
         return this;
     }
     
@@ -90,7 +96,10 @@ public class DicomServiceException extends IOException {
         return this;
     }
 
-    public final Attributes getCommand() {
+    public Attributes mkRSP(Attributes rq) {
+        rsp.setInt(Tag.CommandField, VR.US, Commands.rspFieldFor(rq));
+        rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US,
+                rq.getInt(Tag.MessageID, 0));
         return rsp;
     }
 

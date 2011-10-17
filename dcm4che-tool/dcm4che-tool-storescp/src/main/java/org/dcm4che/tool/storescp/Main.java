@@ -122,7 +122,7 @@ public class Main {
                     ds = in.readDataset(-1, Tag.PixelData);
                 } catch (IOException e) {
                     LOG.warn(as + ": Failed to decode dataset:", e);
-                    throw new DicomServiceException(rq, Status.CannotUnderstand);
+                    throw new DicomServiceException(Status.CannotUnderstand);
                 } finally {
                     SafeClose.close(in);
                 }
@@ -135,7 +135,7 @@ public class Main {
                 LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
             else {
                 LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
-                throw new DicomServiceException(rq, Status.OutOfResources, "Failed to rename file");
+                throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
             }
             return null;
         }

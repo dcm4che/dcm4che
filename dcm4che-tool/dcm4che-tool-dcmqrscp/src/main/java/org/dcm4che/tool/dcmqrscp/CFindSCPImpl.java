@@ -73,8 +73,8 @@ class CFindSCPImpl extends BasicCFindSCP {
     protected QueryTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
-        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        level.validateQueryKeys(rq, validator, rootLevel, relational(as, rq));
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
+        level.validateQueryKeys(validator, rootLevel, relational(as, rq));
         DicomDirReader ddr = main.getDicomDirReader();
         String availability =  main.getInstanceAvailability();
         switch(level) {

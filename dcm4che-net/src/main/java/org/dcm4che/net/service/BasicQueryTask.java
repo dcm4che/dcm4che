@@ -86,7 +86,7 @@ public class BasicQueryTask implements QueryTask {
                 int status = canceled ? Status.Cancel : Status.Success;
                 as.writeDimseRSP(pc, Commands.mkRSP(rq, status));
             } catch (DicomServiceException e) {
-                as.writeDimseRSP(pc, e.getCommand(), e.getDataset());
+                as.writeDimseRSP(pc, e.mkRSP(rq), e.getDataset());
             } finally {
                 close();
             }
@@ -126,6 +126,6 @@ public class BasicQueryTask implements QueryTask {
     }
 
     protected DicomServiceException wrapException(int status, Throwable e) {
-        return new DicomServiceException(rq, status, e);
+        return new DicomServiceException(status, e);
     }
 }

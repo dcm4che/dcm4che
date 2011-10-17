@@ -78,7 +78,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             return File.createTempFile("dcm", ".dcm", main.getStorageDirectory());
         } catch (IOException e) {
             LOG.warn(as + ": Failed to create temp file:", e);
-            throw new DicomServiceException(rq, Status.OutOfResources, e);
+            throw new DicomServiceException(Status.OutOfResources, e);
         }
     }
 
@@ -95,7 +95,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             ds = in.readDataset(-1, Tag.PixelData);
         } catch (IOException e) {
             LOG.warn(as + ": Failed to decode dataset:", e);
-            throw new DicomServiceException(rq, Status.CannotUnderstand);
+            throw new DicomServiceException(Status.CannotUnderstand);
         } finally {
             SafeClose.close(in);
         }
@@ -109,7 +109,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
         else {
             LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
-            throw new DicomServiceException(rq, Status.OutOfResources, "Failed to rename file");
+            throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
         }
         try {
             if (addDicomDirRecords(as, ds, fmi, dst)) {

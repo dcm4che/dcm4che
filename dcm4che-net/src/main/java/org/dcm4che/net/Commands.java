@@ -204,12 +204,15 @@ public class Commands {
 
     public static Attributes mkRSP(Attributes rq, int status) {
         Attributes rsp = new Attributes();
-        rsp.setInt(Tag.CommandField, VR.US,
-                rq.getInt(Tag.CommandField, 0) | RSP);
+        rsp.setInt(Tag.CommandField, VR.US, rspFieldFor(rq));
         rsp.setInt(Tag.Status, VR.US, status);
         rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US,
                 rq.getInt(Tag.MessageID, 0));
         return rsp;
+    }
+
+    public static int rspFieldFor(Attributes rq) {
+        return rq.getInt(Tag.CommandField, 0) | RSP;
     }
 
     public static void includeUIDsinRSP(Attributes rq, Attributes rsp) {

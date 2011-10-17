@@ -80,12 +80,12 @@ class CMoveSCPImpl extends BasicCMoveSCP {
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             final Attributes rq, Attributes keys) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(keys);
-        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        level.validateRetrieveKeys(rq, validator, rootLevel, relational(as, rq));
+        QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
+        level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
         String dest = rq.getString(Tag.MoveDestination);
         final Connection remote = main.getRemoteConnection(dest);
         if (remote == null)
-            throw new DicomServiceException(rq, Status.MoveDestinationUnknown,
+            throw new DicomServiceException(Status.MoveDestinationUnknown,
                     "Move Destination: " + dest + " unknown");
         List<InstanceLocator> matches = main.calculateMatches(rq, keys);
         BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches ) {
@@ -96,11 +96,11 @@ class CMoveSCPImpl extends BasicCMoveSCP {
                     return as.getApplicationEntity().connect(
                             as.getConnection(), remote, makeAAssociateRQ());
                 } catch (IOException e) {
-                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                    throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
                 } catch (InterruptedException e) {
-                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                    throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
                 } catch (IncompatibleConnectionException e) {
-                    throw new DicomServiceException(rq, Status.UnableToPerformSubOperations, e);
+                    throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
                 }
             }
 

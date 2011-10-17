@@ -81,8 +81,8 @@ class CGetSCPImpl extends BasicCGetSCP {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = withoutBulkData 
                 ? QueryRetrieveLevel.IMAGE
-                : QueryRetrieveLevel.valueOf(rq, validator, qrLevels);
-        level.validateRetrieveKeys(rq, validator, rootLevel, relational(as, rq));
+                : QueryRetrieveLevel.valueOf(validator, qrLevels);
+        level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
         List<InstanceLocator> matches = main.calculateMatches(rq, keys);
         RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
         retrieveTask.setSendPendingRSP(main.isSendPendingCGet());

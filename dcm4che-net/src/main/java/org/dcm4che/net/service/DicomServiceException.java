@@ -76,6 +76,17 @@ public class DicomServiceException extends IOException {
         setErrorComment(getMessage());
     }
 
+    public static Throwable initialCauseOf(Throwable e) {
+        if (e == null)
+            return null;
+
+        Throwable cause;
+        while ((cause = e.getCause()) != null)
+            e = cause;
+        return e;
+    }
+
+
     private void setStatus(int status) {
         rsp.setInt(Tag.Status, VR.US, status);
     }

@@ -60,6 +60,10 @@ public class AttributesValidator {
         this.attrs = attrs;
     }
 
+    public final Attributes getAttributes() {
+        return attrs;
+    }
+
     public String getType1String(int tag, int index, int maxvm,
             String... enumvals) {
         String[] ss = attrs.getStrings(tag);

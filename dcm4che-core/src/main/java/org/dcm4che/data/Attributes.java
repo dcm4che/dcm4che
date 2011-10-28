@@ -1328,7 +1328,7 @@ public class Attributes implements Serializable {
 
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        Arrays.sort(selection);
+        Arrays.sort(selection, fromIndex, toIndex);
         return addAll(other, selection, null, fromIndex, toIndex, false);
     }
 
@@ -1347,7 +1347,7 @@ public class Attributes implements Serializable {
 
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        Arrays.sort(selection);
+        Arrays.sort(selection, fromIndex, toIndex);
         return addAll(other, null, selection, fromIndex, toIndex, false);
     }
 
@@ -1403,14 +1403,24 @@ public class Attributes implements Serializable {
         return numAdd != 0;
     }
 
-    public boolean coerceAttributes(Attributes other, Attributes modified) {
-         boolean toggleEndian = bigEndian != other.bigEndian;
+    public boolean updateAttributes(Attributes newAttrs, Attributes modified) {
+        return updateAttributes(newAttrs, modified, null);
+    }
+
+    public boolean updateSelectedAttributes(Attributes newAttrs, Attributes modified,
+            int... includes) {
+        Arrays.sort(includes);
+        return updateAttributes(newAttrs, modified, includes);
+    }
+
+    private boolean updateAttributes(Attributes newAttrs, Attributes modified, int... include) {
+         boolean toggleEndian = bigEndian != newAttrs.bigEndian;
          boolean modifiedToggleEndian = modified != null && bigEndian != modified.bigEndian;
          int numModified = 0;
-         final int[] tags = other.tags;
-         final VR[] srcVRs = other.vrs;
-         final Object[] srcValues = other.values;
-         final int otherSize = other.size;
+         final int[] tags = newAttrs.tags;
+         final VR[] srcVRs = newAttrs.vrs;
+         final Object[] srcValues = newAttrs.values;
+         final int otherSize = newAttrs.size;
          String privateCreator = null;
          int otherCreatorTag = 0;
          int creatorTag = 0;
@@ -1422,17 +1432,19 @@ public class Attributes implements Serializable {
                  if (contains(tag))
                      continue; // do not overwrite private creator IDs
                  if (vr == VR.LO && value != Value.NULL
-                         && creatorTagOf(VR.LO.toString(other.decodeStringValue(i), false, 0, null),
+                         && creatorTagOf(VR.LO.toString(newAttrs.decodeStringValue(i), false, 0, null),
                                  tag,
                                  false)
                             != -1)
                      continue; // do not add duplicate private creator ID
              }
+             if (include != null && Arrays.binarySearch(include, tag) < 0)
+                 continue;
              if (TagUtils.isPrivateTag(tag)) {
                  int tmp = TagUtils.creatorTagOf(tag);
                  if (otherCreatorTag != tmp) {
                      otherCreatorTag = tmp;
-                     privateCreator = other.privateCreatorOf(tag);
+                     privateCreator = newAttrs.privateCreatorOf(tag);
                      creatorTag = creatorTagOf(privateCreator, tag, true);
                  }
                  tag = TagUtils.toPrivateTag(creatorTag, tag);
@@ -1443,7 +1455,7 @@ public class Attributes implements Serializable {
              int j = indexOf(tag);
              boolean replace = j >= 0;
              if (replace) {
-                 if (equalValues(other, j, i))
+                 if (equalValues(newAttrs, j, i))
                      continue;
              } else if (modified != null)
                  modified.setNull(tag, vr);

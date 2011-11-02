@@ -59,16 +59,13 @@ public abstract class AAssociateRQAC {
     public static final int DEF_MAX_PDU_LENGTH = 16378;
     // to fit into SunJSSE TLS Application Data Length 16408
 
-    private static final String DEF_CALLED_AET = "ANONYMOUS";
-    private static final String DEF_CALLING_AET = "ANONYMOUS";
-
     protected byte[] reservedBytes = new byte[32];
     protected int protocolVersion = 1;
     protected int maxPDULength = DEF_MAX_PDU_LENGTH;
     protected int maxOpsInvoked = 1;
     protected int maxOpsPerformed = 1;
-    protected String calledAET = DEF_CALLED_AET;
-    protected String callingAET = DEF_CALLING_AET;
+    protected String calledAET;
+    protected String callingAET;
     protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.getClassUID();
     protected String implVersionName = Implementation.getVersionName();
@@ -82,6 +79,16 @@ public abstract class AAssociateRQAC {
             extNegMap = new LinkedHashMap<String, ExtendedNegotiation>();
     protected final LinkedHashMap<String, CommonExtendedNegotiation>
             commonExtNegMap = new LinkedHashMap<String, CommonExtendedNegotiation>();
+
+    public void checkCallingAET() {
+        if (callingAET == null)
+            throw new IllegalStateException("Calling AET not initalized");
+    }
+
+    public void checkCalledAET() {
+        if (calledAET == null)
+            throw new IllegalStateException("Called AET not initalized");
+    }
 
     public final int getProtocolVersion() {
         return protocolVersion;

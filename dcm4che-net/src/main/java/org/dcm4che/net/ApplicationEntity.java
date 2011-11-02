@@ -643,7 +643,7 @@ public class ApplicationEntity {
             throws IOException, InterruptedException, IncompatibleConnectionException {
         checkDevice();
         checkInstalled();
-        if (aet.length() != 1 || aet.charAt(0) != '*')
+        if (rq.getCallingAET() == null)
             rq.setCallingAET(aet);
         rq.setMaxOpsInvoked(maxOpsInvoked);
         rq.setMaxOpsPerformed(maxOpsPerformed);

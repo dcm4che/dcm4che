@@ -41,7 +41,6 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -76,7 +75,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ApplicationEntity {
 
-    private static final Logger LOG = 
+    protected static final Logger LOG = 
             LoggerFactory.getLogger(ApplicationEntity.class);
 
     private Device device;
@@ -515,8 +514,8 @@ public class ApplicationEntity {
         return extNegotiators.remove(cuid);
     }
 
-    AAssociateAC negotiate(Association as, AAssociateRQ rq)
-            throws AAssociateRJ {
+    protected AAssociateAC negotiate(Association as, AAssociateRQ rq)
+            throws IOException {
         if (!(isInstalled() && acceptor && conns.contains(as.getConnection())))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
@@ -541,17 +540,21 @@ public class ApplicationEntity {
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
         ac.setUserIdentity(userIdentity);
-        Collection<PresentationContext> pcs = rq.getPresentationContexts();
-        for (PresentationContext rqpc : pcs)
-            ac.addPresentationContext(negotiate(rq, ac, rqpc));
-        return ac ;
+        return negotiate(as, rq, ac);
     }
 
-   static int minZeroAsMax(int i1, int i2) {
-        return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
-   }
+    protected AAssociateAC negotiate(Association as, AAssociateRQ rq, AAssociateAC ac)
+            throws IOException {
+        for (PresentationContext rqpc : rq.getPresentationContexts())
+            ac.addPresentationContext(negotiate(rq, ac, rqpc));
+        return ac;
+    }
 
-   private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
+    static int minZeroAsMax(int i1, int i2) {
+        return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
+    }
+
+    private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
            PresentationContext rqpc) {
        String as = rqpc.getAbstractSyntax();
        TransferCapability tc = roleSelection(rq, ac, as);
@@ -679,7 +682,7 @@ public class ApplicationEntity {
                 "No compatible connection to " + remote + " available on " + this);
     }
 
-    void onClose(Association as) {
+    protected void onClose(Association as) {
         DimseRQHandler tmp = getDimseRQHandler();
         if (tmp != null)
             tmp.onClose(as);

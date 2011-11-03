@@ -63,6 +63,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
@@ -92,11 +93,11 @@ public class Main {
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void store(Association as, Attributes rq,
-                PDVInputStream data, String tsuid, Attributes rsp)
+        protected void store(Association as, PresentationContext pc, Attributes rq,
+                PDVInputStream data, Attributes rsp)
                 throws IOException {
             if (storageDir != null)
-                super.store(as, rq, data, tsuid, rsp);
+                super.store(as, pc, rq, data, rsp);
         }
 
         @Override
@@ -106,7 +107,7 @@ public class Main {
         }
 
         @Override
-        protected File process(Association as, Attributes rq, String tsuid,
+        protected File process(Association as, PresentationContext pc, Attributes rq,
                 Attributes rsp, Object storage, File file, MessageDigest digest)
                 throws DicomServiceException {
             File dst;

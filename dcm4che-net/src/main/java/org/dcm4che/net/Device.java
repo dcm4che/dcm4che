@@ -554,6 +554,10 @@ public class Device {
         aes.put(aet, ae);
     }
 
+    public ApplicationEntity removeApplicationEntity(ApplicationEntity ae) {
+        return removeApplicationEntity(ae.getAETitle());
+    }
+
     public ApplicationEntity removeApplicationEntity(String aet) {
         ApplicationEntity ae = aes.remove(aet);
         if (ae != null)

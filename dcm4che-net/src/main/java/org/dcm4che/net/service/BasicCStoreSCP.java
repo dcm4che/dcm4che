@@ -74,13 +74,12 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     public void onCStoreRQ(Association as, PresentationContext pc, Attributes rq,
             PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
-        String tsuid = pc.getTransferSyntax();
-        store(as, rq, data, tsuid, rsp);
+        store(as, pc, rq, data, rsp);
         as.writeDimseRSP(pc, rsp);
     }
 
-    protected void store(Association as, Attributes rq, PDVInputStream data, String tsuid,
-            Attributes rsp) throws IOException {
+    protected void store(Association as, PresentationContext pc, Attributes rq,
+            PDVInputStream data, Attributes rsp) throws IOException {
         Object storage = selectStorage(as, rq);
         File file = createFile(as, rq, storage);
         LOG.info("{}: M-WRITE {}", as, file);
@@ -90,13 +89,13 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
             BufferedOutputStream bout = new BufferedOutputStream(
                     digest == null ? fout : new DigestOutputStream(fout, digest));
             DicomOutputStream out = new DicomOutputStream(bout, UID.ExplicitVRLittleEndian);
-            out.writeFileMetaInformation(createFileMetaInformation(as, rq, tsuid));
+            out.writeFileMetaInformation(createFileMetaInformation(as, rq, pc.getTransferSyntax()));
             try {
                 data.copyTo(out);
             } finally {
                 out.close();
             }
-            file = process(as, rq, tsuid, rsp, storage, file, digest);
+            file = process(as, pc, rq, rsp, storage, file, digest);
         } finally {
             if (file != null)
                 if (file.delete())
@@ -110,12 +109,12 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
         return null;
     }
 
-    protected Object selectStorage(Association as, Attributes rq) throws DicomServiceException {
+    protected Object selectStorage(Association as, Attributes rq) throws IOException {
         return null;
     }
 
     protected File createFile(Association as, Attributes rq, Object storage)
-            throws DicomServiceException {
+            throws IOException {
         return new File(rq.getString(Tag.AffectedSOPInstanceUID));
     }
 
@@ -134,8 +133,8 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
         return fmi;
     }
 
-    protected File process(Association as, Attributes rq, String tsuid, Attributes rsp,
-            Object storage, File file, MessageDigest digest) throws DicomServiceException {
+    protected File process(Association as, PresentationContext pc, Attributes rq, Attributes rsp,
+            Object storage, File file, MessageDigest digest) throws IOException {
         return null;
     }
 

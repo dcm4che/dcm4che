@@ -150,11 +150,11 @@ public class Main {
     private BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void store(Association as, Attributes rq,
-                PDVInputStream data, String tsuid, Attributes rsp)
+        protected void store(Association as, PresentationContext pc, Attributes rq,
+                PDVInputStream data, Attributes rsp)
                 throws IOException {
             if (storageDir != null)
-                super.store(as, rq, data, tsuid, rsp);
+                super.store(as, pc, rq, data, rsp);
         }
 
         @Override

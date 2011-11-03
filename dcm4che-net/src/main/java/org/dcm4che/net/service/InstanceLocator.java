@@ -39,6 +39,7 @@
 package org.dcm4che.net.service;
 
 import java.io.File;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -47,8 +48,10 @@ import java.net.URISyntaxException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class InstanceLocator {
+public class InstanceLocator implements Serializable {
     
+    private static final long serialVersionUID = -5744253220472580137L;
+
     public final String cuid;
     public final String iuid;
     public final String tsuid;

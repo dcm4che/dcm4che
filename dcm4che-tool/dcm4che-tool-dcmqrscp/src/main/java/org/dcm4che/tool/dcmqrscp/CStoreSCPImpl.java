@@ -53,6 +53,7 @@ import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.util.SafeClose;
@@ -83,7 +84,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected File process(Association as, Attributes rq, String tsuid,
+    protected File process(Association as, PresentationContext pc, Attributes rq,
             Attributes rsp, Object storage, File file, MessageDigest digest)
             throws DicomServiceException {
         Attributes fmi, ds;

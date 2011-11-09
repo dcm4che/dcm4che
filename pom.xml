@@ -85,6 +85,5 @@
     <module>dcm4che-soundex</module>
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
-    <module>dcm4che-conf</module>
   </modules>
 </project>

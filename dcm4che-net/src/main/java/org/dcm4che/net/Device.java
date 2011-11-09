@@ -46,6 +46,7 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -87,7 +88,7 @@ public class Device {
     private String[] institutionalDepartmentName = {};
     private X509Certificate[] authorizedNodeCertificate = {};
     private X509Certificate[] thisNodeCertificate = {};
-    private Object vendorDeviceData;
+    private Object vendorData;
     private boolean installed = true;
     private boolean activated = false;
     private final List<Connection> conns = new ArrayList<Connection>();
@@ -406,18 +407,18 @@ public class Device {
      * 
      * @return An Object of the device data.
      */
-    public final Object getVendorDeviceData() {
-        return vendorDeviceData;
+    public final Object getVendorData() {
+        return vendorData;
     }
 
     /**
      * Set device specific vendor configuration information
      * 
-     * @param vendorDeviceData
+     * @param vendorData
      *                An Object of the device data.
      */
-    public final void setVendorDeviceData(Object vendorDeviceData) {
-        this.vendorDeviceData = vendorDeviceData;
+    public final void setVendorData(Object vendorData) {
+        this.vendorData = vendorData;
     }
 
     /**
@@ -547,6 +548,10 @@ public class Device {
         conn.setDevice(null);
         conn.unbind();
         return true;
+    }
+
+    public List<Connection> listConnections() {
+        return Collections.unmodifiableList(conns);
     }
 
     public void addApplicationEntity(ApplicationEntity ae) {

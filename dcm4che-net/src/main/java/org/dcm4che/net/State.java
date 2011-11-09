@@ -220,7 +220,7 @@ public enum State {
     }
 
     void writeAReleaseRQ(Association as) throws IOException {
-        throw new IOException("State: " + this);
+        throw new AssociationStateException(this);
     }
 
     void write(Association as, AAbort aa) throws IOException {
@@ -228,7 +228,7 @@ public enum State {
     }
 
     public void writePDataTF(Association as) throws IOException {
-        throw new IOException("State: " + this);
+        throw new AssociationStateException(this);
     }
 
     void closeSocket(Association as) {

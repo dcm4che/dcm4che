@@ -55,6 +55,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
@@ -89,13 +90,16 @@ public class Main {
     private final Connection conn = new Connection();
     private File storageDir;
     private AttributesFormat filePathFormat;
+    private int status;
 
     private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
+
 
         @Override
         protected void store(Association as, PresentationContext pc, Attributes rq,
                 PDVInputStream data, Attributes rsp)
                 throws IOException {
+            rsp.setInt(Tag.Status, VR.US, status);
             if (storageDir != null)
                 super.store(as, pc, rq, data, rsp);
         }
@@ -172,15 +176,30 @@ public class Main {
         this.filePathFormat = new AttributesFormat(pattern);
     }
 
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
+        addStatusOption(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addStatusOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("code")
+                .withDescription(rb.getString("status"))
+                .withLongOpt("status")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -219,6 +238,7 @@ public class Main {
             Main main = new Main();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
+            main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();

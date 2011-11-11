@@ -409,6 +409,16 @@ public class CLIUtils {
                         : Priority.NORMAL;
     }
 
+    public static int getIntOption(CommandLine cl, String opt, int defVal) {
+        String optVal = cl.getOptionValue(opt);
+        if (optVal == null)
+            return defVal;
+        
+        return optVal.endsWith("H")
+                ? Integer.parseInt(optVal.substring(0, optVal.length() - 1), 16)
+                : Integer.parseInt(optVal);
+    }
+
     public static void configure(Connection conn, ApplicationEntity ae,
             CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {

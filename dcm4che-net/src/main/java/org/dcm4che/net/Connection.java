@@ -46,7 +46,11 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -76,8 +80,6 @@ public class Connection {
 
     private static Logger LOG = LoggerFactory.getLogger(Connection.class);
     
-    private static final String[] DEF_TLS_PROTOCOLS = { "TLSv1", "SSLv3" };
-
     private Device device;
     private String commonName;
     private String hostname;
@@ -96,8 +98,9 @@ public class Connection {
     private int receiveBufferSize;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
-    private String[] tlsCipherSuites = {};
-    private String[] tlsProtocols = DEF_TLS_PROTOCOLS;
+    private final LinkedHashSet<String> tlsCipherSuites = new LinkedHashSet<String>();
+    private final LinkedHashSet<String> tlsProtocols = 
+            new LinkedHashSet<String>(Arrays.asList("TLSv1", "SSLv3"));
     private Boolean installed;
     private Collection<InetAddress> blacklist;
 
@@ -344,8 +347,8 @@ public class Connection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public String[] getTlsCipherSuite() {
-        return tlsCipherSuites.clone();
+    public Set<String> getTlsCipherSuite() {
+        return tlsCipherSuites;
     }
 
     /**
@@ -356,28 +359,30 @@ public class Connection {
      * @param tlsCipherSuite
      *            A String array containing the supported cipher suites
      */
+    public void setTlsCipherSuite(Collection<String> tlsCipherSuite) {
+        tlsCipherSuites.clear();
+        tlsCipherSuites.addAll(tlsCipherSuite);
+    }
+
     public void setTlsCipherSuite(String... tlsCipherSuite) {
-        for (String s : tlsCipherSuite)
-            if (s == null)
-                throw new NullPointerException();
-        this.tlsCipherSuites = tlsCipherSuite.clone();
+        setTlsCipherSuite(Arrays.asList(tlsCipherSuite));
     }
 
     public final boolean isTls() {
-        return tlsCipherSuites.length > 0;
+        return tlsCipherSuites.isEmpty();
     }
 
-    public String[] getTlsProtocols() {
-        return tlsProtocols.clone();
+    public Set<String> getTlsProtocols() {
+        return tlsProtocols;
+    }
+
+    public void setTlsProtocol(Collection<String> tlsProtocols) {
+        tlsProtocols.clear();
+        tlsProtocols.addAll(tlsProtocols);
     }
 
     public void setTlsProtocol(String... tlsProtocols) {
-        if (tlsProtocols.length == 0)
-            throw new IllegalArgumentException("no TLS protocol specified");
-        for (String s : tlsProtocols)
-            if (s == null)
-                throw new NullPointerException();
-        this.tlsProtocols = tlsProtocols.clone();
+        setTlsProtocol(Arrays.asList(tlsProtocols));
     }
 
     public final boolean isTlsNeedClientAuth() {
@@ -463,6 +468,10 @@ public class Connection {
     public boolean isInstalled() {
         return device != null && device.isInstalled() 
                 && (installed == null || installed.booleanValue());
+    }
+
+    public Boolean getInstalled() {
+        return installed;
     }
 
     /**
@@ -663,10 +672,14 @@ public class Connection {
         SSLContext sslContext = device.getSSLContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(tlsProtocols);
-        ss.setEnabledCipherSuites(tlsCipherSuites);
+        ss.setEnabledProtocols(toArray(tlsProtocols));
+        ss.setEnabledCipherSuites(toArray(tlsCipherSuites));
         ss.setNeedClientAuth(tlsNeedClientAuth);
         return ss;
+    }
+
+    private static String[] toArray(Collection<String> c) {
+        return c.toArray(new String[c.size()]);
     }
 
     private boolean isBlackListed(InetAddress ia) {
@@ -704,9 +717,9 @@ public class Connection {
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(
-                intersect(remoteConn.tlsProtocols, tlsProtocols));
+                toArray(intersect(remoteConn.tlsProtocols, tlsProtocols)));
         s.setEnabledCipherSuites(
-                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
+                toArray(intersect(remoteConn.tlsCipherSuites, tlsCipherSuites)));
         return s;
     }
 
@@ -718,32 +731,18 @@ public class Connection {
                 : !isTls();
     }
 
-    private static boolean hasCommon(String[] ss1, String[] ss2) {
-        for (String s1 : ss1)
-            if (!contains(ss2, s1))
-                return false;
-        return true;
-    }
-
-    private static boolean contains(String[] ss2, String s1) {
-        for (String s2 : ss2)
-            if (s2.equals(s1))
+    private boolean hasCommon(Collection<String> c1,  Collection<String> c2) {
+        for (String s1 : c1)
+            if (c2.contains(s1))
                 return true;
         return false;
     }
 
-    private static String[] intersect(String[] ss1, String[] ss2) {
-        String[] intersect = new String[Math.min(ss1.length, ss2.length)];
-        int n = 0;
-        for (String s1 : ss1)
-            for (String s2 : ss2)
-                if (s1.equals(s2))
-                    intersect[n++] = s1;
-        if (n < intersect.length) {
-            String[] tmp = new String[n];
-            System.arraycopy(intersect, 0, tmp, 0, n);
-            intersect = tmp;
-        }
+    private static Collection<String> intersect(Collection<String> c1, Collection<String> c2) {
+        ArrayList<String> intersect = new ArrayList<String>(Math.min(c1.size(), c2.size()));
+        for (String s1 : c1)
+            if (c2.contains(s1))
+                intersect.add(s1);
         return intersect;
     }
 

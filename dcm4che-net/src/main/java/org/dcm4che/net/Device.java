@@ -41,10 +41,9 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,14 +80,15 @@ public class Device {
     private String stationName;
     private String deviceSerialNumber;
     private String issuerOfPatientID;
-    private String[] softwareVersion = {};
-    private String[] primaryDeviceType = {};
-    private String[] institutionName = {};
-    private String[] institutionAddress = {};
-    private String[] institutionalDepartmentName = {};
-    private X509Certificate[] authorizedNodeCertificate = {};
-    private X509Certificate[] thisNodeCertificate = {};
-    private Object vendorData;
+    private final List<String> softwareVersion = new ArrayList<String>(1);
+    private final List<String> primaryDeviceType = new ArrayList<String>(1);
+    private final List<String> institutionNames = new ArrayList<String>(1);
+    private final List<String> institutionAddresses = new ArrayList<String>(1);
+    private final List<String> institutionalDepartmentNames = new ArrayList<String>(1);
+    private final List<String> authorizedNodeCertificateRefs = new ArrayList<String>(1);
+    private final List<String> thisNodeCertificateRefs = new ArrayList<String>(1);
+    private final List<String> relatedDeviceRefs = new ArrayList<String>(1);
+    private final List<byte[]> vendorData = new ArrayList<byte[]>(1);
     private boolean installed = true;
     private boolean activated = false;
     private final List<Connection> conns = new ArrayList<Connection>();
@@ -188,7 +188,7 @@ public class Device {
      * 
      * @return A String array containing the software versions.
      */
-    public final String[] getSoftwareVersion() {
+    public final List<String> getSoftwareVersion() {
         return softwareVersion;
     }
 
@@ -201,8 +201,13 @@ public class Device {
      * @param softwareVersion
      *                A String array containing the software versions.
      */
+    public void setSoftwareVersion(Collection<String> softwareVersion) {
+        softwareVersion.clear();
+        softwareVersion.addAll(softwareVersion);
+    }
+
     public final void setSoftwareVersion(String... softwareVersion) {
-        this.softwareVersion = softwareVersion;
+        setSoftwareVersion(Arrays.asList(softwareVersion));
     }
 
     /**
@@ -254,7 +259,7 @@ public class Device {
      * 
      * @return A String array containing the type codes of this device.
      */
-    public final String[] getPrimaryDeviceType() {
+    public final List<String> getPrimaryDeviceTypes() {
         return primaryDeviceType;
     }
 
@@ -265,10 +270,15 @@ public class Device {
      * modalities. Types should be selected from the list of code values
      * (0008,0100) for Context ID 30 in PS3.16 when applicable.
      * 
-     * @param primaryDeviceType
+     * @param primaryDeviceTypes
      */
-    public final void setPrimaryDeviceType(String... primaryDeviceType) {
-        this.primaryDeviceType = primaryDeviceType;
+    public void setPrimaryDeviceTypes(Collection<String> primaryDeviceTypes) {
+        primaryDeviceTypes.clear();
+        primaryDeviceTypes.addAll(primaryDeviceTypes);
+    }
+
+    public void setPrimaryDeviceTypes(String... primaryDeviceTypes) {
+        setPrimaryDeviceTypes(Arrays.asList(primaryDeviceTypes));
     }
 
     /**
@@ -277,8 +287,8 @@ public class Device {
      * 
      * @return A String array containing the institution name values.
      */
-    public final String[] getInstitutionName() {
-        return institutionName;
+    public final List<String> getInstitutionNames() {
+        return institutionNames;
     }
 
     /**
@@ -291,8 +301,13 @@ public class Device {
      * @param names
      *                A String array containing the institution name values.
      */
-    public final void setInstitutionName(String... name) {
-        this.institutionName = name;
+    public void setInstitutionNames(Collection<String> name) {
+        institutionNames.clear();
+        institutionNames.addAll(name);
+    }
+
+    public void setInstitutionNames(String... name) {
+        setInstitutionNames(Arrays.asList(name));
     }
 
     /**
@@ -300,8 +315,8 @@ public class Device {
      * 
      * @return A String array containing the institution address values.
      */
-    public final String[] getInstitutionAddress() {
-        return institutionAddress;
+    public final List<String> getInstitutionAddresses() {
+        return institutionAddresses;
     }
 
     /**
@@ -313,8 +328,13 @@ public class Device {
      * @param addr
      *                A String array containing the institution address values.
      */
-    public final void setInstitutionAddress(String... addr) {
-        this.institutionAddress = addr;
+    public void setInstitutionAddresses(Collection<String> name) {
+        institutionAddresses.clear();
+        institutionAddresses.addAll(name);
+    }
+
+    public void setInstitutionAddresses(String... name) {
+        setInstitutionAddresses(Arrays.asList(name));
     }
 
     /**
@@ -322,8 +342,8 @@ public class Device {
      * 
      * @return A String array containing the dept. name values.
      */
-    public final String[] getInstitutionalDepartmentName() {
-        return institutionalDepartmentName;
+    public final List<String> getInstitutionalDepartmentNames() {
+        return institutionalDepartmentNames;
     }
 
     /**
@@ -335,8 +355,13 @@ public class Device {
      * @param name
      *                A String array containing the dept. name values.
      */
-    public final void setInstitutionalDepartmentName(String... name) {
-        this.institutionalDepartmentName = name;
+    public void setInstitutionalDepartmentNames(Collection<String> name) {
+        institutionalDepartmentNames.clear();
+        institutionalDepartmentNames.addAll(name);
+    }
+
+    public void setInstitutionalDepartmentNames(String... name) {
+        setInstitutionAddresses(Arrays.asList(name));
     }
 
     /**
@@ -362,44 +387,44 @@ public class Device {
         this.issuerOfPatientID = issuerOfPatientID;
     }
 
-    /**
-     * Get the certificates of nodes that are authorized to connect to this
-     * device.
-     * 
-     * @return An array containing the X509Certificate objects
-     */
-    public final X509Certificate[] getAuthorizedNodeCertificate() {
-        return authorizedNodeCertificate;
+
+    public final List<String> getAuthorizedNodeCertificateRefs() {
+        return authorizedNodeCertificateRefs;
     }
 
-    /**
-     * Set the certificates of nodes that are authorized to connect to this
-     * device.
-     * 
-     * @param certs
-     *                An array containing the X509Certificate objects.
-     */
-    public final void setAuthorizedNodeCertificate(X509Certificate... certs) {
-        this.authorizedNodeCertificate = certs;
+    public void setAuthorizedNodeCertificateRefs(Collection<String> refs) {
+        authorizedNodeCertificateRefs.clear();
+        authorizedNodeCertificateRefs.addAll(refs);
     }
 
-    /**
-     * Get the public certificate for this device.
-     * 
-     * @return An array containing the X509Certificate objects
-     */
-    public final X509Certificate[] getThisNodeCertificate() {
-        return thisNodeCertificate;
+    public void setAuthorizedNodeCertificateRefs(String... refs) {
+        setAuthorizedNodeCertificateRefs(Arrays.asList(refs));
     }
 
-    /**
-     * Set the public certificates for this device.
-     * 
-     * @param certs
-     *                An array containing the X509Certificate objects.
-     */
-    public final void setThisNodeCertificate(X509Certificate... certs) {
-        this.thisNodeCertificate = certs;
+    public final List<String> getThisNodeCertificateRefs() {
+        return thisNodeCertificateRefs;
+    }
+
+    public void setThisNodeCertificateRefs(Collection<String> refs) {
+        thisNodeCertificateRefs.clear();
+        thisNodeCertificateRefs.addAll(refs);
+    }
+
+    public void setThisNodeCertificateRefs(String... refs) {
+        setThisNodeCertificateRefs(Arrays.asList(refs));
+    }
+
+    public final List<String> getRelatedDeviceRefs() {
+        return relatedDeviceRefs;
+    }
+
+    public void setRelatedDeviceRefs(Collection<String> refs) {
+        relatedDeviceRefs.clear();
+        relatedDeviceRefs.addAll(refs);
+    }
+
+    public void setRelatedDeviceRefs(String... refs) {
+        setRelatedDeviceRefs(Arrays.asList(refs));
     }
 
     /**
@@ -407,7 +432,7 @@ public class Device {
      * 
      * @return An Object of the device data.
      */
-    public final Object getVendorData() {
+    public final List<byte[]> getVendorData() {
         return vendorData;
     }
 
@@ -417,8 +442,13 @@ public class Device {
      * @param vendorData
      *                An Object of the device data.
      */
-    public final void setVendorData(Object vendorData) {
-        this.vendorData = vendorData;
+    public void setVendorData(Collection<byte[]> vendorData) {
+        this.vendorData.clear();
+        this.vendorData.addAll(vendorData);
+    }
+
+    public void setVendorData(byte[]... vendorData) {
+        setVendorData(Arrays.asList(vendorData));
     }
 
     /**
@@ -613,36 +643,6 @@ public class Device {
         if (sslContext == null)
             throw new IllegalStateException("TLS Context not initialized!");
         return sslContext;
-    }
-
-    /**
-     * Initialize transport layer security (TLS) for network interactions using
-     * the device's certificate (as returned by
-     * <code>getThisNodeCertificate()</code>).
-     * 
-     * @param key
-     *                The <code>KeyStore</code> containing the keys needed for
-     *                secure network interaction with another device.
-     * @param password
-     *                A char array containing the password used to access the
-     *                key.
-     * @throws GeneralSecurityException
-     */
-    public void initTLS(KeyStore key, char[] password)
-            throws GeneralSecurityException {
-        KeyStore trust = KeyStore.getInstance(KeyStore.getDefaultType());
-        addCertificate(trust, getThisNodeCertificate());
-        addCertificate(trust, getAuthorizedNodeCertificate());
-        initTLS(key, password, trust);
-    }
-
-    private void addCertificate(KeyStore trust, final X509Certificate[] certs)
-            throws KeyStoreException {
-        if (certs != null) {
-            for (int i = 0; i < certs.length; i++)
-                trust.setCertificateEntry(certs[i].getSubjectDN().getName(),
-                        certs[i]);
-        }
     }
 
     /**

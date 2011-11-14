@@ -41,6 +41,8 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,13 +84,14 @@ public class ApplicationEntity {
     private String aet;
     private String description;
     private Object vendorData;
-    private LinkedHashSet<String> applicationCluster =
+    private final LinkedHashSet<String> applicationCluster =
             new LinkedHashSet<String>();
-    private LinkedHashSet<String> prefCalledAETs =
+    private final LinkedHashSet<String> prefCalledAETs =
             new LinkedHashSet<String>();
-    private LinkedHashSet<String> prefCallingAETs =
+    private final LinkedHashSet<String> prefCallingAETs =
             new LinkedHashSet<String>();
-    private String[] supportedCharacterSet = {};
+    private final LinkedHashSet<String> supportedCharacterSets =
+            new LinkedHashSet<String>();
     private boolean checkCallingAET;
     private boolean acceptor;
     private boolean initiator;
@@ -208,20 +211,13 @@ public class ApplicationEntity {
         return applicationCluster;
     }
 
-    public boolean isApplicationCluster(String cluster) {
-        return applicationCluster.contains(cluster);
-    }
-
-    public boolean addApplicationCluster(String cluster) {
-        return applicationCluster.add(cluster);
-    }
-
-    public boolean removeApplicationCluster(String cluster) {
-        return applicationCluster.remove(cluster);
-    }
-
-    public void clearApplicationClusters() {
+    public void setApplicationClusters(Collection<String> clusters) {
         applicationCluster.clear();
+        applicationCluster.addAll(clusters);
+    }
+
+    public void setApplicationClusters(String... clusters) {
+        setApplicationClusters(Arrays.asList(clusters));
     }
 
     /**
@@ -234,20 +230,13 @@ public class ApplicationEntity {
         return prefCalledAETs;
     }
 
-    public boolean isPreferredCalledAETitle(String aet) {
-        return prefCalledAETs.contains(aet);
-    }
-
-    public boolean addPreferredCalledAETitle(String aet) {
-        return prefCalledAETs.add(aet);
-    }
-
-    public boolean removePreferredCalledAETitle(String aet) {
-        return prefCalledAETs.remove(aet);
-    }
-
-    public void clearPreferredCalledAETitles() {
+    public void setPreferredCalledAETitles(Collection<String> aets) {
         prefCalledAETs.clear();
+        prefCalledAETs.addAll(aets);
+    }
+
+    public void setPreferredCalledAETitles(String... aets) {
+        setPreferredCalledAETitles(Arrays.asList(aets));
     }
 
     /**
@@ -256,32 +245,21 @@ public class ApplicationEntity {
      * 
      * @return A Set<String> containing the preferred calling AE titles.
      */
-    public Set<String> getPreferredCallingAETitle() {
+    public Set<String> getPreferredCallingAETitles() {
         return prefCallingAETs;
     }
 
-    public boolean isPreferredCallingAETitle(String aet) {
-        return prefCallingAETs.contains(aet);
-    }
-
-    public void addPreferredCallingAETitle(String aet) {
-        prefCallingAETs.add(aet);
-    }
-
-    public boolean removePreferredCallingAETitle(String aet) {
-        return prefCallingAETs.remove(aet);
-    }
-
-    public void clearPreferredCallingAETitles() {
+    public void setPreferredCallingAETitles(Collection<String> aets) {
         prefCallingAETs.clear();
+        prefCallingAETs.addAll(aets);
+    }
+
+    public void setPreferredCallingAETitles(String... aets) {
+        setPreferredCallingAETitles(Arrays.asList(aets));
     }
 
     public void setAcceptOnlyPreferredCallingAETitles(boolean checkCallingAET) {
         this.checkCallingAET = checkCallingAET;
-    }
-
-    public boolean isAcceptOnlyPreferredCallingAETitles() {
-        return checkCallingAET;
     }
 
     /**
@@ -293,8 +271,8 @@ public class ApplicationEntity {
      * 
      * @return A String array of the supported character sets.
      */
-    public String[] getSupportedCharacterSet() {
-        return supportedCharacterSet;
+    public Set<String> getSupportedCharacterSets() {
+        return supportedCharacterSets;
     }
 
     /**
@@ -307,8 +285,9 @@ public class ApplicationEntity {
      * @param characterSets
      *                A String array of the supported character sets.
      */
-    public void setSupportedCharacterSet(String... characterSets) {
-        this.supportedCharacterSet = characterSets;
+    public void setSupportedCharacterSets(Collection<String> characterSets) {
+        supportedCharacterSets.clear();
+        supportedCharacterSets.addAll(characterSets);
     }
 
     /**
@@ -363,6 +342,10 @@ public class ApplicationEntity {
     public boolean isInstalled() {
         return device != null && device.isInstalled() 
                 && (installed == null || installed.booleanValue());
+    }
+
+    public final Boolean getInstalled() {
+        return installed;
     }
 
     /**
@@ -501,6 +484,14 @@ public class ApplicationEntity {
         }
     }
 
+    public Collection<TransferCapability> getTransferCapabilities() {
+        ArrayList<TransferCapability> tcs =
+                new ArrayList<TransferCapability>(scuTCs.size() + scpTCs.size());
+        tcs.addAll(scpTCs.values());
+        tcs.addAll(scuTCs.values());
+        return tcs;
+    }
+
     public void addExtendedNegotiator(String cuid,
             ExtendedNegotiator extNegtor) {
         if (cuid == null)
@@ -520,7 +511,7 @@ public class ApplicationEntity {
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (checkCallingAET && !isPreferredCallingAETitle(rq.getCallingAET()))
+        if (checkCallingAET && !prefCallingAETs.contains(rq.getCallingAET()))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);

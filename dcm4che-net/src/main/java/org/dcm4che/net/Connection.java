@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * called and calling AE-titles.
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * 
  */
 public class Connection {
 
@@ -369,7 +369,7 @@ public class Connection {
     }
 
     public final boolean isTls() {
-        return tlsCipherSuites.isEmpty();
+        return !tlsCipherSuites.isEmpty();
     }
 
     public Set<String> getTlsProtocols() {

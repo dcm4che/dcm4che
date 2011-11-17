@@ -127,7 +127,7 @@ olcAttributeTypes: ( 1.2.840.10008.15.0.3.26 NAME 'dicomInstitutionName'
   DESC 'Institution name of the device. Should be the same as the value of Institution Name (0008,0080) in SOP Instances created by this device.'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.12.1.15 )
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 olcAttributeTypes: ( 1.2.840.10008.15.0.3.27 NAME 'dicomInstitutionAddress'
   DESC 'Institution address of the device.  Should be the same as the value of Institution Address (0008,0081) attribute in SOP Instances created by this device.'
   EQUALITY caseIgnoreMatch

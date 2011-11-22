@@ -153,6 +153,110 @@ olcAttributeTypes: ( 1.2.840.10008.15.0.3.31 NAME 'dicomSupportedCharacterSet'
   DESC 'The Character Set(s) supported by the Network AE for data sets it receives.'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.1 NAME 'dicomTLSNeedClientAuth'
+  DESC 'Indicates if TLS client authentication is required'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.2 NAME 'dicomTLSProtocol'
+  DESC 'The supported TLS Protocols'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.3 NAME 'dicomTCPBacklog'
+  DESC 'Maximum queue length for incoming TCP connections'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.4 NAME 'dicomTCPConnectTimeout'
+  DESC 'TCP connect timeout in ms'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.5 NAME 'dicomAssociationRequestTimeout'
+  DESC 'Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.6 NAME 'dicomAssociationAcknowledgeTimeout'
+  DESC 'Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.7 NAME 'dicomAssociationReleaseTimeout'
+  DESC 'Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.8 NAME 'dicomDIMSEResponseTimeout'
+  DESC 'Timeout in ms for receive of DIMSE-RSP after send of DIMSE-RQ'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.9 NAME 'dicomCMoveResponseTimeout'
+  DESC 'Timeout in ms for receive of C-MOVE-RSP after send of C-MOVE-RQ'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.10 NAME 'dicomCGetResponseTimeout'
+  DESC 'Timeout in ms for receive of C-GET-RSP after send of C-GET-RQ'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.11 NAME 'dicomAssociationIdleTimeout'
+  DESC 'Indicates aborting of idle Associations afer specified timeout in ms'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.12 NAME 'dicomTCPCloseDelay'
+  DESC 'TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.13 NAME 'dicomTCPSendBufferSize'
+  DESC 'TCP send buffer size'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.14 NAME 'dicomTCPReceiveBufferSize'
+  DESC 'TCP receive buffer size'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.15 NAME 'dicomTCPNoDelay'
+  DESC 'Enable/disable TCP_NODELAY (disable/enable Nagle algorithm)'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.16 NAME 'dicomBlacklistedHostname'
+  DESC 'DNS hostname'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.17 NAME 'dicomSendPDULength'
+  DESC 'Maximal length of emitted PDUs'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.18 NAME 'dicomReceivePDULength'
+  DESC 'Maximal length of received PDUs'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.19 NAME 'dicomMaxOpsPerformed'
+  DESC 'Maximal number of operations to perform asynchronously'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.20 NAME 'dicomMaxOpsInvoked'
+  DESC 'Maximal number of operations to invoke asynchronously'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.1.21 NAME 'dicomPackPDV'
+  DESC 'Enable/disable packing of command and data PDVs into one P-DATA-TF PDU'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 olcObjectClasses: ( 1.2.840.10008.15.0.4.1 NAME 'dicomConfigurationRoot'
   DESC 'Root of the DICOM Configuration Hierarchy'
   SUP top STRUCTURAL
@@ -205,6 +309,11 @@ olcObjectClasses: ( 1.2.840.10008.15.0.4.5 NAME 'dicomNetworkAE'
     dicomPreferredCalledAETitle $
     dicomPreferredCallingAETitle $
     dicomSupportedCharacterSet $
+    dicomSendPDULength $
+    dicomReceivePDULength $
+    dicomMaxOpsPerformed $
+    dicomMaxOpsInvoked $
+    dicomPackPDV $
     dicomInstalled ) )
 olcObjectClasses: ( 1.2.840.10008.15.0.4.6 NAME 'dicomNetworkConnection'
   DESC 'DICOM Network Connection information'
@@ -214,6 +323,22 @@ olcObjectClasses: ( 1.2.840.10008.15.0.4.6 NAME 'dicomNetworkConnection'
     cn $
     dicomPort $
     dicomTLSCipherSuite $
+    dicomTLSNeedClientAuth $
+    dicomTLSProtocol $
+    dicomTCPBacklog $
+    dicomTCPConnectTimeout $
+    dicomTCPCloseDelay $
+    dicomTCPSendBufferSize $
+    dicomTCPReceiveBufferSize $
+    dicomTCPNoDelay $
+    dicomBlacklistedHostname $
+    dicomAssociationRequestTimeout $
+    dicomAssociationAcknowledgeTimeout $
+    dicomAssociationReleaseTimeout $
+    dicomDIMSEResponseTimeout $
+    dicomCGetResponseTimeout $
+    dicomCMoveResponseTimeout $
+    dicomAssociationIdleTimeout $
     dicomInstalled ) )
 olcObjectClasses: ( 1.2.840.10008.15.0.4.7 NAME 'dicomUniqueAETitle'
   DESC 'A Unique DICOM Application Entity title'

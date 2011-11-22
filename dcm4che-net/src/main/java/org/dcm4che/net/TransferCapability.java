@@ -38,8 +38,8 @@
 
 package org.dcm4che.net;
 
-import java.util.Arrays;
-import java.util.List;
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
 
 /**
  * DICOM Standard, Part 15, Annex H: Transfer Capability - The description of
@@ -61,21 +61,16 @@ public class TransferCapability {
     private final String commonName;
     private final String sopClass;
     private final Role role;
-    private final List<String> transferSyntaxes ;
+    private final String[] transferSyntaxes ;
 
 
     public TransferCapability(String commonName, String sopClass, Role role,
             String... transferSyntaxes) {
-        this(commonName, sopClass, role, Arrays.asList(transferSyntaxes));
-    }
-
-    public TransferCapability(String commonName, String sopClass, Role role,
-            List<String> transferSyntaxes) {
         if (sopClass.isEmpty())
             throw new IllegalArgumentException("empty sopClass");
         if (role == null)
             throw new NullPointerException("missing tole");
-        if (transferSyntaxes.isEmpty())
+        if (transferSyntaxes.length == 0)
             throw new IllegalArgumentException("missing transferSyntax");
         for (String ts : transferSyntaxes)
             if (ts.isEmpty())
@@ -120,15 +115,35 @@ public class TransferCapability {
      * 
      * @return list of transfer syntaxes.
      */
-    public final List<String> getTransferSyntaxes() {
+    public final String[] getTransferSyntaxes() {
         return transferSyntaxes;
     }
 
     public boolean containsTransferSyntax(String ts) {
-        return isAnyTransferSyntax() || transferSyntaxes.contains(ts);
+        if ("*".equals(transferSyntaxes[0]))
+            return true;
+
+        for (String s : transferSyntaxes)
+            if (ts.equals(s))
+                return true;
+
+        return false;
     }
 
-    private boolean isAnyTransferSyntax() {
-        return "*".equals(transferSyntaxes.get(0));
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder(512), "").toString();
+    }
+
+    public StringBuilder promptTo(StringBuilder sb, String indent) {
+        String indent2 = indent + "  ";
+        StringUtils.appendLine(sb, indent, "TransferCapability[role: ", role);
+        sb.append(indent2).append("as: ");
+        UIDUtils.promptTo(sopClass, sb).append(StringUtils.LINE_SEPARATOR);
+        for (String ts : transferSyntaxes) {
+            sb.append(indent2).append("ts: ");
+            UIDUtils.promptTo(ts, sb).append(StringUtils.LINE_SEPARATOR);
+        }
+        return sb.append(indent).append(']');
     }
 }

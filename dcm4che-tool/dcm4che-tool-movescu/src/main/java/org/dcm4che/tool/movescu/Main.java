@@ -266,8 +266,8 @@ public class Main {
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
-            main.remote.setTlsProtocol(main.conn.getTlsProtocols());
-            main.remote.setTlsCipherSuite(main.conn.getTlsCipherSuite());
+            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureServiceClass(main, cl);
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));

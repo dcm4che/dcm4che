@@ -58,6 +58,12 @@ public class StringUtils {
 
     public static String[] EMPTY_STRING = {};
 
+    public static StringBuilder appendLine(StringBuilder sb, Object... ss) {
+        for (Object s : ss)
+            sb.append(s);
+        return sb.append(LINE_SEPARATOR);
+    }
+
     public static String join(String[] ss, char delim) {
         int n = ss.length;
         if (n == 0)

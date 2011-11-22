@@ -423,10 +423,10 @@ public class CLIUtils {
             CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {
         if (cl.hasOption("max-pdulen-rcv"))
-            ae.setMaxPDULengthReceive(Integer.parseInt(
+            ae.setReceivePDULength(Integer.parseInt(
                     cl.getOptionValue("max-pdulen-rcv")));
         if (cl.hasOption("max-pdulen-snd"))
-            ae.setMaxPDULengthSend(Integer.parseInt(
+            ae.setSendPDULength(Integer.parseInt(
                     cl.getOptionValue("max-pdulen-snd")));
         if(cl.hasOption("not-async")) {
             ae.setMaxOpsInvoked(1);
@@ -484,31 +484,31 @@ public class CLIUtils {
     private static void configureTLS(Connection conn, CommandLine cl)
             throws ParseException, GeneralSecurityException, IOException {
         if (cl.hasOption("tls"))
-            conn.setTlsCipherSuite(
+            conn.setTlsCipherSuites(
                     "SSL_RSA_WITH_NULL_SHA",
                     "TLS_RSA_WITH_AES_128_CBC_SHA",
                     "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-null"))
-            conn.setTlsCipherSuite("SSL_RSA_WITH_NULL_SHA");
+            conn.setTlsCipherSuites("SSL_RSA_WITH_NULL_SHA");
         else if (cl.hasOption("tls-3des"))
-            conn.setTlsCipherSuite("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+            conn.setTlsCipherSuites("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-aes"))
-            conn.setTlsCipherSuite(
+            conn.setTlsCipherSuites(
                     "TLS_RSA_WITH_AES_128_CBC_SHA",
                     "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
         else if (cl.hasOption("tls-cipher"))
-            conn.setTlsCipherSuite(cl.getOptionValues("tls-cipher"));
+            conn.setTlsCipherSuites(cl.getOptionValues("tls-cipher"));
         else
             return;
 
         if (cl.hasOption("tls1"))
-            conn.setTlsProtocol("TLSv1");
+            conn.setTlsProtocols("TLSv1");
         else if (cl.hasOption("ssl3"))
-            conn.setTlsProtocol("SSLv3");
+            conn.setTlsProtocols("SSLv3");
         else if (cl.hasOption("ssl2Hello"))
-            conn.setTlsProtocol("SSLv2Hello", "SSLv3", "TLSv1");
+            conn.setTlsProtocols("SSLv2Hello", "SSLv3", "TLSv1");
         else if (cl.hasOption("tls-protocol"))
-            conn.setTlsProtocol(cl.getOptionValues("tls-protocol"));
+            conn.setTlsProtocols(cl.getOptionValues("tls-protocol"));
 
         conn.setTlsNeedClientAuth(!cl.hasOption("tls-noauth"));
 

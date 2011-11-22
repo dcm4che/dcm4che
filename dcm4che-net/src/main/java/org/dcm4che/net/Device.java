@@ -59,6 +59,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.dcm4che.util.StringUtils;
+
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM enabled system or
  * device. This is used to describe a DICOM-enabled network endpoint in terms of
@@ -73,22 +75,22 @@ public class Device {
 
     private static final int DEF_CONN_LIMIT = 100;
 
-    private final String deviceName;
+    private String deviceName;
     private String description;
     private String manufacturer;
     private String manufacturerModelName;
     private String stationName;
     private String deviceSerialNumber;
     private String issuerOfPatientID;
-    private final List<String> softwareVersion = new ArrayList<String>(1);
-    private final List<String> primaryDeviceType = new ArrayList<String>(1);
-    private final List<String> institutionNames = new ArrayList<String>(1);
-    private final List<String> institutionAddresses = new ArrayList<String>(1);
-    private final List<String> institutionalDepartmentNames = new ArrayList<String>(1);
-    private final List<String> authorizedNodeCertificateRefs = new ArrayList<String>(1);
-    private final List<String> thisNodeCertificateRefs = new ArrayList<String>(1);
-    private final List<String> relatedDeviceRefs = new ArrayList<String>(1);
-    private final List<byte[]> vendorData = new ArrayList<byte[]>(1);
+    private String[] softwareVersions = {};
+    private String[] primaryDeviceTypes = {};
+    private String[] institutionNames = {};
+    private String[] institutionAddresses = {};
+    private String[] institutionalDepartmentNames = {};
+    private String[] authorizedNodeCertificateRefs = {};
+    private String[] thisNodeCertificateRefs = {};
+    private String[] relatedDeviceRefs = {};
+    private byte[][] vendorData = {};
     private boolean installed = true;
     private boolean activated = false;
     private final List<Connection> conns = new ArrayList<Connection>();
@@ -188,8 +190,8 @@ public class Device {
      * 
      * @return A String array containing the software versions.
      */
-    public final List<String> getSoftwareVersion() {
-        return softwareVersion;
+    public final String[] getSoftwareVersion() {
+        return softwareVersions;
     }
 
     /**
@@ -201,13 +203,8 @@ public class Device {
      * @param softwareVersion
      *                A String array containing the software versions.
      */
-    public void setSoftwareVersion(Collection<String> softwareVersion) {
-        softwareVersion.clear();
-        softwareVersion.addAll(softwareVersion);
-    }
-
-    public final void setSoftwareVersion(String... softwareVersion) {
-        setSoftwareVersion(Arrays.asList(softwareVersion));
+    public final void setSoftwareVersions(String... softwareVersions) {
+        this.softwareVersions = softwareVersions;
     }
 
     /**
@@ -259,8 +256,8 @@ public class Device {
      * 
      * @return A String array containing the type codes of this device.
      */
-    public final List<String> getPrimaryDeviceTypes() {
-        return primaryDeviceType;
+    public final String[] getPrimaryDeviceTypes() {
+        return primaryDeviceTypes;
     }
 
     /**
@@ -287,7 +284,7 @@ public class Device {
      * 
      * @return A String array containing the institution name values.
      */
-    public final List<String> getInstitutionNames() {
+    public final String[] getInstitutionNames() {
         return institutionNames;
     }
 
@@ -301,13 +298,8 @@ public class Device {
      * @param names
      *                A String array containing the institution name values.
      */
-    public void setInstitutionNames(Collection<String> name) {
-        institutionNames.clear();
-        institutionNames.addAll(name);
-    }
-
-    public void setInstitutionNames(String... name) {
-        setInstitutionNames(Arrays.asList(name));
+    public void setInstitutionNames(String... names) {
+        institutionNames = names;
     }
 
     /**
@@ -315,7 +307,7 @@ public class Device {
      * 
      * @return A String array containing the institution address values.
      */
-    public final List<String> getInstitutionAddresses() {
+    public final String[] getInstitutionAddresses() {
         return institutionAddresses;
     }
 
@@ -328,13 +320,8 @@ public class Device {
      * @param addr
      *                A String array containing the institution address values.
      */
-    public void setInstitutionAddresses(Collection<String> name) {
-        institutionAddresses.clear();
-        institutionAddresses.addAll(name);
-    }
-
-    public void setInstitutionAddresses(String... name) {
-        setInstitutionAddresses(Arrays.asList(name));
+    public void setInstitutionAddresses(String... addresses) {
+        institutionAddresses = addresses;
     }
 
     /**
@@ -342,7 +329,7 @@ public class Device {
      * 
      * @return A String array containing the dept. name values.
      */
-    public final List<String> getInstitutionalDepartmentNames() {
+    public final String[] getInstitutionalDepartmentNames() {
         return institutionalDepartmentNames;
     }
 
@@ -355,13 +342,8 @@ public class Device {
      * @param name
      *                A String array containing the dept. name values.
      */
-    public void setInstitutionalDepartmentNames(Collection<String> name) {
-        institutionalDepartmentNames.clear();
-        institutionalDepartmentNames.addAll(name);
-    }
-
-    public void setInstitutionalDepartmentNames(String... name) {
-        setInstitutionAddresses(Arrays.asList(name));
+    public void setInstitutionalDepartmentNames(String... names) {
+        institutionalDepartmentNames = names;
     }
 
     /**
@@ -388,43 +370,28 @@ public class Device {
     }
 
 
-    public final List<String> getAuthorizedNodeCertificateRefs() {
+    public final String[] getAuthorizedNodeCertificateRefs() {
         return authorizedNodeCertificateRefs;
     }
 
-    public void setAuthorizedNodeCertificateRefs(Collection<String> refs) {
-        authorizedNodeCertificateRefs.clear();
-        authorizedNodeCertificateRefs.addAll(refs);
-    }
-
     public void setAuthorizedNodeCertificateRefs(String... refs) {
-        setAuthorizedNodeCertificateRefs(Arrays.asList(refs));
+        authorizedNodeCertificateRefs = refs;
     }
 
-    public final List<String> getThisNodeCertificateRefs() {
+    public final String[] getThisNodeCertificateRefs() {
         return thisNodeCertificateRefs;
     }
 
-    public void setThisNodeCertificateRefs(Collection<String> refs) {
-        thisNodeCertificateRefs.clear();
-        thisNodeCertificateRefs.addAll(refs);
-    }
-
     public void setThisNodeCertificateRefs(String... refs) {
-        setThisNodeCertificateRefs(Arrays.asList(refs));
+        thisNodeCertificateRefs = refs;
     }
 
-    public final List<String> getRelatedDeviceRefs() {
+    public final String[] getRelatedDeviceRefs() {
         return relatedDeviceRefs;
     }
 
-    public void setRelatedDeviceRefs(Collection<String> refs) {
-        relatedDeviceRefs.clear();
-        relatedDeviceRefs.addAll(refs);
-    }
-
     public void setRelatedDeviceRefs(String... refs) {
-        setRelatedDeviceRefs(Arrays.asList(refs));
+        relatedDeviceRefs = refs;
     }
 
     /**
@@ -432,7 +399,7 @@ public class Device {
      * 
      * @return An Object of the device data.
      */
-    public final List<byte[]> getVendorData() {
+    public final byte[][] getVendorData() {
         return vendorData;
     }
 
@@ -442,13 +409,8 @@ public class Device {
      * @param vendorData
      *                An Object of the device data.
      */
-    public void setVendorData(Collection<byte[]> vendorData) {
-        this.vendorData.clear();
-        this.vendorData.addAll(vendorData);
-    }
-
     public void setVendorData(byte[]... vendorData) {
-        setVendorData(Arrays.asList(vendorData));
+        this.vendorData = vendorData;
     }
 
     /**
@@ -700,5 +662,22 @@ public class Device {
 
         return scheduledExecutor.scheduleAtFixedRate(command,
                 initialDelay, period, unit);
+    }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder(512), "").toString();
+    }
+
+    public StringBuilder promptTo(StringBuilder sb, String indent) {
+        String indent2 = indent + "  ";
+        StringUtils.appendLine(sb, indent, "Device[name: ", deviceName);
+        StringUtils.appendLine(sb, indent2,"desc: ", description);
+        StringUtils.appendLine(sb, indent2,"installed: ", installed);
+        for (Connection conn : conns)
+            conn.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
+        for (ApplicationEntity ae : aes.values())
+            ae.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
+        return sb.append(indent).append(']');
     }
 }

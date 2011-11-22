@@ -48,9 +48,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -59,6 +57,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +73,7 @@ import org.slf4j.LoggerFactory;
  * called and calling AE-titles.
  * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
+ *
  */
 public class Connection {
 
@@ -98,14 +97,15 @@ public class Connection {
     private int receiveBufferSize;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
-    private final LinkedHashSet<String> tlsCipherSuites = new LinkedHashSet<String>();
-    private final LinkedHashSet<String> tlsProtocols = 
-            new LinkedHashSet<String>(Arrays.asList("TLSv1", "SSLv3"));
+    private String[] tlsCipherSuites = {};
+    private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
+    private String[] blacklist = {};
     private Boolean installed;
-    private Collection<InetAddress> blacklist;
 
     private InetAddress addr;
+    private List<InetAddress> blacklistAddrs;
     private ServerSocket server;
+    private boolean needRebind;
 
      /**
      * Get the <code>Device</code> object that this Network Connection belongs
@@ -150,7 +150,16 @@ public class Connection {
      *            A String containing the host name.
      */
     public final void setHostname(String hostname) {
+        if (hostname != null ? hostname.equals(this.hostname) : this.hostname == null)
+            return;
+
         this.hostname = hostname;
+        needRebind();
+    }
+
+    private void needRebind() {
+        if (isListening())
+            needRebind = true;
     }
 
     /**
@@ -185,19 +194,23 @@ public class Connection {
     }
 
     /**
-     * The TCP port that the AE is listening on or <code>-1</code> for a
+     * The TCP port that the AE is listening on or <code>0</code> for a
      *          network connection that only initiates associations.
      * 
-     * A valid port value is between 1 and 65535.
+     * A valid port value is between 0 and 65535.
      * 
      * @param port
      *            The port number or <code>-1</code>.
      */
     public final void setPort(int port) {
-        if (port != -1 && port <= 0 || port > 0xFFFF)
+        if (this.port == port)
+            return;
+
+        if ((port <= 0 || port > 0xFFFF) && port != -1)
             throw new IllegalArgumentException("port out of range:" + port);
 
         this.port = port;
+        needRebind();
     }
 
     public final boolean isServer() {
@@ -209,9 +222,14 @@ public class Connection {
     }
 
     public final void setBacklog(int backlog) {
+        if (this.backlog == backlog)
+            return;
+
         if (backlog < 1)
             throw new IllegalArgumentException("backlog: " + backlog);
+
         this.backlog = backlog;
+        needRebind();
     }
 
     public final int getConnectTimeout() {
@@ -314,6 +332,10 @@ public class Connection {
 
     public final void setDimseRSPTimeout(int timeout) {
         this.dimseRSPTimeout = timeout;
+        if (cgetRSPTimeout == 0)
+            cgetRSPTimeout = timeout;
+        if (cmoveRSPTimeout == 0)
+            cmoveRSPTimeout = timeout;
     }
 
     public final int getCGetRSPTimeout() {
@@ -347,7 +369,7 @@ public class Connection {
      * 
      * @return A String array containing the supported cipher suites
      */
-    public Set<String> getTlsCipherSuite() {
+    public String[] getTlsCipherSuites() {
         return tlsCipherSuites;
     }
 
@@ -359,30 +381,28 @@ public class Connection {
      * @param tlsCipherSuite
      *            A String array containing the supported cipher suites
      */
-    public void setTlsCipherSuite(Collection<String> tlsCipherSuite) {
-        tlsCipherSuites.clear();
-        tlsCipherSuites.addAll(tlsCipherSuite);
-    }
+    public void setTlsCipherSuites(String... tlsCipherSuites) {
+        if (Arrays.equals(this.tlsCipherSuites, tlsCipherSuites))
+            return;
 
-    public void setTlsCipherSuite(String... tlsCipherSuite) {
-        setTlsCipherSuite(Arrays.asList(tlsCipherSuite));
+        this.tlsCipherSuites = tlsCipherSuites;
+        needRebind();
     }
 
     public final boolean isTls() {
-        return !tlsCipherSuites.isEmpty();
+        return tlsCipherSuites.length > 0;
     }
 
-    public Set<String> getTlsProtocols() {
+    public final String[] getTlsProtocols() {
         return tlsProtocols;
     }
 
-    public void setTlsProtocol(Collection<String> tlsProtocols) {
-        tlsProtocols.clear();
-        tlsProtocols.addAll(tlsProtocols);
-    }
+    public final void setTlsProtocols(String... tlsProtocols) {
+        if (Arrays.equals(this.tlsProtocols, tlsProtocols))
+            return;
 
-    public void setTlsProtocol(String... tlsProtocols) {
-        setTlsProtocol(Arrays.asList(tlsProtocols));
+        this.tlsProtocols = tlsProtocols;
+        needRebind();
     }
 
     public final boolean isTlsNeedClientAuth() {
@@ -390,7 +410,11 @@ public class Connection {
     }
 
     public final void setTlsNeedClientAuth(boolean tlsNeedClientAuth) {
+        if (this.tlsNeedClientAuth == tlsNeedClientAuth)
+            return;
+
         this.tlsNeedClientAuth = tlsNeedClientAuth;
+        needRebind();
     }
 
     /**
@@ -518,7 +542,7 @@ public class Connection {
      * 
      * @return Returns the list of IP addresses which should be ignored.
      */
-    public final Collection<InetAddress> getBlacklist() {
+    public final String[] getBlacklist() {
         return blacklist;
     }
 
@@ -531,50 +555,28 @@ public class Connection {
      * @param blacklist
      *            the list of IP addresses which should be ignored.
      */
-    public final void setBlacklist(Collection<InetAddress> blacklist) {
+    public final void setBlacklist(String[] blacklist) {
         this.blacklist = blacklist;
+        this.blacklistAddrs = null;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Connection[")
-            .append(hostname)
-            .append(':')
-            .append(port);
-        if (isTls()) {
-            sb.append(", tls=[");
-            for (String s : tlsCipherSuites)
-                sb.append(s).append(", ");
-            sb.setLength(sb.length() - 2);
-            sb.append(']');
-        }
-        if (commonName != null)
-            sb.append(", cn=").append(commonName);
-        sb.append(']');
-        return sb.toString();
+        return promptTo(new StringBuilder(), "").toString();
     }
 
-    /**
-     * Set options on a socket that was either just accepted (if this network
-     * connection is an SCP), or just created (if this network connection is an
-     * SCU).
-     * 
-     * @param s
-     *            The <code>Socket</code> object.
-     * @throws SocketException
-     *             If the options cannot be set on the socket.
-     */
-    private void setSocketOptions(Socket s) throws SocketException {
-        int size;
-        size = s.getReceiveBufferSize();
-        if (receiveBufferSize == 0) {
-            receiveBufferSize = size;
-        } else if (receiveBufferSize != size) {
-            s.setReceiveBufferSize(receiveBufferSize);
-            receiveBufferSize = s.getReceiveBufferSize();
-        }
-        size = s.getSendBufferSize();
+    public StringBuilder promptTo(StringBuilder sb, String indent) {
+        String indent2 = indent + "  ";
+        StringUtils.appendLine(sb, indent, "Connection[cn: ", commonName);
+        StringUtils.appendLine(sb, indent2,"host: ", hostname);
+        StringUtils.appendLine(sb, indent2,"port: ", port);
+        StringUtils.appendLine(sb, indent2,"ciphers: ", Arrays.toString(tlsCipherSuites));
+        StringUtils.appendLine(sb, indent2,"installed: ", getInstalled());
+        return sb.append(indent).append(']');
+    }
+
+    private void setSocketSendOptions(Socket s) throws SocketException {
+        int size = s.getSendBufferSize();
         if (sendBufferSize == 0) {
             sendBufferSize = size;
         } else if (sendBufferSize != size) {
@@ -586,11 +588,45 @@ public class Connection {
         }
     }
 
+    private void setReceiveBufferSize(Socket s) throws SocketException {
+        int size = s.getReceiveBufferSize();
+        if (receiveBufferSize == 0) {
+            receiveBufferSize = size;
+        } else if (receiveBufferSize != size) {
+            s.setReceiveBufferSize(receiveBufferSize);
+            receiveBufferSize = s.getReceiveBufferSize();
+        }
+    }
+
+    private void setReceiveBufferSize(ServerSocket ss) throws SocketException {
+        int size = ss.getReceiveBufferSize();
+        if (receiveBufferSize == 0) {
+            receiveBufferSize = size;
+        } else if (receiveBufferSize != size) {
+            ss.setReceiveBufferSize(receiveBufferSize);
+            receiveBufferSize = ss.getReceiveBufferSize();
+        }
+    }
+
     private InetAddress addr() throws UnknownHostException {
         if (addr == null && hostname != null)
             addr = InetAddress.getByName(hostname);
         return addr;
     }
+
+    private List<InetAddress> blacklistAddrs() {
+        if (blacklistAddrs == null) {
+            blacklistAddrs = new ArrayList<InetAddress>(blacklist.length);
+            for (String hostname : blacklist)
+                try {
+                    blacklistAddrs.add(InetAddress.getByName(hostname));
+                } catch (UnknownHostException e) {
+                    LOG.warn("Failed to lookup InetAddress of " + hostname, e);
+                }
+        }
+        return blacklistAddrs;
+    }
+
 
     InetSocketAddress getEndPoint() throws UnknownHostException {
         return new InetSocketAddress(addr(), port);
@@ -636,9 +672,10 @@ public class Connection {
         checkInstalled();
         if (!isServer())
             throw new IllegalStateException("Does not accept connections");
-        if (server != null)
+        if (isListening())
             throw new IllegalStateException("Already listening - " + server);
         server = isTls() ? createTLSServerSocket() : new ServerSocket();
+        setReceiveBufferSize(server);
         server.bind(getEndPoint(), backlog);
         device.execute(new Runnable() {
 
@@ -654,7 +691,7 @@ public class Connection {
                             SafeClose.close(s);
                         } else {
                             LOG.info("Accept connection from {}", s);
-                            setSocketOptions(s);
+                            setSocketSendOptions(s);
                             new Association(null, Connection.this, s);
                         }
                     }
@@ -668,22 +705,26 @@ public class Connection {
         });
     }
 
+    public final boolean isListening() {
+        return server != null;
+    }
+
+    public final boolean isNeedRebind() {
+        return needRebind;
+    }
+
     private ServerSocket createTLSServerSocket() throws IOException {
         SSLContext sslContext = device.getSSLContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(toArray(tlsProtocols));
-        ss.setEnabledCipherSuites(toArray(tlsCipherSuites));
+        ss.setEnabledProtocols(tlsProtocols);
+        ss.setEnabledCipherSuites(tlsCipherSuites);
         ss.setNeedClientAuth(tlsNeedClientAuth);
         return ss;
     }
 
-    private static String[] toArray(Collection<String> c) {
-        return c.toArray(new String[c.size()]);
-    }
-
     private boolean isBlackListed(InetAddress ia) {
-        return blacklist != null && blacklist.contains(ia);
+        return blacklistAddrs().contains(ia);
     }
 
     public synchronized void unbind() {
@@ -695,6 +736,7 @@ public class Connection {
             // Ignore errors when closing the server socket.
         }
         server = null;
+        needRebind = false;
     }
 
     public Socket connect(Connection remoteConn)
@@ -707,7 +749,8 @@ public class Connection {
                 remoteConn.getHostname(), remoteConn.getPort());
         LOG.info("Initiate connection from {} to {}", bindPoint, endpoint);
         s.bind(bindPoint);
-        setSocketOptions(s);
+        setReceiveBufferSize(s);
+        setSocketSendOptions(s);
         s.connect(endpoint, connectTimeout);
         return s;
     }
@@ -717,9 +760,9 @@ public class Connection {
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(
-                toArray(intersect(remoteConn.tlsProtocols, tlsProtocols)));
+                intersect(remoteConn.tlsProtocols, tlsProtocols));
         s.setEnabledCipherSuites(
-                toArray(intersect(remoteConn.tlsCipherSuites, tlsCipherSuites)));
+                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
         return s;
     }
 
@@ -731,19 +774,29 @@ public class Connection {
                 : !isTls();
     }
 
-    private boolean hasCommon(Collection<String> c1,  Collection<String> c2) {
-        for (String s1 : c1)
-            if (c2.contains(s1))
-                return true;
+    private boolean hasCommon(String[] ss1,  String[] ss2) {
+        for (String s1 : ss1)
+            for (String s2 : ss2)
+                if (s1.equals(s2))
+                    return true;
         return false;
     }
 
-    private static Collection<String> intersect(Collection<String> c1, Collection<String> c2) {
-        ArrayList<String> intersect = new ArrayList<String>(Math.min(c1.size(), c2.size()));
-        for (String s1 : c1)
-            if (c2.contains(s1))
-                intersect.add(s1);
-        return intersect;
+    private static String[] intersect(String[] ss1, String[] ss2) {
+        String[] ss = new String[Math.min(ss1.length, ss2.length)];
+        int len = 0;
+        for (String s1 : ss1)
+            for (String s2 : ss2)
+                if (s1.equals(s2)) {
+                    ss[len++] = s1;
+                    break;
+                };
+        if (len == ss.length)
+            return ss;
+
+        String[] dest = new String[len];
+        System.arraycopy(ss, 0, dest, 0, len);
+        return dest;
     }
 
     private InetSocketAddress getBindPoint() throws UnknownHostException {

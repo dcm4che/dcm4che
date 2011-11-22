@@ -536,7 +536,7 @@ public class Association {
             initPCMap();
             maxOpsInvoked = ac.getMaxOpsPerformed();
             maxPDULength = ApplicationEntity.minZeroAsMax(
-                    rq.getMaxPDULength(), ae.getMaxPDULengthSend());
+                    rq.getMaxPDULength(), ae.getSendPDULength());
             write(ac);
         } catch (AAssociateRJ e) {
             write(e);
@@ -555,7 +555,7 @@ public class Association {
         initPCMap();
         maxOpsInvoked = ac.getMaxOpsInvoked();
         maxPDULength = ApplicationEntity.minZeroAsMax(
-                ac.getMaxPDULength(), ae.getMaxPDULengthSend());
+                ac.getMaxPDULength(), ae.getSendPDULength());
         enterState(State.Sta6);
         startIdleTimeout();
     }

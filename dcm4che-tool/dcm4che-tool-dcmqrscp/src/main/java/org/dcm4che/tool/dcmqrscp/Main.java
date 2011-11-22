@@ -464,7 +464,7 @@ public class Main {
                 Connection remote = new Connection();
                 remote.setHostname(hostPortCiphers[0]);
                 remote.setPort(Integer.parseInt(hostPortCiphers[1]));
-                remote.setTlsCipherSuite(ciphers);
+                remote.setTlsCipherSuites(ciphers);
                 main.addRemoteConnection(aet, remote);
             } catch (Exception e) {
                 throw new IllegalArgumentException(

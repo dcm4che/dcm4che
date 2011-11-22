@@ -41,12 +41,9 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.net.pdu.AAbort;
@@ -59,6 +56,7 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.pdu.UserIdentityAC;
+import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,15 +81,11 @@ public class ApplicationEntity {
     private Device device;
     private String aet;
     private String description;
-    private Object vendorData;
-    private final LinkedHashSet<String> applicationCluster =
-            new LinkedHashSet<String>();
-    private final LinkedHashSet<String> prefCalledAETs =
-            new LinkedHashSet<String>();
-    private final LinkedHashSet<String> prefCallingAETs =
-            new LinkedHashSet<String>();
-    private final LinkedHashSet<String> supportedCharacterSets =
-            new LinkedHashSet<String>();
+    private byte[][] vendorData = {};
+    private String[] applicationClusters = {};
+    private String[] prefCalledAETs = {};
+    private String[] prefCallingAETs = {};
+    private String[] supportedCharacterSets = {};
     private boolean checkCallingAET;
     private boolean acceptor;
     private boolean initiator;
@@ -101,8 +95,8 @@ public class ApplicationEntity {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
-    private int maxPDULengthSend = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
-    private int maxPDULengthReceive = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
+    private int sendPDULength = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
+    private int receivePDULength = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
     private int maxOpsPerformed = 1;
     private int maxOpsInvoked = 1;
     private boolean packPDV = true;
@@ -187,7 +181,7 @@ public class ApplicationEntity {
      * 
      * @return An Object of the vendor data.
      */
-    public final Object getVendorData() {
+    public final byte[][] getVendorData() {
         return vendorData;
     }
 
@@ -197,7 +191,7 @@ public class ApplicationEntity {
      * @param vendorData
      *                An Object of the vendor data.
      */
-    public final void setVendorData(Object vendorData) {
+    public final void setVendorData(byte[]... vendorData) {
         this.vendorData = vendorData;
     }
 
@@ -205,57 +199,42 @@ public class ApplicationEntity {
      * Get the locally defined names for a subset of related applications. E.g.
      * neuroradiology.
      * 
-     * @return A Set<String> containing the names.
+     * @return A String[] containing the names.
      */
-    public Set<String> getApplicationClusters() {
-        return applicationCluster;
-    }
-
-    public void setApplicationClusters(Collection<String> clusters) {
-        applicationCluster.clear();
-        applicationCluster.addAll(clusters);
+    public String[] getApplicationClusters() {
+        return applicationClusters;
     }
 
     public void setApplicationClusters(String... clusters) {
-        setApplicationClusters(Arrays.asList(clusters));
+        applicationClusters = clusters;
     }
 
     /**
      * Get the AE Title(s) that are preferred for initiating associations
      * from this network AE.
      * 
-     * @return A Set<String> of the preferred called AE titles.
+     * @return A String[] of the preferred called AE titles.
      */
-    public Set<String> getPreferredCalledAETitles() {
+    public String[] getPreferredCalledAETitles() {
         return prefCalledAETs;
     }
 
-    public void setPreferredCalledAETitles(Collection<String> aets) {
-        prefCalledAETs.clear();
-        prefCalledAETs.addAll(aets);
-    }
-
     public void setPreferredCalledAETitles(String... aets) {
-        setPreferredCalledAETitles(Arrays.asList(aets));
+        prefCalledAETs = aets;
     }
 
     /**
      * Get the AE title(s) that are preferred for accepting associations by
      * this network AE.
      * 
-     * @return A Set<String> containing the preferred calling AE titles.
+     * @return A String[] containing the preferred calling AE titles.
      */
-    public Set<String> getPreferredCallingAETitles() {
+    public String[] getPreferredCallingAETitles() {
         return prefCallingAETs;
     }
 
-    public void setPreferredCallingAETitles(Collection<String> aets) {
-        prefCallingAETs.clear();
-        prefCallingAETs.addAll(aets);
-    }
-
     public void setPreferredCallingAETitles(String... aets) {
-        setPreferredCallingAETitles(Arrays.asList(aets));
+        prefCallingAETs = aets;
     }
 
     public void setAcceptOnlyPreferredCallingAETitles(boolean checkCallingAET) {
@@ -271,7 +250,7 @@ public class ApplicationEntity {
      * 
      * @return A String array of the supported character sets.
      */
-    public Set<String> getSupportedCharacterSets() {
+    public String[] getSupportedCharacterSets() {
         return supportedCharacterSets;
     }
 
@@ -285,9 +264,8 @@ public class ApplicationEntity {
      * @param characterSets
      *                A String array of the supported character sets.
      */
-    public void setSupportedCharacterSets(Collection<String> characterSets) {
-        supportedCharacterSets.clear();
-        supportedCharacterSets.addAll(characterSets);
+    public void setSupportedCharacterSets(String... characterSets) {
+        supportedCharacterSets = characterSets;
     }
 
     /**
@@ -363,20 +341,20 @@ public class ApplicationEntity {
         this.installed = installed;
     }
 
-    public final int getMaxPDULengthSend() {
-        return maxPDULengthSend;
+    public final int getSendPDULength() {
+        return sendPDULength;
     }
 
-    public final void setMaxPDULengthSend(int maxPDULengthSend) {
-        this.maxPDULengthSend = maxPDULengthSend;
+    public final void setSendPDULength(int sendPDULength) {
+        this.sendPDULength = sendPDULength;
     }
 
-    public final int getMaxPDULengthReceive() {
-        return maxPDULengthReceive;
+    public final int getReceivePDULength() {
+        return receivePDULength;
     }
 
-    public final void setMaxPDULengthReceive(int maxPDULengthReceive) {
-        this.maxPDULengthReceive = maxPDULengthReceive;
+    public final void setReceivePDULength(int receivePDULength) {
+        this.receivePDULength = receivePDULength;
     }
 
     public final int getMaxOpsPerformed() {
@@ -469,19 +447,14 @@ public class ApplicationEntity {
         return conns;
     }
 
-    public void addTransferCapability(TransferCapability tc) {
-        String sopClass = tc.getSopClass();
-        TransferCapability.Role role = tc.getRole();
-        if (role == null || sopClass == null)
-            throw new IllegalArgumentException(tc.toString());
-        switch(role) {
-        case SCU:
-            scuTCs.put(sopClass, tc);
-            break;
-        case SCP:
-            scpTCs.put(sopClass, tc);
-            break;
-        }
+    public TransferCapability addTransferCapability(TransferCapability tc) {
+        return (tc.getRole() == TransferCapability.Role.SCU ? scuTCs : scpTCs)
+                .put(tc.getSopClass(), tc);
+    }
+
+    public TransferCapability removeTransferCapability(TransferCapability tc) {
+        return (tc.getRole() == TransferCapability.Role.SCU ? scuTCs : scpTCs)
+                .remove(tc.getSopClass());
     }
 
     public Collection<TransferCapability> getTransferCapabilities() {
@@ -511,7 +484,7 @@ public class ApplicationEntity {
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (checkCallingAET && !prefCallingAETs.contains(rq.getCallingAET()))
+        if (checkCallingAET && !contains(prefCallingAETs, rq.getCallingAET()))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
@@ -525,13 +498,21 @@ public class ApplicationEntity {
         AAssociateAC ac = new AAssociateAC();
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
-        ac.setMaxPDULength(maxPDULengthReceive);
+        ac.setMaxPDULength(receivePDULength);
         ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
                 maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
         ac.setUserIdentity(userIdentity);
         return negotiate(as, rq, ac);
+    }
+
+    private static boolean contains(String[] ss, String val) {
+        for (String s : ss)
+           if (val.equals(s))
+               return true;
+
+        return false;
     }
 
     protected AAssociateAC negotiate(Association as, AAssociateRQ rq, AAssociateAC ac)
@@ -641,7 +622,7 @@ public class ApplicationEntity {
             rq.setCallingAET(aet);
         rq.setMaxOpsInvoked(maxOpsInvoked);
         rq.setMaxOpsPerformed(maxOpsPerformed);
-        rq.setMaxPDULength(maxPDULengthReceive);
+        rq.setMaxPDULength(receivePDULength);
         Socket sock = local.connect(remote);
         Association as = new Association(this, local, sock);
         as.write(rq);
@@ -681,6 +662,20 @@ public class ApplicationEntity {
 
     @Override
     public String toString() {
-        return getAETitle();
+        return promptTo(new StringBuilder(512), "").toString();
+    }
+
+    public StringBuilder promptTo(StringBuilder sb, String indent) {
+        String indent2 = indent + "  ";
+        StringUtils.appendLine(sb, indent, "ApplicationEntity[title: ", aet);
+        StringUtils.appendLine(sb, indent2,"desc: ", description);
+        StringUtils.appendLine(sb, indent2,"acceptor: ", acceptor);
+        StringUtils.appendLine(sb, indent2,"initiator: ", initiator);
+        StringUtils.appendLine(sb, indent2,"installed: ", getInstalled());
+        for (Connection conn : conns)
+            conn.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
+        for (TransferCapability tc : getTransferCapabilities())
+            tc.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
+        return sb.append(indent).append(']');
     }
 }

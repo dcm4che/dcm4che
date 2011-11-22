@@ -47,24 +47,21 @@ import org.dcm4che.net.Device;
  */
 public interface DeviceManager {
 
-    boolean initConfiguration() throws ConfigurationManagementException;
+    boolean configurationExists() throws ConfigurationManagementException;
 
     boolean purgeConfiguration() throws ConfigurationManagementException;
 
     boolean registerAETitle(String aet) throws ConfigurationManagementException;
 
-    boolean unregisterAETitle(String aet) throws ConfigurationManagementException;
+    void unregisterAETitle(String aet) throws ConfigurationManagementException;
 
     ApplicationEntity findApplicationEntity(String aet) throws ConfigurationManagementException;
 
     Device findDevice(String name) throws ConfigurationManagementException;
 
-    void removeDevice(String name) throws ConfigurationManagementException;
-
     void persist(Device device) throws ConfigurationManagementException;
 
-    void merge(Device preUpdate) throws ConfigurationManagementException;
+    void merge(Device device) throws ConfigurationManagementException;
 
-    void refresh(Device postLoad) throws ConfigurationManagementException;
-
+    void remove(Device device) throws ConfigurationManagementException;
 }

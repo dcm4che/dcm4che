@@ -40,11 +40,17 @@ package org.dcm4che.conf.ldap;
 
 import static org.junit.Assert.*;
 
+import java.util.Collection;
+import java.util.Iterator;
+
+import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,44 +60,126 @@ import org.junit.Test;
  */
 public class LdapDeviceManagerTest {
 
-    private LdapDeviceManager deviceManager = new LdapDeviceManager();
+    private LdapDeviceManager deviceManager;
 
     @Before
     public void setUp() throws Exception {
-        deviceManager.setLdapURI("ldap://localhost:389/dc=nodomain");
-        deviceManager.setSimpleAuthentication("cn=admin,dc=nodomain", "admin");
+        deviceManager = new LdapDeviceManager(
+                LdapDeviceManager.authenticate(
+                                LdapDeviceManager.env("ldap://localhost:389"),
+                                "cn=admin,dc=nodomain", "admin"),
+                        "dc=nodomain");
     }
 
-    @Test
-    public void testConnect() throws Exception {
-        deviceManager.connect();
+    @After
+    public void tearDown() throws Exception {
         deviceManager.close();
     }
 
-
     @Test
-    public void testInitConfiguration() throws Exception {
-        deviceManager.connect();
-        deviceManager.initConfiguration();
-        deviceManager.registerAETitle("DCM4CHEE");
-        deviceManager.persist(createDevice());
-        deviceManager.purgeConfiguration();
-        deviceManager.close();
+    public void testRegisterAETitle() throws Exception {
+        deviceManager.unregisterAETitle("TEST-AET1");
+        assertTrue(deviceManager.registerAETitle("TEST-AET1"));
+        assertFalse(deviceManager.registerAETitle("TEST-AET1"));
+        deviceManager.unregisterAETitle("TEST-AET1");
     }
 
-    private Device createDevice() throws Exception {
-        Device device = new Device("DCM4CHEE");
+    @Test
+    public void testPersist() throws Exception {
+        Device device = createDevice("Test-Device-1", "TEST-AET1");
+        try {
+            deviceManager.remove(device);
+        }  catch (ConfigurationNotFoundException e) {}
+        deviceManager.persist(device);
+        ApplicationEntity ae = deviceManager.findApplicationEntity("TEST-AET1");
+        assertFalse(ae.isAssociationInitiator());
+        assertTrue(ae.isAssociationAcceptor());
+        assertTrue(ae.getConnections().get(0).isServer());
+        Collection<TransferCapability> tcs = ae.getTransferCapabilities();
+        Iterator<TransferCapability> tciter = tcs.iterator();
+        assertTrue(tciter.hasNext());
+        TransferCapability tc = tciter.next();
+        assertEquals(UID.VerificationSOPClass, tc.getSopClass());
+        assertEquals(TransferCapability.Role.SCP, tc.getRole());
+        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
+        assertFalse(tciter.hasNext());
+        try {
+            deviceManager.persist(createDevice("Test-Device-1", "TEST-AET1"));
+            fail("ConfigurationAlreadyExistsException expected");
+        } catch (ConfigurationAlreadyExistsException e) {}
+        deviceManager.remove(device);
+    }
+
+    @Test
+    public void testMerge() throws Exception {
+        Device device = createDevice("Test-Device-1", "TEST-AET1");
+        try {
+            deviceManager.remove(device);
+        }  catch (ConfigurationNotFoundException e) {}
+        deviceManager.persist(device);
+        modifyDevice(device);
+        deviceManager.merge(device);
+        ApplicationEntity ae2 = deviceManager.findApplicationEntity("TEST-AET2");
+        ApplicationEntity ae = ae2.getDevice().getApplicationEntity("TEST-AET1");
+        assertTrue(ae.isAssociationInitiator());
+        assertFalse(ae.isAssociationAcceptor());
+        assertFalse(ae.getConnections().get(0).isServer());
+        Collection<TransferCapability> tcs = ae.getTransferCapabilities();
+        Iterator<TransferCapability> tciter = tcs.iterator();
+        assertTrue(tciter.hasNext());
+        TransferCapability tc = tciter.next();
+        assertEquals(UID.VerificationSOPClass, tc.getSopClass());
+        assertEquals(TransferCapability.Role.SCU, tc.getRole());
+        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
+        assertFalse(tciter.hasNext());
+        deviceManager.remove(device);
+    }
+
+    private static Device createDevice(String name, String aet) throws Exception {
+        Device device = new Device(name);
+        Connection conn = createConn();
+        device.addConnection(conn);
+        ApplicationEntity ae = createAE(aet, conn);
+        device.addApplicationEntity(ae);
+        return device ;
+    }
+
+    private static Connection createConn() {
         Connection conn = new Connection();
         conn.setHostname("host.dcm4che.org");
         conn.setPort(11112);
-        device.addConnection(conn);
-        ApplicationEntity ae = new ApplicationEntity("DCM4CHEE");
+        return conn;
+    }
+
+    private static final TransferCapability ECHO_SCP = new TransferCapability(null, 
+            UID.VerificationSOPClass,
+            TransferCapability.Role.SCP,
+            UID.ImplicitVRLittleEndian);
+
+    private static final TransferCapability ECHO_SCU = new TransferCapability(null, 
+            UID.VerificationSOPClass,
+            TransferCapability.Role.SCU,
+            UID.ImplicitVRLittleEndian);
+
+    private static ApplicationEntity createAE(String aet, Connection conn) {
+        ApplicationEntity ae = new ApplicationEntity(aet);
+        ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
-        ae.addTransferCapability(
-                new TransferCapability(null, UID.VerificationSOPClass, TransferCapability.Role.SCU,
-                        UID.ImplicitVRLittleEndian));
-        device.addApplicationEntity(ae);
-        return device ;
+        ae.addTransferCapability(ECHO_SCP);
+        return ae;
+    }
+
+    private static void modifyDevice(Device device) throws Exception  {
+        ApplicationEntity ae = device.getApplicationEntity("TEST-AET1");
+        ae.getConnections().get(0).setPort(-1);
+        ae.setAssociationInitiator(true);
+        ae.setAssociationAcceptor(false);
+        ae.removeTransferCapability(ECHO_SCP);
+        ae.addTransferCapability(ECHO_SCU);
+        Connection conn = createConn();
+        device.addConnection(conn);
+        ApplicationEntity ae2 = createAE("TEST-AET2", conn);
+        device.addApplicationEntity(ae2);
     }
 
 }

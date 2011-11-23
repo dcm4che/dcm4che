@@ -47,15 +47,14 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.pdu.AAssociateRQAC;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ExtendedLdapDeviceManager extends LdapDeviceManager {
+public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
-    public ExtendedLdapDeviceManager(Hashtable<String, Object> env, String baseDN)
+    public ExtendedLdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         super(env, baseDN);
     }
@@ -64,18 +63,30 @@ public class ExtendedLdapDeviceManager extends LdapDeviceManager {
     protected Attributes attrsOf(Connection conn) {
         Attributes attrs = super.attrsOf(conn);
         addNotEmpty(attrs, "dicomBlacklistedHostname", conn.getBlacklist());
-        addNotDef(attrs, "dicomTCPBacklog", conn.getBacklog(), 50);
-        addNotDef(attrs, "dicomTCPConnectTimeout", conn.getConnectTimeout(), 0);
-        addNotDef(attrs, "dicomAssociationRequestTimeout", conn.getRequestTimeout(), 0);
-        addNotDef(attrs, "dicomAssociationAcknowledgeTimeout", conn.getAcceptTimeout(), 0);
-        addNotDef(attrs, "dicomAssociationReleaseTimeout", conn.getReleaseTimeout(), 0);
-        addNotDef(attrs, "dicomDIMSEResponseTimeout", conn.getDimseRSPTimeout(), 0);
-        addNotDef(attrs, "dicomCGetResponseTimeout", conn.getCGetRSPTimeout(), 0);
-        addNotDef(attrs, "dicomCMoveResponseTimeout", conn.getCMoveRSPTimeout(), 0);
-        addNotDef(attrs, "dicomAssociationIdleTimeout", conn.getIdleTimeout(), 0);
-        addNotDef(attrs, "dicomTCPCloseDelay", conn.getSocketCloseDelay(), 50);
-        addNotDef(attrs, "dicomTCPSendBufferSize", conn.getSendBufferSize(), 0);
-        addNotDef(attrs, "dicomTCPReceiveBufferSize", conn.getReceiveBufferSize(), 0);
+        addNotDef(attrs, "dicomTCPBacklog",
+                conn.getBacklog(), Connection.DEF_BACKLOG);
+        addNotDef(attrs, "dicomTCPConnectTimeout",
+                conn.getConnectTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomAssociationRequestTimeout",
+                conn.getRequestTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomAssociationAcknowledgeTimeout",
+                conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomAssociationReleaseTimeout",
+                conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomDIMSEResponseTimeout",
+                conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomCGetResponseTimeout",
+                conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomCMoveResponseTimeout",
+                conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomAssociationIdleTimeout",
+                conn.getIdleTimeout(), Connection.NO_TIMEOUT);
+        addNotDef(attrs, "dicomTCPCloseDelay",
+                conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
+        addNotDef(attrs, "dicomTCPSendBufferSize",
+                conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
+        addNotDef(attrs, "dicomTCPReceiveBufferSize",
+                conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         addBoolean(attrs, "dicomTCPNoDelay", conn.isTcpNoDelay());
         addNotEmpty(attrs, "dicomTLSProtocol", conn.getTlsProtocols());
         addBoolean(attrs, "dicomTLSNeedClientAuth", conn.isTlsNeedClientAuth());
@@ -85,47 +96,62 @@ public class ExtendedLdapDeviceManager extends LdapDeviceManager {
     @Override
     protected Attributes attrsOf(ApplicationEntity ae, String deviceDN) {
         Attributes attrs = super.attrsOf(ae, deviceDN);
-        addNotDef(attrs, "dicomSendPDULength", ae.getSendPDULength(),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH);
-        addNotDef(attrs, "dicomReceivePDULength", ae.getReceivePDULength(),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH);
-        addNotDef(attrs, "dicomMaxOpsPerformed", ae.getMaxOpsPerformed(), 1);
-        addNotDef(attrs, "dicomMaxOpsInvoked", ae.getMaxOpsInvoked(), 1);
+        addNotDef(attrs, "dicomSendPDULength",
+                ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
+        addNotDef(attrs, "dicomReceivePDULength",
+                ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
+        addNotDef(attrs, "dicomMaxOpsPerformed",
+                ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
+        addNotDef(attrs, "dicomMaxOpsInvoked",
+                ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
         addBoolean(attrs, "dicomPackPDV", ae.isPackPDV());
         return attrs;
     }
 
 
     @Override
-    protected void load(Connection conn, Attributes attrs) throws NamingException {
-        super.load(conn, attrs);
+    protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
+        super.loadFrom(conn, attrs);
         conn.setBlacklist(toStrings(attrs.get("dicomBlacklistedHostname")));
-        conn.setBacklog(toInt(attrs.get("dicomTCPBacklog"), 50));
-        conn.setConnectTimeout(toInt(attrs.get("dicomTCPConnectTimeout"), 0));
-        conn.setRequestTimeout(toInt(attrs.get("dicomAssociationRequestTimeout"), 0));
-        conn.setAcceptTimeout(toInt(attrs.get("dicomAssociationAcknowledgeTimeout"), 0));
-        conn.setReleaseTimeout(toInt(attrs.get("dicomAssociationReleaseTimeout"), 0));
-        conn.setDimseRSPTimeout(toInt(attrs.get("dicomDIMSEResponseTimeout"), 0));
-        conn.setCGetRSPTimeout(toInt(attrs.get("dicomCGetResponseTimeout"), 0));
-        conn.setCMoveRSPTimeout(toInt(attrs.get("dicomCMoveResponseTimeout"), 0));
-        conn.setIdleTimeout(toInt(attrs.get("dicomAssociationIdleTimeout"), 0));
-        conn.setSocketCloseDelay(toInt(attrs.get("dicomTCPCloseDelay"), 50));
-        conn.setSendBufferSize(toInt(attrs.get("dicomTCPSendBufferSize"), 0));
-        conn.setReceiveBufferSize(toInt(attrs.get("dicomTCPReceiveBufferSize"), 0));
+        conn.setBacklog(toInt(attrs.get("dicomTCPBacklog"), Connection.DEF_BACKLOG));
+        conn.setConnectTimeout(toInt(attrs.get("dicomTCPConnectTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setRequestTimeout(toInt(attrs.get("dicomAssociationRequestTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setAcceptTimeout(toInt(attrs.get("dicomAssociationAcknowledgeTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setReleaseTimeout(toInt(attrs.get("dicomAssociationReleaseTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setDimseRSPTimeout(toInt(attrs.get("dicomDIMSEResponseTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setCGetRSPTimeout(toInt(attrs.get("dicomCGetResponseTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setCMoveRSPTimeout(toInt(attrs.get("dicomCMoveResponseTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setIdleTimeout(toInt(attrs.get("dicomAssociationIdleTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setSocketCloseDelay(toInt(attrs.get("dicomTCPCloseDelay"),
+                Connection.DEF_SOCKETDELAY));
+        conn.setSendBufferSize(toInt(attrs.get("dicomTCPSendBufferSize"),
+                Connection.DEF_BUFFERSIZE));
+        conn.setReceiveBufferSize(toInt(attrs.get("dicomTCPReceiveBufferSize"),
+                Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(toBoolean(attrs.get("dicomTCPNoDelay"), Boolean.TRUE));
         conn.setTlsNeedClientAuth(toBoolean(attrs.get("dicomTLSNeedClientAuth"), Boolean.TRUE));
         conn.setTlsProtocols(toStrings(attrs.get("dicomTLSProtocol")));
     }
 
     @Override
-    protected void load(ApplicationEntity ae, Attributes attrs) throws NamingException {
-        super.load(ae, attrs);
+    protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
+        super.loadFrom(ae, attrs);
         ae.setSendPDULength(toInt(attrs.get("dicomSendPDULength"),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH));
+                ApplicationEntity.DEF_MAX_PDU_LENGTH));
         ae.setReceivePDULength(toInt(attrs.get("dicomReceivePDULength"),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(toInt(attrs.get("dicomMaxOpsPerformed"), 1));
-        ae.setMaxOpsInvoked(toInt(attrs.get("dicomMaxOpsInvoked"), 1));
+                ApplicationEntity.DEF_MAX_PDU_LENGTH));
+        ae.setMaxOpsPerformed(toInt(attrs.get("dicomMaxOpsPerformed"),
+                ApplicationEntity.SYNCHRONOUS_MODE));
+        ae.setMaxOpsInvoked(toInt(attrs.get("dicomMaxOpsInvoked"),
+                ApplicationEntity.SYNCHRONOUS_MODE));
         ae.setPackPDV(toBoolean(attrs.get("dicomPackPDV"), Boolean.TRUE));
     }
 
@@ -138,51 +164,51 @@ public class ExtendedLdapDeviceManager extends LdapDeviceManager {
         diffOf(mods, "dicomTCPBacklog",
                 a.getBacklog(),
                 b.getBacklog(),
-                50);
+                Connection.DEF_BACKLOG);
         diffOf(mods, "dicomTCPConnectTimeout",
                 a.getConnectTimeout(),
                 b.getConnectTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomAssociationRequestTimeout",
                 a.getRequestTimeout(),
                 b.getRequestTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomAssociationAcknowledgeTimeout",
                 a.getAcceptTimeout(),
                 b.getAcceptTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomAssociationReleaseTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomDIMSEResponseTimeout",
                 a.getDimseRSPTimeout(),
                 b.getDimseRSPTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomCGetResponseTimeout",
                 a.getCGetRSPTimeout(),
                 b.getCGetRSPTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomCMoveResponseTimeout",
                 a.getCMoveRSPTimeout(),
                 b.getCMoveRSPTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomAssociationIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
-                0);
+                Connection.NO_TIMEOUT);
         diffOf(mods, "dicomTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),
-                50);
+                Connection.DEF_SOCKETDELAY);
         diffOf(mods, "dicomTCPSendBufferSize",
                 a.getSendBufferSize(),
                 b.getSendBufferSize(),
-                0);
+                Connection.DEF_BUFFERSIZE);
         diffOf(mods, "dicomTCPReceiveBufferSize",
                 a.getReceiveBufferSize(),
                 b.getReceiveBufferSize(),
-                0);
+                Connection.DEF_BUFFERSIZE);
         diffOf(mods, "dicomTCPNoDelay",
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay());
@@ -201,19 +227,19 @@ public class ExtendedLdapDeviceManager extends LdapDeviceManager {
         diffOf(mods, "dicomSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH);
+                ApplicationEntity.DEF_MAX_PDU_LENGTH);
         diffOf(mods, "dicomReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
-                AAssociateRQAC.DEF_MAX_PDU_LENGTH);
+                ApplicationEntity.DEF_MAX_PDU_LENGTH);
         diffOf(mods, "dicomMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
-                1);
+                ApplicationEntity.SYNCHRONOUS_MODE);
         diffOf(mods, "dicomMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
-                1);
+                ApplicationEntity.SYNCHRONOUS_MODE);
         diffOf(mods, "dicomPackPDV",
                 a.isPackPDV(),
                 b.isPackPDV());

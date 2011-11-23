@@ -43,7 +43,7 @@ package org.dcm4che.conf.api;
  *
  */
 public class ConfigurationAlreadyExistsException 
-        extends ConfigurationManagementException {
+        extends ConfigurationException {
 
     private static final long serialVersionUID = -283493164926148262L;
 

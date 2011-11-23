@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -63,9 +62,9 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
-import org.dcm4che.conf.api.ConfigurationManagementException;
+import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
-import org.dcm4che.conf.api.DeviceManager;
+import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
@@ -78,24 +77,24 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class LdapDeviceManager implements DeviceManager {
+public class LdapDicomConfiguration implements DicomConfiguration {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LdapDeviceManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LdapDicomConfiguration.class);
 
     private static final String CN_UNIQUE_AE_TITLES_REGISTRY = "cn=Unique AE Titles Registry,";
     private static final String CN_DEVICES = "cn=Devices,";
-    private static final String CONFIGURATION_CN = "DICOM Configuration";
-    private static final String CONFIGURATION_CLASS = "dicomConfigurationRoot";
+    private static final String DICOM_CONFIGURATION = "DICOM Configuration";
+    private static final String DICOM_CONFIGURATION_ROOT = "dicomConfigurationRoot";
 
     private final DirContext ctx;
     private final String baseDN;
     private String configurationDN;
     private String devicesDN;
     private String aetsRegistryDN;
-    private String configurationCN = CONFIGURATION_CN; 
-    private String configurationClass = CONFIGURATION_CLASS;
+    private String configurationCN = DICOM_CONFIGURATION; 
+    private String configurationRoot = DICOM_CONFIGURATION_ROOT;
 
-    public LdapDeviceManager(Hashtable<String, Object> env, String baseDN)
+    public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         this.ctx = new InitialDirContext(env);
         this.baseDN = baseDN;
@@ -109,12 +108,12 @@ public class LdapDeviceManager implements DeviceManager {
         return configurationCN;
     }
 
-    public final void setConfigurationClass(String configurationClass) {
-        this.configurationClass = configurationClass;
+    public final void setConfigurationRoot(String configurationRoot) {
+        this.configurationRoot = configurationRoot;
     }
 
-    public final String getConfigurationClass() {
-        return configurationClass;
+    public final String getConfigurationRoot() {
+        return configurationRoot;
     }
 
     public void close() {
@@ -139,12 +138,12 @@ public class LdapDeviceManager implements DeviceManager {
     }
 
     @Override
-    public boolean configurationExists() throws ConfigurationManagementException {
+    public boolean configurationExists() throws ConfigurationException {
         return configurationDN != null || findConfiguration();
     }
 
     @Override
-    public boolean purgeConfiguration() throws ConfigurationManagementException {
+    public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists())
             return false;
 
@@ -153,13 +152,13 @@ public class LdapDeviceManager implements DeviceManager {
             LOG.info("Purge DICOM Configuration at {}", configurationDN);
             clearConfigurationDN();
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         }
         return true;
     }
 
     @Override
-    public boolean registerAETitle(String aet) throws ConfigurationManagementException {
+    public boolean registerAETitle(String aet) throws ConfigurationException {
         ensureConfigurationExists();
         try {
             createSubcontext(ctx, aetDN(aet, aetsRegistryDN),
@@ -168,23 +167,23 @@ public class LdapDeviceManager implements DeviceManager {
         } catch (NameAlreadyBoundException e) {
             return false;
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
        }
     }
 
     @Override
-    public void unregisterAETitle(String aet) throws ConfigurationManagementException {
+    public void unregisterAETitle(String aet) throws ConfigurationException {
         if (configurationExists())
             try {
                 ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
             } catch (NamingException e) {
-                throw new ConfigurationManagementException(e);
+                throw new ConfigurationException(e);
             }
     }
 
     @Override
     public ApplicationEntity findApplicationEntity(String aet)
-            throws ConfigurationManagementException {
+            throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -211,35 +210,55 @@ public class LdapDeviceManager implements DeviceManager {
             Device device = loadDevice(deviceDN);
             return device.getApplicationEntity(aet);
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         }
     }
 
     @Override
-    public Device findDevice(String name) throws ConfigurationManagementException {
+    public Device findDevice(String name) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
         return loadDevice(deviceDN(name));
     }
 
+    public Device loadDevice(String deviceDN) throws ConfigurationException {
+        try {
+            Attributes attrs = ctx.getAttributes(deviceDN);
+            Device device = newDevice(toString(attrs.get("dicomDeviceName")));
+            loadFrom(device, attrs);
+            loadConnections(deviceDN, device);
+            loadApplicationEntities(deviceDN, device);
+            return device;
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
     @Override
-    public void persist(Device device) throws ConfigurationManagementException {
+    public void persist(Device device) throws ConfigurationException {
         ensureConfigurationExists();
-        String deviceDN = deviceDN(device.getDeviceName());
+        String deviceName = device.getDeviceName();
+        String deviceDN = deviceDN(deviceName);
         boolean rollback = false;
         try {
             createSubcontext(ctx, deviceDN, attrsOf(device));
             rollback = true;
             for (Connection conn : device.listConnections())
                 createSubcontext(ctx, dnOf(conn, deviceDN), attrsOf(conn));
-            for (ApplicationEntity ae : device.getApplicationEntities())
-                persist(ae, deviceDN);
+            for (ApplicationEntity ae : device.getApplicationEntities()) {
+                String aeDN = aetDN(ae.getAETitle(), deviceDN);
+                createSubcontext(ctx, aeDN, attrsOf(ae, deviceDN));
+                for (TransferCapability tc : ae.getTransferCapabilities())
+                    createSubcontext(ctx, dnOf(tc, aeDN), attrsOf(tc));
+            }
             rollback = false;
         } catch (NameAlreadyBoundException e) {
-            throw new ConfigurationAlreadyExistsException("" + device);
+            throw new ConfigurationAlreadyExistsException(deviceName);
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         } finally {
             if (rollback)
                 try {
@@ -251,14 +270,14 @@ public class LdapDeviceManager implements DeviceManager {
     }
 
     @Override
-    public void merge(Device device) throws ConfigurationManagementException {
+    public void merge(Device device) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
         merge(device, deviceDN(device.getDeviceName()));
     }
 
-    public void merge(Device device, String deviceDN) throws ConfigurationManagementException {
+    public void merge(Device device, String deviceDN) throws ConfigurationException {
         Device prev = loadDevice(deviceDN);
         try {
             ctx.modifyAttributes(deviceDN, diffsOf(prev, device));
@@ -267,25 +286,25 @@ public class LdapDeviceManager implements DeviceManager {
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         }
     }
 
     @Override
-    public void remove(Device device) throws ConfigurationManagementException {
+    public void removeDevice(String name) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        removeDevice(deviceDN(device.getDeviceName()));
+        removeDeviceWithDN(deviceDN(name));
     }
 
-    public void removeDevice(String deviceDN) throws ConfigurationManagementException {
+    public void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
         try {
             destroySubcontext(ctx, deviceDN);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         }
     }
 
@@ -326,16 +345,16 @@ public class LdapDeviceManager implements DeviceManager {
         this.aetsRegistryDN = null;
     }
 
-    private void ensureConfigurationExists() throws ConfigurationManagementException {
+    private void ensureConfigurationExists() throws ConfigurationException {
         if (!configurationExists())
             initConfiguration();
     }
 
-    private void initConfiguration() throws ConfigurationManagementException {
+    private void initConfiguration() throws ConfigurationException {
         setConfigurationDN("cn=" + configurationCN + ',' + baseDN);
         try {
             createSubcontext(ctx, configurationDN,
-                    attrs(configurationClass, "cn", configurationCN));
+                    attrs(configurationRoot, "cn", configurationCN));
             createSubcontext(ctx, devicesDN,
                     attrs("dicomDevicesRoot", "cn", "Devices"));
             createSubcontext(ctx, aetsRegistryDN,
@@ -344,11 +363,11 @@ public class LdapDeviceManager implements DeviceManager {
             LOG.info("Create DICOM Configuration at {}", configurationDN);
         } catch (NamingException e) {
             clearConfigurationDN();
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         }
     }
 
-   private boolean findConfiguration() throws ConfigurationManagementException {
+   private boolean findConfiguration() throws ConfigurationException {
         NamingEnumeration<SearchResult> ne = null;
         try {
             SearchControls ctls = new SearchControls();
@@ -358,7 +377,7 @@ public class LdapDeviceManager implements DeviceManager {
             ctls.setReturningObjFlag(false);
             ne = ctx.search(
                     baseDN,
-                    "(&(objectclass=" + configurationClass
+                    "(&(objectclass=" + configurationRoot
                             + ")(cn=" + configurationCN + "))",
                     ctls);
             if (!ne.hasMore())
@@ -367,7 +386,7 @@ public class LdapDeviceManager implements DeviceManager {
             setConfigurationDN(ne.next().getName() + "," + baseDN);
             return true;
         } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
+            throw new ConfigurationException(e);
         } finally {
             safeClose(ne);
         }
@@ -398,7 +417,7 @@ public class LdapDeviceManager implements DeviceManager {
     protected Attributes attrsOf(Connection conn) {
         Attributes attrs = attrs("dicomNetworkConnection", "cn", conn.getCommonName());
         addNotNull(attrs, "dicomHostname", conn.getHostname());
-        addNotDef(attrs, "dicomPort", conn.getPort(), -1);
+        addNotDef(attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
         addNotEmpty(attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
         addBoolean(attrs, "dicomInstalled", conn.getInstalled());
         return attrs;
@@ -427,27 +446,11 @@ public class LdapDeviceManager implements DeviceManager {
         return attrs;
     }
 
-    public Device loadDevice(String deviceDN) throws ConfigurationManagementException {
-        try {
-            Attributes attrs = ctx.getAttributes(deviceDN);
-            Device device = newDevice(toString(attrs.get("dicomDeviceName")));
-            loadDevice(device, attrs);
-            HashMap<String,Connection> connByDN = new HashMap<String,Connection>();
-            loadConnections(deviceDN, device, connByDN);
-            loadApplicationEntities(deviceDN, device, connByDN);
-            return device;
-        } catch (NameNotFoundException e) {
-            throw new ConfigurationNotFoundException(e);
-        } catch (NamingException e) {
-            throw new ConfigurationManagementException(e);
-        }
-    }
-
     protected Device newDevice(String name) {
         return new Device(name);
     }
 
-    protected void loadDevice(Device device, Attributes attrs) throws NamingException {
+    protected void loadFrom(Device device, Attributes attrs) throws NamingException {
         device.setDescription(toString(attrs.get("dicomDescription")));
         device.setManufacturer(toString(attrs.get("dicomManufacturer")));
         device.setManufacturerModelName(toString(attrs.get("dicomManufacturerModelName")));
@@ -473,8 +476,7 @@ public class LdapDeviceManager implements DeviceManager {
         }
     }
 
-    private void loadConnections(String deviceDN, Device device,
-            HashMap<String, Connection> connByDN) throws NamingException {
+    private void loadConnections(String deviceDN, Device device) throws NamingException {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         ctls.setReturningObjFlag(false);
@@ -486,23 +488,22 @@ public class LdapDeviceManager implements DeviceManager {
             while (ne.hasMore()) {
                 SearchResult sr = ne.next();
                 Connection conn = newConnection();
-                load(conn, sr.getAttributes());
+                loadFrom(conn, sr.getAttributes());
                 try {
                     device.addConnection(conn);
                 } catch (IOException e) {
                     throw new AssertionError(e.getMessage());
                 }
-                connByDN.put(sr.getNameInNamespace(), conn);
             }
         } finally {
            safeClose(ne);
         }
     }
 
-    protected void load(Connection conn, Attributes attrs) throws NamingException {
+    protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
         conn.setCommonName(toString(attrs.get("cn")));
         conn.setHostname(toString(attrs.get("dicomHostname")));
-        conn.setPort(toInt(attrs.get("dicomPort"), -1));
+        conn.setPort(toInt(attrs.get("dicomPort"), Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(toStrings(attrs.get("dicomTLSCipherSuite")));
         try {
             conn.setInstalled(toBoolean(attrs.get("dicomInstalled"), null));
@@ -515,8 +516,8 @@ public class LdapDeviceManager implements DeviceManager {
         return new Connection();
     }
 
-    private void loadApplicationEntities(String deviceDN, Device device,
-            HashMap<String, Connection> connByDN) throws NamingException {
+    private void loadApplicationEntities(String deviceDN, Device device)
+            throws NamingException {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         ctls.setReturningObjFlag(false);
@@ -527,7 +528,7 @@ public class LdapDeviceManager implements DeviceManager {
         try {
             while (ne.hasMore()) {
                 device.addApplicationEntity(
-                        loadApplicationEntity(ne.next(), connByDN));
+                        loadApplicationEntity(ne.next(), deviceDN, device));
             }
         } finally {
            safeClose(ne);
@@ -535,21 +536,30 @@ public class LdapDeviceManager implements DeviceManager {
     }
 
     private ApplicationEntity loadApplicationEntity(SearchResult sr,
-            HashMap<String, Connection> connByDN) throws NamingException {
+            String deviceDN, Device device) throws NamingException {
         Attributes attrs = sr.getAttributes();
         ApplicationEntity ae = newApplicationEntity(toString(attrs.get("dicomAETitle")));
-        load(ae, attrs);
+        loadFrom(ae, attrs);
         for (String connDN : toStrings(attrs.get("dicomNetworkConnectionReference")))
-            ae.addConnection(connByDN.get(connDN));
+            ae.addConnection(findConnection(connDN, deviceDN, device));
         loadTransferCapabilities(sr.getNameInNamespace(), ae);
         return ae ;
+    }
+
+    private Connection findConnection(String connDN, String deviceDN, Device device)
+            throws NameNotFoundException {
+        for (Connection conn : device.listConnections())
+            if (dnOf(conn, deviceDN).equals(connDN))
+                return conn;
+
+        throw new NameNotFoundException(connDN);
     }
 
     protected ApplicationEntity newApplicationEntity(String aet) {
         return new ApplicationEntity(aet);
     }
 
-    protected void load(ApplicationEntity ae, Attributes attrs) throws NamingException {
+    protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
         ae.setDescription(toString(attrs.get("dicomDescription")));
         ae.setVendorData(toVendorData(attrs.get("dicomVendorData")));
         ae.setApplicationClusters(toStrings(attrs.get("dicomApplicationCluster")));
@@ -573,18 +583,19 @@ public class LdapDeviceManager implements DeviceManager {
         try {
             while (ne.hasMore()) {
                 ae.addTransferCapability(
-                        loadTransferCapability(ne.next().getAttributes()));
+                        newTransferCapability(ne.next().getAttributes()));
             }
         } finally {
            safeClose(ne);
         }
     }
 
-    private static TransferCapability loadTransferCapability(Attributes attrs)
+    protected TransferCapability newTransferCapability(Attributes attrs)
             throws NamingException {
-        return new TransferCapability(toString(attrs.get("cn")), toString(attrs
-                .get("dicomSOPClass")), TransferCapability.Role
-                .valueOf(toString(attrs.get("dicomTransferRole"))),
+        return new TransferCapability(
+                toString(attrs.get("cn")),
+                toString(attrs.get("dicomSOPClass")),
+                TransferCapability.Role.valueOf(toString(attrs.get("dicomTransferRole"))),
                 toStrings(attrs.get("dicomTransferSyntax")));
     }
 
@@ -737,14 +748,6 @@ public class LdapDeviceManager implements DeviceManager {
         return attr != null ? Boolean.valueOf((String) attr.get()) : defVal;
     }
 
-    private void persist(ApplicationEntity ae, String deviceDN)
-            throws NamingException {
-        String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        createSubcontext(ctx, aeDN, attrsOf(ae, deviceDN));
-        for (TransferCapability tc : ae.getTransferCapabilities())
-            createSubcontext(ctx, dnOf(tc, aeDN), attrsOf(tc));
-    }
-
     private ModificationItem[] diffsOf(Device prev, Device device) {
         ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
         diffsOf(mods, prev, device);
@@ -761,9 +764,12 @@ public class LdapDeviceManager implements DeviceManager {
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             ApplicationEntity prevAE = prevDev.getApplicationEntity(aet);
-            if (prevAE == null)
-                persist(ae, deviceDN);
-            else
+            if (prevAE == null) {
+                String aeDN = aetDN(ae.getAETitle(), deviceDN);
+                createSubcontext(ctx, aeDN, attrsOf(ae, deviceDN));
+                for (TransferCapability tc : ae.getTransferCapabilities())
+                    createSubcontext(ctx, dnOf(tc, aeDN), attrsOf(tc));
+            } else
                 merge(prevAE, ae, deviceDN);
         }
     }
@@ -973,7 +979,7 @@ public class LdapDeviceManager implements DeviceManager {
         return attrs;
     }
 
-    static void addBoolean(Attributes attrs, String attrID, Boolean val) {
+    protected static void addBoolean(Attributes attrs, String attrID, Boolean val) {
         if (val != null)
             attrs.put(attrID, toString(val));
     }
@@ -982,17 +988,17 @@ public class LdapDeviceManager implements DeviceManager {
         return b ? "TRUE" : "FALSE";
     }
 
-    static void addNotNull(Attributes attrs, String attrID, Object val) {
+    protected static void addNotNull(Attributes attrs, String attrID, Object val) {
         if (val != null)
             attrs.put(attrID, val);
     }
 
-    static void addNotDef(Attributes attrs, String attrID, int val, int defVal) {
+    protected static void addNotDef(Attributes attrs, String attrID, int val, int defVal) {
         if (val != defVal)
             attrs.put(attrID, Integer.toString(val, 10));
     }
 
-    static <T> void addNotEmpty(Attributes attrs, String attrID, T... vals) {
+    protected static <T> void addNotEmpty(Attributes attrs, String attrID, T... vals) {
         if (vals.length > 0)
             attrs.put(attr(attrID, vals));
     }

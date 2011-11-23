@@ -43,7 +43,7 @@ package org.dcm4che.conf.api;
  *
  */
 public class ConfigurationNotFoundException
-        extends ConfigurationManagementException {
+        extends ConfigurationException {
 
     private static final long serialVersionUID = 524392057619230097L;
 

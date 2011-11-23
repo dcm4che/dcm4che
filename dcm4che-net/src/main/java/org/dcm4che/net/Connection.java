@@ -77,13 +77,19 @@ import org.slf4j.LoggerFactory;
  */
 public class Connection {
 
-    private static Logger LOG = LoggerFactory.getLogger(Connection.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
+
+    public static final int NOT_LISTENING = -1;
+    public static final int DEF_BACKLOG = 50;
+    public static final int DEF_SOCKETDELAY = 50;
+    public static final int DEF_BUFFERSIZE = 0;
+    public static final int NO_TIMEOUT = 0;
+
     private Device device;
     private String commonName;
     private String hostname;
-    private int port = -1;
-    private int backlog = 50;
+    private int port = NOT_LISTENING;
+    private int backlog = DEF_BACKLOG;
     private int connectTimeout;
     private int requestTimeout;
     private int acceptTimeout;
@@ -92,7 +98,7 @@ public class Connection {
     private int cgetRSPTimeout;
     private int cmoveRSPTimeout;
     private int idleTimeout;
-    private int socketCloseDelay = 50;
+    private int socketCloseDelay = DEF_SOCKETDELAY;
     private int sendBufferSize;
     private int receiveBufferSize;
     private boolean tcpNoDelay = true;
@@ -206,7 +212,7 @@ public class Connection {
         if (this.port == port)
             return;
 
-        if ((port <= 0 || port > 0xFFFF) && port != -1)
+        if ((port <= 0 || port > 0xFFFF) && port != NOT_LISTENING)
             throw new IllegalArgumentException("port out of range:" + port);
 
         this.port = port;

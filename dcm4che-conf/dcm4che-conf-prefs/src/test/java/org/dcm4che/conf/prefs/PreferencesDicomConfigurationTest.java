@@ -36,12 +36,13 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.conf.ldap;
+package org.dcm4che.conf.prefs;
 
 import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
@@ -58,40 +59,37 @@ import org.junit.Test;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class LdapDeviceManagerTest {
+public class PreferencesDicomConfigurationTest {
 
-    private LdapDeviceManager deviceManager;
+    private PreferencesDicomConfiguration config;
 
     @Before
     public void setUp() throws Exception {
-        deviceManager = new LdapDeviceManager(
-                LdapDeviceManager.authenticate(
-                                LdapDeviceManager.env("ldap://localhost:389"),
-                                "cn=admin,dc=nodomain", "admin"),
-                        "dc=nodomain");
+        config = new PreferencesDicomConfiguration(
+                Preferences.userNodeForPackage(PreferencesDicomConfiguration.class));
     }
 
     @After
     public void tearDown() throws Exception {
-        deviceManager.close();
+        config.purgeConfiguration();
     }
 
     @Test
     public void testRegisterAETitle() throws Exception {
-        deviceManager.unregisterAETitle("TEST-AET1");
-        assertTrue(deviceManager.registerAETitle("TEST-AET1"));
-        assertFalse(deviceManager.registerAETitle("TEST-AET1"));
-        deviceManager.unregisterAETitle("TEST-AET1");
+        config.unregisterAETitle("TEST-AET1");
+        assertTrue(config.registerAETitle("TEST-AET1"));
+        assertFalse(config.registerAETitle("TEST-AET1"));
+        config.unregisterAETitle("TEST-AET1");
     }
 
     @Test
     public void testPersist() throws Exception {
-        Device device = createDevice("Test-Device-1", "TEST-AET1");
         try {
-            deviceManager.remove(device);
+            config.removeDevice("Test-Device-1");
         }  catch (ConfigurationNotFoundException e) {}
-        deviceManager.persist(device);
-        ApplicationEntity ae = deviceManager.findApplicationEntity("TEST-AET1");
+        Device device = createDevice("Test-Device-1", "TEST-AET1");
+        config.persist(device);
+        ApplicationEntity ae = config.findApplicationEntity("TEST-AET1");
         assertFalse(ae.isAssociationInitiator());
         assertTrue(ae.isAssociationAcceptor());
         assertTrue(ae.getConnections().get(0).isServer());
@@ -104,22 +102,22 @@ public class LdapDeviceManagerTest {
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
         assertFalse(tciter.hasNext());
         try {
-            deviceManager.persist(createDevice("Test-Device-1", "TEST-AET1"));
+            config.persist(createDevice("Test-Device-1", "TEST-AET1"));
             fail("ConfigurationAlreadyExistsException expected");
         } catch (ConfigurationAlreadyExistsException e) {}
-        deviceManager.remove(device);
+        config.removeDevice("Test-Device-1");
     }
 
     @Test
     public void testMerge() throws Exception {
-        Device device = createDevice("Test-Device-1", "TEST-AET1");
         try {
-            deviceManager.remove(device);
+            config.removeDevice("Test-Device-1");
         }  catch (ConfigurationNotFoundException e) {}
-        deviceManager.persist(device);
+        Device device = createDevice("Test-Device-1", "TEST-AET1");
+        config.persist(device);
         modifyDevice(device);
-        deviceManager.merge(device);
-        ApplicationEntity ae2 = deviceManager.findApplicationEntity("TEST-AET2");
+        config.merge(device);
+        ApplicationEntity ae2 = config.findApplicationEntity("TEST-AET2");
         ApplicationEntity ae = ae2.getDevice().getApplicationEntity("TEST-AET1");
         assertTrue(ae.isAssociationInitiator());
         assertFalse(ae.isAssociationAcceptor());
@@ -132,7 +130,7 @@ public class LdapDeviceManagerTest {
         assertEquals(TransferCapability.Role.SCU, tc.getRole());
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
         assertFalse(tciter.hasNext());
-        deviceManager.remove(device);
+        config.removeDevice("Test-Device-1");
     }
 
     private static Device createDevice(String name, String aet) throws Exception {

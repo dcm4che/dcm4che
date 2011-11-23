@@ -50,7 +50,6 @@ import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
 import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
-import org.dcm4che.net.pdu.AAssociateRQAC;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -78,6 +77,11 @@ public class ApplicationEntity {
     protected static final Logger LOG = 
             LoggerFactory.getLogger(ApplicationEntity.class);
 
+
+    public static final int DEF_MAX_PDU_LENGTH = 16378;
+    public static final int SYNCHRONOUS_MODE = 1;
+    // to fit into SunJSSE TLS Application Data Length 16408
+
     private Device device;
     private String aet;
     private String description;
@@ -95,10 +99,10 @@ public class ApplicationEntity {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
-    private int sendPDULength = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
-    private int receivePDULength = AAssociateRQAC.DEF_MAX_PDU_LENGTH;
-    private int maxOpsPerformed = 1;
-    private int maxOpsInvoked = 1;
+    private int sendPDULength = DEF_MAX_PDU_LENGTH;
+    private int receivePDULength = DEF_MAX_PDU_LENGTH;
+    private int maxOpsPerformed = SYNCHRONOUS_MODE;
+    private int maxOpsInvoked = SYNCHRONOUS_MODE;
     private boolean packPDV = true;
     private UserIdentityNegotiator userIdNegotiator;
     private final HashMap<String, ExtendedNegotiator> extNegotiators =

@@ -38,27 +38,30 @@
 
 package org.dcm4che.conf.api;
 
+import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Device;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ConfigurationManagementException extends Exception {
+public interface DicomConfiguration {
 
-    private static final long serialVersionUID = 1507953586524535616L;
+    boolean configurationExists() throws ConfigurationException;
 
-    public ConfigurationManagementException() {
-    }
+    boolean purgeConfiguration() throws ConfigurationException;
 
-    public ConfigurationManagementException(String message) {
-        super(message);
-    }
+    boolean registerAETitle(String aet) throws ConfigurationException;
 
-    public ConfigurationManagementException(Throwable cause) {
-        super(cause);
-    }
+    void unregisterAETitle(String aet) throws ConfigurationException;
 
-    public ConfigurationManagementException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException;
 
+    Device findDevice(String name) throws ConfigurationException;
+
+    void persist(Device device) throws ConfigurationException;
+
+    void merge(Device device) throws ConfigurationException;
+
+    void removeDevice(String name) throws ConfigurationException;
 }

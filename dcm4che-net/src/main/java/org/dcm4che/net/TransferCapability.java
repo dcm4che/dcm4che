@@ -137,7 +137,8 @@ public class TransferCapability {
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
-        StringUtils.appendLine(sb, indent, "TransferCapability[role: ", role);
+        StringUtils.appendLine(sb, indent, "TransferCapability[cn: ", commonName);
+        StringUtils.appendLine(sb, indent2, "role: ", role);
         sb.append(indent2).append("as: ");
         UIDUtils.promptTo(sopClass, sb).append(StringUtils.LINE_SEPARATOR);
         for (String ts : transferSyntaxes) {

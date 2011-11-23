@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.dcm4che.data.Implementation;
 import org.dcm4che.data.UID;
+import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.util.IntHashMap;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
@@ -56,14 +57,11 @@ import org.dcm4che.util.UIDUtils;
  */
 public abstract class AAssociateRQAC {
 
-    public static final int DEF_MAX_PDU_LENGTH = 16378;
-    // to fit into SunJSSE TLS Application Data Length 16408
-
     protected byte[] reservedBytes = new byte[32];
     protected int protocolVersion = 1;
-    protected int maxPDULength = DEF_MAX_PDU_LENGTH;
-    protected int maxOpsInvoked = 1;
-    protected int maxOpsPerformed = 1;
+    protected int maxPDULength = ApplicationEntity.DEF_MAX_PDU_LENGTH;
+    protected int maxOpsInvoked = ApplicationEntity.SYNCHRONOUS_MODE;
+    protected int maxOpsPerformed = ApplicationEntity.SYNCHRONOUS_MODE;
     protected String calledAET;
     protected String callingAET;
     protected String applicationContext = UID.DICOMApplicationContextName;

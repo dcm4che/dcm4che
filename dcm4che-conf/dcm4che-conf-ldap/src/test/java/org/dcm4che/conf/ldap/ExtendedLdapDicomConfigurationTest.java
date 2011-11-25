@@ -58,13 +58,13 @@ import org.junit.Test;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class LdapDicomConfigurationTest {
+public class ExtendedLdapDicomConfigurationTest {
 
-    private LdapDicomConfiguration config;
+    private ExtendedLdapDicomConfiguration config;
 
     @Before
     public void setUp() throws Exception {
-        config = new LdapDicomConfiguration(
+        config = new ExtendedLdapDicomConfiguration(
                 LdapDicomConfiguration.authenticate(
                                 LdapDicomConfiguration.env("ldap://localhost:389"),
                                 "cn=admin,dc=nodomain", "admin"),

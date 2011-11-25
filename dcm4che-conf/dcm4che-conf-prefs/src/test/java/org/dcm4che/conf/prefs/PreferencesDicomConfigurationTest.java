@@ -65,8 +65,8 @@ public class PreferencesDicomConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        config = new PreferencesDicomConfiguration(
-                Preferences.userNodeForPackage(PreferencesDicomConfiguration.class));
+        config = new PreferencesDicomConfiguration(Preferences.userRoot());
+        config.setConfigurationRoot("PreferencesDicomConfigurationTest");
     }
 
     @After

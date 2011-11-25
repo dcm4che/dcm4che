@@ -59,190 +59,204 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super(env, baseDN);
     }
 
+    protected String objectclassOf(Connection conn) {
+        return "dcm4cheNetworkConnection";
+    }
+
+    protected String objectclassOf(ApplicationEntity ae) {
+        return "dcm4cheNetworkAE";
+    }
+
     @Override
-    protected Attributes attrsOf(Connection conn) {
-        Attributes attrs = super.attrsOf(conn);
-        addNotEmpty(attrs, "dicomBlacklistedHostname", conn.getBlacklist());
-        addNotDef(attrs, "dicomTCPBacklog",
+    protected Attributes storeTo(Connection conn, Attributes attrs) {
+        super.storeTo(conn, attrs);
+        storeNotEmpty(attrs, "dcm4cheBlacklistedHostname", conn.getBlacklist());
+        storeNotDef(attrs, "dcm4cheTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
-        addNotDef(attrs, "dicomTCPConnectTimeout",
+        storeNotDef(attrs, "dcm4cheTCPConnectTimeout",
                 conn.getConnectTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomAssociationRequestTimeout",
+        storeNotDef(attrs, "dcm4cheAssociationRequestTimeout",
                 conn.getRequestTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomAssociationAcknowledgeTimeout",
+        storeNotDef(attrs, "dcm4cheAssociationAcknowledgeTimeout",
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomAssociationReleaseTimeout",
+        storeNotDef(attrs, "dcm4cheAssociationReleaseTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomDIMSEResponseTimeout",
+        storeNotDef(attrs, "dcm4cheDIMSEResponseTimeout",
                 conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomCGetResponseTimeout",
+        storeNotDef(attrs, "dcm4cheCGetResponseTimeout",
                 conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomCMoveResponseTimeout",
+        storeNotDef(attrs, "dcm4cheCMoveResponseTimeout",
                 conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomAssociationIdleTimeout",
+        storeNotDef(attrs, "dcm4cheAssociationIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
-        addNotDef(attrs, "dicomTCPCloseDelay",
+        storeNotDef(attrs, "dcm4cheTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
-        addNotDef(attrs, "dicomTCPSendBufferSize",
+        storeNotDef(attrs, "dcm4cheTCPSendBufferSize",
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
-        addNotDef(attrs, "dicomTCPReceiveBufferSize",
+        storeNotDef(attrs, "dcm4cheTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        addBoolean(attrs, "dicomTCPNoDelay", conn.isTcpNoDelay());
-        addNotEmpty(attrs, "dicomTLSProtocol", conn.getTlsProtocols());
-        addBoolean(attrs, "dicomTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+        storeBoolean(attrs, "dcm4cheTCPNoDelay", conn.isTcpNoDelay());
+        storeNotEmpty(attrs, "dcm4cheTLSProtocol", conn.getTlsProtocols());
+        storeBoolean(attrs, "dcm4cheTLSNeedClientAuth", conn.isTlsNeedClientAuth());
         return attrs;
     }
 
     @Override
-    protected Attributes attrsOf(ApplicationEntity ae, String deviceDN) {
-        Attributes attrs = super.attrsOf(ae, deviceDN);
-        addNotDef(attrs, "dicomSendPDULength",
+    protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
+        super.storeTo(ae, deviceDN, attrs);
+        storeNotDef(attrs, "dcm4cheSendPDULength",
                 ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        addNotDef(attrs, "dicomReceivePDULength",
+        storeNotDef(attrs, "dcm4cheReceivePDULength",
                 ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        addNotDef(attrs, "dicomMaxOpsPerformed",
+        storeNotDef(attrs, "dcm4cheMaxOpsPerformed",
                 ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
-        addNotDef(attrs, "dicomMaxOpsInvoked",
+        storeNotDef(attrs, "dcm4cheMaxOpsInvoked",
                 ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        addBoolean(attrs, "dicomPackPDV", ae.isPackPDV());
+        storeBoolean(attrs, "dcm4chePackPDV", ae.isPackPDV());
+        storeBoolean(attrs, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+                ae.isAcceptOnlyPreferredCallingAETitles());
         return attrs;
     }
-
 
     @Override
     protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
         super.loadFrom(conn, attrs);
-        conn.setBlacklist(toStrings(attrs.get("dicomBlacklistedHostname")));
-        conn.setBacklog(toInt(attrs.get("dicomTCPBacklog"), Connection.DEF_BACKLOG));
-        conn.setConnectTimeout(toInt(attrs.get("dicomTCPConnectTimeout"),
+        conn.setBlacklist(toStrings(attrs.get("dcm4cheBlacklistedHostname")));
+        conn.setBacklog(toInt(attrs.get("dcm4cheTCPBacklog"), Connection.DEF_BACKLOG));
+        conn.setConnectTimeout(toInt(attrs.get("dcm4cheTCPConnectTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setRequestTimeout(toInt(attrs.get("dicomAssociationRequestTimeout"),
+        conn.setRequestTimeout(toInt(attrs.get("dcm4cheAssociationRequestTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setAcceptTimeout(toInt(attrs.get("dicomAssociationAcknowledgeTimeout"),
+        conn.setAcceptTimeout(toInt(attrs.get("dcm4cheAssociationAcknowledgeTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setReleaseTimeout(toInt(attrs.get("dicomAssociationReleaseTimeout"),
+        conn.setReleaseTimeout(toInt(attrs.get("dcm4cheAssociationReleaseTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setDimseRSPTimeout(toInt(attrs.get("dicomDIMSEResponseTimeout"),
+        conn.setDimseRSPTimeout(toInt(attrs.get("dcm4cheDIMSEResponseTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCGetRSPTimeout(toInt(attrs.get("dicomCGetResponseTimeout"),
+        conn.setCGetRSPTimeout(toInt(attrs.get("dcm4cheCGetResponseTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCMoveRSPTimeout(toInt(attrs.get("dicomCMoveResponseTimeout"),
+        conn.setCMoveRSPTimeout(toInt(attrs.get("dcm4cheCMoveResponseTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setIdleTimeout(toInt(attrs.get("dicomAssociationIdleTimeout"),
+        conn.setIdleTimeout(toInt(attrs.get("dcm4cheAssociationIdleTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setSocketCloseDelay(toInt(attrs.get("dicomTCPCloseDelay"),
+        conn.setSocketCloseDelay(toInt(attrs.get("dcm4cheTCPCloseDelay"),
                 Connection.DEF_SOCKETDELAY));
-        conn.setSendBufferSize(toInt(attrs.get("dicomTCPSendBufferSize"),
+        conn.setSendBufferSize(toInt(attrs.get("dcm4cheTCPSendBufferSize"),
                 Connection.DEF_BUFFERSIZE));
-        conn.setReceiveBufferSize(toInt(attrs.get("dicomTCPReceiveBufferSize"),
+        conn.setReceiveBufferSize(toInt(attrs.get("dcm4cheTCPReceiveBufferSize"),
                 Connection.DEF_BUFFERSIZE));
-        conn.setTcpNoDelay(toBoolean(attrs.get("dicomTCPNoDelay"), Boolean.TRUE));
-        conn.setTlsNeedClientAuth(toBoolean(attrs.get("dicomTLSNeedClientAuth"), Boolean.TRUE));
-        conn.setTlsProtocols(toStrings(attrs.get("dicomTLSProtocol")));
+        conn.setTcpNoDelay(toBoolean(attrs.get("dcm4cheTCPNoDelay"), Boolean.TRUE));
+        conn.setTlsNeedClientAuth(toBoolean(attrs.get("dcm4cheTLSNeedClientAuth"), Boolean.TRUE));
+        conn.setTlsProtocols(toStrings(attrs.get("dcm4cheTLSProtocol")));
     }
 
     @Override
     protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
         super.loadFrom(ae, attrs);
-        ae.setSendPDULength(toInt(attrs.get("dicomSendPDULength"),
+        ae.setSendPDULength(toInt(attrs.get("dcm4cheSendPDULength"),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setReceivePDULength(toInt(attrs.get("dicomReceivePDULength"),
+        ae.setReceivePDULength(toInt(attrs.get("dcm4cheReceivePDULength"),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(toInt(attrs.get("dicomMaxOpsPerformed"),
+        ae.setMaxOpsPerformed(toInt(attrs.get("dcm4cheMaxOpsPerformed"),
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setMaxOpsInvoked(toInt(attrs.get("dicomMaxOpsInvoked"),
+        ae.setMaxOpsInvoked(toInt(attrs.get("dcm4cheMaxOpsInvoked"),
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setPackPDV(toBoolean(attrs.get("dicomPackPDV"), Boolean.TRUE));
+        ae.setPackPDV(toBoolean(attrs.get("dcm4chePackPDV"), Boolean.TRUE));
+        ae.setAcceptOnlyPreferredCallingAETitles(
+                toBoolean(attrs.get("dcm4cheAcceptOnlyPreferredCallingAETitle"), Boolean.FALSE));
     }
 
     @Override
-    protected void diffsOf(Collection<ModificationItem> mods, Connection a, Connection b) {
-        super.diffsOf(mods, a, b);
-        diffOf(mods, "dicomBlacklistedHostname",
+    protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {
+        super.storeDiffs(mods, a, b);
+        storeDiff(mods, "dcm4cheBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
-        diffOf(mods, "dicomTCPBacklog",
+        storeDiff(mods, "dcm4cheTCPBacklog",
                 a.getBacklog(),
                 b.getBacklog(),
                 Connection.DEF_BACKLOG);
-        diffOf(mods, "dicomTCPConnectTimeout",
+        storeDiff(mods, "dcm4cheTCPConnectTimeout",
                 a.getConnectTimeout(),
                 b.getConnectTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomAssociationRequestTimeout",
+        storeDiff(mods, "dcm4cheAssociationRequestTimeout",
                 a.getRequestTimeout(),
                 b.getRequestTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomAssociationAcknowledgeTimeout",
+        storeDiff(mods, "dcm4cheAssociationAcknowledgeTimeout",
                 a.getAcceptTimeout(),
                 b.getAcceptTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomAssociationReleaseTimeout",
+        storeDiff(mods, "dcm4cheAssociationReleaseTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomDIMSEResponseTimeout",
+        storeDiff(mods, "dcm4cheDIMSEResponseTimeout",
                 a.getDimseRSPTimeout(),
                 b.getDimseRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomCGetResponseTimeout",
+        storeDiff(mods, "dcm4cheCGetResponseTimeout",
                 a.getCGetRSPTimeout(),
                 b.getCGetRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomCMoveResponseTimeout",
+        storeDiff(mods, "dcm4cheCMoveResponseTimeout",
                 a.getCMoveRSPTimeout(),
                 b.getCMoveRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomAssociationIdleTimeout",
+        storeDiff(mods, "dcm4cheAssociationIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
                 Connection.NO_TIMEOUT);
-        diffOf(mods, "dicomTCPCloseDelay",
+        storeDiff(mods, "dcm4cheTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),
                 Connection.DEF_SOCKETDELAY);
-        diffOf(mods, "dicomTCPSendBufferSize",
+        storeDiff(mods, "dcm4cheTCPSendBufferSize",
                 a.getSendBufferSize(),
                 b.getSendBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        diffOf(mods, "dicomTCPReceiveBufferSize",
+        storeDiff(mods, "dcm4cheTCPReceiveBufferSize",
                 a.getReceiveBufferSize(),
                 b.getReceiveBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        diffOf(mods, "dicomTCPNoDelay",
+        storeDiff(mods, "dcm4cheTCPNoDelay",
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay());
-        diffOf(mods, "dicomTLSProtocol",
+        storeDiff(mods, "dcm4cheTLSProtocol",
                 a.getTlsProtocols(),
                 b.getTlsProtocols());
-        diffOf(mods, "dicomTLSNeedClientAuth",
+        storeDiff(mods, "dcm4cheTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
                 b.isTlsNeedClientAuth());
     }
 
     @Override
-    protected void diffsOf(Collection<ModificationItem> mods,
+    protected void storeDiffs(Collection<ModificationItem> mods,
             ApplicationEntity a, ApplicationEntity b, String deviceDN) {
-        super.diffsOf(mods, a, b, deviceDN);
-        diffOf(mods, "dicomSendPDULength",
+        super.storeDiffs(mods, a, b, deviceDN);
+        storeDiff(mods, "dcm4cheSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        diffOf(mods, "dicomReceivePDULength",
+        storeDiff(mods, "dcm4cheReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        diffOf(mods, "dicomMaxOpsPerformed",
+        storeDiff(mods, "dcm4cheMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        diffOf(mods, "dicomMaxOpsInvoked",
+        storeDiff(mods, "dcm4cheMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        diffOf(mods, "dicomPackPDV",
+        storeDiff(mods, "dcm4chePackPDV",
                 a.isPackPDV(),
                 b.isPackPDV());
+        storeDiff(mods, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+                a.isAcceptOnlyPreferredCallingAETitles(),
+                b.isAcceptOnlyPreferredCallingAETitles());
     }
 
 }

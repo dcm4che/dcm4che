@@ -222,21 +222,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return loadDevice(deviceDN(name));
     }
 
-    public Device loadDevice(String deviceDN) throws ConfigurationException {
-        try {
-            Attributes attrs = ctx.getAttributes(deviceDN);
-            Device device = newDevice(toString(attrs.get("dicomDeviceName")));
-            loadFrom(device, attrs);
-            loadConnections(deviceDN, device);
-            loadApplicationEntities(deviceDN, device);
-            return device;
-        } catch (NameNotFoundException e) {
-            throw new ConfigurationNotFoundException(e);
-        } catch (NamingException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
     @Override
     public void persist(Device device) throws ConfigurationException {
         ensureConfigurationExists();
@@ -244,15 +229,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         String deviceDN = deviceDN(deviceName);
         boolean rollback = false;
         try {
-            createSubcontext(ctx, deviceDN, attrsOf(device));
+            createSubcontext(ctx, deviceDN, storeTo(device, new BasicAttributes(true)));
             rollback = true;
             for (Connection conn : device.listConnections())
-                createSubcontext(ctx, dnOf(conn, deviceDN), attrsOf(conn));
+                createSubcontext(ctx, dnOf(conn, deviceDN), storeTo(conn, new BasicAttributes(true)));
             for (ApplicationEntity ae : device.getApplicationEntities()) {
                 String aeDN = aetDN(ae.getAETitle(), deviceDN);
-                createSubcontext(ctx, aeDN, attrsOf(ae, deviceDN));
+                createSubcontext(ctx, aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
                 for (TransferCapability tc : ae.getTransferCapabilities())
-                    createSubcontext(ctx, dnOf(tc, aeDN), attrsOf(tc));
+                    createSubcontext(ctx, dnOf(tc, aeDN), storeTo(tc, new BasicAttributes(true)));
             }
             rollback = false;
         } catch (NameAlreadyBoundException e) {
@@ -274,13 +259,10 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        merge(device, deviceDN(device.getDeviceName()));
-    }
-
-    public void merge(Device device, String deviceDN) throws ConfigurationException {
+        String deviceDN = deviceDN(device.getDeviceName());
         Device prev = loadDevice(deviceDN);
         try {
-            ctx.modifyAttributes(deviceDN, diffsOf(prev, device));
+            ctx.modifyAttributes(deviceDN, storeDiffs(prev, device));
             mergeConnections(prev, device, deviceDN);
             mergeAEs(prev, device, deviceDN);
         } catch (NameNotFoundException e) {
@@ -298,7 +280,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         removeDeviceWithDN(deviceDN(name));
     }
 
-    public void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
+    private void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
         try {
             destroySubcontext(ctx, deviceDN);
         } catch (NameNotFoundException e) {
@@ -392,62 +374,117 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-   protected Attributes attrsOf(Device device) {
-        Attributes attrs = attrs("dicomDevice", "dicomDeviceName", device.getDeviceName());
-        addNotNull(attrs, "dicomDescription", device.getDescription());
-        addNotNull(attrs, "dicomManufacturer", device.getManufacturer());
-        addNotNull(attrs, "dicomManufacturerModelName", device.getManufacturerModelName());
-        addNotEmpty(attrs, "dicomSoftwareVersion", device.getSoftwareVersion());
-        addNotNull(attrs, "dicomStationName", device.getStationName());
-        addNotNull(attrs, "dicomDeviceSerialNumber", device.getDeviceSerialNumber());
-        addNotNull(attrs, "dicomIssuerOfPatientID", device.getIssuerOfPatientID());
-        addNotEmpty(attrs, "dicomInstitutionName",device.getInstitutionNames());
-        addNotEmpty(attrs, "dicomInstitutionAddress",device.getInstitutionAddresses());
-        addNotEmpty(attrs, "dicomInstitutionalDepartmentName",device.getInstitutionalDepartmentNames());
-        addNotEmpty(attrs, "dicomPrimaryDeviceType", device.getPrimaryDeviceTypes());
-        addNotEmpty(attrs, "dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
-        addNotEmpty(attrs, "dicomAuthorizedNodeCertificateReference",
+   protected String objectclassOf(Device device) {
+       return "dicomDevice";
+   }
+
+   protected String objectclassOf(Connection conn) {
+       return "dicomNetworkConnection";
+   }
+
+   protected String objectclassOf(ApplicationEntity ae) {
+       return "dicomNetworkAE";
+   }
+
+   protected String objectclassOf(TransferCapability tc) {
+       return "dicomTransferCapability";
+   }
+
+   protected Attributes storeTo(Device device, Attributes attrs) {
+        attrs.put("objectclass", objectclassOf(device));
+        storeNotNull(attrs, "dicomDeviceName", device.getDeviceName());
+        storeNotNull(attrs, "dicomDescription", device.getDescription());
+        storeNotNull(attrs, "dicomManufacturer", device.getManufacturer());
+        storeNotNull(attrs, "dicomManufacturerModelName",
+                device.getManufacturerModelName());
+        storeNotEmpty(attrs, "dicomSoftwareVersion", device.getSoftwareVersion());
+        storeNotNull(attrs, "dicomStationName", device.getStationName());
+        storeNotNull(attrs, "dicomDeviceSerialNumber", device.getDeviceSerialNumber());
+        storeNotNull(attrs, "dicomIssuerOfPatientID", device.getIssuerOfPatientID());
+        storeNotEmpty(attrs, "dicomInstitutionName",device.getInstitutionNames());
+        storeNotEmpty(attrs, "dicomInstitutionAddress",device.getInstitutionAddresses());
+        storeNotEmpty(attrs, "dicomInstitutionalDepartmentName",
+                device.getInstitutionalDepartmentNames());
+        storeNotEmpty(attrs, "dicomPrimaryDeviceType", device.getPrimaryDeviceTypes());
+        storeNotEmpty(attrs, "dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
+        storeNotEmpty(attrs, "dicomAuthorizedNodeCertificateReference",
                 device.getAuthorizedNodeCertificateRefs());
-        addNotEmpty(attrs, "dicomThisNodeCertificateReference", device.getThisNodeCertificateRefs());
-        addNotEmpty(attrs, "dicomVendorData", device.getVendorData());
-        addBoolean(attrs, "dicomInstalled", device.isInstalled());
+        storeNotEmpty(attrs, "dicomThisNodeCertificateReference",
+                device.getThisNodeCertificateRefs());
+        storeNotEmpty(attrs, "dicomVendorData", device.getVendorData());
+        storeBoolean(attrs, "dicomInstalled", device.isInstalled());
         return attrs;
     }
 
-    protected Attributes attrsOf(Connection conn) {
-        Attributes attrs = attrs("dicomNetworkConnection", "cn", conn.getCommonName());
-        addNotNull(attrs, "dicomHostname", conn.getHostname());
-        addNotDef(attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
-        addNotEmpty(attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        addBoolean(attrs, "dicomInstalled", conn.getInstalled());
+    protected Attributes storeTo(Connection conn, Attributes attrs) {
+        attrs.put("objectclass", objectclassOf(conn));
+        storeNotNull(attrs, "cn", conn.getCommonName());
+        storeNotNull(attrs, "dicomHostname", conn.getHostname());
+        storeNotDef(attrs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
+        storeNotEmpty(attrs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
+        storeBoolean(attrs, "dicomInstalled", conn.getInstalled());
         return attrs;
     }
 
-    protected Attributes attrsOf(ApplicationEntity ae, String deviceDN) {
-        Attributes attrs = attrs("dicomNetworkAE", "dicomAETitle", ae.getAETitle());
-        addNotNull(attrs, "dicomDescription", ae.getDescription());
-        addNotEmpty(attrs, "dicomVendorData", ae.getVendorData());
-        addNotEmpty(attrs, "dicomApplicationCluster", ae.getApplicationClusters());
-        addNotEmpty(attrs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
-        addNotEmpty(attrs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
-        addBoolean(attrs, "dicomAssociationInitiator", ae.isAssociationInitiator());
-        addBoolean(attrs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
-        addConnRefs(attrs, ae.getConnections(), deviceDN);
-        addNotEmpty(attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
-        addBoolean(attrs, "dicomInstalled", ae.getInstalled());
+    protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
+        attrs.put("objectclass", objectclassOf(ae));
+        storeNotNull(attrs, "dicomAETitle", ae.getAETitle());
+        storeNotNull(attrs, "dicomDescription", ae.getDescription());
+        storeNotEmpty(attrs, "dicomVendorData", ae.getVendorData());
+        storeNotEmpty(attrs, "dicomApplicationCluster", ae.getApplicationClusters());
+        storeNotEmpty(attrs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
+        storeNotEmpty(attrs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
+        storeBoolean(attrs, "dicomAssociationInitiator", ae.isAssociationInitiator());
+        storeBoolean(attrs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
+        storeConnRefs(attrs, ae.getConnections(), deviceDN);
+        storeNotEmpty(attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
+        storeBoolean(attrs, "dicomInstalled", ae.getInstalled());
         return attrs;
     }
 
-    protected Attributes attrsOf(TransferCapability tc) {
-        Attributes attrs = attrs("dicomTransferCapability", "cn", tc.getCommonName());
-        addNotNull(attrs, "dicomSOPClass", tc.getSopClass());
-        addNotNull(attrs, "dicomTransferRole", tc.getRole().toString());
-        addNotEmpty(attrs, "dicomTransferSyntax", tc.getTransferSyntaxes());
+    protected Attributes storeTo(TransferCapability tc, Attributes attrs) {
+        attrs.put("objectclass", objectclassOf(tc));
+        storeNotNull(attrs, "cn", tc.getCommonName());
+        storeNotNull(attrs, "dicomSOPClass", tc.getSopClass());
+        storeNotNull(attrs, "dicomTransferRole", tc.getRole().toString());
+        storeNotEmpty(attrs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         return attrs;
+    }
+
+    private Device loadDevice(String deviceDN) throws ConfigurationException {
+        try {
+            Attributes attrs = ctx.getAttributes(deviceDN);
+            Device device = newDevice(toString(attrs.get("dicomDeviceName")));
+            loadFrom(device, attrs);
+            loadConnections(deviceDN, device);
+            loadApplicationEntities(deviceDN, device);
+            return device;
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     protected Device newDevice(String name) {
         return new Device(name);
+    }
+
+    protected Connection newConnection() {
+        return new Connection();
+    }
+
+    protected ApplicationEntity newApplicationEntity(String aet) {
+        return new ApplicationEntity(aet);
+    }
+
+    protected TransferCapability newTransferCapability(Attributes attrs)
+            throws NamingException {
+        return new TransferCapability(
+                toString(attrs.get("cn")),
+                toString(attrs.get("dicomSOPClass")),
+                TransferCapability.Role.valueOf(toString(attrs.get("dicomTransferRole"))),
+                toStrings(attrs.get("dicomTransferSyntax")));
     }
 
     protected void loadFrom(Device device, Attributes attrs) throws NamingException {
@@ -512,10 +549,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected Connection newConnection() {
-        return new Connection();
-    }
-
     private void loadApplicationEntities(String deviceDN, Device device)
             throws NamingException {
         SearchControls ctls = new SearchControls();
@@ -555,10 +588,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         throw new NameNotFoundException(connDN);
     }
 
-    protected ApplicationEntity newApplicationEntity(String aet) {
-        return new ApplicationEntity(aet);
-    }
-
     protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
         ae.setDescription(toString(attrs.get("dicomDescription")));
         ae.setVendorData(toVendorData(attrs.get("dicomVendorData")));
@@ -590,126 +619,117 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected TransferCapability newTransferCapability(Attributes attrs)
-            throws NamingException {
-        return new TransferCapability(
-                toString(attrs.get("cn")),
-                toString(attrs.get("dicomSOPClass")),
-                TransferCapability.Role.valueOf(toString(attrs.get("dicomTransferRole"))),
-                toStrings(attrs.get("dicomTransferSyntax")));
-    }
-
-    protected void diffsOf(Collection<ModificationItem> mods, Device a, Device b) {
-        diffOf(mods, "dicomDescription",
+    protected void storeDiffs(Collection<ModificationItem> mods, Device a, Device b) {
+        storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
-        diffOf(mods, "dicomManufacturer",
+        storeDiff(mods, "dicomManufacturer",
                 a.getManufacturer(),
                 b.getManufacturer());
-        diffOf(mods, "dicomManufacturerModelName",
+        storeDiff(mods, "dicomManufacturerModelName",
                 a.getManufacturerModelName(),
                 b.getManufacturerModelName());
-        diffOf(mods, "dicomSoftwareVersion",
+        storeDiff(mods, "dicomSoftwareVersion",
                 a.getSoftwareVersion(),
                 b.getSoftwareVersion());
-        diffOf(mods, "dicomStationName",
+        storeDiff(mods, "dicomStationName",
                 a.getStationName(),
                 b.getStationName());
-        diffOf(mods, "dicomDeviceSerialNumber",
+        storeDiff(mods, "dicomDeviceSerialNumber",
                 a.getDeviceSerialNumber(),
                 b.getDeviceSerialNumber());
-        diffOf(mods, "dicomIssuerOfPatientID",
+        storeDiff(mods, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
                 b.getIssuerOfPatientID());
-        diffOf(mods, "dicomInstitutionName",
+        storeDiff(mods, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
-        diffOf(mods, "dicomInstitutionAddress",
+        storeDiff(mods, "dicomInstitutionAddress",
                 a.getInstitutionAddresses(),
                 b.getInstitutionAddresses());
-        diffOf(mods, "dicomInstitutionalDepartmentName",
+        storeDiff(mods, "dicomInstitutionalDepartmentName",
                 a.getInstitutionalDepartmentNames(),
                 b.getInstitutionalDepartmentNames());
-        diffOf(mods, "dicomPrimaryDeviceType",
+        storeDiff(mods, "dicomPrimaryDeviceType",
                 a.getPrimaryDeviceTypes(),
                 b.getPrimaryDeviceTypes());
-        diffOf(mods, "dicomRelatedDeviceReference",
+        storeDiff(mods, "dicomRelatedDeviceReference",
                 a.getRelatedDeviceRefs(),
                 b.getRelatedDeviceRefs());
-        diffOf(mods, "dicomAuthorizedNodeCertificateReference",
+        storeDiff(mods, "dicomAuthorizedNodeCertificateReference",
                 a.getAuthorizedNodeCertificateRefs(),
                 b.getAuthorizedNodeCertificateRefs());
-        diffOf(mods, "dicomThisNodeCertificateReference",
+        storeDiff(mods, "dicomThisNodeCertificateReference",
                 a.getThisNodeCertificateRefs(),
                 b.getThisNodeCertificateRefs());
-        diffOf(mods, "dicomVendorData",
+        storeDiff(mods, "dicomVendorData",
                 a.getVendorData(),
                 b.getVendorData());
-        diffOf(mods, "dicomInstalled",
+        storeDiff(mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
     }
 
-    protected void diffsOf(Collection<ModificationItem> mods, Connection a, Connection b) {
-        diffOf(mods, "dicomHostname",
+    protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {
+        storeDiff(mods, "dicomHostname",
                 a.getHostname(),
                 b.getHostname());
-        diffOf(mods, "dicomPort",
+        storeDiff(mods, "dicomPort",
                 a.getPort(),
                 b.getPort(),
-                -1);
-        diffOf(mods, "dicomTLSCipherSuite",
+                Connection.NOT_LISTENING);
+        storeDiff(mods, "dicomTLSCipherSuite",
                 a.getTlsCipherSuites(),
                 b.getTlsCipherSuites());
-        diffOf(mods, "dicomInstalled",
+        storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
     }
 
-    protected void diffsOf(Collection<ModificationItem> mods,
+    protected void storeDiffs(Collection<ModificationItem> mods,
             ApplicationEntity a, ApplicationEntity b, String deviceDN) {
-        diffOf(mods, "dicomDescription",
+        storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
-        diffOf(mods, "dicomVendorData",
+        storeDiff(mods, "dicomVendorData",
                 a.getVendorData(),
                 b.getVendorData());
-        diffOf(mods, "dicomApplicationCluster",
+        storeDiff(mods, "dicomApplicationCluster",
                 a.getApplicationClusters(),
                 b.getApplicationClusters());
-        diffOf(mods, "dicomPreferredCallingAETitle",
+        storeDiff(mods, "dicomPreferredCallingAETitle",
                 a.getPreferredCallingAETitles(),
                 b.getPreferredCallingAETitles());
-        diffOf(mods, "dicomPreferredCalledAETitle",
+        storeDiff(mods, "dicomPreferredCalledAETitle",
                 a.getPreferredCalledAETitles(),
                 b.getPreferredCalledAETitles());
-        diffOf(mods, "dicomAssociationInitiator",
+        storeDiff(mods, "dicomAssociationInitiator",
                 a.isAssociationInitiator(),
                 b.isAssociationInitiator());
-        diffOf(mods, "dicomAssociationAcceptor",
+        storeDiff(mods, "dicomAssociationAcceptor",
                 a.isAssociationAcceptor(),
                 b.isAssociationAcceptor());
-        diffOf(mods, "dicomNetworkConnectionReference",
+        storeDiff(mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        diffOf(mods, "dicomSupportedCharacterSet",
+        storeDiff(mods, "dicomSupportedCharacterSet",
                 a.getSupportedCharacterSets(),
                 b.getSupportedCharacterSets());
-        diffOf(mods, "dicomInstalled",
+        storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
     }
 
-    protected void diffsOf(Collection<ModificationItem> mods,
+    protected void storeDiffs(Collection<ModificationItem> mods,
             TransferCapability a, TransferCapability b) {
-        diffOf(mods, "dicomSOPClass",
+        storeDiff(mods, "dicomSOPClass",
                 a.getSopClass(),
                 b.getSopClass());
-        diffOf(mods, "dicomTransferRole",
+        storeDiff(mods, "dicomTransferRole",
                 a.getRole().toString(),
                 b.getRole().toString());
-        diffOf(mods, "dicomTransferSyntax",
+        storeDiff(mods, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
     }
@@ -748,9 +768,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr != null ? Boolean.valueOf((String) attr.get()) : defVal;
     }
 
-    private ModificationItem[] diffsOf(Device prev, Device device) {
+    private ModificationItem[] storeDiffs(Device prev, Device device) {
         ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        diffsOf(mods, prev, device);
+        storeDiffs(mods, prev, device);
         return mods.toArray(new ModificationItem[mods.size()]);
     }
 
@@ -766,9 +786,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             ApplicationEntity prevAE = prevDev.getApplicationEntity(aet);
             if (prevAE == null) {
                 String aeDN = aetDN(ae.getAETitle(), deviceDN);
-                createSubcontext(ctx, aeDN, attrsOf(ae, deviceDN));
+                createSubcontext(ctx, aeDN,
+                        storeTo(ae, deviceDN, new BasicAttributes(true)));
                 for (TransferCapability tc : ae.getTransferCapabilities())
-                    createSubcontext(ctx, dnOf(tc, aeDN), attrsOf(tc));
+                    createSubcontext(ctx, dnOf(tc, aeDN),
+                            storeTo(tc, new BasicAttributes(true)));
             } else
                 merge(prevAE, ae, deviceDN);
         }
@@ -784,7 +806,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private ModificationItem[] diffsOf(ApplicationEntity prev,
             ApplicationEntity ae, String deviceDN) {
         ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        diffsOf(mods, prev, ae, deviceDN);
+        storeDiffs(mods, prev, ae, deviceDN);
         return mods.toArray(new ModificationItem[mods.size()]);
     }
 
@@ -799,16 +821,16 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             String dn = dnOf(tc, aeDN);
             TransferCapability prev = findByDN(aeDN, prevs, dn);
             if (prev == null)
-                createSubcontext(ctx, dn, attrsOf(tc));
+                createSubcontext(ctx, dn, storeTo(tc, new BasicAttributes(true)));
             else
-                ctx.modifyAttributes(dn, diffsOf(prev, tc));
+                ctx.modifyAttributes(dn, storeDiffs(prev, tc));
         }
     }
 
-    private ModificationItem[] diffsOf(TransferCapability prev,
+    private ModificationItem[] storeDiffs(TransferCapability prev,
             TransferCapability tc) {
         ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        diffsOf(mods, prev, tc);
+        storeDiffs(mods, prev, tc);
         return mods.toArray(new ModificationItem[mods.size()]);
     }
 
@@ -825,15 +847,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             String dn = dnOf(conn, deviceDN);
             Connection prev = findByDN(deviceDN, prevs, dn);
             if (prev == null)
-                ctx.createSubcontext(dn, attrsOf(conn));
+                ctx.createSubcontext(dn, storeTo(conn, new BasicAttributes(true)));
             else
-                ctx.modifyAttributes(dn, diffsOf(prev, conn));
+                ctx.modifyAttributes(dn, storeDiffs(prev, conn));
         }
     }
 
-    private ModificationItem[] diffsOf(Connection prev, Connection conn) {
+    private ModificationItem[] storeDiffs(Connection prev, Connection conn) {
         ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        diffsOf(mods, prev, conn);
+        storeDiffs(mods, prev, conn);
         return mods.toArray(new ModificationItem[mods.size()]);
     }
 
@@ -854,7 +876,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
 
-    static void diffOf(Collection<ModificationItem> mods, String attrId,
+    static void storeDiff(Collection<ModificationItem> mods, String attrId,
             Boolean prev, Boolean val) {
         if (val == null) {
             if (prev != null)
@@ -865,16 +887,14 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     new BasicAttribute(attrId, toString(val))));
     }
 
-    private static void diffOf(Collection<ModificationItem> mods, String attrId,
+    private static void storeDiff(Collection<ModificationItem> mods, String attrId,
             byte[][] prevs, byte[][] vals) {
-        if (vals.length == 0) {
-            if (prevs.length > 0)
-                mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-                        new BasicAttribute(attrId)));
-        } else if (!equals(prevs, vals))
-            mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                    attr(attrId, vals)));
-        
+        if (!equals(prevs, vals))
+            mods.add((vals.length == 0)
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                            new BasicAttribute(attrId))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                            attr(attrId, vals)));
     }
 
     private static boolean equals(byte[][] bb1, byte[][] bb2) {
@@ -888,7 +908,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    private static void diffOf(Collection<ModificationItem> mods, String attrId,
+    private static void storeDiff(Collection<ModificationItem> mods, String attrId,
             List<Connection> prevs, List<Connection> conns, String deviceDN) {
         if (!equalsConnRefs(prevs, conns, deviceDN))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -905,7 +925,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    static void diffOf(Collection<ModificationItem> mods, String attrId,
+    static void storeDiff(Collection<ModificationItem> mods, String attrId,
             String[] prevs, String[] vals) {
         if (!Arrays.equals(prevs, vals))
             mods.add((vals.length == 0)
@@ -915,7 +935,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             attr(attrId, vals)));
     }
 
-    static void diffOf(Collection<ModificationItem> mods, String attrId,
+    static void storeDiff(Collection<ModificationItem> mods, String attrId,
             String prev, String val) {
         if (val == null) {
             if (prev != null)
@@ -926,7 +946,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     new BasicAttribute(attrId, val)));
     }
 
-    static void diffOf(Collection<ModificationItem> mods,
+    static void storeDiff(Collection<ModificationItem> mods,
             String attrId, int prev, int val, int defVal) {
         if (val != prev)
             mods.add((val == defVal)
@@ -975,11 +995,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static Attributes attrs(String objectclass, String attrID, String attrVal) {
         Attributes attrs = new BasicAttributes(true); // case-ignore
         attrs.put("objectclass", objectclass);
-        addNotNull(attrs, attrID, attrVal);
+        storeNotNull(attrs, attrID, attrVal);
         return attrs;
     }
 
-    protected static void addBoolean(Attributes attrs, String attrID, Boolean val) {
+    protected static void storeBoolean(Attributes attrs, String attrID, Boolean val) {
         if (val != null)
             attrs.put(attrID, toString(val));
     }
@@ -988,17 +1008,17 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return b ? "TRUE" : "FALSE";
     }
 
-    protected static void addNotNull(Attributes attrs, String attrID, Object val) {
+    protected static void storeNotNull(Attributes attrs, String attrID, Object val) {
         if (val != null)
             attrs.put(attrID, val);
     }
 
-    protected static void addNotDef(Attributes attrs, String attrID, int val, int defVal) {
+    protected static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
         if (val != defVal)
             attrs.put(attrID, Integer.toString(val, 10));
     }
 
-    protected static <T> void addNotEmpty(Attributes attrs, String attrID, T... vals) {
+    protected static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {
         if (vals.length > 0)
             attrs.put(attr(attrID, vals));
     }
@@ -1010,7 +1030,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr;
     }
 
-    private static void addConnRefs(Attributes attrs, Collection<Connection> conns,
+    private static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
             String deviceDN) {
         if (!conns.isEmpty())
             attrs.put(connRefs(conns, deviceDN));

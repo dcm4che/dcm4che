@@ -241,6 +241,10 @@ public class ApplicationEntity {
         prefCallingAETs = aets;
     }
 
+    public boolean isAcceptOnlyPreferredCallingAETitles() {
+        return checkCallingAET;
+    }
+
     public void setAcceptOnlyPreferredCallingAETitles(boolean checkCallingAET) {
         this.checkCallingAET = checkCallingAET;
     }

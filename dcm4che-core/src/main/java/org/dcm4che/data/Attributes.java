@@ -290,8 +290,12 @@ public class Attributes implements Serializable {
     }
 
     public Attributes getNestedDataset(String privateCreator, int sequenceTag, int itemIndex) {
-        Sequence sq = getSequence(privateCreator, sequenceTag);
-        if (sq == null || itemIndex >= sq.size())
+        Object value = getValue(privateCreator, sequenceTag);
+        if (!(value instanceof Sequence))
+            return null;
+
+        Sequence sq = (Sequence) value;
+        if (itemIndex >= sq.size())
             return null;
 
         return sq.get(itemIndex);
@@ -300,9 +304,14 @@ public class Attributes implements Serializable {
     public Attributes getNestedDataset(ItemPointer... itemPointers) {
         Attributes item = this;
         for (ItemPointer ip : itemPointers) {
-            Sequence sq = item.getSequence(ip.privateCreator, ip.sequenceTag);
-            if (sq == null || ip.itemIndex >= sq.size())
+            Object value = item.getValue(ip.privateCreator, ip.sequenceTag);
+            if (!(value instanceof Sequence))
                 return null;
+
+            Sequence sq = (Sequence) value;
+            if (ip.itemIndex >= sq.size())
+                return null;
+
             item = sq.get(ip.itemIndex);
         }
         return item;
@@ -316,6 +325,16 @@ public class Attributes implements Serializable {
 
     private int indexOf(int tag) {
         return Arrays.binarySearch(tags, 0, size, tag);
+    }
+
+    private int indexOf(String privateCreator, int tag) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, false);
+            if (creatorTag == -1)
+                return -1;
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+        return indexOf(tag);
     }
 
     private int creatorTagOf(String privateCreator, int tag, boolean reserve) {
@@ -377,28 +396,16 @@ public class Attributes implements Serializable {
     }
 
     public boolean contains(String privateCreator, int tag) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return false;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        return contains(tag);
+        return indexOf(privateCreator, tag) >= 0;
     }
 
     public boolean containsValue(int tag) {
-        int index = indexOf(tag);
-        return index >= 0 && !isEmpty(values[index]);
+        return containsValue(null, tag);
     }
 
     public boolean containsValue(String privateCreator, int tag) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return false;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        return containsValue(tag);
+        int index = indexOf(privateCreator, tag);
+        return index >= 0 && !isEmpty(values[index]);
     }
 
     public String privateCreatorOf(int tag) {
@@ -414,21 +421,15 @@ public class Attributes implements Serializable {
     }
 
     public Object getValue(int tag) {
-        int index = indexOf(tag);
-        if (index < 0)
-            return null;
-
-        return values[index];
+        return getValue(null, tag);
     }
 
     public Object getValue(String privateCreator, int tag) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        return getValue(tag);
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+        
+        return values[index];
     }
 
     public Sequence getSequence(int tag) {
@@ -436,42 +437,37 @@ public class Attributes implements Serializable {
     }
 
     public Sequence getSequence(String privateCreator, int tag) {
-        Object value = getValue(privateCreator, tag);
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+        
+        Object value = values[index];
+        if (value == Value.NULL)
+            return (Sequence) (values[index] = new Sequence(this, 0));
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
-    public Sequence ensureSequence(int tag, int initialCapacity) {
-        return ensureSequence(null, tag, initialCapacity);
-    }
-
-    public Sequence ensureSequence(String privateCreator, int tag, int initialCapacity) {
-        Object value = getValue(privateCreator, tag);
-        return value instanceof Sequence ? (Sequence) value : newSequence(privateCreator, tag,
-                initialCapacity);
-    }
-
     public byte[] getBytes(int tag) throws IOException {
-        int index = indexOf(tag);
-        if (index < 0)
-            return null;
-
-        Object value = values[index];
-        VR vr = vrs[index];
-
-        if (value instanceof Value)
-            return ((Value) value).toBytes(vr, bigEndian);
-
-        return vr.toBytes(value, getSpecificCharacterSet());
+        return getBytes(null, tag);
     }
 
     public byte[] getBytes(String privateCreator, int tag) throws IOException {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+        
+        Object value = values[index];
+        VR vr = vrs[index];
+        
+        try {
+            if (value instanceof Value)
+                return ((Value) value).toBytes(vr, bigEndian);
+            
+            return vr.toBytes(value, getSpecificCharacterSet());
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as bytes", TagUtils.toString(tag), vr);
+            return null;
         }
-        return getBytes(tag);
     }
 
     public String getString(int tag) {
@@ -519,13 +515,7 @@ public class Attributes implements Serializable {
     }
 
     public String getString(String privateCreator, int tag, VR vr, int valueIndex, String defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -540,7 +530,12 @@ public class Attributes implements Serializable {
         if (vr.isStringType())
             value = decodeStringValue(index);
 
-        return vr.toString(value, bigEndian, valueIndex, defVal);
+        try {
+            return vr.toString(value, bigEndian, valueIndex, defVal);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     public String[] getStrings(int tag) {
@@ -552,13 +547,7 @@ public class Attributes implements Serializable {
     }
 
     public String[] getStrings(String privateCreator, int tag, VR vr) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 
@@ -570,9 +559,14 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        return toStrings(vr.isStringType()
-                ? decodeStringValue(index) 
-                : vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
+        try {
+            return toStrings(vr.isStringType()
+                    ? decodeStringValue(index) 
+                    : vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
+            return null;
+        }
     }
 
     private static String[] toStrings(Object val) {
@@ -602,13 +596,7 @@ public class Attributes implements Serializable {
     }
 
     public int getInt(String privateCreator, int tag, VR vr, int valueIndex, int defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -623,7 +611,15 @@ public class Attributes implements Serializable {
         if (vr == VR.IS)
             value = decodeStringValue(index);
 
-        return vr.toInt(value, bigEndian, valueIndex, defVal);
+        try {
+            return vr.toInt(value, bigEndian, valueIndex, defVal);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            return defVal;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     public int[] getInts(int tag) {
@@ -635,13 +631,7 @@ public class Attributes implements Serializable {
     }
 
     public int[] getInts(String privateCreator, int tag, VR vr) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 
@@ -656,7 +646,15 @@ public class Attributes implements Serializable {
         if (vr == VR.IS)
             value = decodeStringValue(index);
 
-        return vr.toInts(value, bigEndian);
+        try {
+            return vr.toInts(value, bigEndian);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as int", TagUtils.toString(tag), vr);
+            return null;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
     }
 
     public float getFloat(int tag, float defVal) {
@@ -680,13 +678,7 @@ public class Attributes implements Serializable {
     }
 
     public float getFloat(String privateCreator, int tag, VR vr, int valueIndex, float defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -701,7 +693,15 @@ public class Attributes implements Serializable {
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
-        return vr.toFloat(value, bigEndian, valueIndex, defVal);
+        try {
+            return vr.toFloat(value, bigEndian, valueIndex, defVal);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
+            return defVal;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     public float[] getFloats(int tag) {
@@ -713,13 +713,7 @@ public class Attributes implements Serializable {
     }
 
     public float[] getFloats(String privateCreator, int tag, VR vr) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 
@@ -734,7 +728,15 @@ public class Attributes implements Serializable {
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
-        return vr.toFloats(value, bigEndian);
+        try {
+            return vr.toFloats(value, bigEndian);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as float", TagUtils.toString(tag), vr);
+            return null;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
     }
 
     public double getDouble(int tag, double defVal) {
@@ -758,13 +760,7 @@ public class Attributes implements Serializable {
     }
 
     public double getDouble(String privateCreator, int tag, VR vr, int valueIndex, double defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -779,7 +775,15 @@ public class Attributes implements Serializable {
         if (vr == VR.DS)
             value = decodeStringValue(index);
 
-        return vr.toDouble(value, bigEndian, valueIndex, defVal);
+        try {
+            return vr.toDouble(value, bigEndian, valueIndex, defVal);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
+           return defVal;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     public double[] getDoubles(int tag) {
@@ -791,13 +795,7 @@ public class Attributes implements Serializable {
     }
 
     public double[] getDoubles(String privateCreator, int tag, VR vr) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 
@@ -811,8 +809,15 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
         if (vr == VR.DS)
             value = decodeStringValue(index);
-
-        return vr.toDoubles(value, bigEndian);
+        try {
+            return vr.toDoubles(value, bigEndian);
+        } catch (UnsupportedOperationException e) {
+            LOG.info("Attempt to access {} {} as double", TagUtils.toString(tag), vr);
+            return null;
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return null;
+        }
     }
 
     public Date getDate(int tag) {
@@ -860,13 +865,7 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex, Date defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -878,11 +877,17 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (!vr.isTemporalType())
-            throw new UnsupportedOperationException();
-
-        return vr.toDate(decodeStringValue(index),
-                getTimeZone(), valueIndex, false, defVal);
+        if (!vr.isTemporalType()) {
+            LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
+            return defVal;
+        }
+        try {
+            return vr.toDate(decodeStringValue(index),
+                    getTimeZone(), valueIndex, false, defVal);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     public Date getDate(long tag) {
@@ -908,8 +913,12 @@ public class Attributes implements Serializable {
         String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)
             return defVal;
-
-        return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
+        try {
+            return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} TM", TagUtils.toString((int) tag));
+            return defVal;
+        }
     }
 
     public Date[] getDates(int tag) {
@@ -921,13 +930,7 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(String privateCreator, int tag, VR vr) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 
@@ -939,11 +942,16 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (!vr.isTemporalType())
-            throw new UnsupportedOperationException();
-
-        return vr.toDates(decodeStringValue(index), getTimeZone(), false);
-    }
+        if (!vr.isTemporalType()) {
+            LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
+            return null;
+        }
+        try {
+            return vr.toDates(decodeStringValue(index), getTimeZone(), false);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+   }
 
     public DateRange getDateRange(int tag) {
         return getDateRange(null, tag, null, null);
@@ -966,13 +974,7 @@ public class Attributes implements Serializable {
     }
 
     public DateRange getDateRange(String privateCreator, int tag, VR vr, DateRange defVal) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return defVal;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
 
@@ -984,17 +986,23 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (!vr.isTemporalType())
-            throw new UnsupportedOperationException();
-
+        if (!vr.isTemporalType()) {
+            LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
+            return defVal;
+        }
         String[] range = splitRange(
                 vr.toString(decodeStringValue(index), false, 0, null));
         TimeZone tz = getTimeZone();
-        return new DateRange(
-                range[0] == null ? null
-                        : vr.toDate(range[0], tz, 0, false, null),
-                range[1] == null ? null
-                        : vr.toDate(range[1], tz, 0, true, null));
+        try {
+            return new DateRange(
+                    range[0] == null ? null
+                            : vr.toDate(range[0], tz, 0, false, null),
+                    range[1] == null ? null
+                            : vr.toDate(range[1], tz, 0, true, null));
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
+            return defVal;
+        }
     }
 
     private static String[] splitRange(String s) {
@@ -1037,18 +1045,22 @@ public class Attributes implements Serializable {
 
         String[] darange = splitRange(VR.DA.toString(da, false, 0, null));
         String[] tmrange = splitRange(VR.TM.toString(tm, false, 0, null));
-
-        return new DateRange(
-                darange[0] == null ? null
-                        : VR.DT.toDate(tmrange[0] == null
-                                ? darange[0]
-                                : darange[0] + tmrange[0],
-                                tz, 0, false, null),
-                darange[1] == null ? null
-                        : VR.DT.toDate(tmrange[1] == null
-                                ? darange[1]
-                                : darange[1] + tmrange[1],
-                                tz, 0, true, null));
+        try {
+            return new DateRange(
+                    darange[0] == null ? null
+                            : VR.DT.toDate(tmrange[0] == null
+                                    ? darange[0]
+                                    : darange[0] + tmrange[0],
+                                    tz, 0, false, null),
+                    darange[1] == null ? null
+                            : VR.DT.toDate(tmrange[1] == null
+                                    ? darange[1]
+                                    : darange[1] + tmrange[1],
+                                    tz, 0, true, null));
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} TM", TagUtils.toString((int) tag));
+            return defVal;
+        }
     }
 
     public SpecificCharacterSet getSpecificCharacterSet() {
@@ -1101,13 +1113,7 @@ public class Attributes implements Serializable {
     }
 
     public Object remove(String privateCreator, int tag) {
-        if (privateCreator != null) {
-            int creatorTag = creatorTagOf(privateCreator, tag, false);
-            if (creatorTag == -1)
-                return null;
-            tag = TagUtils.toPrivateTag(creatorTag, tag);
-        }
-        int index = indexOf(tag);
+        int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
 

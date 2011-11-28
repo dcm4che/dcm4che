@@ -69,7 +69,7 @@ public enum QueryOption {
 
     private static void toOption(ExtendedNegotiation extNeg,
             QueryOption opt, EnumSet<QueryOption> opts) {
-        if (extNeg.getField(opt.ordinal(), 0) == 1)
+        if (extNeg.getField(opt.ordinal(), (byte) 0) == 1)
             opts.add(opt);
     }
 }

@@ -66,7 +66,7 @@ public class ExtendedNegotiation {
         return info.clone();
     }
 
-    public final int getField(int index, int def) {
+    public final byte getField(int index, byte def) {
         return index < info.length ? info[index] : def;
     }
 

@@ -478,13 +478,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return new ApplicationEntity(aet);
     }
 
-    protected TransferCapability newTransferCapability(Attributes attrs)
-            throws NamingException {
-        return new TransferCapability(
-                toString(attrs.get("cn")),
-                toString(attrs.get("dicomSOPClass")),
-                TransferCapability.Role.valueOf(toString(attrs.get("dicomTransferRole"))),
-                toStrings(attrs.get("dicomTransferSyntax")));
+    protected TransferCapability newTransferCapability() {
+        return new TransferCapability();
+    }
+
+    protected void loadFrom(TransferCapability tc, Attributes attrs) throws NamingException {
+        tc.setCommonName(toString(attrs.get("cn")));
+        tc.setSopClass(toString(attrs.get("dicomSOPClass")));
+        tc.setRole(TransferCapability.Role.valueOf(toString(attrs.get("dicomTransferRole"))));
+        tc.setTransferSyntaxes(toStrings(attrs.get("dicomTransferSyntax")));
     }
 
     protected void loadFrom(Device device, Attributes attrs) throws NamingException {
@@ -610,13 +612,18 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 "(objectclass=dicomTransferCapability)",
                 ctls);
         try {
-            while (ne.hasMore()) {
-                ae.addTransferCapability(
-                        newTransferCapability(ne.next().getAttributes()));
-            }
+            while (ne.hasMore())
+                ae.addTransferCapability(loadTransferCapability(ne.next()));
         } finally {
            safeClose(ne);
         }
+    }
+
+    private TransferCapability loadTransferCapability(SearchResult sr)
+            throws NamingException {
+        TransferCapability tc = newTransferCapability();
+        loadFrom(tc, sr.getAttributes());
+        return tc;
     }
 
     protected void storeDiffs(Collection<ModificationItem> mods, Device a, Device b) {
@@ -953,7 +960,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                            new BasicAttribute(attrId, val)));
+                            new BasicAttribute(attrId, "" + val)));
     }
 
 
@@ -1004,7 +1011,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             attrs.put(attrID, toString(val));
     }
 
-    private static String toString(boolean b) {
+    protected static String toString(boolean b) {
         return b ? "TRUE" : "FALSE";
     }
 
@@ -1015,7 +1022,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
         if (val != defVal)
-            attrs.put(attrID, Integer.toString(val, 10));
+            storeInt(attrs, attrID, val);
+    }
+
+    protected static Attribute storeInt(Attributes attrs, String attrID, int val) {
+        return attrs.put(attrID, "" + val);
     }
 
     protected static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {

@@ -39,14 +39,19 @@
 package org.dcm4che.conf.ldap;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Hashtable;
 
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.pdu.QueryOption;
+import org.dcm4che.net.pdu.StorageOptions;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -59,12 +64,19 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super(env, baseDN);
     }
 
+    @Override
     protected String objectclassOf(Connection conn) {
         return "dcm4cheNetworkConnection";
     }
 
+    @Override
     protected String objectclassOf(ApplicationEntity ae) {
         return "dcm4cheNetworkAE";
+    }
+
+    @Override
+    protected String objectclassOf(TransferCapability tc) {
+        return "dcm4cheTransferCapability";
     }
 
     @Override
@@ -119,6 +131,32 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     }
 
     @Override
+    protected Attributes storeTo(TransferCapability tc, Attributes attrs) {
+        super.storeTo(tc, attrs);
+        EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
+        if (queryOpts != null) {
+            storeBoolean(attrs, "dcm4cheRelationalQueries",
+                    queryOpts.contains(QueryOption.RELATIONAL));
+            storeBoolean(attrs, "dcm4cheCombinedDateTimeMatching",
+                    queryOpts.contains(QueryOption.DATETIME));
+            storeBoolean(attrs, "dcm4cheFuzzySemanticMatching",
+                    queryOpts.contains(QueryOption.FUZZY));
+            storeBoolean(attrs, "dcm4cheTimezoneQueryAdjustment",
+                    queryOpts.contains(QueryOption.TIMEZONE));
+        }
+        StorageOptions storageOpts = tc.getStorageOptions();
+        if (storageOpts != null) {
+            storeInt(attrs, "dcm4cheLevelOfStorageConformance",
+                    storageOpts.getLevelOfSupport().ordinal());
+            storeInt(attrs, "dcm4cheLevelOfDigitalSignatureSupport",
+                    storageOpts.getDigitalSignatureSupport().ordinal());
+            storeInt(attrs, "dcm4cheDataElementCoercion",
+                    storageOpts.getElementCoercion().ordinal());
+        }
+        return attrs;
+    }
+
+    @Override
     protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
         super.loadFrom(conn, attrs);
         conn.setBlacklist(toStrings(attrs.get("dcm4cheBlacklistedHostname")));
@@ -164,6 +202,50 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         ae.setPackPDV(toBoolean(attrs.get("dcm4chePackPDV"), Boolean.TRUE));
         ae.setAcceptOnlyPreferredCallingAETitles(
                 toBoolean(attrs.get("dcm4cheAcceptOnlyPreferredCallingAETitle"), Boolean.FALSE));
+    }
+
+    @Override
+    protected void loadFrom(TransferCapability tc, Attributes attrs)
+            throws NamingException {
+        super.loadFrom(tc, attrs);
+        tc.setQueryOptions(toQueryOptions(attrs));
+        tc.setStorageOptions(toStorageOptions(attrs));
+    }
+
+    private static EnumSet<QueryOption> toQueryOptions(Attributes attrs)
+            throws NamingException {
+        Attribute relational = attrs.get("dcm4cheRelationalQueries");
+        Attribute datetime = attrs.get("dcm4cheCombinedDateTimeMatching");
+        Attribute fuzzy = attrs.get("dcm4cheFuzzySemanticMatching");
+        Attribute timezone = attrs.get("dcm4cheTimezoneQueryAdjustment");
+        if (relational == null && datetime == null && fuzzy == null && timezone == null)
+            return null;
+        EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
+        if (toBoolean(relational, Boolean.FALSE))
+            opts.add(QueryOption.RELATIONAL);
+        if (toBoolean(datetime, Boolean.FALSE))
+            opts.add(QueryOption.DATETIME);
+        if (toBoolean(fuzzy, Boolean.FALSE))
+            opts.add(QueryOption.FUZZY);
+        if (toBoolean(timezone, Boolean.FALSE))
+            opts.add(QueryOption.TIMEZONE);
+        return opts ;
+     }
+
+    private static StorageOptions toStorageOptions(Attributes attrs) throws NamingException {
+        Attribute levelOfSupport = attrs.get("dcm4cheLevelOfStorageConformance");
+        Attribute signatureSupport = attrs.get("dcm4cheLevelOfDigitalSignatureSupport");
+        Attribute coercion = attrs.get("dcm4cheDataElementCoercion");
+        if (levelOfSupport == null && signatureSupport == null && coercion == null)
+            return null;
+        StorageOptions opts = new StorageOptions();
+        opts.setLevelOfSupport(
+                StorageOptions.LevelOfSupport.valueOf(toInt(levelOfSupport, 3)));
+        opts.setDigitalSignatureSupport(
+                StorageOptions.DigitalSignatureSupport.valueOf(toInt(signatureSupport, 0)));
+        opts.setElementCoercion(
+                StorageOptions.ElementCoercion.valueOf(toInt(coercion, 2)));
+        return opts;
     }
 
     @Override
@@ -257,6 +339,46 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         storeDiff(mods, "dcm4cheAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
                 b.isAcceptOnlyPreferredCallingAETitles());
+    }
+
+    @Override
+    protected void storeDiffs(Collection<ModificationItem> mods,
+            TransferCapability a, TransferCapability b) {
+        super.storeDiffs(mods, a, b);
+        storeDiffs(mods, a.getQueryOptions(), b.getQueryOptions());
+        storeDiffs(mods, a.getStorageOptions(), b.getStorageOptions());
+    }
+
+    private void storeDiffs(Collection<ModificationItem> mods,
+            EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
+        storeDiff(mods, "dcm4cheRelationalQueries",
+                prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
+                val != null ? val.contains(QueryOption.RELATIONAL) : null);
+        storeDiff(mods, "dcm4cheCombinedDateTimeMatching",
+                prev != null ? prev.contains(QueryOption.DATETIME) : null,
+                val != null ? val.contains(QueryOption.DATETIME) : null);
+        storeDiff(mods, "dcm4cheFuzzySemanticMatching",
+                prev != null ? prev.contains(QueryOption.FUZZY) : null,
+                val != null ? val.contains(QueryOption.FUZZY) : null);
+        storeDiff(mods, "dcm4cheTimezoneQueryAdjustment",
+                prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
+                val != null ? val.contains(QueryOption.TIMEZONE) : null);
+    }
+
+    private void storeDiffs(Collection<ModificationItem> mods,
+            StorageOptions prev, StorageOptions val) {
+        storeDiff(mods, "dcm4cheLevelOfStorageConformance",
+                prev != null ? prev.getLevelOfSupport().ordinal() : -1,
+                val != null ? val.getLevelOfSupport().ordinal() : -1,
+                -1);
+        storeDiff(mods, "dcm4cheLevelOfDigitalSignatureSupport",
+                prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
+                val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
+                -1);
+        storeDiff(mods, "dcm4cheDataElementCoercion",
+                prev != null ? prev.getElementCoercion().ordinal() : -1,
+                val != null ? val.getElementCoercion().ordinal() : -1,
+                -1);
     }
 
 }

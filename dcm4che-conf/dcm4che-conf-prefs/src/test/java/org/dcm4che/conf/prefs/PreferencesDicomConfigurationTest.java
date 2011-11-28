@@ -40,8 +40,8 @@ package org.dcm4che.conf.prefs;
 
 import static org.junit.Assert.*;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
@@ -51,6 +51,9 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.TransferCapability.Role;
+import org.dcm4che.net.pdu.QueryOption;
+import org.dcm4che.net.pdu.StorageOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,19 +96,31 @@ public class PreferencesDicomConfigurationTest {
         assertFalse(ae.isAssociationInitiator());
         assertTrue(ae.isAssociationAcceptor());
         assertTrue(ae.getConnections().get(0).isServer());
-        Collection<TransferCapability> tcs = ae.getTransferCapabilities();
-        Iterator<TransferCapability> tciter = tcs.iterator();
-        assertTrue(tciter.hasNext());
-        TransferCapability tc = tciter.next();
-        assertEquals(UID.VerificationSOPClass, tc.getSopClass());
-        assertEquals(TransferCapability.Role.SCP, tc.getRole());
-        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
-        assertFalse(tciter.hasNext());
+        TransferCapability echoSCP = ae.getTransferCapabilityFor(
+                UID.VerificationSOPClass, TransferCapability.Role.SCP);
+        assertNotNull(echoSCP);
+        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, echoSCP.getTransferSyntaxes());
+        TransferCapability ctSCP = ae.getTransferCapabilityFor(
+                UID.CTImageStorage, TransferCapability.Role.SCP);
+        assertNotNull(ctSCP);
+        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian },
+                sort(ctSCP.getTransferSyntaxes()));
+        assertNull(ctSCP.getStorageOptions());
+        TransferCapability findSCP = ae.getTransferCapabilityFor(
+                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+        assertNotNull(findSCP);
+        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, findSCP.getTransferSyntaxes());
+        assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         try {
             config.persist(createDevice("Test-Device-1", "TEST-AET1"));
             fail("ConfigurationAlreadyExistsException expected");
         } catch (ConfigurationAlreadyExistsException e) {}
         config.removeDevice("Test-Device-1");
+    }
+
+    private static String[] sort(String[] a) {
+        Arrays.sort(a);
+        return a;
     }
 
     @Test
@@ -122,59 +137,84 @@ public class PreferencesDicomConfigurationTest {
         assertTrue(ae.isAssociationInitiator());
         assertFalse(ae.isAssociationAcceptor());
         assertFalse(ae.getConnections().get(0).isServer());
-        Collection<TransferCapability> tcs = ae.getTransferCapabilities();
-        Iterator<TransferCapability> tciter = tcs.iterator();
-        assertTrue(tciter.hasNext());
-        TransferCapability tc = tciter.next();
-        assertEquals(UID.VerificationSOPClass, tc.getSopClass());
-        assertEquals(TransferCapability.Role.SCU, tc.getRole());
-        assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, tc.getTransferSyntaxes());
-        assertFalse(tciter.hasNext());
+        TransferCapability echoSCP = ae.getTransferCapabilityFor(
+                UID.VerificationSOPClass, TransferCapability.Role.SCP);
+        assertNull(echoSCP);
+        TransferCapability echoSCU = ae.getTransferCapabilityFor(
+                UID.VerificationSOPClass, TransferCapability.Role.SCU);
+        assertNotNull(echoSCU);
+        TransferCapability ctSCP = ae.getTransferCapabilityFor(
+                UID.CTImageStorage, TransferCapability.Role.SCP);
+        assertEquals(STORAGE_OPTIONS, ctSCP.getStorageOptions());
+        TransferCapability findSCP = ae.getTransferCapabilityFor(
+                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+        assertEquals(EnumSet.of(QueryOption.RELATIONAL, QueryOption.DATETIME),
+                findSCP.getQueryOptions());
         config.removeDevice("Test-Device-1");
     }
 
     private static Device createDevice(String name, String aet) throws Exception {
         Device device = new Device(name);
-        Connection conn = createConn();
+        Connection conn = createConn("host.dcm4che.org", 11112);
         device.addConnection(conn);
         ApplicationEntity ae = createAE(aet, conn);
         device.addApplicationEntity(ae);
         return device ;
     }
 
-    private static Connection createConn() {
+    private static Connection createConn(String hostname, int port) {
         Connection conn = new Connection();
-        conn.setHostname("host.dcm4che.org");
-        conn.setPort(11112);
+        conn.setHostname(hostname);
+        conn.setPort(port);
         return conn;
     }
 
-    private static final TransferCapability ECHO_SCP = new TransferCapability(null, 
-            UID.VerificationSOPClass,
-            TransferCapability.Role.SCP,
-            UID.ImplicitVRLittleEndian);
+    private static TransferCapability echoSCP() {
+        return new TransferCapability(null, UID.VerificationSOPClass, Role.SCP,
+                UID.ImplicitVRLittleEndian);
+    }
 
-    private static final TransferCapability ECHO_SCU = new TransferCapability(null, 
-            UID.VerificationSOPClass,
-            TransferCapability.Role.SCU,
-            UID.ImplicitVRLittleEndian);
+    private static final TransferCapability ctSCP() {
+        return new TransferCapability(null, UID.CTImageStorage, Role.SCP, 
+                UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian);
+    }
+ 
+    private static final TransferCapability findSCP() {
+        return new TransferCapability(null, UID.StudyRootQueryRetrieveInformationModelFIND,
+                Role.SCP, UID.ImplicitVRLittleEndian)
+            .setQueryOptions(EnumSet.of(QueryOption.RELATIONAL));
+    }
+
+    private static final StorageOptions STORAGE_OPTIONS = new StorageOptions(
+            StorageOptions.LevelOfSupport.LEVEL_2,
+            StorageOptions.DigitalSignatureSupport.LEVEL_1,
+            StorageOptions.ElementCoercion.YES);
 
     private static ApplicationEntity createAE(String aet, Connection conn) {
         ApplicationEntity ae = new ApplicationEntity(aet);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
-        ae.addTransferCapability(ECHO_SCP);
+        ae.addTransferCapability(echoSCP());
+        ae.addTransferCapability(ctSCP());
+        ae.addTransferCapability(findSCP());
         return ae;
     }
 
     private static void modifyDevice(Device device) throws Exception  {
         ApplicationEntity ae = device.getApplicationEntity("TEST-AET1");
-        ae.getConnections().get(0).setPort(-1);
+        ae.getConnections().get(0).setPort(Connection.NOT_LISTENING);
         ae.setAssociationInitiator(true);
         ae.setAssociationAcceptor(false);
-        ae.removeTransferCapability(ECHO_SCP);
-        ae.addTransferCapability(ECHO_SCU);
-        Connection conn = createConn();
+        for (TransferCapability tc : ae.getTransferCapabilities()) {
+            String sopClass = tc.getSopClass();
+            if (sopClass.equals(UID.VerificationSOPClass))
+                tc.setRole(TransferCapability.Role.SCU);
+            else if (sopClass.equals(UID.CTImageStorage))
+                tc.setStorageOptions(STORAGE_OPTIONS);
+            else
+                tc.getQueryOptions().add(QueryOption.DATETIME);
+        }
+        Connection conn = createConn("host.dcm4che.org", 11114);
         device.addConnection(conn);
         ApplicationEntity ae2 = createAE("TEST-AET2", conn);
         device.addApplicationEntity(ae2);

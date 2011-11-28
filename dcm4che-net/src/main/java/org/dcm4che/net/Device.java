@@ -43,7 +43,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -269,13 +268,8 @@ public class Device {
      * 
      * @param primaryDeviceTypes
      */
-    public void setPrimaryDeviceTypes(Collection<String> primaryDeviceTypes) {
-        primaryDeviceTypes.clear();
-        primaryDeviceTypes.addAll(primaryDeviceTypes);
-    }
-
     public void setPrimaryDeviceTypes(String... primaryDeviceTypes) {
-        setPrimaryDeviceTypes(Arrays.asList(primaryDeviceTypes));
+        this.primaryDeviceTypes = primaryDeviceTypes;
     }
 
     /**

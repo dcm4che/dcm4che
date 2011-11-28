@@ -41,6 +41,7 @@ package org.dcm4che.conf.prefs;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -54,6 +55,8 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.pdu.QueryOption;
+import org.dcm4che.net.pdu.StorageOptions;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,7 +155,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         
         try {
             Preferences devicePrefs = rootPrefs.node(pathName);
-            for (String deviceName : devicePrefs .childrenNames()) {
+            for (String deviceName : devicePrefs.childrenNames()) {
                 Preferences deviceNode = devicePrefs.node(deviceName);
                 for (String aet2 : deviceNode.node("dcm4cheNetworkAE").childrenNames())
                     if (aet.equals(aet2))
@@ -361,6 +364,26 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
         storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
         storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
+        EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
+        if (queryOpts != null) {
+            storeBoolean(prefs, "dcm4cheRelationalQueries",
+                    queryOpts.contains(QueryOption.RELATIONAL));
+            storeBoolean(prefs, "dcm4cheCombinedDateTimeMatching",
+                    queryOpts.contains(QueryOption.DATETIME));
+            storeBoolean(prefs, "dcm4cheFuzzySemanticMatching",
+                    queryOpts.contains(QueryOption.FUZZY));
+            storeBoolean(prefs, "dcm4cheTimezoneQueryAdjustment",
+                    queryOpts.contains(QueryOption.TIMEZONE));
+        }
+        StorageOptions storageOpts = tc.getStorageOptions();
+        if (storageOpts != null) {
+            storeInt(prefs, "dcm4cheLevelOfStorageConformance",
+                    storageOpts.getLevelOfSupport().ordinal());
+            storeInt(prefs, "dcm4cheLevelOfDigitalSignatureSupport",
+                    storageOpts.getDigitalSignatureSupport().ordinal());
+            storeInt(prefs, "dcm4cheDataElementCoercion",
+                    storageOpts.getElementCoercion().ordinal());
+        }
     }
 
     protected void storeDiffs(Preferences prefs, Device a, Device b) {
@@ -499,6 +522,40 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
+        storeDiffs(prefs, a.getQueryOptions(), b.getQueryOptions());
+        storeDiffs(prefs, a.getStorageOptions(), b.getStorageOptions());
+    }
+
+    private static void storeDiffs(Preferences prefs,
+            EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
+        storeDiff(prefs, "dcm4cheRelationalQueries",
+                prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
+                val != null ? val.contains(QueryOption.RELATIONAL) : null);
+        storeDiff(prefs, "dcm4cheCombinedDateTimeMatching",
+                prev != null ? prev.contains(QueryOption.DATETIME) : null,
+                val != null ? val.contains(QueryOption.DATETIME) : null);
+        storeDiff(prefs, "dcm4cheFuzzySemanticMatching",
+                prev != null ? prev.contains(QueryOption.FUZZY) : null,
+                val != null ? val.contains(QueryOption.FUZZY) : null);
+        storeDiff(prefs, "dcm4cheTimezoneQueryAdjustment",
+                prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
+                val != null ? val.contains(QueryOption.TIMEZONE) : null);
+    }
+
+    private static void storeDiffs(Preferences prefs,
+            StorageOptions prev, StorageOptions val) {
+        storeDiff(prefs, "dcm4cheLevelOfStorageConformance",
+                prev != null ? prev.getLevelOfSupport().ordinal() : -1,
+                val != null ? val.getLevelOfSupport().ordinal() : -1,
+                -1);
+        storeDiff(prefs, "dcm4cheLevelOfDigitalSignatureSupport",
+                prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
+                val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
+                -1);
+        storeDiff(prefs, "dcm4cheDataElementCoercion",
+                prev != null ? prev.getElementCoercion().ordinal() : -1,
+                val != null ? val.getElementCoercion().ordinal() : -1,
+                -1);
     }
 
     private static void storeDiffConnRefs(Preferences prefs,
@@ -599,7 +656,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 }
                 Preferences tcsNode = aeNode.node("dicomTransferCapability");
                 for (int tcIndex : sort(tcsNode.childrenNames()))
-                    ae.addTransferCapability(newTransferCapability(tcsNode.node("" + tcIndex)));
+                    ae.addTransferCapability(
+                            loadTransferCapability(tcsNode.node("" + tcIndex)));
                 device.addApplicationEntity(ae);
             }
             return device;
@@ -628,16 +686,62 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return new ApplicationEntity(aet);
     }
 
-    protected TransferCapability newTransferCapability(Preferences prefs)
-            throws BackingStoreException {
-        return new TransferCapability(
-                prefs.get("cn", null),
-                prefs.get("dicomSOPClass", null),
-                TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)),
-                toStrings(prefs, "dicomTransferSyntax"));
+    protected TransferCapability newTransferCapability() {
+        return new TransferCapability();
     }
 
-    protected void loadFrom(Device device, Preferences attrs) throws BackingStoreException {
+    protected void loadFrom(TransferCapability tc, Preferences prefs) {
+        tc.setCommonName(prefs.get("cn", null));
+        tc.setSopClass(prefs.get("dicomSOPClass", null));
+        tc.setRole(TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)));
+        tc.setTransferSyntaxes(toStrings(prefs, "dicomTransferSyntax"));
+        tc.setQueryOptions(toQueryOptions(prefs));
+        tc.setStorageOptions(toStorageOptions(prefs));
+    }
+
+    private static EnumSet<QueryOption> toQueryOptions(Preferences prefs) {
+        String relational = prefs.get("dcm4cheRelationalQueries", null);
+        String datetime = prefs.get("dcm4cheCombinedDateTimeMatching", null);
+        String fuzzy = prefs.get("dcm4cheFuzzySemanticMatching", null);
+        String timezone = prefs.get("dcm4cheTimezoneQueryAdjustment", null);
+        if (relational == null && datetime == null && fuzzy == null && timezone == null)
+            return null;
+        EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
+        if (Boolean.parseBoolean(relational))
+            opts.add(QueryOption.RELATIONAL);
+        if (Boolean.parseBoolean(datetime))
+            opts.add(QueryOption.DATETIME);
+        if (Boolean.parseBoolean(fuzzy))
+            opts.add(QueryOption.FUZZY);
+        if (Boolean.parseBoolean(timezone))
+            opts.add(QueryOption.TIMEZONE);
+        return opts ;
+    }
+
+    private static StorageOptions toStorageOptions(Preferences prefs) {
+        int levelOfSupport = prefs.getInt("dcm4cheLevelOfStorageConformance", -1);
+        int signatureSupport = prefs.getInt("dcm4cheLevelOfDigitalSignatureSupport", -1);
+        int coercion = prefs.getInt("dcm4cheDataElementCoercion", -1);
+        if (levelOfSupport == -1 && signatureSupport == -1 && coercion == -1)
+            return null;
+        StorageOptions opts = new StorageOptions();
+        if (levelOfSupport != -1)
+            opts.setLevelOfSupport(StorageOptions.LevelOfSupport.valueOf(levelOfSupport));
+        if (signatureSupport != -1)
+            opts.setDigitalSignatureSupport(
+                    StorageOptions.DigitalSignatureSupport.valueOf(signatureSupport));
+        if (coercion != -1)
+            opts.setElementCoercion(StorageOptions.ElementCoercion.valueOf(coercion));
+        return opts;
+    }
+
+    private TransferCapability loadTransferCapability(Preferences prefs) {
+        TransferCapability tc = newTransferCapability();
+        loadFrom(tc, prefs);
+        return tc;
+    }
+
+    protected void loadFrom(Device device, Preferences attrs) {
         device.setDescription(attrs.get("dicomDescription", null));
         device.setManufacturer(attrs.get("dicomManufacturer", null));
         device.setManufacturerModelName(attrs.get("dicomManufacturerModelName", null));
@@ -663,7 +767,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void loadFrom(Connection conn, Preferences prefs) throws BackingStoreException {
+    protected void loadFrom(Connection conn, Preferences prefs) {
         conn.setCommonName(prefs.get("cn", null));
         conn.setHostname(prefs.get("dicomHostname", null));
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
@@ -706,8 +810,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return s != null ? Boolean.valueOf(s) : null;
     }
 
-    protected void loadFrom(ApplicationEntity ae, Preferences prefs)
-            throws BackingStoreException {
+    protected void loadFrom(ApplicationEntity ae, Preferences prefs) {
         ae.setDescription(prefs.get("dicomDescription", null));
         ae.setVendorData(toVendorData(prefs, "dicomVendorData"));
         ae.setApplicationClusters(toStrings(prefs, "dicomApplicationCluster"));
@@ -731,8 +834,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getBoolean("dcm4cheAcceptOnlyPreferredCallingAETitle", false));
 }
 
-    private static byte[][] toVendorData(Preferences prefs, String key)
-           throws BackingStoreException {
+    private static byte[][] toVendorData(Preferences prefs, String key) {
        int n = prefs.getInt(key + ".#", 0);
        byte[][] bb = new byte[n][];
        for (int i = 0; i < n; i++)
@@ -740,8 +842,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
        return bb;
     }
 
-    private static String[] toStrings(Preferences prefs, String key)
-            throws BackingStoreException {
+    private static String[] toStrings(Preferences prefs, String key)  {
         int n = prefs.getInt(key + ".#", 0);
         if (n == 0)
             return StringUtils.EMPTY_STRING;
@@ -757,9 +858,13 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             prefs.putBoolean(key, value);
     }
 
-    private void storeNotDef(Preferences prefs, String key, int value, int defVal) {
+    protected static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
         if (value != defVal)
-            prefs.putInt(key, value);
+            storeInt(prefs, key, value);
+    }
+
+    protected static void storeInt(Preferences prefs, String key, int value) {
+        prefs.putInt(key, value);
     }
 
     protected static void storeNotNull(Preferences prefs, String key, String value) {
@@ -814,7 +919,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             if (val == defVal)
                 prefs.remove(key);
             else
-                prefs.putInt(key, val);
+                storeInt(prefs, key, val);
      }
 
     protected static void storeDiff(Preferences prefs, String key,

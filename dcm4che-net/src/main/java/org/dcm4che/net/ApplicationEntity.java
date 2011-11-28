@@ -473,6 +473,11 @@ public class ApplicationEntity {
         return tcs;
     }
 
+    public TransferCapability getTransferCapabilityFor(
+            String sopClass, TransferCapability.Role role) {
+        return (role == TransferCapability.Role.SCU ? scuTCs : scpTCs).get(sopClass);
+    }
+
     public void addExtendedNegotiator(String cuid,
             ExtendedNegotiator extNegtor) {
         if (cuid == null)

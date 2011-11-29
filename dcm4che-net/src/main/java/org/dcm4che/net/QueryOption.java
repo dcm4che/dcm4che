@@ -36,9 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.pdu;
+package org.dcm4che.net;
 
 import java.util.EnumSet;
+
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 
 
 public enum QueryOption {

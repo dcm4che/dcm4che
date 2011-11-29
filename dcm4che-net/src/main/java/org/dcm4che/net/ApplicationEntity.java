@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -105,8 +106,6 @@ public class ApplicationEntity {
     private int maxOpsInvoked = SYNCHRONOUS_MODE;
     private boolean packPDV = true;
     private UserIdentityNegotiator userIdNegotiator;
-    private final HashMap<String, ExtendedNegotiator> extNegotiators =
-            new HashMap<String, ExtendedNegotiator>();
     private DimseRQHandler dimseRQHandler;
     private HashMap<String,Object> properties = new HashMap<String,Object>();
 
@@ -478,19 +477,6 @@ public class ApplicationEntity {
         return (role == TransferCapability.Role.SCU ? scuTCs : scpTCs).get(sopClass);
     }
 
-    public void addExtendedNegotiator(String cuid,
-            ExtendedNegotiator extNegtor) {
-        if (cuid == null)
-            throw new NullPointerException("cuid");
-        if (extNegtor == null)
-            throw new NullPointerException("extNegtor");
-        extNegotiators.put(cuid, extNegtor);
-    }
-
-    public ExtendedNegotiator removeExtendedNegotiator(String cuid) {
-        return extNegotiators.remove(cuid);
-    }
-
     protected AAssociateAC negotiate(Association as, AAssociateRQ rq)
             throws IOException {
         if (!(isInstalled() && acceptor && conns.contains(as.getConnection())))
@@ -551,9 +537,11 @@ public class ApplicationEntity {
 
        for (String ts : rqpc.getTransferSyntaxes())
            if (tc.containsTransferSyntax(ts)) {
-                extNegotiate(rq, ac, as);
-                return new PresentationContext(pcid,
-                        PresentationContext.ACCEPTANCE, ts);
+               byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
+               if (info != null)
+                   ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
+               return new PresentationContext(pcid,
+                       PresentationContext.ACCEPTANCE, ts);
            }
 
        return new PresentationContext(pcid,
@@ -603,28 +591,21 @@ public class ApplicationEntity {
         return tcs.get("*");
     }
 
-    private void extNegotiate(AAssociateRQ rq, AAssociateAC ac, String asuid) {
-        ExtendedNegotiator exnegtor = extNegotiators .get(asuid);
-        if (exnegtor == null) {
-            CommonExtendedNegotiation commonExtNeg =
-                rq.getCommonExtendedNegotiationFor(asuid);
-            if (commonExtNeg != null) {
-                for (String cuid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
-                    exnegtor = extNegotiators.get(cuid);
-                    if (exnegtor != null)
-                        break;
-                }
-                exnegtor = extNegotiators.get(commonExtNeg.getServiceClassUID());
-            }
-        }
-        if (exnegtor == null)
-            return;
+    private byte[] negotiate(ExtendedNegotiation exneg, TransferCapability tc) {
+        if (exneg == null)
+            return null;
 
-        ExtendedNegotiation exneg = rq.getExtNegotiationFor(asuid);
-        byte[] info = exnegtor.negotiate(asuid, 
-                exneg != null ? exneg.getInformation() : null);
-        if (info != null)
-            ac.addExtendedNegotiation(new ExtendedNegotiation(asuid, info));
+        StorageOptions storageOptions = tc.getStorageOptions();
+        if (storageOptions != null)
+            return storageOptions.toExtendedNegotiationInformation();
+
+        EnumSet<QueryOption> queryOptions = tc.getQueryOptions();
+        if (queryOptions != null) {
+            EnumSet<QueryOption> commonOpts = QueryOption.toOptions(exneg);
+            commonOpts.retainAll(queryOptions);
+            return QueryOption.toExtendedNegotiationInformation(commonOpts);
+        }
+        return null;
     }
 
     public Association connect(Connection local, Connection remote, AAssociateRQ rq)

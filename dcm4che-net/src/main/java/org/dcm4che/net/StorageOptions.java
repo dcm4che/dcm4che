@@ -36,7 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.pdu;
+package org.dcm4che.net;
+
+import org.dcm4che.net.pdu.ExtendedNegotiation;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -112,28 +114,25 @@ public class StorageOptions {
         return levelOfSupport;
     }
 
-    public final StorageOptions setLevelOfSupport(LevelOfSupport levelOfSupport) {
+    public final void setLevelOfSupport(LevelOfSupport levelOfSupport) {
         this.levelOfSupport = levelOfSupport;
-        return this;
     }
 
     public final DigitalSignatureSupport getDigitalSignatureSupport() {
         return digitalSignatureSupport;
     }
 
-    public final StorageOptions setDigitalSignatureSupport(
+    public final void setDigitalSignatureSupport(
             DigitalSignatureSupport digitalSignatureSupport) {
         this.digitalSignatureSupport = digitalSignatureSupport;
-        return this;
     }
 
     public final ElementCoercion getElementCoercion() {
         return elementCoercion;
     }
 
-    public final StorageOptions setElementCoercion(ElementCoercion elementCoercion) {
+    public final void setElementCoercion(ElementCoercion elementCoercion) {
         this.elementCoercion = elementCoercion;
-        return this;
     }
 
     public byte[] toExtendedNegotiationInformation() {

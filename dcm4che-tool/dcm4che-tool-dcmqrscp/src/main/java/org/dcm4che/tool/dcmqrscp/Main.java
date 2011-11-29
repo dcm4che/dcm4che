@@ -41,6 +41,7 @@ package org.dcm4che.tool.dcmqrscp;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +63,9 @@ import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
 import org.dcm4che.net.ApplicationEntity;
-import org.dcm4che.net.BasicExtendedNegotiator;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
-import org.dcm4che.net.ExtendedNegotiator;
+import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
@@ -371,13 +371,16 @@ public class Main {
     private static void configureTransferCapability(Main main, CommandLine cl)
             throws IOException {
         ApplicationEntity ae = main.ae;
+        EnumSet<QueryOption> queryOptions = cl.hasOption("relational")
+                ? EnumSet.of(QueryOption.RELATIONAL)
+                : EnumSet.noneOf(QueryOption.class);
         boolean storage = !cl.hasOption("no-storage") && main.isWriteable();
         if (storage && cl.hasOption("all-storage")) {
             ae.addTransferCapability(
                     new TransferCapability(null, 
                             "*",
                             TransferCapability.Role.SCP,
-                            "*"));
+                            "*").setQueryOptions(queryOptions));
         } else {
             ae.addTransferCapability(
                     new TransferCapability(null, 
@@ -390,30 +393,22 @@ public class Main {
                     null);
             if (storage)
                 addTransferCapabilities(ae, storageSOPClasses,
-                        TransferCapability.Role.SCP);
+                        TransferCapability.Role.SCP, null);
             if (!cl.hasOption("no-retrieve")) {
                 addTransferCapabilities(ae, storageSOPClasses,
-                        TransferCapability.Role.SCU);
+                        TransferCapability.Role.SCU, null);
                 Properties p = CLIUtils.loadProperties(
                         cl.getOptionValue("retrieve-sop-classes",
                                 "resource:retrieve-sop-classes.properties"),
                         null);
-                addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
-                if (cl.hasOption("relational"))
-                    addExtendedNegotiator(ae, p,
-                            new BasicExtendedNegotiator(
-                                    toByte(cl.hasOption("relational"))));
+                addTransferCapabilities(ae, p, TransferCapability.Role.SCP, queryOptions);
             }
             if (!cl.hasOption("no-query")) {
                 Properties p = CLIUtils.loadProperties(
                         cl.getOptionValue("query-sop-classes",
                                 "resource:query-sop-classes.properties"),
                         null);
-                addTransferCapabilities(ae, p, TransferCapability.Role.SCP);
-                if (cl.hasOption("relational"))
-                    addExtendedNegotiator(ae, p,
-                            new BasicExtendedNegotiator(
-                                    toByte(cl.hasOption("relational"))));
+                addTransferCapabilities(ae, p, TransferCapability.Role.SCP, queryOptions);
             }
         }
         if (storage)
@@ -422,26 +417,18 @@ public class Main {
             main.openDicomDirForReadOnly();
      }
 
-    private static byte toByte(boolean b) {
-        return b ? (byte) 1 : (byte) 0;
-    }
-
     private static void addTransferCapabilities(ApplicationEntity ae,
-            Properties p, TransferCapability.Role role) {
+            Properties p, TransferCapability.Role role,
+            EnumSet<QueryOption> queryOptions) {
         for (String cuid : p.stringPropertyNames()) {
             String ts = p.getProperty(cuid);
-            ae.addTransferCapability(
+            TransferCapability tc = new TransferCapability(null, cuid, role,
                     ts.equals("*")
-                        ? new TransferCapability(null, cuid, role, "*")
-                        : new TransferCapability(null, cuid, role,
-                                toUIDs(StringUtils.split(ts, ','))));
+                        ? new String[] { "*" }
+                        : toUIDs(StringUtils.split(ts, ',')));
+            tc.setQueryOptions(queryOptions);
+            ae.addTransferCapability(tc);
         }
-    }
-
-    private static void addExtendedNegotiator(ApplicationEntity ae,
-            Properties p, ExtendedNegotiator extNegtor) {
-        for (String cuid : p.stringPropertyNames())
-            ae.addExtendedNegotiator(cuid, extNegtor);
     }
 
     private static String[] toUIDs(String[] names) {

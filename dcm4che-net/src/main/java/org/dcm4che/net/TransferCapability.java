@@ -41,8 +41,6 @@ package org.dcm4che.net;
 import java.util.EnumSet;
 
 import org.dcm4che.data.UID;
-import org.dcm4che.net.pdu.QueryOption;
-import org.dcm4che.net.pdu.StorageOptions;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
 
@@ -92,9 +90,8 @@ public class TransferCapability {
         return commonName;
     }
 
-    public TransferCapability setCommonName(String commonName) {
+    public void setCommonName(String commonName) {
         this.commonName = commonName;
-        return this;
     }
 
     /**
@@ -106,11 +103,10 @@ public class TransferCapability {
         return role;
     }
 
-    public TransferCapability setRole(Role role) {
+    public void setRole(Role role) {
         if (role == null)
             throw new NullPointerException();
         this.role = role;
-        return this;
     }
 
     /**
@@ -122,11 +118,10 @@ public class TransferCapability {
         return sopClass;
     }
 
-    public TransferCapability setSopClass(String sopClass) {
+    public void setSopClass(String sopClass) {
         if (sopClass.isEmpty())
             throw new IllegalArgumentException("empty sopClass");
         this.sopClass = sopClass;
-        return this;
     }
 
     /**
@@ -139,14 +134,13 @@ public class TransferCapability {
         return transferSyntaxes;
     }
 
-    public TransferCapability setTransferSyntaxes(String... transferSyntaxes) {
+    public void setTransferSyntaxes(String... transferSyntaxes) {
         if (transferSyntaxes.length == 0)
             throw new IllegalArgumentException("missing transferSyntax");
         for (String ts : transferSyntaxes)
             if (ts.isEmpty())
                 throw new IllegalArgumentException("empty transferSyntax");
         this.transferSyntaxes = transferSyntaxes;
-        return this;
     }
 
     public boolean containsTransferSyntax(String ts) {
@@ -160,18 +154,16 @@ public class TransferCapability {
         return false;
     }
 
-    public TransferCapability setQueryOptions(EnumSet<QueryOption> queryOptions) {
+    public void setQueryOptions(EnumSet<QueryOption> queryOptions) {
         this.queryOptions = queryOptions;
-        return this;
     }
 
     public EnumSet<QueryOption> getQueryOptions() {
         return queryOptions;
     }
 
-    public TransferCapability setStorageOptions(StorageOptions storageOptions) {
+    public void setStorageOptions(StorageOptions storageOptions) {
         this.storageOptions = storageOptions;
-        return this;
     }
 
     public StorageOptions getStorageOptions() {

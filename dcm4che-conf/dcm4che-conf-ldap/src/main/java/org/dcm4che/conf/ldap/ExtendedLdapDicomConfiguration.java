@@ -49,9 +49,9 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.QueryOption;
+import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
-import org.dcm4che.net.pdu.QueryOption;
-import org.dcm4che.net.pdu.StorageOptions;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

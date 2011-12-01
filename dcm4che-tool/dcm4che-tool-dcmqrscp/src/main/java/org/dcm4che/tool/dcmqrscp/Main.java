@@ -376,11 +376,12 @@ public class Main {
                 : EnumSet.noneOf(QueryOption.class);
         boolean storage = !cl.hasOption("no-storage") && main.isWriteable();
         if (storage && cl.hasOption("all-storage")) {
-            ae.addTransferCapability(
-                    new TransferCapability(null, 
-                            "*",
-                            TransferCapability.Role.SCP,
-                            "*").setQueryOptions(queryOptions));
+            TransferCapability tc = new TransferCapability(null, 
+                    "*",
+                    TransferCapability.Role.SCP,
+                    "*");
+            tc.setQueryOptions(queryOptions);
+            ae.addTransferCapability(tc);
         } else {
             ae.addTransferCapability(
                     new TransferCapability(null, 

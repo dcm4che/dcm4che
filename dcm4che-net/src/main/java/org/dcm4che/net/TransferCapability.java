@@ -59,7 +59,7 @@ import org.dcm4che.util.UIDUtils;
  */
 public class TransferCapability {
 
-    public static enum Role { SCU, SCP }
+    public enum Role { SCU, SCP }
 
     private String commonName;
     private String sopClass;

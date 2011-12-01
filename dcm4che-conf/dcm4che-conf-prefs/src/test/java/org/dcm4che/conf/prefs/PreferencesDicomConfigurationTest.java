@@ -180,9 +180,11 @@ public class PreferencesDicomConfigurationTest {
     }
  
     private static final TransferCapability findSCP() {
-        return new TransferCapability(null, UID.StudyRootQueryRetrieveInformationModelFIND,
-                Role.SCP, UID.ImplicitVRLittleEndian)
-            .setQueryOptions(EnumSet.of(QueryOption.RELATIONAL));
+        TransferCapability tc = new TransferCapability(null, 
+                UID.StudyRootQueryRetrieveInformationModelFIND, Role.SCP,
+                UID.ImplicitVRLittleEndian);
+        tc.setQueryOptions(EnumSet.of(QueryOption.RELATIONAL));
+        return tc;
     }
 
     private static final StorageOptions STORAGE_OPTIONS = new StorageOptions(

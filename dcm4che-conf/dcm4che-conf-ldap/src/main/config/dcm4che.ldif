@@ -1,7 +1,7 @@
 # Extended DICOM Application Configuration Data Model Hierarchy LDAP Schema
 dn: cn=dcm,cn=schema,cn=config
 objectClass: olcSchemaConfig
-cn: dcm
+cn: dcm4che
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.1 NAME 'dcmTLSNeedClientAuth'
   DESC 'Indicates if TLS client authentication is required'
   EQUALITY booleanMatch

@@ -389,6 +389,9 @@
     <dependencySet>
       <outputDirectory>lib</outputDirectory>
       <includes>
+        <include>org.dcm4che:dcm4che-conf-api</include>
+        <include>org.dcm4che:dcm4che-conf-ldap</include>
+        <include>org.dcm4che:dcm4che-conf-prefs</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-soundex</include>

@@ -95,8 +95,7 @@ public class SAXWriter implements DicomInputHandler {
         this.namespace = includeNameSpaceDeclaration ? NAMESPACE : "";
     }
 
-    public void write(Attributes attrs)
-            throws SAXException, IOException {
+    public void write(Attributes attrs) throws SAXException {
         startDocument();
         attrs.writeTo(this);
         endDocument();

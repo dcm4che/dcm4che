@@ -38,6 +38,8 @@
 
 package org.dcm4che.data;
 
+import org.dcm4che.util.TagUtils;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -89,11 +91,17 @@ public class ValueSelector {
 
     private void appendTo(int tag, String privateCreator, int index, String valueOrItem,
             String suffix, StringBuilder sb) {
-        sb.append("DicomAttribute[@tag=\"").append(tag);
+        sb.append("DicomAttribute[@tag=\"").append(TagUtils.toHexString(tag));
         if (privateCreator != null)
             sb.append("\" and @privateCreator=\"").append(privateCreator);
         if (vr != null)
             sb.append("\" and @vr=\"").append(vr);
         sb.append(valueOrItem).append(index + 1).append(suffix);
     }
+
+    public static ValueSelector valueOf(String s) {
+        //TODO
+        return null;
+    }
+
 }

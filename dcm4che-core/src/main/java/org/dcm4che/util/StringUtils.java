@@ -227,6 +227,10 @@ public class StringUtils {
         return o == null ? mask : o;
     }
 
+    public static String maskEmpty(String s, String mask) {
+        return s == null || s.isEmpty() ? mask : s;
+    }
+
     public static String truncate(String s, int maxlen) {
         return s.length() > maxlen ? s.substring(0, 64) : s;
     }

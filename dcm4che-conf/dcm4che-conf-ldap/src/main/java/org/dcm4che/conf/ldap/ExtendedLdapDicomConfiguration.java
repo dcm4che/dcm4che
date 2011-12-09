@@ -65,67 +65,75 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     }
 
     @Override
-    protected String objectclassOf(Connection conn) {
-        return "dcm4cheNetworkConnection";
+    protected Attribute objectClassesOf(Connection conn, Attribute attr) {
+        super.objectClassesOf(conn, attr);
+        attr.add("dcmNetworkConnection");
+        return attr;
     }
 
     @Override
-    protected String objectclassOf(ApplicationEntity ae) {
-        return "dcm4cheNetworkAE";
+    protected Attribute objectClassesOf(ApplicationEntity ae, Attribute attr) {
+        super.objectClassesOf(ae, attr);
+        attr.add("dcmNetworkAE");
+        return attr;
     }
 
     @Override
-    protected String objectclassOf(TransferCapability tc) {
-        return "dcm4cheTransferCapability";
+    protected Attribute objectClassesOf(TransferCapability tc, Attribute attr) {
+        super.objectClassesOf(tc, attr);
+        attr.add("dcmTransferCapability");
+        return attr;
     }
 
     @Override
     protected Attributes storeTo(Connection conn, Attributes attrs) {
         super.storeTo(conn, attrs);
-        storeNotEmpty(attrs, "dcm4cheBlacklistedHostname", conn.getBlacklist());
-        storeNotDef(attrs, "dcm4cheTCPBacklog",
+        storeNotEmpty(attrs, "dcmBlacklistedHostname", conn.getBlacklist());
+        storeNotDef(attrs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
-        storeNotDef(attrs, "dcm4cheTCPConnectTimeout",
+        storeNotDef(attrs, "dcmTCPConnectTimeout",
                 conn.getConnectTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheAssociationRequestTimeout",
+        storeNotDef(attrs, "dcmAARQTimeout",
                 conn.getRequestTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheAssociationAcknowledgeTimeout",
+        storeNotDef(attrs, "dcmAAACTimeout",
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheAssociationReleaseTimeout",
+        storeNotDef(attrs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheDIMSEResponseTimeout",
+        storeNotDef(attrs, "dcmDimseRspTimeout",
                 conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheCGetResponseTimeout",
+        storeNotDef(attrs, "dcmCGetRspTimeout",
                 conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheCMoveResponseTimeout",
+        storeNotDef(attrs, "dcmCMoveRspTimeout",
                 conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheAssociationIdleTimeout",
+        storeNotDef(attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcm4cheTCPCloseDelay",
+        storeNotDef(attrs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
-        storeNotDef(attrs, "dcm4cheTCPSendBufferSize",
+        storeNotDef(attrs, "dcmTCPSendBufferSize",
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeNotDef(attrs, "dcm4cheTCPReceiveBufferSize",
+        storeNotDef(attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeBoolean(attrs, "dcm4cheTCPNoDelay", conn.isTcpNoDelay());
-        storeNotEmpty(attrs, "dcm4cheTLSProtocol", conn.getTlsProtocols());
-        storeBoolean(attrs, "dcm4cheTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+        storeBoolean(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay());
+        if (conn.isTls()) {
+            storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols());
+            storeBoolean(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+        }
         return attrs;
     }
 
     @Override
     protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
         super.storeTo(ae, deviceDN, attrs);
-        storeNotDef(attrs, "dcm4cheSendPDULength",
+        storeNotDef(attrs, "dcmSendPDULength",
                 ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(attrs, "dcm4cheReceivePDULength",
+        storeNotDef(attrs, "dcmReceivePDULength",
                 ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(attrs, "dcm4cheMaxOpsPerformed",
+        storeNotDef(attrs, "dcmMaxOpsPerformed",
                 ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(attrs, "dcm4cheMaxOpsInvoked",
+        storeNotDef(attrs, "dcmMaxOpsInvoked",
                 ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeBoolean(attrs, "dcm4chePackPDV", ae.isPackPDV());
-        storeBoolean(attrs, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+        storeBoolean(attrs, "dcmPackPDV", ae.isPackPDV());
+        storeBoolean(attrs, "dcmAcceptOnlyPreferredCallingAETitle",
                 ae.isAcceptOnlyPreferredCallingAETitles());
         return attrs;
     }
@@ -135,22 +143,22 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.storeTo(tc, attrs);
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            storeBoolean(attrs, "dcm4cheRelationalQueries",
+            storeBoolean(attrs, "dcmRelationalQueries",
                     queryOpts.contains(QueryOption.RELATIONAL));
-            storeBoolean(attrs, "dcm4cheCombinedDateTimeMatching",
-                    queryOpts.contains(QueryOption.DATETIME));
-            storeBoolean(attrs, "dcm4cheFuzzySemanticMatching",
-                    queryOpts.contains(QueryOption.FUZZY));
-            storeBoolean(attrs, "dcm4cheTimezoneQueryAdjustment",
-                    queryOpts.contains(QueryOption.TIMEZONE));
+            storeNotDef(attrs, "dcmCombinedDateTimeMatching",
+                    queryOpts.contains(QueryOption.DATETIME), false);
+            storeNotDef(attrs, "dcmFuzzySemanticMatching",
+                    queryOpts.contains(QueryOption.FUZZY), false);
+            storeNotDef(attrs, "dcmTimezoneQueryAdjustment",
+                    queryOpts.contains(QueryOption.TIMEZONE), false);
         }
         StorageOptions storageOpts = tc.getStorageOptions();
         if (storageOpts != null) {
-            storeInt(attrs, "dcm4cheLevelOfStorageConformance",
+            storeInt(attrs, "dcmStorageConformance",
                     storageOpts.getLevelOfSupport().ordinal());
-            storeInt(attrs, "dcm4cheLevelOfDigitalSignatureSupport",
+            storeInt(attrs, "dcmDigitalSignatureSupport",
                     storageOpts.getDigitalSignatureSupport().ordinal());
-            storeInt(attrs, "dcm4cheDataElementCoercion",
+            storeInt(attrs, "dcmDataElementCoercion",
                     storageOpts.getElementCoercion().ordinal());
         }
         return attrs;
@@ -159,156 +167,162 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
         super.loadFrom(conn, attrs);
-        conn.setBlacklist(toStrings(attrs.get("dcm4cheBlacklistedHostname")));
-        conn.setBacklog(toInt(attrs.get("dcm4cheTCPBacklog"), Connection.DEF_BACKLOG));
-        conn.setConnectTimeout(toInt(attrs.get("dcm4cheTCPConnectTimeout"),
+        if (!hasObjectClass(attrs, "dcmNetworkConnection"))
+            return;
+        conn.setBlacklist(stringArray(attrs.get("dcmBlacklistedHostname")));
+        conn.setBacklog(intValue(attrs.get("dcmTCPBacklog"), Connection.DEF_BACKLOG));
+        conn.setConnectTimeout(intValue(attrs.get("dcmTCPConnectTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setRequestTimeout(toInt(attrs.get("dcm4cheAssociationRequestTimeout"),
+        conn.setRequestTimeout(intValue(attrs.get("dcmAARQTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setAcceptTimeout(toInt(attrs.get("dcm4cheAssociationAcknowledgeTimeout"),
+        conn.setAcceptTimeout(intValue(attrs.get("dcmAAACTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setReleaseTimeout(toInt(attrs.get("dcm4cheAssociationReleaseTimeout"),
+        conn.setReleaseTimeout(intValue(attrs.get("dcmARRPTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setDimseRSPTimeout(toInt(attrs.get("dcm4cheDIMSEResponseTimeout"),
+        conn.setDimseRSPTimeout(intValue(attrs.get("dcmDimseRspTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCGetRSPTimeout(toInt(attrs.get("dcm4cheCGetResponseTimeout"),
+        conn.setCGetRSPTimeout(intValue(attrs.get("dcmCGetRspTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCMoveRSPTimeout(toInt(attrs.get("dcm4cheCMoveResponseTimeout"),
+        conn.setCMoveRSPTimeout(intValue(attrs.get("dcmCMoveRspTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setIdleTimeout(toInt(attrs.get("dcm4cheAssociationIdleTimeout"),
+        conn.setIdleTimeout(intValue(attrs.get("dcmIdleTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setSocketCloseDelay(toInt(attrs.get("dcm4cheTCPCloseDelay"),
+        conn.setSocketCloseDelay(intValue(attrs.get("dcmTCPCloseDelay"),
                 Connection.DEF_SOCKETDELAY));
-        conn.setSendBufferSize(toInt(attrs.get("dcm4cheTCPSendBufferSize"),
+        conn.setSendBufferSize(intValue(attrs.get("dcmTCPSendBufferSize"),
                 Connection.DEF_BUFFERSIZE));
-        conn.setReceiveBufferSize(toInt(attrs.get("dcm4cheTCPReceiveBufferSize"),
+        conn.setReceiveBufferSize(intValue(attrs.get("dcmTCPReceiveBufferSize"),
                 Connection.DEF_BUFFERSIZE));
-        conn.setTcpNoDelay(toBoolean(attrs.get("dcm4cheTCPNoDelay"), Boolean.TRUE));
-        conn.setTlsNeedClientAuth(toBoolean(attrs.get("dcm4cheTLSNeedClientAuth"), Boolean.TRUE));
-        conn.setTlsProtocols(toStrings(attrs.get("dcm4cheTLSProtocol")));
+        conn.setTcpNoDelay(booleanValue(attrs.get("dcmTCPNoDelay"), Boolean.TRUE));
+        conn.setTlsNeedClientAuth(booleanValue(attrs.get("dcmTLSNeedClientAuth"), Boolean.TRUE));
+        conn.setTlsProtocols(stringArray(attrs.get("dcmTLSProtocol")));
     }
 
     @Override
     protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
         super.loadFrom(ae, attrs);
-        ae.setSendPDULength(toInt(attrs.get("dcm4cheSendPDULength"),
+        if (!hasObjectClass(attrs, "dcmNetworkAE"))
+            return;
+        ae.setSendPDULength(intValue(attrs.get("dcmSendPDULength"),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setReceivePDULength(toInt(attrs.get("dcm4cheReceivePDULength"),
+        ae.setReceivePDULength(intValue(attrs.get("dcmReceivePDULength"),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(toInt(attrs.get("dcm4cheMaxOpsPerformed"),
+        ae.setMaxOpsPerformed(intValue(attrs.get("dcmMaxOpsPerformed"),
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setMaxOpsInvoked(toInt(attrs.get("dcm4cheMaxOpsInvoked"),
+        ae.setMaxOpsInvoked(intValue(attrs.get("dcmMaxOpsInvoked"),
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setPackPDV(toBoolean(attrs.get("dcm4chePackPDV"), Boolean.TRUE));
+        ae.setPackPDV(booleanValue(attrs.get("dcmPackPDV"), Boolean.TRUE));
         ae.setAcceptOnlyPreferredCallingAETitles(
-                toBoolean(attrs.get("dcm4cheAcceptOnlyPreferredCallingAETitle"), Boolean.FALSE));
+                booleanValue(attrs.get("dcmAcceptOnlyPreferredCallingAETitle"), Boolean.FALSE));
     }
 
     @Override
     protected void loadFrom(TransferCapability tc, Attributes attrs)
             throws NamingException {
         super.loadFrom(tc, attrs);
+        if (!hasObjectClass(attrs, "dcmTransferCapability"))
+            return;
         tc.setQueryOptions(toQueryOptions(attrs));
         tc.setStorageOptions(toStorageOptions(attrs));
     }
 
     private static EnumSet<QueryOption> toQueryOptions(Attributes attrs)
             throws NamingException {
-        Attribute relational = attrs.get("dcm4cheRelationalQueries");
-        Attribute datetime = attrs.get("dcm4cheCombinedDateTimeMatching");
-        Attribute fuzzy = attrs.get("dcm4cheFuzzySemanticMatching");
-        Attribute timezone = attrs.get("dcm4cheTimezoneQueryAdjustment");
+        Attribute relational = attrs.get("dcmRelationalQueries");
+        Attribute datetime = attrs.get("dcmCombinedDateTimeMatching");
+        Attribute fuzzy = attrs.get("dcmFuzzySemanticMatching");
+        Attribute timezone = attrs.get("dcmTimezoneQueryAdjustment");
         if (relational == null && datetime == null && fuzzy == null && timezone == null)
             return null;
         EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
-        if (toBoolean(relational, Boolean.FALSE))
+        if (booleanValue(relational, Boolean.FALSE))
             opts.add(QueryOption.RELATIONAL);
-        if (toBoolean(datetime, Boolean.FALSE))
+        if (booleanValue(datetime, Boolean.FALSE))
             opts.add(QueryOption.DATETIME);
-        if (toBoolean(fuzzy, Boolean.FALSE))
+        if (booleanValue(fuzzy, Boolean.FALSE))
             opts.add(QueryOption.FUZZY);
-        if (toBoolean(timezone, Boolean.FALSE))
+        if (booleanValue(timezone, Boolean.FALSE))
             opts.add(QueryOption.TIMEZONE);
         return opts ;
      }
 
     private static StorageOptions toStorageOptions(Attributes attrs) throws NamingException {
-        Attribute levelOfSupport = attrs.get("dcm4cheLevelOfStorageConformance");
-        Attribute signatureSupport = attrs.get("dcm4cheLevelOfDigitalSignatureSupport");
-        Attribute coercion = attrs.get("dcm4cheDataElementCoercion");
+        Attribute levelOfSupport = attrs.get("dcmStorageConformance");
+        Attribute signatureSupport = attrs.get("dcmDigitalSignatureSupport");
+        Attribute coercion = attrs.get("dcmDataElementCoercion");
         if (levelOfSupport == null && signatureSupport == null && coercion == null)
             return null;
         StorageOptions opts = new StorageOptions();
         opts.setLevelOfSupport(
-                StorageOptions.LevelOfSupport.valueOf(toInt(levelOfSupport, 3)));
+                StorageOptions.LevelOfSupport.valueOf(intValue(levelOfSupport, 3)));
         opts.setDigitalSignatureSupport(
-                StorageOptions.DigitalSignatureSupport.valueOf(toInt(signatureSupport, 0)));
+                StorageOptions.DigitalSignatureSupport.valueOf(intValue(signatureSupport, 0)));
         opts.setElementCoercion(
-                StorageOptions.ElementCoercion.valueOf(toInt(coercion, 2)));
+                StorageOptions.ElementCoercion.valueOf(intValue(coercion, 2)));
         return opts;
     }
 
     @Override
     protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {
         super.storeDiffs(mods, a, b);
-        storeDiff(mods, "dcm4cheBlacklistedHostname",
+        storeDiff(mods, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
-        storeDiff(mods, "dcm4cheTCPBacklog",
+        storeDiff(mods, "dcmTCPBacklog",
                 a.getBacklog(),
                 b.getBacklog(),
                 Connection.DEF_BACKLOG);
-        storeDiff(mods, "dcm4cheTCPConnectTimeout",
+        storeDiff(mods, "dcmTCPConnectTimeout",
                 a.getConnectTimeout(),
                 b.getConnectTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheAssociationRequestTimeout",
+        storeDiff(mods, "dcmAARQTimeout",
                 a.getRequestTimeout(),
                 b.getRequestTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheAssociationAcknowledgeTimeout",
+        storeDiff(mods, "dcmAAACTimeout",
                 a.getAcceptTimeout(),
                 b.getAcceptTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheAssociationReleaseTimeout",
+        storeDiff(mods, "dcmARRPTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheDIMSEResponseTimeout",
+        storeDiff(mods, "dcmDimseRspTimeout",
                 a.getDimseRSPTimeout(),
                 b.getDimseRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheCGetResponseTimeout",
+        storeDiff(mods, "dcmCGetRspTimeout",
                 a.getCGetRSPTimeout(),
                 b.getCGetRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheCMoveResponseTimeout",
+        storeDiff(mods, "dcmCMoveRspTimeout",
                 a.getCMoveRSPTimeout(),
                 b.getCMoveRSPTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheAssociationIdleTimeout",
+        storeDiff(mods, "dcmIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcm4cheTCPCloseDelay",
+        storeDiff(mods, "dcmTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),
                 Connection.DEF_SOCKETDELAY);
-        storeDiff(mods, "dcm4cheTCPSendBufferSize",
+        storeDiff(mods, "dcmTCPSendBufferSize",
                 a.getSendBufferSize(),
                 b.getSendBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        storeDiff(mods, "dcm4cheTCPReceiveBufferSize",
+        storeDiff(mods, "dcmTCPReceiveBufferSize",
                 a.getReceiveBufferSize(),
                 b.getReceiveBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        storeDiff(mods, "dcm4cheTCPNoDelay",
+        storeDiff(mods, "dcmTCPNoDelay",
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay());
-        storeDiff(mods, "dcm4cheTLSProtocol",
+        storeDiff(mods, "dcmTLSProtocol",
                 a.getTlsProtocols(),
                 b.getTlsProtocols());
-        storeDiff(mods, "dcm4cheTLSNeedClientAuth",
+        storeDiff(mods, "dcmTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
                 b.isTlsNeedClientAuth());
     }
@@ -317,26 +331,26 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected void storeDiffs(Collection<ModificationItem> mods,
             ApplicationEntity a, ApplicationEntity b, String deviceDN) {
         super.storeDiffs(mods, a, b, deviceDN);
-        storeDiff(mods, "dcm4cheSendPDULength",
+        storeDiff(mods, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(mods, "dcm4cheReceivePDULength",
+        storeDiff(mods, "dcmReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(mods, "dcm4cheMaxOpsPerformed",
+        storeDiff(mods, "dcmMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(mods, "dcm4cheMaxOpsInvoked",
+        storeDiff(mods, "dcmMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(mods, "dcm4chePackPDV",
+        storeDiff(mods, "dcmPackPDV",
                 a.isPackPDV(),
                 b.isPackPDV());
-        storeDiff(mods, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+        storeDiff(mods, "dcmAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
                 b.isAcceptOnlyPreferredCallingAETitles());
     }
@@ -351,31 +365,31 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
     private void storeDiffs(Collection<ModificationItem> mods,
             EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
-        storeDiff(mods, "dcm4cheRelationalQueries",
+        storeDiff(mods, "dcmRelationalQueries",
                 prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
                 val != null ? val.contains(QueryOption.RELATIONAL) : null);
-        storeDiff(mods, "dcm4cheCombinedDateTimeMatching",
+        storeDiff(mods, "dcmCombinedDateTimeMatching",
                 prev != null ? prev.contains(QueryOption.DATETIME) : null,
                 val != null ? val.contains(QueryOption.DATETIME) : null);
-        storeDiff(mods, "dcm4cheFuzzySemanticMatching",
+        storeDiff(mods, "dcmFuzzySemanticMatching",
                 prev != null ? prev.contains(QueryOption.FUZZY) : null,
                 val != null ? val.contains(QueryOption.FUZZY) : null);
-        storeDiff(mods, "dcm4cheTimezoneQueryAdjustment",
+        storeDiff(mods, "dcmTimezoneQueryAdjustment",
                 prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
                 val != null ? val.contains(QueryOption.TIMEZONE) : null);
     }
 
     private void storeDiffs(Collection<ModificationItem> mods,
             StorageOptions prev, StorageOptions val) {
-        storeDiff(mods, "dcm4cheLevelOfStorageConformance",
+        storeDiff(mods, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
                 -1);
-        storeDiff(mods, "dcm4cheLevelOfDigitalSignatureSupport",
+        storeDiff(mods, "dcmDigitalSignatureSupport",
                 prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
                 val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
                 -1);
-        storeDiff(mods, "dcm4cheDataElementCoercion",
+        storeDiff(mods, "dcmDataElementCoercion",
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);

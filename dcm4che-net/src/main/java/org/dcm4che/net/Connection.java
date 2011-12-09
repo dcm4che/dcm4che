@@ -85,6 +85,10 @@ public class Connection {
     public static final int DEF_BUFFERSIZE = 0;
     public static final int NO_TIMEOUT = 0;
 
+    public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
+    public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
+    public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
+
     private Device device;
     private String commonName;
     private String hostname;
@@ -113,7 +117,20 @@ public class Connection {
     private ServerSocket server;
     private boolean needRebind;
 
-     /**
+    public Connection() {
+    }
+
+    public Connection(String commonName, String hostname) {
+        this(commonName, hostname, NOT_LISTENING);
+    }
+
+    public Connection(String commonName, String hostname, int port) {
+        this.commonName = commonName;
+        this.hostname = hostname;
+        this.port = port;
+    }
+
+    /**
      * Get the <code>Device</code> object that this Network Connection belongs
      * to.
      * 

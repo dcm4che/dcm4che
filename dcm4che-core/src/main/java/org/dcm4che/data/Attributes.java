@@ -52,6 +52,7 @@ import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.io.SAXWriter;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.DateUtils;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
@@ -70,11 +71,6 @@ public class Attributes implements Serializable {
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
-
-    private static final int[] EMPTY_INTS = {};
-    private static final float[] EMPTY_FLOATS = {};
-    private static final double[] EMPTY_DOUBLES = {};
-    private static final Date[] EMPTY_DATES = {};
 
     private transient Attributes parent;
     private transient int[] tags;
@@ -637,7 +633,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == Value.NULL)
-            return EMPTY_INTS;
+            return ByteUtils.EMPTY_INTS;
 
         if (vr == null)
             vr = vrs[index];
@@ -719,7 +715,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == Value.NULL)
-            return EMPTY_FLOATS;
+            return ByteUtils.EMPTY_FLOATS;
 
         if (vr == null)
             vr = vrs[index];
@@ -801,7 +797,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == Value.NULL)
-            return EMPTY_DOUBLES;
+            return ByteUtils.EMPTY_DOUBLES;
 
         if (vr == null)
             vr = vrs[index];
@@ -936,7 +932,7 @@ public class Attributes implements Serializable {
 
         Object value = values[index];
         if (value == Value.NULL)
-            return EMPTY_DATES;
+            return DateUtils.EMPTY_DATES;
 
         if (vr == null)
             vr = vrs[index];

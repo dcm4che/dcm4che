@@ -48,8 +48,10 @@ import java.util.TimeZone;
  */
 public class DateUtils {
 
+    public static final Date[] EMPTY_DATES = {};
+
     private static CachedTimeZone cachedTimeZone;
-    
+
     private static final class CachedTimeZone {
         final String offset;
         final TimeZone zone;

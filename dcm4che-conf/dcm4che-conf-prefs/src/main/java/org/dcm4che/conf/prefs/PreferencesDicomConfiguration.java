@@ -157,7 +157,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences devicePrefs = rootPrefs.node(pathName);
             for (String deviceName : devicePrefs.childrenNames()) {
                 Preferences deviceNode = devicePrefs.node(deviceName);
-                for (String aet2 : deviceNode.node("dcm4cheNetworkAE").childrenNames())
+                for (String aet2 : deviceNode.node("dcmNetworkAE").childrenNames())
                     if (aet.equals(aet2))
                         return loadDevice(deviceNode).getApplicationEntity(aet);
             }
@@ -185,12 +185,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
         Preferences deviceNode = rootPrefs.node(pathName);
         storeTo(device, deviceNode);
-        Preferences connsNode = deviceNode.node("dcm4cheNetworkConnection");
+        Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         int connIndex = 1;
         List<Connection> devConns = device.listConnections();
         for (Connection conn : devConns)
             storeTo(conn, connsNode.node("" + connIndex++));
-        Preferences aesNode = deviceNode.node("dcm4cheNetworkAE");
+        Preferences aesNode = deviceNode.node("dcmNetworkAE");
         for (ApplicationEntity ae : device.getApplicationEntities()) {
             Preferences aeNode = aesNode.node(ae.getAETitle());
             storeTo(ae, aeNode, devConns);
@@ -294,34 +294,34 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
         storeBoolean(prefs, "dicomInstalled", conn.getInstalled());
 
-        storeNotEmpty(prefs, "dcm4cheBlacklistedHostname", conn.getBlacklist());
-        storeNotDef(prefs, "dcm4cheTCPBacklog",
+        storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
+        storeNotDef(prefs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
-        storeNotDef(prefs, "dcm4cheTCPConnectTimeout",
+        storeNotDef(prefs, "dcmTCPConnectTimeout",
                 conn.getConnectTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheAssociationRequestTimeout",
+        storeNotDef(prefs, "dcmAARQTimeout",
                 conn.getRequestTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheAssociationAcknowledgeTimeout",
+        storeNotDef(prefs, "dcmAAACTimeout",
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheAssociationReleaseTimeout",
+        storeNotDef(prefs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheDIMSEResponseTimeout",
+        storeNotDef(prefs, "dcmDimseRspTimeout",
                 conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheCGetResponseTimeout",
+        storeNotDef(prefs, "dcmCGetRspTimeout",
                 conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheCMoveResponseTimeout",
+        storeNotDef(prefs, "dcmCMoveRspTimeout",
                 conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheAssociationIdleTimeout",
+        storeNotDef(prefs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcm4cheTCPCloseDelay",
+        storeNotDef(prefs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
-        storeNotDef(prefs, "dcm4cheTCPSendBufferSize",
+        storeNotDef(prefs, "dcmTCPSendBufferSize",
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeNotDef(prefs, "dcm4cheTCPReceiveBufferSize",
+        storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeBoolean(prefs, "dcm4cheTCPNoDelay", conn.isTcpNoDelay());
-        storeNotEmpty(prefs, "dcm4cheTLSProtocol", conn.getTlsProtocols());
-        storeBoolean(prefs, "dcm4cheTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+        storeBoolean(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay());
+        storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
+        storeBoolean(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth());
     }
 
     protected void storeTo(ApplicationEntity ae, Preferences prefs, List<Connection> devConns) {
@@ -336,16 +336,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeBoolean(prefs, "dicomInstalled", ae.getInstalled());
         storeConnRefs(prefs, ae, devConns);
 
-        storeNotDef(prefs, "dcm4cheSendPDULength",
+        storeNotDef(prefs, "dcmSendPDULength",
                 ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcm4cheReceivePDULength",
+        storeNotDef(prefs, "dcmReceivePDULength",
                 ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcm4cheMaxOpsPerformed",
+        storeNotDef(prefs, "dcmMaxOpsPerformed",
                 ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(prefs, "dcm4cheMaxOpsInvoked",
+        storeNotDef(prefs, "dcmMaxOpsInvoked",
                 ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeBoolean(prefs, "dcm4chePackPDV", ae.isPackPDV());
-        storeBoolean(prefs, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+        storeBoolean(prefs, "dcmPackPDV", ae.isPackPDV());
+        storeBoolean(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
                 ae.isAcceptOnlyPreferredCallingAETitles());
     }
 
@@ -366,22 +366,22 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            storeBoolean(prefs, "dcm4cheRelationalQueries",
+            storeBoolean(prefs, "dcmRelationalQueries",
                     queryOpts.contains(QueryOption.RELATIONAL));
-            storeBoolean(prefs, "dcm4cheCombinedDateTimeMatching",
+            storeBoolean(prefs, "dcmCombinedDateTimeMatching",
                     queryOpts.contains(QueryOption.DATETIME));
-            storeBoolean(prefs, "dcm4cheFuzzySemanticMatching",
+            storeBoolean(prefs, "dcmFuzzySemanticMatching",
                     queryOpts.contains(QueryOption.FUZZY));
-            storeBoolean(prefs, "dcm4cheTimezoneQueryAdjustment",
+            storeBoolean(prefs, "dcmTimezoneQueryAdjustment",
                     queryOpts.contains(QueryOption.TIMEZONE));
         }
         StorageOptions storageOpts = tc.getStorageOptions();
         if (storageOpts != null) {
-            storeInt(prefs, "dcm4cheLevelOfStorageConformance",
+            storeInt(prefs, "dcmStorageConformance",
                     storageOpts.getLevelOfSupport().ordinal());
-            storeInt(prefs, "dcm4cheLevelOfDigitalSignatureSupport",
+            storeInt(prefs, "dcmDigitalSignatureSupport",
                     storageOpts.getDigitalSignatureSupport().ordinal());
-            storeInt(prefs, "dcm4cheDataElementCoercion",
+            storeInt(prefs, "dcmDataElementCoercion",
                     storageOpts.getElementCoercion().ordinal());
         }
     }
@@ -486,26 +486,26 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getInstalled(),
                 b.getInstalled());
 
-        storeDiff(prefs, "dcm4cheSendPDULength",
+        storeDiff(prefs, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcm4cheReceivePDULength",
+        storeDiff(prefs, "dcmReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
                 ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcm4cheMaxOpsPerformed",
+        storeDiff(prefs, "dcmMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcm4cheMaxOpsInvoked",
+        storeDiff(prefs, "dcmMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
                 ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcm4chePackPDV",
+        storeDiff(prefs, "dcmPackPDV",
                 a.isPackPDV(),
                 b.isPackPDV());
-        storeDiff(prefs, "dcm4cheAcceptOnlyPreferredCallingAETitle",
+        storeDiff(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
                 b.isAcceptOnlyPreferredCallingAETitles());
 
@@ -528,31 +528,31 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static void storeDiffs(Preferences prefs,
             EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
-        storeDiff(prefs, "dcm4cheRelationalQueries",
+        storeDiff(prefs, "dcmRelationalQueries",
                 prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
                 val != null ? val.contains(QueryOption.RELATIONAL) : null);
-        storeDiff(prefs, "dcm4cheCombinedDateTimeMatching",
+        storeDiff(prefs, "dcmCombinedDateTimeMatching",
                 prev != null ? prev.contains(QueryOption.DATETIME) : null,
                 val != null ? val.contains(QueryOption.DATETIME) : null);
-        storeDiff(prefs, "dcm4cheFuzzySemanticMatching",
+        storeDiff(prefs, "dcmFuzzySemanticMatching",
                 prev != null ? prev.contains(QueryOption.FUZZY) : null,
                 val != null ? val.contains(QueryOption.FUZZY) : null);
-        storeDiff(prefs, "dcm4cheTimezoneQueryAdjustment",
+        storeDiff(prefs, "dcmTimezoneQueryAdjustment",
                 prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
                 val != null ? val.contains(QueryOption.TIMEZONE) : null);
     }
 
     private static void storeDiffs(Preferences prefs,
             StorageOptions prev, StorageOptions val) {
-        storeDiff(prefs, "dcm4cheLevelOfStorageConformance",
+        storeDiff(prefs, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
                 -1);
-        storeDiff(prefs, "dcm4cheLevelOfDigitalSignatureSupport",
+        storeDiff(prefs, "dcmDigitalSignatureSupport",
                 prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
                 val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
                 -1);
-        storeDiff(prefs, "dcm4cheDataElementCoercion",
+        storeDiff(prefs, "dcmDataElementCoercion",
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
@@ -578,7 +578,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void mergeConnections(Device prevDev, Device device, Preferences deviceNode)
             throws BackingStoreException {
-        Preferences connsNode = deviceNode.node("dcm4cheNetworkConnection");
+        Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         List<Connection> prevs = prevDev.listConnections();
         List<Connection> conns = device.listConnections();
         int prevsSize = prevs.size();
@@ -594,7 +594,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void mergeAEs(Device prevDev, Device dev, Preferences deviceNode)
             throws BackingStoreException {
-        Preferences aesNode = deviceNode.node("dcm4cheNetworkAE");
+        Preferences aesNode = deviceNode.node("dcmNetworkAE");
         for (ApplicationEntity ae : prevDev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             if (dev.getApplicationEntity(aet) == null)
@@ -633,7 +633,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         try {
             Device device = newDevice(deviceNode.name());
             loadFrom(device, deviceNode);
-            Preferences connsNode = deviceNode.node("dcm4cheNetworkConnection");
+            Preferences connsNode = deviceNode.node("dcmNetworkConnection");
             for (int connIndex : sort(connsNode.childrenNames())) {
                 Connection conn = newConnection();
                 loadFrom(conn, connsNode.node("" + connIndex));
@@ -644,7 +644,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 }
             }
             List<Connection> devConns = device.listConnections();
-            Preferences aesNode = deviceNode.node("dcm4cheNetworkAE");
+            Preferences aesNode = deviceNode.node("dcmNetworkAE");
             for (String aet : aesNode.childrenNames()) {
                 Preferences aeNode = aesNode.node(aet);
                 ApplicationEntity ae = newApplicationEntity(aet);
@@ -700,10 +700,10 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private static EnumSet<QueryOption> toQueryOptions(Preferences prefs) {
-        String relational = prefs.get("dcm4cheRelationalQueries", null);
-        String datetime = prefs.get("dcm4cheCombinedDateTimeMatching", null);
-        String fuzzy = prefs.get("dcm4cheFuzzySemanticMatching", null);
-        String timezone = prefs.get("dcm4cheTimezoneQueryAdjustment", null);
+        String relational = prefs.get("dcmRelationalQueries", null);
+        String datetime = prefs.get("dcmCombinedDateTimeMatching", null);
+        String fuzzy = prefs.get("dcmFuzzySemanticMatching", null);
+        String timezone = prefs.get("dcmTimezoneQueryAdjustment", null);
         if (relational == null && datetime == null && fuzzy == null && timezone == null)
             return null;
         EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
@@ -719,9 +719,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private static StorageOptions toStorageOptions(Preferences prefs) {
-        int levelOfSupport = prefs.getInt("dcm4cheLevelOfStorageConformance", -1);
-        int signatureSupport = prefs.getInt("dcm4cheLevelOfDigitalSignatureSupport", -1);
-        int coercion = prefs.getInt("dcm4cheDataElementCoercion", -1);
+        int levelOfSupport = prefs.getInt("dcmStorageConformance", -1);
+        int signatureSupport = prefs.getInt("dcmDigitalSignatureSupport", -1);
+        int coercion = prefs.getInt("dcmDataElementCoercion", -1);
         if (levelOfSupport == -1 && signatureSupport == -1 && coercion == -1)
             return null;
         StorageOptions opts = new StorageOptions();
@@ -777,33 +777,33 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
-        conn.setBlacklist(toStrings(prefs, "dcm4cheBlacklistedHostname"));
-        conn.setBacklog(prefs.getInt("dcm4cheTCPBacklog", Connection.DEF_BACKLOG));
+        conn.setBlacklist(toStrings(prefs, "dcmBlacklistedHostname"));
+        conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
         conn.setConnectTimeout(
-                prefs.getInt("dcm4cheTCPConnectTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmTCPConnectTimeout", Connection.NO_TIMEOUT));
         conn.setRequestTimeout(
-                prefs.getInt("dcm4cheAssociationRequestTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmAARQTimeout", Connection.NO_TIMEOUT));
         conn.setAcceptTimeout(
-                prefs.getInt("dcm4cheAssociationAcknowledgeTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmAAACTimeout", Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(
-                prefs.getInt("dcm4cheAssociationReleaseTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmARRPTimeout", Connection.NO_TIMEOUT));
         conn.setDimseRSPTimeout(
-                prefs.getInt("dcm4cheDIMSEResponseTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmDimseRspTimeout", Connection.NO_TIMEOUT));
         conn.setCGetRSPTimeout(
-                prefs.getInt("dcm4cheCGetResponseTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmCGetRspTimeout", Connection.NO_TIMEOUT));
         conn.setCMoveRSPTimeout(
-                prefs.getInt("dcm4cheCMoveResponseTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmCMoveRspTimeout", Connection.NO_TIMEOUT));
         conn.setIdleTimeout(
-                prefs.getInt("dcm4cheAssociationIdleTimeout", Connection.NO_TIMEOUT));
+                prefs.getInt("dcmIdleTimeout", Connection.NO_TIMEOUT));
         conn.setSocketCloseDelay(
-                prefs.getInt("dcm4cheTCPCloseDelay", Connection.DEF_SOCKETDELAY));
+                prefs.getInt("dcmTCPCloseDelay", Connection.DEF_SOCKETDELAY));
         conn.setSendBufferSize(
-                prefs.getInt("dcm4cheTCPSendBufferSize", Connection.DEF_BUFFERSIZE));
+                prefs.getInt("dcmTCPSendBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setReceiveBufferSize(
-                prefs.getInt("dcm4cheTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
-        conn.setTcpNoDelay(prefs.getBoolean("dcm4cheTCPNoDelay", true));
-        conn.setTlsNeedClientAuth(prefs.getBoolean("dcm4cheTLSNeedClientAuth", true));
-        conn.setTlsProtocols(toStrings(prefs, "dcm4cheTLSProtocol"));
+                prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
+        conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
+        conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
+        conn.setTlsProtocols(toStrings(prefs, "dcmTLSProtocol"));
     }
 
     private static Boolean toBoolean(String s) {
@@ -821,17 +821,17 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         ae.setSupportedCharacterSets(toStrings(prefs, "dicomSupportedCharacterSet"));
         ae.setInstalled(toBoolean(prefs.get("dicomInstalled", null)));
 
-        ae.setSendPDULength(prefs.getInt("dcm4cheSendPDULength",
+        ae.setSendPDULength(prefs.getInt("dcmSendPDULength",
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setReceivePDULength(prefs.getInt("dcm4cheReceivePDULength",
+        ae.setReceivePDULength(prefs.getInt("dcmReceivePDULength",
                 ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(prefs.getInt("dcm4cheMaxOpsPerformed",
+        ae.setMaxOpsPerformed(prefs.getInt("dcmMaxOpsPerformed",
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setMaxOpsInvoked(prefs.getInt("dcm4cheMaxOpsInvoked",
+        ae.setMaxOpsInvoked(prefs.getInt("dcmMaxOpsInvoked",
                 ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setPackPDV(prefs.getBoolean("dcm4chePackPDV", true));
+        ae.setPackPDV(prefs.getBoolean("dcmPackPDV", true));
         ae.setAcceptOnlyPreferredCallingAETitles(
-                prefs.getBoolean("dcm4cheAcceptOnlyPreferredCallingAETitle", false));
+                prefs.getBoolean("dcmAcceptOnlyPreferredCallingAETitle", false));
 }
 
     private static byte[][] toVendorData(Preferences prefs, String key) {

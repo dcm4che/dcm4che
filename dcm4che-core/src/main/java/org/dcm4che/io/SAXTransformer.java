@@ -38,6 +38,7 @@
 
 package org.dcm4che.io;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
@@ -46,6 +47,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Attributes;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -60,5 +62,21 @@ public abstract class SAXTransformer {
         TransformerHandler th = factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new ContentHandlerAdapter(result)));
         return new SAXWriter(th);
+    }
+
+    public static Attributes transform(Attributes ds, Templates templates,
+            boolean includeNameSpaceDeclaration, boolean includeKeword)
+            throws SAXException, TransformerConfigurationException {
+        Attributes modify = new Attributes();
+        SAXWriter w = SAXTransformer.getSAXWriter(templates, modify);
+        w.setIncludeNamespaceDeclaration(includeNameSpaceDeclaration);
+        w.setIncludeKeyword(includeKeword);
+        w.write(ds);
+        return modify;
+    }
+
+    public static Templates newTemplates(Source source)
+            throws TransformerConfigurationException {
+        return factory.newTemplates(source);
     }
 }

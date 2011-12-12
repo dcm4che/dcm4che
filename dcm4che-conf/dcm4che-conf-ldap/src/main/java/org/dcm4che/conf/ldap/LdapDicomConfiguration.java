@@ -120,24 +120,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         safeClose(ctx);
     }
 
-    public static Hashtable<String, Object> env(String url) {
-        Hashtable<String, Object> env = new Hashtable<String, Object>();
-        env.put(Context.PROVIDER_URL, url);
-        env.put(Context.INITIAL_CONTEXT_FACTORY,
-                System.getProperty("org.dcm4che.conf.ldap", "com.sun.jndi.ldap.LdapCtxFactory"));
-        env.put("java.naming.ldap.attributes.binary", "dicomVendorData");
-        return env;
-    }
- 
-    public static Hashtable<String, Object> envWithSimpleAuth(String url,
-            String userDN, String password) {
-        Hashtable<String, Object> env = env(url);
-        env.put(Context.SECURITY_AUTHENTICATION, "simple");
-        env.put(Context.SECURITY_PRINCIPAL, userDN);
-        env.put(Context.SECURITY_CREDENTIALS, password);
-        return env;
-    }
-
     @Override
     public boolean configurationExists() throws ConfigurationException {
         return configurationDN != null || findConfiguration();

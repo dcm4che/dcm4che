@@ -67,10 +67,11 @@ public class ExtendedLdapDicomConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        config = new ExtendedLdapDicomConfiguration(
-                    LdapDicomConfiguration.envWithSimpleAuth(
-                            "ldap://localhost:389", "cn=admin,dc=nodomain", "admin"),
-                    "dc=nodomain");
+        LdapEnv env = new LdapEnv();
+        env.setUrl("ldap://localhost:389");
+        env.setUserDN("cn=admin,dc=nodomain");
+        env.setPassword("admin");
+        config = new ExtendedLdapDicomConfiguration(env, "dc=nodomain");
     }
 
     @After

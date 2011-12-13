@@ -69,7 +69,7 @@ public class Soundex implements FuzzyStr {
     @Override
     public String toFuzzy(String s) {
         if (s == null || s.length() == 0)
-            return "*";
+            return "";
 
         char[] in = s.toCharArray();
         char[] out = in.length < padLength ? new char[padLength] : in;

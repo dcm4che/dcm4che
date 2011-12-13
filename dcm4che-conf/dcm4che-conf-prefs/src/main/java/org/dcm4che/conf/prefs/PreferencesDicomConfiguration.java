@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.dcm4che.conf.api.AttributeCoercion;
+import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
@@ -212,8 +214,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         for (ApplicationEntity ae : device.getApplicationEntities()) {
             Preferences aeNode = aesNode.node(ae.getAETitle());
             storeTo(ae, aeNode, devConns);
-            storeTransferCapabilities(ae, aeNode);
+            storeChilds(ae, aeNode);
         }
+    }
+
+    protected void storeChilds(ApplicationEntity ae, Preferences aeNode) {
+        storeTransferCapabilities(ae, aeNode);
     }
 
     private void storeTransferCapabilities(ApplicationEntity ae,
@@ -226,6 +232,20 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
+    protected void store(AttributeCoercions acs, Preferences parentNode) {
+        Preferences acsNode = parentNode.node("dcmAttributeCoercion");
+        int acIndex = 1;
+        for (AttributeCoercion ac : acs.getAll())
+            storeTo(ac, acsNode.node("" + acIndex ++));
+    }
+
+    private static void storeTo(AttributeCoercion ac, Preferences prefs) {
+        storeNotNull(prefs, "dcmDIMSE", ac.getDimse());
+        storeNotNull(prefs, "dicomTransferRole", ac.getRole());
+        storeNotNull(prefs, "dicomAETitle", ac.getAETitle());
+        storeNotNull(prefs, "dicomSOPClass", ac.getSopClass());
+        storeNotNull(prefs, "labeledURI", ac.getURI());
+    }
 
     @Override
     public void merge(Device device) throws ConfigurationException {
@@ -611,7 +631,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences aeNode = aesNode.node(aet);
             if (prevAE == null) {
                 storeTo(ae, aeNode, devConns);
-                storeTransferCapabilities(ae, aeNode);
+                storeChilds(ae, aeNode);
             } else {
                 storeDiffs(aeNode, prevAE, ae);
                 merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
@@ -637,40 +657,66 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         try {
             Device device = newDevice(deviceNode);
             loadFrom(device, deviceNode);
-            Preferences connsNode = deviceNode.node("dcmNetworkConnection");
-            for (int connIndex : sort(connsNode.childrenNames())) {
-                Connection conn = newConnection();
-                loadFrom(conn, connsNode.node("" + connIndex));
-                try {
-                    device.addConnection(conn);
-                } catch (IOException e) {
-                    throw new AssertionError(e.getMessage());
-                }
-            }
-            List<Connection> devConns = device.listConnections();
-            Preferences aesNode = deviceNode.node("dcmNetworkAE");
-            for (String aet : aesNode.childrenNames()) {
-                Preferences aeNode = aesNode.node(aet);
-                ApplicationEntity ae = newApplicationEntity(aeNode);
-                loadFrom(ae, aeNode);
-                int n = aeNode.getInt("dicomNetworkConnectionReference.#", 0);
-                for (int i = 0; i < n; i++) {
-                    ae.addConnection(devConns.get(
-                            aeNode.getInt("dicomNetworkConnectionReference." + (i+1), 0) - 1));
-                }
-                Preferences tcsNode = aeNode.node("dicomTransferCapability");
-                for (int tcIndex : sort(tcsNode.childrenNames()))
-                    ae.addTransferCapability(
-                            loadTransferCapability(tcsNode.node("" + tcIndex)));
-                device.addApplicationEntity(ae);
-            }
+            loadChilds(device, deviceNode);
             return device;
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    private static int[] sort(String[] ss) {
+    protected void loadChilds(Device device, Preferences deviceNode)
+            throws BackingStoreException {
+        Preferences connsNode = deviceNode.node("dcmNetworkConnection");
+        for (int connIndex : sort(connsNode.childrenNames())) {
+            Connection conn = newConnection();
+            loadFrom(conn, connsNode.node("" + connIndex));
+            try {
+                device.addConnection(conn);
+            } catch (IOException e) {
+                throw new AssertionError(e.getMessage());
+            }
+        }
+        List<Connection> devConns = device.listConnections();
+        Preferences aesNode = deviceNode.node("dcmNetworkAE");
+        for (String aet : aesNode.childrenNames()) {
+            Preferences aeNode = aesNode.node(aet);
+            ApplicationEntity ae = newApplicationEntity(aeNode);
+            loadFrom(ae, aeNode);
+            int n = aeNode.getInt("dicomNetworkConnectionReference.#", 0);
+            for (int i = 0; i < n; i++) {
+                ae.addConnection(devConns.get(
+                        aeNode.getInt("dicomNetworkConnectionReference." + (i+1), 0) - 1));
+            }
+            loadChilds(ae, aeNode);
+            device.addApplicationEntity(ae);
+        }
+    }
+
+    protected void loadChilds(ApplicationEntity ae, Preferences aeNode)
+            throws BackingStoreException {
+        Preferences tcsNode = aeNode.node("dicomTransferCapability");
+        for (int tcIndex : sort(tcsNode.childrenNames()))
+            ae.addTransferCapability(
+                    loadTransferCapability(tcsNode.node("" + tcIndex)));
+    }
+
+    protected void load(AttributeCoercions acs, Preferences deviceNode)
+            throws BackingStoreException {
+        Preferences acsNode = deviceNode.node("dcmAttributeCoercion");
+        for (int acIndex : sort(acsNode.childrenNames())) {
+            Preferences acNode = acsNode.node("" + acIndex);
+            acs.add(new AttributeCoercion(
+                    acNode.get("dicomSOPClass", null),
+                    AttributeCoercion.DIMSE.valueOf(
+                            acNode.get("dcmDIMSE", null)),
+                    TransferCapability.Role.valueOf(
+                            acNode.get("dicomTransferRole", null)),
+                    acNode.get("dicomAETitle", null),
+                    acNode.get("labeledURI", null)));
+        }
+    }
+
+    protected static int[] sort(String[] ss) {
         int[] a = new int[ss.length];
         for (int i = 0; i < a.length; i++)
             a[i] = Integer.parseInt(ss[i]);
@@ -698,7 +744,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         tc.setCommonName(prefs.get("cn", null));
         tc.setSopClass(prefs.get("dicomSOPClass", null));
         tc.setRole(TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)));
-        tc.setTransferSyntaxes(toStrings(prefs, "dicomTransferSyntax"));
+        tc.setTransferSyntaxes(stringArray(prefs, "dicomTransferSyntax"));
         tc.setQueryOptions(toQueryOptions(prefs));
         tc.setStorageOptions(toStorageOptions(prefs));
     }
@@ -745,27 +791,27 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    protected void loadFrom(Device device, Preferences attrs) {
-        device.setDescription(attrs.get("dicomDescription", null));
-        device.setManufacturer(attrs.get("dicomManufacturer", null));
-        device.setManufacturerModelName(attrs.get("dicomManufacturerModelName", null));
-        device.setSoftwareVersions(toStrings(attrs, "dicomSoftwareVersion"));
-        device.setStationName(attrs.get("dicomStationName", null));
-        device.setDeviceSerialNumber(attrs.get("dicomDeviceSerialNumber", null));
-        device.setIssuerOfPatientID(attrs.get("dicomIssuerOfPatientID", null));
-        device.setInstitutionNames(toStrings(attrs, "dicomInstitutionName"));
-        device.setInstitutionAddresses(toStrings(attrs, "dicomInstitutionAddress"));
+    protected void loadFrom(Device device, Preferences prefs) {
+        device.setDescription(prefs.get("dicomDescription", null));
+        device.setManufacturer(prefs.get("dicomManufacturer", null));
+        device.setManufacturerModelName(prefs.get("dicomManufacturerModelName", null));
+        device.setSoftwareVersions(stringArray(prefs, "dicomSoftwareVersion"));
+        device.setStationName(prefs.get("dicomStationName", null));
+        device.setDeviceSerialNumber(prefs.get("dicomDeviceSerialNumber", null));
+        device.setIssuerOfPatientID(prefs.get("dicomIssuerOfPatientID", null));
+        device.setInstitutionNames(stringArray(prefs, "dicomInstitutionName"));
+        device.setInstitutionAddresses(stringArray(prefs, "dicomInstitutionAddress"));
         device.setInstitutionalDepartmentNames(
-                toStrings(attrs, "dicomInstitutionalDepartmentName"));
-        device.setPrimaryDeviceTypes(toStrings(attrs, "dicomPrimaryDeviceType"));
-        device.setRelatedDeviceRefs(toStrings(attrs, "dicomRelatedDeviceReference"));
+                stringArray(prefs, "dicomInstitutionalDepartmentName"));
+        device.setPrimaryDeviceTypes(stringArray(prefs, "dicomPrimaryDeviceType"));
+        device.setRelatedDeviceRefs(stringArray(prefs, "dicomRelatedDeviceReference"));
         device.setAuthorizedNodeCertificateRefs(
-                toStrings(attrs, "dicomAuthorizedNodeCertificateReference"));
+                stringArray(prefs, "dicomAuthorizedNodeCertificateReference"));
         device.setThisNodeCertificateRefs(
-                toStrings(attrs, "dicomThisNodeCertificateReference"));
-        device.setVendorData(toVendorData(attrs, "dicomVendorData"));
+                stringArray(prefs, "dicomThisNodeCertificateReference"));
+        device.setVendorData(toVendorData(prefs, "dicomVendorData"));
         try {
-            device.setInstalled(attrs.getBoolean("dicomInstalled", false));
+            device.setInstalled(prefs.getBoolean("dicomInstalled", false));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
@@ -775,13 +821,13 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setCommonName(prefs.get("cn", null));
         conn.setHostname(prefs.get("dicomHostname", null));
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
-        conn.setTlsCipherSuites(toStrings(prefs, "dicomTLSCipherSuite"));
+        conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
         try {
             conn.setInstalled(toBoolean(prefs.get("dicomInstalled", null)));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
-        conn.setBlacklist(toStrings(prefs, "dcmBlacklistedHostname"));
+        conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));
         conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
         conn.setConnectTimeout(
                 prefs.getInt("dcmTCPConnectTimeout", Connection.NO_TIMEOUT));
@@ -807,7 +853,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
-        conn.setTlsProtocols(toStrings(prefs, "dcmTLSProtocol"));
+        conn.setTlsProtocols(stringArray(prefs, "dcmTLSProtocol"));
     }
 
     private static Boolean toBoolean(String s) {
@@ -817,12 +863,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     protected void loadFrom(ApplicationEntity ae, Preferences prefs) {
         ae.setDescription(prefs.get("dicomDescription", null));
         ae.setVendorData(toVendorData(prefs, "dicomVendorData"));
-        ae.setApplicationClusters(toStrings(prefs, "dicomApplicationCluster"));
-        ae.setPreferredCallingAETitles(toStrings(prefs, "dicomPreferredCallingAETitle"));
-        ae.setPreferredCalledAETitles(toStrings(prefs, "dicomPreferredCalledAETitle"));
+        ae.setApplicationClusters(stringArray(prefs, "dicomApplicationCluster"));
+        ae.setPreferredCallingAETitles(stringArray(prefs, "dicomPreferredCallingAETitle"));
+        ae.setPreferredCalledAETitles(stringArray(prefs, "dicomPreferredCalledAETitle"));
         ae.setAssociationInitiator(prefs.getBoolean("dicomAssociationInitiator", false));
         ae.setAssociationAcceptor(prefs.getBoolean("dicomAssociationAcceptor", false));
-        ae.setSupportedCharacterSets(toStrings(prefs, "dicomSupportedCharacterSet"));
+        ae.setSupportedCharacterSets(stringArray(prefs, "dicomSupportedCharacterSet"));
         ae.setInstalled(toBoolean(prefs.get("dicomInstalled", null)));
 
         ae.setSendPDULength(prefs.getInt("dcmSendPDULength",
@@ -846,7 +892,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
        return bb;
     }
 
-    private static String[] toStrings(Preferences prefs, String key)  {
+    protected static String[] stringArray(Preferences prefs, String key)  {
         int n = prefs.getInt(key + ".#", 0);
         if (n == 0)
             return StringUtils.EMPTY_STRING;
@@ -877,7 +923,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     protected static void storeNotEmpty(Preferences prefs, String key, String[] values) {
-        if (values.length != 0) {
+        if (values != null && values.length != 0) {
             int count = 0;
             for (String value : values)
                 prefs.put(key + '.' + (++count), value);

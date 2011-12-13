@@ -109,6 +109,10 @@ public class AttributesFormat extends Format {
         strs[n] = tokens.get(j);
     }
 
+    public static AttributesFormat valueOf(String s) {
+        return s != null ? new AttributesFormat(s) : null;
+    }
+
     @Override
     public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
         Attributes attrs = (Attributes) obj;

@@ -169,9 +169,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         return attrs;
     }
 
-    protected void store(Collection<AttributeCoercion> coercions, String parentDN)
+    protected void store(AttributeCoercions coercions, String parentDN)
         throws NamingException {
-        for (AttributeCoercion ac : coercions)
+        for (AttributeCoercion ac : coercions.getAll())
             createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
     }
 

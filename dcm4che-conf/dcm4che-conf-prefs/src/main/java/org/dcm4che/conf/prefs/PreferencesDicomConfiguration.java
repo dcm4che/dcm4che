@@ -218,7 +218,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         int tcIndex = 1;
         for (TransferCapability tc : ae.getTransferCapabilities()) {
             Preferences tcNode = tcsNode.node("" + tcIndex++);
-            storeTo(tcNode, tc);
+            storeTo(tc, tcNode);
         }
     }
 
@@ -359,7 +359,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         prefs.putInt("dicomNetworkConnectionReference.#", refCount);
     }
 
-    protected void storeTo(Preferences prefs, TransferCapability tc) {
+    protected void storeTo(TransferCapability tc, Preferences prefs) {
         storeNotNull(prefs, "cn", tc.getCommonName());
         storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
         storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
@@ -625,7 +625,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             if (prevIter.hasNext())
                 storeDiffs(tcNode, prevIter.next(), tc);
             else
-                storeTo(tcNode, tc);
+                storeTo(tc, tcNode);
         }
     }
 

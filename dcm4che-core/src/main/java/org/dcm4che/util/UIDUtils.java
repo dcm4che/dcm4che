@@ -38,7 +38,9 @@
 
 package org.dcm4che.util;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -116,5 +118,20 @@ public class UIDUtils {
 
     public static StringBuilder promptTo(String uid, StringBuilder sb) {
         return sb.append(uid).append(" - ").append(UID.nameOf(uid));
+    }
+
+    public static String[] findUIDs(String regex) {
+        Pattern p = Pattern.compile(regex);
+        Field[] fields = UID.class.getFields();
+        String[] uids = new String[fields.length];
+        int j = 0;
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            if (p.matcher(field.getName()).matches())
+                try {
+                    uids[j++] = (String) field.get(null);
+                } catch (Exception ignore) { }
+        }
+        return Arrays.copyOf(uids, j);
     }
 }

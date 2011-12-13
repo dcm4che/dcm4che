@@ -46,7 +46,7 @@ public class KPhonetik implements FuzzyStr {
     @Override
     public String toFuzzy(String s) {
         if (s == null || s.length() == 0)
-            return "";
+            return "*";
 
         char[] in = s.toUpperCase().toCharArray();
         int countX = 0;

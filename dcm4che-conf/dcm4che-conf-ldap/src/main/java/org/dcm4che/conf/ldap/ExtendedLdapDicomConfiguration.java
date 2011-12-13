@@ -42,11 +42,16 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Hashtable;
 
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 
+import org.dcm4che.conf.api.AttributeCoercion;
+import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.QueryOption;
@@ -164,6 +169,34 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         return attrs;
     }
 
+    protected void store(Collection<AttributeCoercion> coercions, String parentDN)
+        throws NamingException {
+        for (AttributeCoercion ac : coercions)
+            createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
+    }
+
+    private static String dnOf(AttributeCoercion ac, String parentDN) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("dcmDIMSE=").append(ac.getDimse());
+        sb.append("+dicomTransferRole=").append(ac.getRole());
+        if (ac.getAETitle() != null)
+            sb.append("+dicomAETitle=").append(ac.getAETitle());
+        if (ac.getSopClass() != null)
+            sb.append("+dicomSOPClass=").append(ac.getSopClass());
+        sb.append(',').append(parentDN);
+        return sb.toString();
+    }
+
+    private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
+        attrs.put("objectclass", "dcmAttributeCoercion");
+        storeNotNull(attrs, "dcmDIMSE", ac.getDimse());
+        storeNotNull(attrs, "dicomTransferRole", ac.getRole());
+        storeNotNull(attrs, "dicomAETitle", ac.getAETitle());
+        storeNotNull(attrs, "dicomSOPClass", ac.getSopClass());
+        storeNotNull(attrs, "labeledURI", ac.getURI());
+        return attrs;
+    }
+
     @Override
     protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
         super.loadFrom(conn, attrs);
@@ -261,6 +294,27 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 StorageOptions.ElementCoercion.valueOf(intValue(coercion, 2)));
         return opts;
     }
+
+    protected void load(AttributeCoercions acs, String dn) throws NamingException {
+        NamingEnumeration<SearchResult> ne = search(dn, "(objectclass=dcmAttributeCoercion)");
+        try {
+            while (ne.hasMore()) {
+                SearchResult sr = ne.next();
+                Attributes attrs = sr.getAttributes();
+                acs.add(new AttributeCoercion(
+                        stringValue(attrs.get("dicomSOPClass")),
+                        AttributeCoercion.DIMSE.valueOf(
+                                stringValue(attrs.get("dcmDIMSE"))),
+                        TransferCapability.Role.valueOf(
+                                stringValue(attrs.get("dicomTransferRole"))),
+                        stringValue(attrs.get("dicomAETitle")),
+                        stringValue(attrs.get("labeledURI"))));
+            }
+        } finally {
+           safeClose(ne);
+        }
+    }
+
 
     @Override
     protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {

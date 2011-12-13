@@ -1,5 +1,5 @@
 # Extended DICOM Application Configuration Data Model Hierarchy LDAP Schema
-dn: cn=dcm,cn=schema,cn=config
+dn: cn=dcm4che,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: dcm4che
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.1 NAME 'dcmTLSNeedClientAuth'
@@ -146,6 +146,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.29 NAME 'dcmDataElementCoercion'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.30 NAME 'dcmDIMSE'
+  DESC 'DIMSE: "C_STORE_RQ", "C_FIND_RQ", "C_FIND_RSP"'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
   DESC 'Extended DICOM Network AE related information'
   SUP top AUXILIARY
@@ -187,3 +192,14 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
      dcmStorageConformance $
      dcmDigitalSignatureSupport $
      dcmDataElementCoercion ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
+  DESC 'Attribute Coercion of received/sent DIMSE'
+  SUP top STRUCTURAL
+  MUST (
+    dcmDIMSE $
+    dicomTransferRole $
+    labeledURI )
+  MAY (
+    dicomAETitle $
+    dicomSOPClass ) )
+

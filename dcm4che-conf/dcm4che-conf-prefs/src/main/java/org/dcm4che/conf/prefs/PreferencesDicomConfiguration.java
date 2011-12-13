@@ -84,7 +84,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     public final String getConfigurationRoot() {
-        return configurationRoot ;
+        return configurationRoot;
     }
 
     @Override
@@ -185,17 +185,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
         Preferences deviceNode = rootPrefs.node(pathName);
         storeTo(device, deviceNode);
-        Preferences connsNode = deviceNode.node("dcmNetworkConnection");
-        int connIndex = 1;
-        List<Connection> devConns = device.listConnections();
-        for (Connection conn : devConns)
-            storeTo(conn, connsNode.node("" + connIndex++));
-        Preferences aesNode = deviceNode.node("dcmNetworkAE");
-        for (ApplicationEntity ae : device.getApplicationEntities()) {
-            Preferences aeNode = aesNode.node(ae.getAETitle());
-            storeTo(ae, aeNode, devConns);
-            storeTransferCapabilities(ae, aeNode);
-        }
+        storeChilds(device, deviceNode);
         try {
             deviceNode.flush();
             deviceNode = null;
@@ -209,6 +199,20 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 } catch (BackingStoreException e) {
                     LOG.warn("Rollback failed:", e);
                 }
+        }
+    }
+
+    protected void storeChilds(Device device, Preferences deviceNode) {
+        Preferences connsNode = deviceNode.node("dcmNetworkConnection");
+        int connIndex = 1;
+        List<Connection> devConns = device.listConnections();
+        for (Connection conn : devConns)
+            storeTo(conn, connsNode.node("" + connIndex++));
+        Preferences aesNode = deviceNode.node("dcmNetworkAE");
+        for (ApplicationEntity ae : device.getApplicationEntities()) {
+            Preferences aeNode = aesNode.node(ae.getAETitle());
+            storeTo(ae, aeNode, devConns);
+            storeTransferCapabilities(ae, aeNode);
         }
     }
 
@@ -631,7 +635,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private Device loadDevice(Preferences deviceNode) throws ConfigurationException {
         try {
-            Device device = newDevice(deviceNode.name());
+            Device device = newDevice(deviceNode);
             loadFrom(device, deviceNode);
             Preferences connsNode = deviceNode.node("dcmNetworkConnection");
             for (int connIndex : sort(connsNode.childrenNames())) {
@@ -647,7 +651,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences aesNode = deviceNode.node("dcmNetworkAE");
             for (String aet : aesNode.childrenNames()) {
                 Preferences aeNode = aesNode.node(aet);
-                ApplicationEntity ae = newApplicationEntity(aet);
+                ApplicationEntity ae = newApplicationEntity(aeNode);
                 loadFrom(ae, aeNode);
                 int n = aeNode.getInt("dicomNetworkConnectionReference.#", 0);
                 for (int i = 0; i < n; i++) {
@@ -674,16 +678,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return a;
     }
 
-    protected Device newDevice(String name) {
-        return new Device(name);
+    protected Device newDevice(Preferences deviceNode) {
+        return new Device(deviceNode.name());
     }
 
     protected Connection newConnection() {
         return new Connection();
     }
 
-    protected ApplicationEntity newApplicationEntity(String aet) {
-        return new ApplicationEntity(aet);
+    protected ApplicationEntity newApplicationEntity(Preferences aeNode) {
+        return new ApplicationEntity(aeNode.name());
     }
 
     protected TransferCapability newTransferCapability() {
@@ -867,9 +871,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         prefs.putInt(key, value);
     }
 
-    protected static void storeNotNull(Preferences prefs, String key, String value) {
+    protected static void storeNotNull(Preferences prefs, String key, Object value) {
         if (value != null)
-            prefs.put(key, value);
+            prefs.put(key, value.toString());
     }
 
     protected static void storeNotEmpty(Preferences prefs, String key, String[] values) {

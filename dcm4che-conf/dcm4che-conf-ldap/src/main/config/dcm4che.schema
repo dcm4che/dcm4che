@@ -173,6 +173,12 @@ attributetype ( 1.2.40.0.13.1.15.0.3.29 NAME 'dcmDataElementCoercion'
  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
  SINGLE-VALUE )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.30 NAME 'dcmDIMSE'
+ DESC 'DIMSE: "C_STORE_RQ", "C_FIND_RQ", "C_FIND_RSP"'
+ EQUALITY caseExactIA5Match
+ SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+ SINGLE-VALUE )
+
 objectclass ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
  DESC 'Extended DICOM Network AE related information'
  SUP top AUXILIARY
@@ -216,3 +222,14 @@ objectclass ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
   dcmStorageConformance $
   dcmDigitalSignatureSupport $
   dcmDataElementCoercion ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
+ DESC 'Attribute Coercion of received/sent DIMSE'
+ SUP top STRUCTURAL
+ MUST (
+  dcmDIMSE $
+  dicomTransferRole $
+  labeledURI )
+ MAY (
+  dicomAETitle $
+  dicomSOPClass ) )

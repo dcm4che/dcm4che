@@ -82,13 +82,11 @@ class PDUEncoder extends PDVOutputStream {
 
     public void write(AAssociateRQ rq) throws IOException {
         encode(rq, PDUType.A_ASSOCIATE_RQ, ItemType.RQ_PRES_CONTEXT);
-        encode(rq.getUserIdentity());
         writePDU(pos - 6);
     }
 
     public void write(AAssociateAC ac) throws IOException {
         encode(ac, PDUType.A_ASSOCIATE_AC, ItemType.AC_PRES_CONTEXT);
-        encode(ac.getUserIdentity());
         writePDU(pos - 6);
     }
 
@@ -247,6 +245,8 @@ class PDUEncoder extends PDVOutputStream {
         for (CommonExtendedNegotiation extNeg :
                 rqac.getCommonExtendedNegotiations())
             encode(extNeg);
+        encode(rqac.getUserIdentityRQ());
+        encode(rqac.getUserIdentityAC());
     }
 
     private void encodeMaxPDULength(int maxPDULength) {

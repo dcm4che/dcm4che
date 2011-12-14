@@ -488,7 +488,7 @@ public class ApplicationEntity {
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
         UserIdentityAC userIdentity = userIdNegotiator != null
-                ? userIdNegotiator.negotiate(as, rq.getUserIdentity())
+                ? userIdNegotiator.negotiate(as, rq.getUserIdentityRQ())
                 : null;
         if (device.isLimitOfOpenConnectionsExceeded())
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
@@ -502,7 +502,7 @@ public class ApplicationEntity {
                 maxOpsPerformed));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
                 maxOpsInvoked));
-        ac.setUserIdentity(userIdentity);
+        ac.setUserIdentityAC(userIdentity);
         return negotiate(as, rq, ac);
     }
 

@@ -352,7 +352,7 @@ public class CLIUtils {
         conn.setPort(Integer.parseInt(hostPort[1]));
 
         if (cl.hasOption("user"))
-            rq.setUserIdentity(cl.hasOption("user-pass")
+            rq.setUserIdentityRQ(cl.hasOption("user-pass")
                     ? new UserIdentityRQ(cl.getOptionValue("user"),
                             cl.getOptionValue("user-pass").toCharArray())
                     : new UserIdentityRQ(cl.getOptionValue("user"),

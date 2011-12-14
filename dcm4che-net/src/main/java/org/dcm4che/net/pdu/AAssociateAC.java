@@ -38,23 +38,15 @@
 
 package org.dcm4che.net.pdu;
 
-import org.dcm4che.util.StringUtils;
-
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class AAssociateAC extends AAssociateRQAC {
 
-    private UserIdentityAC userIdentity;
-
-    public final UserIdentityAC getUserIdentity() {
-        return userIdentity;
-    }
-
-    public final void setUserIdentity(UserIdentityAC userIdentity) {
-        this.userIdentity = userIdentity;
+    @Override
+    public void setUserIdentityRQ(UserIdentityRQ userIdentityRQ) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -64,16 +56,5 @@ public class AAssociateAC extends AAssociateRQAC {
 
     StringBuilder promptTo(StringBuilder sb) {
         return promptTo("A-ASSOCIATE-AC[", sb);
-    }
-
-    @Override
-    protected void promptUserIdentityTo(StringBuilder sb) {
-        if (userIdentity != null)
-            userIdentity.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
-    }
-
-    @Override
-    protected int userIdentityLength() {
-        return userIdentity != null ? 4 + userIdentity.length() : 0;
     }
 }

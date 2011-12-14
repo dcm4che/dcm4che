@@ -357,12 +357,10 @@ class PDUDecoder extends PDVInputStream {
             rqac.addCommonExtendedNegotiation(decodeCommonExtNeg(itemLen));
             break;
         case ItemType.RQ_USER_IDENTITY:
+            rqac.setUserIdentityRQ(decodeUserIdentityRQ(itemLen));
+            break;
         case ItemType.AC_USER_IDENTITY:
-            if (rqac instanceof AAssociateRQ) {
-                ((AAssociateRQ) rqac).setUserIdentity(decodeUserIdentityRQ(itemLen));               
-            } else {
-                ((AAssociateAC) rqac).setUserIdentity(decodeUserIdentityAC(itemLen));                
-            }
+            rqac.setUserIdentityAC(decodeUserIdentityAC(itemLen));
             break;
         default:
             skip(itemLen);

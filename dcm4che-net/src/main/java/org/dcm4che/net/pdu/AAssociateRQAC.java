@@ -67,6 +67,8 @@ public abstract class AAssociateRQAC {
     protected String applicationContext = UID.DICOMApplicationContextName;
     protected String implClassUID = Implementation.getClassUID();
     protected String implVersionName = Implementation.getVersionName();
+    protected UserIdentityRQ userIdentityRQ;
+    protected UserIdentityAC userIdentityAC;
     protected final ArrayList<PresentationContext>
             pcs = new ArrayList<PresentationContext>();
     protected final IntHashMap<PresentationContext>
@@ -185,6 +187,22 @@ public abstract class AAssociateRQAC {
         this.implVersionName = implVersionName;
     }
 
+    public final UserIdentityRQ getUserIdentityRQ() {
+        return userIdentityRQ;
+    }
+
+    public void setUserIdentityRQ(UserIdentityRQ userIdentityRQ) {
+        this.userIdentityRQ = userIdentityRQ;
+    }
+
+    public final UserIdentityAC getUserIdentityAC() {
+        return userIdentityAC;
+    }
+
+    public void setUserIdentityAC(UserIdentityAC userIdentityAC) {
+        this.userIdentityAC = userIdentityAC;
+    }
+
     public List<PresentationContext> getPresentationContexts() {
         return Collections.unmodifiableList(pcs);
     }
@@ -291,11 +309,12 @@ public abstract class AAssociateRQAC {
         for (CommonExtendedNegotiation cen : commonExtNegMap.values()) {
             len += 4 + cen.length();
         }
-        len += userIdentityLength();
+        if (userIdentityRQ != null)
+            len += 4 + userIdentityRQ.length();
+        if (userIdentityAC != null)
+            len += 4 + userIdentityAC.length();
         return len;
     }
-
-    protected abstract int userIdentityLength();
 
     protected StringBuilder promptTo(String header, StringBuilder sb) {
         sb.append(header)
@@ -316,7 +335,10 @@ public abstract class AAssociateRQAC {
           .append("  maxOpsInvoked/maxOpsPerformed: ")
           .append(maxOpsInvoked).append("/").append(maxOpsPerformed)
           .append(StringUtils.LINE_SEPARATOR);
-        promptUserIdentityTo(sb);
+        if (userIdentityRQ != null)
+            userIdentityRQ.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
+        if (userIdentityAC != null)
+            userIdentityAC.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         for (PresentationContext pc : pcs)
             pc.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         for (RoleSelection rs : roleSelMap.values())
@@ -327,6 +349,4 @@ public abstract class AAssociateRQAC {
             extNeg.promptTo(sb).append(StringUtils.LINE_SEPARATOR);
         return sb.append("]");
     }
-
-    protected abstract void promptUserIdentityTo(StringBuilder sb);
 }

@@ -71,11 +71,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(PreferencesDicomConfiguration.class);
 
-    private static final String DICOM_CONFIGURATION_ROOT = "dicomConfigurationRoot";
-
     private final Preferences rootPrefs;
 
-    private String configurationRoot = DICOM_CONFIGURATION_ROOT;
+    private String configurationRoot = "org/dcm4che";
 
     public PreferencesDicomConfiguration(Preferences rootPrefs) {
         this.rootPrefs = rootPrefs;

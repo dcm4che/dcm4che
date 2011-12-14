@@ -62,6 +62,7 @@
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>
     <module>dcm4che-tool-xml2dcm</module>
+    <module>dcm4che-tool-xml2prefs</module>
   </modules>
   <build>
     <plugins>

@@ -386,6 +386,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
         storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
         storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
+        storeNotNull(prefs, "dcmServiceClass", tc.getServiceClass());
+        storeNotEmpty(prefs, "dcmRelatedGeneralSopClass", tc.getRelatedGeneralSopClasses());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
             storeBoolean(prefs, "dcmRelationalQueries",
@@ -544,6 +546,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
+        storeDiff(prefs, "dcmServiceClass",
+                a.getServiceClass(),
+                b.getServiceClass());
+        storeDiff(prefs, "dcmRelatedGeneralSopClass",
+                a.getRelatedGeneralSopClasses(),
+                b.getRelatedGeneralSopClasses());
         storeDiffs(prefs, a.getQueryOptions(), b.getQueryOptions());
         storeDiffs(prefs, a.getStorageOptions(), b.getStorageOptions());
     }
@@ -743,6 +751,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         tc.setSopClass(prefs.get("dicomSOPClass", null));
         tc.setRole(TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)));
         tc.setTransferSyntaxes(stringArray(prefs, "dicomTransferSyntax"));
+        tc.setServiceClass(prefs.get("dcmServiceClass", null));
+        tc.setRelatedGeneralSopClasses(stringArray(prefs, "dcmRelatedGeneralSopClass"));
         tc.setQueryOptions(toQueryOptions(prefs));
         tc.setStorageOptions(toStorageOptions(prefs));
     }

@@ -146,6 +146,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected Attributes storeTo(TransferCapability tc, Attributes attrs) {
         super.storeTo(tc, attrs);
+        
+        storeNotNull(attrs, "dcmServiceClass", tc.getServiceClass());
+        storeNotEmpty(attrs, "dcmRelatedGeneralSopClass", tc.getRelatedGeneralSopClasses());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
             storeBoolean(attrs, "dcmRelationalQueries",
@@ -255,6 +258,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.loadFrom(tc, attrs);
         if (!hasObjectClass(attrs, "dcmTransferCapability"))
             return;
+        tc.setServiceClass(stringValue(attrs.get("dcmServiceClass")));
+        tc.setRelatedGeneralSopClasses(stringArray(attrs.get("dcmRelatedGeneralSopClass")));
         tc.setQueryOptions(toQueryOptions(attrs));
         tc.setStorageOptions(toStorageOptions(attrs));
     }
@@ -413,6 +418,12 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected void storeDiffs(Collection<ModificationItem> mods,
             TransferCapability a, TransferCapability b) {
         super.storeDiffs(mods, a, b);
+        storeDiff(mods, "dcmServiceClass",
+                a.getServiceClass(),
+                b.getServiceClass());
+        storeDiff(mods, "dcmRelatedGeneralSopClass",
+                a.getRelatedGeneralSopClasses(),
+                b.getRelatedGeneralSopClasses());
         storeDiffs(mods, a.getQueryOptions(), b.getQueryOptions());
         storeDiffs(mods, a.getStorageOptions(), b.getStorageOptions());
     }

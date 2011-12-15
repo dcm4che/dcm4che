@@ -64,7 +64,8 @@ public class DicomServiceRegistry implements DimseRQHandler {
     private final HashSet<String> sopCUIDs = new HashSet<String>();
     private final HashMap<String, CEchoSCP> cechoSCPs =
             new HashMap<String, CEchoSCP>(1);
-    private HashMap<String, CStoreSCP> cstoreSCPs;
+    private final HashMap<String, CStoreSCP> cstoreSCPs =
+            new HashMap<String, CStoreSCP>();
     private HashMap<String, CGetSCP> cgetSCPs;
     private HashMap<String, CFindSCP> cfindSCPs;
     private HashMap<String, CMoveSCP> cmoveSCPs;
@@ -85,8 +86,6 @@ public class DicomServiceRegistry implements DimseRQHandler {
                 cechoSCPs.put(uid, (CEchoSCP) service);
         }
         if (service instanceof CStoreSCP) {
-            if (cstoreSCPs == null)
-                cstoreSCPs = new HashMap<String, CStoreSCP>();
             for (String uid : sopClasses)
                 cstoreSCPs.put(uid, (CStoreSCP) service);
         }
@@ -158,10 +157,8 @@ public class DicomServiceRegistry implements DimseRQHandler {
                 cechoSCPs.remove(uid);
         }
         if (service instanceof CStoreSCP) {
-            if (cstoreSCPs != null) {
-                for (String uid : sopClasses)
-                    cstoreSCPs.remove(uid);
-            }
+            for (String uid : sopClasses)
+                cstoreSCPs.remove(uid);
         }
         if (service instanceof CGetSCP) {
             if (cgetSCPs != null) {
@@ -273,15 +270,18 @@ public class DicomServiceRegistry implements DimseRQHandler {
         }
     }
 
-    private <T> T service(HashMap<String, T> map, Attributes cmd, int tag,
-            Association as) throws DicomServiceException {
-        String cuid = cmd.getString(tag, null);
-        if (map == null)
+    private <T> T service(HashMap<String, T> map, String cuid)
+            throws DicomServiceException {
+        T ret = map != null ? map.get(cuid) : null;
+        if (ret == null)
             throw new DicomServiceException(sopCUIDs.contains(cuid)
                         ? Status.UnrecognizedOperation
                         : Status.NoSuchSOPclass);
+        return ret;
+    }
 
-        T ret = map.get(cuid);
+    private CStoreSCP cstoreSCP(String cuid, Association as) throws DicomServiceException {
+        CStoreSCP ret = cstoreSCPs.get(cuid);
         if (ret != null)
             return ret;
 
@@ -292,15 +292,15 @@ public class DicomServiceRegistry implements DimseRQHandler {
                 .getCommonExtendedNegotiationFor(cuid);
         if (commonExtNeg != null) {
             for (String uid : commonExtNeg.getRelatedGeneralSOPClassUIDs()) {
-                ret = map.get(uid);
+                ret = cstoreSCPs.get(uid);
                 if (ret != null)
                     return ret;
             }
-            ret = map.get(commonExtNeg.getServiceClassUID());
+            ret = cstoreSCPs.get(commonExtNeg.getServiceClassUID());
             if (ret != null)
                 return ret;
         }
-        ret = map.get("*");
+        ret = cstoreSCPs.get("*");
         if (ret != null)
             return ret;
 
@@ -309,67 +309,67 @@ public class DicomServiceRegistry implements DimseRQHandler {
 
     private void cstore(Association as, PresentationContext pc,
             Attributes cmd, PDVInputStream data) throws IOException {
-        service(cstoreSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        cstoreSCP(cmd.getString(Tag.AffectedSOPClassUID), as)
                 .onCStoreRQ(as, pc, cmd, data);
     }
 
     private void cget(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(cgetSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        service(cgetSCPs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onCGetRQ(as, pc, cmd, dataset);
     }
 
     private void cfind(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(cfindSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        service(cfindSCPs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onCFindRQ(as, pc, cmd, dataset);
     }
 
     private void cmove(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(cmoveSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        service(cmoveSCPs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onCMoveRQ(as, pc, cmd, dataset);
     }
 
     private void cecho(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(cechoSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        service(cechoSCPs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onCEchoRQ(as, pc, cmd);
     }
 
     private void nget(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(ngetSCPs, cmd, Tag.RequestedSOPClassUID, as)
+        service(ngetSCPs, cmd.getString(Tag.RequestedSOPClassUID))
                 .onNGetRQ(as, pc, cmd, dataset);
     }
 
     private void nset(Association as, PresentationContext pc, Attributes cmd,
             Attributes dataset) throws IOException {
-        service(nsetSCPs, cmd, Tag.RequestedSOPClassUID, as)
+        service(nsetSCPs, cmd.getString(Tag.RequestedSOPClassUID))
                 .onNSetRQ(as, pc, cmd, dataset);
     }
 
     private void ncreate(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(ncreateSCPs, cmd, Tag.AffectedSOPClassUID, as)
+        service(ncreateSCPs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onNCreateRQ(as, pc, cmd, dataset);
     }
 
     private void naction(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(nactionSCPs, cmd, Tag.RequestedSOPClassUID, as)
+        service(nactionSCPs, cmd.getString(Tag.RequestedSOPClassUID))
                 .onNActionRQ(as, pc, cmd, dataset);
     }
 
     private void ndelete(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(ndeleteSCPs, cmd, Tag.RequestedSOPClassUID, as)
+        service(ndeleteSCPs, cmd.getString(Tag.RequestedSOPClassUID))
                 .onNDeleteRQ(as, pc, cmd);
     }
 
     private void neventReport(Association as, PresentationContext pc,
             Attributes cmd, Attributes dataset) throws IOException {
-        service(neventReportSCUs, cmd, Tag.AffectedSOPClassUID, as)
+        service(neventReportSCUs, cmd.getString(Tag.AffectedSOPClassUID))
                 .onNEventReportRQ(as, pc, cmd, dataset);
     }
 

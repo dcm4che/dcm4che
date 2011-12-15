@@ -179,17 +179,6 @@ attributetype ( 1.2.40.0.13.1.15.0.3.30 NAME 'dcmDIMSE'
  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.31 NAME 'dcmServiceClass'
-  DESC 'A Service Class UID'
-  EQUALITY objectIdentifierMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
-  SINGLE-VALUE )
-
-attributetype ( 1.2.40.0.13.1.15.0.3.32 NAME 'dcmRelatedGeneralSopClass'
-  DESC 'A Related General SOP Class UID
-  EQUALITY objectIdentifierMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
-
 objectclass ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
  DESC 'Extended DICOM Network AE related information'
  SUP top AUXILIARY
@@ -226,8 +215,6 @@ objectclass ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
  DESC 'Extended Transfer Capabilities for an Application Entity'
  SUP top AUXILIARY
  MAY (
-  dcmServiceClass $
-  dcmRelatedGeneralSopClass $
   dcmRelationalQueries $
   dcmCombinedDateTimeMatching $
   dcmFuzzySemanticMatching $

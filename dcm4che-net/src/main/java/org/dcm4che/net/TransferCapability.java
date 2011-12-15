@@ -65,8 +65,6 @@ public class TransferCapability {
     private String sopClass;
     private Role role;
     private String[] transferSyntaxes;
-    private String serviceClass;
-    private String[] relSopClasses = {};
     private EnumSet<QueryOption> queryOptions;
     private StorageOptions storageOptions;
 
@@ -187,13 +185,6 @@ public class TransferCapability {
             sb.append(indent2).append("ts: ");
             UIDUtils.promptTo(ts, sb).append(StringUtils.LINE_SEPARATOR);
         }
-        if (serviceClass != null)
-            sb.append(indent2).append("serviceClass: ");
-                UIDUtils.promptTo(serviceClass, sb).append(StringUtils.LINE_SEPARATOR);
-        for (String relSopClass : relSopClasses) {
-            sb.append(indent2).append("relSopClass: ");
-            UIDUtils.promptTo(relSopClass, sb).append(StringUtils.LINE_SEPARATOR);
-        }
         if (queryOptions != null)
             sb.append(indent2).append("QueryOptions").append(queryOptions)
                 .append(StringUtils.LINE_SEPARATOR);
@@ -201,22 +192,6 @@ public class TransferCapability {
             sb.append(indent2).append(storageOptions)
                 .append(StringUtils.LINE_SEPARATOR);
         return sb.append(indent).append(']');
-    }
-
-    public void setServiceClass(String serviceClass) {
-        this.serviceClass = serviceClass;
-    }
-
-    public String getServiceClass() {
-        return serviceClass;
-    }
-
-    public void setRelatedGeneralSopClasses(String... relSopClasses) {
-        this.relSopClasses = relSopClasses;
-    }
-
-    public String[] getRelatedGeneralSopClasses() {
-        return relSopClasses;
     }
 
 }

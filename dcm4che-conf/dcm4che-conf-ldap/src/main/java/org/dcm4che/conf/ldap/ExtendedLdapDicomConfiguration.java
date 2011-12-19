@@ -119,10 +119,10 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
         storeNotDef(attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeBoolean(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay());
+        storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
         if (conn.isTls()) {
             storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols());
-            storeBoolean(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+            storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
         }
         return attrs;
     }
@@ -138,9 +138,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
         storeNotDef(attrs, "dcmMaxOpsInvoked",
                 ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeBoolean(attrs, "dcmPackPDV", ae.isPackPDV());
-        storeBoolean(attrs, "dcmAcceptOnlyPreferredCallingAETitle",
-                ae.isAcceptOnlyPreferredCallingAETitles());
+        storeNotDef(attrs, "dcmPackPDV", ae.isPackPDV(), true);
+        storeNotDef(attrs, "dcmAcceptOnlyPreferredCallingAETitle",
+                ae.isAcceptOnlyPreferredCallingAETitles(), false);
         return attrs;
     }
 
@@ -150,8 +150,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            storeBoolean(attrs, "dcmRelationalQueries",
-                    queryOpts.contains(QueryOption.RELATIONAL));
+            storeNotDef(attrs, "dcmRelationalQueries",
+                    queryOpts.contains(QueryOption.RELATIONAL), false);
             storeNotDef(attrs, "dcmCombinedDateTimeMatching",
                     queryOpts.contains(QueryOption.DATETIME), false);
             storeNotDef(attrs, "dcmFuzzySemanticMatching",

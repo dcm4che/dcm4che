@@ -346,9 +346,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
         storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeBoolean(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay());
+        storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
         storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
-        storeBoolean(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth());
+        storeNotDef(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
     }
 
     protected void storeTo(ApplicationEntity ae, Preferences prefs, List<Connection> devConns) {
@@ -371,9 +371,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
         storeNotDef(prefs, "dcmMaxOpsInvoked",
                 ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeBoolean(prefs, "dcmPackPDV", ae.isPackPDV());
-        storeBoolean(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
-                ae.isAcceptOnlyPreferredCallingAETitles());
+        storeNotDef(prefs, "dcmPackPDV", ae.isPackPDV(), true);
+        storeNotDef(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
+                ae.isAcceptOnlyPreferredCallingAETitles(), false);
     }
 
     private void storeConnRefs(Preferences prefs, ApplicationEntity ae,
@@ -393,14 +393,14 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            storeBoolean(prefs, "dcmRelationalQueries",
-                    queryOpts.contains(QueryOption.RELATIONAL));
-            storeBoolean(prefs, "dcmCombinedDateTimeMatching",
-                    queryOpts.contains(QueryOption.DATETIME));
-            storeBoolean(prefs, "dcmFuzzySemanticMatching",
-                    queryOpts.contains(QueryOption.FUZZY));
-            storeBoolean(prefs, "dcmTimezoneQueryAdjustment",
-                    queryOpts.contains(QueryOption.TIMEZONE));
+            storeNotDef(prefs, "dcmRelationalQueries",
+                    queryOpts.contains(QueryOption.RELATIONAL), false);
+            storeNotDef(prefs, "dcmCombinedDateTimeMatching",
+                    queryOpts.contains(QueryOption.DATETIME), false);
+            storeNotDef(prefs, "dcmFuzzySemanticMatching",
+                    queryOpts.contains(QueryOption.FUZZY), false);
+            storeNotDef(prefs, "dcmTimezoneQueryAdjustment",
+                    queryOpts.contains(QueryOption.TIMEZONE), false);
         }
         StorageOptions storageOpts = tc.getStorageOptions();
         if (storageOpts != null) {
@@ -950,6 +950,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     protected static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
         if (value != defVal)
             storeInt(prefs, key, value);
+    }
+
+    protected static void storeNotDef(Preferences prefs, String key, boolean val, boolean defVal) {
+        if (val != defVal)
+            storeBoolean(prefs, key, val);
     }
 
     protected static void storeInt(Preferences prefs, String key, int value) {

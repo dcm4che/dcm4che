@@ -255,12 +255,17 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         Device prev = loadDevice(devicePrefs);
         try {
             storeDiffs(devicePrefs, prev, device);
-            mergeConnections(prev, device, devicePrefs);
-            mergeAEs(prev, device, devicePrefs);
+            mergeChilds(prev, device, devicePrefs);
             devicePrefs.flush();
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }
+    }
+
+    protected void mergeChilds(Device prev, Device device,
+            Preferences devicePrefs) throws BackingStoreException {
+        mergeConnections(prev, device, devicePrefs);
+        mergeAEs(prev, device, devicePrefs);
     }
 
     @Override
@@ -632,13 +637,45 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 storeChilds(ae, aeNode);
             } else {
                 storeDiffs(aeNode, prevAE, ae);
-                merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
+                mergeChilds(prevAE, ae, aeNode);
             }
         }
     }
 
+    protected void merge(AttributeCoercions prevs, AttributeCoercions acs,
+            Preferences parentNode) throws BackingStoreException {
+        Preferences acsNode = parentNode.node("dcmAttributeCoercion");
+        int acIndex = 1;
+        Iterator<AttributeCoercion> prevIter = prevs.getAll().iterator();
+        for (AttributeCoercion ac : acs.getAll()) {
+            Preferences acNode = acsNode.node("" + acIndex++);
+            if (prevIter.hasNext())
+                storeDiffs(acNode, prevIter.next(), ac);
+            else
+                storeTo(ac, acNode);
+        }
+        while (prevIter.hasNext()) {
+            prevIter.next();
+            acsNode.node("" + acIndex++).removeNode();
+        }
+    }
+
+    private void storeDiffs(Preferences prefs, AttributeCoercion a, AttributeCoercion b) {
+        storeDiff(prefs, "dcmDIMSE", a.getDimse(), b.getDimse());
+        storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
+        storeDiff(prefs, "dicomAETitle", a.getAETitle(), b.getAETitle());
+        storeDiff(prefs, "dicomSOPClass", a.getSopClass(), b.getSopClass());
+        storeDiff(prefs, "labeledURI", a.getURI(), b.getURI());
+    }
+
+    protected void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
+            Preferences aeNode) throws BackingStoreException {
+        merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
+    }
+
     private void merge(Collection<TransferCapability> prevs,
-            Collection<TransferCapability> tcs, Preferences aeNode) {
+            Collection<TransferCapability> tcs, Preferences aeNode)
+            throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
         int tcIndex = 1;
         Iterator<TransferCapability> prevIter = prevs.iterator();
@@ -648,6 +685,10 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 storeDiffs(tcNode, prevIter.next(), tc);
             else
                 storeTo(tc, tcNode);
+        }
+        while (prevIter.hasNext()) {
+            prevIter.next();
+            tcsNode.node("" + tcIndex++).removeNode();
         }
     }
 
@@ -693,16 +734,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     protected void loadChilds(ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        for (int tcIndex : sort(tcsNode.childrenNames()))
+        for (String tcIndex : tcsNode.childrenNames())
             ae.addTransferCapability(
-                    loadTransferCapability(tcsNode.node("" + tcIndex)));
+                    loadTransferCapability(tcsNode.node(tcIndex)));
     }
 
     protected void load(AttributeCoercions acs, Preferences deviceNode)
             throws BackingStoreException {
         Preferences acsNode = deviceNode.node("dcmAttributeCoercion");
-        for (int acIndex : sort(acsNode.childrenNames())) {
-            Preferences acNode = acsNode.node("" + acIndex);
+        for (String acIndex : acsNode.childrenNames()) {
+            Preferences acNode = acsNode.node(acIndex);
             acs.add(new AttributeCoercion(
                     acNode.get("dicomSOPClass", null),
                     AttributeCoercion.DIMSE.valueOf(
@@ -939,12 +980,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     protected static void storeDiff(Preferences prefs, String key,
-            String prev, String val) {
+            Object prev, Object val) {
         if (val == null) {
             if (prev != null)
                 prefs.remove(key);
         } else if (!val.equals(prev))
-            prefs.put(key, val);
+            prefs.put(key, val.toString());
     }
 
     protected static void storeDiff(Preferences prefs, String key,
@@ -986,7 +1027,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private static void removeKeys(Preferences prefs, String key, int from, int to) {
+    protected static void removeKeys(Preferences prefs, String key, int from, int to) {
         for (int i = from; i < to;) 
             prefs.remove(key + '.' + (++i));
         if (from == 0)

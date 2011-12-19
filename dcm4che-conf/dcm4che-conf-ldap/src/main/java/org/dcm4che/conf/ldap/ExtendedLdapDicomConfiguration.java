@@ -38,9 +38,10 @@
 
 package org.dcm4che.conf.ldap;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -318,8 +319,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
 
     @Override
-    protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {
-        super.storeDiffs(mods, a, b);
+    protected List<ModificationItem> storeDiffs(Connection a, Connection b,
+            List<ModificationItem> mods) {
+        super.storeDiffs(a, b, mods);
         storeDiff(mods, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
@@ -380,12 +382,13 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         storeDiff(mods, "dcmTLSNeedClientAuth",
                 a.isTlsNeedClientAuth(),
                 b.isTlsNeedClientAuth());
+        return mods;
     }
 
     @Override
-    protected void storeDiffs(Collection<ModificationItem> mods,
-            ApplicationEntity a, ApplicationEntity b, String deviceDN) {
-        super.storeDiffs(mods, a, b, deviceDN);
+    protected List<ModificationItem> storeDiffs(ApplicationEntity a,
+            ApplicationEntity b, String deviceDN, List<ModificationItem> mods) {
+        super.storeDiffs(a, b, deviceDN, mods);
         storeDiff(mods, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
@@ -408,18 +411,20 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         storeDiff(mods, "dcmAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
                 b.isAcceptOnlyPreferredCallingAETitles());
+        return mods;
     }
 
     @Override
-    protected void storeDiffs(Collection<ModificationItem> mods,
-            TransferCapability a, TransferCapability b) {
-        super.storeDiffs(mods, a, b);
-        storeDiffs(mods, a.getQueryOptions(), b.getQueryOptions());
-        storeDiffs(mods, a.getStorageOptions(), b.getStorageOptions());
+    protected List<ModificationItem> storeDiffs(TransferCapability a,
+            TransferCapability b, List<ModificationItem> mods) {
+        super.storeDiffs(a, b, mods);
+        storeDiffs(a.getQueryOptions(), b.getQueryOptions(), mods);
+        storeDiffs(a.getStorageOptions(), b.getStorageOptions(), mods);
+        return mods;
     }
 
-    private void storeDiffs(Collection<ModificationItem> mods,
-            EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
+    private void storeDiffs(EnumSet<QueryOption> prev,
+            EnumSet<QueryOption> val, List<ModificationItem> mods) {
         storeDiff(mods, "dcmRelationalQueries",
                 prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
                 val != null ? val.contains(QueryOption.RELATIONAL) : null);
@@ -434,8 +439,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 val != null ? val.contains(QueryOption.TIMEZONE) : null);
     }
 
-    private void storeDiffs(Collection<ModificationItem> mods,
-            StorageOptions prev, StorageOptions val) {
+    private void storeDiffs(StorageOptions prev,
+            StorageOptions val, List<ModificationItem> mods) {
         storeDiff(mods, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
@@ -448,6 +453,27 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
+    }
+
+    protected void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
+            throws NamingException {
+        for (AttributeCoercion prev : prevs.getAll())
+            if (acs.getEquals(prev) == null)
+                destroySubcontext(dnOf(prev, parentDN));
+        for (AttributeCoercion ac : acs.getAll()) {
+            String dn = dnOf(ac, parentDN);
+            AttributeCoercion prev = prevs.getEquals(ac);
+            if (prev == null)
+                createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
+            else
+                modifyAttributes(dn, storeDiffs(prev, ac, new ArrayList<ModificationItem>()));
+        }
+    }
+
+    private List<ModificationItem> storeDiffs(AttributeCoercion prev,
+            AttributeCoercion ac, ArrayList<ModificationItem> mods) {
+        storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
+        return mods;
     }
 
 }

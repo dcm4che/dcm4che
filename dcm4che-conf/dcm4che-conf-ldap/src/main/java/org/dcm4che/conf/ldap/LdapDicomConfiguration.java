@@ -131,7 +131,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             return false;
 
         try {
-            destroySubcontext(configurationDN);
+            destroySubcontextWithChilds(configurationDN);
             LOG.info("Purge DICOM Configuration at {}", configurationDN);
             clearConfigurationDN();
         } catch (NamingException e) {
@@ -223,7 +223,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         } finally {
             if (rollback)
                 try {
-                    destroySubcontext(deviceDN);
+                    destroySubcontextWithChilds(deviceDN);
                 } catch (NamingException e) {
                     LOG.warn("Rollback failed:", e);
                 }
@@ -254,14 +254,19 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         String deviceDN = deviceDN(device.getDeviceName());
         Device prev = loadDevice(deviceDN);
         try {
-            ctx.modifyAttributes(deviceDN, storeDiffs(prev, device));
-            mergeConnections(prev, device, deviceDN);
-            mergeAEs(prev, device, deviceDN);
+            modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>()));
+            mergeChilds(prev, device, deviceDN);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }
+    }
+
+    protected void mergeChilds(Device prev, Device device, String deviceDN)
+            throws NamingException {
+        mergeConnections(prev, device, deviceDN);
+        mergeAEs(prev, device, deviceDN);
     }
 
     @Override
@@ -274,7 +279,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     private void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
         try {
-            destroySubcontext(deviceDN);
+            destroySubcontextWithChilds(deviceDN);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
@@ -286,11 +291,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         safeClose(ctx.createSubcontext(name, attrs));
     }
 
-    protected void destroySubcontext(String name) throws NamingException {
-        destroySubcontext(ctx, name);
+    protected void destroySubcontext(String dn) throws NamingException {
+        ctx.destroySubcontext(dn);
     }
 
-    private static void destroySubcontext(DirContext ctx, String name)
+    protected void destroySubcontextWithChilds(String name) throws NamingException {
+        destroySubcontextWithChilds(ctx, name);
+    }
+
+    private static void destroySubcontextWithChilds(DirContext ctx, String name)
             throws NamingException {
         NamingEnumeration<NameClassPair> list = ctx.list(name);
         try {
@@ -298,7 +307,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 DirContext subContext = (DirContext) ctx.lookup(name);
                 try {
                     do {
-                        destroySubcontext(subContext, list.next().getName());
+                        destroySubcontextWithChilds(subContext, list.next().getName());
                     } while (list.hasMore());
                 } finally {
                     safeClose(subContext);
@@ -648,7 +657,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    protected void storeDiffs(Collection<ModificationItem> mods, Device a, Device b) {
+    protected List<ModificationItem> storeDiffs(Device a, Device b,
+            List<ModificationItem> mods) {
         storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
@@ -697,9 +707,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
+        return mods;
     }
 
-    protected void storeDiffs(Collection<ModificationItem> mods, Connection a, Connection b) {
+    protected List<ModificationItem> storeDiffs(Connection a, Connection b,
+            List<ModificationItem> mods) {
         storeDiff(mods, "dicomHostname",
                 a.getHostname(),
                 b.getHostname());
@@ -713,10 +725,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        return mods;
     }
 
-    protected void storeDiffs(Collection<ModificationItem> mods,
-            ApplicationEntity a, ApplicationEntity b, String deviceDN) {
+    protected List<ModificationItem> storeDiffs(ApplicationEntity a,
+            ApplicationEntity b, String deviceDN, List<ModificationItem> mods) {
         storeDiff(mods, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
@@ -748,19 +761,21 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        return mods;
     }
 
-    protected void storeDiffs(Collection<ModificationItem> mods,
-            TransferCapability a, TransferCapability b) {
+    protected List<ModificationItem> storeDiffs(TransferCapability a,
+            TransferCapability b, List<ModificationItem> mods) {
         storeDiff(mods, "dicomSOPClass",
                 a.getSopClass(),
                 b.getSopClass());
         storeDiff(mods, "dicomTransferRole",
-                a.getRole().toString(),
-                b.getRole().toString());
+                a.getRole(),
+                b.getRole());
         storeDiff(mods, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
+        return mods;
     }
 
     protected static int intValue(Attribute attr, int defVal) throws NamingException {
@@ -798,18 +813,12 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr != null ? Boolean.valueOf((String) attr.get()) : defVal;
     }
 
-    private ModificationItem[] storeDiffs(Device prev, Device device) {
-        ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        storeDiffs(mods, prev, device);
-        return mods.toArray(new ModificationItem[mods.size()]);
-    }
-
     private void mergeAEs(Device prevDev, Device dev, String deviceDN)
             throws NamingException {
         for (ApplicationEntity ae : prevDev.getApplicationEntities()) {
             String aet = ae.getAETitle();
             if (dev.getApplicationEntity(aet) == null)
-                destroySubcontext(aetDN(aet, deviceDN));
+                destroySubcontextWithChilds(aetDN(aet, deviceDN));
         }
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
@@ -827,15 +836,19 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private void merge(ApplicationEntity prev, ApplicationEntity ae,
             String deviceDN) throws NamingException {
         String aeDN = aetDN(ae.getAETitle(), deviceDN);
-        ctx.modifyAttributes(aeDN, diffsOf(prev, ae, deviceDN));
+        modifyAttributes(aeDN, storeDiffs(prev, ae, deviceDN, new ArrayList<ModificationItem>()));
+        mergeChilds(prev, ae, aeDN);
+    }
+
+    protected void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
+            String aeDN) throws NamingException {
         merge(prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
     }
 
-    private ModificationItem[] diffsOf(ApplicationEntity prev,
-            ApplicationEntity ae, String deviceDN) {
-        ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        storeDiffs(mods, prev, ae, deviceDN);
-        return mods.toArray(new ModificationItem[mods.size()]);
+    protected void modifyAttributes(String dn, List<ModificationItem> mods)
+            throws NamingException {
+        if (!mods.isEmpty())
+            ctx.modifyAttributes(dn, mods.toArray(new ModificationItem[mods.size()]));
     }
 
     private void merge(Collection<TransferCapability> prevs,
@@ -843,7 +856,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         for (TransferCapability tc : prevs) {
             String dn = dnOf(tc, aeDN);
             if (findByDN(aeDN, tcs, dn) == null)
-                ctx.destroySubcontext(dn);
+                destroySubcontext(dn);
         }
         for (TransferCapability tc : tcs) {
             String dn = dnOf(tc, aeDN);
@@ -851,15 +864,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             if (prev == null)
                 createSubcontext(dn, storeTo(tc, new BasicAttributes(true)));
             else
-                ctx.modifyAttributes(dn, storeDiffs(prev, tc));
+                modifyAttributes(dn, storeDiffs(prev, tc, new ArrayList<ModificationItem>()));
         }
-    }
-
-    private ModificationItem[] storeDiffs(TransferCapability prev,
-            TransferCapability tc) {
-        ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        storeDiffs(mods, prev, tc);
-        return mods.toArray(new ModificationItem[mods.size()]);
     }
 
     private void mergeConnections(Device prevDev, Device device, String deviceDN)
@@ -869,22 +875,16 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         for (Connection prev : prevs) {
             String dn = dnOf(prev, deviceDN);
             if (findByDN(deviceDN, conns, dn) == null)
-                ctx.destroySubcontext(dn);
+                destroySubcontext(dn);
         }
         for (Connection conn : conns) {
             String dn = dnOf(conn, deviceDN);
             Connection prev = findByDN(deviceDN, prevs, dn);
             if (prev == null)
-                ctx.createSubcontext(dn, storeTo(conn, new BasicAttributes(true)));
+                createSubcontext(dn, storeTo(conn, new BasicAttributes(true)));
             else
-                ctx.modifyAttributes(dn, storeDiffs(prev, conn));
+                modifyAttributes(dn, storeDiffs(prev, conn, new ArrayList<ModificationItem>()));
         }
-    }
-
-    private ModificationItem[] storeDiffs(Connection prev, Connection conn) {
-        ArrayList<ModificationItem> mods = new ArrayList<ModificationItem>();
-        storeDiffs(mods, prev, conn);
-        return mods.toArray(new ModificationItem[mods.size()]);
     }
 
     private static Connection findByDN(String deviceDN, 
@@ -904,7 +904,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
 
-    static void storeDiff(Collection<ModificationItem> mods, String attrId,
+    protected static void storeDiff(List<ModificationItem> mods, String attrId,
             Boolean prev, Boolean val) {
         if (val == null) {
             if (prev != null)
@@ -915,7 +915,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     new BasicAttribute(attrId, toString(val))));
     }
 
-    private static void storeDiff(Collection<ModificationItem> mods, String attrId,
+    private static void storeDiff(List<ModificationItem> mods, String attrId,
             byte[][] prevs, byte[][] vals) {
         if (!equals(prevs, vals))
             mods.add((vals.length == 0)
@@ -936,7 +936,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    private static void storeDiff(Collection<ModificationItem> mods, String attrId,
+    private static void storeDiff(List<ModificationItem> mods, String attrId,
             List<Connection> prevs, List<Connection> conns, String deviceDN) {
         if (!equalsConnRefs(prevs, conns, deviceDN))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -953,7 +953,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    static void storeDiff(Collection<ModificationItem> mods, String attrId,
+    protected static void storeDiff(List<ModificationItem> mods, String attrId,
             String[] prevs, String[] vals) {
         if (!Arrays.equals(prevs, vals))
             mods.add((vals.length == 0)
@@ -963,18 +963,18 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             attr(attrId, vals)));
     }
 
-    static void storeDiff(Collection<ModificationItem> mods, String attrId,
-            String prev, String val) {
+    protected static void storeDiff(List<ModificationItem> mods, String attrId,
+            Object prev, Object val) {
         if (val == null) {
             if (prev != null)
                 mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                         new BasicAttribute(attrId)));
         } else if (!val.equals(prev))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                    new BasicAttribute(attrId, val)));
+                    new BasicAttribute(attrId, val.toString())));
     }
 
-    static void storeDiff(Collection<ModificationItem> mods,
+    protected static void storeDiff(List<ModificationItem> mods,
             String attrId, int prev, int val, int defVal) {
         if (val != prev)
             mods.add((val == defVal)

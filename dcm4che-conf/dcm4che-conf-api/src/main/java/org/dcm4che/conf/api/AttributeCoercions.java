@@ -64,7 +64,18 @@ public class AttributeCoercions {
         if (map2 == null)
             map1.put(ac.getAETitle(),
                     map2 = new HashMap<String, AttributeCoercion>());
-        return map2.put(ac.getAETitle(), ac);
+        return map2.put(ac.getSopClass(), ac);
+    }
+
+    public AttributeCoercion getEquals(AttributeCoercion ac) {
+        HashMap<String,HashMap<String,AttributeCoercion>> map1 =
+            mapOf(ac.getDimse(), ac.getRole());
+        if (map1 == null)
+            return null;
+        HashMap<String, AttributeCoercion> map2 = map1.get(ac.getAETitle());
+        if (map2 == null)
+            return null;
+        return map2.get(ac.getSopClass());
     }
 
     public AttributeCoercion get(String sopClass, AttributeCoercion.DIMSE cmd,
@@ -85,6 +96,18 @@ public class AttributeCoercions {
             }
         }
         return ac;
+    }
+
+    public AttributeCoercion remove(String sopClass, AttributeCoercion.DIMSE cmd,
+            Role role, String aeTitle) {
+        HashMap<String,HashMap<String,AttributeCoercion>> map1 =
+                mapOf(cmd, role);
+        if (map1 == null)
+            return null;
+        HashMap<String, AttributeCoercion> map2 = map1.get(aeTitle);
+        if (map2 == null)
+            return null;
+        return map2.remove(sopClass);
     }
 
     @SuppressWarnings("unchecked")

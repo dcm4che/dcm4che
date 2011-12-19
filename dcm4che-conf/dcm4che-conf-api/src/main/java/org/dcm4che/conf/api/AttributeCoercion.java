@@ -39,6 +39,8 @@
 package org.dcm4che.conf.api;
 
 import org.dcm4che.net.TransferCapability.Role;
+import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -79,5 +81,24 @@ public class AttributeCoercion {
 
     public final String getURI() {
         return uri;
+    }
+
+    @Override
+    public String toString() {
+        return promptTo(new StringBuilder(64), "").toString();
+    }
+
+    public StringBuilder promptTo(StringBuilder sb, String indent) {
+        String indent2 = indent + "  ";
+        StringUtils.appendLine(sb, indent, "AttributeCoercion[dimse: ", dimse);
+        StringUtils.appendLine(sb, indent2, "role: ", role);
+        if (sopClass != null) {
+            sb.append(indent2).append("cuid: ");
+            UIDUtils.promptTo(sopClass, sb).append(StringUtils.LINE_SEPARATOR);
+        }
+        if (aeTitle != null)
+            StringUtils.appendLine(sb, indent2, "aet: ", aeTitle);
+        StringUtils.appendLine(sb, indent2, "uri: ", uri);
+        return sb.append(indent).append(']');
     }
 }

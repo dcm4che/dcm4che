@@ -131,7 +131,8 @@ public class Main {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STORESCU");
         CLIUtils.addAEOptions(opts, true, false);
-        CLIUtils.addDimseRspOption(opts);
+        CLIUtils.addCEchoRspOption(opts);
+        CLIUtils.addCStoreRspOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
         addRelatedSOPClassOptions(opts);

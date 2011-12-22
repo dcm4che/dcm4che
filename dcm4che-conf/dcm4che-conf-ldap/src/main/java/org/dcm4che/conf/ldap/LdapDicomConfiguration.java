@@ -476,8 +476,12 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected static String toString(Object o) {
         return (o instanceof Boolean)
-                ? (Boolean) o ? "TRUE" : "FALSE"
+                ? toString(((Boolean) o).booleanValue())
                 : o != null ? o.toString() : null;
+    }
+
+    private static String toString(boolean val) {
+        return val ? "TRUE" : "FALSE";
     }
 
     private Device loadDevice(String deviceDN) throws ConfigurationException {
@@ -543,7 +547,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 stringArray(attrs.get("dicomThisNodeCertificateReference")));
         device.setVendorData(byteArrays(attrs.get("dicomVendorData")));
         try {
-            device.setInstalled(booleanValue(attrs.get("dicomInstalled"), Boolean.TRUE));
+            device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
@@ -628,8 +632,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         ae.setApplicationClusters(stringArray(attrs.get("dicomApplicationCluster")));
         ae.setPreferredCallingAETitles(stringArray(attrs.get("dicomPreferredCallingAETitle")));
         ae.setPreferredCalledAETitles(stringArray(attrs.get("dicomPreferredCalledAETitle")));
-        ae.setAssociationInitiator(booleanValue(attrs.get("dicomAssociationInitiator"), Boolean.FALSE));
-        ae.setAssociationAcceptor(booleanValue(attrs.get("dicomAssociationAcceptor"), Boolean.FALSE));
+        ae.setAssociationInitiator(booleanValue(attrs.get("dicomAssociationInitiator"), false));
+        ae.setAssociationAcceptor(booleanValue(attrs.get("dicomAssociationAcceptor"), false));
         ae.setSupportedCharacterSets(stringArray(attrs.get("dicomSupportedCharacterSet")));
         ae.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
     }
@@ -782,6 +786,10 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
     }
 
+    protected static Integer intValue(Attribute attr, Integer defVal) throws NamingException {
+        return attr != null ? Integer.valueOf((String) attr.get()) : defVal;
+    }
+
     protected static byte[][] byteArrays(Attribute attr) throws NamingException {
         if (attr == null)
             return new byte[0][];
@@ -806,6 +814,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected static String stringValue(Attribute attr) throws NamingException {
         return attr != null ? (String) attr.get() : null;
+    }
+
+    protected static boolean booleanValue(Attribute attr, boolean defVal)
+            throws NamingException {
+        return attr != null ? Boolean.parseBoolean((String) attr.get()) : defVal;
     }
 
     protected static Boolean booleanValue(Attribute attr, Boolean defVal)
@@ -903,18 +916,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return null;
     }
 
-
-    protected static void storeDiff(List<ModificationItem> mods, String attrId,
-            Boolean prev, Boolean val) {
-        if (val == null) {
-            if (prev != null)
-                mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-                        new BasicAttribute(attrId)));
-        } else if (!val.equals(prev))
-            mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                    new BasicAttribute(attrId, toString(val))));
-    }
-
     private static void storeDiff(List<ModificationItem> mods, String attrId,
             byte[][] prevs, byte[][] vals) {
         if (!equals(prevs, vals))
@@ -971,7 +972,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                         new BasicAttribute(attrId)));
         } else if (!val.equals(prev))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                    new BasicAttribute(attrId, val.toString())));
+                    new BasicAttribute(attrId, toString(val))));
     }
 
     protected static void storeDiff(List<ModificationItem> mods,
@@ -982,6 +983,16 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                             new BasicAttribute(attrId, "" + val)));
+    }
+
+    protected static void storeDiff(List<ModificationItem> mods,
+            String attrId, boolean prev, boolean val, boolean defVal) {
+        if (val != prev)
+            mods.add((val == defVal)
+                    ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                            new BasicAttribute(attrId))
+                    : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                            new BasicAttribute(attrId, toString(val))));
     }
 
 
@@ -1043,7 +1054,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected static Attribute storeBoolean(Attributes attrs, String attrID, boolean val) {
-        return attrs.put(attrID, val ? "TRUE" : "FALSE");
+        return attrs.put(attrID, toString(val));
     }
 
     protected static Attribute storeInt(Attributes attrs, String attrID, int val) {

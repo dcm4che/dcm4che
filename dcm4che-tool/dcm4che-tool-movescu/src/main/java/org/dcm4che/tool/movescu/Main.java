@@ -193,7 +193,7 @@ public class Main {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "MOVESCU");
             CLIUtils.addAEOptions(opts, true, false);
-            CLIUtils.addDimseRspOption(opts);
+            CLIUtils.addCMoveRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, Main.class);

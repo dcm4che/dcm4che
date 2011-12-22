@@ -66,7 +66,7 @@ class PDUEncoder extends PDVOutputStream {
 
     private Association as;
     private OutputStream out;
-    private byte[] buf = new byte[ApplicationEntity.DEF_MAX_PDU_LENGTH + 6];
+    private byte[] buf = new byte[Connection.DEF_MAX_PDU_LENGTH + 6];
     private int pos;
     private int pdvpcid;
     private int pdvcmd;

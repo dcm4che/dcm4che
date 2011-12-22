@@ -1,235 +1,333 @@
-# Extended DICOM Application Configuration Data Model Hierarchy LDAP Schema
+# dcm4che extensions of the DICOM Application Configuration Data Model Hierarchy LDAP Schema
 
-attributetype ( 1.2.40.0.13.1.15.0.3.1 NAME 'dcmTLSNeedClientAuth'
- DESC 'Indicates if TLS client authentication is required'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.1
+  NAME 'dcmTLSNeedClientAuth'
+  DESC 'Indicates if TLS client authentication is required; required if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.2 NAME 'dcmTLSProtocol'
- DESC 'The supported TLS Protocols'
- EQUALITY caseExactIA5Match
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+attributetype ( 1.2.40.0.13.1.15.0.3.2
+  NAME 'dcmTLSProtocol'
+  DESC 'The Supported TLS Protocols; "TLSv1", "SSLv3" if absent'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.3 NAME 'dcmTCPBacklog'
- DESC 'Maximum queue length for incoming TCP connections'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.3
+  NAME 'dcmTCPBacklog'
+  DESC 'Maximum queue length for incoming TCP connections; 50 if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.4 NAME 'dcmTCPConnectTimeout'
- DESC 'TCP connect timeout in ms'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.4
+  NAME 'dcmTCPConnectTimeout'
+  DESC 'TCP connect timeout in ms; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.5 NAME 'dcmAARQTimeout'
- DESC 'Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.5
+  NAME 'dcmAARQTimeout'
+  DESC 'Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.6 NAME 'dcmAAACTimeout'
- DESC 'Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.6
+  NAME 'dcmAAACTimeout'
+  DESC 'Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.7 NAME 'dcmARRPTimeout'
- DESC 'Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.7
+  NAME 'dcmARRPTimeout'
+  DESC 'Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.8 NAME 'dcmDimseRspTimeout'
- DESC 'Timeout in ms for receive of DIMSE-RSP after send of DIMSE-RQ'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.8
+  NAME 'dcmCStoreRspTimeout'
+  DESC 'Timeout in ms for receive of C-STORE-RSP after send of C-STORE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.9 NAME 'dcmCMoveRspTimeout'
- DESC 'Timeout in ms for receive of C-MOVE-RSP after send of C-MOVE-RQ'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.9
+  NAME 'dcmCGetRspTimeout'
+  DESC 'Timeout in ms for receive of C-GET-RSP after send of C-GET-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.10 NAME 'dcmCGetRspTimeout'
- DESC 'Timeout in ms for receive of C-GET-RSP after send of C-GET-RQ'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.10
+  NAME 'dcmCFindRspTimeout'
+  DESC 'Timeout in ms for receive of C-FIND-RSP after send of C-FIND-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.11 NAME 'dcmIdleTimeout'
- DESC 'Indicates aborting of idle Associations afer specified timeout in ms'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.11
+  NAME 'dcmCMoveRspTimeout'
+  DESC 'Timeout in ms for receive of C-MOVE-RSP after send of C-MOVE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.12 NAME 'dcmTCPCloseDelay'
- DESC 'TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.12
+  NAME 'dcmCEchoRspTimeout'
+  DESC 'Timeout in ms for receive of C-ECHO-RSP after send of C-ECHO-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.13 NAME 'dcmTCPSendBufferSize'
- DESC 'TCP send buffer size'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.13
+  NAME 'dcmNEventReportRspTimeout'
+  DESC 'Timeout in ms for receive of N-EVENT-REPORT-RSP after send of C-EVENT-REPORT-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.14 NAME 'dcmTCPReceiveBufferSize'
- DESC 'TCP receive buffer size'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.14
+  NAME 'dcmNGetRspTimeout'
+  DESC 'Timeout in ms for receive of N-GET-RSP after send of N-GET-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.15 NAME 'dcmTCPNoDelay'
- DESC 'Enable/disable TCP_NODELAY (disable/enable Nagle algorithm)'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.15
+  NAME 'dcmNSetRspTimeout'
+  DESC 'Timeout in ms for receive of N-SET-RSP after send of N-SET-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.16 NAME 'dcmBlacklistedHostname'
- DESC 'blacklisted DNS hostnames'
- EQUALITY caseIgnoreMatch
- SUBSTR caseIgnoreSubstringsMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+attributetype ( 1.2.40.0.13.1.15.0.3.16
+  NAME 'dcmNActionRspTimeout'
+  DESC 'Timeout in ms for receive of N-ACTION-RSP after send of N-ACTION-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.17 NAME 'dcmSendPDULength'
- DESC 'Maximal length of emitted PDUs'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.17
+  NAME 'dcmNCreateRspTimeout'
+  DESC 'Timeout in ms for receive of N-CREATE-RSP after send of N-CREATE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.18 NAME 'dcmReceivePDULength'
- DESC 'Maximal length of received PDUs'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.18
+  NAME 'dcmNDeleteRspTimeout'
+  DESC 'Timeout in ms for receive of N-DELETE-RSP after send of N-DELETE-RQ; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.19 NAME 'dcmMaxOpsPerformed'
- DESC 'Maximal number of operations to perform asynchronously'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.19
+  NAME 'dcmIdleTimeout'
+  DESC 'Indicates aborting of idle Associations after specified timeout in ms; no timeout if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.20 NAME 'dcmMaxOpsInvoked'
- DESC 'Maximal number of operations to invoke asynchronously'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.20
+  NAME 'dcmTCPCloseDelay'
+  DESC 'TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU; 50 ms if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.21 NAME 'dcmPackPDV'
- DESC 'Enable/disable packing of command and data PDVs into one P-DATA-TF PDU'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.21
+  NAME 'dcmTCPSendBufferSize'
+  DESC 'TCP send buffer size; use system defaults if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.22 NAME 'dcmAcceptOnlyPreferredCallingAETitle'
- DESC 'Enable/disable check of Calling AE Title in Association requests'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.22
+  NAME 'dcmTCPReceiveBufferSize'
+  DESC 'TCP receive buffer size; use system defaults if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.23 NAME 'dcmRelationalQueries'
- DESC 'Enable/disable relational queries'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.23
+  NAME 'dcmTCPNoDelay'
+  DESC 'Enable/disable TCP_NODELAY (disable/enable Nagle algorithm); disable Nagle algorithm if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.24 NAME 'dcmCombinedDateTimeMatching'
- DESC 'Enable/disable combined date time matching'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.24
+  NAME 'dcmBlacklistedHostname'
+  DESC 'blacklisted DNS hostnames'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.25 NAME 'dcmFuzzySemanticMatching'
- DESC 'Enable/disable fuzzy semantic matching of person names'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.25
+  NAME 'dcmSendPDULength'
+  DESC 'Maximal length of emitted PDUs; 16378 if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.26 NAME 'dcmTimezoneQueryAdjustment'
- DESC 'Enable/disable timezone query adjustment'
- EQUALITY booleanMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.26
+  NAME 'dcmReceivePDULength'
+  DESC 'Maximal length of received PDUs; 16378 if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.27 NAME 'dcmStorageConformance'
- DESC 'Indicates level of Conformance of a Storage SCP'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.27
+  NAME 'dcmMaxOpsPerformed'
+  DESC 'Maximal number of operations to perform asynchronously; 1 (=synchronous) if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.28 NAME 'dcmDigitalSignatureSupport'
- DESC 'Indicates level of Digital Signature support of a Storage SCP'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.28
+  NAME 'dcmMaxOpsInvoked'
+  DESC 'Maximal number of operations to invoke asynchronously; 1 (=synchronous) if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.29 NAME 'dcmDataElementCoercion'
- DESC 'Indicates coercion of Data Elements of a Storage SCP'
- EQUALITY integerMatch
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.29
+  NAME 'dcmPackPDV'
+  DESC 'Enable/disable packing of command and data PDVs into one P-DATA-TF PDU; enabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.30 NAME 'dcmDIMSE'
- DESC 'DIMSE: "C_STORE_RQ", "C_FIND_RQ", "C_FIND_RSP"'
- EQUALITY caseExactIA5Match
- SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
- SINGLE-VALUE )
+attributetype ( 1.2.40.0.13.1.15.0.3.30
+  NAME 'dcmAcceptOnlyPreferredCallingAETitle'
+  DESC 'Enable/disable check of Calling AE Title in Association requests; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
- DESC 'Extended DICOM Network AE related information'
- SUP top AUXILIARY
- MAY (
-  dcmSendPDULength $
-  dcmReceivePDULength $
-  dcmMaxOpsPerformed $
-  dcmMaxOpsInvoked $
-  dcmPackPDV $
-  dcmAcceptOnlyPreferredCallingAETitle ) )
+attributetype ( 1.2.40.0.13.1.15.0.3.31
+  NAME 'dcmRelationalQueries'
+  DESC 'Enable/disable relational queries; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
- DESC 'Extended DICOM Network Connection information'
- SUP top AUXILIARY
- MAY (
-  dcmTLSNeedClientAuth $
-  dcmTLSProtocol $
-  dcmTCPBacklog $
-  dcmTCPConnectTimeout $
-  dcmTCPCloseDelay $
-  dcmTCPSendBufferSize $
-  dcmTCPReceiveBufferSize $
-  dcmTCPNoDelay $
-  dcmBlacklistedHostname $
-  dcmAARQTimeout $
-  dcmAAACTimeout $
-  dcmARRPTimeout $
-  dcmDimseRspTimeout $
-  dcmCGetRspTimeout $
-  dcmCMoveRspTimeout $
-  dcmIdleTimeout ) )
+attributetype ( 1.2.40.0.13.1.15.0.3.32
+  NAME 'dcmCombinedDateTimeMatching'
+  DESC 'Enable/disable combined date time matching; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
- DESC 'Extended Transfer Capabilities for an Application Entity'
- SUP top AUXILIARY
- MAY (
-  dcmRelationalQueries $
-  dcmCombinedDateTimeMatching $
-  dcmFuzzySemanticMatching $
-  dcmTimezoneQueryAdjustment $
-  dcmStorageConformance $
-  dcmDigitalSignatureSupport $
-  dcmDataElementCoercion ) )
+attributetype ( 1.2.40.0.13.1.15.0.3.33
+  NAME 'dcmFuzzySemanticMatching'
+  DESC 'Enable/disable fuzzy semantic matching of person  NAMEs; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
- DESC 'Attribute Coercion of received/sent DIMSE'
- SUP top STRUCTURAL
- MUST (
-  dcmDIMSE $
-  dicomTransferRole $
-  labeledURI )
- MAY (
-  dicomAETitle $
-  dicomSOPClass ) )
+attributetype ( 1.2.40.0.13.1.15.0.3.34
+  NAME 'dcmTimezoneQueryAdjustment'
+  DESC 'Enable/disable timezone query adjustment; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.35
+  NAME 'dcmStorageConformance'
+  DESC 'Indicates level of Conformance of a Storage SCP'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.36
+  NAME 'dcmDigitalSignatureSupport'
+  DESC 'Indicates level of Digital Signature Support of a Storage SCP'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.37
+  NAME 'dcmDataElementCoercion'
+  DESC 'Indicates coercion of Data Elements of a Storage SCP'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.38
+  NAME 'dcmDIMSE'
+  DESC 'DIMSE: "C_STORE_RQ", "C_FIND_RQ", "C_FIND_RSP"'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.5
+  NAME 'dcmNetworkAE'
+  DESC 'Extended DICOM Network AE related information'
+  SUP top AUXILIARY
+  MAY (
+    dcmAcceptOnlyPreferredCallingAETitle ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.6
+  NAME 'dcmNetworkConnection'
+  DESC 'Extended DICOM Network Connection information'
+  SUP top AUXILIARY
+  MAY (
+    dcmTLSNeedClientAuth $
+    dcmTLSProtocol $
+    dcmTCPBacklog $
+    dcmTCPConnectTimeout $
+    dcmTCPCloseDelay $
+    dcmTCPSendBufferSize $
+    dcmTCPReceiveBufferSize $
+    dcmTCPNoDelay $
+    dcmBlacklistedHostname $
+    dcmSendPDULength $
+    dcmReceivePDULength $
+    dcmMaxOpsPerformed $
+    dcmMaxOpsInvoked $
+    dcmPackPDV $
+    dcmAARQTimeout $
+    dcmAAACTimeout $
+    dcmARRPTimeout $
+    dcmCStoreRspTimeout $
+    dcmCGetRspTimeout $
+    dcmCFindRspTimeout $
+    dcmCMoveRspTimeout $
+    dcmCEchoRspTimeout $
+    dcmNEventReportRspTimeout $
+    dcmNGetRspTimeout $
+    dcmNSetRspTimeout $
+    dcmNActionRspTimeout $
+    dcmNCreateRspTimeout $
+    dcmNDeleteRspTimeout $
+    dcmIdleTimeout ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.8
+  NAME 'dcmTransferCapability'
+  DESC 'Extended Transfer Capabilities for an Application Entity'
+  SUP top AUXILIARY
+  MAY (
+    dcmRelationalQueries $
+    dcmCombinedDateTimeMatching $
+    dcmFuzzySemanticMatching $
+    dcmTimezoneQueryAdjustment $
+    dcmStorageConformance $
+    dcmDigitalSignatureSupport $
+    dcmDataElementCoercion ) )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.9
+  NAME 'dcmAttributeCoercion'
+  DESC 'Attribute Coercion of received/sent DIMSE'
+  SUP top STRUCTURAL
+  MUST (
+    dcmDIMSE $
+    dicomTransferRole $
+    labeledURI )
+  MAY (
+    dicomAETitle $
+    dicomSOPClass ) )

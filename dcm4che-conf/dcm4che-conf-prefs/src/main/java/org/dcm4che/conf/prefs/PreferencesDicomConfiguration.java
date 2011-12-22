@@ -319,7 +319,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dicomHostname", conn.getHostname());
         storeNotDef(prefs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
         storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        storeBoolean(prefs, "dicomInstalled", conn.getInstalled());
+        storeNotNull(prefs, "dicomInstalled", conn.getInstalled());
 
         storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
         storeNotDef(prefs, "dcmTCPBacklog",
@@ -332,12 +332,28 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmDimseRspTimeout",
-                conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmCStoreRspTimeout",
+                conn.getCStoreRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmCGetRspTimeout",
                 conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmCFindRspTimeout",
+                conn.getCFindRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmCMoveRspTimeout",
                 conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmCEchoRspTimeout",
+                conn.getCEchoRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNEventReportRspTimeout",
+                conn.getNEventReportRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNGetRspTimeout",
+                conn.getNGetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNSetRspTimeout",
+                conn.getNSetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNActionRspTimeout",
+                conn.getNActionRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNCreateRspTimeout",
+                conn.getNCreateRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmNDeleteRspTimeout",
+                conn.getNDeleteRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmTCPCloseDelay",
@@ -347,8 +363,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
-        storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
-        storeNotDef(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+        storeNotDef(prefs, "dcmSendPDULength",
+                conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
+        storeNotDef(prefs, "dcmReceivePDULength",
+                conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH);
+        storeNotDef(prefs, "dcmMaxOpsPerformed",
+                conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE);
+        storeNotDef(prefs, "dcmMaxOpsInvoked",
+                conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
+        storeNotDef(prefs, "dcmPackPDV", conn.isPackPDV(), true);
+        if (conn.isTls()) {
+            storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
+            storeNotDef(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+        }
     }
 
     protected void storeTo(ApplicationEntity ae, Preferences prefs, List<Connection> devConns) {
@@ -357,21 +384,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomApplicationCluster", ae.getApplicationClusters());
         storeNotEmpty(prefs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
         storeNotEmpty(prefs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
-        storeBoolean(prefs, "dicomAssociationInitiator", ae.isAssociationInitiator());
-        storeBoolean(prefs, "dicomAssociationAcceptor",  ae.isAssociationAcceptor());
+        prefs.putBoolean("dicomAssociationInitiator", ae.isAssociationInitiator());
+        prefs.putBoolean("dicomAssociationAcceptor",  ae.isAssociationAcceptor());
         storeNotEmpty(prefs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
-        storeBoolean(prefs, "dicomInstalled", ae.getInstalled());
+        storeNotNull(prefs, "dicomInstalled", ae.getInstalled());
         storeConnRefs(prefs, ae, devConns);
 
-        storeNotDef(prefs, "dcmSendPDULength",
-                ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcmReceivePDULength",
-                ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcmMaxOpsPerformed",
-                ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(prefs, "dcmMaxOpsInvoked",
-                ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(prefs, "dcmPackPDV", ae.isPackPDV(), true);
         storeNotDef(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
                 ae.isAcceptOnlyPreferredCallingAETitles(), false);
     }
@@ -404,11 +422,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
         StorageOptions storageOpts = tc.getStorageOptions();
         if (storageOpts != null) {
-            storeInt(prefs, "dcmStorageConformance",
+            prefs.putInt("dcmStorageConformance",
                     storageOpts.getLevelOfSupport().ordinal());
-            storeInt(prefs, "dcmDigitalSignatureSupport",
+            prefs.putInt("dcmDigitalSignatureSupport",
                     storageOpts.getDigitalSignatureSupport().ordinal());
-            storeInt(prefs, "dcmDataElementCoercion",
+            prefs.putInt("dcmDataElementCoercion",
                     storageOpts.getElementCoercion().ordinal());
         }
     }
@@ -481,7 +499,121 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
-    }
+
+        storeDiff(prefs, "dcmBlacklistedHostname",
+                a.getBlacklist(),
+                b.getBlacklist());
+        storeDiff(prefs, "dcmTCPBacklog",
+                a.getBacklog(),
+                b.getBacklog(),
+                Connection.DEF_BACKLOG);
+        storeDiff(prefs, "dcmTCPConnectTimeout",
+                a.getConnectTimeout(),
+                b.getConnectTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmAARQTimeout",
+                a.getRequestTimeout(),
+                b.getRequestTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmAAACTimeout",
+                a.getAcceptTimeout(),
+                b.getAcceptTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmARRPTimeout",
+                a.getReleaseTimeout(),
+                b.getReleaseTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmCStoreRspTimeout",
+                a.getCStoreRSPTimeout(),
+                b.getCStoreRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmCGetRspTimeout",
+                a.getCGetRSPTimeout(),
+                b.getCGetRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmCFindRspTimeout",
+                a.getCFindRSPTimeout(),
+                b.getCFindRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmCMoveRspTimeout",
+                a.getCMoveRSPTimeout(),
+                b.getCMoveRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmCEchoRspTimeout",
+                a.getCEchoRSPTimeout(),
+                b.getCEchoRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNEventReportRspTimeout",
+                a.getNEventReportRSPTimeout(),
+                b.getNEventReportRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNGetRspTimeout",
+                a.getNGetRSPTimeout(),
+                b.getNGetRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNSetRspTimeout",
+                a.getNSetRSPTimeout(),
+                b.getNSetRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNActionRspTimeout",
+                a.getNActionRSPTimeout(),
+                b.getNActionRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNCreateRspTimeout",
+                a.getNCreateRSPTimeout(),
+                b.getNCreateRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmNDeleteRspTimeout",
+                a.getNDeleteRSPTimeout(),
+                b.getNDeleteRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmIdleTimeout",
+                a.getIdleTimeout(),
+                b.getIdleTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(prefs, "dcmTCPCloseDelay",
+                a.getSocketCloseDelay(),
+                b.getSocketCloseDelay(),
+                Connection.DEF_SOCKETDELAY);
+        storeDiff(prefs, "dcmTCPSendBufferSize",
+                a.getSendBufferSize(),
+                b.getSendBufferSize(),
+                Connection.DEF_BUFFERSIZE);
+        storeDiff(prefs, "dcmTCPReceiveBufferSize",
+                a.getReceiveBufferSize(),
+                b.getReceiveBufferSize(),
+                Connection.DEF_BUFFERSIZE);
+        storeDiff(prefs, "dcmTCPNoDelay",
+                a.isTcpNoDelay(),
+                b.isTcpNoDelay(),
+                true);
+        storeDiff(prefs, "dcmTLSProtocol",
+                a.isTls() ? a.getTlsProtocols() : null,
+                b.isTls() ? b.getTlsProtocols() : null);
+        storeDiff(prefs, "dcmTLSNeedClientAuth",
+                !a.isTls() || a.isTlsNeedClientAuth(),
+                !a.isTls() || a.isTlsNeedClientAuth(),
+                true);
+        storeDiff(prefs, "dcmSendPDULength",
+                a.getSendPDULength(),
+                b.getSendPDULength(),
+                Connection.DEF_MAX_PDU_LENGTH);
+        storeDiff(prefs, "dcmReceivePDULength",
+                a.getReceivePDULength(),
+                b.getReceivePDULength(),
+                Connection.DEF_MAX_PDU_LENGTH);
+        storeDiff(prefs, "dcmMaxOpsPerformed",
+                a.getMaxOpsPerformed(),
+                b.getMaxOpsPerformed(),
+                Connection.SYNCHRONOUS_MODE);
+        storeDiff(prefs, "dcmMaxOpsInvoked",
+                a.getMaxOpsInvoked(),
+                b.getMaxOpsInvoked(),
+                Connection.SYNCHRONOUS_MODE);
+        storeDiff(prefs, "dcmPackPDV",
+                a.isPackPDV(),
+                b.isPackPDV());
+}
 
     protected void storeDiffs(Preferences prefs, ApplicationEntity a, ApplicationEntity b) {
         storeDiff(prefs, "dicomDescription",
@@ -513,28 +645,10 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getInstalled(),
                 b.getInstalled());
 
-        storeDiff(prefs, "dcmSendPDULength",
-                a.getSendPDULength(),
-                b.getSendPDULength(),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcmReceivePDULength",
-                a.getReceivePDULength(),
-                b.getReceivePDULength(),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcmMaxOpsPerformed",
-                a.getMaxOpsPerformed(),
-                b.getMaxOpsPerformed(),
-                ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcmMaxOpsInvoked",
-                a.getMaxOpsInvoked(),
-                b.getMaxOpsInvoked(),
-                ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcmPackPDV",
-                a.isPackPDV(),
-                b.isPackPDV());
         storeDiff(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
-                b.isAcceptOnlyPreferredCallingAETitles());
+                b.isAcceptOnlyPreferredCallingAETitles(),
+                false);
 
     }
 
@@ -555,22 +669,32 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static void storeDiffs(Preferences prefs,
             EnumSet<QueryOption> prev, EnumSet<QueryOption> val) {
+        if (prev != null ? prev.equals(val) : val == null)
+            return;
+
         storeDiff(prefs, "dcmRelationalQueries",
-                prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
-                val != null ? val.contains(QueryOption.RELATIONAL) : null);
+                prev != null && prev.contains(QueryOption.RELATIONAL),
+                val != null && val.contains(QueryOption.RELATIONAL),
+                false);
         storeDiff(prefs, "dcmCombinedDateTimeMatching",
-                prev != null ? prev.contains(QueryOption.DATETIME) : null,
-                val != null ? val.contains(QueryOption.DATETIME) : null);
+                prev != null && prev.contains(QueryOption.DATETIME),
+                val != null && val.contains(QueryOption.DATETIME),
+                false);
         storeDiff(prefs, "dcmFuzzySemanticMatching",
-                prev != null ? prev.contains(QueryOption.FUZZY) : null,
-                val != null ? val.contains(QueryOption.FUZZY) : null);
+                prev != null && prev.contains(QueryOption.FUZZY),
+                val != null && val.contains(QueryOption.FUZZY),
+                false);
         storeDiff(prefs, "dcmTimezoneQueryAdjustment",
-                prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
-                val != null ? val.contains(QueryOption.TIMEZONE) : null);
+                prev != null && prev.contains(QueryOption.TIMEZONE),
+                val != null && val.contains(QueryOption.TIMEZONE),
+                false);
     }
 
     private static void storeDiffs(Preferences prefs,
             StorageOptions prev, StorageOptions val) {
+        if (prev != null ? prev.equals(val) : val == null)
+            return;
+
         storeDiff(prefs, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
@@ -862,7 +986,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
         try {
-            conn.setInstalled(toBoolean(prefs.get("dicomInstalled", null)));
+            conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
         }
@@ -876,12 +1000,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmAAACTimeout", Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(
                 prefs.getInt("dcmARRPTimeout", Connection.NO_TIMEOUT));
-        conn.setDimseRSPTimeout(
-                prefs.getInt("dcmDimseRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCGetRSPTimeout(
-                prefs.getInt("dcmCGetRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCMoveRSPTimeout(
-                prefs.getInt("dcmCMoveRspTimeout", Connection.NO_TIMEOUT));
+        conn.setCStoreRSPTimeout(prefs.getInt("dcmCStoreRspTimeout", Connection.NO_TIMEOUT));
+        conn.setCGetRSPTimeout(prefs.getInt("dcmCGetRspTimeout", Connection.NO_TIMEOUT));
+        conn.setCFindRSPTimeout(prefs.getInt("dcmCFindRspTimeout", Connection.NO_TIMEOUT));
+        conn.setCMoveRSPTimeout(prefs.getInt("dcmCMoveRspTimeout", Connection.NO_TIMEOUT));
+        conn.setCEchoRSPTimeout(prefs.getInt("dcmCEchoRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNEventReportRSPTimeout(prefs.getInt("dcmNEventReportRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNGetRSPTimeout(prefs.getInt("dcmNGetRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNSetRSPTimeout(prefs.getInt("dcmNSetRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNActionRSPTimeout(prefs.getInt("dcmNActionRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNCreateRSPTimeout(
+                prefs.getInt("dcmNCreateRspTimeout", Connection.NO_TIMEOUT));
+        conn.setNDeleteRSPTimeout(
+                prefs.getInt("dcmNDeleteRspTimeout", Connection.NO_TIMEOUT));
         conn.setIdleTimeout(
                 prefs.getInt("dcmIdleTimeout", Connection.NO_TIMEOUT));
         conn.setSocketCloseDelay(
@@ -892,11 +1023,26 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
-        conn.setTlsProtocols(stringArray(prefs, "dcmTLSProtocol"));
+        String[] tlsProtocols = stringArray(prefs, "dcmTLSProtocol");
+        if (tlsProtocols.length > 0)
+            conn.setTlsProtocols(tlsProtocols);
+        conn.setSendPDULength(prefs.getInt("dcmSendPDULength",
+                Connection.DEF_MAX_PDU_LENGTH));
+        conn.setReceivePDULength(prefs.getInt("dcmReceivePDULength",
+                Connection.DEF_MAX_PDU_LENGTH));
+        conn.setMaxOpsPerformed(prefs.getInt("dcmMaxOpsPerformed",
+                Connection.SYNCHRONOUS_MODE));
+        conn.setMaxOpsInvoked(prefs.getInt("dcmMaxOpsInvoked",
+                Connection.SYNCHRONOUS_MODE));
+        conn.setPackPDV(prefs.getBoolean("dcmPackPDV", true));
     }
 
-    private static Boolean toBoolean(String s) {
+    protected static Boolean booleanValue(String s) {
         return s != null ? Boolean.valueOf(s) : null;
+    }
+
+    protected static Integer intValue(String s) {
+        return s != null ? Integer.valueOf(s) : null;
     }
 
     protected void loadFrom(ApplicationEntity ae, Preferences prefs) {
@@ -908,17 +1054,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         ae.setAssociationInitiator(prefs.getBoolean("dicomAssociationInitiator", false));
         ae.setAssociationAcceptor(prefs.getBoolean("dicomAssociationAcceptor", false));
         ae.setSupportedCharacterSets(stringArray(prefs, "dicomSupportedCharacterSet"));
-        ae.setInstalled(toBoolean(prefs.get("dicomInstalled", null)));
+        ae.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
 
-        ae.setSendPDULength(prefs.getInt("dcmSendPDULength",
-                ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setReceivePDULength(prefs.getInt("dcmReceivePDULength",
-                ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(prefs.getInt("dcmMaxOpsPerformed",
-                ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setMaxOpsInvoked(prefs.getInt("dcmMaxOpsInvoked",
-                ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setPackPDV(prefs.getBoolean("dcmPackPDV", true));
         ae.setAcceptOnlyPreferredCallingAETitles(
                 prefs.getBoolean("dcmAcceptOnlyPreferredCallingAETitle", false));
 }
@@ -942,23 +1079,14 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return ss;
     }
 
-    protected static void storeBoolean(Preferences prefs, String key, Boolean value) {
-        if (value != null)
-            prefs.putBoolean(key, value);
-    }
-
     protected static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
         if (value != defVal)
-            storeInt(prefs, key, value);
+            prefs.putInt(key, value);
     }
 
     protected static void storeNotDef(Preferences prefs, String key, boolean val, boolean defVal) {
         if (val != defVal)
-            storeBoolean(prefs, key, val);
-    }
-
-    protected static void storeInt(Preferences prefs, String key, int value) {
-        prefs.putInt(key, value);
+            prefs.putBoolean(key, val);
     }
 
     protected static void storeNotNull(Preferences prefs, String key, Object value) {
@@ -984,8 +1112,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected static void storeDiff(Preferences prefs, String key,
-            Object prev, Object val) {
+    protected static void storeDiff(Preferences prefs, String key, Object prev, Object val) {
         if (val == null) {
             if (prev != null)
                 prefs.remove(key);
@@ -994,18 +1121,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     protected static void storeDiff(Preferences prefs, String key,
-            boolean prev, boolean val) {
+            boolean prev, boolean val, boolean defVal) {
         if (prev != val)
-            prefs.putBoolean(key, val);
-    }
-
-    protected static void storeDiff(Preferences prefs, String key,
-            Boolean prev, Boolean val) {
-        if (val == null) {
-            if (prev != null)
+            if (val == defVal)
                 prefs.remove(key);
-        } else if (!val.equals(prev))
-            prefs.putBoolean(key, val);
+            else
+                prefs.putBoolean(key, val);
     }
 
     protected static void storeDiff(Preferences prefs, String key, int prev, int val, int defVal) {
@@ -1013,7 +1134,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             if (val == defVal)
                 prefs.remove(key);
             else
-                storeInt(prefs, key, val);
+                prefs.putInt(key, val);
      }
 
     protected static void storeDiff(Preferences prefs, String key,

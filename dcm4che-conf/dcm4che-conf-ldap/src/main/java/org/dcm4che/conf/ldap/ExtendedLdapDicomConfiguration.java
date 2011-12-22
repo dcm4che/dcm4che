@@ -105,12 +105,28 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmDimseRspTimeout",
-                conn.getDimseRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmCStoreRspTimeout",
+                conn.getCStoreRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmCGetRspTimeout",
                 conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmCFindRspTimeout",
+                conn.getCFindRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmCMoveRspTimeout",
                 conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmCEchoRspTimeout",
+                conn.getCEchoRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNEventReportRspTimeout",
+                conn.getNEventReportRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNGetRspTimeout",
+                conn.getNGetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNSetRspTimeout",
+                conn.getNSetRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNActionRspTimeout",
+                conn.getNActionRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNCreateRspTimeout",
+                conn.getNCreateRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmNDeleteRspTimeout",
+                conn.getNDeleteRSPTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmTCPCloseDelay",
@@ -120,6 +136,15 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         storeNotDef(attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        storeNotDef(attrs, "dcmSendPDULength",
+                conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
+        storeNotDef(attrs, "dcmReceivePDULength",
+                conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH);
+        storeNotDef(attrs, "dcmMaxOpsPerformed",
+                conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE);
+        storeNotDef(attrs, "dcmMaxOpsInvoked",
+                conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
+        storeNotDef(attrs, "dcmPackPDV", conn.isPackPDV(), true);
         if (conn.isTls()) {
             storeNotEmpty(attrs, "dcmTLSProtocol", conn.getTlsProtocols());
             storeNotDef(attrs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
@@ -130,15 +155,6 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
         super.storeTo(ae, deviceDN, attrs);
-        storeNotDef(attrs, "dcmSendPDULength",
-                ae.getSendPDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(attrs, "dcmReceivePDULength",
-                ae.getReceivePDULength(), ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeNotDef(attrs, "dcmMaxOpsPerformed",
-                ae.getMaxOpsPerformed(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(attrs, "dcmMaxOpsInvoked",
-                ae.getMaxOpsInvoked(), ApplicationEntity.SYNCHRONOUS_MODE);
-        storeNotDef(attrs, "dcmPackPDV", ae.isPackPDV(), true);
         storeNotDef(attrs, "dcmAcceptOnlyPreferredCallingAETitle",
                 ae.isAcceptOnlyPreferredCallingAETitles(), false);
         return attrs;
@@ -214,11 +230,27 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(intValue(attrs.get("dcmARRPTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setDimseRSPTimeout(intValue(attrs.get("dcmDimseRspTimeout"),
+        conn.setCStoreRSPTimeout(intValue(attrs.get("dcmCStoreRspTimeout"),
                 Connection.NO_TIMEOUT));
         conn.setCGetRSPTimeout(intValue(attrs.get("dcmCGetRspTimeout"),
                 Connection.NO_TIMEOUT));
+        conn.setCFindRSPTimeout(intValue(attrs.get("dcmCFindRspTimeout"),
+                Connection.NO_TIMEOUT));
         conn.setCMoveRSPTimeout(intValue(attrs.get("dcmCMoveRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setCEchoRSPTimeout(intValue(attrs.get("dcmCEchoRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNEventReportRSPTimeout(intValue(attrs.get("dcmNEventReportRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNGetRSPTimeout(intValue(attrs.get("dcmNGetRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNSetRSPTimeout(intValue(attrs.get("dcmNSetRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNActionRSPTimeout(intValue(attrs.get("dcmNActionRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNCreateRSPTimeout(intValue(attrs.get("dcmNCreateRspTimeout"),
+                Connection.NO_TIMEOUT));
+        conn.setNDeleteRSPTimeout(intValue(attrs.get("dcmNDeleteRspTimeout"),
                 Connection.NO_TIMEOUT));
         conn.setIdleTimeout(intValue(attrs.get("dcmIdleTimeout"),
                 Connection.NO_TIMEOUT));
@@ -228,9 +260,20 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 Connection.DEF_BUFFERSIZE));
         conn.setReceiveBufferSize(intValue(attrs.get("dcmTCPReceiveBufferSize"),
                 Connection.DEF_BUFFERSIZE));
-        conn.setTcpNoDelay(booleanValue(attrs.get("dcmTCPNoDelay"), Boolean.TRUE));
-        conn.setTlsNeedClientAuth(booleanValue(attrs.get("dcmTLSNeedClientAuth"), Boolean.TRUE));
-        conn.setTlsProtocols(stringArray(attrs.get("dcmTLSProtocol")));
+        conn.setTcpNoDelay(booleanValue(attrs.get("dcmTCPNoDelay"), true));
+        conn.setTlsNeedClientAuth(booleanValue(attrs.get("dcmTLSNeedClientAuth"), true));
+        String[] tlsProtocols = stringArray(attrs.get("dcmTLSProtocol"));
+        if (tlsProtocols.length > 0)
+            conn.setTlsProtocols(tlsProtocols);
+        conn.setSendPDULength(intValue(attrs.get("dcmSendPDULength"),
+                Connection.DEF_MAX_PDU_LENGTH));
+        conn.setReceivePDULength(intValue(attrs.get("dcmReceivePDULength"),
+                Connection.DEF_MAX_PDU_LENGTH));
+        conn.setMaxOpsPerformed(intValue(attrs.get("dcmMaxOpsPerformed"),
+                Connection.SYNCHRONOUS_MODE));
+        conn.setMaxOpsInvoked(intValue(attrs.get("dcmMaxOpsInvoked"),
+                Connection.SYNCHRONOUS_MODE));
+        conn.setPackPDV(booleanValue(attrs.get("dcmPackPDV"), true));
     }
 
     @Override
@@ -238,17 +281,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.loadFrom(ae, attrs);
         if (!hasObjectClass(attrs, "dcmNetworkAE"))
             return;
-        ae.setSendPDULength(intValue(attrs.get("dcmSendPDULength"),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setReceivePDULength(intValue(attrs.get("dcmReceivePDULength"),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH));
-        ae.setMaxOpsPerformed(intValue(attrs.get("dcmMaxOpsPerformed"),
-                ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setMaxOpsInvoked(intValue(attrs.get("dcmMaxOpsInvoked"),
-                ApplicationEntity.SYNCHRONOUS_MODE));
-        ae.setPackPDV(booleanValue(attrs.get("dcmPackPDV"), Boolean.TRUE));
         ae.setAcceptOnlyPreferredCallingAETitles(
-                booleanValue(attrs.get("dcmAcceptOnlyPreferredCallingAETitle"), Boolean.FALSE));
+                booleanValue(attrs.get("dcmAcceptOnlyPreferredCallingAETitle"), false));
     }
 
     @Override
@@ -270,13 +304,13 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         if (relational == null && datetime == null && fuzzy == null && timezone == null)
             return null;
         EnumSet<QueryOption> opts = EnumSet.noneOf(QueryOption.class);
-        if (booleanValue(relational, Boolean.FALSE))
+        if (booleanValue(relational, false))
             opts.add(QueryOption.RELATIONAL);
-        if (booleanValue(datetime, Boolean.FALSE))
+        if (booleanValue(datetime, false))
             opts.add(QueryOption.DATETIME);
-        if (booleanValue(fuzzy, Boolean.FALSE))
+        if (booleanValue(fuzzy, false))
             opts.add(QueryOption.FUZZY);
-        if (booleanValue(timezone, Boolean.FALSE))
+        if (booleanValue(timezone, false))
             opts.add(QueryOption.TIMEZONE);
         return opts ;
      }
@@ -345,17 +379,49 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmDimseRspTimeout",
-                a.getDimseRSPTimeout(),
-                b.getDimseRSPTimeout(),
+        storeDiff(mods, "dcmCStoreRspTimeout",
+                a.getCStoreRSPTimeout(),
+                b.getCStoreRSPTimeout(),
                 Connection.NO_TIMEOUT);
         storeDiff(mods, "dcmCGetRspTimeout",
                 a.getCGetRSPTimeout(),
                 b.getCGetRSPTimeout(),
                 Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmCFindRspTimeout",
+                a.getCFindRSPTimeout(),
+                b.getCFindRSPTimeout(),
+                Connection.NO_TIMEOUT);
         storeDiff(mods, "dcmCMoveRspTimeout",
                 a.getCMoveRSPTimeout(),
                 b.getCMoveRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmCEchoRspTimeout",
+                a.getCEchoRSPTimeout(),
+                b.getCEchoRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNEventReportRspTimeout",
+                a.getNEventReportRSPTimeout(),
+                b.getNEventReportRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNGetRspTimeout",
+                a.getNGetRSPTimeout(),
+                b.getNGetRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNSetRspTimeout",
+                a.getNSetRSPTimeout(),
+                b.getNSetRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNActionRspTimeout",
+                a.getNActionRSPTimeout(),
+                b.getNActionRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNCreateRspTimeout",
+                a.getNCreateRSPTimeout(),
+                b.getNCreateRSPTimeout(),
+                Connection.NO_TIMEOUT);
+        storeDiff(mods, "dcmNDeleteRspTimeout",
+                a.getNDeleteRSPTimeout(),
+                b.getNDeleteRSPTimeout(),
                 Connection.NO_TIMEOUT);
         storeDiff(mods, "dcmIdleTimeout",
                 a.getIdleTimeout(),
@@ -375,13 +441,35 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 Connection.DEF_BUFFERSIZE);
         storeDiff(mods, "dcmTCPNoDelay",
                 a.isTcpNoDelay(),
-                b.isTcpNoDelay());
+                b.isTcpNoDelay(),
+                true);
         storeDiff(mods, "dcmTLSProtocol",
-                a.getTlsProtocols(),
-                b.getTlsProtocols());
+                a.isTls() ? a.getTlsProtocols() : null,
+                b.isTls() ? b.getTlsProtocols() : null);
         storeDiff(mods, "dcmTLSNeedClientAuth",
-                a.isTlsNeedClientAuth(),
-                b.isTlsNeedClientAuth());
+                !a.isTls() || a.isTlsNeedClientAuth(),
+                !a.isTls() || a.isTlsNeedClientAuth(),
+                true);
+        storeDiff(mods, "dcmSendPDULength",
+                a.getSendPDULength(),
+                b.getSendPDULength(),
+                Connection.DEF_MAX_PDU_LENGTH);
+        storeDiff(mods, "dcmReceivePDULength",
+                a.getReceivePDULength(),
+                b.getReceivePDULength(),
+                Connection.DEF_MAX_PDU_LENGTH);
+        storeDiff(mods, "dcmMaxOpsPerformed",
+                a.getMaxOpsPerformed(),
+                b.getMaxOpsPerformed(),
+                Connection.SYNCHRONOUS_MODE);
+        storeDiff(mods, "dcmMaxOpsInvoked",
+                a.getMaxOpsInvoked(),
+                b.getMaxOpsInvoked(),
+                Connection.SYNCHRONOUS_MODE);
+        storeDiff(mods, "dcmPackPDV",
+                a.isPackPDV(),
+                b.isPackPDV(),
+                true);
         return mods;
     }
 
@@ -389,28 +477,10 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected List<ModificationItem> storeDiffs(ApplicationEntity a,
             ApplicationEntity b, String deviceDN, List<ModificationItem> mods) {
         super.storeDiffs(a, b, deviceDN, mods);
-        storeDiff(mods, "dcmSendPDULength",
-                a.getSendPDULength(),
-                b.getSendPDULength(),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(mods, "dcmReceivePDULength",
-                a.getReceivePDULength(),
-                b.getReceivePDULength(),
-                ApplicationEntity.DEF_MAX_PDU_LENGTH);
-        storeDiff(mods, "dcmMaxOpsPerformed",
-                a.getMaxOpsPerformed(),
-                b.getMaxOpsPerformed(),
-                ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(mods, "dcmMaxOpsInvoked",
-                a.getMaxOpsInvoked(),
-                b.getMaxOpsInvoked(),
-                ApplicationEntity.SYNCHRONOUS_MODE);
-        storeDiff(mods, "dcmPackPDV",
-                a.isPackPDV(),
-                b.isPackPDV());
         storeDiff(mods, "dcmAcceptOnlyPreferredCallingAETitle",
                 a.isAcceptOnlyPreferredCallingAETitles(),
-                b.isAcceptOnlyPreferredCallingAETitles());
+                b.isAcceptOnlyPreferredCallingAETitles(),
+                false);
         return mods;
     }
 
@@ -425,22 +495,32 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
     private void storeDiffs(EnumSet<QueryOption> prev,
             EnumSet<QueryOption> val, List<ModificationItem> mods) {
+        if (prev != null ? prev.equals(val) : val == null)
+            return;
+
         storeDiff(mods, "dcmRelationalQueries",
-                prev != null ? prev.contains(QueryOption.RELATIONAL) : null,
-                val != null ? val.contains(QueryOption.RELATIONAL) : null);
+                prev != null && prev.contains(QueryOption.RELATIONAL),
+                val != null && val.contains(QueryOption.RELATIONAL),
+                false);
         storeDiff(mods, "dcmCombinedDateTimeMatching",
-                prev != null ? prev.contains(QueryOption.DATETIME) : null,
-                val != null ? val.contains(QueryOption.DATETIME) : null);
+                prev != null && prev.contains(QueryOption.DATETIME),
+                val != null && val.contains(QueryOption.DATETIME),
+                false);
         storeDiff(mods, "dcmFuzzySemanticMatching",
-                prev != null ? prev.contains(QueryOption.FUZZY) : null,
-                val != null ? val.contains(QueryOption.FUZZY) : null);
+                prev != null && prev.contains(QueryOption.FUZZY),
+                val != null && val.contains(QueryOption.FUZZY),
+                false);
         storeDiff(mods, "dcmTimezoneQueryAdjustment",
-                prev != null ? prev.contains(QueryOption.TIMEZONE) : null,
-                val != null ? val.contains(QueryOption.TIMEZONE) : null);
+                prev != null && prev.contains(QueryOption.TIMEZONE),
+                val != null && val.contains(QueryOption.TIMEZONE),
+                false);
     }
 
     private void storeDiffs(StorageOptions prev,
             StorageOptions val, List<ModificationItem> mods) {
+        if (prev != null ? prev.equals(val) : val == null)
+            return;
+
         storeDiff(mods, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,

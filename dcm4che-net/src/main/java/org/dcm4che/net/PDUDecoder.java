@@ -90,7 +90,7 @@ class PDUDecoder extends PDVInputStream {
     private final Association as;
     private final InputStream in;
     private final Thread th;
-    private byte[] buf = new byte[6 + ApplicationEntity.DEF_MAX_PDU_LENGTH];
+    private byte[] buf = new byte[6 + Connection.DEF_MAX_PDU_LENGTH];
     private int pos;
     private int pdutype;
     private int pdulen;

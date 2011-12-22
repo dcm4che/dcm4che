@@ -79,11 +79,14 @@ public class Connection {
 
     private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
+    public static final int NO_TIMEOUT = 0;
+    public static final int SYNCHRONOUS_MODE = 1;
     public static final int NOT_LISTENING = -1;
     public static final int DEF_BACKLOG = 50;
     public static final int DEF_SOCKETDELAY = 50;
     public static final int DEF_BUFFERSIZE = 0;
-    public static final int NO_TIMEOUT = 0;
+    public static final int DEF_MAX_PDU_LENGTH = 16378;
+    // to fit into SunJSSE TLS Application Data Length 16408
 
     public static final String TLS_RSA_WITH_NULL_SHA = "SSL_RSA_WITH_NULL_SHA";
     public static final String TLS_RSA_WITH_3DES_EDE_CBC_SHA = "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
@@ -98,13 +101,26 @@ public class Connection {
     private int requestTimeout;
     private int acceptTimeout;
     private int releaseTimeout;
-    private int dimseRSPTimeout;
+    private int cstoreRSPTimeout;
     private int cgetRSPTimeout;
+    private int cfindRSPTimeout;
     private int cmoveRSPTimeout;
+    private int cechoRSPTimeout;
+    private int neventRSPTimeout;
+    private int ngetRSPTimeout;
+    private int nsetRSPTimeout;
+    private int nactionRSPTimeout;
+    private int ncreateRSPTimeout;
+    private int ndeleteRSPTimeout;
     private int idleTimeout;
     private int socketCloseDelay = DEF_SOCKETDELAY;
     private int sendBufferSize;
     private int receiveBufferSize;
+    private int sendPDULength = DEF_MAX_PDU_LENGTH;
+    private int receivePDULength = DEF_MAX_PDU_LENGTH;
+    private int maxOpsPerformed = SYNCHRONOUS_MODE;
+    private int maxOpsInvoked = SYNCHRONOUS_MODE;
+    private boolean packPDV = true;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
     private String[] tlsCipherSuites = {};
@@ -340,25 +356,40 @@ public class Connection {
         this.socketCloseDelay = delay;
     }
 
-
     public int getDimseRSPTimeout(int cmdfield) {
-        return (cmdfield == Commands.C_GET_RSP)
-                ? cgetRSPTimeout
-                : (cmdfield == Commands.C_MOVE_RSP)
-                        ? cmoveRSPTimeout
-                        : dimseRSPTimeout;
+        switch (cmdfield) {
+        case Commands.C_STORE_RSP:
+            return cechoRSPTimeout;
+        case Commands.C_GET_RSP:
+            return cechoRSPTimeout;
+        case Commands.C_FIND_RSP:
+            return cechoRSPTimeout;
+        case Commands.C_MOVE_RSP:
+            return cechoRSPTimeout;
+        case Commands.C_ECHO_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_EVENT_REPORT_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_GET_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_SET_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_ACTION_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_CREATE_RSP:
+            return cechoRSPTimeout;
+        case Commands.N_DELETE_RSP:
+            return cechoRSPTimeout;
+        }
+        throw new IllegalArgumentException("cmdfield: " + cmdfield);
     }
 
-    public final int getDimseRSPTimeout() {
-        return dimseRSPTimeout;
+    public final void setCStoreRSPTimeout(int cstoreRSPTimeout) {
+        this.cstoreRSPTimeout = cstoreRSPTimeout;
     }
 
-    public final void setDimseRSPTimeout(int timeout) {
-        this.dimseRSPTimeout = timeout;
-        if (cgetRSPTimeout == 0)
-            cgetRSPTimeout = timeout;
-        if (cmoveRSPTimeout == 0)
-            cmoveRSPTimeout = timeout;
+    public final int getCStoreRSPTimeout() {
+        return cstoreRSPTimeout;
     }
 
     public final int getCGetRSPTimeout() {
@@ -369,12 +400,76 @@ public class Connection {
         this.cgetRSPTimeout = timeout;
     }
 
+    public final void setCFindRSPTimeout(int cfindRSPTimeout) {
+        this.cfindRSPTimeout = cfindRSPTimeout;
+    }
+
+    public final int getCFindRSPTimeout() {
+        return cfindRSPTimeout;
+    }
+
     public final int getCMoveRSPTimeout() {
         return cmoveRSPTimeout;
     }
 
     public final void setCMoveRSPTimeout(int timeout) {
         this.cmoveRSPTimeout = timeout;
+    }
+
+    public final void setCEchoRSPTimeout(int cechoRSPTimeout) {
+        this.cechoRSPTimeout = cechoRSPTimeout;
+    }
+
+    public final int getCEchoRSPTimeout() {
+        return cechoRSPTimeout;
+    }
+
+    public final void setNEventReportRSPTimeout(int neventRSPTimeout) {
+        this.neventRSPTimeout = neventRSPTimeout;
+    }
+
+    public final int getNEventReportRSPTimeout() {
+        return neventRSPTimeout;
+    }
+
+    public final void setNGetRSPTimeout(int ngetRSPTimeout) {
+        this.ngetRSPTimeout = ngetRSPTimeout;
+    }
+
+    public final int getNGetRSPTimeout() {
+        return ngetRSPTimeout;
+    }
+
+    public final void setNSetRSPTimeout(int nsetRSPTimeout) {
+        this.nsetRSPTimeout = nsetRSPTimeout;
+    }
+
+    public final int getNSetRSPTimeout() {
+        return nsetRSPTimeout;
+    }
+
+    public final void setNActionRSPTimeout(int nactionRSPTimeout) {
+        this.nactionRSPTimeout = nactionRSPTimeout;
+    }
+
+    public final int getNActionRSPTimeout() {
+        return nactionRSPTimeout;
+    }
+
+    public final void setNCreateRSPTimeout(int ncreateRSPTimeout) {
+        this.ncreateRSPTimeout = ncreateRSPTimeout;
+    }
+
+    public final int getNCreateRSPTimeout() {
+        return ncreateRSPTimeout;
+    }
+
+    public final void setNDeleteRSPTimeout(int ndeleteRSPTimeout) {
+        this.ndeleteRSPTimeout = ndeleteRSPTimeout;
+    }
+
+    public final int getNDeleteRSPTimeout() {
+        return ndeleteRSPTimeout;
     }
 
     public final int getIdleTimeout() {
@@ -480,6 +575,46 @@ public class Connection {
         if (size < 0)
             throw new IllegalArgumentException("size: " + size);
         this.sendBufferSize = size;
+    }
+
+    public final int getSendPDULength() {
+        return sendPDULength;
+    }
+
+    public final void setSendPDULength(int sendPDULength) {
+        this.sendPDULength = sendPDULength;
+    }
+
+    public final int getReceivePDULength() {
+        return receivePDULength;
+    }
+
+    public final void setReceivePDULength(int receivePDULength) {
+        this.receivePDULength = receivePDULength;
+    }
+
+    public final int getMaxOpsPerformed() {
+        return maxOpsPerformed;
+    }
+
+    public final void setMaxOpsPerformed(int maxOpsPerformed) {
+        this.maxOpsPerformed = maxOpsPerformed;
+    }
+
+    public final int getMaxOpsInvoked() {
+        return maxOpsInvoked;
+    }
+
+    public final void setMaxOpsInvoked(int maxOpsInvoked) {
+        this.maxOpsInvoked = maxOpsInvoked;
+    }
+
+    public final boolean isPackPDV() {
+        return packPDV;
+    }
+
+    public final void setPackPDV(boolean packPDV) {
+        this.packPDV = packPDV;
     }
 
     /**
@@ -831,4 +966,5 @@ public class Connection {
     private static InetAddress maskLoopBackAddress(InetAddress addr) {
         return addr != null && addr.isLoopbackAddress() ? null : addr;
     }
+
 }

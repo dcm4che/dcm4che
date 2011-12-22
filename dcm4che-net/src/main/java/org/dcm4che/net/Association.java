@@ -256,7 +256,7 @@ public class Association {
     }
 
     boolean isPackPDV() {
-        return ae.isPackPDV();
+        return conn.isPackPDV();
     }
 
     public void release() throws IOException {
@@ -536,7 +536,7 @@ public class Association {
             initPCMap();
             maxOpsInvoked = ac.getMaxOpsPerformed();
             maxPDULength = ApplicationEntity.minZeroAsMax(
-                    rq.getMaxPDULength(), ae.getSendPDULength());
+                    rq.getMaxPDULength(), conn.getSendPDULength());
             write(ac);
         } catch (AAssociateRJ e) {
             write(e);
@@ -555,7 +555,7 @@ public class Association {
         initPCMap();
         maxOpsInvoked = ac.getMaxOpsInvoked();
         maxPDULength = ApplicationEntity.minZeroAsMax(
-                ac.getMaxPDULength(), ae.getSendPDULength());
+                ac.getMaxPDULength(), conn.getSendPDULength());
         enterState(State.Sta6);
         startIdleTimeout();
     }
@@ -823,7 +823,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority);
-        invoke(pc, cstorerq, data, rspHandler, conn.getDimseRSPTimeout());
+        invoke(pc, cstorerq, data, rspHandler, conn.getCStoreRSPTimeout());
     }
 
     public DimseRSP cstore(String cuid, String iuid, int priority,
@@ -855,7 +855,7 @@ public class Association {
         PresentationContext pc = pcFor(asuid, tsuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority, moveOriginatorAET, moveOriginatorMsgId);
-        invoke(pc, cstorerq, data, rspHandler, conn.getDimseRSPTimeout());
+        invoke(pc, cstorerq, data, rspHandler, conn.getCStoreRSPTimeout());
     }
 
     public DimseRSP cstore(String cuid, String iuid, int priority,
@@ -890,7 +890,7 @@ public class Association {
         Attributes cfindrq =
                 Commands.mkCFindRQ(rspHandler.getMessageID(), cuid, priority);
         invoke(pc, cfindrq, new DataWriterAdapter(data), rspHandler,
-                conn.getDimseRSPTimeout());
+                conn.getCFindRSPTimeout());
     }
 
     public DimseRSP cfind(String cuid, int priority, Attributes data,
@@ -981,17 +981,17 @@ public class Association {
         PresentationContext pc = pcFor(cuid, null);
         checkIsSCU(cuid);
         Attributes cechorq = Commands.mkCEchoRQ(rsp.getMessageID(), cuid);
-        invoke(pc, cechorq, null, rsp, conn.getDimseRSPTimeout());
+        invoke(pc, cechorq, null, rsp, conn.getCEchoRSPTimeout());
         return rsp;
     }
 
-    public void nevent(String cuid, String iuid, int eventTypeId,
+    public void neventReport(String cuid, String iuid, int eventTypeId,
             Attributes data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
-        nevent(cuid, cuid, iuid, eventTypeId, data, tsuid, rspHandler);
+        neventReport(cuid, cuid, iuid, eventTypeId, data, tsuid, rspHandler);
     }
 
-    public void nevent(String asuid, String cuid, String iuid, int eventTypeId,
+    public void neventReport(String asuid, String cuid, String iuid, int eventTypeId,
             Attributes data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
@@ -1000,20 +1000,20 @@ public class Association {
                 Commands.mkNEventReportRQ(rspHandler.getMessageID(), cuid, iuid,
                         eventTypeId, data);
         invoke(pc, neventrq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getDimseRSPTimeout());
+                conn.getNEventReportRSPTimeout());
     }
 
-    public DimseRSP nevent(String cuid, String iuid, int eventTypeId,
+    public DimseRSP neventReport(String cuid, String iuid, int eventTypeId,
             Attributes data, String tsuid) throws IOException,
             InterruptedException {
-        return nevent(cuid, cuid, iuid, eventTypeId, data, tsuid);
+        return neventReport(cuid, cuid, iuid, eventTypeId, data, tsuid);
     }
 
-    public DimseRSP nevent(String asuid, String cuid, String iuid,
+    public DimseRSP neventReport(String asuid, String cuid, String iuid,
             int eventTypeId, Attributes data, String tsuid)
             throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
-        nevent(asuid, cuid, iuid, eventTypeId, data, tsuid, rsp);
+        neventReport(asuid, cuid, iuid, eventTypeId, data, tsuid, rsp);
         return rsp;
     }
 
@@ -1030,7 +1030,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes ngetrq =
                 Commands.mkNGetRQ(rspHandler.getMessageID(), cuid, iuid, tags);
-        invoke(pc, ngetrq, null, rspHandler, conn.getDimseRSPTimeout());
+        invoke(pc, ngetrq, null, rspHandler, conn.getNGetRSPTimeout());
     }
 
     public DimseRSP nget(String cuid, String iuid, int[] tags)
@@ -1059,7 +1059,7 @@ public class Association {
         Attributes nsetrq =
                 Commands.mkNSetRQ(rspHandler.getMessageID(), cuid, iuid);
         invoke(pc, nsetrq, new DataWriterAdapter(data), rspHandler,
-                conn.getDimseRSPTimeout());
+                conn.getNSetRSPTimeout());
     }
 
     public DimseRSP nset(String cuid, String iuid, Attributes data,
@@ -1091,7 +1091,7 @@ public class Association {
                 Commands.mkNActionRQ(rspHandler.getMessageID(), cuid, iuid,
                         actionTypeId, data);
         invoke(pc, nactionrq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getDimseRSPTimeout());
+                conn.getNActionRSPTimeout());
     }
 
     public DimseRSP naction(String cuid, String iuid, int actionTypeId,
@@ -1122,7 +1122,7 @@ public class Association {
         Attributes ncreaterq =
                 Commands.mkNCreateRQ(rspHandler.getMessageID(), cuid, iuid);
         invoke(pc, ncreaterq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getDimseRSPTimeout());
+                conn.getNCreateRSPTimeout());
     }
 
     public DimseRSP ncreate(String cuid, String iuid, Attributes data,
@@ -1151,7 +1151,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes ndeleterq =
                 Commands.mkNDeleteRQ(rspHandler.getMessageID(), cuid, iuid);
-        invoke(pc, ndeleterq, null, rspHandler, conn.getDimseRSPTimeout());
+        invoke(pc, ndeleterq, null, rspHandler, conn.getNDeleteRSPTimeout());
     }
 
     public DimseRSP ndelete(String cuid, String iuid)

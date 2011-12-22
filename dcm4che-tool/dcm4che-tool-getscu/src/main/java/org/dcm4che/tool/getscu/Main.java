@@ -226,7 +226,7 @@ public class Main {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts, true, false);
-            CLIUtils.addDimseRspOption(opts);
+            CLIUtils.addCGetRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, Main.class);

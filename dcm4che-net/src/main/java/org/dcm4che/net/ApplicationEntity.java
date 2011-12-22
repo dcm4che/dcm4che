@@ -78,11 +78,6 @@ public class ApplicationEntity {
     protected static final Logger LOG = 
             LoggerFactory.getLogger(ApplicationEntity.class);
 
-
-    public static final int DEF_MAX_PDU_LENGTH = 16378;
-    public static final int SYNCHRONOUS_MODE = 1;
-    // to fit into SunJSSE TLS Application Data Length 16408
-
     private Device device;
     private String aet;
     private String description;
@@ -100,11 +95,6 @@ public class ApplicationEntity {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
-    private int sendPDULength = DEF_MAX_PDU_LENGTH;
-    private int receivePDULength = DEF_MAX_PDU_LENGTH;
-    private int maxOpsPerformed = SYNCHRONOUS_MODE;
-    private int maxOpsInvoked = SYNCHRONOUS_MODE;
-    private boolean packPDV = true;
     private UserIdentityNegotiator userIdNegotiator;
     private DimseRQHandler dimseRQHandler;
     private HashMap<String,Object> properties = new HashMap<String,Object>();
@@ -348,46 +338,6 @@ public class ApplicationEntity {
         this.installed = installed;
     }
 
-    public final int getSendPDULength() {
-        return sendPDULength;
-    }
-
-    public final void setSendPDULength(int sendPDULength) {
-        this.sendPDULength = sendPDULength;
-    }
-
-    public final int getReceivePDULength() {
-        return receivePDULength;
-    }
-
-    public final void setReceivePDULength(int receivePDULength) {
-        this.receivePDULength = receivePDULength;
-    }
-
-    public final int getMaxOpsPerformed() {
-        return maxOpsPerformed;
-    }
-
-    public final void setMaxOpsPerformed(int maxOpsPerformed) {
-        this.maxOpsPerformed = maxOpsPerformed;
-    }
-
-    public final int getMaxOpsInvoked() {
-        return maxOpsInvoked;
-    }
-
-    public final void setMaxOpsInvoked(int maxOpsInvoked) {
-        this.maxOpsInvoked = maxOpsInvoked;
-    }
-
-    public final boolean isPackPDV() {
-        return packPDV;
-    }
-
-    public final void setPackPDV(boolean packPDV) {
-        this.packPDV = packPDV;
-    }
-
     public DimseRQHandler getDimseRQHandler() {
         DimseRQHandler handler = dimseRQHandler;
         if (handler != null)
@@ -497,11 +447,12 @@ public class ApplicationEntity {
         AAssociateAC ac = new AAssociateAC();
         ac.setCalledAET(rq.getCalledAET());
         ac.setCallingAET(rq.getCallingAET());
-        ac.setMaxPDULength(receivePDULength);
+        Connection conn = as.getConnection();
+        ac.setMaxPDULength(conn.getReceivePDULength());
         ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
-                maxOpsPerformed));
+                conn.getMaxOpsPerformed()));
         ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
-                maxOpsInvoked));
+                conn.getMaxOpsInvoked()));
         ac.setUserIdentityAC(userIdentity);
         return negotiate(as, rq, ac);
     }
@@ -614,9 +565,9 @@ public class ApplicationEntity {
         checkInstalled();
         if (rq.getCallingAET() == null)
             rq.setCallingAET(aet);
-        rq.setMaxOpsInvoked(maxOpsInvoked);
-        rq.setMaxOpsPerformed(maxOpsPerformed);
-        rq.setMaxPDULength(receivePDULength);
+        rq.setMaxOpsInvoked(local.getMaxOpsInvoked());
+        rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
+        rq.setMaxPDULength(local.getReceivePDULength());
         Socket sock = local.connect(remote);
         Association as = new Association(this, local, sock);
         as.write(rq);

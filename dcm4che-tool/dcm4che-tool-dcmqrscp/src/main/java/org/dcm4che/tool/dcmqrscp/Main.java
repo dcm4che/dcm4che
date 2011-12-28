@@ -40,6 +40,7 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -109,7 +110,7 @@ public class Main {
     private DicomDirWriter ddWriter;
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
 
-    public Main() throws IOException {
+    public Main() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -461,7 +462,7 @@ public class Main {
         }
     }
 
-    private void activate() throws IOException {
+    private void activate() throws IOException, KeyManagementException {
         device.activate();
     }
 

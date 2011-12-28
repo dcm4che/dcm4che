@@ -40,6 +40,7 @@ package org.dcm4che.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -147,7 +148,7 @@ public class Main {
 
     };
 
-    public Main() throws IOException {
+    public Main() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -298,7 +299,7 @@ public class Main {
         }
      }
 
-    private void activate() throws IOException {
+    private void activate() throws IOException, KeyManagementException {
         device.activate();
     }
 

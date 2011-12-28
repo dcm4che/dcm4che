@@ -40,6 +40,7 @@ package org.dcm4che.tool.movescu;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -138,7 +139,7 @@ public class Main {
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
 
-    public Main() throws IOException {
+    public Main() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -346,7 +347,7 @@ public class Main {
         return IVR_LE_FIRST;
     }
 
-    public void open() throws IOException, InterruptedException, IncompatibleConnectionException {
+    public void open() throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
         as = ae.connect(conn, remote, rq);
     }
 

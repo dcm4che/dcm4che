@@ -38,7 +38,13 @@
 
 package org.dcm4che.conf.ldap;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -85,6 +91,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static final String CN_DEVICES = "cn=Devices,";
     private static final String DICOM_CONFIGURATION = "DICOM Configuration";
     private static final String DICOM_CONFIGURATION_ROOT = "dicomConfigurationRoot";
+    private static final String PKI_USER = "pkiUser";
+    private static final String USER_CERTIFICATE_BINARY = "userCertificate;binary";
 
     private final DirContext ctx;
     private final String baseDN;
@@ -93,6 +101,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private String aetsRegistryDN;
     private String configurationCN = DICOM_CONFIGURATION; 
     private String configurationRoot = DICOM_CONFIGURATION_ROOT;
+    private String pkiUser = PKI_USER;
+    private String userCertificate = USER_CERTIFICATE_BINARY;
 
     public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
@@ -114,6 +124,22 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     public final String getConfigurationRoot() {
         return configurationRoot;
+    }
+
+    public void setPkiUser(String pkiUser) {
+        this.pkiUser = pkiUser;
+    }
+
+    public String getPkiUser() {
+        return pkiUser;
+    }
+
+    public void setUserCertificate(String userCertificate) {
+        this.userCertificate = userCertificate;
+    }
+
+    public String getUserCertificate() {
+        return userCertificate;
     }
 
     public void close() {
@@ -159,6 +185,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         if (configurationExists())
             try {
                 ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
+            } catch (NameNotFoundException e) {
             } catch (NamingException e) {
                 throw new ConfigurationException(e);
             }
@@ -296,23 +323,10 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected void destroySubcontextWithChilds(String name) throws NamingException {
-        destroySubcontextWithChilds(ctx, name);
-    }
-
-    private static void destroySubcontextWithChilds(DirContext ctx, String name)
-            throws NamingException {
         NamingEnumeration<NameClassPair> list = ctx.list(name);
         try {
-            if (list.hasMore()) {
-                DirContext subContext = (DirContext) ctx.lookup(name);
-                try {
-                    do {
-                        destroySubcontextWithChilds(subContext, list.next().getName());
-                    } while (list.hasMore());
-                } finally {
-                    safeClose(subContext);
-                }
-            }
+            while (list.hasMore())
+                destroySubcontextWithChilds(list.next().getNameInNamespace());
         } finally {
             safeClose(list);
         }
@@ -378,28 +392,28 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-   protected Attribute objectClassesOf(Device dev, Attribute attr) {
-       attr.add("dicomDevice");
-       return attr;
-   }
+    protected Attribute objectClassesOf(Device dev, Attribute attr) {
+        attr.add("dicomDevice");
+        return attr;
+    }
 
-   protected Attribute objectClassesOf(Connection ae, Attribute attr) {
-       attr.add("dicomNetworkConnection");
-       return attr;
-   }
+    protected Attribute objectClassesOf(Connection ae, Attribute attr) {
+        attr.add("dicomNetworkConnection");
+        return attr;
+    }
 
-   protected Attribute objectClassesOf(ApplicationEntity ae, Attribute attr) {
-       attr.add("dicomNetworkAE");
-       return attr;
-   }
+    protected Attribute objectClassesOf(ApplicationEntity ae, Attribute attr) {
+        attr.add("dicomNetworkAE");
+        return attr;
+    }
 
-   protected Attribute objectClassesOf(TransferCapability tc, Attribute attr) {
-       attr.add("dicomTransferCapability");
-       return attr;
-   }
+    protected Attribute objectClassesOf(TransferCapability tc, Attribute attr) {
+        attr.add("dicomTransferCapability");
+        return attr;
+    }
 
-   @SuppressWarnings("unchecked")
-   protected static boolean hasObjectClass(Attributes attrs, String objectClass)
+    @SuppressWarnings("unchecked")
+    protected static boolean hasObjectClass(Attributes attrs, String objectClass)
            throws NamingException {
        NamingEnumeration<String> ne =
            (NamingEnumeration<String>) attrs.get("objectclass").getAll();
@@ -412,7 +426,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
        }
        return false;
    }
-   
+
    protected Attributes storeTo(Device device, Attributes attrs) {
         attrs.put(objectClassesOf(device, new BasicAttribute("objectclass")));
         storeNotNull(attrs, "dicomDeviceName", device.getDeviceName());
@@ -484,6 +498,102 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return val ? "TRUE" : "FALSE";
     }
 
+    public List<Certificate> persistCertificates(String... refs)
+            throws ConfigurationException {
+        try {
+            List<Certificate> list = new ArrayList<Certificate>(refs.length);
+            CertificateFactory cf = CertificateFactory.getInstance("X509");
+            for (String ref : refs)
+                loadCertifcates(cf, ref, list);
+            return list ;
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } catch (CertificateException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public void persistCertificates(String certRef, Certificate... certs)
+            throws ConfigurationException {
+        try {
+            byte[][] vals = new byte[certs.length][];
+            for (int i = 0; i < vals.length; i++)
+                vals[i] = certs[i].getEncoded();
+            Attributes attrs = ctx.getAttributes(certRef,
+                    new String[] { "objectClass" } );
+            ModificationItem replaceCert = new ModificationItem(
+                    DirContext.REPLACE_ATTRIBUTE, attr(userCertificate, vals ));
+            ctx.modifyAttributes(certRef, 
+                    hasObjectClass(attrs, pkiUser)
+                         ? new ModificationItem[] { replaceCert }
+                         : new ModificationItem[] {
+                                 new ModificationItem(
+                                     DirContext.ADD_ATTRIBUTE,
+                                     attr("objectClass", pkiUser )),
+                                 replaceCert });
+        } catch (CertificateEncodingException e) {
+            throw new ConfigurationException(e);
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public void removeCertificates(String certRef) throws ConfigurationException {
+        try {
+            ModificationItem removeCert = new ModificationItem(
+                    DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(userCertificate));
+            ctx.modifyAttributes(certRef, new ModificationItem[] { removeCert });
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public Certificate[] findCertificates(String... certRefs)
+            throws ConfigurationException {
+        try {
+            List<Certificate> list = new ArrayList<Certificate>(certRefs.length);
+            CertificateFactory cf = CertificateFactory.getInstance("X509");
+            for (String certRef : certRefs)
+                loadCertifcates(cf, certRef, list);
+            return list.toArray(new Certificate[list.size()]) ;
+        } catch (NameNotFoundException e) {
+            throw new ConfigurationNotFoundException(e);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } catch (CertificateException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private void loadCertifcates(CertificateFactory cf, String certDN, List<Certificate> list)
+            throws NamingException, CertificateException {
+        Attributes attrs = ctx.getAttributes(certDN, new String[] { userCertificate } );
+        // Workaround for Apache DS DIRSERVER-1198:
+        // attrs.get("userCertificate;binary") returns null
+        Attribute attr;
+        NamingEnumeration<? extends Attribute> ne = attrs.getAll();
+        try {
+            attr = ne.next();
+        } finally {
+            safeClose(ne);
+        }
+        if (attr != null) {
+            int size = attr.size();
+            for (int ix = 0; ix < size; ix++)
+                list.add(cf.generateCertificate(new ByteArrayInputStream(
+                        (byte[]) attr.get(ix))));
+        }
+    }
+
     private Device loadDevice(String deviceDN) throws ConfigurationException {
         try {
             Attributes attrs = ctx.getAttributes(deviceDN);
@@ -550,6 +660,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
+        } catch (KeyManagementException e) {
+            throw new AssertionError(e.getMessage());
         }
     }
 
@@ -565,6 +677,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 try {
                     device.addConnection(conn);
                 } catch (IOException e) {
+                    throw new AssertionError(e.getMessage());
+                } catch (KeyManagementException e) {
                     throw new AssertionError(e.getMessage());
                 }
             }
@@ -589,6 +703,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         try {
             conn.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
         } catch (IOException e) {
+            throw new AssertionError(e.getMessage());
+        } catch (KeyManagementException e) {
             throw new AssertionError(e.getMessage());
         }
     }
@@ -1009,7 +1125,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return dnOf("dicomAETitle" ,aet, parentDN);
     }
 
-    private String deviceDN(String name) {
+    @Override
+    public String deviceDN(String name) {
         return dnOf("dicomDeviceName" ,name, devicesDN);
     }
 

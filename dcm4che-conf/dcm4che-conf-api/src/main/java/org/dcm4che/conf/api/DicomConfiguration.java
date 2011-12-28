@@ -38,6 +38,8 @@
 
 package org.dcm4che.conf.api;
 
+import java.security.cert.Certificate;
+
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Device;
 
@@ -64,4 +66,13 @@ public interface DicomConfiguration {
     void merge(Device device) throws ConfigurationException;
 
     void removeDevice(String name) throws ConfigurationException;
+
+    String deviceDN(String name);
+
+    void persistCertificates(String certRef, Certificate... certs)
+            throws ConfigurationException;
+
+    void removeCertificates(String certRef) throws ConfigurationException;
+
+    Certificate[] findCertificates(String... certRefs) throws ConfigurationException;
 }

@@ -39,13 +39,12 @@
 package org.dcm4che.tool.common;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -63,6 +62,8 @@ import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.SSLManagerFactory;
 import org.dcm4che.net.Priority;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.UserIdentityRQ;
@@ -76,8 +77,6 @@ public class CLIUtils {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.common.messages");
-
-    private static final char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
 
     public static void addCommonOptions(Options opts) {
         opts.addOption("h", "help", false, rb.getString("help"));
@@ -348,8 +347,20 @@ public class CLIUtils {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("key"))
-                .withLongOpt("key")
+                .withDescription(rb.getString("key-store"))
+                .withLongOpt("key-store")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("storetype")
+                .withDescription(rb.getString("key-store-type"))
+                .withLongOpt("key-store-type")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("password")
+                .withDescription(rb.getString("key-store-pass"))
+                .withLongOpt("key-store-pass")
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
@@ -359,21 +370,21 @@ public class CLIUtils {
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("password")
-                .withDescription(rb.getString("key-pass2"))
-                .withLongOpt("key-pass2")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("cacerts"))
-                .withLongOpt("cacerts")
+                .withDescription(rb.getString("trust-store"))
+                .withLongOpt("trust-store")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("storetype")
+                .withDescription(rb.getString("trust-store-type"))
+                .withLongOpt("trust-store-type")
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("password")
-                .withDescription(rb.getString("cacerts-pass"))
-                .withLongOpt("cacerts-pass")
+                .withDescription(rb.getString("trust-store-pass"))
+                .withLongOpt("trust-store-pass")
                 .create(null));
     }
 
@@ -501,7 +512,7 @@ public class CLIUtils {
 
     public static void configure(Connection conn, ApplicationEntity ae,
             CommandLine cl)
-            throws ParseException, GeneralSecurityException, IOException {
+            throws ParseException, IOException {
         if (cl.hasOption("max-pdulen-rcv"))
             conn.setReceivePDULength(Integer.parseInt(
                     cl.getOptionValue("max-pdulen-rcv")));
@@ -586,7 +597,7 @@ public class CLIUtils {
     }
 
     private static void configureTLS(Connection conn, CommandLine cl)
-            throws ParseException, GeneralSecurityException, IOException {
+            throws ParseException, IOException {
         if (cl.hasOption("tls"))
             conn.setTlsCipherSuites(
                     "SSL_RSA_WITH_NULL_SHA",
@@ -616,55 +627,28 @@ public class CLIUtils {
 
         conn.setTlsNeedClientAuth(!cl.hasOption("tls-noauth"));
 
-        String keyStoreURL = cl.hasOption("key")
-                ? cl.getOptionValue("key")
-                : "resource:key.jks";
-        char[] keyStorePass = cl.hasOption("key-pass")
-                ? cl.getOptionValue("key-pass").toCharArray()
-                : SECRET;
-        char[] keyPass = cl.hasOption("key-pass2")
-                ? cl.getOptionValue("key-pass2").toCharArray()
-                : keyStorePass;
-        String trustStoreURL = cl.hasOption("cacerts")
-                ? cl.getOptionValue("cacerts")
-                : "resource:cacerts.jks";
-        char[] trustStorePass = cl.hasOption("cacerts-pass")
-                ? cl.getOptionValue("cacerts-pass").toCharArray()
-                : SECRET;
+        String keyStoreURL = cl.getOptionValue("key-store", "resource:key.jks");
+        String keyStoreType =  cl.getOptionValue("key-store-type", "JKS");
+        String keyStorePass = cl.getOptionValue("key-store-pass", "secret");
+        String keyPass = cl.getOptionValue("key-pass", keyStorePass);
+        String trustStoreURL = cl.getOptionValue("trust-store", "resource:cacerts.jks");
+        String trustStoreType =  cl.getOptionValue("trust-store-type", "JKS");
+        String trustStorePass = cl.getOptionValue("trust-store-pass", "secret");
 
-        KeyStore keyStore = loadKeyStore(keyStoreURL, keyStorePass);
-        KeyStore trustStore = loadKeyStore(trustStoreURL, trustStorePass);
-        conn.getDevice().initTLS(keyStore,
-                keyPass != null ? keyPass : keyStorePass,
-                trustStore);
-    }
-
-    private static KeyStore loadKeyStore(String url, char[] password)
-            throws GeneralSecurityException, IOException {
-        KeyStore key = KeyStore.getInstance(toKeyStoreType(url));
-        InputStream in = openFileOrURL(url);
+        Device device = conn.getDevice();
         try {
-            key.load(in, password);
-        } finally {
-            in.close();
-        }
-        return key;
-    }
-
-    private static String toKeyStoreType(String fname) {
-        return fname.endsWith(".p12") || fname.endsWith(".P12")
-                 ? "PKCS12" : "JKS";
-    }
-
-    public static InputStream openFileOrURL(String url) throws IOException {
-        if (url.startsWith("resource:")) {
-            return Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(url.substring(9));
-        }
-        try {
-            return new URL(url).openStream();
-        } catch (MalformedURLException e) {
-            return new FileInputStream(url);
+            device.setKeyManager(SSLManagerFactory.createKeyManager(
+                    keyStoreType, keyStoreURL, keyStorePass, keyPass));
+            device.setTrustManager(SSLManagerFactory.createTrustManager(
+                    trustStoreType, trustStoreURL, trustStorePass));
+        } catch (UnrecoverableKeyException e) {
+            throw new IOException(e);
+        } catch (KeyStoreException e) {
+            throw new IOException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        } catch (CertificateException e) {
+            throw new IOException(e);
         }
     }
 
@@ -672,7 +656,7 @@ public class CLIUtils {
             throws IOException {
         if (p == null)
             p = new Properties();
-        InputStream in = openFileOrURL(url);
+        InputStream in = SSLManagerFactory.openFileOrURL(url);
         try {
             p.load(in);
         } finally {

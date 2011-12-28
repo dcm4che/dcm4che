@@ -42,6 +42,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.EnumSet;
@@ -155,7 +156,7 @@ public class Main {
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
 
-    public Main() throws IOException {
+    public Main() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -443,7 +444,7 @@ public class Main {
         return IVR_LE_FIRST;
     }
 
-    public void open() throws IOException, InterruptedException, IncompatibleConnectionException {
+    public void open() throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
         as = ae.connect(conn, remote, rq);
     }
 

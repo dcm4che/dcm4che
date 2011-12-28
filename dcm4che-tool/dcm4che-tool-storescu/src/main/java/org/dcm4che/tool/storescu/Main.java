@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
@@ -107,7 +108,7 @@ public class Main {
     private int filesScanned;
     private int filesSent;
 
-    public Main() throws IOException {
+    public Main() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -366,7 +367,7 @@ public class Main {
     }
 
     public void open()
-            throws IOException, InterruptedException, IncompatibleConnectionException {
+            throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
         if (rq.getNumberOfPresentationContexts() == 0)
             rq.addPresentationContext(
                     new PresentationContext(1, UID.VerificationSOPClass,

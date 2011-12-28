@@ -46,6 +46,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -130,7 +131,7 @@ public class Connection {
 
     private InetAddress addr;
     private List<InetAddress> blacklistAddrs;
-    private ServerSocket server;
+    private volatile ServerSocket server;
     private boolean needRebind;
 
     public Connection() {
@@ -196,7 +197,7 @@ public class Connection {
         needRebind();
     }
 
-    private void needRebind() {
+    void needRebind() {
         if (isListening())
             needRebind = true;
     }
@@ -663,8 +664,10 @@ public class Connection {
      * 
      * @param installed
      *                True if the NetworkConnection is installed on the network.
+     * @throws KeyManagementException 
      */
-    public void setInstalled(Boolean installed) throws IOException {
+    public void setInstalled(Boolean installed)
+            throws IOException, KeyManagementException {
         if (this.installed == null
                 ? installed == null 
                 : this.installed.equals(installed))
@@ -687,7 +690,7 @@ public class Connection {
         }
     }
 
-    void activate() throws IOException {
+    void activate() throws IOException, KeyManagementException {
         if (isInstalled() && isServer() && server == null)
             bind();
     }
@@ -824,8 +827,9 @@ public class Connection {
      * 
      * @throws IOException
      *             If there is a problem with the network interaction.
+     * @throws KeyManagementException 
      */
-    public synchronized void bind() throws IOException {
+    public synchronized void bind() throws IOException, KeyManagementException {
         checkDevice();
         checkInstalled();
         if (!isServer())
@@ -854,7 +858,8 @@ public class Connection {
                         }
                     }
                 } catch (Throwable e) {
-                    // assume exception was raised by graceful stop of server
+                    if (server != null)
+                        LOG.error("Exception on listing on " + sockAddr + ":", e);
                 }
                 LOG.info("Stop listening on {}", sockAddr);
             }
@@ -871,8 +876,9 @@ public class Connection {
         return needRebind;
     }
 
-    private ServerSocket createTLSServerSocket() throws IOException {
-        SSLContext sslContext = device.getSSLContext();
+    private ServerSocket createTLSServerSocket()
+            throws IOException, KeyManagementException {
+        SSLContext sslContext = device.sslContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
         ss.setEnabledProtocols(tlsProtocols);
@@ -886,19 +892,20 @@ public class Connection {
     }
 
     public synchronized void unbind() {
-        if (server == null)
+        ServerSocket tmp = server;
+        if (tmp == null)
             return;
+        server = null;
         try {
-            server.close();
+            tmp.close();
         } catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
-        server = null;
         needRebind = false;
     }
 
     public Socket connect(Connection remoteConn)
-            throws IOException, IncompatibleConnectionException {
+            throws IOException, IncompatibleConnectionException, KeyManagementException {
         checkInstalled();
         checkCompatible(remoteConn);
         Socket s = isTls() ? createTLSSocket(remoteConn) : new Socket();
@@ -913,8 +920,9 @@ public class Connection {
         return s;
     }
 
-    private Socket createTLSSocket(Connection remoteConn) throws IOException {
-        SSLContext sslContext = device.getSSLContext();
+    private Socket createTLSSocket(Connection remoteConn)
+            throws IOException, KeyManagementException {
+        SSLContext sslContext = device.sslContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
         s.setEnabledProtocols(

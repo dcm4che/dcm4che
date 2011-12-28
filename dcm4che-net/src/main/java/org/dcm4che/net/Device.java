@@ -39,9 +39,8 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.SecureRandom;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,9 +53,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManager;
 
 import org.dcm4che.util.StringUtils;
 
@@ -105,6 +104,8 @@ public class Device {
     private Executor executor;
     private ScheduledExecutorService scheduledExecutor;
     private SSLContext sslContext;
+    private KeyManager km;
+    private TrustManager tm;
 
     public Device(String name) {
         if (name.isEmpty())
@@ -426,8 +427,10 @@ public class Device {
      * @param installed
      *                A boolean which will be true if this device is installed.
      * @throws IOException 
+     * @throws KeyManagementException 
      */
-    public final void setInstalled(boolean installed) throws IOException {
+    public final void setInstalled(boolean installed)
+            throws IOException, KeyManagementException {
         if (this.installed == installed)
             return;
 
@@ -468,7 +471,7 @@ public class Device {
         return properties.remove(key);
     }
 
-    public void activate() throws IOException {
+    public void activate() throws IOException, KeyManagementException {
         if (activated)
             throw new IllegalStateException("already activated");
 
@@ -484,7 +487,7 @@ public class Device {
         activated = false;
     }
 
-    private void activateConnections() throws IOException {
+    private void activateConnections() throws IOException, KeyManagementException {
         try {
             for (Connection con : conns)
                 con.activate();
@@ -492,6 +495,12 @@ public class Device {
             deactivateConnections();
             throw e;
         }
+    }
+
+    private void needRebindTLSConnections()  {
+        for (Connection con : conns)
+            if (con.isTls())
+                con.needRebind();
     }
 
     private void deactivateConnections() {
@@ -515,7 +524,8 @@ public class Device {
         this.scheduledExecutor = executor;
     }
 
-    public void addConnection(Connection conn) throws IOException {
+    public void addConnection(Connection conn)
+            throws IOException, KeyManagementException {
         conn.setDevice(this);
         conns.add(conn);
         if (activated)
@@ -595,40 +605,47 @@ public class Device {
         return aes.values();
     }
 
-    public final SSLContext getSSLContext() {
-        if (sslContext == null)
-            throw new IllegalStateException("TLS Context not initialized!");
-        return sslContext;
+    public final void setKeyManager(KeyManager km) {
+        this.km = km;
+        this.sslContext = null;
+        needRebindTLSConnections();
     }
 
-    /**
-     * Initialize transport layer security (TLS) for network interactions using
-     * the trusted material (certificates, etc.) contained in the "trust"
-     * parameter..
-     * 
-     * @param key
-     *                The <code>KeyStore</code> containing the keys needed for
-     *                secure network interaction with another device.
-     * @param password
-     *                A char array containing the password used to access the
-     *                key.
-     * @param trust
-     *                The <code>KeyStore</code> object containing the source
-     *                of certificates and trusted material.
-     * @throws GeneralSecurityException
-     */
-    public void initTLS(KeyStore key, char[] password, KeyStore trust)
-            throws GeneralSecurityException {
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory
-                .getDefaultAlgorithm());
-        kmf.init(key, password);
-        TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init(trust);
-        if (sslContext == null)
-            sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(),
-                new SecureRandom());
+    public final KeyManager getKeyManager() {
+        return km;
+    }
+
+    public final void setTrustManager(TrustManager tm) {
+        this.tm = tm;
+        this.sslContext = null;
+        needRebindTLSConnections();
+    }
+
+    public final TrustManager getTrustManager() {
+        return tm;
+    }
+
+    SSLContext sslContext() throws KeyManagementException {
+        SSLContext tmp = sslContext;
+        if (tmp != null)
+            return tmp;
+
+        synchronized (this) {
+            tmp = sslContext;
+            if (tmp == null) {
+                try {
+                    tmp = SSLContext.getInstance("TLS");
+                } catch (NoSuchAlgorithmException e) {
+                    throw new AssertionError(e);
+                }
+                KeyManager km = this.km;
+                TrustManager tm = this.tm;
+                tmp.init(km != null ? new KeyManager[]{ km } : null, 
+                        tm != null ? new TrustManager[]{ tm } : null, null);
+                sslContext = tmp;
+            }
+            return tmp;
+        }
     }
 
     public void execute(Runnable command) {

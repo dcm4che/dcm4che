@@ -577,15 +577,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private void loadCertifcates(CertificateFactory cf, String certDN, List<Certificate> list)
             throws NamingException, CertificateException {
         Attributes attrs = ctx.getAttributes(certDN, new String[] { userCertificate } );
-        // Workaround for Apache DS DIRSERVER-1198:
-        // attrs.get("userCertificate;binary") returns null
-        Attribute attr;
-        NamingEnumeration<? extends Attribute> ne = attrs.getAll();
-        try {
-            attr = ne.next();
-        } finally {
-            safeClose(ne);
-        }
+        Attribute attr = attrs.get(userCertificate);
         if (attr != null) {
             int size = attr.size();
             for (int ix = 0; ix < size; ix++)

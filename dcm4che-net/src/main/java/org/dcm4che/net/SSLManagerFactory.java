@@ -46,7 +46,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 
 import javax.net.ssl.KeyManager;
@@ -61,7 +61,7 @@ import org.dcm4che.util.SafeClose;
  */
 public abstract class SSLManagerFactory {
 
-    public static KeyStore createKeyStore(Certificate... certs)
+    public static KeyStore createKeyStore(X509Certificate... certs)
             throws KeyStoreException {
         KeyStore ks = KeyStore.getInstance("JKS");
         try {
@@ -73,8 +73,8 @@ public abstract class SSLManagerFactory {
         } catch (CertificateException e) {
             throw new AssertionError(e);
         }
-        for (int i = 0; i < certs.length; i++)
-            ks.setCertificateEntry(Integer.toString(i), certs[i]);
+        for (X509Certificate cert : certs)
+            ks.setCertificateEntry(cert.getSubjectX500Principal().getName(), cert);
         return ks;
     }
 
@@ -151,7 +151,7 @@ public abstract class SSLManagerFactory {
         }
     }
 
-    public static TrustManager createTrustManager(Certificate... certs)
+    public static TrustManager createTrustManager(X509Certificate... certs)
             throws KeyStoreException {
         return certs.length > 0 ? createTrustManager(createKeyStore(certs)) : null;
     }

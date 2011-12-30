@@ -41,11 +41,10 @@ package org.dcm4che.conf.prefs;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.ArrayList;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -77,6 +76,7 @@ import org.slf4j.LoggerFactory;
 public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static final String USER_CERTIFICATE = "userCertificate";
+    private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
 
     private static final Logger LOG = LoggerFactory.getLogger(PreferencesDicomConfiguration.class);
 
@@ -148,7 +148,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public String deviceDN(String name) {
+    public String deviceRef(String name) {
         return configurationRoot + "/dicomDevicesRoot/" + name;
     }
 
@@ -179,7 +179,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public Device findDevice(String name) throws ConfigurationException {
-        String pathName = deviceDN(name);
+        String pathName = deviceRef(name);
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
 
@@ -189,7 +189,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     @Override
     public void persist(Device device) throws ConfigurationException {
         String deviceName = device.getDeviceName();
-        String pathName = deviceDN(deviceName);
+        String pathName = deviceRef(deviceName);
         if (nodeExists(rootPrefs, pathName))
             throw new ConfigurationAlreadyExistsException(pathName);
 
@@ -197,9 +197,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeTo(device, deviceNode);
         storeChilds(device, deviceNode);
         try {
+            updateCertificates(device);
             deviceNode.flush();
             deviceNode = null;
         } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        } catch (CertificateException e) {
             throw new ConfigurationException(e);
         } finally {
             if (deviceNode != null)
@@ -210,6 +213,23 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                     LOG.warn("Rollback failed:", e);
                 }
         }
+    }
+
+    private void updateCertificates(Device device)
+            throws CertificateException, BackingStoreException {
+        for (String dn : device.getAuthorizedNodeCertificateRefs())
+            updateCertificates(dn, loadCertificates(dn),
+                    device.getAuthorizedNodeCertificates(dn));
+        for (String dn : device.getThisNodeCertificateRefs())
+            updateCertificates(dn, loadCertificates(dn),
+                    device.getThisNodeCertificates(dn));
+    }
+
+    private void updateCertificates(String ref, 
+            X509Certificate[] prev, X509Certificate[] certs)
+            throws CertificateEncodingException, BackingStoreException {
+        if (!Arrays.equals(prev, certs))
+            storeCertificates(ref, certs);
     }
 
     protected void storeChilds(Device device, Preferences deviceNode) {
@@ -257,7 +277,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public void merge(Device device) throws ConfigurationException {
-        String pathName = deviceDN(device.getDeviceName());
+        String pathName = deviceRef(device.getDeviceName());
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
         
@@ -266,9 +286,28 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         try {
             storeDiffs(devicePrefs, prev, device);
             mergeChilds(prev, device, devicePrefs);
+            updateCertificates(prev, device);
             devicePrefs.flush();
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
+        } catch (CertificateException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private void updateCertificates(Device prev, Device device)
+            throws CertificateException, BackingStoreException {
+        for (String dn : device.getAuthorizedNodeCertificateRefs()) {
+            X509Certificate[] prevCerts = prev.getAuthorizedNodeCertificates(dn);
+            updateCertificates(dn,
+                    prevCerts != null ? prevCerts : loadCertificates(dn),
+                    device.getAuthorizedNodeCertificates(dn));
+        }
+        for (String dn : device.getThisNodeCertificateRefs()) {
+            X509Certificate[] prevCerts = prev.getThisNodeCertificates(dn);
+            updateCertificates(dn,
+                    prevCerts != null ? prevCerts : loadCertificates(dn),
+                    device.getThisNodeCertificates(dn));
         }
     }
 
@@ -280,7 +319,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public void removeDevice(String name) throws ConfigurationException {
-        String pathName = deviceDN(name);
+        String pathName = deviceRef(name);
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
 
@@ -834,6 +873,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             return device;
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
+        } catch (CertificateException e) {
+            throw new ConfigurationException(e);
         }
     }
 
@@ -966,7 +1007,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    protected void loadFrom(Device device, Preferences prefs) {
+    protected void loadFrom(Device device, Preferences prefs) throws CertificateException {
         device.setDescription(prefs.get("dicomDescription", null));
         device.setManufacturer(prefs.get("dicomManufacturer", null));
         device.setManufacturerModelName(prefs.get("dicomManufacturerModelName", null));
@@ -980,10 +1021,10 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 stringArray(prefs, "dicomInstitutionalDepartmentName"));
         device.setPrimaryDeviceTypes(stringArray(prefs, "dicomPrimaryDeviceType"));
         device.setRelatedDeviceRefs(stringArray(prefs, "dicomRelatedDeviceReference"));
-        device.setAuthorizedNodeCertificateRefs(
-                stringArray(prefs, "dicomAuthorizedNodeCertificateReference"));
-        device.setThisNodeCertificateRefs(
-                stringArray(prefs, "dicomThisNodeCertificateReference"));
+        for (String ref : stringArray(prefs, "dicomAuthorizedNodeCertificateReference"))
+            device.setAuthorizedNodeCertificates(ref, loadCertificates(ref));
+        for (String ref : stringArray(prefs, "dicomThisNodeCertificateReference"))
+            device.setThisNodeCertificates(ref, loadCertificates(ref));
         device.setVendorData(toVendorData(prefs, "dicomVendorData"));
         try {
             device.setInstalled(prefs.getBoolean("dicomInstalled", false));
@@ -1188,22 +1229,27 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void persistCertificates(String certRef, Certificate... certs)
+    public void persistCertificates(String certRef, X509Certificate... certs)
             throws ConfigurationException {
         try {
-            if (certs != null && certs.length != 0) {
-                int count = 0;
-                Preferences prefs = rootPrefs.node(certRef);
-                for (Certificate cert : certs)
-                    prefs.putByteArray(USER_CERTIFICATE + '.' + (++count),
-                            cert.getEncoded());
-                prefs.putInt(USER_CERTIFICATE + ".#", count);
-                prefs.flush();
-            }
+            storeCertificates(certRef, certs);
         } catch (CertificateEncodingException e) {
             throw new ConfigurationException(e);
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
+        }
+    }
+
+    private void storeCertificates(String certRef, X509Certificate... certs)
+            throws CertificateEncodingException, BackingStoreException {
+        if (certs != null && certs.length != 0) {
+            int count = 0;
+            Preferences prefs = rootPrefs.node(certRef);
+            for (X509Certificate cert : certs)
+                prefs.putByteArray(USER_CERTIFICATE + '.' + (++count),
+                        cert.getEncoded());
+            prefs.putInt(USER_CERTIFICATE + ".#", count);
+            prefs.flush();
         }
     }
 
@@ -1221,26 +1267,29 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public Certificate[] findCertificates(String... certRefs)
+    public X509Certificate[] findCertificates(String certRef)
             throws ConfigurationException {
         try {
-            List<Certificate> list = new ArrayList<Certificate>(certRefs.length);
-            CertificateFactory cf = CertificateFactory.getInstance("X509");
-            for (String certRef : certRefs)
-                loadCertifcates(cf, certRef, list);
-            return list.toArray(new Certificate[list.size()]) ;
+            return loadCertificates(certRef);
         } catch (CertificateException e) {
             throw new ConfigurationException(e);
         }
     }
 
-    private void loadCertifcates(CertificateFactory cf, String certRef,
-            List<Certificate> list) throws CertificateException {
+    private X509Certificate[] loadCertificates(String certRef)
+            throws CertificateException {
         Preferences prefs = rootPrefs.node(certRef);
         int n = prefs.getInt(USER_CERTIFICATE + ".#", 0);
+        if (n == 0)
+            return EMPTY_X509_CERTIFICATES;
+        
+        CertificateFactory cf = CertificateFactory.getInstance("X509");
+        X509Certificate[] certs = new X509Certificate[n];
         for (int i = 0; i < n; i++)
-            list.add(cf.generateCertificate(new ByteArrayInputStream(
-                    prefs.getByteArray(USER_CERTIFICATE + '.' + (i+1), null))));
+            certs[i] = (X509Certificate) cf.generateCertificate(
+                    new ByteArrayInputStream(
+                            prefs.getByteArray(USER_CERTIFICATE + '.' + (i+1), null)));
+        return certs;
     }
 
 }

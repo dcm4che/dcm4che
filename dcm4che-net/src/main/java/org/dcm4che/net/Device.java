@@ -40,7 +40,9 @@ package org.dcm4che.net;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,12 +87,14 @@ public class Device {
     private String[] institutionNames = {};
     private String[] institutionAddresses = {};
     private String[] institutionalDepartmentNames = {};
-    private String[] authorizedNodeCertificateRefs = {};
-    private String[] thisNodeCertificateRefs = {};
     private String[] relatedDeviceRefs = {};
     private byte[][] vendorData = {};
     private boolean installed = true;
     private boolean activated = false;
+    private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
+            new LinkedHashMap<String, X509Certificate[]>();
+    private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
+            new LinkedHashMap<String, X509Certificate[]>();
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
@@ -364,22 +368,68 @@ public class Device {
         this.issuerOfPatientID = issuerOfPatientID;
     }
 
-
-    public final String[] getAuthorizedNodeCertificateRefs() {
-        return authorizedNodeCertificateRefs;
+    public X509Certificate[] getAuthorizedNodeCertificates(String ref) {
+        return authorizedNodeCertificates.get(ref);
     }
 
-    public void setAuthorizedNodeCertificateRefs(String... refs) {
-        authorizedNodeCertificateRefs = refs;
+    public void setAuthorizedNodeCertificates(String ref, X509Certificate... certs) {
+        authorizedNodeCertificates.put(ref, certs);
     }
 
-    public final String[] getThisNodeCertificateRefs() {
-        return thisNodeCertificateRefs;
+    public X509Certificate[] removeAuthorizedNodeCertificates(String ref) {
+        return authorizedNodeCertificates.remove(ref);
     }
 
-    public void setThisNodeCertificateRefs(String... refs) {
-        thisNodeCertificateRefs = refs;
+    public void removeAllAuthorizedNodeCertificates(String ref, X509Certificate... certs) {
+        authorizedNodeCertificates.put(ref, certs);
     }
+
+    public X509Certificate[] getAllAuthorizedNodeCertificates() {
+        return toArray(authorizedNodeCertificates.values());
+    }
+
+    public String[] getAuthorizedNodeCertificateRefs() {
+        return authorizedNodeCertificates.keySet().toArray(StringUtils.EMPTY_STRING);
+    }
+
+    public X509Certificate[] getThisNodeCertificates(String ref) {
+        return thisNodeCertificates.get(ref);
+    }
+
+    public void setThisNodeCertificates(String ref, X509Certificate... certs) {
+        thisNodeCertificates.put(ref, certs);
+    }
+
+    public X509Certificate[] removeThisNodeCertificates(String ref) {
+        return thisNodeCertificates.remove(ref);
+    }
+
+    public void removeAllThisNodeCertificates(String ref, X509Certificate... certs) {
+        thisNodeCertificates.put(ref, certs);
+    }
+
+    public X509Certificate[] getAllThisNodeCertificates() {
+        return toArray(thisNodeCertificates.values());
+    }
+
+    public String[] getThisNodeCertificateRefs() {
+        return thisNodeCertificates.keySet().toArray(StringUtils.EMPTY_STRING);
+    }
+
+    private static X509Certificate[] toArray(Collection<X509Certificate[]> c) {
+        int size = 0;
+        for (X509Certificate[] certs : c)
+            size += certs.length;
+
+        X509Certificate[] dest = new X509Certificate[size];
+        int destPos = 0;
+        for (X509Certificate[] certs : c) {
+            System.arraycopy(certs, 0, dest, destPos, certs.length);
+            destPos += certs.length;
+        }
+        return dest ;
+    }
+
 
     public final String[] getRelatedDeviceRefs() {
         return relatedDeviceRefs;
@@ -623,6 +673,11 @@ public class Device {
 
     public final TrustManager getTrustManager() {
         return tm;
+    }
+
+    public void initTrustManager() throws KeyStoreException {
+        setTrustManager(SSLManagerFactory.createTrustManager(
+                getAllAuthorizedNodeCertificates()));
     }
 
     SSLContext sslContext() throws KeyManagementException {

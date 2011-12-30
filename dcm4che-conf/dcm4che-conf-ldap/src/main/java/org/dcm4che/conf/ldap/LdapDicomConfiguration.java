@@ -41,10 +41,10 @@ package org.dcm4che.conf.ldap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,6 +93,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static final String DICOM_CONFIGURATION_ROOT = "dicomConfigurationRoot";
     private static final String PKI_USER = "pkiUser";
     private static final String USER_CERTIFICATE_BINARY = "userCertificate;binary";
+    private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
 
     private final DirContext ctx;
     private final String baseDN;
@@ -229,23 +230,26 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        return loadDevice(deviceDN(name));
+        return loadDevice(deviceRef(name));
     }
 
     @Override
     public void persist(Device device) throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
-        String deviceDN = deviceDN(deviceName);
+        String deviceDN = deviceRef(deviceName);
         boolean rollback = false;
         try {
             createSubcontext(deviceDN, storeTo(device, new BasicAttributes(true)));
             rollback = true;
             storeChilds(deviceDN, device);
+            updateCertificates(device);
             rollback = false;
         } catch (NameAlreadyBoundException e) {
             throw new ConfigurationAlreadyExistsException(deviceName);
         } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } catch (CertificateException e) {
             throw new ConfigurationException(e);
         } finally {
             if (rollback)
@@ -255,6 +259,23 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     LOG.warn("Rollback failed:", e);
                 }
         }
+    }
+
+    private void updateCertificates(Device device)
+            throws CertificateException, NamingException {
+        for (String dn : device.getAuthorizedNodeCertificateRefs())
+            updateCertificates(dn, loadCertificates(dn),
+                    device.getAuthorizedNodeCertificates(dn));
+        for (String dn : device.getThisNodeCertificateRefs())
+            updateCertificates(dn, loadCertificates(dn),
+                    device.getThisNodeCertificates(dn));
+    }
+
+    private void updateCertificates(String dn,
+            X509Certificate[] prev, X509Certificate[] certs)
+            throws CertificateEncodingException, NamingException {
+        if (!equals(prev, certs))
+            storeCertificates(dn, certs);
     }
 
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
@@ -278,15 +299,34 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        String deviceDN = deviceDN(device.getDeviceName());
+        String deviceDN = deviceRef(device.getDeviceName());
         Device prev = loadDevice(deviceDN);
         try {
             modifyAttributes(deviceDN, storeDiffs(prev, device, new ArrayList<ModificationItem>()));
             mergeChilds(prev, device, deviceDN);
+            updateCertificates(prev, device);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
+        } catch (CertificateException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private void updateCertificates(Device prev, Device device)
+            throws CertificateException, NamingException {
+        for (String dn : device.getAuthorizedNodeCertificateRefs()) {
+            X509Certificate[] prevCerts = prev.getAuthorizedNodeCertificates(dn);
+            updateCertificates(dn,
+                    prevCerts != null ? prevCerts : loadCertificates(dn),
+                    device.getAuthorizedNodeCertificates(dn));
+        }
+        for (String dn : device.getThisNodeCertificateRefs()) {
+            X509Certificate[] prevCerts = prev.getThisNodeCertificates(dn);
+            updateCertificates(dn,
+                    prevCerts != null ? prevCerts : loadCertificates(dn),
+                    device.getThisNodeCertificates(dn));
         }
     }
 
@@ -301,7 +341,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
-        removeDeviceWithDN(deviceDN(name));
+        removeDeviceWithDN(deviceRef(name));
     }
 
     private void removeDeviceWithDN(String deviceDN) throws ConfigurationException {
@@ -498,57 +538,45 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return val ? "TRUE" : "FALSE";
     }
 
-    public List<Certificate> persistCertificates(String... refs)
+    @Override
+    public void persistCertificates(String dn, X509Certificate... certs)
             throws ConfigurationException {
         try {
-            List<Certificate> list = new ArrayList<Certificate>(refs.length);
-            CertificateFactory cf = CertificateFactory.getInstance("X509");
-            for (String ref : refs)
-                loadCertifcates(cf, ref, list);
-            return list ;
+            storeCertificates(dn, certs);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
-        } catch (CertificateException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    @Override
-    public void persistCertificates(String certRef, Certificate... certs)
-            throws ConfigurationException {
-        try {
-            byte[][] vals = new byte[certs.length][];
-            for (int i = 0; i < vals.length; i++)
-                vals[i] = certs[i].getEncoded();
-            Attributes attrs = ctx.getAttributes(certRef,
-                    new String[] { "objectClass" } );
-            ModificationItem replaceCert = new ModificationItem(
-                    DirContext.REPLACE_ATTRIBUTE, attr(userCertificate, vals ));
-            ctx.modifyAttributes(certRef, 
-                    hasObjectClass(attrs, pkiUser)
-                         ? new ModificationItem[] { replaceCert }
-                         : new ModificationItem[] {
-                                 new ModificationItem(
-                                     DirContext.ADD_ATTRIBUTE,
-                                     attr("objectClass", pkiUser )),
-                                 replaceCert });
         } catch (CertificateEncodingException e) {
             throw new ConfigurationException(e);
-        } catch (NameNotFoundException e) {
-            throw new ConfigurationNotFoundException(e);
-        } catch (NamingException e) {
-            throw new ConfigurationException(e);
         }
     }
 
+    private void storeCertificates(String dn, X509Certificate... certs)
+            throws CertificateEncodingException, NamingException {
+        byte[][] vals = new byte[certs.length][];
+        for (int i = 0; i < vals.length; i++)
+            vals[i] = certs[i].getEncoded();
+        Attributes attrs = ctx.getAttributes(dn,
+                new String[] { "objectClass" } );
+        ModificationItem replaceCert = new ModificationItem(
+                DirContext.REPLACE_ATTRIBUTE, attr(userCertificate, vals ));
+        ctx.modifyAttributes(dn, 
+                hasObjectClass(attrs, pkiUser)
+                     ? new ModificationItem[] { replaceCert }
+                     : new ModificationItem[] {
+                             new ModificationItem(
+                                 DirContext.ADD_ATTRIBUTE,
+                                 attr("objectClass", pkiUser )),
+                             replaceCert });
+    }
+
     @Override
-    public void removeCertificates(String certRef) throws ConfigurationException {
+    public void removeCertificates(String dn) throws ConfigurationException {
         try {
             ModificationItem removeCert = new ModificationItem(
                     DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(userCertificate));
-            ctx.modifyAttributes(certRef, new ModificationItem[] { removeCert });
+            ctx.modifyAttributes(dn, new ModificationItem[] { removeCert });
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
@@ -557,14 +585,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public Certificate[] findCertificates(String... certRefs)
-            throws ConfigurationException {
+    public X509Certificate[] findCertificates(String dn) throws ConfigurationException {
         try {
-            List<Certificate> list = new ArrayList<Certificate>(certRefs.length);
-            CertificateFactory cf = CertificateFactory.getInstance("X509");
-            for (String certRef : certRefs)
-                loadCertifcates(cf, certRef, list);
-            return list.toArray(new Certificate[list.size()]) ;
+            return loadCertificates(dn);
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
@@ -574,16 +597,19 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    private void loadCertifcates(CertificateFactory cf, String certDN, List<Certificate> list)
+    private X509Certificate[] loadCertificates(String dn)
             throws NamingException, CertificateException {
-        Attributes attrs = ctx.getAttributes(certDN, new String[] { userCertificate } );
+        Attributes attrs = ctx.getAttributes(dn, new String[] { userCertificate } );
         Attribute attr = attrs.get(userCertificate);
-        if (attr != null) {
-            int size = attr.size();
-            for (int ix = 0; ix < size; ix++)
-                list.add(cf.generateCertificate(new ByteArrayInputStream(
-                        (byte[]) attr.get(ix))));
-        }
+        if (attr == null)
+            return EMPTY_X509_CERTIFICATES;
+        CertificateFactory cf = CertificateFactory.getInstance("X509");
+        X509Certificate[] certs = new X509Certificate[attr.size()];
+        for (int i = 0; i < certs.length; i++)
+            certs[i] = (X509Certificate) cf.generateCertificate(
+                    new ByteArrayInputStream((byte[]) attr.get(i)));
+
+        return certs;
     }
 
     private Device loadDevice(String deviceDN) throws ConfigurationException {
@@ -596,6 +622,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         } catch (NameNotFoundException e) {
             throw new ConfigurationNotFoundException(e);
         } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } catch (CertificateException e) {
             throw new ConfigurationException(e);
         }
     }
@@ -629,7 +657,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         tc.setTransferSyntaxes(stringArray(attrs.get("dicomTransferSyntax")));
     }
 
-    protected void loadFrom(Device device, Attributes attrs) throws NamingException {
+    protected void loadFrom(Device device, Attributes attrs)
+            throws NamingException, CertificateException {
         device.setDescription(stringValue(attrs.get("dicomDescription")));
         device.setManufacturer(stringValue(attrs.get("dicomManufacturer")));
         device.setManufacturerModelName(stringValue(attrs.get("dicomManufacturerModelName")));
@@ -643,10 +672,10 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 stringArray(attrs.get("dicomInstitutionalDepartmentName")));
         device.setPrimaryDeviceTypes(stringArray(attrs.get("dicomPrimaryDeviceType")));
         device.setRelatedDeviceRefs(stringArray(attrs.get("dicomRelatedDeviceReference")));
-        device.setAuthorizedNodeCertificateRefs(
-                stringArray(attrs.get("dicomAuthorizedNodeCertificateReference")));
-        device.setThisNodeCertificateRefs(
-                stringArray(attrs.get("dicomThisNodeCertificateReference")));
+        for (String dn : stringArray(attrs.get("dicomAuthorizedNodeCertificateReference")))
+            device.setAuthorizedNodeCertificates(dn, loadCertificates(dn));
+        for (String dn : stringArray(attrs.get("dicomThisNodeCertificateReference")))
+            device.setThisNodeCertificates(dn, loadCertificates(dn));
         device.setVendorData(byteArrays(attrs.get("dicomVendorData")));
         try {
             device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
@@ -1034,14 +1063,33 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             attr(attrId, vals)));
     }
 
-    private static boolean equals(byte[][] bb1, byte[][] bb2) {
-        if (bb1.length != bb2.length)
+    private static boolean equals(Object[] a, Object[] a2) {
+        int length = a.length;
+        if (a2.length != length)
             return false;
-        
-        for (int i = 0; i < bb1.length; i++)
-            if (!Arrays.equals(bb1[i], bb2[i]))
-                return false;
 
+        outer:
+        for (Object o1 : a) {
+            for (Object o2 : a2)
+                if (o1.equals(o2))
+                    continue outer;
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean equals(byte[][] a, byte[][] a2) {
+        int length = a.length;
+        if (a2.length != length)
+            return false;
+
+        outer:
+        for (byte[] o1 : a) {
+            for (byte[] o2 : a2)
+                if (Arrays.equals(o1, o2))
+                    continue outer;
+            return false;
+        }
         return true;
     }
 
@@ -1064,7 +1112,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected static void storeDiff(List<ModificationItem> mods, String attrId,
             String[] prevs, String[] vals) {
-        if (!Arrays.equals(prevs, vals))
+        if (!equals(prevs, vals))
             mods.add((vals.length == 0)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
@@ -1118,7 +1166,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public String deviceDN(String name) {
+    public String deviceRef(String name) {
         return dnOf("dicomDeviceName" ,name, devicesDN);
     }
 

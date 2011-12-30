@@ -1543,7 +1543,7 @@ public class Attributes implements Serializable {
 
     private boolean equalStringValues(Attributes other, int index, int otherIndex) {
         Object v1 = decodeStringValue(index);
-        Object v2 = decodeStringValue(index);
+        Object v2 = decodeStringValue(otherIndex);
         if (v1 instanceof String[]) {
             if (v2 instanceof String[])
                 return Arrays.equals((String[]) v1, (String[]) v2);

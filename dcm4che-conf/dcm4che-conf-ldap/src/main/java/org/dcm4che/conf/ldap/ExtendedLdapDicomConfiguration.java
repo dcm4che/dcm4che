@@ -444,8 +444,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 b.isTcpNoDelay(),
                 true);
         storeDiff(mods, "dcmTLSProtocol",
-                a.isTls() ? a.getTlsProtocols() : null,
-                b.isTls() ? b.getTlsProtocols() : null);
+                a.isTls() ? a.getTlsProtocols() : "",
+                b.isTls() ? b.getTlsProtocols() : "");
         storeDiff(mods, "dcmTLSNeedClientAuth",
                 !a.isTls() || a.isTlsNeedClientAuth(),
                 !a.isTls() || a.isTlsNeedClientAuth(),

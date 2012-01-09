@@ -637,8 +637,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 b.isTcpNoDelay(),
                 true);
         storeDiff(prefs, "dcmTLSProtocol",
-                a.isTls() ? a.getTlsProtocols() : null,
-                b.isTls() ? b.getTlsProtocols() : null);
+                a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
+                b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
         storeDiff(prefs, "dcmTLSNeedClientAuth",
                 !a.isTls() || a.isTlsNeedClientAuth(),
                 !a.isTls() || a.isTlsNeedClientAuth(),

@@ -58,6 +58,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -444,8 +445,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 b.isTcpNoDelay(),
                 true);
         storeDiff(mods, "dcmTLSProtocol",
-                a.isTls() ? a.getTlsProtocols() : null,
-                b.isTls() ? b.getTlsProtocols() : null);
+                a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
+                b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
         storeDiff(mods, "dcmTLSNeedClientAuth",
                 !a.isTls() || a.isTlsNeedClientAuth(),
                 !a.isTls() || a.isTlsNeedClientAuth(),

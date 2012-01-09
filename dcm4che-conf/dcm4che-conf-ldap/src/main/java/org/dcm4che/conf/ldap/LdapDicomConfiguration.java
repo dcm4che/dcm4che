@@ -1064,24 +1064,18 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private static boolean equals(Object[] a, Object[] a2) {
-        if(a == null && a2 == null)
-            return true;
-        
-        if(a != null && a2 != null) {
-            int length = a.length;
-            if (a2.length != length)
-                return false;
+        int length = a.length;
+        if (a2.length != length)
+            return false;
 
-            outer:
-            for (Object o1 : a) {
-                for (Object o2 : a2)
-                    if (o1.equals(o2))
-                        continue outer;
-                return false;
-            }
-            return true;
+        outer:
+        for (Object o1 : a) {
+            for (Object o2 : a2)
+                if (o1.equals(o2))
+                    continue outer;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private static boolean equals(byte[][] a, byte[][] a2) {

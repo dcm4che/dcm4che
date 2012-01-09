@@ -45,9 +45,7 @@
     <groupId>org.dcm4che</groupId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-net</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
   <name>dcm4che-net</name>
   <description>DICOM Network Services</description>
   <dependencies>

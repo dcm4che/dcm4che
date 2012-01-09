@@ -5,14 +5,12 @@
     <groupId>org.dcm4che</groupId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-conf</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che-conf</name>
   <modules>
-  	<module>dcm4che-conf-api</module>
-  	<module>dcm4che-conf-ldap</module>
-  	<module>dcm4che-conf-prefs</module>
+    <module>dcm4che-conf-api</module>
+    <module>dcm4che-conf-ldap</module>
+    <module>dcm4che-conf-prefs</module>
   </modules>
 </project>

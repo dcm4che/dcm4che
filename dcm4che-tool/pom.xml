@@ -48,7 +48,6 @@
   <artifactId>dcm4che-tool</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che-tool</name>
-  <version>3.0.0-SNAPSHOT</version>
   <description>DICOM utilities</description>
   <modules>
     <module>dcm4che-tool-common</module>

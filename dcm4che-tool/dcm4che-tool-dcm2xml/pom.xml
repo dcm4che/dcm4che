@@ -44,10 +44,8 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.dcm4che.tool</groupId>
   <artifactId>dcm4che-tool-dcm2xml</artifactId>
   <name>dcm4che-tool-dcm2xml</name>
-  <version>3.0.0-SNAPSHOT</version>
   <description>Convert DICOM file to XML</description>
   <build>
     <plugins>

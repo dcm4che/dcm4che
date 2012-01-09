@@ -51,7 +51,7 @@ import org.dcm4che.net.TransferCapability.Role;
  */
 public class AttributeCoercions {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private final HashMap[] maps = new HashMap[AttributeCoercion.DIMSE.values().length * 2];
 
     public AttributeCoercion add(AttributeCoercion ac) {
@@ -122,6 +122,7 @@ public class AttributeCoercions {
         return map2 != null ? map2.get(sopClass) : null;
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<AttributeCoercion> getAll() {
         ArrayList<AttributeCoercion> list = new ArrayList<AttributeCoercion>();
         for (HashMap<String, HashMap<String, AttributeCoercion>> map1 : maps)

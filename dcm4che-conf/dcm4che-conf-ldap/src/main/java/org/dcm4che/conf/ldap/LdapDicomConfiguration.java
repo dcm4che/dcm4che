@@ -1064,18 +1064,24 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private static boolean equals(Object[] a, Object[] a2) {
-        int length = a.length;
-        if (a2.length != length)
-            return false;
+        if(a == null && a2 == null)
+            return true;
+        
+        if(a != null && a2 != null) {
+            int length = a.length;
+            if (a2.length != length)
+                return false;
 
-        outer:
-        for (Object o1 : a) {
-            for (Object o2 : a2)
-                if (o1.equals(o2))
-                    continue outer;
-            return false;
+            outer:
+            for (Object o1 : a) {
+                for (Object o2 : a2)
+                    if (o1.equals(o2))
+                        continue outer;
+                return false;
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static boolean equals(byte[][] a, byte[][] a2) {
@@ -1113,7 +1119,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     protected static void storeDiff(List<ModificationItem> mods, String attrId,
             String[] prevs, String[] vals) {
         if (!equals(prevs, vals))
-            mods.add((vals.length == 0)
+            mods.add((vals != null && vals.length == 0)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
                             new BasicAttribute(attrId))
                     : new ModificationItem(DirContext.REPLACE_ATTRIBUTE,

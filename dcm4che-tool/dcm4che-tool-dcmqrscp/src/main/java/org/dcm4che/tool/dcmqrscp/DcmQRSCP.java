@@ -83,7 +83,7 @@ import org.dcm4che.util.UIDUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Main {
+public class DcmQRSCP {
 
     private static final String[] PATIENT_ROOT_LEVELS = {
         "PATIENT", "STUDY", "SERIES", "IMAGE" };
@@ -110,7 +110,7 @@ public class Main {
     private DicomDirWriter ddWriter;
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
 
-    public Main() throws IOException, KeyManagementException {
+    public DcmQRSCP() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -244,7 +244,7 @@ public class Main {
         addInstanceAvailabilityOption(opts);
         addSendingPendingOptions(opts);
         addRemoteConnectionsOption(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
     }
 
     @SuppressWarnings("static-access")
@@ -324,7 +324,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            DcmQRSCP main = new DcmQRSCP();
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
@@ -350,7 +350,7 @@ public class Main {
         }
     }
 
-    private static void configureDicomFileSet(Main main, CommandLine cl)
+    private static void configureDicomFileSet(DcmQRSCP main, CommandLine cl)
             throws ParseException {
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
@@ -358,18 +358,18 @@ public class Main {
         main.setRecordFactory(new RecordFactory());
     }
 
-    private static void configureInstanceAvailability(Main main, CommandLine cl) {
+    private static void configureInstanceAvailability(DcmQRSCP main, CommandLine cl) {
         main.setInstanceAvailability(cl.getOptionValue("availability"));
     }
 
-    private static void configureSendPending(Main main, CommandLine cl) {
+    private static void configureSendPending(DcmQRSCP main, CommandLine cl) {
         main.setSendPendingCGet(cl.hasOption("pending-cget"));
         if (cl.hasOption("pending-cmove"))
                 main.setSendPendingCMoveInterval(
                         Long.parseLong(cl.getOptionValue("pending-cmove")));
     }
 
-    private static void configureTransferCapability(Main main, CommandLine cl)
+    private static void configureTransferCapability(DcmQRSCP main, CommandLine cl)
             throws IOException {
         ApplicationEntity ae = main.ae;
         EnumSet<QueryOption> queryOptions = cl.hasOption("relational")
@@ -440,7 +440,7 @@ public class Main {
         return uids ;
     }
 
-    private static void configureRemoteConnections(Main main, CommandLine cl) throws Exception {
+    private static void configureRemoteConnections(DcmQRSCP main, CommandLine cl) throws Exception {
         String file = cl.getOptionValue("ae-config", "resource:ae.properties");
         Properties aeConfig = CLIUtils.loadProperties(file, null);
         for (Map.Entry<Object, Object> entry : aeConfig.entrySet()) {

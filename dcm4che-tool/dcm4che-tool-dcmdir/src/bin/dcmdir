@@ -3,7 +3,7 @@
 # dcmdir  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcmdir.Main
+MAIN_CLASS=org.dcm4che.tool.dcmdir.DcmDir
 MAIN_JAR=dcm4che-tool-dcmdir-3.0.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

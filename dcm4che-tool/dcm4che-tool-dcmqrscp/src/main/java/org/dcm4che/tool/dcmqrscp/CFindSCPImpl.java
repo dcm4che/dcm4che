@@ -58,11 +58,11 @@ import org.dcm4che.util.AttributesValidator;
  */
 class CFindSCPImpl extends BasicCFindSCP {
 
-    private final Main main;
+    private final DcmQRSCP main;
     private final String[] qrLevels;
     private final QueryRetrieveLevel rootLevel;
 
-    public CFindSCPImpl(Main main, String sopClass, String... qrLevels) {
+    public CFindSCPImpl(DcmQRSCP main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;

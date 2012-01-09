@@ -79,7 +79,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Main {
+public class StoreSCP {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.storescp.messages");
@@ -148,7 +148,7 @@ public class Main {
 
     };
 
-    public Main() throws IOException, KeyManagementException {
+    public StoreSCP() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
@@ -190,7 +190,7 @@ public class Main {
         addStatusOption(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        return CLIUtils.parseComandLine(args, opts, rb, StoreSCP.class);
     }
 
     @SuppressWarnings("static-access")
@@ -236,7 +236,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            StoreSCP main = new StoreSCP();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
@@ -259,7 +259,7 @@ public class Main {
         }
     }
 
-    private static void configureStorageDirectory(Main main, CommandLine cl) {
+    private static void configureStorageDirectory(StoreSCP main, CommandLine cl) {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(
                     new File(cl.getOptionValue("directory", ".")));

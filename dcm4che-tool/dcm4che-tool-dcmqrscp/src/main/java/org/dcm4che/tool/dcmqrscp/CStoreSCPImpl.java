@@ -65,9 +65,9 @@ import org.dcm4che.util.TagUtils;
  */
 class CStoreSCPImpl extends BasicCStoreSCP {
 
-    private final Main main;
+    private final DcmQRSCP main;
 
-    public CStoreSCPImpl(Main main) {
+    public CStoreSCPImpl(DcmQRSCP main) {
         super("*");
         this.main = main;
     }

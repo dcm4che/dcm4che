@@ -66,11 +66,11 @@ import org.dcm4che.util.AttributesValidator;
  */
 class CMoveSCPImpl extends BasicCMoveSCP {
 
-    private final Main main;
+    private final DcmQRSCP main;
     private final String[] qrLevels;
     private final QueryRetrieveLevel rootLevel;
 
-    public CMoveSCPImpl(Main main, String sopClass, String... qrLevels) {
+    public CMoveSCPImpl(DcmQRSCP main, String sopClass, String... qrLevels) {
         super(main.getDevice(), sopClass);
         this.main = main;
         this.qrLevels = qrLevels;

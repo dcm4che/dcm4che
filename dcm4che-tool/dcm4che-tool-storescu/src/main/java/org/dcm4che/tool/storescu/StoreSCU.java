@@ -84,7 +84,7 @@ import org.dcm4che.util.TagUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Main {
+public class StoreSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.storescu.messages");
@@ -108,7 +108,7 @@ public class Main {
     private int filesScanned;
     private int filesSent;
 
-    public Main() throws IOException, KeyManagementException {
+    public StoreSCU() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -137,7 +137,7 @@ public class Main {
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
         addRelatedSOPClassOptions(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
     }
 
     @SuppressWarnings("static-access")
@@ -157,7 +157,7 @@ public class Main {
         long t1, t2;
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            StoreSCU main = new StoreSCU();
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
@@ -221,7 +221,7 @@ public class Main {
         }
     }
 
-    private static void configureRelatedSOPClass(Main storescu, CommandLine cl)
+    private static void configureRelatedSOPClass(StoreSCU storescu, CommandLine cl)
             throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
             storescu.enableSOPClassRelationshipExtNeg(true);
@@ -354,7 +354,7 @@ public class Main {
             @Override
             public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
                 super.onDimseRSP(as, cmd, data);
-                Main.this.onCStoreRSP(cmd, f);
+                StoreSCU.this.onCStoreRSP(cmd, f);
             }
         };
 

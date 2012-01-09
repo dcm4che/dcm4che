@@ -36,14 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.movescu;
+package org.dcm4che.tool.getscu;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,9 +69,14 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.pdu.RoleSelection;
+import org.dcm4che.net.service.BasicCStoreSCP;
+import org.dcm4che.net.service.DicomServiceException;
+import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
@@ -77,15 +85,16 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Main {
+public class GetSCU {
 
     private static enum InformationModel {
-        PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, "STUDY"),
-        StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, "STUDY"),
-        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),
-        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveMOVE, "IMAGE"),
-        HangingProtocol(UID.HangingProtocolInformationModelMOVE, null),
-        ColorPalette(UID.ColorPaletteInformationModelMOVE, null);
+        PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
+        StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
+        PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
+        CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
+        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
+        HangingProtocol(UID.HangingProtocolInformationModelGET, null),
+        ColorPalette(UID.ColorPaletteInformationModelGET, null);
 
         final String cuid;
         final String level;
@@ -97,7 +106,7 @@ public class Main {
     }
 
     private static ResourceBundle rb =
-        ResourceBundle.getBundle("org.dcm4che.tool.movescu.messages");
+        ResourceBundle.getBundle("org.dcm4che.tool.getscu.messages");
 
     private static String[] IVR_LE_FIRST = {
         UID.ImplicitVRLittleEndian,
@@ -127,22 +136,43 @@ public class Main {
         Tag.SeriesInstanceUID
     };
 
-   private final Device device = new Device("movescu");
-    private final ApplicationEntity ae = new ApplicationEntity("MOVESCU");
+    private final Device device = new Device("getscu");
+    private final ApplicationEntity ae = new ApplicationEntity("GETSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
     private int priority;
-    private String destination;
     private InformationModel model;
+    private File storageDir;
     private Attributes keys = new Attributes();
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
 
-    public Main() throws IOException, KeyManagementException {
+    private BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
+
+        @Override
+        protected void store(Association as, PresentationContext pc, Attributes rq,
+                PDVInputStream data, Attributes rsp)
+                throws IOException {
+            if (storageDir != null)
+                super.store(as, pc, rq, data, rsp);
+        }
+
+        @Override
+        protected File createFile(Association as, Attributes rq, Object storage)
+                throws DicomServiceException {
+            return new File(storageDir, rq.getString(Tag.AffectedSOPInstanceUID));
+        }
+
+    };
+
+    public GetSCU() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(storageSCP);
+        ae.setDimseRQHandler(serviceRegistry);
     }
 
     public void setScheduledExecutorService(ScheduledExecutorService service) {
@@ -151,6 +181,13 @@ public class Main {
 
     public void setExecutor(Executor executor) {
         device.setExecutor(executor);
+    }
+
+    public void setStorageDirectory(File storageDir) {
+        if (storageDir != null)
+            if (storageDir.mkdirs())
+                System.out.println("M-WRITE " + storageDir);
+        this.storageDir = storageDir;
     }
 
     public final void setPriority(int priority) {
@@ -171,10 +208,6 @@ public class Main {
         keys.setString(Tag.QueryRetrieveLevel, VR.CS, s);
     }
 
-    public final void setDestination(String destination) {
-        this.destination = destination;
-    }
-
     public void addKey(int tag, String... ss) {
         VR vr = ElementDictionary.vrOf(tag, keys.getPrivateCreator(tag));
         keys.setString(tag, vr, ss);
@@ -190,14 +223,14 @@ public class Main {
             addServiceClassOptions(opts);
             addKeyOptions(opts);
             addRetrieveLevelOption(opts);
-            addDestinationOption(opts);
+            addStorageDirectoryOptions(opts);
             CLIUtils.addConnectOption(opts);
-            CLIUtils.addBindOption(opts, "MOVESCU");
+            CLIUtils.addBindOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts, true, false);
-            CLIUtils.addCMoveRspOption(opts);
+            CLIUtils.addCGetRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
-            return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+            return CLIUtils.parseComandLine(args, opts, rb, GetSCU.class);
     }
 
     @SuppressWarnings("static-access")
@@ -210,14 +243,15 @@ public class Main {
    }
 
     @SuppressWarnings("static-access")
-    private static void addDestinationOption(Options opts) {
+    private static void addStorageDirectoryOptions(Options opts) {
+        opts.addOption(null, "ignore", false,
+                rb.getString("ignore"));
         opts.addOption(OptionBuilder
-                .withLongOpt("dest")
                 .hasArg()
-                .withArgName("aet")
-                .withDescription(rb.getString("dest"))
-                .create());
-        
+                .withArgName("path")
+                .withDescription(rb.getString("directory"))
+                .withLongOpt("directory")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -257,13 +291,26 @@ public class Main {
                 .withDescription(rb.getString("implicit-vr"))
                 .create());
         opts.addOptionGroup(group);
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("cuid:tsuid[(,|;)...]")
+                .withDescription(rb.getString("store-tc"))
+                .withLongOpt("store-tc")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("store-tcs"))
+                .withLongOpt("store-tcs")
+                .create());
     }
+
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            GetSCU main = new GetSCU();
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
@@ -272,7 +319,7 @@ public class Main {
             configureServiceClass(main, cl);
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
-            main.setDestination(destinationOf(cl));
+            configureStorageDirectory(main, cl);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -293,27 +340,67 @@ public class Main {
                 scheduledExecutorService.shutdown();
             }
        } catch (ParseException e) {
-            System.err.println("movescu: " + e.getMessage());
+            System.err.println("getscu: " + e.getMessage());
             System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
-            System.err.println("movescu: " + e.getMessage());
+            System.err.println("getscu: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
         }
     }
 
-    private static void configureServiceClass(Main main, CommandLine cl) throws ParseException {
+    private static void configureServiceClass(GetSCU main, CommandLine cl)
+            throws Exception {
         main.setInformationModel(informationModelOf(cl), tssOf(cl), cl.hasOption("relational"));
+        String[] pcs = cl.getOptionValues("store-tc");
+        if (pcs != null)
+            for (String pc : pcs) {
+                String[] ss = StringUtils.split(pc, ':');
+                configureStorageSOPClass(main, ss[0], ss[1]);
+            }
+        String[] files = cl.getOptionValues("store-tcs");
+        if (pcs == null && files == null)
+            files = new String[] { "resource:store-tcs.properties" };
+        if (files != null)
+            for (String file : files) {
+                Properties p = CLIUtils.loadProperties(file, null);
+                Set<Entry<Object, Object>> entrySet = p.entrySet();
+                for (Entry<Object, Object> entry : entrySet)
+                    configureStorageSOPClass(main, (String) entry.getKey(), (String) entry.getValue());
+            }
     }
 
-    private static String destinationOf(CommandLine cl) throws ParseException {
-        if (cl.hasOption("dest"))
-            return cl.getOptionValue("dest");
-        throw new ParseException(rb.getString("missing-dest"));
+    private static void configureStorageSOPClass(GetSCU main, String cuid, String tsuids0) {
+        cuid = toUID(cuid);
+        String[] tsuids1 = StringUtils.split(tsuids0, ';');
+        for (String tsuids2 : tsuids1) {
+            String[] tsuids = StringUtils.split(tsuids2, ',');
+            for (int i = 0; i < tsuids.length; i++)
+                tsuids[i] = toUID(tsuids[i]);
+            main.addOfferedStorageSOPClass(cuid, tsuids);
+        }
     }
 
-    private static void configureKeys(Main main, CommandLine cl) {
+    private static String toUID(String uid) {
+        return uid.startsWith("1") ? uid : UID.forName(uid);
+    }
+
+     public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
+        if (!rq.containsPresentationContextFor(cuid))
+            rq.addRoleSelection(new RoleSelection(cuid, false, true));
+        rq.addPresentationContext(new PresentationContext(
+                2 * rq.getNumberOfPresentationContexts() + 1, cuid, tsuids));
+    }
+
+    private static void configureStorageDirectory(GetSCU main, CommandLine cl) {
+        if (!cl.hasOption("ignore")) {
+            main.setStorageDirectory(
+                    new File(cl.getOptionValue("directory", ".")));
+        }
+    }
+
+    private static void configureKeys(GetSCU main, CommandLine cl) {
         if (cl.hasOption("m")) {
             String[] keys = cl.getOptionValues("m");
             for (int i = 1; i < keys.length; i++, i++)
@@ -331,9 +418,10 @@ public class Main {
                     ? InformationModel.valueOf(cl.getOptionValue("M"))
                     : InformationModel.StudyRoot;
         } catch(IllegalArgumentException e) {
-            throw new ParseException(MessageFormat.format(
-                    rb.getString("invalid-model-name"),
-                    cl.getOptionValue("M")));
+            throw new ParseException(
+                    MessageFormat.format(
+                            rb.getString("invalid-model-name"),
+                            cl.getOptionValue("M")));
         }
     }
 
@@ -384,7 +472,7 @@ public class Main {
             }
         };
 
-        as.cmove(model.cuid, priority, keys, null, destination, rspHandler);
+        as.cget(model.cuid, priority, keys, null, rspHandler);
     }
 
 }

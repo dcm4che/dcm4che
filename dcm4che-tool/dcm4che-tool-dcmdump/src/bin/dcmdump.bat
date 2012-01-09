@@ -6,7 +6,7 @@ rem -------------------------------------------------------------------------
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che.tool.dcmdump.Main
+set MAIN_CLASS=org.dcm4che.tool.dcmdump.DcmDump
 set MAIN_JAR=dcm4che-tool-dcmdump-3.0.0-SNAPSHOT.jar
 
 set DIRNAME=.\

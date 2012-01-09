@@ -86,7 +86,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Main {
+public class FindSCU {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
@@ -156,7 +156,7 @@ public class Main {
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
 
-    public Main() throws IOException, KeyManagementException {
+    public FindSCU() throws IOException, KeyManagementException {
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
@@ -245,7 +245,7 @@ public class Main {
             CLIUtils.addCFindRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
-            return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+            return CLIUtils.parseComandLine(args, opts, rb, FindSCU.class);
     }
 
     @SuppressWarnings("static-access")
@@ -334,7 +334,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            FindSCU main = new FindSCU();
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, main.ae, cl);
@@ -375,7 +375,7 @@ public class Main {
         }
     }
 
-    private static EnumSet<QueryOption> queryOptionsOf(Main main, CommandLine cl) {
+    private static EnumSet<QueryOption> queryOptionsOf(FindSCU main, CommandLine cl) {
         EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
         if (cl.hasOption("relational"))
             queryOptions.add(QueryOption.RELATIONAL);
@@ -388,18 +388,18 @@ public class Main {
         return queryOptions;
     }
 
-    private static void configureOutput(Main main, CommandLine cl) {
+    private static void configureOutput(FindSCU main, CommandLine cl) {
         if (cl.hasOption("out-dir"))
             main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
         main.setOutputFileFormat(cl.getOptionValue("out-file", "000.dcm"));
     }
 
-    private static void configureCancel(Main main, CommandLine cl) {
+    private static void configureCancel(FindSCU main, CommandLine cl) {
         if (cl.hasOption("cancel"))
             main.setCancelAfter(Integer.parseInt(cl.getOptionValue("cancel")));
     }
 
-    private static void configureKeys(Main main, CommandLine cl) {
+    private static void configureKeys(FindSCU main, CommandLine cl) {
         if (cl.hasOption("r")) {
             String[] keys = cl.getOptionValues("r");
             for (int i = 0; i < keys.length; i++)
@@ -417,7 +417,7 @@ public class Main {
             main.setInputFilter(CLIUtils.toTags(cl.getOptionValues("i")));
     }
 
-    private static void configureServiceClass(Main main, CommandLine cl) throws ParseException {
+    private static void configureServiceClass(FindSCU main, CommandLine cl) throws ParseException {
         main.setInformationModel(informationModelOf(cl), tssOf(cl), queryOptionsOf(main, cl));
     }
 
@@ -478,7 +478,7 @@ public class Main {
     private void query(Attributes keys) throws IOException, InterruptedException {
          DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
-            int cancelAfter = Main.this.cancelAfter;
+            int cancelAfter = FindSCU.this.cancelAfter;
             int numMatches;
 
             @Override
@@ -487,7 +487,7 @@ public class Main {
                 super.onDimseRSP(as, cmd, data);
                 int status = cmd.getInt(Tag.Status, -1);
                 if (Commands.isPending(status )) {
-                    Main.this.onResult(data);
+                    FindSCU.this.onResult(data);
                     ++numMatches;
                     if (cancelAfter != 0 && numMatches >= cancelAfter)
                         try {

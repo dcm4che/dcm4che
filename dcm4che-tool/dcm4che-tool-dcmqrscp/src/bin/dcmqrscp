@@ -3,7 +3,7 @@
 # dcmqrscp  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcmqrscp.Main
+MAIN_CLASS=org.dcm4che.tool.dcmqrscp.DcmQRSCP
 MAIN_JAR=dcm4che-tool-dcmqrscp-3.0.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

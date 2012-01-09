@@ -62,7 +62,7 @@ import org.dcm4che.util.TagUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Main implements DicomInputHandler {
+public class DcmDump implements DicomInputHandler {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.dcmdump.messages");
@@ -225,7 +225,7 @@ public class Main implements DicomInputHandler {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            DcmDump main = new DcmDump();
             if (cl.hasOption("w")) {
                 String s = cl.getOptionValue("w");
                 try {
@@ -277,7 +277,7 @@ public class Main implements DicomInputHandler {
                 .withArgName("col")
                 .withDescription(rb.getString("width"))
                 .create("w"));
-        return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        return CLIUtils.parseComandLine(args, opts, rb, DcmDump.class);
     }
 
 }

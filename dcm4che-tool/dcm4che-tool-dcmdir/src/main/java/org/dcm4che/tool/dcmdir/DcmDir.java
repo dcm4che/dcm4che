@@ -67,7 +67,7 @@ import org.dcm4che.util.UIDUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Main {
+public class DcmDir {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.dcmdir.messages");
@@ -106,7 +106,7 @@ public class Main {
         opts.addOption(null, "orig-seq-len", false,
                 rb.getString("orig-seq-len"));
         CLIUtils.addEncodingOptions(opts);
-        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, DcmDir.class);
         if (cmdGroup.getSelected() == null)
             throw new ParseException(rb.getString("missing"));
         return cl;
@@ -150,7 +150,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            DcmDir main = new DcmDir();
             main.setInUse(cl.hasOption("in-use"));
             main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             CLIUtils.configure(main.fsInfo, cl);

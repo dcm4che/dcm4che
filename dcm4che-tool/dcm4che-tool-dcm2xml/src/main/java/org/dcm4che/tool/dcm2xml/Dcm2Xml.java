@@ -68,7 +68,7 @@ import org.dcm4che.tool.common.CLIUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Main {
+public class Dcm2Xml {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.dcm2xml.messages");
@@ -145,7 +145,7 @@ public class Main {
         opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
         addBulkdataOptions(opts);
 
-        return CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        return CLIUtils.parseComandLine(args, opts, rb, Dcm2Xml.class);
     }
 
     @SuppressWarnings("static-access")
@@ -192,7 +192,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            Dcm2Xml main = new Dcm2Xml();
             if (cl.hasOption("x")) {
                 String s = cl.getOptionValue("x");
                 main.setXSLT(new File(s).toURI().toURL());
@@ -224,7 +224,7 @@ public class Main {
         }
     }
 
-    private static void configureBulkdata(Main dcm2xml, CommandLine cl)
+    private static void configureBulkdata(Dcm2Xml dcm2xml, CommandLine cl)
             throws Exception {
         if (cl.hasOption("b")) {
             dcm2xml.setIncludeBulkData(true);

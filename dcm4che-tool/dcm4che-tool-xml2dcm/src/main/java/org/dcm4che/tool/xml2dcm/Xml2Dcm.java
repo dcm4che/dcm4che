@@ -67,7 +67,7 @@ import org.dcm4che.tool.common.CLIUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Main {
+public class Xml2Dcm {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.xml2dcm.messages");
@@ -138,7 +138,7 @@ public class Main {
         addIOFileNameOptions(opts);
         addBulkdataOptions(opts);
         addFileEncodingOptions(opts);
-        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Main.class);
+        CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, Xml2Dcm.class);
         if (!(cl.hasOption("x") || cl.hasOption("i")))
             throw new ParseException(rb.getString("missing-i-x"));
         return cl;
@@ -230,7 +230,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            Main main = new Main();
+            Xml2Dcm main = new Xml2Dcm();
             configureBulkdata(main, cl);
             if (cl.hasOption("t")) {
                 main.setTransferSyntax(cl.getOptionValue("t"));
@@ -280,7 +280,7 @@ public class Main {
         }
     }
 
-    private static void configureBulkdata(Main xml2dcm, CommandLine cl)
+    private static void configureBulkdata(Xml2Dcm xml2dcm, CommandLine cl)
             throws Exception {
         if (cl.hasOption("b")) {
             xml2dcm.setIncludeBulkData(true);

@@ -107,6 +107,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
+        if (baseDN == null)
+            throw new NullPointerException("baseDN");
         this.ctx = new InitialDirContext(env);
         this.baseDN = baseDN;
     }

@@ -51,7 +51,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
@@ -98,28 +97,6 @@ public class MoveSCU {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.movescu.messages");
-
-    private static String[] IVR_LE_FIRST = {
-        UID.ImplicitVRLittleEndian,
-        UID.ExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndian
-    };
-
-    private static String[] EVR_LE_FIRST = {
-        UID.ExplicitVRLittleEndian,
-        UID.ExplicitVRBigEndian,
-        UID.ImplicitVRLittleEndian
-    };
-
-    private static String[] EVR_BE_FIRST = {
-        UID.ExplicitVRBigEndian,
-        UID.ExplicitVRLittleEndian,
-        UID.ImplicitVRLittleEndian
-    };
-
-    private static String[] IVR_LE_ONLY = {
-        UID.ImplicitVRLittleEndian
-    };
 
     private static final int[] DEF_IN_FILTER = {
         Tag.SOPInstanceUID,
@@ -242,21 +219,8 @@ public class MoveSCU {
                 .withArgName("name")
                 .withDescription(rb.getString("model"))
                 .create("M"));
+        CLIUtils.addTransferSyntaxOptions(opts);
         opts.addOption(null, "relational", false, rb.getString("relational"));
-        OptionGroup group = new OptionGroup();
-        group.addOption(OptionBuilder
-                .withLongOpt("explicit-vr")
-                .withDescription(rb.getString("explicit-vr"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("big-endian")
-                .withDescription(rb.getString("big-endian"))
-                .create());
-        group.addOption(OptionBuilder
-                .withLongOpt("implicit-vr")
-                .withDescription(rb.getString("implicit-vr"))
-                .create());
-        opts.addOptionGroup(group);
     }
 
     @SuppressWarnings("unchecked")
@@ -304,7 +268,8 @@ public class MoveSCU {
     }
 
     private static void configureServiceClass(MoveSCU main, CommandLine cl) throws ParseException {
-        main.setInformationModel(informationModelOf(cl), tssOf(cl), cl.hasOption("relational"));
+        main.setInformationModel(informationModelOf(cl),
+                CLIUtils.transferSyntaxesOf(cl), cl.hasOption("relational"));
     }
 
     private static String destinationOf(CommandLine cl) throws ParseException {
@@ -335,16 +300,6 @@ public class MoveSCU {
                     rb.getString("invalid-model-name"),
                     cl.getOptionValue("M")));
         }
-    }
-
-    private static String[] tssOf(CommandLine cl) {
-        if (cl.hasOption("explicit-vr"))
-            return EVR_LE_FIRST;
-        if (cl.hasOption("big-endian"))
-            return EVR_BE_FIRST;
-        if (cl.hasOption("implicit-vr"))
-            return IVR_LE_ONLY;
-        return IVR_LE_FIRST;
     }
 
     public void open() throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {

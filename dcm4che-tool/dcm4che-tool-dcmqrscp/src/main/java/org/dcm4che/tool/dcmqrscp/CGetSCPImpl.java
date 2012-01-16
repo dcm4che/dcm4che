@@ -65,9 +65,9 @@ class CGetSCPImpl extends BasicCGetSCP {
     private final boolean withoutBulkData;
     private final QueryRetrieveLevel rootLevel;
 
-    public CGetSCPImpl(DcmQRSCP main, String sopClass, String... qrLevels) {
-        super(main.getDevice(), sopClass);
-        this.main = main;
+    public CGetSCPImpl(DcmQRSCP qrscp, String sopClass, String... qrLevels) {
+        super(qrscp, sopClass);
+        this.main = qrscp;
         this.qrLevels = qrLevels;
         this.withoutBulkData = qrLevels.length == 0;
         this.rootLevel = withoutBulkData

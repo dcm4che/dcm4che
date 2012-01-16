@@ -38,7 +38,7 @@
 
 package org.dcm4che.data;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Date;
 
@@ -140,5 +140,17 @@ public class AttributesTest {
         assertEquals("VALUE1", a.getString("CREATOR1", 0x00090010, null, null));
         assertEquals("VALUE2", a.getString("CREATOR2", 0x00090010, null, null));
         assertEquals("CREATOR3", a.getString(0x00090021));
+    }
+
+    @Test
+    public void testEqualsPrivate() {
+        Attributes a1 = new Attributes();
+        a1.setString(0x00090010, VR.LO, "CREATOR1");
+        a1.setString(0x00091010, VR.LO, "VALUE1");
+        Attributes a2 = new Attributes();
+        a2.setString(0x00090020, VR.LO, "CREATOR1");
+        a2.setString(0x00092010, VR.LO, "VALUE1");
+        assertTrue(a1.equals(a2));
+        assertTrue(a2.equals(a1));
     }
 }

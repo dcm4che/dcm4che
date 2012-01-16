@@ -59,6 +59,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.ElementDictionary;
+import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
@@ -454,14 +455,13 @@ public class CLIUtils {
             ApplicationEntity ae, CommandLine cl) throws ParseException {
         if (cl.hasOption("b")) {
             String aeAtHostPort = cl.getOptionValue("b");
-            String[] aeHostPort = split(aeAtHostPort, '@', 0);
-            ae.setAETitle(aeHostPort[0]);
-            if (aeHostPort[1] != null) {
-                String[] hostPort = split(aeHostPort[1], ':', 0);
-                conn.setHostname(hostPort[0]);
-                if (hostPort[1] != null)
-                    conn.setPort(Integer.parseInt(hostPort[1]));
-            }
+            String[] aeAtHostAndPort = split(aeAtHostPort, ':', 0);
+            String[] aeHost = split(aeAtHostAndPort[0], '@', 0);
+            ae.setAETitle(aeHost[0]);
+            if (aeHost[1] != null)
+                conn.setHostname(aeHost[1]);
+            if (aeAtHostAndPort[1] != null)
+                conn.setPort(Integer.parseInt(aeAtHostAndPort[1]));
         }
     }
 
@@ -758,5 +758,54 @@ public class CLIUtils {
         fsInfo.setDescriptorFileCharset(cl.getOptionValue("fs-desc-cs"));
     }
 
+    @SuppressWarnings("static-access")
+    public static void addTransferSyntaxOptions(Options opts) {
+        OptionGroup group = new OptionGroup();
+        group.addOption(OptionBuilder
+                .withLongOpt("explicit-vr")
+                .withDescription(rb.getString("explicit-vr"))
+                .create());
+        group.addOption(OptionBuilder
+                .withLongOpt("big-endian")
+                .withDescription(rb.getString("big-endian"))
+                .create());
+        group.addOption(OptionBuilder
+                .withLongOpt("implicit-vr")
+                .withDescription(rb.getString("implicit-vr"))
+                .create());
+        opts.addOptionGroup(group);
+    }
+
+    private static String[] IVR_LE_FIRST = {
+        UID.ImplicitVRLittleEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian
+    };
+
+    private static String[] EVR_LE_FIRST = {
+        UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian,
+        UID.ImplicitVRLittleEndian
+    };
+
+    private static String[] EVR_BE_FIRST = {
+        UID.ExplicitVRBigEndian,
+        UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian
+    };
+
+    private static String[] IVR_LE_ONLY = {
+        UID.ImplicitVRLittleEndian
+    };
+
+    public static String[] transferSyntaxesOf(CommandLine cl) {
+        if (cl.hasOption("explicit-vr"))
+            return EVR_LE_FIRST;
+        if (cl.hasOption("big-endian"))
+            return EVR_BE_FIRST;
+        if (cl.hasOption("implicit-vr"))
+            return IVR_LE_ONLY;
+        return IVR_LE_FIRST;
+    }
 
 }

@@ -102,8 +102,23 @@ public class DicomServiceException extends IOException {
         return this;
     }
 
+    public DicomServiceException setEventTypeID(int val) {
+        rsp.setInt(Tag.EventTypeID, VR.US, val);
+        return this;
+    }
+
+    public DicomServiceException setActionTypeID(int val) {
+        rsp.setInt(Tag.ActionTypeID, VR.US, val);
+        return this;
+    }
+
     public DicomServiceException setOffendingElements(int... tags) {
         rsp.setInt(Tag.OffendingElement, VR.AT, tags);
+        return this;
+    }
+
+    public DicomServiceException setAttributeIdentifierList(int... tags) {
+        rsp.setInt(Tag.AttributeIdentifierList, VR.AT, tags);
         return this;
     }
 

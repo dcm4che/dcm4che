@@ -360,6 +360,40 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
+      <includes>
+        <include>bin/stgcmtscu</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
+      <includes>
+        <include>bin/stgcmtscu.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
+      <includes>
+        <include>etc/stgcmtscu/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
+      <includes>
+        <include>etc/stgcmtscu/key.jks</include>
+        <include>etc/stgcmtscu/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
       <includes>
         <include>bin/xml2dcm</include>
@@ -422,6 +456,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
         <include>org.slf4j:slf4j-api</include>

@@ -51,12 +51,28 @@ public class Status {
 
     public static final int Cancel                             = 0xFE00;
 
+    public static final int NoSuchAttribute                    = 0x0105;
+    public static final int InvalidAttributeValue              = 0x0106;
+    public static final int AttributeListError                 = 0x0107;
     public static final int ProcessingFailure                  = 0x0110;
     public static final int DuplicateSOPinstance               = 0x0111;
     public static final int NoSuchObjectInstance               = 0x0112;
+    public static final int NoSuchEventType                    = 0x0113;
+    public static final int NoSuchArgument                     = 0x0114;
+    public static final int InvalidArgumentValue               = 0x0115;
+    public static final int AttributeValueOutOfRange           = 0x0116;
+    public static final int InvalidObjectInstance              = 0x0117;
     public static final int NoSuchSOPclass                     = 0x0118;
+    public static final int ClassInstanceConflict              = 0x0119;
+    public static final int MissingAttribute                   = 0x0120;
+    public static final int MissingAttributeValue              = 0x0121;
     public static final int SOPclassNotSupported               = 0x0122;
+    public static final int NoSuchActionType                   = 0x0123;
+    public static final int NotAuthorized                      = 0x0124;
+    public static final int DuplicateInvocation                = 0x0210;
     public static final int UnrecognizedOperation              = 0x0211;
+    public static final int MistypedArgument                   = 0x0212;
+    public static final int ResourceLimitation                 = 0x0213;
 
     public static final int OutOfResources                     = 0xA700;
     public static final int UnableToCalculateNumberOfMatches   = 0xA701;

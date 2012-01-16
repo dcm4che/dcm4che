@@ -58,15 +58,17 @@ import org.dcm4che.util.AttributesValidator;
  */
 class CFindSCPImpl extends BasicCFindSCP {
 
-    private final DcmQRSCP main;
     private final String[] qrLevels;
     private final QueryRetrieveLevel rootLevel;
 
-    public CFindSCPImpl(DcmQRSCP main, String sopClass, String... qrLevels) {
-        super(main.getDevice(), sopClass);
-        this.main = main;
+    public CFindSCPImpl(DcmQRSCP qrscp, String sopClass, String... qrLevels) {
+        super(qrscp, sopClass);
         this.qrLevels = qrLevels;
         this.rootLevel = QueryRetrieveLevel.valueOf(qrLevels[0]);
+    }
+
+    private DcmQRSCP qrscp() {
+        return (DcmQRSCP) device;
     }
 
     @Override
@@ -75,8 +77,8 @@ class CFindSCPImpl extends BasicCFindSCP {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateQueryKeys(validator, rootLevel, relational(as, rq));
-        DicomDirReader ddr = main.getDicomDirReader();
-        String availability =  main.getInstanceAvailability();
+        DicomDirReader ddr = qrscp().getDicomDirReader();
+        String availability =  qrscp().getInstanceAvailability();
         switch(level) {
         case PATIENT:
             return new PatientQueryTask(as, pc, rq, keys, ddr, availability);

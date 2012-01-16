@@ -344,20 +344,20 @@ public class Attributes implements Serializable {
         if (index < 0)
             index = -index-1;
         while (index < size && (tags[index] & 0xffffff00) == group) {
+            creatorTag = tags[index];
             if (vrs[index] == VR.LO && values[index] != Value.NULL
                     && privateCreator.equals(
                             VR.LO.toString(decodeStringValue(index), false, 0, null)))
-                return tags[index];
+                return creatorTag;
             index++;
+            creatorTag++;
         }
         if (!reserve)
             return -1;
 
-        if (index > 0 && (tags[index-1] & 0xffffff00) == group) {
-            if (((creatorTag = tags[index-1] + 1) & 0xff00) != 0)
-                throw new IllegalStateException("No free block for Private Element "
-                        + TagUtils.toString(tag));
-        }
+        if ((creatorTag & 0xff00) != 0)
+            throw new IllegalStateException("No free block for Private Element "
+                    + TagUtils.toString(tag));
         setString(creatorTag, VR.LO, privateCreator);
         return creatorTag;
     }
@@ -1254,6 +1254,32 @@ public class Attributes implements Serializable {
         return seq;
     }
 
+    public Sequence ensureSequence(int tag, int initialCapacity) {
+        return ensureSequence(null, tag, initialCapacity);
+    }
+
+    public Sequence ensureSequence(String privateCreator, int tag, int initialCapacity) {
+        if (privateCreator != null) {
+            int creatorTag = creatorTagOf(privateCreator, tag, true);
+            tag = TagUtils.toPrivateTag(creatorTag, tag);
+        }
+
+        Sequence seq;
+        int index = indexOf(tag);
+        if (index >= 0) {
+            Object oldValue = values[index];
+            if (oldValue instanceof Sequence)
+                seq = (Sequence) oldValue;
+            else
+                values[index] = seq = new Sequence(this, initialCapacity);
+        } else {
+            seq = new Sequence(this, initialCapacity);
+            insert(-index-1, tag, VR.SQ, seq);
+        }
+        return seq;
+    }
+
+
     public Fragments newFragments(int tag, VR vr, int initialCapacity) {
         return newFragments(null, tag, vr, initialCapacity);
     }
@@ -1296,7 +1322,11 @@ public class Attributes implements Serializable {
             values[index] = value;
             return oldValue;
         }
-        index = -index-1;
+        insert(-index-1, tag, vr, value);
+        return null;
+    }
+
+    private void insert(int index, int tag, VR vr, Object value) {
         ensureCapacity(size+1);
         int numMoved = size - index;
         if (numMoved > 0) {
@@ -1308,7 +1338,6 @@ public class Attributes implements Serializable {
         vrs[index] = vr;
         values[index] = value;
         size++;
-        return null;
     }
 
 

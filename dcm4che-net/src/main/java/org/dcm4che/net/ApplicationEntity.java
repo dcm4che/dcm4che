@@ -88,8 +88,8 @@ public class ApplicationEntity {
     private String[] prefCallingAETs = {};
     private String[] supportedCharacterSets = {};
     private boolean checkCallingAET;
-    private boolean acceptor;
-    private boolean initiator;
+    private boolean acceptor = true;
+    private boolean initiator = true;
     private Boolean installed;
     private final List<Connection> conns = new ArrayList<Connection>(1);
     private final HashMap<String, TransferCapability> scuTCs =

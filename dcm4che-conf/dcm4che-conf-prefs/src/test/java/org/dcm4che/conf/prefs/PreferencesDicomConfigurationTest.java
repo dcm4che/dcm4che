@@ -194,7 +194,7 @@ public class PreferencesDicomConfigurationTest {
 
     private static ApplicationEntity createAE(String aet, Connection conn) {
         ApplicationEntity ae = new ApplicationEntity(aet);
-        ae.setAssociationAcceptor(true);
+        ae.setAssociationInitiator(false);
         ae.addConnection(conn);
         ae.addTransferCapability(echoSCP());
         ae.addTransferCapability(ctSCP());

@@ -53,7 +53,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -103,7 +102,8 @@ public class Device {
     private HashMap<String,Object> properties = new HashMap<String,Object>();
 
     private int connLimit = DEF_CONN_LIMIT;
-    private final AtomicInteger connCount = new AtomicInteger(0);
+    private int connCount = 0;
+    private final Object connCountLock = new Object();
 
     private Executor executor;
     private ScheduledExecutorService scheduledExecutor;
@@ -629,15 +629,27 @@ public class Device {
     }
 
     public int getNumberOfOpenConnections() {
-        return connCount.intValue();
+        return connCount;
     }
 
     void incrementNumberOfOpenConnections() {
-        connCount.incrementAndGet();
+        synchronized (connCountLock) {
+            connCount++;
+        }
     }
 
     void decrementNumberOfOpenConnections() {
-        connCount.decrementAndGet();
+        synchronized (connCountLock) {
+            if (--connCount <= 0)
+                connCountLock.notifyAll();
+        }
+    }
+
+    public void waitForNoOpenConnections() throws InterruptedException {
+        synchronized (connCountLock) {
+            while (connCount > 0)
+                connCountLock.wait();
+        }
     }
 
     public boolean isLimitOfOpenConnectionsExceeded() {

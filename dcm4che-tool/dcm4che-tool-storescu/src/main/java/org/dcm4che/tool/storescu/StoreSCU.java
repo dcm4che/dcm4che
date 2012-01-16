@@ -38,21 +38,19 @@
 
 package org.dcm4che.tool.storescu;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -78,18 +76,18 @@ import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class StoreSCU {
+public class StoreSCU extends Device {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.storescu.messages");
 
-    private final Device device = new Device("storescu");
     private final ApplicationEntity ae = new ApplicationEntity("STORESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -102,6 +100,8 @@ public class StoreSCU {
     private String tmpSuffix;
     private File tmpDir;
     private File tmpFile;
+    private boolean keepTmpFile;
+    private boolean scanOnly;
     private Association as;
 
     private long totalSize;
@@ -109,21 +109,38 @@ public class StoreSCU {
     private int filesSent;
 
     public StoreSCU() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+        super("storescu");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.addConnection(conn);
-    }
-
-    public void setScheduledExecutorService(ScheduledExecutorService service) {
-        device.setScheduledExecutor(service);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
     }
 
     public final void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public final void setTmpFilePrefix(String prefix) {
+        this.tmpPrefix = prefix;
+    }
+
+    public final void setTmpFileSuffix(String suffix) {
+        this.tmpSuffix = suffix;
+    }
+
+    public final void setTmpFileDirectory(File tmpDir) {
+        this.tmpDir = tmpDir;
+    }
+
+    public final void setScanResult(File file) {
+        this.tmpFile = file;
+    }
+
+    public final void setScanOnly(boolean scanOnly) {
+        this.scanOnly = scanOnly;
+    }
+
+    public final void setKeepTmpFile(boolean keepTmpFile) {
+        this.keepTmpFile = keepTmpFile;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -136,8 +153,41 @@ public class StoreSCU {
         CLIUtils.addCStoreRspOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addScanOptions(opts);
         addRelatedSOPClassOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addScanOptions(Options opts) {
+        opts.addOption(null, "scan-only", false,
+                rb.getString("scan-only"));
+        opts.addOption(null, "tmp-file-keep", false,
+                rb.getString("tmp-file-keep"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file")
+                .withDescription(rb.getString("scan-result"))
+                .withLongOpt("scan-result")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("directory")
+                .withDescription(rb.getString("tmp-file-dir"))
+                .withLongOpt("tmp-file-dir")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("prefix")
+                .withDescription(rb.getString("tmp-file-prefix"))
+                .withLongOpt("tmp-file-prefix")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription(rb.getString("tmp-file-suffix"))
+                .withLongOpt("tmp-file-suffix")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -158,13 +208,16 @@ public class StoreSCU {
         try {
             CommandLine cl = parseComandLine(args);
             StoreSCU main = new StoreSCU();
-            CLIUtils.configureConnect(main.remote, main.rq, cl);
-            CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
-            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
-            configureRelatedSOPClass(main, cl);
-            main.setPriority(CLIUtils.priorityOf(cl));
+            configureScan(main, cl);
+            if (!main.scanOnly) {
+                CLIUtils.configureConnect(main.remote, main.rq, cl);
+                CLIUtils.configureBind(main.conn, main.ae, cl);
+                CLIUtils.configure(main.conn, main.ae, cl);
+                main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+                main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
+                configureRelatedSOPClass(main, cl);
+                main.setPriority(CLIUtils.priorityOf(cl));
+            }
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -178,12 +231,15 @@ public class StoreSCU {
                         rb.getString("scanned"), n,
                         (t2 - t1) / 1000F, (t2 - t1) / n));
             }
+            if (main.scanOnly) {
+                return;
+            }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             main.setExecutor(executorService);
-            main.setScheduledExecutorService(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             try {
                 t1 = System.currentTimeMillis();
                 main.open();
@@ -221,6 +277,17 @@ public class StoreSCU {
         }
     }
 
+    private static void configureScan(StoreSCU storescu, CommandLine cl) {
+        storescu.setScanOnly(cl.hasOption("scan-only"));
+        storescu.setKeepTmpFile(cl.hasOption("tmp-file-keep"));
+        if (cl.hasOption("scan-result"))
+            storescu.setScanResult(new File(cl.getOptionValue("scan-result")));
+        if (cl.hasOption("tmp-file-dir"))
+            storescu.setTmpFileDirectory(new File(cl.getOptionValue("tmp-file-dir")));
+        storescu.setTmpFilePrefix(cl.getOptionValue("tmp-file-prefix", "storescu-"));
+        storescu.setTmpFileSuffix(cl.getOptionValue("tmp-file-suffix"));
+    }
+
     private static void configureRelatedSOPClass(StoreSCU storescu, CommandLine cl)
             throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
@@ -239,9 +306,13 @@ public class StoreSCU {
     }
 
     public void scanFiles(List<String> fnames) throws IOException {
-        tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
-        DataOutputStream fileInfos = new DataOutputStream(
-                new BufferedOutputStream(new FileOutputStream(tmpFile)));
+        if (tmpFile == null) {
+            tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+            if (!keepTmpFile)
+                tmpFile.deleteOnExit();
+        }
+        BufferedWriter fileInfos = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(tmpFile)));
         try {
             for (String fname : fnames)
                 scanFile(fileInfos, new File(fname));
@@ -251,23 +322,20 @@ public class StoreSCU {
     }
 
     public void sendFiles() throws IOException {
-        DataInputStream fileInfos = new DataInputStream(
-                new BufferedInputStream(
+        BufferedReader fileInfos = new BufferedReader(
+                new InputStreamReader(
                         new FileInputStream(tmpFile)));
         try {
-            while (as.isReadyForDataTransfer()) {
-                String fpath = fileInfos.readUTF();
-                long fmiEndPos = fileInfos.readLong();
-                String cuid = fileInfos.readUTF();
-                String iuid = fileInfos.readUTF();
-                String ts = fileInfos.readUTF();
+            String line;
+            while (as.isReadyForDataTransfer()
+                    && (line = fileInfos.readLine()) != null) {
+                String[] ss = StringUtils.split(line, '\t');
                 try {
-                    send(new File(fpath), fmiEndPos, cuid, iuid, ts);
+                    send(new File(ss[4]), Long.parseLong(ss[3]), ss[1], ss[0], ss[2]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }            
-        } catch (EOFException eof) {
             try {
                 as.waitForOutstandingRSP();
             } catch (InterruptedException e) {
@@ -275,11 +343,10 @@ public class StoreSCU {
             }
         } finally {
             SafeClose.close(fileInfos);
-            tmpFile.delete();
         }
     }
 
-    private void scanFile(DataOutputStream fileInfos, File f) {
+    private void scanFile(BufferedWriter fileInfos, File f) {
         if (f.isDirectory()) {
             for (String s : f.list())
                 scanFile(fileInfos, new File(f, s));
@@ -312,13 +379,18 @@ public class StoreSCU {
         }
     }
 
-    private void addFile(DataOutputStream fileInfos, File f, long endFmi,
+    private void addFile(BufferedWriter fileInfos, File f, long endFmi,
             String cuid, String iuid, String ts) throws IOException {
-        fileInfos.writeUTF(f.getPath());
-        fileInfos.writeLong(endFmi);
-        fileInfos.writeUTF(cuid);
-        fileInfos.writeUTF(iuid);
-        fileInfos.writeUTF(ts);
+        fileInfos.write(iuid);
+        fileInfos.write('\t');
+        fileInfos.write(cuid);
+        fileInfos.write('\t');
+        fileInfos.write(ts);
+        fileInfos.write('\t');
+        fileInfos.write(Long.toString(endFmi));
+        fileInfos.write('\t');
+        fileInfos.write(f.getPath());
+        fileInfos.newLine();
 
         if (rq.containsPresentationContextFor(cuid, ts))
             return;

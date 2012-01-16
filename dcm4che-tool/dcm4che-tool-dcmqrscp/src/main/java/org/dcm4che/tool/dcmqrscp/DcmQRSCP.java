@@ -44,22 +44,25 @@ import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
@@ -83,7 +86,7 @@ import org.dcm4che.util.UIDUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DcmQRSCP {
+public class DcmQRSCP extends Device {
 
     private static final String[] PATIENT_ROOT_LEVELS = {
         "PATIENT", "STUDY", "SERIES", "IMAGE" };
@@ -94,7 +97,6 @@ public class DcmQRSCP {
     private static ResourceBundle rb =
          ResourceBundle.getBundle("org.dcm4che.tool.dcmqrscp.messages");
 
-    private final Device device = new Device("dcmqrscp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
@@ -103,6 +105,7 @@ public class DcmQRSCP {
     private AttributesFormat filePathFormat;
     private RecordFactory recFact;
     private String availability;
+    private boolean stgCmtOnSameAssoc;
     private boolean sendPendingCGet;
     private long sendPendingCMoveInterval;
     private final FilesetInfo fsInfo = new FilesetInfo();
@@ -111,13 +114,15 @@ public class DcmQRSCP {
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
 
     public DcmQRSCP() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+        super("dcmqrscp");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
         serviceRegistry.addDicomService(new CStoreSCPImpl(this));
+        serviceRegistry.addDicomService(new StgCmtSCPImpl(this));
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(this,
                         UID.PatientRootQueryRetrieveInformationModelFIND,
@@ -160,10 +165,6 @@ public class DcmQRSCP {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
-    final Device getDevice() {
-        return device;
-    }
-
     public final void setDicomDirectory(File dicomDir) {
         File storageDir = dicomDir.getParentFile();
         if (storageDir.mkdirs())
@@ -192,20 +193,20 @@ public class DcmQRSCP {
         return storageDir.canWrite();
     }
 
-    public void setScheduledExecutor(ScheduledExecutorService scheduledExecutor) {
-        device.setScheduledExecutor(scheduledExecutor);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
-    }
-
     public final void setInstanceAvailability(String availability) {
         this.availability = availability;
     }
 
     public final String getInstanceAvailability() {
         return availability;
+    }
+
+    public boolean isStgCmtOnSameAssoc() {
+        return stgCmtOnSameAssoc;
+    }
+
+    public void setStgCmtOnSameAssoc(boolean stgCmtOnSameAssoc) {
+        this.stgCmtOnSameAssoc = stgCmtOnSameAssoc;
     }
 
     public final void setSendPendingCGet(boolean sendPendingCGet) {
@@ -242,6 +243,7 @@ public class DcmQRSCP {
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);
+        addStgCmtOptions(opts);
         addSendingPendingOptions(opts);
         addRemoteConnectionsOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, DcmQRSCP.class);
@@ -255,6 +257,10 @@ public class DcmQRSCP {
                 .withDescription(rb.getString("availability"))
                 .withLongOpt("availability")
                 .create());
+    }
+
+    private static void addStgCmtOptions(Options opts) {
+        opts.addOption(null, "stgcmt-same-assoc", false, rb.getString("stgcmt-same-assoc"));
     }
 
     @SuppressWarnings("static-access")
@@ -331,6 +337,7 @@ public class DcmQRSCP {
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);
+            configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureRemoteConnections(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
@@ -352,6 +359,8 @@ public class DcmQRSCP {
 
     private static void configureDicomFileSet(DcmQRSCP main, CommandLine cl)
             throws ParseException {
+        if (!cl.hasOption("dicomdir"))
+            throw new MissingOptionException(rb.getString("missing-dicomdir"));
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
                         "DICOM/#(0020,000D)/#(0020,000E)/#(0008,0018)"));
@@ -360,6 +369,10 @@ public class DcmQRSCP {
 
     private static void configureInstanceAvailability(DcmQRSCP main, CommandLine cl) {
         main.setInstanceAvailability(cl.getOptionValue("availability"));
+    }
+
+    private static void configureStgCmt(DcmQRSCP main, CommandLine cl) {
+        main.setStgCmtOnSameAssoc(cl.hasOption("stgcmt-same-assoc"));
     }
 
     private static void configureSendPending(DcmQRSCP main, CommandLine cl) {
@@ -440,7 +453,8 @@ public class DcmQRSCP {
         return uids ;
     }
 
-    private static void configureRemoteConnections(DcmQRSCP main, CommandLine cl) throws Exception {
+    private static void configureRemoteConnections(DcmQRSCP main, CommandLine cl)
+            throws Exception {
         String file = cl.getOptionValue("ae-config", "resource:ae.properties");
         Properties aeConfig = CLIUtils.loadProperties(file, null);
         for (Map.Entry<Object, Object> entry : aeConfig.entrySet()) {
@@ -460,10 +474,6 @@ public class DcmQRSCP {
                         "Invalid entry in " + file + ": " + aet + "=" + value);
             }
         }
-    }
-
-    private void activate() throws IOException, KeyManagementException {
-        device.activate();
     }
 
     final DicomDirReader getDicomDirReader() {
@@ -548,4 +558,64 @@ public class DcmQRSCP {
         }
         return list;
     }
+
+    public Attributes calculateStorageCommitmentResult(String calledAET,
+            Attributes actionInfo) throws IOException {
+        Sequence requestSeq = actionInfo.getSequence(Tag.ReferencedSOPSequence);
+        int size = requestSeq.size();
+        String[] sopIUIDs = new String[size];
+        Attributes eventInfo = new Attributes(6);
+        eventInfo.setString(Tag.RetrieveAETitle, VR.AE, calledAET);
+        eventInfo.setString(Tag.StorageMediaFileSetID, VR.SH, ddReader.getFileSetID());
+        eventInfo.setString(Tag.StorageMediaFileSetUID, VR.SH, ddReader.getFileSetUID());
+        eventInfo.setBytes(Tag.TransactionUID, VR.UI, actionInfo.getBytes(Tag.TransactionUID));
+        Sequence successSeq = eventInfo.newSequence(Tag.ReferencedSOPSequence, size);
+        Sequence failedSeq = eventInfo.newSequence(Tag.FailedSOPSequence, size);
+        LinkedHashMap<String, String> map =
+                new LinkedHashMap<String, String>(size * 4 / 3);
+        for (int i = 0; i < sopIUIDs.length; i++) {
+            Attributes item = requestSeq.get(i);
+            map.put(sopIUIDs[i] = item.getString(Tag.ReferencedSOPInstanceUID),
+                    item.getString(Tag.ReferencedSOPClassUID));
+        }
+        DicomDirReader ddr = ddReader;
+        Attributes patRec = ddr.findPatientRecord();
+        while (patRec != null) {
+            Attributes studyRec = ddr.findStudyRecord(patRec);
+            while (studyRec != null) {
+                Attributes seriesRec = ddr.findSeriesRecord(studyRec);
+                while (seriesRec != null) {
+                    Attributes instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+                    while (instRec != null) {
+                        String iuid = instRec.getString(Tag.ReferencedSOPInstanceUIDInFile);
+                        String cuid = map.remove(iuid);
+                        if (cuid.equals(instRec.getString(Tag.ReferencedSOPClassUIDInFile)))
+                            successSeq.add(refSOP(iuid, cuid, Status.Success));
+                        else
+                            failedSeq.add(refSOP(iuid, cuid, Status.ClassInstanceConflict));
+                        instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+                    }
+                    seriesRec = ddr.findNextSeriesRecord(seriesRec);
+                }
+                studyRec = ddr.findNextStudyRecord(studyRec);
+            }
+            patRec = ddr.findNextPatientRecord(patRec);
+        }
+        for (Map.Entry<String, String> entry : map.entrySet())
+            failedSeq.add(refSOP(entry.getKey(), entry.getValue(),
+                    Status.NoSuchObjectInstance));
+        if (failedSeq.isEmpty())
+            eventInfo.remove(Tag.FailedSOPSequence);
+        return eventInfo;
+    }
+
+    private static Attributes refSOP(String iuid, String cuid, int failureReason) {
+        Attributes attrs = new Attributes(3);
+        attrs.setString(Tag.ReferencedSOPClassUID, VR.UI, cuid);
+        attrs.setString(Tag.ReferencedSOPInstanceUID, VR.UI, iuid);
+        if (failureReason != Status.Success)
+            attrs.setInt(Tag.FailureReason, VR.US, failureReason);
+        return attrs ;
+    }
+
 }

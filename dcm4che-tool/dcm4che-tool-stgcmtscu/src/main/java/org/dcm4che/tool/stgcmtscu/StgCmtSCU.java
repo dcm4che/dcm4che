@@ -290,12 +290,14 @@ public class StgCmtSCU extends Device {
                 .withArgName("iuid:cuid")
                 .withValueSeparator(':')
                 .withDescription(rb.getString("ref-sop"))
+                .withLongOpt("ref-sop")
                 .create("r"));
         opts.addOption(OptionBuilder
                 .hasArgs()
                 .withArgName("id:iuid")
                 .withValueSeparator(':')
                 .withDescription(rb.getString("ref-fs"))
+                .withLongOpt("ref-fs")
                 .create(null));
    }
 

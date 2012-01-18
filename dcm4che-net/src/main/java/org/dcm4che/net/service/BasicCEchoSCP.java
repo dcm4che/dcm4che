@@ -43,6 +43,7 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -64,7 +65,11 @@ public class BasicCEchoSCP extends DicomService implements CEchoSCP {
     @Override
     public void onCEchoRQ(Association as, PresentationContext pc,
             Attributes cmd) throws IOException {
-        as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
+        try {
+            as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
+        } catch (AssociationStateException e) {
+            LOG.warn("{} << C-ECHO-RSP failed: {}", as, e.getMessage());
+        }
     }
 
 }

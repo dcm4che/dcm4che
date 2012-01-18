@@ -94,6 +94,7 @@ public class StgCmtSCU extends Device {
     private int iuidFieldIndex = 0;
     private int cuidFieldIndex = 1;
     private char fieldDelim = '\t';
+    private boolean keepAlive;
 
     private Attributes actionInfo = new Attributes();
 
@@ -103,17 +104,9 @@ public class StgCmtSCU extends Device {
     private final BasicNEventReportSCU stgcmtResultHandler =
             new BasicNEventReportSCU(UID.StorageCommitmentPushModelSOPClass) {
 
-        @Override
-        protected Attributes eventReport(Association as,
-                PresentationContext pc, int eventTypeID,
-                Attributes eventInfo, Attributes rsp, Object[] handback) {
-            handback[0] = eventInfo.getString(Tag.TransactionUID);
-            return null;
-        }
-
         protected void postNEventReportRSP(Association as, PresentationContext pc,
                 int eventTypeID, Attributes eventInfo, Attributes rsp, Object handback) {
-            removeOutstandingResult((String) handback);
+            removeOutstandingResult(eventInfo.getString(Tag.TransactionUID));
         }
     };
 
@@ -139,6 +132,7 @@ public class StgCmtSCU extends Device {
             stgcmtscu.remote.setTlsProtocols(stgcmtscu.conn.getTlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
             configureServiceClass(stgcmtscu, cl);
+            configureKeepAlive(stgcmtscu, cl);
             configureRequest(stgcmtscu, cl);
             ExecutorService executorService =
                     Executors.newCachedThreadPool();
@@ -170,6 +164,10 @@ public class StgCmtSCU extends Device {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static void configureKeepAlive(StgCmtSCU stgcmtscu, CommandLine cl) {
+        stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
     }
 
     private static void configureRequest(StgCmtSCU stgcmtscu, CommandLine cl) {
@@ -238,6 +236,10 @@ public class StgCmtSCU extends Device {
        cuidFieldIndex = i - 1;
     }
 
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
     private static void configureServiceClass(StgCmtSCU stgcmtscu,
             CommandLine cl) {
         String[] tss = CLIUtils.transferSyntaxesOf(cl);
@@ -255,6 +257,7 @@ public class StgCmtSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
+        addKeepAliveOption(opts);
         addRequestOption(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
@@ -263,6 +266,10 @@ public class StgCmtSCU extends Device {
         CLIUtils.addNActionRspOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);
+    }
+
+    private static void addKeepAliveOption(Options opts) {
+        opts.addOption(null, "keep-alive", false, rb.getString("keep-alive"));
     }
 
     @SuppressWarnings("static-access")
@@ -309,12 +316,15 @@ public class StgCmtSCU extends Device {
     public void close() throws IOException, InterruptedException {
         if (as != null && as.isReadyForDataTransfer()) {
             as.waitForOutstandingRSP();
-            waitForOutstandingResults();
+            if (keepAlive)
+                waitForOutstandingResults();
             as.release();
         }
-        waitForOutstandingResults();
-        waitForNoOpenConnections();
-        deactivate();
+        if (conn.isListening()) {
+            waitForOutstandingResults();
+            waitForNoOpenConnections();
+            deactivate();
+        }
     }
 
     private void addOutstandingResult(String tuid) {

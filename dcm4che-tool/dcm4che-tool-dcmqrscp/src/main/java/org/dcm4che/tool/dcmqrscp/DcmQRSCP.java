@@ -240,6 +240,8 @@ public class DcmQRSCP extends Device {
         CLIUtils.addBindServerOption(opts);
         CLIUtils.addAEOptions(opts, false, true);
         CLIUtils.addCommonOptions(opts);
+        CLIUtils.addCStoreRspOption(opts);
+        CLIUtils.addNEventRspOption(opts);
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);

@@ -51,20 +51,17 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class BasicCStoreSCP extends DicomService implements CStoreSCP {
-
-    public static final Logger LOG = LoggerFactory.getLogger(BasicCStoreSCP.class);
 
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
@@ -75,7 +72,11 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
             PDVInputStream data) throws IOException {
         Attributes rsp = Commands.mkRSP(rq, Status.Success);
         store(as, pc, rq, data, rsp);
-        as.writeDimseRSP(pc, rsp);
+        try {
+            as.writeDimseRSP(pc, rsp);
+        } catch (AssociationStateException e) {
+            LOG.warn("{} << C-STORE-RSP failed: {}", as, e.getMessage());
+        }
     }
 
     protected void store(Association as, PresentationContext pc, Attributes rq,

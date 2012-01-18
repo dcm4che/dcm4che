@@ -45,6 +45,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -85,8 +86,12 @@ public class BasicNEventReportSCU extends DicomService implements NEventReportSC
                 rsp, handback );
         if (eventReply != null)
             rsp.setInt(Tag.EventTypeID, VR.US, eventTypeID);
-        as.writeDimseRSP(pc, rsp, eventReply);
-        postNEventReportRSP(as, pc, eventTypeID , eventInfo, rsp, handback[0]);
+        try {
+            as.writeDimseRSP(pc, rsp, eventReply);
+            postNEventReportRSP(as, pc, eventTypeID , eventInfo, rsp, handback[0]);
+        } catch (AssociationStateException e) {
+            LOG.warn("{} << N-EVENT_REPORT-RSP failed: {}", as, e.getMessage());
+        }
     }
 
     protected Attributes eventReport(Association as, PresentationContext pc,

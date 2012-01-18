@@ -39,12 +39,17 @@
 package org.dcm4che.net.service;
 
 import org.dcm4che.net.Association;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DicomService {
+
+    public static final Logger LOG = LoggerFactory.getLogger(DicomService.class);
+
     private final String[] sopClasses;
 
     protected DicomService(String... sopClasses) {

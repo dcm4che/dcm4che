@@ -45,6 +45,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -85,8 +86,12 @@ public class BasicNActionSCP extends DicomService implements NActionSCP {
                 handback);
         if (actionReply != null)
             rsp.setInt(Tag.ActionTypeID, VR.US, actionTypeID);
-        as.writeDimseRSP(pc, rsp, actionReply);
-        postNActionRSP(as, pc, actionTypeID, actionInfo, rsp, handback[0]);
+        try {
+            as.writeDimseRSP(pc, rsp, actionReply);
+            postNActionRSP(as, pc, actionTypeID, actionInfo, rsp, handback[0]);
+        } catch (AssociationStateException e) {
+            LOG.warn("{} << N-ACTION-RSP failed: {}", as, e.getMessage());
+        }
     }
 
     protected Attributes action(Association as, PresentationContext pc,

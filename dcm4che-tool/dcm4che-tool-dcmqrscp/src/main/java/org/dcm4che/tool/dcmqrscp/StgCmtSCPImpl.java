@@ -45,7 +45,6 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
@@ -86,43 +85,39 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
     }
 
     @Override
-    protected void postNActionRSP(Association as, PresentationContext pc,
+    protected void postNActionRSP(final Association as, PresentationContext pc,
             int actionTypeID, Attributes actionInfo, Attributes rsp,
-            Object handback) {
-        Attributes eventInfo = (Attributes) handback;
-        if (qrscp.isStgCmtOnSameAssoc()) {
-            try {
-                neventReport(as, eventInfo);
-                return;
-            } catch (Exception e) {
-                LOG.info("Failed to return Storage Commitment Result in same Association:", e);
+            final Object handback) {
+        qrscp.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (qrscp.isStgCmtOnSameAssoc()) {
+                    try {
+                        neventReport(as, (Attributes) handback);
+                        return;
+                    } catch (Exception e) {
+                        LOG.info("Failed to return Storage Commitment Result in same Association:", e);
+                    }
+                }
+                try {
+                    Association diffAssoc = as.getApplicationEntity().connect(
+                            as.getConnection(),
+                            qrscp.getRemoteConnection(as.getCallingAET()),
+                            makeAAssociateRQ(as));
+                    neventReport(diffAssoc, (Attributes) handback);
+                    diffAssoc.release();
+                } catch (Exception e) {
+                    LOG.error("Failed to return Storage Commitment Result in new Association:", e);
+                }
             }
-        }
-        try {
-            Association diffAssoc = as.getApplicationEntity().connect(
-                    as.getConnection(),
-                    qrscp.getRemoteConnection(as.getCallingAET()),
-                    makeAAssociateRQ(as));
-            neventReport(diffAssoc, eventInfo);
-            diffAssoc.waitForOutstandingRSP();
-            diffAssoc.release();
-        } catch (Exception e) {
-            LOG.error("Failed to return Storage Commitment Result in new Association:", e);
-        }
+        });
     }
 
     private void neventReport(Association as, Attributes eventInfo)
             throws IOException, InterruptedException {
-        DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
-
-            @Override
-            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-                super.onDimseRSP(as, cmd, data);
-            }
-        };
         as.neventReport(UID.StorageCommitmentPushModelSOPClass,
                 UID.StorageCommitmentPushModelSOPInstance, 
-                eventTypeId(eventInfo), eventInfo, null, rspHandler);
+                eventTypeId(eventInfo), eventInfo, null).next();
     }
 
     private int eventTypeId(Attributes eventInfo) {

@@ -160,13 +160,13 @@ public class CLIUtils {
         if (requestor) {
             opts.addOption(OptionBuilder
                     .hasArg()
-                    .withArgName("timeout")
+                    .withArgName("ms")
                     .withDescription(rb.getString("connect-timeout"))
                     .withLongOpt("connect-timeout")
                     .create(null));
             opts.addOption(OptionBuilder
                     .hasArg()
-                    .withArgName("timeout")
+                    .withArgName("ms")
                     .withDescription(rb.getString("accept-timeout"))
                     .withLongOpt("accept-timeout")
                     .create(null));
@@ -174,26 +174,26 @@ public class CLIUtils {
         if (acceptor) {
             opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("timeout")
+                .withArgName("ms")
                 .withDescription(rb.getString("request-timeout"))
                 .withLongOpt("request-timeout")
                 .create(null));
         }
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("timeout")
+                .withArgName("ms")
                 .withDescription(rb.getString("idle-timeout"))
                 .withLongOpt("idle-timeout")
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("timeout")
+                .withArgName("ms")
                 .withDescription(rb.getString("release-timeout"))
                 .withLongOpt("release-timeout")
                 .create(null));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("delay")
+                .withArgName("ms")
                 .withDescription(rb.getString("soclose-delay"))
                 .withLongOpt("soclose-delay")
                 .create(null));
@@ -217,7 +217,7 @@ public class CLIUtils {
     public static void addCStoreRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("cstore-rsp-timeout"))
             .withLongOpt("cstore-rsp-timeout")
             .create(null));
@@ -227,7 +227,7 @@ public class CLIUtils {
     public static void addCGetRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("cget-rsp-timeout"))
             .withLongOpt("cget-rsp-timeout")
             .create(null));
@@ -237,7 +237,7 @@ public class CLIUtils {
     public static void addCFindRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("cfind-rsp-timeout"))
             .withLongOpt("cfind-rsp-timeout")
             .create(null));
@@ -247,7 +247,7 @@ public class CLIUtils {
     public static void addCMoveRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("cmove-rsp-timeout"))
             .withLongOpt("cmove-rsp-timeout")
             .create(null));
@@ -257,7 +257,7 @@ public class CLIUtils {
     public static void addCEchoRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("cecho-rsp-timeout"))
             .withLongOpt("cecho-rsp-timeout")
             .create(null));
@@ -267,9 +267,9 @@ public class CLIUtils {
     public static void addNEventRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
-            .withDescription(rb.getString("nevent-report-rsp-timeout"))
-            .withLongOpt("nevent-report-rsp-timeout")
+            .withArgName("ms")
+            .withDescription(rb.getString("nevent-rsp-timeout"))
+            .withLongOpt("nevent-rsp-timeout")
             .create(null));
     }
 
@@ -277,7 +277,7 @@ public class CLIUtils {
     public static void addNGetRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("nget-rsp-timeout"))
             .withLongOpt("nget-rsp-timeout")
             .create(null));
@@ -287,7 +287,7 @@ public class CLIUtils {
     public static void addNSetRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("nset-rsp-timeout"))
             .withLongOpt("nset-rsp-timeout")
             .create(null));
@@ -297,7 +297,7 @@ public class CLIUtils {
     public static void addNActionRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("naction-rsp-timeout"))
             .withLongOpt("naction-rsp-timeout")
             .create(null));
@@ -307,7 +307,7 @@ public class CLIUtils {
     public static void addNCreateRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("ncreate-rsp-timeout"))
             .withLongOpt("ncreate-rsp-timeout")
             .create(null));
@@ -317,7 +317,7 @@ public class CLIUtils {
     public static void addNDeleteRspOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
-            .withArgName("timeout")
+            .withArgName("ms")
             .withDescription(rb.getString("ndelete-rsp-timeout"))
             .withLongOpt("ndelete-rsp-timeout")
             .create(null));
@@ -562,9 +562,9 @@ public class CLIUtils {
         if (cl.hasOption("cecho-rsp-timeout"))
             conn.setCEchoRSPTimeout(
                     Integer.parseInt(cl.getOptionValue("cecho-rsp-timeout")));
-        if (cl.hasOption("nevent-report-rsp-timeout"))
+        if (cl.hasOption("nevent-rsp-timeout"))
             conn.setNEventReportRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("nevent-report-rsp-timeout")));
+                    Integer.parseInt(cl.getOptionValue("nevent-rsp-timeout")));
         if (cl.hasOption("nget-rsp-timeout"))
             conn.setNGetRSPTimeout(
                     Integer.parseInt(cl.getOptionValue("nget-rsp-timeout")));

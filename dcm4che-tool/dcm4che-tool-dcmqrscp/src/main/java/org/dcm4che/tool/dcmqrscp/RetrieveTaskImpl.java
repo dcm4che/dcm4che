@@ -61,7 +61,7 @@ class RetrieveTaskImpl extends BasicRetrieveTask {
 
     public RetrieveTaskImpl(Association as, PresentationContext pc, Attributes rq,
             List<InstanceLocator> matches, boolean withoutBulkData) {
-        super(as, pc, rq, matches);
+        super(BasicRetrieveTask.Service.C_GET, as, pc, rq, matches);
         this.withoutBulkData = withoutBulkData;
     }
 

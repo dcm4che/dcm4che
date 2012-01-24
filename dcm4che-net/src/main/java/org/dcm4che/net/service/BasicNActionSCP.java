@@ -80,28 +80,27 @@ public class BasicNActionSCP extends DicomService implements NActionSCP {
             Attributes rq, Attributes actionInfo) throws IOException {
         int actionTypeID = rq.getInt(Tag.ActionTypeID, 0);
         checkActionTypeID(actionTypeID);
-        Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        Attributes rsp = Commands.mkNActionRSP(rq, Status.Success);
         Object[] handback = new Object[1];
-        Attributes actionReply = action(as, pc, actionTypeID, actionInfo, rsp,
+        Attributes actionReply = action(as, actionTypeID, actionInfo, rsp,
                 handback);
         if (actionReply != null)
             rsp.setInt(Tag.ActionTypeID, VR.US, actionTypeID);
         try {
             as.writeDimseRSP(pc, rsp, actionReply);
-            postNActionRSP(as, pc, actionTypeID, actionInfo, rsp, handback[0]);
+            postNActionRSP(as, actionTypeID, actionInfo, rsp, handback[0]);
         } catch (AssociationStateException e) {
             LOG.warn("{} << N-ACTION-RSP failed: {}", as, e.getMessage());
         }
     }
 
-    protected Attributes action(Association as, PresentationContext pc,
-            int actionTypeID, Attributes actionInfo, Attributes rsp,
-            Object[] handback) throws DicomServiceException {
+    protected Attributes action(Association as, int actionTypeID,
+            Attributes actionInfo, Attributes rsp, Object[] handback)
+            throws DicomServiceException {
         return null;
     }
 
-    protected void postNActionRSP(Association as, PresentationContext pc,
-            int actionTypeID, Attributes actionInfo, Attributes rsp,
-            Object handback) {
+    protected void postNActionRSP(Association as, int actionTypeID,
+            Attributes actionInfo, Attributes rsp, Object handback) {
     }
 }

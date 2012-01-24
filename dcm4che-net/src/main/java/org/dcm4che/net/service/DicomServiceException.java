@@ -91,12 +91,16 @@ public class DicomServiceException extends IOException {
         rsp.setInt(Tag.Status, VR.US, status);
     }
 
+    public DicomServiceException setUID(int tag, String value) {
+        rsp.setString(tag, VR.UI, value);
+        return this;
+    }
+
     public DicomServiceException setErrorComment(String val) {
         if (val != null)
             rsp.setString(Tag.ErrorComment, VR.LO, StringUtils.truncate(val, 64));
         return this;
     }
-    
     public DicomServiceException setErrorID(int val) {
         rsp.setInt(Tag.ErrorID, VR.US, val);
         return this;

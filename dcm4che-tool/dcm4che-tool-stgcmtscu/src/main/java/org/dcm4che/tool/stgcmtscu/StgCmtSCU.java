@@ -104,8 +104,9 @@ public class StgCmtSCU extends Device {
     private final BasicNEventReportSCU stgcmtResultHandler =
             new BasicNEventReportSCU(UID.StorageCommitmentPushModelSOPClass) {
 
-        protected void postNEventReportRSP(Association as, PresentationContext pc,
-                int eventTypeID, Attributes eventInfo, Attributes rsp, Object handback) {
+        @Override
+        protected void postNEventReportRSP(Association as, int eventTypeID,
+                Attributes eventInfo, Attributes rsp, Object handback) {
             removeOutstandingResult(eventInfo.getString(Tag.TransactionUID));
         }
     };
@@ -131,7 +132,7 @@ public class StgCmtSCU extends Device {
             CLIUtils.configure(stgcmtscu.conn, stgcmtscu.ae, cl);
             stgcmtscu.remote.setTlsProtocols(stgcmtscu.conn.getTlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
-            configureServiceClass(stgcmtscu, cl);
+            stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             configureKeepAlive(stgcmtscu, cl);
             configureRequest(stgcmtscu, cl);
             ExecutorService executorService =
@@ -240,14 +241,12 @@ public class StgCmtSCU extends Device {
         this.keepAlive = keepAlive;
     }
 
-    private static void configureServiceClass(StgCmtSCU stgcmtscu,
-            CommandLine cl) {
-        String[] tss = CLIUtils.transferSyntaxesOf(cl);
-        stgcmtscu.rq.addPresentationContext(
+    public void setTransferSyntaxes(String[] tss) {
+        rq.addPresentationContext(
                 new PresentationContext(1,
                         UID.StorageCommitmentPushModelSOPClass,
                         tss));
-        stgcmtscu.ae.addTransferCapability(
+        ae.addTransferCapability(
                 new TransferCapability(null,
                         UID.StorageCommitmentPushModelSOPClass,
                         TransferCapability.Role.SCU,
@@ -262,7 +261,7 @@ public class StgCmtSCU extends Device {
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STGCMTSCU");
-        CLIUtils.addAEOptions(opts, true, false);
+        CLIUtils.addAEOptions(opts, true, true);
         CLIUtils.addNActionRspOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);

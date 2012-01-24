@@ -68,9 +68,9 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
     }
 
     @Override
-    protected Attributes action(Association as, PresentationContext pc,
-            int actionTypeID, Attributes actionInfo, Attributes rsp,
-            Object[] handback) throws DicomServiceException {
+    protected Attributes action(Association as, int actionTypeID,
+            Attributes actionInfo, Attributes rsp, Object[] handback)
+            throws DicomServiceException {
         String callingAET = as.getCallingAET();
         String calledAET = as.getCalledAET();
         if (qrscp.getRemoteConnection(callingAET) == null)
@@ -85,9 +85,8 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
     }
 
     @Override
-    protected void postNActionRSP(final Association as, PresentationContext pc,
-            int actionTypeID, Attributes actionInfo, Attributes rsp,
-            final Object handback) {
+    protected void postNActionRSP(final Association as, int actionTypeID,
+            Attributes actionInfo, Attributes rsp, final Object handback) {
         qrscp.execute(new Runnable() {
             @Override
             public void run() {

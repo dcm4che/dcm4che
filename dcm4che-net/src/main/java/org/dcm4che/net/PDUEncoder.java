@@ -395,19 +395,19 @@ class PDUEncoder extends PDVOutputStream {
 
     public void writeDIMSE(PresentationContext pc, Attributes cmd,
             DataWriter dataWriter) throws IOException {
-        int pcid = pc.getPCID();
-        String tsuid = pc.getTransferSyntax();
-        if (Association.LOG_DIMSE.isInfoEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(as).append(" << ");
-            Commands.promptTo(cmd, pcid, tsuid, sb);
-            Association.LOG_DIMSE.info(sb.toString());
-        }
-        Association.LOG_DIMSE.debug("Command:\n{}", cmd);
-        if (dataWriter instanceof DataWriterAdapter)
-            Association.LOG_DIMSE.debug("Dataset:\n{}",
-                    ((DataWriterAdapter) dataWriter).getDataset());
         synchronized (dimseLock) {
+            int pcid = pc.getPCID();
+            String tsuid = pc.getTransferSyntax();
+            if (Association.LOG_DIMSE.isInfoEnabled()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(as).append(" << ");
+                Commands.promptTo(cmd, pcid, tsuid, sb);
+                Association.LOG_DIMSE.info(sb.toString());
+            }
+            Association.LOG_DIMSE.debug("Command:\n{}", cmd);
+            if (dataWriter instanceof DataWriterAdapter)
+                Association.LOG_DIMSE.debug("Dataset:\n{}",
+                        ((DataWriterAdapter) dataWriter).getDataset());
             this.th = Thread.currentThread();
             maxpdulen = as.getMaxPDULengthSend();
             if (buf.length < maxpdulen + 6)

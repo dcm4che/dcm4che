@@ -91,7 +91,8 @@ class CMoveSCPImpl extends BasicCMoveSCP {
             throw new DicomServiceException(Status.MoveDestinationUnknown,
                     "Move Destination: " + dest + " unknown");
         List<InstanceLocator> matches = qrscp().calculateMatches(rq, keys);
-        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(as, pc, rq, matches ) {
+        BasicRetrieveTask retrieveTask = new BasicRetrieveTask(
+                BasicRetrieveTask.Service.C_MOVE, as, pc, rq, matches ) {
 
             @Override
             protected Association getStoreAssociation() throws DicomServiceException {

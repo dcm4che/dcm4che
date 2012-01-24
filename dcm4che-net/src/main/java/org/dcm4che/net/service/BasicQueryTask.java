@@ -81,10 +81,10 @@ public class BasicQueryTask implements QueryTask {
                     int status = optionalKeyNotSupported(match, keys)
                             ? Status.PendingWarning
                             : Status.Pending;
-                    as.writeDimseRSP(pc, Commands.mkRSP(rq, status), match);
+                    as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status), match);
                 }
                 int status = canceled ? Status.Cancel : Status.Success;
-                as.writeDimseRSP(pc, Commands.mkRSP(rq, status));
+                as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status));
             } catch (DicomServiceException e) {
                 as.writeDimseRSP(pc, e.mkRSP(rq), e.getDataset());
             } finally {

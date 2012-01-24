@@ -70,6 +70,7 @@ public class BasicCGetSCP extends DicomService implements CGetSCP {
 
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(as, pc, rq, Collections.<InstanceLocator>emptyList());
+        return new BasicRetrieveTask(BasicRetrieveTask.Service.C_GET,
+                as, pc, rq, Collections.<InstanceLocator>emptyList());
     }
 }

@@ -46,6 +46,7 @@ import java.util.HashSet;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.PDVInputStream;
@@ -266,7 +267,13 @@ public class DicomServiceRegistry implements DimseRQHandler {
                 }
             }
         } catch (DicomServiceException e) {
-            as.writeDimseRSP(pc, e.mkRSP(cmd), e.getDataset());
+            Attributes rsp = e.mkRSP(cmd);
+            try {
+                as.writeDimseRSP(pc, rsp, e.getDataset());
+            } catch (AssociationStateException ase) {
+                Association.LOG_ACSE.warn("{} << DIMSE-RSP failed: {}",
+                        as, ase.getMessage());
+            }
         }
     }
 

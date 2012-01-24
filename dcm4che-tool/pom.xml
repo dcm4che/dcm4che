@@ -58,6 +58,8 @@
     <module>dcm4che-tool-findscu</module>
     <module>dcm4che-tool-getscu</module>
     <module>dcm4che-tool-movescu</module>
+    <module>dcm4che-tool-mppsscp</module>
+    <module>dcm4che-tool-mppsscu</module>
     <module>dcm4che-tool-stgcmtscu</module>
     <module>dcm4che-tool-storescp</module>
     <module>dcm4che-tool-storescu</module>

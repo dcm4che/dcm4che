@@ -41,10 +41,8 @@ package org.dcm4che.tool.storescp;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
-import java.security.MessageDigest;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,104 +51,40 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
-import org.dcm4che.data.UID;
-import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
-import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
-import org.dcm4che.net.PDVInputStream;
-import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
-import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
-import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.AttributesFormat;
-import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class StoreSCP {
+public class StoreSCP extends Device{
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.storescp.messages");
 
-    private static final String PART_EXT = ".part";
+    static final String PART_EXT = ".part";
 
-    private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
+    private final BasicCStoreSCP storageSCP = new CStoreSCPImpl(this);
     private File storageDir;
     private AttributesFormat filePathFormat;
     private int status;
 
-    private final BasicCStoreSCP storageSCP = new BasicCStoreSCP("*") {
-
-
-        @Override
-        protected void store(Association as, PresentationContext pc, Attributes rq,
-                PDVInputStream data, Attributes rsp)
-                throws IOException {
-            rsp.setInt(Tag.Status, VR.US, status);
-            if (storageDir != null)
-                super.store(as, pc, rq, data, rsp);
-        }
-
-        @Override
-        protected File createFile(Association as, Attributes rq, Object storage)
-                throws DicomServiceException {
-            return new File(storageDir, rq.getString(Tag.AffectedSOPInstanceUID) + PART_EXT);
-        }
-
-        @Override
-        protected File process(Association as, PresentationContext pc, Attributes rq,
-                Attributes rsp, Object storage, File file, MessageDigest digest)
-                throws DicomServiceException {
-            File dst;
-            if (filePathFormat == null) {
-                String fname = file.getName();
-                dst = new File(storageDir, fname.substring(0, fname.lastIndexOf('.')));
-            } else {
-                Attributes ds;
-                DicomInputStream in = null;
-                try {
-                    in = new DicomInputStream(file);
-                    in.setIncludeBulkData(false);
-                    ds = in.readDataset(-1, Tag.PixelData);
-                } catch (IOException e) {
-                    LOG.warn(as + ": Failed to decode dataset:", e);
-                    throw new DicomServiceException(Status.CannotUnderstand);
-                } finally {
-                    SafeClose.close(in);
-                }
-                dst = new File(storageDir, filePathFormat.format(ds));
-            }
-            File dir = dst.getParentFile();
-            dir.mkdirs();
-            dst.delete();
-            if (file.renameTo(dst))
-                LOG.info("{}: M-RENAME {} to {}", new Object[] {as, file, dst});
-            else {
-                LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
-                throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
-            }
-            return null;
-        }
-
-    };
 
     public StoreSCP() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+        super("storescp");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
@@ -159,26 +93,30 @@ public class StoreSCP {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
-    public void setScheduledExecutor(ScheduledExecutorService scheduledExecutor) {
-        device.setScheduledExecutor(scheduledExecutor);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
-    }
-
     public void setStorageDirectory(File storageDir) {
         if (storageDir != null)
             storageDir.mkdirs();
         this.storageDir = storageDir;
     }
 
+    public File getStorageDirectory() {
+        return storageDir;
+    }
+
     public void setStorageFilePathFormat(String pattern) {
         this.filePathFormat = new AttributesFormat(pattern);
     }
 
+    public AttributesFormat getStorageFilePathFormat() {
+        return filePathFormat;
+    }
+
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public int getStatus() {
+        return status;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -228,8 +166,8 @@ public class StoreSCP {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file|url")
-                .withDescription(rb.getString("storage-sop-classes"))
-                .withLongOpt("storage-sop-classes")
+                .withDescription(rb.getString("sop-classes"))
+                .withLongOpt("sop-classes")
                 .create(null));
     }
 
@@ -277,14 +215,9 @@ public class StoreSCP {
                             TransferCapability.Role.SCP,
                             "*"));
         } else {
-            ae.addTransferCapability(
-                    new TransferCapability(null, 
-                            UID.VerificationSOPClass,
-                            TransferCapability.Role.SCP,
-                            UID.ImplicitVRLittleEndian));
             Properties p = CLIUtils.loadProperties(
-                    cl.getOptionValue("storage-sop-classes", 
-                            "resource:storage-sop-classes.properties"),
+                    cl.getOptionValue("sop-classes", 
+                            "resource:sop-classes.properties"),
                     null);
             for (String cuid : p.stringPropertyNames()) {
                 String ts = p.getProperty(cuid);
@@ -298,9 +231,5 @@ public class StoreSCP {
             }
         }
      }
-
-    private void activate() throws IOException, KeyManagementException {
-        device.activate();
-    }
 
 }

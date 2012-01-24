@@ -78,6 +78,11 @@ public class Commands {
 
     public static final int NO_DATASET = 0x0101;
     private static int withDatasetType = 0x0000;
+    private static int[] AffectedSOPClassUID = { Tag.AffectedSOPClassUID };
+    private static int[] AffectedSOP = { 
+            Tag.AffectedSOPClassUID, Tag.AffectedSOPInstanceUID };
+    private static int[] RequestedSOP = {
+            Tag.RequestedSOPClassUID, Tag.RequestedSOPInstanceUID };
 
     public static boolean isRSP(int cmdField) {
         return (cmdField & RSP) != 0;
@@ -105,11 +110,19 @@ public class Commands {
        return rq;
     }
 
+    public static Attributes mkCStoreRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOP);
+    }
+
     public static Attributes mkCFindRQ(int msgId, String cuid, int priority) {
        Attributes rq = mkRQ(msgId, C_FIND_RQ, withDatasetType);
        rq.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
        rq.setInt(Tag.Priority, VR.US, priority);
        return rq;
+    }
+
+    public static Attributes mkCFindRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOPClassUID);
     }
 
     public static Attributes mkCGetRQ(int msgId, String cuid, int priority) {
@@ -119,6 +132,10 @@ public class Commands {
        return rq;
     }
 
+    public static Attributes mkCGetRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOPClassUID);
+    }
+
     public static Attributes mkCMoveRQ(int msgId, String cuid, int priority,
             String destination) {
        Attributes rq = mkRQ(msgId, C_MOVE_RQ, withDatasetType);
@@ -126,6 +143,10 @@ public class Commands {
        rq.setInt(Tag.Priority, VR.US, priority);
        rq.setString(Tag.MoveDestination, VR.AE, destination);
        return rq;
+    }
+
+    public static Attributes mkCMoveRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOPClassUID);
     }
 
     public static Attributes mkCCancelRQ(int msgId) {
@@ -142,6 +163,10 @@ public class Commands {
        return rq;
     }
 
+    public static Attributes mkEchoRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOPClassUID);
+    }
+
     public static Attributes mkNEventReportRQ(int msgId, String cuid,
             String iuid, int eventTypeID, Attributes data) {
        Attributes rq = mkRQ(msgId, N_EVENT_REPORT_RQ, 
@@ -150,6 +175,10 @@ public class Commands {
        rq.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
        rq.setInt(Tag.EventTypeID, VR.US, eventTypeID);
        return rq;
+    }
+
+    public static Attributes mkNEventReportRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, AffectedSOP);
     }
 
     public static Attributes mkNGetRQ(int msgId, String cuid, String iuid,
@@ -162,11 +191,19 @@ public class Commands {
        return rq;
     }
 
+    public static Attributes mkNGetRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, RequestedSOP);
+    }
+
     public static Attributes mkNSetRQ(int msgId, String cuid, String iuid) {
         Attributes rq = mkRQ(msgId, N_SET_RQ, withDatasetType);
         rq.setString(Tag.RequestedSOPClassUID, VR.UI, cuid);
         rq.setString(Tag.RequestedSOPInstanceUID, VR.UI, iuid);
         return rq;
+    }
+
+    public static Attributes mkNSetRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, RequestedSOP);
     }
 
     public static Attributes mkNActionRQ(int msgId, String cuid,
@@ -179,12 +216,23 @@ public class Commands {
        return rq;
     }
 
+    public static Attributes mkNActionRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, RequestedSOP);
+    }
+
     public static Attributes mkNCreateRQ(int msgId, String cuid, String iuid) {
         Attributes rq = mkRQ(msgId, N_CREATE_RQ, withDatasetType);
-        if (cuid != null)
-            rq.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-        rq.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
+        rq.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
+        if (iuid != null)
+            rq.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
         return rq;
+    }
+
+    public static Attributes mkNCreateRSP(Attributes cmd, int status) {
+        String iuid = cmd.getString(Tag.AffectedSOPInstanceUID);
+        if (iuid == null)
+            cmd.setString(Tag.AffectedSOPInstanceUID, VR.UI, UIDUtils.createUID());
+        return mkRSP(cmd, status, AffectedSOP);
     }
 
     public static Attributes mkNDeleteRQ(int msgId, String cuid, String iuid) {
@@ -194,6 +242,10 @@ public class Commands {
         return rq;
     }    
 
+    public static Attributes mkNDeleteRSP(Attributes cmd, int status) {
+        return mkRSP(cmd, status, RequestedSOP);
+    }
+
     private static Attributes mkRQ(int msgId, int cmdfield, int datasetType) {
         Attributes rsp = new Attributes();
         rsp.setInt(Tag.MessageID, VR.US, msgId);
@@ -202,30 +254,20 @@ public class Commands {
         return rsp;
     }
 
-    public static Attributes mkRSP(Attributes rq, int status) {
+    private static Attributes mkRSP(Attributes rq, int status, int[] rqUIDs) {
+        int cmdField = rspFieldFor(rq);
         Attributes rsp = new Attributes();
-        rsp.setInt(Tag.CommandField, VR.US, rspFieldFor(rq));
+        rsp.setInt(Tag.CommandField, VR.US, cmdField);
         rsp.setInt(Tag.Status, VR.US, status);
         rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US,
                 rq.getInt(Tag.MessageID, 0));
-        return rsp;
+        for (int i = 0; i < rqUIDs.length; i++)
+            rsp.setString(AffectedSOP[i], VR.UI, rq.getString(rqUIDs[i]));
+       return rsp;
     }
 
     public static int rspFieldFor(Attributes rq) {
         return rq.getInt(Tag.CommandField, 0) | RSP;
-    }
-
-    public static void includeUIDsinRSP(Attributes rq, Attributes rsp) {
-        String cuid = rq.getString(Tag.AffectedSOPClassUID, null);
-        if (cuid == null)
-            cuid = rq.getString(Tag.RequestedSOPClassUID, null);
-        rsp.setString(Tag.AffectedSOPClassUID, VR.UI, cuid);
-        String iuid = rq.getString(Tag.AffectedSOPInstanceUID, null);
-        if (iuid == null)
-            iuid = rq.getString(Tag.RequestedSOPInstanceUID, null);
-        if (iuid != null) {
-            rsp.setString(Tag.AffectedSOPInstanceUID, VR.UI, iuid);
-        }
     }
 
     public static void initNumberOfSuboperations(Attributes rsp,
@@ -321,7 +363,7 @@ public class Commands {
         case N_CREATE_RQ:
             promptHeaderTo(cmd, Tag.MessageID, ":N-CREATE-RQ[pcid=", pcid, sb);
             promptUIDTo(cmd, "  cuid=", Tag.AffectedSOPClassUID, sb);
-            promptUIDTo(cmd, "  iuid=", Tag.AffectedSOPClassUID, sb);
+            promptUIDTo(cmd, "  iuid=", Tag.AffectedSOPInstanceUID, sb);
             break;
         case N_DELETE_RQ:
             promptHeaderTo(cmd, Tag.MessageID, ":N-DELETE-RQ[pcid=", pcid, sb);
@@ -475,4 +517,5 @@ public class Commands {
         promptUIDTo(cmd, "  cuid=", Tag.AffectedSOPClassUID, sb);
         promptUIDTo(cmd, "  iuid=", Tag.AffectedSOPInstanceUID, sb);
     }
+
 }

@@ -70,6 +70,7 @@ public class BasicCMoveSCP extends DicomService implements CMoveSCP {
 
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(as, pc, rq, Collections.<InstanceLocator>emptyList());
+        return new BasicRetrieveTask(BasicRetrieveTask.Service.C_MOVE,
+                as, pc, rq, Collections.<InstanceLocator>emptyList());
     }
 }

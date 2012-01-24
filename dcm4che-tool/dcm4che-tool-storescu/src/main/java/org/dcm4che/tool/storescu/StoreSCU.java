@@ -72,6 +72,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.InputStreamDataWriter;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
@@ -113,6 +114,9 @@ public class StoreSCU extends Device {
         addConnection(conn);
         addApplicationEntity(ae);
         ae.addConnection(conn);
+        rq.addPresentationContext(
+                new PresentationContext(1, UID.VerificationSOPClass,
+                        UID.ImplicitVRLittleEndian));
     }
 
     public final void setPriority(int priority) {
@@ -440,24 +444,20 @@ public class StoreSCU extends Device {
 
     public void open()
             throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
-        if (rq.getNumberOfPresentationContexts() == 0)
-            rq.addPresentationContext(
-                    new PresentationContext(1, UID.VerificationSOPClass,
-                            UID.ImplicitVRLittleEndian));
         as = ae.connect(conn, remote, rq);
     }
 
     private void onCStoreRSP(Attributes cmd, File f) {
         int status = cmd.getInt(Tag.Status, -1);
         switch (status) {
-        case 0:
+        case Status.Success:
             totalSize += f.length();
             ++filesSent;
             System.out.print('.');
             break;
-        case 0xB000:
-        case 0xB006:
-        case 0xB007:
+        case Status.CoercionOfDataElements:
+        case Status.ElementsDiscarded:
+        case Status.DataSetDoesNotMatchSOPClassWarning:
             totalSize += f.length();
             ++filesSent;
             System.err.println(MessageFormat.format(rb.getString("warning"),

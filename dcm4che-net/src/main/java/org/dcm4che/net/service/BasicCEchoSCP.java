@@ -66,7 +66,7 @@ public class BasicCEchoSCP extends DicomService implements CEchoSCP {
     public void onCEchoRQ(Association as, PresentationContext pc,
             Attributes cmd) throws IOException {
         try {
-            as.writeDimseRSP(pc, Commands.mkRSP(cmd, Status.Success), null);
+            as.writeDimseRSP(pc, Commands.mkEchoRSP(cmd, Status.Success), null);
         } catch (AssociationStateException e) {
             LOG.warn("{} << C-ECHO-RSP failed: {}", as, e.getMessage());
         }

@@ -416,6 +416,14 @@ public class Attributes implements Serializable {
         return VR.LO.toString(decodeStringValue(index), false, 0, null);
     }
 
+    public VR vrOf(int tag) {
+        int index = indexOf(tag);
+        if (index < 0)
+            return null;
+
+        return vrs[index];
+    }
+
     public Object getValue(int tag) {
         return getValue(null, tag);
     }
@@ -1114,8 +1122,8 @@ public class Attributes implements Serializable {
             return null;
 
         Object value = values[index];
-        if (value instanceof Sequence)
-            ((Sequence) value).clear();
+//        if (value instanceof Sequence)
+//            ((Sequence) value).clear();
 
         int numMoved = size - index - 1;
         if (numMoved > 0) {

@@ -80,28 +80,28 @@ public class BasicNEventReportSCU extends DicomService implements NEventReportSC
             Attributes rq, Attributes eventInfo) throws IOException {
         int eventTypeID = rq.getInt(Tag.EventTypeID, 0);
         checkEventTypeID(eventTypeID);
-        Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        Attributes rsp = Commands.mkNEventReportRSP(rq, Status.Success);
         Object[] handback = new Object[1];
-        Attributes eventReply = eventReport(as, pc, eventTypeID , eventInfo,
-                rsp, handback );
+        Attributes eventReply = eventReport(as, eventTypeID , eventInfo, rsp,
+                handback );
         if (eventReply != null)
             rsp.setInt(Tag.EventTypeID, VR.US, eventTypeID);
         try {
             as.writeDimseRSP(pc, rsp, eventReply);
-            postNEventReportRSP(as, pc, eventTypeID , eventInfo, rsp, handback[0]);
+            postNEventReportRSP(as, eventTypeID , eventInfo, rsp, handback[0]);
         } catch (AssociationStateException e) {
             LOG.warn("{} << N-EVENT_REPORT-RSP failed: {}", as, e.getMessage());
         }
     }
 
-    protected Attributes eventReport(Association as, PresentationContext pc,
-            int eventTypeID, Attributes eventInfo, Attributes rsp,
-            Object[] handback) throws DicomServiceException {
+    protected Attributes eventReport(Association as, int eventTypeID,
+            Attributes eventInfo, Attributes rsp, Object[] handback)
+            throws DicomServiceException {
         return null;
     }
 
-    protected void postNEventReportRSP(Association as, PresentationContext pc,
-            int eventTypeID, Attributes eventInfo, Attributes rsp, Object handback) {
+    protected void postNEventReportRSP(Association as, int eventTypeID,
+            Attributes eventInfo, Attributes rsp, Object handback) {
     }
 
 }

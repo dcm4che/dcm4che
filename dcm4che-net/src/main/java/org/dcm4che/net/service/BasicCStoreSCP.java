@@ -70,7 +70,7 @@ public class BasicCStoreSCP extends DicomService implements CStoreSCP {
     @Override
     public void onCStoreRQ(Association as, PresentationContext pc, Attributes rq,
             PDVInputStream data) throws IOException {
-        Attributes rsp = Commands.mkRSP(rq, Status.Success);
+        Attributes rsp = Commands.mkCStoreRSP(rq, Status.Success);
         store(as, pc, rq, data, rsp);
         try {
             as.writeDimseRSP(pc, rsp);

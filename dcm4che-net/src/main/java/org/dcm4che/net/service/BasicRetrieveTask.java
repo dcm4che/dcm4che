@@ -49,6 +49,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.DataWriter;
 import org.dcm4che.net.DimseRSPHandler;
@@ -65,8 +66,36 @@ import org.slf4j.LoggerFactory;
  */
 public class BasicRetrieveTask implements RetrieveTask {
 
-    public static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
 
+    public enum Service {
+        C_GET {
+            @Override
+            Attributes mkRSP(Attributes rq, int status) {
+                return Commands.mkCGetRSP(rq, status);
+            }
+
+            @Override
+            void releaseStoreAssociation(Association storeas) throws IOException {
+                // NO OP
+            }
+        },
+        C_MOVE {
+            @Override
+            Attributes mkRSP(Attributes rq, int status) {
+                return Commands.mkCMoveRSP(rq, status);
+            }
+
+            @Override
+            void releaseStoreAssociation(Association storeas) throws IOException {
+                storeas.release();
+            }
+        };
+        abstract Attributes mkRSP(Attributes rq, int status);
+        abstract void releaseStoreAssociation(Association storeas) throws IOException;
+    }
+
+    protected final Service service;
     protected final Association as;
     protected final PresentationContext pc;
     protected final Attributes rq;
@@ -83,8 +112,9 @@ public class BasicRetrieveTask implements RetrieveTask {
 
     private ScheduledFuture<?> writePendingRSP;
 
-    public BasicRetrieveTask(Association as, PresentationContext pc, Attributes rq,
-            List<InstanceLocator> insts) {
+    public BasicRetrieveTask(Service service, Association as,
+            PresentationContext pc, Attributes rq, List<InstanceLocator> insts) {
+        this.service = service;
         this.as = as;
         this.pc = pc;
         this.rq = rq;
@@ -195,13 +225,13 @@ public class BasicRetrieveTask implements RetrieveTask {
     }
 
     protected void releaseStoreAssociation(Association storeas) {
-        if (storeas != as && storeas.isReadyForDataTransfer())
-            try {
-                storeas.release();
-            } catch (IOException e) {
-                LOG.warn(as + ": failed to release association to "
-                        + storeas.getRemoteAET(), e);
-            }
+        try {
+            service.releaseStoreAssociation(storeas);
+        } catch (AssociationStateException e) {
+        } catch (IOException e) {
+            LOG.warn(as + ": failed to release association to "
+                    + storeas.getRemoteAET(), e);
+        }
     }
 
     protected void cstore(Association storeas, InstanceLocator inst)
@@ -275,7 +305,7 @@ public class BasicRetrieveTask implements RetrieveTask {
     }
 
     private void writeRSP(int status) {
-        Attributes cmd = Commands.mkRSP(rq, status);
+        Attributes cmd = service.mkRSP(rq, status);
         if (status == Status.Pending || status == Status.Cancel)
             cmd.setInt(Tag.NumberOfRemainingSuboperations, VR.US, remaining());
         cmd.setInt(Tag.NumberOfCompletedSuboperations, VR.US, completed);

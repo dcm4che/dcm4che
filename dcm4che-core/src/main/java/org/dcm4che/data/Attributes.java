@@ -1614,7 +1614,12 @@ public class Attributes implements Serializable {
         if (vr != other.vrs[otherIndex])
             return false;
         if (vr.isStringType())
-            return equalStringValues(other, index, otherIndex);
+            if (vr == VR.IS)
+                return equalISValues(other, index, otherIndex);
+            else if (vr == VR.DS)
+                return equalDSValues(other, index, otherIndex);
+            else
+                return equalStringValues(other, index, otherIndex);
         Object v1 = values[index];
         Object v2 = other.values[otherIndex];
         if (v1 instanceof byte[]) {
@@ -1626,6 +1631,22 @@ public class Attributes implements Serializable {
         } else
             return v1.equals(v2);
         return false;
+    }
+
+    private boolean equalISValues(Attributes other, int index, int otherIndex) {
+        try {
+            return Arrays.equals(decodeISValue(index), other.decodeISValue(otherIndex));
+        } catch (NumberFormatException e) {
+            return equalStringValues(other, index, otherIndex);
+        }
+    }
+
+    private boolean equalDSValues(Attributes other, int index, int otherIndex) {
+        try {
+            return Arrays.equals(decodeDSValue(index), other.decodeDSValue(otherIndex));
+        } catch (NumberFormatException e) {
+            return equalStringValues(other, index, otherIndex);
+        }
     }
 
     private boolean equalStringValues(Attributes other, int index, int otherIndex) {

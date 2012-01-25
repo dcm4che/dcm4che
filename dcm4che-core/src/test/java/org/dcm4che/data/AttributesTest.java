@@ -153,4 +153,24 @@ public class AttributesTest {
         assertTrue(a1.equals(a2));
         assertTrue(a2.equals(a1));
     }
+
+    @Test
+    public void testEqualsIS() {
+        Attributes a1 = new Attributes();
+        a1.setString(Tag.ReferencedFrameNumber, VR.IS, "54");
+        a1.setString(Tag.InstanceNumber, VR.IS, "IMG0077");
+        Attributes a2 = new Attributes();
+        a2.setString(Tag.ReferencedFrameNumber, VR.IS, "0054");
+        a2.setString(Tag.InstanceNumber, VR.IS, "IMG0077");
+        assertTrue(a1.equals(a2));
+    }
+
+    @Test
+    public void testEqualsDS() {
+        Attributes a1 = new Attributes();
+        a1.setString(Tag.PixelSpacing, VR.DS, ".5",".5");
+        Attributes a2 = new Attributes();
+        a2.setString(Tag.PixelSpacing, VR.DS, "+0.50", "5E-1");
+        assertTrue(a1.equals(a2));
+    }
 }

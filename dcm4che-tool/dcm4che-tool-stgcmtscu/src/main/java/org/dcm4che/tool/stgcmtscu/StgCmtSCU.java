@@ -340,9 +340,13 @@ public class StgCmtSCU extends Device {
     }
 
     private void waitForOutstandingResults() throws InterruptedException {
-        synchronized (outstandingResults ) {
-            while (!outstandingResults.isEmpty())
+        synchronized (outstandingResults) {
+            while (!outstandingResults.isEmpty()) {
+                BasicNEventReportSCU.LOG.info(
+                        rb.getString("wait-for-results"),
+                        outstandingResults.size());
                 outstandingResults.wait();
+            }
         }
     }
 

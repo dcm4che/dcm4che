@@ -200,18 +200,16 @@ public class VRTest {
 
     @Test
     public void testToBytes() {
-        assertArrayEquals(DCM4CHEE_AS_AE,
-                VR.AE.toBytes("DCM4CHEE", CS));
-        assertArrayEquals(INTS_AS_IS,
-                VR.IS.toBytes(INTS_AS_STRINGS, CS));
+        assertArrayEquals(DCM4CHEE_AS_AE, VR.AE.toBytes("DCM4CHEE", CS));
+        assertArrayEquals(INTS_AS_IS, VR.IS.toBytes(INTS_AS_STRINGS, CS));
+        assertArrayEquals(INTS_AS_IS, VR.IS.toBytes(INTS, CS));
         assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(FLOATS_AS_STRINGS, CS));
+        assertArrayEquals(FLOATS_AS_DS, VR.DS.toBytes(DOUBLES, CS));
     }
 
     @Test
     public void testToValue() {
         assertArrayEquals(TAGS_AS_AT, (byte[]) VR.AT.toValue(TAGS, false));
-        assertArrayEquals(INTS_AS_STRINGS,
-                (String[]) VR.IS.toValue(INTS, false));
         assertArrayEquals(INTS_AS_OB, (byte[]) VR.OB.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SS, (byte[]) VR.OW.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SL, (byte[]) VR.SL.toValue(INTS, false));
@@ -223,8 +221,6 @@ public class VRTest {
         assertArrayEquals(FLOATS_AS_FL, (byte[]) VR.FL.toValue(FLOATS, false));
         assertArrayEquals(FLOATS_AS_FD, (byte[]) VR.FD.toValue(FLOATS, false));
         assertArrayEquals(FLOATS_AS_FL, (byte[]) VR.OF.toValue(FLOATS, false));
-        assertArrayEquals(FLOATS_AS_STRINGS,
-                (String[]) VR.DS.toValue(DOUBLES, false));
         assertArrayEquals(DOUBLES_AS_FL, (byte[]) VR.FL.toValue(DOUBLES, false));
         assertArrayEquals(DOUBLES_AS_FD, (byte[]) VR.FD.toValue(DOUBLES, false));
         assertArrayEquals(DOUBLES_AS_FL, (byte[]) VR.OF.toValue(DOUBLES, false));
@@ -246,8 +242,12 @@ public class VRTest {
                 VR.AE.toStrings(DCM4CHEE_AS_AE, false, CS));
         assertArrayEquals(INTS_AS_STRINGS,
                 (String[]) VR.IS.toStrings(INTS_AS_IS, false, CS));
+        assertArrayEquals(INTS_AS_STRINGS,
+                (String[]) VR.IS.toStrings(INTS, false, CS));
         assertArrayEquals(FLOATS_AS_STRINGS,
                 (String[]) VR.DS.toStrings(FLOATS_AS_DS, false, CS));
+        assertArrayEquals(FLOATS_AS_STRINGS,
+                (String[]) VR.DS.toStrings(DOUBLES, false, CS));
     }
 
     @Test(expected=UnsupportedOperationException.class)
@@ -268,9 +268,6 @@ public class VRTest {
        assertArrayEquals(INTS, VR.SS.toInts(INTS_AS_SS, false));
        assertArrayEquals(INTS, VR.UL.toInts(INTS_AS_SL, false));
        assertArrayEquals(UINTS, VR.US.toInts(INTS_AS_SS, false));
-       assertArrayEquals(INTS, VR.IS.toInts(INTS_AS_STRINGS, false));
-       assertArrayEquals(new int[] { INTS[2] },
-               VR.IS.toInts(INTS_AS_STRINGS[2], false));
     }
 
    @Test(expected=UnsupportedOperationException.class)
@@ -315,12 +312,10 @@ public class VRTest {
 
     @Test
     public void testToFloats() {
+        assertArrayEquals(FLOATS, VR.DS.toFloats(DOUBLES, false), 0);
         assertArrayEquals(FLOATS, VR.FL.toFloats(FLOATS_AS_FL, false), 0);
         assertArrayEquals(FLOATS, VR.FD.toFloats(FLOATS_AS_FD, false), 0);
         assertArrayEquals(FLOATS, VR.OF.toFloats(FLOATS_AS_FL, false), 0);
-        assertArrayEquals(FLOATS, VR.DS.toFloats(FLOATS_AS_STRINGS, false), 0);
-        assertArrayEquals(new float[] { FLOATS[1] },
-                VR.DS.toFloats(FLOATS_AS_STRINGS[1], false), 0);
     }
 
     @Test
@@ -330,10 +325,6 @@ public class VRTest {
         assertArrayEquals(DOUBLES, VR.FD.toDoubles(DOUBLES_AS_FD, false), 0);
         assertArrayEquals(DOUBLES_AS_FLOAT,
                 VR.OF.toDoubles(DOUBLES_AS_FL, false), 0);
-        assertArrayEquals(DOUBLES,
-                VR.DS.toDoubles(FLOATS_AS_STRINGS, false), 0);
-        assertArrayEquals(new double[] { DOUBLES[1] },
-                VR.DS.toDoubles(FLOATS_AS_STRINGS[1], false), 0);
     }
 
     @Test

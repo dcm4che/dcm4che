@@ -89,71 +89,77 @@ enum StringValueType implements ValueType {
     DS("\\", null) {
 
         @Override
+        public byte[] toBytes(Object val, SpecificCharacterSet cs) {
+
+            if (val instanceof double[])
+                val = toStrings((double[]) val);
+            return super.toBytes(val, cs);
+        } 
+
+        @Override
+        public String toString(Object val, boolean bigEndian, int valueIndex,
+                String defVal) {
+
+            if (val instanceof double[]) {
+                double[] ds = (double[]) val;
+                return (valueIndex < ds.length
+                        && !Double.isNaN(ds[valueIndex]))
+                                ? StringUtils.formatDS(ds[valueIndex])
+                                : defVal;
+            }
+            return super.toString(val, bigEndian, valueIndex, defVal);
+        } 
+
+        @Override
+        public Object toStrings(Object val, boolean bigEndian,
+                SpecificCharacterSet cs) {
+
+            return (val instanceof double[])
+                    ? toStrings((double[]) val)
+                    : super.toStrings(val, bigEndian, cs);
+        }
+
+        private Object toStrings(double[] ds) {
+            if (ds.length == 1)
+                return StringUtils.formatDS(ds[0]);
+
+            String[] ss = new String[ds.length];
+            for (int i = 0; i < ds.length; i++)
+                ss[i] = !Double.isNaN(ds[i]) ? StringUtils.formatDS(ds[i]) : "";
+
+            return ss;
+        }
+
+        @Override
         public float toFloat(Object val, boolean bigEndian, int valueIndex,
                 float defVal) {
-            if (val instanceof String) {
-                return valueIndex == 0
-                    ? (float) StringUtils.parseDS((String) val)
+            double[] ds = (double[]) val;
+            return valueIndex < ds.length && ds[valueIndex] != Double.NaN
+                    ? (float) ds[valueIndex]
                     : defVal;
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                return (valueIndex < ss.length && ss[valueIndex] != null)
-                    ? (float) StringUtils.parseDS(ss[valueIndex])
-                    : defVal;
-            }
-            throw new UnsupportedOperationException();
         } 
 
         @Override
         public float[] toFloats(Object val, boolean bigEndian) {
-            if (val instanceof String) {
-                return new float[] { (float) StringUtils.parseDS((String) val) };
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                float[] fs = new float[ss.length];
-                for (int i = 0; i < fs.length; i++) {
-                    if (ss[i] != null)
-                        fs[i] = (float) StringUtils.parseDS(ss[i]);
-                }
-                return fs;
-            }
-            throw new UnsupportedOperationException();
+            double[] ds = (double[]) val;
+            float[] fs = new float[ds.length];
+            for (int i = 0; i < fs.length; i++)
+                fs[i] = (float) ds[i];
+            return fs;
         }
 
         @Override
         public double toDouble(Object val, boolean bigEndian, int valueIndex,
                 double defVal) {
-            if (val instanceof String) {
-                return valueIndex == 0
-                    ? StringUtils.parseDS((String) val)
+            double[] ds = (double[]) val;
+            return valueIndex < ds.length && !Double.isNaN(ds[valueIndex])
+                    ? ds[valueIndex]
                     : defVal;
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                return (valueIndex < ss.length && ss[valueIndex] != null)
-                    ? StringUtils.parseDS(ss[valueIndex])
-                    : defVal;
-            }
-            throw new UnsupportedOperationException();
         } 
 
         @Override
         public double[] toDoubles(Object val, boolean bigEndian) {
-            if (val instanceof String) {
-                return new double[] { StringUtils.parseDS((String) val) };
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                double[] ds = new double[ss.length];
-                for (int i = 0; i < ds.length; i++) {
-                    if (ss[i] != null)
-                        ds[i] = StringUtils.parseDS(ss[i]);
-                }
-                return ds;
-            }
-            throw new UnsupportedOperationException();
+            return (double[]) val;
         }
 
         @Override
@@ -163,11 +169,10 @@ enum StringValueType implements ValueType {
 
             if (fs.length == 1)
                 return StringUtils.formatDS(fs[0]);
-
+            
             String[] ss = new String[fs.length];
-            for (int i = 0; i < ss.length; i++) {
+            for (int i = 0; i < fs.length; i++)
                 ss[i] = StringUtils.formatDS(fs[i]);
-            }
             return ss;
         } 
 
@@ -176,50 +181,73 @@ enum StringValueType implements ValueType {
             if (ds == null || ds.length == 0)
                 return Value.NULL;
 
-            if (ds.length == 1)
-                return StringUtils.formatDS(ds[0]);
-
-            String[] ss = new String[ds.length];
-            for (int i = 0; i < ss.length; i++) {
-                ss[i] = StringUtils.formatDS(ds[i]);
-            }
-            return ss;
+            return ds;
         } 
+
+        @Override
+        public boolean prompt(Object val, boolean bigEndian,
+                SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
+            if (val instanceof double[])
+                val = toStrings((double[]) val);
+            return super.prompt(val, bigEndian, cs, maxChars, sb);
+        }
     },
     IS("\\", null) {
 
         @Override
+        public byte[] toBytes(Object val, SpecificCharacterSet cs) {
+
+            if (val instanceof int[])
+                val = toStrings((int[]) val);
+            return super.toBytes(val, cs);
+        } 
+
+        @Override
+        public String toString(Object val, boolean bigEndian, int valueIndex,
+                String defVal) {
+
+            if (val instanceof int[]) {
+                int[] is = (int[]) val;
+                return (valueIndex < is.length
+                        && is[valueIndex] != Integer.MIN_VALUE)
+                                ? Integer.toString(is[valueIndex])
+                                : defVal;
+            }
+            return super.toString(val, bigEndian, valueIndex, defVal);
+        } 
+
+        @Override
+        public Object toStrings(Object val, boolean bigEndian,
+                SpecificCharacterSet cs) {
+
+            return (val instanceof int[])
+                    ? toStrings((int[]) val)
+                    : super.toStrings(val, bigEndian, cs);
+        }
+
+        private Object toStrings(int[] is) {
+            if (is.length == 1)
+                return Integer.toString(is[0]);
+
+            String[] ss = new String[is.length];
+            for (int i = 0; i < is.length; i++)
+                ss[i] = is[i] != Integer.MIN_VALUE ? Integer.toString(is[i]) : "";
+
+            return ss;
+        }
+
+        @Override
         public int toInt(Object val, boolean bigEndian, int valueIndex,
                 int defVal) {
-            if (val instanceof String) {
-                return valueIndex == 0
-                    ? StringUtils.parseIS((String) val)
+            int[] is = (int[]) val;
+            return valueIndex < is.length && is[valueIndex] != Integer.MIN_VALUE
+                    ? is[valueIndex]
                     : defVal;
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                return (valueIndex < ss.length && ss[valueIndex] != null)
-                    ? StringUtils.parseIS(ss[valueIndex])
-                    : defVal;
-            }
-            throw new UnsupportedOperationException();
         } 
 
         @Override
         public int[] toInts(Object val, boolean bigEndian) {
-            if (val instanceof String) {
-                return new int[] { StringUtils.parseIS((String) val) };
-            }
-            if (val instanceof String[]) {
-                String[] ss = (String[]) val;
-                int[] is = new int[ss.length];
-                for (int i = 0; i < is.length; i++) {
-                    if (ss[i] != null)
-                        is[i] = StringUtils.parseIS(ss[i]);
-                }
-                return is;
-            }
-            throw new UnsupportedOperationException();
+            return (int[]) val;
         }
 
         @Override
@@ -227,15 +255,16 @@ enum StringValueType implements ValueType {
             if (is == null || is.length == 0)
                 return Value.NULL;
 
-            if (is.length == 1)
-                return Integer.toString(is[0]);
-
-            String[] ss = new String[is.length];
-            for (int i = 0; i < ss.length; i++) {
-                ss[i] = Integer.toString(is[i]);
-            }
-            return ss;
+            return is;
         } 
+
+        @Override
+        public boolean prompt(Object val, boolean bigEndian,
+                SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
+            if (val instanceof int[])
+                val = toStrings((int[]) val);
+            return super.prompt(val, bigEndian, cs, maxChars, sb);
+        }
     };
 
     final String delimiters;
@@ -292,11 +321,13 @@ enum StringValueType implements ValueType {
             String defVal) {
 
         if (val instanceof String)
-            return (String) (valueIndex == 0 ? val : null);
+            return (String) (valueIndex == 0 ? val : defVal);
 
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
-            return valueIndex < ss.length ? ss[valueIndex] : null;
+            return (valueIndex < ss.length && !ss[valueIndex].isEmpty())
+                    ? ss[valueIndex]
+                    : defVal;
         }
 
         throw new UnsupportedOperationException();

@@ -371,6 +371,56 @@ public class Attributes implements Serializable {
         return value;
     }
 
+    private double[] decodeDSValue(int index) {
+        Object value = values[index];
+        if (value instanceof double[])
+            return (double[]) value;
+
+        double[] ds;
+        if (value instanceof byte[])
+            value = vrs[index].toStrings((byte[]) value, bigEndian,
+                        getSpecificCharacterSet());
+        if (value instanceof String)
+            ds = new double[] { StringUtils.parseDS((String) value) };
+        else { // value instanceof String[]
+            String[] ss = (String[]) value;
+            ds = new double[ss.length];
+            for (int i = 0; i < ds.length; i++) {
+                String s = ss[i];
+                ds[i] = (s != null && !s.isEmpty())
+                        ? StringUtils.parseDS(s)
+                        : Double.NaN;
+            }
+        }
+        values[index] = ds;
+        return ds;
+    }
+
+    private int[] decodeISValue(int index) {
+        Object value = values[index];
+        if (value instanceof int[])
+            return (int[]) value;
+
+        int[] is;
+        if (value instanceof byte[])
+            value = vrs[index].toStrings((byte[]) value, bigEndian,
+                        getSpecificCharacterSet());
+        if (value instanceof String)
+            is = new int[] { StringUtils.parseIS((String) value) };
+        else { // value instanceof String[]
+            String[] ss = (String[]) value;
+            is = new int[ss.length];
+            for (int i = 0; i < is.length; i++) {
+                String s = ss[i];
+                is[i] = (s != null && !s.isEmpty())
+                            ? StringUtils.parseIS(s)
+                            : Integer.MIN_VALUE;
+            }
+        }
+        values[index] = is;
+        return is;
+    }
+
     private void updateVR(int index, VR vr) {
         VR prev = vrs[index];
         if (vr == prev)
@@ -613,7 +663,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.IS)
-            value = decodeStringValue(index);
+            value = decodeISValue(index);
 
         try {
             return vr.toInt(value, bigEndian, valueIndex, defVal);
@@ -648,7 +698,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.IS)
-            value = decodeStringValue(index);
+            value = decodeISValue(index);
 
         try {
             return vr.toInts(value, bigEndian);
@@ -695,7 +745,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.DS)
-            value = decodeStringValue(index);
+            value = decodeDSValue(index);
 
         try {
             return vr.toFloat(value, bigEndian, valueIndex, defVal);
@@ -730,7 +780,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.DS)
-            value = decodeStringValue(index);
+            value = decodeDSValue(index);
 
         try {
             return vr.toFloats(value, bigEndian);

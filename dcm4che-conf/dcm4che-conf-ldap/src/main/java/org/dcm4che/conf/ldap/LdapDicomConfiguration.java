@@ -40,7 +40,6 @@ package org.dcm4che.conf.ldap;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -683,8 +682,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
-        } catch (KeyManagementException e) {
-            throw new AssertionError(e.getMessage());
         }
     }
 
@@ -700,8 +697,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 try {
                     device.addConnection(conn);
                 } catch (IOException e) {
-                    throw new AssertionError(e.getMessage());
-                } catch (KeyManagementException e) {
                     throw new AssertionError(e.getMessage());
                 }
             }
@@ -726,8 +721,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         try {
             conn.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
         } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        } catch (KeyManagementException e) {
             throw new AssertionError(e.getMessage());
         }
     }

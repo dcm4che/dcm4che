@@ -40,7 +40,6 @@ package org.dcm4che.tool.mppsscu;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -194,7 +193,7 @@ public class MppsSCU extends Device {
     private Association as;
     private final AtomicInteger outstanding = new AtomicInteger(0);
 
-    public MppsSCU() throws KeyManagementException, IOException {
+    public MppsSCU() throws IOException {
         super("mppsscu");
         addConnection(conn);
         addApplicationEntity(ae);
@@ -391,7 +390,7 @@ public class MppsSCU extends Device {
     }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException, KeyManagementException {
+            IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
 

@@ -46,7 +46,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -664,10 +663,8 @@ public class Connection {
      * 
      * @param installed
      *                True if the NetworkConnection is installed on the network.
-     * @throws KeyManagementException 
      */
-    public void setInstalled(Boolean installed)
-            throws IOException, KeyManagementException {
+    public void setInstalled(Boolean installed) throws IOException {
         if (this.installed == null
                 ? installed == null 
                 : this.installed.equals(installed))
@@ -690,7 +687,7 @@ public class Connection {
         }
     }
 
-    void activate() throws IOException, KeyManagementException {
+    void activate() throws IOException {
         if (isInstalled() && isServer() && server == null)
             bind();
     }
@@ -827,9 +824,8 @@ public class Connection {
      * 
      * @throws IOException
      *             If there is a problem with the network interaction.
-     * @throws KeyManagementException 
      */
-    public synchronized void bind() throws IOException, KeyManagementException {
+    public synchronized void bind() throws IOException {
         checkDevice();
         checkInstalled();
         if (!isServer())
@@ -876,8 +872,7 @@ public class Connection {
         return needRebind;
     }
 
-    private ServerSocket createTLSServerSocket()
-            throws IOException, KeyManagementException {
+    private ServerSocket createTLSServerSocket() throws IOException {
         SSLContext sslContext = device.sslContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
@@ -905,7 +900,7 @@ public class Connection {
     }
 
     public Socket connect(Connection remoteConn)
-            throws IOException, IncompatibleConnectionException, KeyManagementException {
+            throws IOException, IncompatibleConnectionException {
         checkInstalled();
         checkCompatible(remoteConn);
         Socket s = isTls() ? createTLSSocket(remoteConn) : new Socket();
@@ -920,8 +915,7 @@ public class Connection {
         return s;
     }
 
-    private Socket createTLSSocket(Connection remoteConn)
-            throws IOException, KeyManagementException {
+    private Socket createTLSSocket(Connection remoteConn) throws IOException {
         SSLContext sslContext = device.sslContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();

@@ -46,7 +46,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
@@ -109,7 +108,7 @@ public class StoreSCU extends Device {
     private int filesScanned;
     private int filesSent;
 
-    public StoreSCU() throws IOException, KeyManagementException {
+    public StoreSCU() throws IOException {
         super("storescu");
         addConnection(conn);
         addApplicationEntity(ae);
@@ -443,7 +442,7 @@ public class StoreSCU extends Device {
     }
 
     public void open()
-            throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
+            throws IOException, InterruptedException, IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
 

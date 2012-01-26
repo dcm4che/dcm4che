@@ -40,11 +40,9 @@ package org.dcm4che.tool.movescu;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -76,7 +74,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class MoveSCU {
+public class MoveSCU extends Device {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, "STUDY"),
@@ -104,7 +102,6 @@ public class MoveSCU {
         Tag.SeriesInstanceUID
     };
 
-   private final Device device = new Device("movescu");
     private final ApplicationEntity ae = new ApplicationEntity("MOVESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -116,18 +113,11 @@ public class MoveSCU {
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
 
-    public MoveSCU() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+    public MoveSCU() throws IOException {
+        super("movescu");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.addConnection(conn);
-    }
-
-    public void setScheduledExecutorService(ScheduledExecutorService service) {
-        device.setScheduledExecutor(service);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
     }
 
     public final void setPriority(int priority) {
@@ -242,7 +232,7 @@ public class MoveSCU {
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             main.setExecutor(executorService);
-            main.setScheduledExecutorService(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();
@@ -302,7 +292,7 @@ public class MoveSCU {
         }
     }
 
-    public void open() throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
+    public void open() throws IOException, InterruptedException, IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
 

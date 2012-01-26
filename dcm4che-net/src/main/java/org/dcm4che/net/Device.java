@@ -479,8 +479,7 @@ public class Device {
      * @throws IOException 
      * @throws KeyManagementException 
      */
-    public final void setInstalled(boolean installed)
-            throws IOException, KeyManagementException {
+    public final void setInstalled(boolean installed) throws IOException {
         if (this.installed == installed)
             return;
 
@@ -521,7 +520,7 @@ public class Device {
         return properties.remove(key);
     }
 
-    public void activate() throws IOException, KeyManagementException {
+    public void activate() throws IOException {
         if (activated)
             throw new IllegalStateException("already activated");
 
@@ -537,7 +536,7 @@ public class Device {
         activated = false;
     }
 
-    private void activateConnections() throws IOException, KeyManagementException {
+    private void activateConnections() throws IOException {
         try {
             for (Connection con : conns)
                 con.activate();
@@ -574,8 +573,7 @@ public class Device {
         this.scheduledExecutor = executor;
     }
 
-    public void addConnection(Connection conn)
-            throws IOException, KeyManagementException {
+    public void addConnection(Connection conn) throws IOException {
         conn.setDevice(this);
         conns.add(conn);
         if (activated)
@@ -667,58 +665,53 @@ public class Device {
         return aes.values();
     }
 
-    public final void setKeyManager(KeyManager km) {
+    public final void setKeyManager(KeyManager km) throws KeyManagementException {
         this.km = km;
-        this.sslContext = null;
-        needRebindTLSConnections();
+        if (tm != null)
+            initTLS();
     }
 
     public final KeyManager getKeyManager() {
         return km;
     }
 
-    public final void setTrustManager(TrustManager tm) {
+    public final void setTrustManager(TrustManager tm) throws KeyManagementException {
         this.tm = tm;
-        this.sslContext = null;
-        needRebindTLSConnections();
+        if (tm != null)
+            initTLS();
     }
 
     public final TrustManager getTrustManager() {
         return tm;
     }
 
-    public void initTrustManager() throws KeyStoreException {
+    public void initTrustManager() throws KeyStoreException, KeyManagementException {
         setTrustManager(SSLManagerFactory.createTrustManager(
                 getAllAuthorizedNodeCertificates()));
     }
 
-    SSLContext sslContext() throws KeyManagementException {
-        SSLContext tmp = sslContext;
-        if (tmp != null)
-            return tmp;
+    SSLContext sslContext() {
+        if (sslContext == null)
+            throw new IllegalStateException("TrustManager not initalized");
+        return sslContext;
+    }
 
-        synchronized (this) {
-            tmp = sslContext;
-            if (tmp == null) {
-                try {
-                    tmp = SSLContext.getInstance("TLS");
-                } catch (NoSuchAlgorithmException e) {
-                    throw new AssertionError(e);
-                }
-                KeyManager km = this.km;
-                TrustManager tm = this.tm;
-                tmp.init(km != null ? new KeyManager[]{ km } : null, 
-                        tm != null ? new TrustManager[]{ tm } : null, null);
-                sslContext = tmp;
-            }
-            return tmp;
+    private void initTLS() throws KeyManagementException {
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
         }
+        KeyManager km = this.km;
+        TrustManager tm = this.tm;
+        sslContext.init(km != null ? new KeyManager[]{ km } : null, 
+                tm != null ? new TrustManager[]{ tm } : null, null);
+        needRebindTLSConnections();
     }
 
     public void execute(Runnable command) {
         if (executor == null)
-            throw new IllegalStateException(
-                    "executer not initalized");
+            throw new IllegalStateException("executer not initalized");
 
         executor.execute(command);
     }

@@ -41,6 +41,7 @@ package org.dcm4che.tool.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -644,6 +645,8 @@ public class CLIUtils {
         } catch (UnrecoverableKeyException e) {
             throw new IOException(e);
         } catch (KeyStoreException e) {
+            throw new IOException(e);
+        } catch (KeyManagementException e) {
             throw new IOException(e);
         } catch (NoSuchAlgorithmException e) {
             throw new IOException(e);

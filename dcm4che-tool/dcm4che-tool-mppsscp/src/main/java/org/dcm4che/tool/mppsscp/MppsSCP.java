@@ -40,7 +40,6 @@ package org.dcm4che.tool.mppsscp;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -76,7 +75,7 @@ public class MppsSCP extends Device {
    private File storageDir;
    private final DicomService mppsSCP = new MppsSCPImpl(this);
 
-   public MppsSCP() throws KeyManagementException, IOException {
+   public MppsSCP() throws IOException {
        super("mppsscp");
        addConnection(conn);
        addApplicationEntity(ae);

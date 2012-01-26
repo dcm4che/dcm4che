@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.security.KeyManagementException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -111,7 +110,7 @@ public class StgCmtSCU extends Device {
         }
     };
 
-    public StgCmtSCU() throws KeyManagementException, IOException {
+    public StgCmtSCU() throws IOException {
         super("stgcmtscu");
         addConnection(conn);
         addApplicationEntity(ae);
@@ -308,7 +307,7 @@ public class StgCmtSCU extends Device {
    }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException, KeyManagementException {
+            IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
 

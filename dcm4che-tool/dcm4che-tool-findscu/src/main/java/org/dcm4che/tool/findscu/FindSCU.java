@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -85,7 +84,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class FindSCU {
+public class FindSCU extends Device {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
@@ -116,7 +115,6 @@ public class FindSCU {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.findscu.messages");
 
-    private final Device device = new Device("findscu");
     private final ApplicationEntity ae = new ApplicationEntity("FINDSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -133,18 +131,11 @@ public class FindSCU {
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
 
-    public FindSCU() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+    public FindSCU() throws IOException {
+        super("findscu");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.addConnection(conn);
-    }
-
-    public void setScheduledExecutorService(ScheduledExecutorService service) {
-        device.setScheduledExecutor(service);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
     }
 
     public final void setPriority(int priority) {
@@ -314,7 +305,7 @@ public class FindSCU {
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             main.setExecutor(executorService);
-            main.setScheduledExecutorService(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();

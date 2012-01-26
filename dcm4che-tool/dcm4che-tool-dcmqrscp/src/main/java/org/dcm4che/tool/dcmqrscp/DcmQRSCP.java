@@ -40,7 +40,6 @@ package org.dcm4che.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -113,7 +112,7 @@ public class DcmQRSCP extends Device {
     private DicomDirWriter ddWriter;
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
 
-    public DcmQRSCP() throws IOException, KeyManagementException {
+    public DcmQRSCP() throws IOException {
         super("dcmqrscp");
         addConnection(conn);
         addApplicationEntity(ae);

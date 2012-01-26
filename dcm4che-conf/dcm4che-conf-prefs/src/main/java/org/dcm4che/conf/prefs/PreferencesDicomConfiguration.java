@@ -40,7 +40,6 @@ package org.dcm4che.conf.prefs;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -888,8 +887,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 device.addConnection(conn);
             } catch (IOException e) {
                 throw new AssertionError(e.getMessage());
-            } catch (KeyManagementException e) {
-                throw new AssertionError(e.getMessage());
             }
         }
         List<Connection> devConns = device.listConnections();
@@ -1030,8 +1027,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             device.setInstalled(prefs.getBoolean("dicomInstalled", false));
         } catch (IOException e) {
             throw new AssertionError(e.getMessage());
-        } catch (KeyManagementException e) {
-            throw new AssertionError(e.getMessage());
         }
     }
 
@@ -1043,8 +1038,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         try {
             conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
         } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        } catch (KeyManagementException e) {
             throw new AssertionError(e.getMessage());
         }
         conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));

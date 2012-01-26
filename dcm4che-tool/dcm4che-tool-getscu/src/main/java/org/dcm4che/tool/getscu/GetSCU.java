@@ -47,7 +47,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -84,7 +83,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class GetSCU {
+public class GetSCU extends Device {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
@@ -113,7 +112,6 @@ public class GetSCU {
         Tag.SeriesInstanceUID
     };
 
-    private final Device device = new Device("getscu");
     private final ApplicationEntity ae = new ApplicationEntity("GETSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -143,21 +141,14 @@ public class GetSCU {
 
     };
 
-    public GetSCU() throws IOException, KeyManagementException {
-        device.addConnection(conn);
-        device.addApplicationEntity(ae);
+    public GetSCU() throws IOException {
+        super("getscu");
+        addConnection(conn);
+        addApplicationEntity(ae);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(storageSCP);
         ae.setDimseRQHandler(serviceRegistry);
-    }
-
-    public void setScheduledExecutorService(ScheduledExecutorService service) {
-        device.setScheduledExecutor(service);
-    }
-
-    public void setExecutor(Executor executor) {
-        device.setExecutor(executor);
     }
 
     public void setStorageDirectory(File storageDir) {
@@ -289,7 +280,7 @@ public class GetSCU {
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
             main.setExecutor(executorService);
-            main.setScheduledExecutorService(scheduledExecutorService);
+            main.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();

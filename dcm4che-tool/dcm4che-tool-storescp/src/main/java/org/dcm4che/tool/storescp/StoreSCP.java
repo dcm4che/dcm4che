@@ -40,7 +40,6 @@ package org.dcm4che.tool.storescp;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -81,7 +80,7 @@ public class StoreSCP extends Device{
     private int status;
 
 
-    public StoreSCP() throws IOException, KeyManagementException {
+    public StoreSCP() throws IOException {
         super("storescp");
         addConnection(conn);
         addApplicationEntity(ae);

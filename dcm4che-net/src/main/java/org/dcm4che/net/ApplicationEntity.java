@@ -40,7 +40,6 @@ package org.dcm4che.net;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -561,8 +560,7 @@ public class ApplicationEntity {
     }
 
     public Association connect(Connection local, Connection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException, IncompatibleConnectionException,
-                KeyManagementException {
+            throws IOException, InterruptedException, IncompatibleConnectionException {
         checkDevice();
         checkInstalled();
         if (rq.getCallingAET() == null)
@@ -578,8 +576,7 @@ public class ApplicationEntity {
     }
 
     public Association connect(Connection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException, IncompatibleConnectionException,
-                KeyManagementException {
+            throws IOException, InterruptedException, IncompatibleConnectionException {
         return connect(findCompatibelConnection(remote), remote, rq);
     }
 
@@ -593,8 +590,7 @@ public class ApplicationEntity {
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)
-        throws IOException, InterruptedException, IncompatibleConnectionException,
-            KeyManagementException {
+        throws IOException, InterruptedException, IncompatibleConnectionException {
         for (Connection remoteConn : remote.conns)
             for (Connection conn : conns)
                 if (conn.isCompatible(remoteConn))

@@ -60,14 +60,12 @@ import org.dcm4che.util.AttributesValidator;
  */
 class CGetSCPImpl extends BasicCGetSCP {
 
-    private final DcmQRSCP main;
     private final String[] qrLevels;
     private final boolean withoutBulkData;
     private final QueryRetrieveLevel rootLevel;
 
-    public CGetSCPImpl(DcmQRSCP qrscp, String sopClass, String... qrLevels) {
-        super(qrscp, sopClass);
-        this.main = qrscp;
+    public CGetSCPImpl(String sopClass, String... qrLevels) {
+        super(sopClass);
         this.qrLevels = qrLevels;
         this.withoutBulkData = qrLevels.length == 0;
         this.rootLevel = withoutBulkData
@@ -83,9 +81,10 @@ class CGetSCPImpl extends BasicCGetSCP {
                 ? QueryRetrieveLevel.IMAGE
                 : QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
-        List<InstanceLocator> matches = main.calculateMatches(rq, keys);
+        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
+        List<InstanceLocator> matches = qrscp.calculateMatches(rq, keys);
         RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
-        retrieveTask.setSendPendingRSP(main.isSendPendingCGet());
+        retrieveTask.setSendPendingRSP(qrscp.isSendPendingCGet());
         return retrieveTask;
     }
 

@@ -124,42 +124,42 @@ public class DcmQRSCP extends Device {
         serviceRegistry.addDicomService(new CStoreSCPImpl(this));
         serviceRegistry.addDicomService(new StgCmtSCPImpl(this));
         serviceRegistry.addDicomService(
-                new CFindSCPImpl(this,
+                new CFindSCPImpl(
                         UID.PatientRootQueryRetrieveInformationModelFIND,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CFindSCPImpl(this,
+                new CFindSCPImpl(
                         UID.StudyRootQueryRetrieveInformationModelFIND,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CFindSCPImpl(this,
+                new CFindSCPImpl(
                         UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
                         PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(
-                new CGetSCPImpl(this,
+                new CGetSCPImpl(
                         UID.PatientRootQueryRetrieveInformationModelGET,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CGetSCPImpl(this,
+                new CGetSCPImpl(
                         UID.StudyRootQueryRetrieveInformationModelGET,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CGetSCPImpl(this,
+                new CGetSCPImpl(
                         UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired,
                         PATIENT_STUDY_ONLY_LEVELS));
         serviceRegistry.addDicomService(
-                new CGetSCPImpl(this,
+                new CGetSCPImpl(
                         UID.CompositeInstanceRetrieveWithoutBulkDataGET));
         serviceRegistry.addDicomService(
-                new CMoveSCPImpl(this,
+                new CMoveSCPImpl(
                         UID.PatientRootQueryRetrieveInformationModelMOVE,
                         PATIENT_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CMoveSCPImpl(this,
+                new CMoveSCPImpl(
                         UID.StudyRootQueryRetrieveInformationModelMOVE,
                         STUDY_ROOT_LEVELS));
         serviceRegistry.addDicomService(
-                new CMoveSCPImpl(this,
+                new CMoveSCPImpl(
                         UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired,
                         PATIENT_STUDY_ONLY_LEVELS));
         ae.setDimseRQHandler(serviceRegistry);

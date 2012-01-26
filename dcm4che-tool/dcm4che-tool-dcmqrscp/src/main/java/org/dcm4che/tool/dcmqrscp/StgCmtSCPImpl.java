@@ -52,19 +52,12 @@ import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
 import org.dcm4che.net.service.BasicNActionSCP;
 import org.dcm4che.net.service.DicomServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class StgCmtSCPImpl extends BasicNActionSCP {
-
-    public static final Logger LOG = LoggerFactory.getLogger(StgCmtSCPImpl.class);
-
-    private final DcmQRSCP qrscp;
 
     public StgCmtSCPImpl(DcmQRSCP qrscp) {
         super(UID.StorageCommitmentPushModelSOPClass);
         setActionTypeIDs(1);
-        this.qrscp = qrscp;
     }
 
     @Override
@@ -73,6 +66,7 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
             throws DicomServiceException {
         String callingAET = as.getCallingAET();
         String calledAET = as.getCalledAET();
+        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
         if (qrscp.getRemoteConnection(callingAET) == null)
             throw new DicomServiceException(Status.ProcessingFailure,
                     "Unknown Calling AET: " + callingAET);
@@ -87,6 +81,7 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
     @Override
     protected void postNActionRSP(final Association as, int actionTypeID,
             Attributes actionInfo, Attributes rsp, final Object handback) {
+        final DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
         qrscp.execute(new Runnable() {
             @Override
             public void run() {

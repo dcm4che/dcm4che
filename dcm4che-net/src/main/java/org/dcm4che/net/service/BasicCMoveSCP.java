@@ -44,7 +44,6 @@ import java.util.Collections;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Device;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
@@ -53,11 +52,8 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicCMoveSCP extends DicomService implements CMoveSCP {
 
-    protected final Device device;
-
-    public BasicCMoveSCP(Device device, String... sopClasses) {
+    public BasicCMoveSCP(String... sopClasses) {
         super(sopClasses);
-        this.device = device;
     }
 
     @Override
@@ -65,7 +61,7 @@ public class BasicCMoveSCP extends DicomService implements CMoveSCP {
             throws IOException {
         RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
         as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
-        device.execute(retrieveTask);
+        as.getApplicationEntity().getDevice().execute(retrieveTask);
     }
 
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,

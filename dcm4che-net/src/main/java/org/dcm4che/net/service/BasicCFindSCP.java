@@ -43,7 +43,6 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Device;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
@@ -52,11 +51,8 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicCFindSCP extends DicomService implements CFindSCP {
 
-    protected final Device device;
-
-    public BasicCFindSCP(Device device, String... sopClasses) {
+    public BasicCFindSCP(String... sopClasses) {
         super(sopClasses);
-        this.device = device;
     }
 
     @Override
@@ -64,7 +60,7 @@ public class BasicCFindSCP extends DicomService implements CFindSCP {
             throws IOException {
         QueryTask queryTask = calculateMatches(as, pc, rq, keys);
         as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), queryTask);
-        device.execute(queryTask);
+        as.getApplicationEntity().getDevice().execute(queryTask);
     }
 
     protected QueryTask calculateMatches(Association as, PresentationContext pc,

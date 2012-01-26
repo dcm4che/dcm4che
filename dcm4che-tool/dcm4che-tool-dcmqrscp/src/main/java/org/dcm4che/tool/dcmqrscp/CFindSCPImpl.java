@@ -61,14 +61,10 @@ class CFindSCPImpl extends BasicCFindSCP {
     private final String[] qrLevels;
     private final QueryRetrieveLevel rootLevel;
 
-    public CFindSCPImpl(DcmQRSCP qrscp, String sopClass, String... qrLevels) {
-        super(qrscp, sopClass);
+    public CFindSCPImpl(String sopClass, String... qrLevels) {
+        super(sopClass);
         this.qrLevels = qrLevels;
         this.rootLevel = QueryRetrieveLevel.valueOf(qrLevels[0]);
-    }
-
-    private DcmQRSCP qrscp() {
-        return (DcmQRSCP) device;
     }
 
     @Override
@@ -77,8 +73,9 @@ class CFindSCPImpl extends BasicCFindSCP {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateQueryKeys(validator, rootLevel, relational(as, rq));
-        DicomDirReader ddr = qrscp().getDicomDirReader();
-        String availability =  qrscp().getInstanceAvailability();
+        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
+        DicomDirReader ddr = qrscp.getDicomDirReader();
+        String availability =  qrscp.getInstanceAvailability();
         switch(level) {
         case PATIENT:
             return new PatientQueryTask(as, pc, rq, keys, ddr, availability);

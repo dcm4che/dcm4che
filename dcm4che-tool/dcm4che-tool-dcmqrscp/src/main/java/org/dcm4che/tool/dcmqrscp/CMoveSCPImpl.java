@@ -69,14 +69,10 @@ class CMoveSCPImpl extends BasicCMoveSCP {
     private final String[] qrLevels;
     private final QueryRetrieveLevel rootLevel;
 
-    public CMoveSCPImpl(DcmQRSCP main, String sopClass, String... qrLevels) {
-        super(main, sopClass);
+    public CMoveSCPImpl(String sopClass, String... qrLevels) {
+        super(sopClass);
         this.qrLevels = qrLevels;
         this.rootLevel = QueryRetrieveLevel.valueOf(qrLevels[0]);
-    }
-
-    private DcmQRSCP qrscp() {
-        return (DcmQRSCP) device;
     }
 
     @Override
@@ -86,11 +82,12 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
         String dest = rq.getString(Tag.MoveDestination);
-        final Connection remote = qrscp().getRemoteConnection(dest);
+        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice(); 
+        final Connection remote = qrscp.getRemoteConnection(dest);
         if (remote == null)
             throw new DicomServiceException(Status.MoveDestinationUnknown,
                     "Move Destination: " + dest + " unknown");
-        List<InstanceLocator> matches = qrscp().calculateMatches(rq, keys);
+        List<InstanceLocator> matches = qrscp.calculateMatches(rq, keys);
         BasicRetrieveTask retrieveTask = new BasicRetrieveTask(
                 BasicRetrieveTask.Service.C_MOVE, as, pc, rq, matches ) {
 
@@ -111,7 +108,7 @@ class CMoveSCPImpl extends BasicCMoveSCP {
             }
 
         };
-        retrieveTask.setSendPendingRSPInterval(qrscp().getSendPendingCMoveInterval());
+        retrieveTask.setSendPendingRSPInterval(qrscp.getSendPendingCMoveInterval());
         return retrieveTask;
     }
 

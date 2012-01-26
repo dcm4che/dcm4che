@@ -70,6 +70,7 @@ import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicNEventReportSCU;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
@@ -94,6 +95,7 @@ public class StgCmtSCU extends Device {
     private int cuidFieldIndex = 1;
     private char fieldDelim = '\t';
     private boolean keepAlive;
+    private int status;
 
     private Attributes actionInfo = new Attributes();
 
@@ -102,6 +104,14 @@ public class StgCmtSCU extends Device {
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
     private final BasicNEventReportSCU stgcmtResultHandler =
             new BasicNEventReportSCU(UID.StorageCommitmentPushModelSOPClass) {
+
+        @Override
+        protected Attributes eventReport(Association as, int eventTypeID,
+                Attributes eventInfo, Attributes rsp,
+                Object[] handback) throws DicomServiceException {
+            rsp.setInt(Tag.Status, VR.US, status);
+            return null;
+        }
 
         @Override
         protected void postNEventReportRSP(Association as, int eventTypeID,
@@ -132,6 +142,7 @@ public class StgCmtSCU extends Device {
             stgcmtscu.remote.setTlsProtocols(stgcmtscu.conn.getTlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             configureKeepAlive(stgcmtscu, cl);
             configureRequest(stgcmtscu, cl);
             ExecutorService executorService =
@@ -240,6 +251,10 @@ public class StgCmtSCU extends Device {
         this.keepAlive = keepAlive;
     }
 
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public void setTransferSyntaxes(String[] tss) {
         rq.addPresentationContext(
                 new PresentationContext(1,
@@ -255,6 +270,7 @@ public class StgCmtSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
+        addStatusOption(opts);
         addKeepAliveOption(opts);
         addRequestOption(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
@@ -264,6 +280,16 @@ public class StgCmtSCU extends Device {
         CLIUtils.addNActionRspOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addStatusOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("code")
+                .withDescription(rb.getString("status"))
+                .withLongOpt("status")
+                .create(null));
     }
 
     private static void addKeepAliveOption(Options opts) {

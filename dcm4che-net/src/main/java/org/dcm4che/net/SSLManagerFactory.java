@@ -153,7 +153,7 @@ public abstract class SSLManagerFactory {
 
     public static TrustManager createTrustManager(X509Certificate... certs)
             throws KeyStoreException {
-        return certs.length > 0 ? createTrustManager(createKeyStore(certs)) : null;
+        return createTrustManager(createKeyStore(certs));
     }
 
     public static TrustManager createTrustManager(String type, String url, char[] password)

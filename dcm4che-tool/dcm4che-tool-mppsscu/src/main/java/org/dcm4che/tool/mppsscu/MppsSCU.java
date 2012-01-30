@@ -590,9 +590,9 @@ public class MppsSCU extends Device {
         Sequence refSOPSeq = prefSeries.getSequence(Tag.ReferencedImageSequence);
         Attributes refSOP = new Attributes();
         refSOPSeq.add(refSOP);
-        refSOP.setString(Tag.RequestedSOPClassUID, VR.UI,
+        refSOP.setString(Tag.ReferencedSOPClassUID, VR.UI,
                 inst.getString(Tag.SOPClassUID));
-        refSOP.setString(Tag.RequestedSOPInstanceUID, VR.UI,
+        refSOP.setString(Tag.ReferencedSOPInstanceUID, VR.UI,
                 inst.getString(Tag.SOPInstanceUID));
     }
 

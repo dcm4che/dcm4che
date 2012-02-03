@@ -73,7 +73,7 @@ class CFindSCPImpl extends BasicCFindSCP {
         AttributesValidator validator = new AttributesValidator(keys);
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateQueryKeys(validator, rootLevel, relational(as, rq));
-        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         DicomDirReader ddr = qrscp.getDicomDirReader();
         String availability =  qrscp.getInstanceAvailability();
         switch(level) {

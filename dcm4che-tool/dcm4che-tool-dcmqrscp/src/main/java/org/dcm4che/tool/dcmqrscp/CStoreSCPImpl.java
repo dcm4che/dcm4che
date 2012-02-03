@@ -65,18 +65,16 @@ import org.dcm4che.util.TagUtils;
  */
 class CStoreSCPImpl extends BasicCStoreSCP {
 
-    private final DcmQRSCP main;
-
-    public CStoreSCPImpl(DcmQRSCP main) {
+    public CStoreSCPImpl() {
         super("*");
-        this.main = main;
     }
 
     @Override
     protected File createFile(Association as, Attributes rq, Object storage)
             throws DicomServiceException {
         try {
-            return File.createTempFile("dcm", ".dcm", main.getStorageDirectory());
+            DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
+            return File.createTempFile("dcm", ".dcm", qrscp.getStorageDirectory());
         } catch (IOException e) {
             LOG.warn(as + ": Failed to create temp file:", e);
             throw new DicomServiceException(Status.OutOfResources, e);
@@ -100,7 +98,8 @@ class CStoreSCPImpl extends BasicCStoreSCP {
         } finally {
             SafeClose.close(in);
         }
-        File dst = new File(main.getStorageDirectory(), main.getFilePathFormat().format(ds));
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
+        File dst = new File(qrscp.getStorageDirectory(), qrscp.getFilePathFormat().format(ds));
         File dir = dst.getParentFile();
         dir.mkdirs();
         while (dst.exists()) {
@@ -114,12 +113,12 @@ class CStoreSCPImpl extends BasicCStoreSCP {
         }
         try {
             if (addDicomDirRecords(as, ds, fmi, dst)) {
-                LOG.info("{}: M-UPDATE {}", as, main.getDicomDirectory());
+                LOG.info("{}: M-UPDATE {}", as, qrscp.getDicomDirectory());
                 return null;
             }
             LOG.info("{}: ignore received object", as);
         } catch (IOException e) {
-            LOG.warn(as + ": Failed to M-UPDATE " + main.getDicomDirectory(), e);
+            LOG.warn(as + ": Failed to M-UPDATE " + qrscp.getDicomDirectory(), e);
             String errorComment = e.getMessage();
             if (errorComment.length() > 64)
                 errorComment = errorComment.substring(0, 64);
@@ -131,8 +130,9 @@ class CStoreSCPImpl extends BasicCStoreSCP {
 
     private boolean addDicomDirRecords(Association as, Attributes ds, 
             Attributes fmi, File f) throws IOException {
-        DicomDirWriter ddWriter = main.getDicomDirWriter();
-        RecordFactory recFact = main.getRecordFactory();
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
+        DicomDirWriter ddWriter = qrscp.getDicomDirWriter();
+        RecordFactory recFact = qrscp.getRecordFactory();
         String pid = ds.getString(Tag.PatientID, null);
         String styuid = ds.getString(Tag.StudyInstanceUID, null);
         String seruid = ds.getString(Tag.SeriesInstanceUID, null);

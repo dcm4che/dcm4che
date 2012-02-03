@@ -81,7 +81,7 @@ class CMoveSCPImpl extends BasicCMoveSCP {
         QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
         String dest = rq.getString(Tag.MoveDestination);
-        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice(); 
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         final Connection remote = qrscp.getRemoteConnection(dest);
         if (remote == null)
             throw new DicomServiceException(Status.MoveDestinationUnknown,

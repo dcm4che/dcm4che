@@ -66,6 +66,7 @@ import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.QueryOption;
@@ -120,8 +121,8 @@ public class DcmQRSCP extends Device {
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
-        serviceRegistry.addDicomService(new CStoreSCPImpl(this));
-        serviceRegistry.addDicomService(new StgCmtSCPImpl(this));
+        serviceRegistry.addDicomService(new CStoreSCPImpl());
+        serviceRegistry.addDicomService(new StgCmtSCPImpl());
         serviceRegistry.addDicomService(
                 new CFindSCPImpl(
                         UID.PatientRootQueryRetrieveInformationModelFIND,
@@ -608,6 +609,10 @@ public class DcmQRSCP extends Device {
         if (failedSeq.isEmpty())
             eventInfo.remove(Tag.FailedSOPSequence);
         return eventInfo;
+    }
+
+    static DcmQRSCP deviceOf(Association as) {
+        return (DcmQRSCP) as.getApplicationEntity().getDevice();
     }
 
     private static Attributes refSOP(String iuid, String cuid, int failureReason) {

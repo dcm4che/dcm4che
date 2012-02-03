@@ -81,7 +81,7 @@ class CGetSCPImpl extends BasicCGetSCP {
                 ? QueryRetrieveLevel.IMAGE
                 : QueryRetrieveLevel.valueOf(validator, qrLevels);
         level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
-        DcmQRSCP qrscp = (DcmQRSCP) as.getApplicationEntity().getDevice();
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         List<InstanceLocator> matches = qrscp.calculateMatches(rq, keys);
         RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
         retrieveTask.setSendPendingRSP(qrscp.isSendPendingCGet());

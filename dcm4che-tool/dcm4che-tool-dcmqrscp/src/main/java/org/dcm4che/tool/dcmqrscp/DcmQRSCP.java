@@ -73,6 +73,7 @@ import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.InstanceLocator;
@@ -562,7 +563,7 @@ public class DcmQRSCP extends Device {
     }
 
     public Attributes calculateStorageCommitmentResult(String calledAET,
-            Attributes actionInfo) throws IOException {
+            Attributes actionInfo) {
         Sequence requestSeq = actionInfo.getSequence(Tag.ReferencedSOPSequence);
         int size = requestSeq.size();
         String[] sopIUIDs = new String[size];
@@ -570,7 +571,7 @@ public class DcmQRSCP extends Device {
         eventInfo.setString(Tag.RetrieveAETitle, VR.AE, calledAET);
         eventInfo.setString(Tag.StorageMediaFileSetID, VR.SH, ddReader.getFileSetID());
         eventInfo.setString(Tag.StorageMediaFileSetUID, VR.SH, ddReader.getFileSetUID());
-        eventInfo.setBytes(Tag.TransactionUID, VR.UI, actionInfo.getBytes(Tag.TransactionUID));
+        eventInfo.setString(Tag.TransactionUID, VR.UI, actionInfo.getString(Tag.TransactionUID));
         Sequence successSeq = eventInfo.newSequence(Tag.ReferencedSOPSequence, size);
         Sequence failedSeq = eventInfo.newSequence(Tag.FailedSOPSequence, size);
         LinkedHashMap<String, String> map =
@@ -580,32 +581,38 @@ public class DcmQRSCP extends Device {
             map.put(sopIUIDs[i] = item.getString(Tag.ReferencedSOPInstanceUID),
                     item.getString(Tag.ReferencedSOPClassUID));
         }
+        int failureReason = Status.NoSuchObjectInstance;
         DicomDirReader ddr = ddReader;
-        Attributes patRec = ddr.findPatientRecord();
-        while (patRec != null) {
-            Attributes studyRec = ddr.findStudyRecord(patRec);
-            while (studyRec != null) {
-                Attributes seriesRec = ddr.findSeriesRecord(studyRec);
-                while (seriesRec != null) {
-                    Attributes instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
-                    while (instRec != null) {
-                        String iuid = instRec.getString(Tag.ReferencedSOPInstanceUIDInFile);
-                        String cuid = map.remove(iuid);
-                        if (cuid.equals(instRec.getString(Tag.ReferencedSOPClassUIDInFile)))
-                            successSeq.add(refSOP(iuid, cuid, Status.Success));
-                        else
-                            failedSeq.add(refSOP(iuid, cuid, Status.ClassInstanceConflict));
-                        instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+        try {
+            Attributes patRec = ddr.findPatientRecord();
+            while (patRec != null) {
+                Attributes studyRec = ddr.findStudyRecord(patRec);
+                while (studyRec != null) {
+                    Attributes seriesRec = ddr.findSeriesRecord(studyRec);
+                    while (seriesRec != null) {
+                        Attributes instRec = ddr.findLowerInstanceRecord(seriesRec, true, sopIUIDs);
+                        while (instRec != null) {
+                            String iuid = instRec.getString(Tag.ReferencedSOPInstanceUIDInFile);
+                            String cuid = map.remove(iuid);
+                            if (cuid.equals(instRec.getString(Tag.ReferencedSOPClassUIDInFile)))
+                                successSeq.add(refSOP(iuid, cuid, Status.Success));
+                            else
+                                failedSeq.add(refSOP(iuid, cuid, Status.ClassInstanceConflict));
+                            instRec = ddr.findNextInstanceRecord(instRec, true, sopIUIDs);
+                        }
+                        seriesRec = ddr.findNextSeriesRecord(seriesRec);
                     }
-                    seriesRec = ddr.findNextSeriesRecord(seriesRec);
+                    studyRec = ddr.findNextStudyRecord(studyRec);
                 }
-                studyRec = ddr.findNextStudyRecord(studyRec);
+                patRec = ddr.findNextPatientRecord(patRec);
             }
-            patRec = ddr.findNextPatientRecord(patRec);
+        } catch (IOException e) {
+            DicomService.LOG.warn("Failed to M-READ " + dicomDir, e);
+            failureReason = Status.ProcessingFailure;
         }
-        for (Map.Entry<String, String> entry : map.entrySet())
-            failedSeq.add(refSOP(entry.getKey(), entry.getValue(),
-                    Status.NoSuchObjectInstance));
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            failedSeq.add(refSOP(entry.getKey(), entry.getValue(), failureReason));
+        }
         if (failedSeq.isEmpty())
             eventInfo.remove(Tag.FailedSOPSequence);
         return eventInfo;

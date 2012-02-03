@@ -65,29 +65,27 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
             Attributes actionInfo, Attributes rsp, Object[] handback)
             throws DicomServiceException {
         String callingAET = as.getCallingAET();
-        String calledAET = as.getCalledAET();
         DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         if (qrscp.getRemoteConnection(callingAET) == null)
             throw new DicomServiceException(Status.ProcessingFailure,
                     "Unknown Calling AET: " + callingAET);
-        try {
-            handback[0] = qrscp.calculateStorageCommitmentResult(calledAET, actionInfo);
-        } catch (Exception e) {
-            throw new DicomServiceException(Status.ProcessingFailure, e);
-        }
         return null;
     }
 
     @Override
     protected void postNActionRSP(final Association as, int actionTypeID,
-            Attributes actionInfo, Attributes rsp, final Object handback) {
+            final Attributes actionInfo, Attributes rsp, Object handback) {
         final DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
+        final String calledAET = as.getCalledAET();
+        final String callingAET = as.getCallingAET();
+        final Attributes eventInfo = 
+                    qrscp.calculateStorageCommitmentResult(calledAET, actionInfo);
         qrscp.execute(new Runnable() {
             @Override
             public void run() {
                 if (qrscp.isStgCmtOnSameAssoc()) {
                     try {
-                        neventReport(as, (Attributes) handback);
+                        neventReport(as, eventInfo);
                         return;
                     } catch (Exception e) {
                         LOG.info("Failed to return Storage Commitment Result in same Association:", e);
@@ -96,9 +94,9 @@ public class StgCmtSCPImpl extends BasicNActionSCP {
                 try {
                     Association diffAssoc = as.getApplicationEntity().connect(
                             as.getConnection(),
-                            qrscp.getRemoteConnection(as.getCallingAET()),
+                            qrscp.getRemoteConnection(callingAET),
                             makeAAssociateRQ(as));
-                    neventReport(diffAssoc, (Attributes) handback);
+                    neventReport(diffAssoc, eventInfo);
                     diffAssoc.release();
                 } catch (Exception e) {
                     LOG.error("Failed to return Storage Commitment Result in new Association:", e);

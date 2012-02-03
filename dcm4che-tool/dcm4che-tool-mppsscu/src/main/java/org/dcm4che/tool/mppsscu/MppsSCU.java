@@ -85,6 +85,7 @@ public class MppsSCU extends Device {
             ResourceBundle.getBundle("org.dcm4che.tool.mppsscu.messages");
     private static final ElementDictionary dict =
             ElementDictionary.getStandardElementDictionary();
+    private static final String IN_PROGRESS = "IN PROGRESS";
     private static final String COMPLETED = "COMPLETED";
     private static final String DISCONTINUED = "DISCONTINUED";
     private static final int[] MPPS_TOP_LEVEL_ATTRS = {
@@ -548,7 +549,7 @@ public class MppsSCU extends Device {
                 mpps.getString(Tag.PerformedProcedureStepStartDate));
         mpps.setString(Tag.PerformedProcedureStepEndTime, VR.TM,
                 mpps.getString(Tag.PerformedProcedureStepStartTime));
-        mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, "SCHEDULED");
+        mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, IN_PROGRESS);
 
         Sequence raSeq = inst.getSequence(Tag.RequestAttributesSequence);
         if (raSeq == null || raSeq.isEmpty()) {

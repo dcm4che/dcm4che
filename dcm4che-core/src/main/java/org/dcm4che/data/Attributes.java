@@ -1411,6 +1411,23 @@ public class Attributes implements Serializable {
         return addAll(other, selection.tags, null, 0, selection.size, false);
     }
 
+    public boolean addSelected(Attributes other, String privateCreator, int tag) {
+        int index = other.indexOf(tag);
+        if (index < 0)
+            return false;
+        Object value = other.values[index];
+        if (value instanceof Sequence) {
+            set(privateCreator, tag, (Sequence) value);
+        } else if (value instanceof Fragments) {
+            set(privateCreator, tag, (Fragments) value);
+        } else {
+            VR vr = other.vrs[index];
+            set(privateCreator, tag, vr,
+                    toggleEndian(vr, value, bigEndian != other.bigEndian));
+        }
+        return true;
+    }
+
     public boolean addSelected(Attributes other, int... selection) {
         return addSelected(other, selection, 0, selection.length);
     }

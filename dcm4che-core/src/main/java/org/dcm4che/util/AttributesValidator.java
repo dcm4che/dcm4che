@@ -41,6 +41,8 @@ package org.dcm4che.util;
 import java.util.Arrays;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Sequence;
+import org.dcm4che.data.Value;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -50,8 +52,8 @@ public class AttributesValidator {
 
     private final Attributes attrs;
     private int[] missingAttributes = {};
-    private int[] missingAttributeValues = {};
-    private int[] invalidAttributeValues = {};
+    private Attributes missingAttributeValues = new Attributes();
+    private Attributes invalidAttributeValues = new Attributes();
     private String errorComment;
 
     public AttributesValidator(Attributes attrs) {
@@ -80,6 +82,24 @@ public class AttributesValidator {
         else
             checkValue(tag, ss[index], enumvals);
         return ss[index];
+    }
+
+    public Sequence getType1Sequence(int tag) {
+        Object value = attrs.getValue(tag);
+        if (value == null) {
+            addMissingAttribute(tag);
+            return null;
+        }
+        if (value instanceof Value) {
+            if (((Value) value).isEmpty()) {
+                addMissingAttributeValue(tag);
+                return null;
+            }
+            if (value instanceof Sequence)
+                return (Sequence) value;
+        }
+        addInvalidAttribueValue(tag);
+        return null;
     }
 
     public String getType2String(int tag, int index, int maxvm, String defval,
@@ -120,9 +140,6 @@ public class AttributesValidator {
     }
 
     private int[] addTo(int[] tags, int tag) {
-        for (int i = tags.length - 1; i >= 0; i--)
-            if (tag == tags[i])
-                return tags;
         int[] newTags = Arrays.copyOf(tags, tags.length + 1);
         newTags[tags.length] = tag;
         return newTags;
@@ -134,12 +151,12 @@ public class AttributesValidator {
     }
 
     public void addMissingAttributeValue(int tag) {
-        missingAttributeValues = addTo(missingAttributeValues, tag);
+        missingAttributeValues.addSelected(attrs, null, tag);
         setErrorComment("Missing Attribute Value of ", tag);
     }
 
     public void addInvalidAttribueValue(int tag) {
-        invalidAttributeValues = addTo(invalidAttributeValues, tag);
+        invalidAttributeValues.addSelected(attrs, null, tag);
         setErrorComment("Invalid Attribute Value of ", tag);
     }
 
@@ -151,11 +168,11 @@ public class AttributesValidator {
         return missingAttributes;
     }
 
-    public final int[] getMissingAttributeValues() {
+    public final Attributes getMissingAttributeValues() {
         return missingAttributeValues;
     }
 
-    public final int[] getInvalidAttributeValues() {
+    public final Attributes getInvalidAttributeValues() {
         return invalidAttributeValues;
     }
 
@@ -164,11 +181,11 @@ public class AttributesValidator {
     }
 
     public final boolean hasMissingAttributeValues() {
-        return missingAttributeValues.length > 0;
+        return !missingAttributeValues.isEmpty();
     }
 
     public final boolean hasInvalidAttributeValues() {
-        return invalidAttributeValues.length > 0;
+        return !invalidAttributeValues.isEmpty();
     }
 
     public final boolean hasOffendingElements() {
@@ -179,14 +196,14 @@ public class AttributesValidator {
 
     public final int[] getOffendingElements() {
         int[] invalid = new int[missingAttributes.length
-                              + missingAttributeValues.length
-                              + invalidAttributeValues.length];
+                              + missingAttributeValues.size()
+                              + invalidAttributeValues.size()];
         int i = 0;
         for (int tag : missingAttributes)
             invalid[i++] = tag;
-        for (int tag : missingAttributeValues)
+        for (int tag : missingAttributeValues.tags())
             invalid[i++] = tag;
-        for (int tag : invalidAttributeValues)
+        for (int tag : invalidAttributeValues.tags())
             invalid[i++] = tag;
 
         return invalid;

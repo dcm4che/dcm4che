@@ -137,7 +137,8 @@ public class DicomServiceException extends IOException {
         return data;
     }
 
-    public final void setDataset(Attributes data) {
+    public final DicomServiceException setDataset(Attributes data) {
         this.data = data;
+        return this;
     }
 }

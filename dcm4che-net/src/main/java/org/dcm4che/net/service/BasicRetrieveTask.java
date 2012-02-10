@@ -101,7 +101,7 @@ public class BasicRetrieveTask implements RetrieveTask {
     protected final Attributes rq;
     protected int status = Status.Success;
     protected boolean pendingRSP;
-    protected long pendingRSPInterval;
+    protected int pendingRSPInterval;
     protected boolean canceled;
     protected int warning;
     protected int completed;
@@ -125,7 +125,7 @@ public class BasicRetrieveTask implements RetrieveTask {
         this.pendingRSP = pendingRSP;
     }
 
-    public void setSendPendingRSPInterval(long pendingRSPInterval) {
+    public void setSendPendingRSPInterval(int pendingRSPInterval) {
         this.pendingRSPInterval = pendingRSPInterval;
     }
 
@@ -186,7 +186,7 @@ public class BasicRetrieveTask implements RetrieveTask {
                         BasicRetrieveTask.this.writePendingRSP();
                     }
                 },
-                0, pendingRSPInterval, TimeUnit.MILLISECONDS);
+                0, pendingRSPInterval, TimeUnit.SECONDS);
     }
 
     private void stopWritePendingRSP() {

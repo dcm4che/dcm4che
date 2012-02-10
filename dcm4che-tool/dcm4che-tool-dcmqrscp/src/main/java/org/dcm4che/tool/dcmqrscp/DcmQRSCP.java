@@ -108,7 +108,7 @@ public class DcmQRSCP extends Device {
     private String availability;
     private boolean stgCmtOnSameAssoc;
     private boolean sendPendingCGet;
-    private long sendPendingCMoveInterval;
+    private int sendPendingCMoveInterval;
     private final FilesetInfo fsInfo = new FilesetInfo();
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
@@ -218,11 +218,11 @@ public class DcmQRSCP extends Device {
         return sendPendingCGet;
     }
 
-    public final void setSendPendingCMoveInterval(long sendPendingCMoveInterval) {
+    public final void setSendPendingCMoveInterval(int sendPendingCMoveInterval) {
         this.sendPendingCMoveInterval = sendPendingCMoveInterval;
     }
 
-    public final long getSendPendingCMoveInterval() {
+    public final int getSendPendingCMoveInterval() {
         return sendPendingCMoveInterval;
     }
 
@@ -271,7 +271,7 @@ public class DcmQRSCP extends Device {
         opts.addOption(null, "pending-cget", false, rb.getString("pending-cget"));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("ms")
+                .withArgName("s")
                 .withDescription(rb.getString("pending-cmove"))
                 .withLongOpt("pending-cmove")
                 .create());
@@ -382,7 +382,7 @@ public class DcmQRSCP extends Device {
         main.setSendPendingCGet(cl.hasOption("pending-cget"));
         if (cl.hasOption("pending-cmove"))
                 main.setSendPendingCMoveInterval(
-                        Long.parseLong(cl.getOptionValue("pending-cmove")));
+                        Integer.parseInt(cl.getOptionValue("pending-cmove")));
     }
 
     private static void configureTransferCapability(DcmQRSCP main, CommandLine cl)

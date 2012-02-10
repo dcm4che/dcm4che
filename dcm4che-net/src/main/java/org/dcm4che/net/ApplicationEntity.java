@@ -583,20 +583,29 @@ public class ApplicationEntity {
     public Connection findCompatibelConnection(Connection remoteConn)
             throws IncompatibleConnectionException {
         for (Connection conn : conns)
-            if (conn.isCompatible(remoteConn))
+            if (conn.isInstalled() && conn.isCompatible(remoteConn))
                 return conn;
         throw new IncompatibleConnectionException(
                 "No compatible connection to " + remoteConn + " available on " + this);
     }
 
-    public Association connect(ApplicationEntity remote, AAssociateRQ rq)
-        throws IOException, InterruptedException, IncompatibleConnectionException {
+    public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
+            throws IncompatibleConnectionException {
         for (Connection remoteConn : remote.conns)
-            for (Connection conn : conns)
-                if (conn.isCompatible(remoteConn))
-                    return connect(conn, remoteConn, rq);
+            if (remoteConn.isInstalled() && remoteConn.isServer())
+                for (Connection conn : conns)
+                    if (conn.isInstalled() && conn.isCompatible(remoteConn))
+                        return new CompatibleConnection(conn, remoteConn);
         throw new IncompatibleConnectionException(
                 "No compatible connection to " + remote + " available on " + this);
+    }
+
+    public Association connect(ApplicationEntity remote, AAssociateRQ rq)
+        throws IOException, InterruptedException, IncompatibleConnectionException {
+        CompatibleConnection cc = findCompatibelConnection(remote);
+        if (rq.getCalledAET() == null)
+            rq.setCalledAET(remote.getAETitle());
+        return connect(cc.getLocalConnection(), cc.getRemoteConnection(), rq);
     }
 
     protected void onClose(Association as) {

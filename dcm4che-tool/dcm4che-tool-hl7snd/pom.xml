@@ -17,7 +17,7 @@
    -
    - The Initial Developer of the Original Code is
    - Agfa Healthcare.
-   - Portions created by the Initial Developer are Copyright (C) 2011
+   - Portions created by the Initial Developer are Copyright (C) 2012
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
@@ -37,51 +37,39 @@
    -
    - ***** END LICENSE BLOCK *****  -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <artifactId>dcm4che-parent</artifactId>
-    <groupId>org.dcm4che</groupId>
-    <version>3.0.0-SNAPSHOT</version>
-  </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.dcm4che.tool</groupId>
-  <artifactId>dcm4che-tool</artifactId>
-  <packaging>pom</packaging>
-  <name>dcm4che-tool</name>
-  <description>DICOM utilities</description>
-  <modules>
-    <module>dcm4che-tool-common</module>
-    <module>dcm4che-tool-dcm2xml</module>
-    <module>dcm4che-tool-dcmdump</module>
-    <module>dcm4che-tool-dcmdir</module>
-    <module>dcm4che-tool-dcmqrscp</module>
-    <module>dcm4che-tool-findscu</module>
-    <module>dcm4che-tool-getscu</module>
-    <module>dcm4che-tool-hl7rcv</module>
-    <module>dcm4che-tool-hl7snd</module>
-    <module>dcm4che-tool-movescu</module>
-    <module>dcm4che-tool-mppsscp</module>
-    <module>dcm4che-tool-mppsscu</module>
-    <module>dcm4che-tool-stgcmtscu</module>
-    <module>dcm4che-tool-storescp</module>
-    <module>dcm4che-tool-storescu</module>
-    <module>dcm4che-tool-xml2dcm</module>
-    <module>dcm4che-tool-xml2prefs</module>
-  </modules>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <parent>
+    <artifactId>dcm4che-tool</artifactId>
+    <groupId>org.dcm4che.tool</groupId>
+    <version>3.0.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+  <artifactId>dcm4che-tool-hl7snd</artifactId>
+  <name>dcm4che-tool-hl7snd</name>
+  <description>Send HL7 V2 messages using MLLP to HL7 receiver</description>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-net</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-common</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.6.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.regenstrief</groupId>
+      <artifactId>xhl7</artifactId>
+      <version>r37730</version>
+    </dependency>
+  </dependencies>
 </project>

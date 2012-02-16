@@ -194,7 +194,7 @@ public class GetSCU extends Device {
             addStorageDirectoryOptions(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "GETSCU");
-            CLIUtils.addAEOptions(opts, true, false);
+            CLIUtils.addAEOptions(opts);
             CLIUtils.addCGetRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
@@ -268,7 +268,7 @@ public class GetSCU extends Device {
             GetSCU main = new GetSCU();
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureServiceClass(main, cl);

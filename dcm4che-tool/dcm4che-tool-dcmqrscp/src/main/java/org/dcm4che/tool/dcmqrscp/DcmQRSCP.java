@@ -239,7 +239,9 @@ public class DcmQRSCP extends Device {
         Options opts = new Options();
         CLIUtils.addFilesetInfoOptions(opts);
         CLIUtils.addBindServerOption(opts);
-        CLIUtils.addAEOptions(opts, false, true);
+        CLIUtils.addConnectTimeoutOption(opts);
+        CLIUtils.addAcceptTimeoutOption(opts);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addCStoreRspOption(opts);
         CLIUtils.addNEventRspOption(opts);
@@ -336,7 +338,7 @@ public class DcmQRSCP extends Device {
             DcmQRSCP main = new DcmQRSCP();
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
             configureDicomFileSet(main, cl);
             configureTransferCapability(main, cl);
             configureInstanceAvailability(main, cl);

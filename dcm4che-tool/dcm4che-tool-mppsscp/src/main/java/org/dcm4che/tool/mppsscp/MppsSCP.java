@@ -102,7 +102,7 @@ public class MppsSCP extends Device {
            CommandLine cl = parseComandLine(args);
            MppsSCP main = new MppsSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
-           CLIUtils.configure(main.conn, main.ae, cl);
+           CLIUtils.configure(main.conn, cl);
            configureTransferCapability(main.ae, cl);
            configureStorageDirectory(main, cl);
            ExecutorService executorService = Executors.newCachedThreadPool();
@@ -125,7 +125,7 @@ public class MppsSCP extends Device {
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
-        CLIUtils.addAEOptions(opts, false, true);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);

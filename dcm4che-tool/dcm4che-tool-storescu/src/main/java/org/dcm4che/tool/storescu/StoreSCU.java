@@ -151,7 +151,7 @@ public class StoreSCU extends Device {
         Options opts = new Options();
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STORESCU");
-        CLIUtils.addAEOptions(opts, true, false);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addCEchoRspOption(opts);
         CLIUtils.addCStoreRspOption(opts);
         CLIUtils.addPriorityOption(opts);
@@ -215,7 +215,7 @@ public class StoreSCU extends Device {
             if (!main.scanOnly) {
                 CLIUtils.configureConnect(main.remote, main.rq, cl);
                 CLIUtils.configureBind(main.conn, main.ae, cl);
-                CLIUtils.configure(main.conn, main.ae, cl);
+                CLIUtils.configure(main.conn, cl);
                 main.remote.setTlsProtocols(main.conn.getTlsProtocols());
                 main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
                 configureRelatedSOPClass(main, cl);

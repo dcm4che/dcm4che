@@ -138,7 +138,7 @@ public class StgCmtSCU extends Device {
             StgCmtSCU stgcmtscu = new StgCmtSCU();
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
             CLIUtils.configureBind(stgcmtscu.conn, stgcmtscu.ae, cl);
-            CLIUtils.configure(stgcmtscu.conn, stgcmtscu.ae, cl);
+            CLIUtils.configure(stgcmtscu.conn, cl);
             stgcmtscu.remote.setTlsProtocols(stgcmtscu.conn.getTlsProtocols());
             stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
@@ -276,7 +276,8 @@ public class StgCmtSCU extends Device {
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STGCMTSCU");
-        CLIUtils.addAEOptions(opts, true, true);
+        CLIUtils.addRequestTimeoutOption(opts);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addNActionRspOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);

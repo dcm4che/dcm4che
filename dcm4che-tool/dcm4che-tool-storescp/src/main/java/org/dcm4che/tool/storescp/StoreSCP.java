@@ -122,7 +122,7 @@ public class StoreSCP extends Device{
             throws ParseException {
         Options opts = new Options();
         CLIUtils.addBindServerOption(opts);
-        CLIUtils.addAEOptions(opts, false, true);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
         addStatusOption(opts);
         addStorageDirectoryOptions(opts);
@@ -175,7 +175,7 @@ public class StoreSCP extends Device{
             CommandLine cl = parseComandLine(args);
             StoreSCP main = new StoreSCP();
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
             main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             configureTransferCapability(main.ae, cl);
             configureStorageDirectory(main, cl);

@@ -256,6 +256,75 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
+      <includes>
+        <include>bin/hl7rcv</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
+      <includes>
+        <include>bin/hl7rcv.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
+      <includes>
+        <include>etc/hl7rcv/log4j.properties</include>
+        <include>etc/hl7rcv/hl7-ack.xsl</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
+      <includes>
+        <include>etc/hl7rcv/key.jks</include>
+        <include>etc/hl7rcv/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
+      <includes>
+        <include>bin/hl7snd</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
+      <includes>
+        <include>bin/hl7snd.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
+      <includes>
+        <include>etc/hl7snd/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
+      <includes>
+        <include>etc/hl7snd/key.jks</include>
+        <include>etc/hl7snd/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
       <includes>
         <include>bin/movescu</include>
@@ -523,6 +592,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>
@@ -531,6 +602,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
+        <include>org.regenstrief:xhl7</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>

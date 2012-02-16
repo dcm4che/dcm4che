@@ -77,7 +77,7 @@ import org.dcm4che.util.SafeClose;
  */
 public class CLIUtils {
 
-    private static ResourceBundle rb =
+    public static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.common.messages");
 
     public static void addCommonOptions(Options opts) {
@@ -104,6 +104,7 @@ public class CLIUtils {
                 .withDescription(rb.getString("bind-server"))
                 .withLongOpt("bind")
                 .create("b"));
+        addRequestTimeoutOption(opts);
     }
 
     @SuppressWarnings("static-access")
@@ -127,11 +128,12 @@ public class CLIUtils {
                 .withLongOpt("user-pass")
                 .create(null));
         opts.addOption(null, "user-rsp", false, rb.getString("user-rsp"));
+        addConnectTimeoutOption(opts);
+        addAcceptTimeoutOption(opts);
     }
 
     @SuppressWarnings("static-access")
-    public static void addAEOptions(Options opts, boolean requestor,
-            boolean acceptor) {
+    public static void addAEOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("length")
@@ -158,28 +160,6 @@ public class CLIUtils {
                 .create(null));
         opts.addOption(null, "not-async", false, rb.getString("not-async"));
         opts.addOption(null, "not-pack-pdv", false, rb.getString("not-pack-pdv"));
-        if (requestor) {
-            opts.addOption(OptionBuilder
-                    .hasArg()
-                    .withArgName("ms")
-                    .withDescription(rb.getString("connect-timeout"))
-                    .withLongOpt("connect-timeout")
-                    .create(null));
-            opts.addOption(OptionBuilder
-                    .hasArg()
-                    .withArgName("ms")
-                    .withDescription(rb.getString("accept-timeout"))
-                    .withLongOpt("accept-timeout")
-                    .create(null));
-        }
-        if (acceptor) {
-            opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("ms")
-                .withDescription(rb.getString("request-timeout"))
-                .withLongOpt("request-timeout")
-                .create(null));
-        }
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("ms")
@@ -198,6 +178,32 @@ public class CLIUtils {
                 .withDescription(rb.getString("soclose-delay"))
                 .withLongOpt("soclose-delay")
                 .create(null));
+        addSocketOptions(opts);
+        addTLSOptions(opts);
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addRequestTimeoutOption(Options opts) {
+        opts.addOption(OptionBuilder
+            .hasArg()
+            .withArgName("ms")
+            .withDescription(rb.getString("request-timeout"))
+            .withLongOpt("request-timeout")
+            .create(null));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addAcceptTimeoutOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("accept-timeout"))
+                .withLongOpt("accept-timeout")
+                .create(null));
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addSocketOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("length")
@@ -211,7 +217,16 @@ public class CLIUtils {
                 .withLongOpt("sorcv-buffer")
                 .create(null));
         opts.addOption(null, "tcp-delay", false, rb.getString("tcp-delay"));
-        addTLSOptions(opts);
+    }
+
+    @SuppressWarnings("static-access")
+    public static void addConnectTimeoutOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("connect-timeout"))
+                .withLongOpt("connect-timeout")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -325,7 +340,7 @@ public class CLIUtils {
     }
 
     @SuppressWarnings("static-access")
-    private static void addTLSOptions(Options opts) {
+    public static void addTLSOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("cipher")
@@ -511,8 +526,7 @@ public class CLIUtils {
                 : Integer.parseInt(optVal);
     }
 
-    public static void configure(Connection conn, ApplicationEntity ae,
-            CommandLine cl)
+    public static void configure(Connection conn, CommandLine cl)
             throws ParseException, IOException {
         if (cl.hasOption("max-pdulen-rcv"))
             conn.setReceivePDULength(Integer.parseInt(

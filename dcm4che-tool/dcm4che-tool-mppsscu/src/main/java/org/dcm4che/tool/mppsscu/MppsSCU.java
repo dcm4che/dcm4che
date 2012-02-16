@@ -265,7 +265,7 @@ public class MppsSCU extends Device {
             configureMPPS(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
@@ -334,7 +334,7 @@ public class MppsSCU extends Device {
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "MPPSSCU");
-        CLIUtils.addAEOptions(opts, true, false);
+        CLIUtils.addAEOptions(opts);
         CLIUtils.addCEchoRspOption(opts);
         CLIUtils.addNCreateRspOption(opts);
         CLIUtils.addNSetRspOption(opts);

@@ -133,11 +133,6 @@ public class Association {
         return messageID.incrementAndGet() & 0xFFFF;
     }
 
-    private void adjustNextMessageID(int msgId) {
-        if ((messageID.get() & 0xFFFF) < msgId)
-            messageID.set(msgId);
-    }
-
     private char delim() {
         return requestor ? '-' : '+';
     }
@@ -656,7 +651,6 @@ public class Association {
             PDVInputStream data) throws IOException {
         stopTimeout();
         incPerforming();
-        adjustNextMessageID(cmd.getInt(Tag.MessageID, 0));
         ae.onDimseRQ(this, pc, cmd, data);
     }
 

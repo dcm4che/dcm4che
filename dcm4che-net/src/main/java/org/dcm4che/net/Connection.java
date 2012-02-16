@@ -845,12 +845,17 @@ public class Connection {
                         LOG.debug("Wait for connection on {}", sockAddr);
                         Socket s = server.accept();
                         if (isBlackListed(s.getInetAddress())) {
-                            LOG.info("Reject connection from {}", s);
-                            SafeClose.close(s);
+                            LOG.info("Reject connection {}", s);
+                            close(s);
                         } else {
-                            LOG.info("Accept connection from {}", s);
-                            setSocketSendOptions(s);
-                            new Association(null, Connection.this, s);
+                            LOG.info("Accept connection {}", s);
+                            try {
+                                setSocketSendOptions(s);
+                                onAccept(s);
+                            } catch (Throwable e) {
+                                LOG.warn("Exception on accepted connection " + s + ":", e);
+                                close(s);
+                            }
                         }
                     }
                 } catch (Throwable e) {
@@ -859,8 +864,6 @@ public class Connection {
                 }
                 LOG.info("Stop listening on {}", sockAddr);
             }
-
-
         });
     }
 
@@ -912,7 +915,13 @@ public class Connection {
         setReceiveBufferSize(s);
         setSocketSendOptions(s);
         s.connect(endpoint, connectTimeout);
+        LOG.info("Established connection {}", s);
         return s;
+    }
+
+    public void close(Socket s) {
+        LOG.info("Close connection {}", s);
+        SafeClose.close(s);
     }
 
     private Socket createTLSSocket(Connection remoteConn) throws IOException {
@@ -963,6 +972,10 @@ public class Connection {
         // don't use loopback address as bind point to avoid
         // ConnectionException connection to remote endpoint
         return new InetSocketAddress(maskLoopBackAddress(addr()), 0);
+    }
+
+    protected void onAccept(Socket s) throws IOException {
+        new Association(null, Connection.this, s);
     }
 
     private static InetAddress maskLoopBackAddress(InetAddress addr) {

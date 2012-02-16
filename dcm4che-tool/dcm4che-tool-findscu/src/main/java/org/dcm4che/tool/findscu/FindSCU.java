@@ -209,7 +209,7 @@ public class FindSCU extends Device {
             addCancelOption(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "FINDSCU");
-            CLIUtils.addAEOptions(opts, true, false);
+            CLIUtils.addAEOptions(opts);
             CLIUtils.addCFindRspOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
@@ -292,7 +292,7 @@ public class FindSCU extends Device {
             FindSCU main = new FindSCU();
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureServiceClass(main, cl);

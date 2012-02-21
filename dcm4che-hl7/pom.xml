@@ -17,7 +17,7 @@
    -
    - The Initial Developer of the Original Code is
    - Agfa Healthcare.
-   - Portions created by the Initial Developer are Copyright (C) 2012
+   - Portions created by the Initial Developer are Copyright (C) 2011
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
@@ -40,36 +40,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>dcm4che-tool</artifactId>
-    <groupId>org.dcm4che.tool</groupId>
+    <artifactId>dcm4che-parent</artifactId>
+    <groupId>org.dcm4che</groupId>
     <version>3.0.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
-  <artifactId>dcm4che-tool-hl7rcv</artifactId>
-  <name>dcm4che-tool-hl7rcv</name>
-  <description>Receive HL7 V2 messages using MLLP from HL7 sender</description>
-  <dependencies>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-net</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-hl7</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-common</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.6.1</version>
-      <scope>runtime</scope>
-    </dependency>
-  </dependencies>
+  <artifactId>dcm4che-hl7</artifactId>
+  <name>dcm4che-hl7</name>
 </project>

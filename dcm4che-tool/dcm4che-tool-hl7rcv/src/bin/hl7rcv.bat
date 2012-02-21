@@ -42,8 +42,8 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\hl7rcv\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\xhl7-r37730.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.0-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-hl7-3.0.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.0.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.0.0-SNAPSHOT.jar"
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar

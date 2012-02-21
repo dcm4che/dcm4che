@@ -68,17 +68,17 @@ import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.hl7.HL7ContentHandler;
+import org.dcm4che.hl7.HL7Parser;
+import org.dcm4che.hl7.MLLPInputStream;
+import org.dcm4che.hl7.MLLPOutputStream;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.SSLManagerFactory;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.StringUtils;
-import org.regenstrief.xhl7.HL7XMLReader;
-import org.regenstrief.xhl7.HL7XMLWriter;
-import org.regenstrief.xhl7.MLLPDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -225,12 +225,12 @@ public class HL7Rcv extends Device {
 
     private void onAccept(Socket s) throws IOException {
         s.setSoTimeout(conn.getIdleTimeout());
-        MLLPDriver mllpDriver = 
-                new MLLPDriver(s.getInputStream(), s.getOutputStream(), false);
+        MLLPInputStream mllpIn = new MLLPInputStream(s.getInputStream());
+        MLLPOutputStream mllpOut = new MLLPOutputStream(s.getOutputStream());
         MyByteArrayOutputStream inbuf = new MyByteArrayOutputStream();
         MyByteArrayOutputStream outbuf = new MyByteArrayOutputStream();
-        while (mllpDriver.hasMoreInput()) {
-            inbuf.write(mllpDriver.getInputStream());
+        while (mllpIn.hasMoreInput()) {
+            mllpIn.copyTo(inbuf);
             LOG.info("Received HL7 Message: {}",
                     promptHL7(inbuf.buf(), inbuf.size()));
             try {
@@ -241,7 +241,8 @@ public class HL7Rcv extends Device {
             inbuf.reset();
             LOG.info("Send HL7 Message: {}",
                     promptHL7(outbuf.buf(), outbuf.size()));
-            mllpDriver.getOutputStream().write(outbuf.buf(), 0, outbuf.size());
+            mllpOut.write(outbuf.buf(), 0, outbuf.size());
+            mllpOut.finish();
             outbuf.reset();
         }
         conn.close(s);
@@ -251,15 +252,14 @@ public class HL7Rcv extends Device {
             throws Exception  {
         TransformerHandler th =
                 transfomerFactory.newTransformerHandler(templates);
-        th.setResult(new SAXResult(new HL7XMLWriter(
+        th.setResult(new SAXResult(new HL7ContentHandler(
                 new OutputStreamWriter(out, charset))));
         Transformer t = th.getTransformer();
         t.setParameter("MessageControlID",
                 nextMessageControlID.getAndIncrement() & 0x7FFFFFFF);
-        HL7XMLReader r = new HL7XMLReader();
-        r.setContentHandler(th);
-        r.parse(new InputSource(new InputStreamReader(
-                new ByteArrayInputStream(buf, 0, size), charset)));
+        HL7Parser p = new HL7Parser(th);
+        p.parse(new InputStreamReader(
+                new ByteArrayInputStream(buf, 0, size), charset));
     }
 
     private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
@@ -268,28 +268,9 @@ public class HL7Rcv extends Device {
             return buf;
         }
 
-        void write(InputStream in) throws IOException {
-            int b;
-            while ((b = in.read()) != -1)
-                write(b);
-        }
-
     }
 
     private String promptHL7(byte[] buf, int size) {
-        StringBuilder sb = new StringBuilder(size);
-        int off = 0, len = 0;
-        for (int i = 0; i < size; i++)
-            if (buf[i] != 0x0D)
-                len++;
-            else {
-                StringUtils.appendLine(sb, new String(buf, off, len, charset));
-                off += len + 1;
-                len = 0;
-            }
-        if (len > 0) {
-            StringUtils.appendLine(sb, new String(buf, off, len, charset));
-        }
-        return sb.toString();
+        return new String(buf, 0, size, charset).replace('\r', '\n');
     }
 }

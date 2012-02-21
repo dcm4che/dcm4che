@@ -42,7 +42,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -52,13 +51,14 @@ import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.hl7.MLLPInputStream;
+import org.dcm4che.hl7.MLLPOutputStream;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
-import org.regenstrief.xhl7.MLLPDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,8 @@ public class HL7Snd extends Device {
     private int hl7RSPTimeout;
 
     private Socket sock;
-    private MLLPDriver mllpDriver;
+    private MLLPInputStream mllpIn;
+    private MLLPOutputStream mllpOut;
 
     public HL7Snd() throws IOException {
         super("hl7snd");
@@ -190,7 +191,8 @@ public class HL7Snd extends Device {
     public void open() throws IOException, IncompatibleConnectionException {
         sock = conn.connect(remote);
         sock.setSoTimeout(hl7RSPTimeout);
-        mllpDriver = new MLLPDriver(sock.getInputStream(), sock.getOutputStream(), true);
+        mllpIn = new MLLPInputStream(sock.getInputStream());
+        mllpOut = new MLLPOutputStream(sock.getOutputStream());
     }
 
     public void close() {
@@ -198,23 +200,25 @@ public class HL7Snd extends Device {
     }
 
     public void sendFiles(List<String> pathnames) throws IOException {
-        MyByteArrayOutputStream inbuf = new MyByteArrayOutputStream();
+        MyByteArrayOutputStream receiveBuf = new MyByteArrayOutputStream();
         for (String pathname : pathnames) {
             File f = new File(pathname);
-            byte[] outbuf = new byte[(int) f.length()];
+            byte[] b = new byte[(int) f.length()];
             FileInputStream in = new FileInputStream(f);
             try {
-                in.read(outbuf);
+                in.read(b);
             } finally {
                 SafeClose.close(in);
             }
-            LOG.info("Send HL7 Message: {}", promptHL7(outbuf, outbuf.length));
-            mllpDriver.getOutputStream().write(outbuf);
-            mllpDriver.turn();
-            inbuf.write(mllpDriver.getInputStream());
-            LOG.info("Received HL7 Message: {}", 
-                    promptHL7(inbuf.buf(), inbuf.size()));
-            inbuf.reset();
+            LOG.info("Send HL7 Message: {}", promptHL7(b, b.length));
+            mllpOut.write(b);
+            mllpOut.finish();
+            if (!mllpIn.hasMoreInput())
+                throw new IOException("Connection closed by receiver");
+            mllpIn.copyTo(receiveBuf);
+            LOG.info("Received HL7 Message: {}",
+                    promptHL7(receiveBuf.buf(), receiveBuf.size()));
+            receiveBuf.reset();
         }
     }
 
@@ -223,28 +227,9 @@ public class HL7Snd extends Device {
         byte[] buf() {
             return buf;
         }
-
-        void write(InputStream in) throws IOException {
-            int b;
-            while ((b = in.read()) != -1)
-                write(b);
-        }
     }
 
-    private String promptHL7(byte[] buf, int size) {
-        StringBuilder sb = new StringBuilder(size);
-        int off = 0, len = 0;
-        for (int i = 0; i < size; i++)
-            if (buf[i] != 0x0D)
-                len++;
-            else {
-                StringUtils.appendLine(sb, new String(buf, off, len));
-                off += len + 1;
-                len = 0;
-            }
-        if (len > 0) {
-            StringUtils.appendLine(sb, new String(buf, off, len));
-        }
-        return sb.toString();
+    private static String promptHL7(byte[] buf, int size) {
+        return new String(buf, 0, size).replace('\r', '\n');
     }
 }

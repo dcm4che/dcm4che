@@ -82,6 +82,7 @@
   <modules>
     <module>dcm4che-conf</module>
     <module>dcm4che-core</module>
+    <module>dcm4che-hl7</module>
     <module>dcm4che-net</module>
     <module>dcm4che-soundex</module>
     <module>dcm4che-tool</module>

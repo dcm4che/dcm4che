@@ -2,6 +2,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
   <xsl:output indent="no" method="xml"/>
   <xsl:param name="MessageControlID">1</xsl:param>
+  <xsl:param name="AcknowledgementCode">AA</xsl:param>
+  <xsl:param name="TextMessage"/>
 
   <xsl:template match="/hl7">
     <hl7>
@@ -29,8 +31,9 @@
         <field><xsl:value-of select="MSH/field[16]"/></field>
       </MSH>
       <MSA>
-        <field><xsl:value-of select="AA"/></field>
+        <field><xsl:value-of select="$AcknowledgementCode"/></field>
         <field><xsl:value-of select="MSH/field[8]"/></field>
+        <field><xsl:value-of select="$TextMessage"/></field>
       </MSA>
     </hl7>
   </xsl:template>

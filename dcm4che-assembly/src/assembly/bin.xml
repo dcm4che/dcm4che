@@ -583,6 +583,7 @@
         <include>org.dcm4che:dcm4che-conf-ldap</include>
         <include>org.dcm4che:dcm4che-conf-prefs</include>
         <include>org.dcm4che:dcm4che-core</include>
+        <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
@@ -602,7 +603,6 @@
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
-        <include>org.regenstrief:xhl7</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>

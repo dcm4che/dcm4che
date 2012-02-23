@@ -163,6 +163,7 @@ public class AttributesTest {
         a2.setString(Tag.ReferencedFrameNumber, VR.IS, "0054");
         a2.setString(Tag.InstanceNumber, VR.IS, "IMG0077");
         assertTrue(a1.equals(a2));
+        assertEquals("54", a2.getString(Tag.ReferencedFrameNumber));
     }
 
     @Test
@@ -172,5 +173,7 @@ public class AttributesTest {
         Attributes a2 = new Attributes();
         a2.setString(Tag.PixelSpacing, VR.DS, "+0.50", "5E-1");
         assertTrue(a1.equals(a2));
+        assertArrayEquals(new String[]{ "0.5","0.5" }, a1.getStrings(Tag.PixelSpacing));
+        assertArrayEquals(new String[]{ "0.5","0.5" }, a2.getStrings(Tag.PixelSpacing));
     }
 }

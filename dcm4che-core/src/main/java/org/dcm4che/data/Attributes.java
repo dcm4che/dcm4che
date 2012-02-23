@@ -613,10 +613,10 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
+        if (vr.isStringType())
+            value = decodeStringValue(index);
         try {
-            return toStrings(vr.isStringType()
-                    ? decodeStringValue(index) 
-                    : vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
+            return toStrings(vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
             return null;

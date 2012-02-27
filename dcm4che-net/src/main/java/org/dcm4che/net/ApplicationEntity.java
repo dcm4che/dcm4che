@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.dcm4che.data.Attributes;
@@ -86,10 +87,11 @@ public class ApplicationEntity {
     private String[] prefCalledAETs = {};
     private String[] prefCallingAETs = {};
     private String[] supportedCharacterSets = {};
-    private boolean checkCallingAET;
     private boolean acceptor = true;
     private boolean initiator = true;
     private Boolean installed;
+    private final LinkedHashSet<String> acceptedCallingAETs =
+            new LinkedHashSet<String>();
     private final List<Connection> conns = new ArrayList<Connection>(1);
     private final HashMap<String, TransferCapability> scuTCs =
             new HashMap<String, TransferCapability>();
@@ -230,12 +232,15 @@ public class ApplicationEntity {
         prefCallingAETs = aets;
     }
 
-    public boolean isAcceptOnlyPreferredCallingAETitles() {
-        return checkCallingAET;
+    public String[] getAcceptedCallingAETitles() {
+        return acceptedCallingAETs.toArray(
+                new String[acceptedCallingAETs.size()]);
     }
 
-    public void setAcceptOnlyPreferredCallingAETitles(boolean checkCallingAET) {
-        this.checkCallingAET = checkCallingAET;
+    public void setAcceptedCallingAETitles(String... names) {
+        acceptedCallingAETs.clear();
+        for (String name : names)
+            acceptedCallingAETs.add(name);
     }
 
     /**
@@ -393,6 +398,7 @@ public class ApplicationEntity {
     }
 
     public void addConnection(Connection conn) {
+        conn.setConnectionHandler(DicomConnectionHandler.INSTANCE);
         conns.add(conn);
     }
 
@@ -433,7 +439,7 @@ public class ApplicationEntity {
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (checkCallingAET && !contains(prefCallingAETs, rq.getCallingAET()))
+        if (!(acceptedCallingAETs.isEmpty() || acceptedCallingAETs.contains(rq.getCallingAET())))
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                     AAssociateRJ.SOURCE_SERVICE_USER,
                     AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
@@ -455,14 +461,6 @@ public class ApplicationEntity {
                 conn.getMaxOpsInvoked()));
         ac.setUserIdentityAC(userIdentity);
         return negotiate(as, rq, ac);
-    }
-
-    private static boolean contains(String[] ss, String val) {
-        for (String s : ss)
-           if (val.equals(s))
-               return true;
-
-        return false;
     }
 
     protected AAssociateAC negotiate(Association as, AAssociateRQ rq, AAssociateAC ac)

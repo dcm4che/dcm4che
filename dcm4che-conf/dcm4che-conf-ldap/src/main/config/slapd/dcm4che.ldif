@@ -176,11 +176,10 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.29
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.30
-  NAME 'dcmAcceptOnlyPreferredCallingAETitle'
-  DESC 'Enable/disable check of Calling AE Title in Association requests; disabled if absent'
-  EQUALITY booleanMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
-  SINGLE-VALUE )
+  NAME 'dcmAcceptedCallingAETitle'
+  DESC 'AE Title(s) to which associations are accepted; any if absent'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.31
   NAME 'dcmRelationalQueries'
   DESC 'Enable/disable relational queries; disabled if absent'
@@ -234,7 +233,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.5
   DESC 'Extended DICOM Network AE related information'
   SUP top AUXILIARY
   MAY (
-    dcmAcceptOnlyPreferredCallingAETitle ) )
+    dcmAcceptedCallingAETitle ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6
   NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'

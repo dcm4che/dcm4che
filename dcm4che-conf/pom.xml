@@ -12,5 +12,8 @@
     <module>dcm4che-conf-api</module>
     <module>dcm4che-conf-ldap</module>
     <module>dcm4che-conf-prefs</module>
+    <module>dcm4che-conf-ldap-hl7</module>
+    <module>dcm4che-conf-prefs-hl7</module>
+    <module>dcm4che-conf-api-hl7</module>
   </modules>
 </project>

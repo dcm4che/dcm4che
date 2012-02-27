@@ -129,6 +129,18 @@ public class StringUtils {
         return ss;
     }
 
+    public static String cut(String s, int index, char delim) {
+        int i = 0;
+        int begin = 0;
+        int end;
+        while ((end = s.indexOf(delim, begin)) >= 0) {
+            if (i++ == index)
+                return s.substring(begin, end);
+            begin = end + 1;
+        }
+        return i == index ? s.substring(begin) : "";
+    }
+
     private static String substring(String s, int beginIndex, int endIndex) {
         while (beginIndex < endIndex && s.charAt(beginIndex) <= ' ')
             beginIndex++;

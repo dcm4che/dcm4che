@@ -54,7 +54,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class HL7Parser {
 
-    private static final String NAMESPACE = "http://http://aurora.regenstrief.org/xhl7";
+    private static final String NAMESPACE = "http://aurora.regenstrief.org/xhl7";
 
     private String namespace = "";
     private final ContentHandler ch;
@@ -170,15 +170,12 @@ public class HL7Parser {
         if (tk.length() != 1)
             return null;
 
-        int index =  delimiters.indexOf(tk.charAt(0));
+        int index = delimiters.indexOf(tk.charAt(0));
         return index >= 0 ? Delimiter.values()[index] : null;
     }
 
     private int escapeIndex(String tk) {
-        if (tk.length() != 1)
-            return -1;
-
-        return  tk.length() != 1 ? Delimiter.ESCAPE.indexOf(tk.charAt(0)) : -1;
+        return tk.length() != 1 ? Delimiter.ESCAPE.indexOf(tk.charAt(0)) : -1;
     }
 
     private String[] tokenize(String s) {

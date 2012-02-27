@@ -158,6 +158,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     @Override
     public ApplicationEntity findApplicationEntity(String aet)
             throws ConfigurationException {
+        return findDevice("dcmNetworkAE", aet).getApplicationEntity(aet);
+    }
+
+    protected Device findDevice(String nodeName, String childName)
+            throws ConfigurationException {
         String pathName = devicesPathName();
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
@@ -166,14 +171,14 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences devicePrefs = rootPrefs.node(pathName);
             for (String deviceName : devicePrefs.childrenNames()) {
                 Preferences deviceNode = devicePrefs.node(deviceName);
-                for (String aet2 : deviceNode.node("dcmNetworkAE").childrenNames())
-                    if (aet.equals(aet2))
-                        return loadDevice(deviceNode).getApplicationEntity(aet);
+                for (String aet2 : deviceNode.node(nodeName).childrenNames())
+                    if (childName.equals(aet2))
+                        return loadDevice(deviceNode);
             }
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }
-        throw new ConfigurationNotFoundException();
+        throw new ConfigurationNotFoundException(childName);
     }
 
     @Override
@@ -436,16 +441,14 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         prefs.putBoolean("dicomAssociationAcceptor",  ae.isAssociationAcceptor());
         storeNotEmpty(prefs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
         storeNotNull(prefs, "dicomInstalled", ae.getInstalled());
-        storeConnRefs(prefs, ae, devConns);
-
-        storeNotDef(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
-                ae.isAcceptOnlyPreferredCallingAETitles(), false);
+        storeConnRefs(prefs, ae.getConnections(), devConns);
+        storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
     }
 
-    private void storeConnRefs(Preferences prefs, ApplicationEntity ae,
+    protected void storeConnRefs(Preferences prefs, List<Connection> connRefs,
             List<Connection> devConns) {
         int refCount = 0;
-        for (Connection conn : ae.getConnections()) {
+        for (Connection conn : connRefs) {
             prefs.putInt("dicomNetworkConnectionReference." + (++refCount), 
                     devConns.indexOf(conn) + 1);
         }
@@ -685,7 +688,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomAssociationAcceptor",
                 a.isAssociationAcceptor(),
                 b.isAssociationAcceptor());
-        storeDiffConnRefs(prefs, a, b);
+        storeDiffConnRefs(prefs, 
+                a.getConnections(), a.getDevice().listConnections(), 
+                b.getConnections(), b.getDevice().listConnections());
         storeDiff(prefs, "dicomSupportedCharacterSet",
                 a.getSupportedCharacterSets(),
                 b.getSupportedCharacterSets());
@@ -693,10 +698,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getInstalled(),
                 b.getInstalled());
 
-        storeDiff(prefs, "dcmAcceptOnlyPreferredCallingAETitle",
-                a.isAcceptOnlyPreferredCallingAETitles(),
-                b.isAcceptOnlyPreferredCallingAETitles(),
-                false);
+        storeDiff(prefs, "dcmAcceptedCallingAETitle",
+                a.getAcceptedCallingAETitles(),
+                b.getAcceptedCallingAETitles());
 
     }
 
@@ -757,18 +761,15 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 -1);
     }
 
-    private static void storeDiffConnRefs(Preferences prefs,
-            ApplicationEntity a, ApplicationEntity b) {
-        List<Connection> prevDevConns = a.getDevice().listConnections();
-        List<Connection> prevConns = a.getConnections();
-        int prevSize = prevConns.size();
-        List<Connection> devConns = b.getDevice().listConnections();
-        List<Connection> conns = b.getConnections();
-        int size = conns.size();
+    protected static void storeDiffConnRefs(Preferences prefs,
+            List<Connection> prevConnRefs, List<Connection> prevDevConns,
+            List<Connection> connRefs, List<Connection> devConns) {
+        int prevSize = prevConnRefs.size();
+        int size = connRefs.size();
         removeKeys(prefs, "dicomNetworkConnectionReference", size, prevSize);
         for (int i = 0; i < size; i++) {
-            int ref = devConns.indexOf(conns.get(i));
-            if (i >= prevSize || ref != prevDevConns.indexOf(prevConns.get(i)))
+            int ref = devConns.indexOf(connRefs.get(i));
+            if (i >= prevSize || ref != prevDevConns.indexOf(prevConnRefs.get(i)))
                 prefs.putInt("dicomNetworkConnectionReference." + (i + 1), ref + 1);
         }
         if (prevSize != size && size != 0)
@@ -1106,8 +1107,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         ae.setSupportedCharacterSets(stringArray(prefs, "dicomSupportedCharacterSet"));
         ae.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
 
-        ae.setAcceptOnlyPreferredCallingAETitles(
-                prefs.getBoolean("dcmAcceptOnlyPreferredCallingAETitle", false));
+        storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        ae.setAcceptedCallingAETitles(
+                stringArray(prefs, "dcmAcceptOnlyPreferredCallingAETitle"));
 }
 
     private static byte[][] toVendorData(Preferences prefs, String key) {

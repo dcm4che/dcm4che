@@ -276,7 +276,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
       <includes>
         <include>etc/hl7rcv/log4j.properties</include>
-        <include>etc/hl7rcv/hl7-ack.xsl</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -580,11 +579,15 @@
       <outputDirectory>lib</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-conf-api</include>
+        <include>org.dcm4che:dcm4che-conf-api-hl7</include>
         <include>org.dcm4che:dcm4che-conf-ldap</include>
+        <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
         <include>org.dcm4che:dcm4che-conf-prefs</include>
+        <include>org.dcm4che:dcm4che-conf-prefs-hl7</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-net</include>
+        <include>org.dcm4che:dcm4che-net-hl7</include>
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>

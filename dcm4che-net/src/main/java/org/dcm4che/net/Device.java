@@ -599,9 +599,8 @@ public class Device {
     }
 
     public void addApplicationEntity(ApplicationEntity ae) {
-        String aet = ae.getAETitle();
         ae.setDevice(this);
-        aes.put(aet, ae);
+        aes.put(ae.getAETitle(), ae);
     }
 
     public ApplicationEntity removeApplicationEntity(ApplicationEntity ae) {

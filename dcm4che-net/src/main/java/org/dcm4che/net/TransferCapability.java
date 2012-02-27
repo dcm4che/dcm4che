@@ -74,10 +74,10 @@ public class TransferCapability {
 
     public TransferCapability(String commonName, String sopClass, Role role,
             String... transferSyntaxes) {
-        this.commonName = commonName;
-        this.sopClass = sopClass;
-        this.role = role;
-        this.transferSyntaxes = transferSyntaxes;
+        setCommonName(commonName);
+        setSopClass(sopClass);
+        setRole(role);
+        setTransferSyntaxes(transferSyntaxes);
     }
 
     /**

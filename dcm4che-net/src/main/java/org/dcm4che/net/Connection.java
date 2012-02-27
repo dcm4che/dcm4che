@@ -77,7 +77,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Connection {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
+    public static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
     public static final int NO_TIMEOUT = 0;
     public static final int SYNCHRONOUS_MODE = 1;
@@ -132,6 +132,7 @@ public class Connection {
     private List<InetAddress> blacklistAddrs;
     private volatile ServerSocket server;
     private boolean needRebind;
+    private ConnectionHandler connectionHandler;
 
     public Connection() {
     }
@@ -687,6 +688,21 @@ public class Connection {
         }
     }
 
+    public ConnectionHandler getConnectionHandler() {
+        return connectionHandler != null 
+                ? connectionHandler
+                : DicomConnectionHandler.INSTANCE;
+    }
+
+    public void setConnectionHandler(ConnectionHandler connectionHandler) {
+        if (this.connectionHandler != connectionHandler) {
+            if (connectionHandler != null && this.connectionHandler != null) 
+                throw new IllegalStateException(
+                        "Connection already associated with different Connection Handler");
+            this.connectionHandler = connectionHandler;
+        }
+    }
+
     void activate() throws IOException {
         if (isInstalled() && isServer() && server == null)
             bind();
@@ -851,7 +867,7 @@ public class Connection {
                             LOG.info("Accept connection {}", s);
                             try {
                                 setSocketSendOptions(s);
-                                onAccept(s);
+                                getConnectionHandler().onAccept(Connection.this, s);
                             } catch (Throwable e) {
                                 LOG.warn("Exception on accepted connection " + s + ":", e);
                                 close(s);

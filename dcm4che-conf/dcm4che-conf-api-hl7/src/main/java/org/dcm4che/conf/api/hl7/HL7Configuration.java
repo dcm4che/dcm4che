@@ -36,40 +36,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.hl7;
+package org.dcm4che.conf.api.hl7;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.net.hl7.HL7Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class TeeInputStream extends FilterInputStream {
+public interface HL7Configuration {
 
-    private final OutputStream out;
-
-    public TeeInputStream(InputStream in, OutputStream out) {
-        super(in);
-        this.out = out;
-    }
-
-    @Override
-    public int read() throws IOException {
-        int b = super.read();
-        if (b != -1)
-            out.write(b);
-        return b;
-    }
-
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        int rlen = super.read(b, off, len);
-        if (rlen != -1)
-            out.write(b, off, rlen);
-        return rlen;
-    }
-
+    HL7Application findHL7Application(String name) throws ConfigurationException;
 }

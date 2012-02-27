@@ -196,34 +196,36 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     @Override
     public ApplicationEntity findApplicationEntity(String aet)
             throws ConfigurationException {
+        return findDevice(
+                "(&(objectclass=dicomNetworkAE)(dicomAETitle=" + aet + "))", aet)
+            .getApplicationEntity(aet);
+    }
+
+    protected Device findDevice(String filter, String childName)
+            throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
+        SearchControls ctls = new SearchControls();
+        ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        ctls.setCountLimit(1);
+        ctls.setReturningAttributes(StringUtils.EMPTY_STRING);
+        ctls.setReturningObjFlag(false);
+        NamingEnumeration<SearchResult> ne = null;
+        String childDN;
         try {
-            SearchControls ctls = new SearchControls();
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            ctls.setCountLimit(1);
-            ctls.setReturningAttributes(StringUtils.EMPTY_STRING);
-            ctls.setReturningObjFlag(false);
-            NamingEnumeration<SearchResult> ne = ctx.search(
-                    devicesDN,
-                    "(&(objectclass=dicomNetworkAE)(dicomAETitle=" + aet + "))",
-                    ctls);
-            String aeDN;
-            try {
-                if (!ne.hasMore())
-                    throw new ConfigurationNotFoundException(aet);
-    
-                aeDN = ne.next().getNameInNamespace();
-            } finally {
-               safeClose(ne);
-            }
-            String deviceDN = aeDN.substring(aeDN.indexOf(',') + 1);
-            Device device = loadDevice(deviceDN);
-            return device.getApplicationEntity(aet);
+            ne = ctx.search(devicesDN, filter, ctls);
+            if (!ne.hasMore())
+                throw new ConfigurationNotFoundException(childName);
+
+            childDN = ne.next().getNameInNamespace();
         } catch (NamingException e) {
             throw new ConfigurationException(e);
+        } finally {
+           safeClose(ne);
         }
+        String deviceDN = childDN.substring(childDN.indexOf(',') + 1);
+        return loadDevice(deviceDN);
     }
 
     @Override
@@ -749,7 +751,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return ae ;
     }
 
-    private Connection findConnection(String connDN, String deviceDN, Device device)
+    protected Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {
         for (Connection conn : device.listConnections())
             if (dnOf(conn, deviceDN).equals(connDN))
@@ -1088,7 +1090,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    private static void storeDiff(List<ModificationItem> mods, String attrId,
+    protected static void storeDiff(List<ModificationItem> mods, String attrId,
             List<Connection> prevs, List<Connection> conns, String deviceDN) {
         if (!equalsConnRefs(prevs, conns, deviceDN))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -1232,7 +1234,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr;
     }
 
-    private static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
+    protected static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
             String deviceDN) {
         if (!conns.isEmpty())
             attrs.put(connRefs(conns, deviceDN));

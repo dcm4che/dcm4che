@@ -42,34 +42,34 @@ package org.dcm4che.hl7;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public enum Delimiter {
+enum Delimiter {
     field {
         @Override
-        public Delimiter parent() { return null;  }
+        Delimiter parent() { return null;  }
     },
     component {
         @Override
-        public Delimiter parent() { return repeat; }
+        Delimiter parent() { return repeat; }
     },
     repeat {
         @Override
-        public Delimiter parent() { return field; }
+        Delimiter parent() { return field; }
     },
     escape {
         @Override
-        public Delimiter parent() { return subcomponent; }
+        Delimiter parent() { return subcomponent; }
     },
     subcomponent {
         @Override
-        public Delimiter parent() { return component; }
+        Delimiter parent() { return component; }
     };
 
-    public static String DEFAULT = "|^~\\$";
-    public static String ESCAPE = "FSRET";
+    static final String DEFAULT = "|^~\\&";
+    static final String ESCAPE = "FSRET";
 
-    public String attribute() {
+    String attribute() {
         return name() + "Delimiter";
     }
 
-    public abstract Delimiter parent();
+    abstract Delimiter parent();
 }

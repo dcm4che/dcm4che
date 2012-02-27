@@ -38,98 +38,43 @@
 
 package org.dcm4che.tool.hl7rcv;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.nio.charset.Charset;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che.hl7.HL7ContentHandler;
-import org.dcm4che.hl7.HL7Parser;
-import org.dcm4che.hl7.MLLPInputStream;
-import org.dcm4che.hl7.MLLPOutputStream;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.SSLManagerFactory;
+import org.dcm4che.net.hl7.HL7Application;
+import org.dcm4che.net.hl7.HL7Device;
+import org.dcm4che.net.hl7.HL7MessageListener;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class HL7Rcv extends Device {
+public class HL7Rcv extends HL7Device {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HL7Rcv.class);
     private static final ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.hl7rcv.messages");
-    private static final SAXTransformerFactory transfomerFactory =
-            (SAXTransformerFactory) TransformerFactory.newInstance();
-    private static final AtomicInteger nextMessageControlID =
-            new AtomicInteger(new Random().nextInt());
 
-    private Charset charset;
-    private Templates templates;
-
-    private Connection conn = new Connection() {
-
-        @Override
-        protected void onAccept(Socket s) throws IOException {
-            HL7Rcv.this.onAccept(s);
-        }
-    };
+    private HL7Application hl7App = new HL7Application("*");
+    private Connection conn = new Connection();
 
     public HL7Rcv() throws IOException {
         super("hl7rcv");
         addConnection(conn);
-    }
-
-    public String getCharsetName() {
-        return charset != null ? charset.name() : null;
-    }
-
-    public void setCharsetName(String charsetName) {
-        this.charset = Charset.forName(charsetName);
-    }
-
-    public Templates getTemplates() {
-        return templates;
-    }
-
-    public void setTemplates(String url)
-            throws IOException, TransformerConfigurationException {
-        InputStream in = SSLManagerFactory.openFileOrURL(url);
-        try {
-            this.templates = transfomerFactory.newTemplates(new StreamSource(in));
-        } finally {
-            in.close();
-        }
+        addHL7Application(hl7App);
+        hl7App.setAcceptedMessageTypes("*");
+        hl7App.addConnection(conn);
+        hl7App.setHL7MessageListener(new HL7MessageListener());
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -137,8 +82,6 @@ public class HL7Rcv extends Device {
         Options opts = new Options();
         addBindServerOption(opts);
         addIdleTimeoutOption(opts);
-        addCharsetNameOption(opts);
-        addXSLOption(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
@@ -165,34 +108,12 @@ public class HL7Rcv extends Device {
                 .create(null));
     }
 
-    @SuppressWarnings("static-access")
-    private static void addCharsetNameOption(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("name")
-                .withDescription(rb.getString("charset"))
-                .withLongOpt("charset")
-                .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addXSLOption(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("file|url")
-                .withDescription(rb.getString("xsl"))
-                .withLongOpt("xsl")
-                .create(null));
-    }
-
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
             HL7Rcv main = new HL7Rcv();
             configureBindServer(main.conn, cl);
             CLIUtils.configure(main.conn, cl);
-            main.setCharsetName(cl.getOptionValue("charset", "ISO-8859-1"));
-            main.setTemplates(cl.getOptionValue("xsl", "resource:hl7-ack.xsl"));
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -221,56 +142,5 @@ public class HL7Rcv extends Device {
         conn.setPort(Integer.parseInt(hostAndPort[portIndex]));
         if (portIndex > 0)
             conn.setHostname(hostAndPort[0]);
-    }
-
-    private void onAccept(Socket s) throws IOException {
-        s.setSoTimeout(conn.getIdleTimeout());
-        MLLPInputStream mllpIn = new MLLPInputStream(s.getInputStream());
-        MLLPOutputStream mllpOut = new MLLPOutputStream(s.getOutputStream());
-        MyByteArrayOutputStream inbuf = new MyByteArrayOutputStream();
-        MyByteArrayOutputStream outbuf = new MyByteArrayOutputStream();
-        while (mllpIn.hasMoreInput()) {
-            mllpIn.copyTo(inbuf);
-            LOG.info("Received HL7 Message: {}",
-                    promptHL7(inbuf.buf(), inbuf.size()));
-            try {
-                process(inbuf.buf(), inbuf.size(), outbuf);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            inbuf.reset();
-            LOG.info("Send HL7 Message: {}",
-                    promptHL7(outbuf.buf(), outbuf.size()));
-            mllpOut.write(outbuf.buf(), 0, outbuf.size());
-            mllpOut.finish();
-            outbuf.reset();
-        }
-        conn.close(s);
-    }
-
-    private void process(byte[] buf, int size, OutputStream out)
-            throws Exception  {
-        TransformerHandler th =
-                transfomerFactory.newTransformerHandler(templates);
-        th.setResult(new SAXResult(new HL7ContentHandler(
-                new OutputStreamWriter(out, charset))));
-        Transformer t = th.getTransformer();
-        t.setParameter("MessageControlID",
-                nextMessageControlID.getAndIncrement() & 0x7FFFFFFF);
-        HL7Parser p = new HL7Parser(th);
-        p.parse(new InputStreamReader(
-                new ByteArrayInputStream(buf, 0, size), charset));
-    }
-
-    private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
-
-        byte[] buf() {
-            return buf;
-        }
-
-    }
-
-    private String promptHL7(byte[] buf, int size) {
-        return new String(buf, 0, size, charset).replace('\r', '\n');
     }
 }

@@ -156,8 +156,7 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
         super.storeTo(ae, deviceDN, attrs);
-        storeNotDef(attrs, "dcmAcceptOnlyPreferredCallingAETitle",
-                ae.isAcceptOnlyPreferredCallingAETitles(), false);
+        storeNotEmpty(attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         return attrs;
     }
 
@@ -282,8 +281,7 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.loadFrom(ae, attrs);
         if (!hasObjectClass(attrs, "dcmNetworkAE"))
             return;
-        ae.setAcceptOnlyPreferredCallingAETitles(
-                booleanValue(attrs.get("dcmAcceptOnlyPreferredCallingAETitle"), false));
+        ae.setAcceptedCallingAETitles(stringArray(attrs.get("dcmAcceptedCallingAETitle")));
     }
 
     @Override
@@ -478,10 +476,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected List<ModificationItem> storeDiffs(ApplicationEntity a,
             ApplicationEntity b, String deviceDN, List<ModificationItem> mods) {
         super.storeDiffs(a, b, deviceDN, mods);
-        storeDiff(mods, "dcmAcceptOnlyPreferredCallingAETitle",
-                a.isAcceptOnlyPreferredCallingAETitles(),
-                b.isAcceptOnlyPreferredCallingAETitles(),
-                false);
+        storeDiff(mods, "dcmAcceptedCallingAETitle",
+                a.getAcceptedCallingAETitles(),
+                b.getAcceptedCallingAETitles());
         return mods;
     }
 

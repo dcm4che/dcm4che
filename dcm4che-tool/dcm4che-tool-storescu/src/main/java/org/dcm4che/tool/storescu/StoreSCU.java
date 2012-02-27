@@ -152,8 +152,7 @@ public class StoreSCU extends Device {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STORESCU");
         CLIUtils.addAEOptions(opts);
-        CLIUtils.addCEchoRspOption(opts);
-        CLIUtils.addCStoreRspOption(opts);
+        CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
         addScanOptions(opts);

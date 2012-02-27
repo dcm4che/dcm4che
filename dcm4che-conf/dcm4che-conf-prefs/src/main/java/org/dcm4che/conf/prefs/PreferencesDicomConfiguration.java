@@ -385,28 +385,10 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmCStoreRspTimeout",
-                conn.getCStoreRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmCGetRspTimeout",
-                conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmCFindRspTimeout",
-                conn.getCFindRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmCMoveRspTimeout",
-                conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmCEchoRspTimeout",
-                conn.getCEchoRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNEventReportRspTimeout",
-                conn.getNEventReportRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNGetRspTimeout",
-                conn.getNGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNSetRspTimeout",
-                conn.getNSetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNActionRspTimeout",
-                conn.getNActionRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNCreateRspTimeout",
-                conn.getNCreateRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmNDeleteRspTimeout",
-                conn.getNDeleteRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmResponseTimeout",
+                conn.getResponseTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(prefs, "dcmRetrieveTimeout",
+                conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(prefs, "dcmTCPCloseDelay",
@@ -574,49 +556,13 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmCStoreRspTimeout",
-                a.getCStoreRSPTimeout(),
-                b.getCStoreRSPTimeout(),
+        storeDiff(prefs, "dcmResponseTimeout",
+                a.getResponseTimeout(),
+                b.getResponseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmCGetRspTimeout",
-                a.getCGetRSPTimeout(),
-                b.getCGetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmCFindRspTimeout",
-                a.getCFindRSPTimeout(),
-                b.getCFindRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmCMoveRspTimeout",
-                a.getCMoveRSPTimeout(),
-                b.getCMoveRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmCEchoRspTimeout",
-                a.getCEchoRSPTimeout(),
-                b.getCEchoRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNEventReportRspTimeout",
-                a.getNEventReportRSPTimeout(),
-                b.getNEventReportRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNGetRspTimeout",
-                a.getNGetRSPTimeout(),
-                b.getNGetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNSetRspTimeout",
-                a.getNSetRSPTimeout(),
-                b.getNSetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNActionRspTimeout",
-                a.getNActionRSPTimeout(),
-                b.getNActionRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNCreateRspTimeout",
-                a.getNCreateRSPTimeout(),
-                b.getNCreateRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmNDeleteRspTimeout",
-                a.getNDeleteRSPTimeout(),
-                b.getNDeleteRSPTimeout(),
+        storeDiff(prefs, "dcmRetrieveTimeout",
+                a.getRetrieveTimeout(),
+                b.getRetrieveTimeout(),
                 Connection.NO_TIMEOUT);
         storeDiff(prefs, "dcmIdleTimeout",
                 a.getIdleTimeout(),
@@ -1051,19 +997,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmAAACTimeout", Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(
                 prefs.getInt("dcmARRPTimeout", Connection.NO_TIMEOUT));
-        conn.setCStoreRSPTimeout(prefs.getInt("dcmCStoreRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCGetRSPTimeout(prefs.getInt("dcmCGetRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCFindRSPTimeout(prefs.getInt("dcmCFindRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCMoveRSPTimeout(prefs.getInt("dcmCMoveRspTimeout", Connection.NO_TIMEOUT));
-        conn.setCEchoRSPTimeout(prefs.getInt("dcmCEchoRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNEventReportRSPTimeout(prefs.getInt("dcmNEventReportRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNGetRSPTimeout(prefs.getInt("dcmNGetRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNSetRSPTimeout(prefs.getInt("dcmNSetRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNActionRSPTimeout(prefs.getInt("dcmNActionRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNCreateRSPTimeout(
-                prefs.getInt("dcmNCreateRspTimeout", Connection.NO_TIMEOUT));
-        conn.setNDeleteRSPTimeout(
-                prefs.getInt("dcmNDeleteRspTimeout", Connection.NO_TIMEOUT));
+        conn.setResponseTimeout(prefs.getInt("dcmResponseTimeout", Connection.NO_TIMEOUT));
+        conn.setRetrieveTimeout(prefs.getInt("dcmRetrieveTimeout", Connection.NO_TIMEOUT));
         conn.setIdleTimeout(
                 prefs.getInt("dcmIdleTimeout", Connection.NO_TIMEOUT));
         conn.setSocketCloseDelay(

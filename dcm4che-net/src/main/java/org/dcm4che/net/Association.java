@@ -680,8 +680,9 @@ public class Association {
             if (rspHandlerForMsgId.isEmpty() && performing == 0)
                 startIdleOrReleaseTimeout();
         } else
-            startTimeout(msgId, conn.getDimseRSPTimeout(
-                    cmd.getInt(Tag.CommandField, 0)));
+            startTimeout(msgId, Commands.isRetrieveRQ(cmd)
+                    ? conn.getRetrieveTimeout()
+                    : conn.getResponseTimeout());
     }
 
     private synchronized void startIdleOrReleaseTimeout() {
@@ -817,7 +818,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority);
-        invoke(pc, cstorerq, data, rspHandler, conn.getCStoreRSPTimeout());
+        invoke(pc, cstorerq, data, rspHandler, conn.getResponseTimeout());
     }
 
     public DimseRSP cstore(String cuid, String iuid, int priority,
@@ -849,7 +850,7 @@ public class Association {
         PresentationContext pc = pcFor(asuid, tsuid);
         Attributes cstorerq = Commands.mkCStoreRQ(rspHandler.getMessageID(),
                 cuid, iuid, priority, moveOriginatorAET, moveOriginatorMsgId);
-        invoke(pc, cstorerq, data, rspHandler, conn.getCStoreRSPTimeout());
+        invoke(pc, cstorerq, data, rspHandler, conn.getResponseTimeout());
     }
 
     public DimseRSP cstore(String cuid, String iuid, int priority,
@@ -884,7 +885,7 @@ public class Association {
         Attributes cfindrq =
                 Commands.mkCFindRQ(rspHandler.getMessageID(), cuid, priority);
         invoke(pc, cfindrq, new DataWriterAdapter(data), rspHandler,
-                conn.getCFindRSPTimeout());
+                conn.getResponseTimeout());
     }
 
     public DimseRSP cfind(String cuid, int priority, Attributes data,
@@ -917,7 +918,7 @@ public class Association {
         Attributes cgetrq = Commands.mkCGetRQ(rspHandler.getMessageID(),
                 cuid, priority);
         invoke(pc, cgetrq, new DataWriterAdapter(data), rspHandler,
-                conn.getCMoveRSPTimeout());
+                conn.getRetrieveTimeout());
     }
 
     public DimseRSP cget(String cuid, int priority, Attributes data,
@@ -949,7 +950,7 @@ public class Association {
         Attributes cmoverq = Commands.mkCMoveRQ(rspHandler.getMessageID(),
                 cuid, priority, destination);
         invoke(pc, cmoverq, new DataWriterAdapter(data), rspHandler,
-                conn.getCMoveRSPTimeout());
+                conn.getRetrieveTimeout());
     }
 
     public DimseRSP cmove(String cuid, int priority, Attributes data,
@@ -975,7 +976,7 @@ public class Association {
         PresentationContext pc = pcFor(cuid, null);
         checkIsSCU(cuid);
         Attributes cechorq = Commands.mkCEchoRQ(rsp.getMessageID(), cuid);
-        invoke(pc, cechorq, null, rsp, conn.getCEchoRSPTimeout());
+        invoke(pc, cechorq, null, rsp, conn.getResponseTimeout());
         return rsp;
     }
 
@@ -994,7 +995,7 @@ public class Association {
                 Commands.mkNEventReportRQ(rspHandler.getMessageID(), cuid, iuid,
                         eventTypeId, data);
         invoke(pc, neventrq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getNEventReportRSPTimeout());
+                conn.getResponseTimeout());
     }
 
     public DimseRSP neventReport(String cuid, String iuid, int eventTypeId,
@@ -1024,7 +1025,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes ngetrq =
                 Commands.mkNGetRQ(rspHandler.getMessageID(), cuid, iuid, tags);
-        invoke(pc, ngetrq, null, rspHandler, conn.getNGetRSPTimeout());
+        invoke(pc, ngetrq, null, rspHandler, conn.getResponseTimeout());
     }
 
     public DimseRSP nget(String cuid, String iuid, int[] tags)
@@ -1053,7 +1054,7 @@ public class Association {
         Attributes nsetrq =
                 Commands.mkNSetRQ(rspHandler.getMessageID(), cuid, iuid);
         invoke(pc, nsetrq, new DataWriterAdapter(data), rspHandler,
-                conn.getNSetRSPTimeout());
+                conn.getResponseTimeout());
     }
 
     public DimseRSP nset(String cuid, String iuid, Attributes data,
@@ -1085,7 +1086,7 @@ public class Association {
                 Commands.mkNActionRQ(rspHandler.getMessageID(), cuid, iuid,
                         actionTypeId, data);
         invoke(pc, nactionrq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getNActionRSPTimeout());
+                conn.getResponseTimeout());
     }
 
     public DimseRSP naction(String cuid, String iuid, int actionTypeId,
@@ -1116,7 +1117,7 @@ public class Association {
         Attributes ncreaterq =
                 Commands.mkNCreateRQ(rspHandler.getMessageID(), cuid, iuid);
         invoke(pc, ncreaterq, DataWriterAdapter.forAttributes(data), rspHandler,
-                conn.getNCreateRSPTimeout());
+                conn.getResponseTimeout());
     }
 
     public DimseRSP ncreate(String cuid, String iuid, Attributes data,
@@ -1145,7 +1146,7 @@ public class Association {
         checkIsSCU(cuid);
         Attributes ndeleterq =
                 Commands.mkNDeleteRQ(rspHandler.getMessageID(), cuid, iuid);
-        invoke(pc, ndeleterq, null, rspHandler, conn.getNDeleteRSPTimeout());
+        invoke(pc, ndeleterq, null, rspHandler, conn.getResponseTimeout());
     }
 
     public DimseRSP ndelete(String cuid, String iuid)

@@ -195,7 +195,7 @@ public class GetSCU extends Device {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "GETSCU");
             CLIUtils.addAEOptions(opts);
-            CLIUtils.addCGetRspOption(opts);
+            CLIUtils.addRetrieveTimeoutOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, GetSCU.class);

@@ -44,68 +44,14 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.7
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.8
-  NAME 'dcmCStoreRspTimeout'
-  DESC 'Timeout in ms for receive of C-STORE-RSP after send of C-STORE-RQ; no timeout if absent'
+  NAME 'dcmResponseTimeout'
+  DESC 'Timeout in ms for receive of response message; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.9
-  NAME 'dcmCGetRspTimeout'
-  DESC 'Timeout in ms for receive of C-GET-RSP after send of C-GET-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.10
-  NAME 'dcmCFindRspTimeout'
-  DESC 'Timeout in ms for receive of C-FIND-RSP after send of C-FIND-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.11
-  NAME 'dcmCMoveRspTimeout'
-  DESC 'Timeout in ms for receive of C-MOVE-RSP after send of C-MOVE-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.12
-  NAME 'dcmCEchoRspTimeout'
-  DESC 'Timeout in ms for receive of C-ECHO-RSP after send of C-ECHO-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.13
-  NAME 'dcmNEventReportRspTimeout'
-  DESC 'Timeout in ms for receive of N-EVENT-REPORT-RSP after send of C-EVENT-REPORT-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.14
-  NAME 'dcmNGetRspTimeout'
-  DESC 'Timeout in ms for receive of N-GET-RSP after send of N-GET-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.15
-  NAME 'dcmNSetRspTimeout'
-  DESC 'Timeout in ms for receive of N-SET-RSP after send of N-SET-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.16
-  NAME 'dcmNActionRspTimeout'
-  DESC 'Timeout in ms for receive of N-ACTION-RSP after send of N-ACTION-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.17
-  NAME 'dcmNCreateRspTimeout'
-  DESC 'Timeout in ms for receive of N-CREATE-RSP after send of N-CREATE-RQ; no timeout if absent'
-  EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
-  SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.18
-  NAME 'dcmNDeleteRspTimeout'
-  DESC 'Timeout in ms for receive of N-DELETE-RSP after send of N-DELETE-RQ; no timeout if absent'
+  NAME 'dcmRetrieveTimeout'
+  DESC 'Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
@@ -256,17 +202,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.6
     dcmAARQTimeout $
     dcmAAACTimeout $
     dcmARRPTimeout $
-    dcmCStoreRspTimeout $
-    dcmCGetRspTimeout $
-    dcmCFindRspTimeout $
-    dcmCMoveRspTimeout $
-    dcmCEchoRspTimeout $
-    dcmNEventReportRspTimeout $
-    dcmNGetRspTimeout $
-    dcmNSetRspTimeout $
-    dcmNActionRspTimeout $
-    dcmNCreateRspTimeout $
-    dcmNDeleteRspTimeout $
+    dcmResponseTimeout $
+    dcmRetrieveTimeout $
     dcmIdleTimeout ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.8
   NAME 'dcmTransferCapability'

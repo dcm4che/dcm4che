@@ -278,7 +278,7 @@ public class StgCmtSCU extends Device {
         CLIUtils.addBindOption(opts, "STGCMTSCU");
         CLIUtils.addRequestTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
-        CLIUtils.addNActionRspOption(opts);
+        CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);
     }

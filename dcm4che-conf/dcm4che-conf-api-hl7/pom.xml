@@ -11,6 +11,12 @@
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-conf-api</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-net-hl7</artifactId>
       <version>3.0.0-SNAPSHOT</version>
       <scope>compile</scope>

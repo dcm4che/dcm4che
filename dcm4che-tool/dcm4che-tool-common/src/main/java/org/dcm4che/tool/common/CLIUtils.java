@@ -230,112 +230,22 @@ public class CLIUtils {
     }
 
     @SuppressWarnings("static-access")
-    public static void addCStoreRspOption(Options opts) {
+    public static void addResponseTimeoutOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
             .withArgName("ms")
-            .withDescription(rb.getString("cstore-rsp-timeout"))
-            .withLongOpt("cstore-rsp-timeout")
+            .withDescription(rb.getString("response-timeout"))
+            .withLongOpt("response-timeout")
             .create(null));
     }
 
     @SuppressWarnings("static-access")
-    public static void addCGetRspOption(Options opts) {
+    public static void addRetrieveTimeoutOption(Options opts) {
         opts.addOption(OptionBuilder
             .hasArg()
             .withArgName("ms")
-            .withDescription(rb.getString("cget-rsp-timeout"))
-            .withLongOpt("cget-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addCFindRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("cfind-rsp-timeout"))
-            .withLongOpt("cfind-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addCMoveRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("cmove-rsp-timeout"))
-            .withLongOpt("cmove-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addCEchoRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("cecho-rsp-timeout"))
-            .withLongOpt("cecho-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNEventRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("nevent-rsp-timeout"))
-            .withLongOpt("nevent-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNGetRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("nget-rsp-timeout"))
-            .withLongOpt("nget-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNSetRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("nset-rsp-timeout"))
-            .withLongOpt("nset-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNActionRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("naction-rsp-timeout"))
-            .withLongOpt("naction-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNCreateRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("ncreate-rsp-timeout"))
-            .withLongOpt("ncreate-rsp-timeout")
-            .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addNDeleteRspOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("ndelete-rsp-timeout"))
-            .withLongOpt("ndelete-rsp-timeout")
+            .withDescription(rb.getString("retrieve-timeout"))
+            .withLongOpt("retrieve-timeout")
             .create(null));
     }
 
@@ -562,39 +472,12 @@ public class CLIUtils {
         if (cl.hasOption("release-timeout"))
             conn.setReleaseTimeout(
                     Integer.parseInt(cl.getOptionValue("release-timeout")));
-        if (cl.hasOption("cstore-rsp-timeout"))
-            conn.setCStoreRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("cstore-rsp-timeout")));
-        if (cl.hasOption("cget-rsp-timeout"))
-            conn.setCGetRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("cget-rsp-timeout")));
-        if (cl.hasOption("cfind-rsp-timeout"))
-            conn.setCFindRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("cfind-rsp-timeout")));
-        if (cl.hasOption("cmove-rsp-timeout"))
-            conn.setCMoveRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("cmove-rsp-timeout")));
-        if (cl.hasOption("cecho-rsp-timeout"))
-            conn.setCEchoRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("cecho-rsp-timeout")));
-        if (cl.hasOption("nevent-rsp-timeout"))
-            conn.setNEventReportRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("nevent-rsp-timeout")));
-        if (cl.hasOption("nget-rsp-timeout"))
-            conn.setNGetRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("nget-rsp-timeout")));
-        if (cl.hasOption("nset-rsp-timeout"))
-            conn.setNSetRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("nset-rsp-timeout")));
-        if (cl.hasOption("naction-rsp-timeout"))
-            conn.setNActionRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("naction-rsp-timeout")));
-        if (cl.hasOption("ncreate-rsp-timeout"))
-            conn.setNCreateRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("ncreate-rsp-timeout")));
-        if (cl.hasOption("ndelete-rsp-timeout"))
-            conn.setNDeleteRSPTimeout(
-                    Integer.parseInt(cl.getOptionValue("ndelete-rsp-timeout")));
+        if (cl.hasOption("response-timeout"))
+            conn.setResponseTimeout(
+                    Integer.parseInt(cl.getOptionValue("response-timeout")));
+        if (cl.hasOption("retrieve-timeout"))
+            conn.setRetrieveTimeout(
+                    Integer.parseInt(cl.getOptionValue("retrieve-timeout")));
         if (cl.hasOption("idle-timeout"))
             conn.setIdleTimeout(
                     Integer.parseInt(cl.getOptionValue("idle-timeout")));

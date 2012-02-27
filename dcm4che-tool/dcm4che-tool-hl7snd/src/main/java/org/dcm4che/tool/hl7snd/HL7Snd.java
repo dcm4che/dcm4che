@@ -75,8 +75,6 @@ public class HL7Snd extends Device {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
 
-    private int hl7RSPTimeout;
-
     private Socket sock;
     private MLLPInputStream mllpIn;
     private MLLPOutputStream mllpOut;
@@ -86,22 +84,12 @@ public class HL7Snd extends Device {
         addConnection(conn);
     }
 
-    public final int getHl7RSPTimeout() {
-        return hl7RSPTimeout;
-    }
-
-    public final void setHl7RSPTimeout(int timeout) {
-        if (timeout < 0)
-            throw new IllegalArgumentException("timeout: " + timeout);
-        this.hl7RSPTimeout = timeout;
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
         addConnectOption(opts);
         addBindOption(opts);
-        addHl7AckTimeoutOption(opts);
+        CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
@@ -127,16 +115,6 @@ public class HL7Snd extends Device {
                 .withDescription(rb.getString("bind"))
                 .withLongOpt("bind")
                 .create("b"));
-    }
-
-    @SuppressWarnings("static-access")
-    public static void addHl7AckTimeoutOption(Options opts) {
-        opts.addOption(OptionBuilder
-            .hasArg()
-            .withArgName("ms")
-            .withDescription(rb.getString("hl7-rsp-timeout"))
-            .withLongOpt("hl7-rsp-timeout")
-            .create(null));
     }
 
     private static void configureConnect(Connection conn, CommandLine cl)
@@ -166,9 +144,6 @@ public class HL7Snd extends Device {
             configureConnect(main.remote, cl);
             configureBind(main.conn, cl);
             CLIUtils.configure(main.conn, cl);
-            if (cl.hasOption("hl7-rsp-timeout"))
-                main.setHl7RSPTimeout(
-                        Integer.parseInt(cl.getOptionValue("hl7-rsp-timeout")));
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             try {
@@ -190,7 +165,7 @@ public class HL7Snd extends Device {
 
     public void open() throws IOException, IncompatibleConnectionException {
         sock = conn.connect(remote);
-        sock.setSoTimeout(hl7RSPTimeout);
+        sock.setSoTimeout(conn.getResponseTimeout());
         mllpIn = new MLLPInputStream(sock.getInputStream());
         mllpOut = new MLLPOutputStream(sock.getOutputStream());
     }

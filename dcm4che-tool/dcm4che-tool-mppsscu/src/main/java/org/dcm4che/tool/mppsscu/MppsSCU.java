@@ -335,9 +335,7 @@ public class MppsSCU extends Device {
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "MPPSSCU");
         CLIUtils.addAEOptions(opts);
-        CLIUtils.addCEchoRspOption(opts);
-        CLIUtils.addNCreateRspOption(opts);
-        CLIUtils.addNSetRspOption(opts);
+        CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCU.class);
     }

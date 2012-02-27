@@ -105,9 +105,9 @@ objectclass: metaAttributeType
 objectclass: metaTop
 objectclass: top
 m-oid: 1.2.40.0.13.1.15.0.3.8
-m-name: dcmCStoreRspTimeout
-m-description: Timeout in ms for receive of C-STORE-RSP after send of C-STORE-RQ
- ; no timeout if absent
+m-name: dcmResponseTimeout
+m-description: Timeout in ms for receive of response message; no timeout if abse
+ nt
 m-equality: integerMatch
 m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
 m-length: 0
@@ -118,126 +118,9 @@ objectclass: metaAttributeType
 objectclass: metaTop
 objectclass: top
 m-oid: 1.2.40.0.13.1.15.0.3.9
-m-name: dcmCGetRspTimeout
-m-description: Timeout in ms for receive of C-GET-RSP after send of C-GET-RQ; no
-  timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.10, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.10
-m-name: dcmCFindRspTimeout
-m-description: Timeout in ms for receive of C-FIND-RSP after send of C-FIND-RQ; 
- no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.11, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.11
-m-name: dcmCMoveRspTimeout
-m-description: Timeout in ms for receive of C-MOVE-RSP after send of C-MOVE-RQ; 
- no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.12, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.12
-m-name: dcmCEchoRspTimeout
-m-description: Timeout in ms for receive of C-ECHO-RSP after send of C-ECHO-RQ; 
- no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.13, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.13
-m-name: dcmNEventReportRspTimeout
-m-description: Timeout in ms for receive of N-EVENT-REPORT-RSP after send of C-E
- VENT-REPORT-RQ; no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.14, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.14
-m-name: dcmNGetRspTimeout
-m-description: Timeout in ms for receive of N-GET-RSP after send of N-GET-RQ; no
-  timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.15, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.15
-m-name: dcmNSetRspTimeout
-m-description: Timeout in ms for receive of N-SET-RSP after send of N-SET-RQ; no
-  timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.16, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.16
-m-name: dcmNActionRspTimeout
-m-description: Timeout in ms for receive of N-ACTION-RSP after send of N-ACTION-
- RQ; no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.17, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.17
-m-name: dcmNCreateRspTimeout
-m-description: Timeout in ms for receive of N-CREATE-RSP after send of N-CREATE-
- RQ; no timeout if absent
-m-equality: integerMatch
-m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
-m-length: 0
-m-singleValue: TRUE
-
-dn: m-oid=1.2.40.0.13.1.15.0.3.18, ou=attributeTypes, cn=dcm4che, ou=schema
-objectclass: metaAttributeType
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.15.0.3.18
-m-name: dcmNDeleteRspTimeout
-m-description: Timeout in ms for receive of N-DELETE-RSP after send of N-DELETE-
- RQ; no timeout if absent
+m-name: dcmRetrieveTimeout
+m-description: Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout 
+ if absent
 m-equality: integerMatch
 m-syntax: 1.3.6.1.4.1.1466.115.121.1.27
 m-length: 0
@@ -567,17 +450,8 @@ m-may: dcmPackPDV
 m-may: dcmAARQTimeout
 m-may: dcmAAACTimeout
 m-may: dcmARRPTimeout
-m-may: dcmCStoreRspTimeout
-m-may: dcmCGetRspTimeout
-m-may: dcmCFindRspTimeout
-m-may: dcmCMoveRspTimeout
-m-may: dcmCEchoRspTimeout
-m-may: dcmNEventReportRspTimeout
-m-may: dcmNGetRspTimeout
-m-may: dcmNSetRspTimeout
-m-may: dcmNActionRspTimeout
-m-may: dcmNCreateRspTimeout
-m-may: dcmNDeleteRspTimeout
+m-may: dcmResponseTimeout
+m-may: dcmRetrieveTimeout
 m-may: dcmIdleTimeout
 
 dn: m-oid=1.2.40.0.13.1.15.0.4.8, ou=objectClasses, cn=dcm4che, ou=schema

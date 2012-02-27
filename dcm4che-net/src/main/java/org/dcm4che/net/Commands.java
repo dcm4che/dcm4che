@@ -88,6 +88,11 @@ public class Commands {
         return (cmdField & RSP) != 0;
     }
 
+    public static boolean isRetrieveRQ(Attributes cmd) {
+        int cmdField = cmd.getInt(Tag.CommandField, 0);
+        return cmdField == C_GET_RQ || cmdField == C_MOVE_RQ;
+    }
+
     public static boolean isCancelRQ(Attributes cmd) {
         return cmd.getInt(Tag.CommandField, 0) == C_CANCEL_RQ;
     }

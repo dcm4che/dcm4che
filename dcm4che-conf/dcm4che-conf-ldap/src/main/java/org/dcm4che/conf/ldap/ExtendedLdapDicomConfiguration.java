@@ -106,28 +106,10 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmCStoreRspTimeout",
-                conn.getCStoreRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmCGetRspTimeout",
-                conn.getCGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmCFindRspTimeout",
-                conn.getCFindRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmCMoveRspTimeout",
-                conn.getCMoveRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmCEchoRspTimeout",
-                conn.getCEchoRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNEventReportRspTimeout",
-                conn.getNEventReportRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNGetRspTimeout",
-                conn.getNGetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNSetRspTimeout",
-                conn.getNSetRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNActionRspTimeout",
-                conn.getNActionRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNCreateRspTimeout",
-                conn.getNCreateRSPTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(attrs, "dcmNDeleteRspTimeout",
-                conn.getNDeleteRSPTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmResponseTimeout",
+                conn.getResponseTimeout(), Connection.NO_TIMEOUT);
+        storeNotDef(attrs, "dcmRetrieveTimeout",
+                conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
         storeNotDef(attrs, "dcmTCPCloseDelay",
@@ -230,27 +212,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 Connection.NO_TIMEOUT));
         conn.setReleaseTimeout(intValue(attrs.get("dcmARRPTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCStoreRSPTimeout(intValue(attrs.get("dcmCStoreRspTimeout"),
+        conn.setResponseTimeout(intValue(attrs.get("dcmResponseTimeout"),
                 Connection.NO_TIMEOUT));
-        conn.setCGetRSPTimeout(intValue(attrs.get("dcmCGetRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setCFindRSPTimeout(intValue(attrs.get("dcmCFindRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setCMoveRSPTimeout(intValue(attrs.get("dcmCMoveRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setCEchoRSPTimeout(intValue(attrs.get("dcmCEchoRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNEventReportRSPTimeout(intValue(attrs.get("dcmNEventReportRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNGetRSPTimeout(intValue(attrs.get("dcmNGetRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNSetRSPTimeout(intValue(attrs.get("dcmNSetRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNActionRSPTimeout(intValue(attrs.get("dcmNActionRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNCreateRSPTimeout(intValue(attrs.get("dcmNCreateRspTimeout"),
-                Connection.NO_TIMEOUT));
-        conn.setNDeleteRSPTimeout(intValue(attrs.get("dcmNDeleteRspTimeout"),
+        conn.setRetrieveTimeout(intValue(attrs.get("dcmRetrieveTimeout"),
                 Connection.NO_TIMEOUT));
         conn.setIdleTimeout(intValue(attrs.get("dcmIdleTimeout"),
                 Connection.NO_TIMEOUT));
@@ -378,49 +342,13 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmCStoreRspTimeout",
-                a.getCStoreRSPTimeout(),
-                b.getCStoreRSPTimeout(),
+        storeDiff(mods, "dcmResponseTimeout",
+                a.getResponseTimeout(),
+                b.getResponseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmCGetRspTimeout",
-                a.getCGetRSPTimeout(),
-                b.getCGetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmCFindRspTimeout",
-                a.getCFindRSPTimeout(),
-                b.getCFindRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmCMoveRspTimeout",
-                a.getCMoveRSPTimeout(),
-                b.getCMoveRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmCEchoRspTimeout",
-                a.getCEchoRSPTimeout(),
-                b.getCEchoRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNEventReportRspTimeout",
-                a.getNEventReportRSPTimeout(),
-                b.getNEventReportRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNGetRspTimeout",
-                a.getNGetRSPTimeout(),
-                b.getNGetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNSetRspTimeout",
-                a.getNSetRSPTimeout(),
-                b.getNSetRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNActionRspTimeout",
-                a.getNActionRSPTimeout(),
-                b.getNActionRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNCreateRspTimeout",
-                a.getNCreateRSPTimeout(),
-                b.getNCreateRSPTimeout(),
-                Connection.NO_TIMEOUT);
-        storeDiff(mods, "dcmNDeleteRspTimeout",
-                a.getNDeleteRSPTimeout(),
-                b.getNDeleteRSPTimeout(),
+        storeDiff(mods, "dcmRetrieveTimeout",
+                a.getRetrieveTimeout(),
+                b.getRetrieveTimeout(),
                 Connection.NO_TIMEOUT);
         storeDiff(mods, "dcmIdleTimeout",
                 a.getIdleTimeout(),

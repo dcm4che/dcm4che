@@ -210,7 +210,7 @@ public class FindSCU extends Device {
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "FINDSCU");
             CLIUtils.addAEOptions(opts);
-            CLIUtils.addCFindRspOption(opts);
+            CLIUtils.addResponseTimeoutOption(opts);
             CLIUtils.addPriorityOption(opts);
             CLIUtils.addCommonOptions(opts);
             return CLIUtils.parseComandLine(args, opts, rb, FindSCU.class);

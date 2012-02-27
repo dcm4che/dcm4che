@@ -243,8 +243,7 @@ public class DcmQRSCP extends Device {
         CLIUtils.addAcceptTimeoutOption(opts);
         CLIUtils.addAEOptions(opts);
         CLIUtils.addCommonOptions(opts);
-        CLIUtils.addCStoreRspOption(opts);
-        CLIUtils.addNEventRspOption(opts);
+        CLIUtils.addResponseTimeoutOption(opts);
         addDicomDirOption(opts);
         addTransferCapabilityOptions(opts);
         addInstanceAvailabilityOption(opts);

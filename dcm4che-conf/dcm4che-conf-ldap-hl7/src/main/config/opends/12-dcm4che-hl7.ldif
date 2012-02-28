@@ -22,10 +22,6 @@ attributeTypes: ( 1.2.40.0.13.1.0.15.0.3.3
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
-objectClasses: ( 1.2.40.0.13.1.0.15.0.4.4
-  NAME 'hl7Device'
-  DESC 'HL7 Device marker'
-  SUP top AUXILIARY )
 objectClasses: ( 1.2.40.0.13.1.0.15.0.4.5
   NAME 'hl7Application'
   DESC 'HL7 Application information'

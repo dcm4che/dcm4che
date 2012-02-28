@@ -78,14 +78,6 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
             .getHL7Application(name);
     }
 
-    @Override
-    protected Attribute objectClassesOf(Device device, Attribute attr) {
-        super.objectClassesOf(device, attr);
-        if (device instanceof HL7Device)
-            attr.add("hl7Device");
-        return attr;
-    }
-
     protected Attribute objectClassesOf(HL7Application hl7App, Attribute attr) {
         attr.add("hl7Application");
         return attr;
@@ -93,8 +85,6 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
 
     @Override
     protected Device newDevice(Attributes attrs) throws NamingException {
-        if (!hasObjectClass(attrs, "hl7Device"))
-            return super.newDevice(attrs);
         return new HL7Device(stringValue(attrs.get("dicomDeviceName")));
     }
 

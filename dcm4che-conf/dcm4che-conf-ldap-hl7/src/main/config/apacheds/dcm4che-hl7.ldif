@@ -104,16 +104,6 @@ m-must: dicomNetworkConnectionReference
 m-may: hl7AcceptedSendingApplication
 m-may: hl7AcceptedMessageType
 
-dn: m-oid=1.2.40.0.13.1.0.15.0.4.4, ou=objectClasses, cn=dcm4che-hl7, ou=schema
-objectclass: metaObjectClass
-objectclass: metaTop
-objectclass: top
-m-oid: 1.2.40.0.13.1.0.15.0.4.4
-m-name: hl7Device
-m-description: HL7 Device marker
-m-supObjectClass: top
-m-typeObjectClass: AUXILIARY
-
 dn: ou=syntaxCheckers, cn=dcm4che-hl7, ou=schema
 objectclass: organizationalUnit
 objectclass: top

@@ -70,23 +70,11 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
 
     @Override
     protected Device newDevice(Preferences deviceNode) {
-        if (!deviceNode.getBoolean("hl7Device", false))
-            return super.newDevice(deviceNode);
-
-        return new HL7Device(deviceNode.name());
+         return new HL7Device(deviceNode.name());
     }
 
     protected HL7Application newHL7Application(Preferences appNode) {
         return new HL7Application(appNode.name());
-    }
-
-    @Override
-    protected void storeTo(Device device, Preferences prefs) {
-        super.storeTo(device, prefs);
-        if (!(device instanceof HL7Device))
-            return;
-
-        prefs.putBoolean("hl7Device", true);
     }
 
     @Override

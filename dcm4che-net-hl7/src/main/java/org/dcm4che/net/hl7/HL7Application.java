@@ -172,7 +172,6 @@ public class HL7Application {
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
             throw new HL7Exception(Ack.AE, "No HL7 Message Listener configured");
-        return listener.onMessage(msh, msg, off, len, conn);
+        return listener.onMessage(this, msh, msg, off, len);
     }
-
 }

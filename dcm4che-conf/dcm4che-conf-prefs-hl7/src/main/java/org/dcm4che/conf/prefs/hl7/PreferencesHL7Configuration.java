@@ -92,7 +92,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         }
     }
 
-    private void storeTo(HL7Application hl7App, Preferences prefs,
+    protected void storeTo(HL7Application hl7App, Preferences prefs,
             List<Connection> devConns) {
         storeNotEmpty(prefs, "hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
         storeNotEmpty(prefs, "hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());

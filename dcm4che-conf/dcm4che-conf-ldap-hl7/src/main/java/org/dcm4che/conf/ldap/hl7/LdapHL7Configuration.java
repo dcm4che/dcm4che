@@ -112,8 +112,7 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
         return dnOf("hl7ApplicationName" , name, deviceDN);
     }
 
-    protected Attributes storeTo(HL7Application hl7App, String deviceDN,
-            BasicAttributes attrs) {
+    protected Attributes storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {
         attrs.put(objectClassesOf(hl7App, new BasicAttribute("objectclass")));
         storeNotNull(attrs, "hl7ApplicationName", hl7App.getApplicationName());
         storeNotEmpty(attrs, "hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
@@ -205,7 +204,7 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     }
 
     protected List<ModificationItem> storeDiffs(HL7Application a, HL7Application b,
-            String deviceDN, ArrayList<ModificationItem> mods) {
+            String deviceDN, List<ModificationItem> mods) {
         storeDiff(mods, "hl7AcceptedSendingApplication",
                 a.getAcceptedSendingApplications(),
                 b.getAcceptedSendingApplications());

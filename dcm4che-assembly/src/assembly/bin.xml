@@ -256,6 +256,31 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl72xml/src</directory>
+      <includes>
+        <include>bin/hl72xml</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl72xml/src</directory>
+      <includes>
+        <include>bin/hl72xml.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl72xml/src</directory>
+      <includes>
+        <include>etc/hl72xml/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
       <includes>
         <include>bin/hl7rcv</include>
@@ -596,6 +621,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>

@@ -265,9 +265,9 @@ public class Dcm2Xml {
     private static String fname(List<String> argList) throws ParseException {
         int numArgs = argList.size();
         if (numArgs == 0)
-            throw new ParseException("Missing file operand");
+            throw new ParseException(rb.getString("missing"));
         if (numArgs > 1)
-            throw new ParseException("Too many arguments");
+            throw new ParseException(rb.getString("too-many"));
         return argList.get(0);
     }
 

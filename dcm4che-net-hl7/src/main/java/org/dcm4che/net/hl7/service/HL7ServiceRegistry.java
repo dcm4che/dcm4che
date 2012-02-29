@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.net.Connection;
+import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7MessageListener;
 
 /**
@@ -72,15 +72,15 @@ public class HL7ServiceRegistry extends HL7MessageListener {
     }
 
     @Override
-    public byte[] onMessage(String[] msh, byte[] msg, int off, int len, Connection conn)
-            throws HL7Exception {
+    public byte[] onMessage(HL7Application hl7App, String[] msh, byte[] msg,
+            int off, int len) throws HL7Exception {
         HL7MessageListener listener = listeners.get(msh[8]);
         if (listener == null) {
             listener = listeners.get("*");
             if (listener == null)
-                return super.onMessage(msh, msg, 0, 0, conn);
+                return super.onMessage(hl7App, msh, msg, 0, 0);
         }
-        return  listener.onMessage(msh, msg, 0, 0, conn);
+        return  listener.onMessage(hl7App, msh, msg, 0, 0);
     }
  
 }

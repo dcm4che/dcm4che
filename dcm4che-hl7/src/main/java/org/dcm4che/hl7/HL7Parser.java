@@ -133,7 +133,7 @@ public class HL7Parser {
                 ch.characters(tk.toCharArray(), 0, tk.length());
             }
             endElement(Delimiter.field);
-            endElement(tks[0]);
+            endElement(seg);
         }
         endDocument();
     }

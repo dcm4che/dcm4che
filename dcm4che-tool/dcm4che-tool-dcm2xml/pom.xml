@@ -47,22 +47,6 @@
   <artifactId>dcm4che-tool-dcm2xml</artifactId>
   <name>dcm4che-tool-dcm2xml</name>
   <description>Convert DICOM file to XML</description>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>

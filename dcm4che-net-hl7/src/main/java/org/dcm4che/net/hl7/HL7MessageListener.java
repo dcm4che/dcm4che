@@ -41,7 +41,6 @@ package org.dcm4che.net.hl7;
 import org.dcm4che.hl7.Ack;
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Utils;
-import org.dcm4che.net.Connection;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -49,8 +48,8 @@ import org.dcm4che.net.Connection;
  */
 public class HL7MessageListener {
 
-    public byte[] onMessage(String[] msh, byte[] msg, int off, int len,
-            Connection conn) throws HL7Exception {
+    public byte[] onMessage(HL7Application hl7App, String[] msh, byte[] msg,
+            int off, int len) throws HL7Exception {
         return HL7Utils.makeACK(msh, Ack.AA, null, (char) msg[3])
                 .getBytes();
     }

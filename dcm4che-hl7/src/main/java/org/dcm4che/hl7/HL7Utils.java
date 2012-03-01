@@ -113,67 +113,74 @@ public abstract class HL7Utils {
         sb.append(msh[9]);
         sb.append(fieldDelim);
         if (text != null)
-            sb.append(text);
+            sb.append(text.length() > 80 ? text.substring(0,80) : text);
         sb.append('\r');
         return sb.toString();
     }
 
-    public static String charsetName(String[] msh) {
-        return charsetName(msh.length > 17 ? msh[17] : null);
+    public static String charsetName(String[] msh, String defCode) {
+        String code = msh.length > 17 ? msh[17] : null;
+        return charsetName(code != null && !code.isEmpty() ? code : defCode);
     }
 
     public static String charsetName(String code) {
-        if (code == null || code.length() == 0)
-            return "US-ASCII";
-        
-        switch (code.charAt(code.length()-1)) {
-        case '1':
-            if (code.equals("8859/1"))
-                return "ISO-8859-1";
-            break;
-        case '2':
-            if (code.equals("8859/2"))
-                return "ISO-8859-2";
-            break;
-        case '3':
-            if (code.equals("8859/3"))
-                return "ISO-8859-3";
-            break;
-        case '4':
-            if (code.equals("8859/4"))
-                return "ISO-8859-4";
-            if (code.equals("ISO IR14"))
-                return "JIS_X0201";
-            break;
-        case '5':
-            if (code.equals("8859/5"))
-                return "ISO-8859-5";
-            break;
-        case '6':
-            if (code.equals("8859/6"))
-                return "ISO-8859-6";
-            break;
-        case '7':
-            if (code.equals("8859/7"))
-                return "ISO-8859-7";
-            if (code.equals("ISO IR87"))
-                return "x-JIS0208";
-            break;
-        case '8':
-            if (code.equals("8859/8"))
-                return "ISO-8859-8";
-            break;
-        case '9':
-            if (code.equals("8859/9"))
-                return "ISO-8859-9";
-            if (code.equals("ISO IR159"))
-                return "JIS_X0212-1990";
-            break;
-        case 'E':
-            if (code.equals("UNICODE"))
-                return "UTF-8";
-            break;
-        }
+        if (code != null && !code.isEmpty())
+            switch (code.charAt(code.length()-1)) {
+            case '0':
+                if (code.equals("GB 18030-2000"))
+                    return "GB18030";
+                break;
+            case '1':
+                if (code.equals("8859/1"))
+                    return "ISO-8859-1";
+                if (code.equals("KS X 1001"))
+                    return "EUC-KR";
+                break;
+            case '2':
+                if (code.equals("8859/2"))
+                    return "ISO-8859-2";
+                break;
+            case '3':
+                if (code.equals("8859/3"))
+                    return "ISO-8859-3";
+                break;
+            case '4':
+                if (code.equals("8859/4"))
+                    return "ISO-8859-4";
+                if (code.equals("ISO IR14"))
+                    return "JIS_X0201";
+                break;
+            case '5':
+                if (code.equals("8859/5"))
+                    return "ISO-8859-5";
+                break;
+            case '6':
+                if (code.equals("8859/6"))
+                    return "ISO-8859-6";
+                break;
+            case '7':
+                if (code.equals("8859/7"))
+                    return "ISO-8859-7";
+                if (code.equals("ISO IR87"))
+                    return "x-JIS0208";
+                break;
+            case '8':
+                if (code.equals("8859/8"))
+                    return "ISO-8859-8";
+                if (code.equals("UNICODE UTF-8"))
+                    return "UTF-8";
+                break;
+            case '9':
+                if (code.equals("8859/9"))
+                    return "ISO-8859-9";
+                if (code.equals("ISO IR159"))
+                    return "JIS_X0212-1990";
+                break;
+            case 'E':
+                if (code.equals("UNICODE"))
+                    return "UTF-8";
+                break;
+            }
         return "US-ASCII";
     }
 }

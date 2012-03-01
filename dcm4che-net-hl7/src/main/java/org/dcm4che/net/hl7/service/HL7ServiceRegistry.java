@@ -78,9 +78,9 @@ public class HL7ServiceRegistry extends HL7MessageListener {
         if (listener == null) {
             listener = listeners.get("*");
             if (listener == null)
-                return super.onMessage(hl7App, msh, msg, 0, 0);
+                return super.onMessage(hl7App, msh, msg, off, len);
         }
-        return  listener.onMessage(hl7App, msh, msg, 0, 0);
+        return  listener.onMessage(hl7App, msh, msg, off, len);
     }
  
 }

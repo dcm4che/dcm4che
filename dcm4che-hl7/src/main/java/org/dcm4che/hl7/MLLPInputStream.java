@@ -50,11 +50,11 @@ import java.io.OutputStream;
  */
 public class MLLPInputStream extends BufferedInputStream {
 
-    private static final int SB = 0x0b; 
-    private static final int EB = 0x1c; 
-    private static final int CR = 0x0d;
+    private static final int SOM = 0x0b; // Start of Message
+    private static final int EOM1 = 0x1c; // End of Message Byte 1
+    private static final int EOM2 = 0x0d; // End of Message Byte 2
 
-    private boolean eof = true;
+    private boolean eom = true;
 
     public MLLPInputStream(InputStream in) {
         super(in);
@@ -65,33 +65,33 @@ public class MLLPInputStream extends BufferedInputStream {
     }
 
     public synchronized boolean hasMoreInput() throws IOException {
-        if (!eof)
+        if (!eom)
             throw new IllegalStateException();
 
         int b = super.read();
         if (b == -1)
             return false;
 
-        if (b != SB)
+        if (b != SOM)
             throw new IOException("Missing Start Block character");
 
-        eof = false;
+        eom = false;
         return true;
     }
 
     @Override
     public synchronized int read() throws IOException {
-        if (eof)
+        if (eom)
             return -1;
 
         int b = super.read();
         if (b == -1)
             throw new EOFException();
         
-        if (b != EB)
+        if (b != EOM1)
             return b;
 
-        eof();
+        eom();
         return -1;
     }
 
@@ -103,7 +103,7 @@ public class MLLPInputStream extends BufferedInputStream {
         if (off < 0 || len < 0 || len > b.length - off)
             throw new IndexOutOfBoundsException();
 
-        if (eof)
+        if (eom)
             return -1;
 
         if (len == 0)
@@ -122,12 +122,12 @@ public class MLLPInputStream extends BufferedInputStream {
 
         System.arraycopy(buf, pos-1, b, off, remaining+1);
         pos += remaining+1;
-        eof();
+        eom();
         return remaining + 1;
     }
 
     public int copyTo(OutputStream out) throws IOException {
-        if (eof)
+        if (eom)
             throw new IllegalStateException();
 
         int totlen = 0;
@@ -145,19 +145,21 @@ public class MLLPInputStream extends BufferedInputStream {
         out.write(buf, pos - leftover, remaining + leftover);
         totlen += remaining + leftover;
         pos += remaining + 1;
-        eof();
+        eom();
         return totlen;
     }
 
-    private void eof() throws IOException {
-        if (super.read() != CR)
-            throw new IOException("Missing Carriage Return");
-        eof = true;
+    private void eom() throws IOException {
+        int b = super.read();
+        if (b != EOM2)
+            throw new IOException("1CH followed by "
+                        + Integer.toHexString(b & 0xff) + "H instead by 0DH");
+        eom = true;
     }
 
     private int remaining(int count) {
         for (int i = pos; i < count; i++)
-            if (buf[i] == EB)
+            if (buf[i] == EOM1)
                 return i - pos;
 
         return -1;

@@ -79,6 +79,7 @@ public class HL72Xml {
         private URL xslt;
         private boolean indent = false;
         private boolean includeNamespaceDeclaration = false;
+        private String charset;
 
         public final void setXSLT(URL xslt) {
             this.xslt = xslt;
@@ -92,6 +93,14 @@ public class HL72Xml {
             this.includeNamespaceDeclaration = includeNamespaceDeclaration;
         }
 
+        public String getCharacterSet() {
+            return charset;
+        }
+
+        public void setCharacterSet(String charset) {
+            this.charset = charset;
+        }
+
         @SuppressWarnings("static-access")
         private static CommandLine parseComandLine(String[] args)
                 throws ParseException {
@@ -103,6 +112,12 @@ public class HL72Xml {
                     .withArgName("xsl-file")
                     .withDescription(rb.getString("xsl"))
                     .create("x"));
+            opts.addOption(OptionBuilder
+                    .withLongOpt("charset")
+                    .hasArg()
+                    .withArgName("name")
+                    .withDescription(rb.getString("charset"))
+                    .create(null));
             opts.addOption("I", "indent", false, rb.getString("indent"));
             opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
 
@@ -118,6 +133,7 @@ public class HL72Xml {
                     String s = cl.getOptionValue("x");
                     main.setXSLT(new File(s).toURI().toURL());
                 }
+                main.setCharacterSet(cl.getOptionValue("charset"));
                 main.setIndent(cl.hasOption("I"));
                 main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns"));
                 String fname = fname(cl.getArgList());
@@ -155,7 +171,7 @@ public class HL72Xml {
                 TransformerConfigurationException, SAXException {
             byte[] buf = new byte[256];
             int len = is.read(buf);
-            String charsetName = HL7Utils.charsetName(HL7Utils.msh(buf));
+            String charsetName = HL7Utils.charsetName(HL7Utils.msh(buf), charset);
             Reader reader = new InputStreamReader(
                     new SequenceInputStream(
                             new ByteArrayInputStream(buf, 0, len), is),

@@ -48,10 +48,10 @@ import java.io.OutputStream;
  */
 public class MLLPOutputStream extends FilterOutputStream {
 
-    private static final int SB = 0x0b; 
-    private static final byte[] EBCR = { 0x1c, 0x0d };
+    private static final int SOM = 0x0b; // Start of Message 
+    private static final byte[] EOM = { 0x1c, 0x0d }; // End of Message
 
-    private boolean startBlockWritten;
+    private boolean somWritten;
 
     public MLLPOutputStream(OutputStream out) {
         super(out);
@@ -71,18 +71,18 @@ public class MLLPOutputStream extends FilterOutputStream {
     }
 
     private void writeStartBlock() throws IOException {
-        if (!startBlockWritten) {
-            out.write(SB);
-            startBlockWritten = true;
+        if (!somWritten) {
+            out.write(SOM);
+            somWritten = true;
         }
     }
 
     public synchronized void finish() throws IOException {
-        if (!startBlockWritten)
+        if (!somWritten)
             throw new IllegalStateException();
-        out.write(EBCR);
+        out.write(EOM);
         out.flush();
-        startBlockWritten = false;
+        somWritten = false;
     }
 
 }

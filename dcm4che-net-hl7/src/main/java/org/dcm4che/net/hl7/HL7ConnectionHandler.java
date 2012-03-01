@@ -68,7 +68,7 @@ enum HL7ConnectionHandler implements ConnectionHandler {
             byte[] buf = inbuf.buf();
             int size = inbuf.size();
             String[] msh = HL7Utils.msh(buf);
-            String charsetName = HL7Utils.charsetName(msh);
+            String charsetName = HL7Utils.charsetName(msh, null);
             Connection.LOG.info("Received HL7 Message: {}",
                     promptHL7(buf, size, charsetName));
             byte[] rsp;

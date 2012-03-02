@@ -118,6 +118,13 @@ public abstract class HL7Utils {
         return sb.toString();
     }
 
+    public static String messageType(String[] msh) {
+        char delim = msh[1].charAt(0);
+        String msgtype = msh[8].replace(delim, '^');
+        int end = msgtype.indexOf('^', msgtype.indexOf('^') + 1);
+        return end < 0 ? msgtype : msgtype.substring(0, end);
+    }
+
     public static String charsetName(String[] msh, String defCode) {
         String code = msh.length > 17 ? msh[17] : null;
         return charsetName(code != null && !code.isEmpty() ? code : defCode);

@@ -66,4 +66,12 @@ public class HL7Exception extends Exception {
         return ack;
     }
 
+    public String getErrorMessage() {
+        Throwable finalCause = this;
+        Throwable nextCause;
+        while ((nextCause = finalCause.getCause()) != null)
+            finalCause = nextCause;
+        return finalCause.getMessage();
+    }
+
 }

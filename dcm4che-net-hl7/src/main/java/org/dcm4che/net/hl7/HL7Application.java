@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.dcm4che.hl7.Ack;
 import org.dcm4che.hl7.HL7Exception;
+import org.dcm4che.hl7.HL7Utils;
 import org.dcm4che.net.Connection;
 
 /**
@@ -166,7 +167,7 @@ public class HL7Application {
                 || acceptedSendingApplications.contains(msh[2] + '^' + msh[3])))
             throw new HL7Exception(Ack.AR, "Sending Application not recognized");
         if (!(acceptedMessageTypes.contains("*")
-                || acceptedMessageTypes.contains(msh[8].replace(msh[1].charAt(0), '^'))))
+                || acceptedMessageTypes.contains(HL7Utils.messageType(msh))))
             throw new HL7Exception(Ack.AR, "Message Type not supported");
 
         HL7MessageListener listener = getHL7MessageListener();

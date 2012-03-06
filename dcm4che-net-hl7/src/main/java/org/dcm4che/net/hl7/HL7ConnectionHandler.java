@@ -44,9 +44,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.hl7.HL7Utils;
 import org.dcm4che.hl7.MLLPInputStream;
 import org.dcm4che.hl7.MLLPOutputStream;
+import org.dcm4che.hl7.MSH;
+import org.dcm4che.hl7.Segment;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.ConnectionHandler;
 
@@ -67,15 +68,16 @@ enum HL7ConnectionHandler implements ConnectionHandler {
             mllpIn.copyTo(inbuf);
             byte[] buf = inbuf.buf();
             int size = inbuf.size();
-            String[] msh = HL7Utils.msh(buf);
-            String charsetName = HL7Utils.charsetName(msh.length > 17 ? msh[17] : null);
+            MSH msh = new MSH(new String(buf, 0, Segment.endOfSegment(buf, 0, size)));
+            String charsetName = MSH.toCharsetName(msh.getField(MSH.CharacterSet, null));
             Connection.LOG.info("Received HL7 Message: {}",
                     promptHL7(buf, size, charsetName));
             byte[] rsp;
             try {
                 rsp = ((HL7Device) conn.getDevice()).onMessage(msh, buf, 0, size, conn);
             } catch (HL7Exception e) {
-                rsp = HL7Utils.makeACK(msh, e.getAck(), e.getErrorMessage(), (char) buf[3])
+                rsp = Segment.toString(
+                        msh.ack(e.getAcknowledgmentCode(), e.getErrorMessage()))
                         .getBytes();
             }
             inbuf.reset();

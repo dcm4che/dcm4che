@@ -38,9 +38,9 @@
 
 package org.dcm4che.net.hl7;
 
-import org.dcm4che.hl7.Ack;
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.hl7.HL7Utils;
+import org.dcm4che.hl7.MSH;
+import org.dcm4che.hl7.Segment;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -48,9 +48,8 @@ import org.dcm4che.hl7.HL7Utils;
  */
 public class HL7MessageListener {
 
-    public byte[] onMessage(HL7Application hl7App, String[] msh, byte[] msg,
+    public byte[] onMessage(HL7Application hl7App, MSH msh, byte[] msg,
             int off, int len) throws HL7Exception {
-        return HL7Utils.makeACK(msh, Ack.AA, null, (char) msg[3])
-                .getBytes();
+        return Segment.toString(msh.ack("AA", null)).getBytes();
     }
 }

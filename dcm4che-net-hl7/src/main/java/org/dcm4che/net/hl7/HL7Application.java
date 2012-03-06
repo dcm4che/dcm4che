@@ -42,9 +42,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.dcm4che.hl7.Ack;
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.hl7.HL7Utils;
+import org.dcm4che.hl7.MSH;
 import org.dcm4che.net.Connection;
 
 /**
@@ -159,20 +158,20 @@ public class HL7Application {
         return conns;
     }
 
-    byte[] onMessage(String[] msh, byte[] msg, int off, int len, Connection conn)
+    byte[] onMessage(MSH msh, byte[] msg, int off, int len, Connection conn)
             throws HL7Exception {
         if (!(isInstalled() && conns.contains(conn)))
-            throw new HL7Exception(Ack.AR, "Receiving Application not recognized");
+            throw new HL7Exception("AR", "Receiving Application not recognized");
         if (!(acceptedSendingApplications.isEmpty()
-                || acceptedSendingApplications.contains(msh[2] + '^' + msh[3])))
-            throw new HL7Exception(Ack.AR, "Sending Application not recognized");
+                || acceptedSendingApplications.contains(msh.getSendingApplication())))
+            throw new HL7Exception("AR", "Sending Application not recognized");
         if (!(acceptedMessageTypes.contains("*")
-                || acceptedMessageTypes.contains(HL7Utils.messageType(msh))))
-            throw new HL7Exception(Ack.AR, "Message Type not supported");
+                || acceptedMessageTypes.contains(msh.getMessageType())))
+            throw new HL7Exception("AR", "Message Type not supported");
 
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
-            throw new HL7Exception(Ack.AE, "No HL7 Message Listener configured");
+            throw new HL7Exception("AE", "No HL7 Message Listener configured");
         return listener.onMessage(this, msh, msg, off, len);
     }
 }

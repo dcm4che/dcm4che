@@ -63,7 +63,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.hl7.HL7Parser;
-import org.dcm4che.hl7.HL7Utils;
+import org.dcm4che.hl7.MSH;
+import org.dcm4che.hl7.Segment;
 import org.dcm4che.tool.common.CLIUtils;
 import org.xml.sax.SAXException;
 
@@ -171,9 +172,8 @@ public class HL72Xml {
                 TransformerConfigurationException, SAXException {
             byte[] buf = new byte[256];
             int len = is.read(buf);
-            String[] msh = HL7Utils.msh(buf);
-            String charsetName = HL7Utils.charsetName(
-                    msh.length > 17 ? msh[17] : charset);
+            MSH msh = new MSH(new String(buf, 0, Segment.endOfSegment(buf, 0, buf.length)));
+            String charsetName = MSH.toCharsetName(msh.getField(MSH.CharacterSet, charset));
             Reader reader = new InputStreamReader(
                     new SequenceInputStream(
                             new ByteArrayInputStream(buf, 0, len), is),

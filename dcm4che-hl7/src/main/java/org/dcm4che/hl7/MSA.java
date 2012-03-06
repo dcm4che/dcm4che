@@ -42,6 +42,26 @@ package org.dcm4che.hl7;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public enum Ack {
-    AA, AE, AR
+public class MSA extends Segment {
+
+    public static final int AcknowledgmentCode = 1;
+    public static final int MessageControlID = 2;
+    public static final int TextMessage = 3;
+    public static final int ExpectedSequenceNumber = 4;
+    public static final int DelayedAcknowledgmentType = 5;
+    public static final int ErrorCondition  = 5;
+
+    public MSA(String s, char fieldDelimiter) {
+        super(s, fieldDelimiter);
+    }
+
+    public MSA(int size, char fieldSeparator) {
+        super(size, fieldSeparator);
+        setField(SegmentID, "MSA");
+    }
+
+    public void setText(String text) {
+        setField(TextMessage,
+                text != null && text.length() > 80 ? text.substring(0, 80) : text);
+    }
 }

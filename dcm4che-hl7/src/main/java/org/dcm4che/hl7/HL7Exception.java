@@ -46,23 +46,23 @@ public class HL7Exception extends Exception {
 
     private static final long serialVersionUID = 5814384748456212615L;
 
-    private final Ack ack;
+    private final String ack;
 
-    public HL7Exception(Ack ack) {
+    public HL7Exception(String ack) {
         this.ack = ack;
     }
 
-    public HL7Exception(Ack ack, String message) {
+    public HL7Exception(String ack, String message) {
         super(message);
         this.ack = ack;
     }
 
-    public HL7Exception(Ack ack, Throwable cause) {
+    public HL7Exception(String ack, Throwable cause) {
         super(cause);
         this.ack = ack;
     }
 
-    public final Ack getAck() {
+    public final String getAcknowledgmentCode() {
         return ack;
     }
 

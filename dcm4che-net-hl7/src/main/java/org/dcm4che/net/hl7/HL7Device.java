@@ -41,8 +41,8 @@ package org.dcm4che.net.hl7;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
-import org.dcm4che.hl7.Ack;
 import org.dcm4che.hl7.HL7Exception;
+import org.dcm4che.hl7.MSH;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 
@@ -96,12 +96,11 @@ public class HL7Device extends Device {
         this.hl7MessageListener = listener;
     }
 
-    byte[] onMessage(String[] msh, byte[] msg, int off, int len, Connection conn)
+    byte[] onMessage(MSH msh, byte[] msg, int off, int len, Connection conn)
             throws HL7Exception {
-        String name = msh[4] + '^' + msh[5];
-        HL7Application hl7App = getHL7Application(name);
+        HL7Application hl7App = getHL7Application(msh.getReceivingApplication());
         if (hl7App == null)
-            throw new HL7Exception(Ack.AR, "Receiving Application not recognized");
+            throw new HL7Exception("AR", "Receiving Application not recognized");
         return hl7App.onMessage(msh, msg, off, len, conn);
     }
 }

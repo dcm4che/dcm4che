@@ -42,7 +42,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.hl7.MSH;
+import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 
@@ -96,9 +96,9 @@ public class HL7Device extends Device {
         this.hl7MessageListener = listener;
     }
 
-    byte[] onMessage(MSH msh, byte[] msg, int off, int len, Connection conn)
+    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, Connection conn)
             throws HL7Exception {
-        HL7Application hl7App = getHL7Application(msh.getReceivingApplication());
+        HL7Application hl7App = getHL7Application(msh.getReceivingApplicationWithFacility());
         if (hl7App == null)
             throw new HL7Exception("AR", "Receiving Application not recognized");
         return hl7App.onMessage(msh, msg, off, len, conn);

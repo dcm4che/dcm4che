@@ -38,29 +38,41 @@
 
 package org.dcm4che.hl7;
 
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Date;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Segment {
+public class HL7Segment implements Serializable {
 
-    public static final int SegmentID = 0;
+    private static final long serialVersionUID = 2268883954083242976L;
+    private static final AtomicInteger nextMessageControlID =
+            new AtomicInteger(new Random().nextInt());
 
     private final char fieldSeparator;
+    private final String encodingCharacters;
     private String[] fields;
 
-    public Segment(int size, char fieldSeparator) {
+    public HL7Segment(int size, char fieldSeparator, String encodingCharacters) {
         if (size <= 0)
             throw new IllegalArgumentException("size: " + size);
         this.fieldSeparator = fieldSeparator;
+        this.encodingCharacters = encodingCharacters;
         this.fields = new String[size];
     }
 
-    public Segment(String s, char fieldDelimiter) {
-        this(count(s, fieldDelimiter), fieldDelimiter);
+    public HL7Segment(int size) {
+        this(size, '|', "^~\\&");
+    }
+
+    public HL7Segment(String s, char fieldDelimiter, String encodingCharacters) {
+        this(count(s, fieldDelimiter), fieldDelimiter, encodingCharacters);
         String[] ss = fields;
         int count = ss.length;
         int begin, end = s.length();
@@ -84,6 +96,10 @@ public class Segment {
         return fieldSeparator;
     }
 
+    public String getEncodingCharacters() {
+        return encodingCharacters;
+    }
+
     public void setField(int index, String value) {
         if (index >= fields.length)
             fields = Arrays.copyOf(fields, index+1);
@@ -97,6 +113,18 @@ public class Segment {
 
     public int size() {
         return fields.length;
+    }
+
+    public String getSendingApplicationWithFacility() {
+        return getField(2, "") + '^' + getField(3, "");
+    }
+
+    public String getReceivingApplicationWithFacility() {
+        return getField(4, "") + '^' + getField(5, "");
+    }
+
+    public String getMessageType() {
+        return getField(8, "").replace(encodingCharacters.charAt(0), '^');
     }
 
     public String toString() {
@@ -120,36 +148,35 @@ public class Segment {
         return new String(cs);
     }
 
-    public static String toString(List<Segment> msg) {
-        int len = msg.size();
-        for (Segment seg : msg) {
-            String[] ss = seg.fields;
-            len += ss.length - 1;
-            for (String s : ss)
-                len += s != null ? s.length() : 0;
-        }
-        char[] cs = new char[len];
-        int off = 0;
-        for (Segment seg : msg) {
-            char delim = seg.getFieldSeparator();
-            String[] ss = seg.fields;
-            for (String s : ss) {
-                if (s != null) {
-                    int l = s.length();
-                    s.getChars(0, l, cs, off);
-                    off += l;
-                }
-                cs[off++] = delim;
-            }
-            cs[off-1] = '\r';
-        }
-        return new String(cs);
+    public static HL7Segment parseMSH(byte[] b) {
+        int i = 0;
+        while (i < b.length && b[i] != '\r')
+            i++;
+        String s = new String(b, 0, i);
+        return new HL7Segment(s, s.charAt(3), s.substring(4,8));
     }
 
-    public static int endOfSegment(byte[] b, int begin, int end) {
-        for (int i = begin; i < end; i++)
-            if (b[i] == '\r')
-                return i;
-        return end;
+    public static String nextMessageControlID() {
+        return Integer.toString(
+                nextMessageControlID.getAndIncrement() & 0x7FFFFFFF);
+    }
+
+    public static String timeStamp(Date date) {
+        return new SimpleDateFormat("yyyyMMddHHmmss.SSS").format(date);
+    }
+
+    public static HL7Segment makeMSH() {
+        return makeMSH(21, '|', "^~\\&");
+    }
+
+    public static HL7Segment makeMSH(int size, char fieldSeparator, String encodingCharacters) {
+        HL7Segment msh = new HL7Segment(size, fieldSeparator, encodingCharacters);
+        msh.setField(0, "MSH");
+        msh.setField(1, encodingCharacters);
+        msh.setField(6, timeStamp(new Date()));
+        msh.setField(9, nextMessageControlID());
+        msh.setField(10, "P");
+        msh.setField(11, "2.5");
+        return msh;
     }
 }

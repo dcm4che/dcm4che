@@ -43,7 +43,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.dcm4che.hl7.HL7Exception;
-import org.dcm4che.hl7.MSH;
+import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.net.Connection;
 
 /**
@@ -158,12 +158,12 @@ public class HL7Application {
         return conns;
     }
 
-    byte[] onMessage(MSH msh, byte[] msg, int off, int len, Connection conn)
+    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, Connection conn)
             throws HL7Exception {
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception("AR", "Receiving Application not recognized");
         if (!(acceptedSendingApplications.isEmpty()
-                || acceptedSendingApplications.contains(msh.getSendingApplication())))
+                || acceptedSendingApplications.contains(msh.getSendingApplicationWithFacility())))
             throw new HL7Exception("AR", "Sending Application not recognized");
         if (!(acceptedMessageTypes.contains("*")
                 || acceptedMessageTypes.contains(msh.getMessageType())))

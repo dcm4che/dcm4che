@@ -191,6 +191,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
+    public String[] listDeviceNames() throws ConfigurationException {
+        String pathName = devicesPathName();
+        if (!nodeExists(rootPrefs, pathName))
+            return StringUtils.EMPTY_STRING;
+
+        try {
+            return rootPrefs.node(pathName).childrenNames();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
     public void persist(Device device) throws ConfigurationException {
         String deviceName = device.getDeviceName();
         String pathName = deviceRef(deviceName);

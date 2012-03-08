@@ -61,6 +61,8 @@ public interface DicomConfiguration {
 
     Device findDevice(String name) throws ConfigurationException;
 
+    String[] listDeviceNames() throws ConfigurationException;
+
     void persist(Device device) throws ConfigurationException;
 
     void merge(Device device) throws ConfigurationException;

@@ -237,6 +237,29 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
+    public String[] listDeviceNames() throws ConfigurationException {
+        if (!configurationExists())
+            return StringUtils.EMPTY_STRING;
+
+        NamingEnumeration<SearchResult> ne = null;
+        ArrayList<String> deviceNames = new ArrayList<String>();
+        try {
+            ne = search(devicesDN, "(objectclass=dicomDevice)",
+                    new String[]{ "dicomDeviceName" });
+            while (ne.hasMore()) {
+                SearchResult sr = ne.next();
+                Attributes attrs = sr.getAttributes();
+                deviceNames.add(stringValue(attrs.get("dicomDeviceName")));
+            }
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+           safeClose(ne);
+        }
+        return deviceNames.toArray(new String[deviceNames.size()]);
+    }
+
+    @Override
     public void persist(Device device) throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
@@ -709,9 +732,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected NamingEnumeration<SearchResult> search(String dn, String filter)
             throws NamingException {
+        return search(dn, filter, null);
+    }
+
+    protected NamingEnumeration<SearchResult> search(String dn, String filter, String[] attrs)
+            throws NamingException {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         ctls.setReturningObjFlag(false);
+        ctls.setReturningAttributes(attrs);
         return ctx.search(dn, filter, ctls);
     }
 

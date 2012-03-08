@@ -38,17 +38,38 @@
 
 package org.dcm4che.tool.hl7rcv;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.hl7.HL7Charset;
+import org.dcm4che.hl7.HL7ContentHandler;
+import org.dcm4che.hl7.HL7Exception;
+import org.dcm4che.hl7.HL7Parser;
+import org.dcm4che.hl7.HL7Segment;
+import org.dcm4che.io.SAXTransformer;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7Device;
@@ -64,9 +85,43 @@ public class HL7Rcv extends HL7Device {
 
     private static final ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.hl7rcv.messages");
+    private static SAXTransformerFactory factory =
+            (SAXTransformerFactory) TransformerFactory.newInstance();
 
-    private HL7Application hl7App = new HL7Application("*");
-    private Connection conn = new Connection();
+    private final HL7Application hl7App = new HL7Application("*");
+    private final Connection conn = new Connection();
+    private String charset;
+    private Templates tpls;
+    private String[] xsltParams;
+    private final HL7MessageListener handler = new HL7MessageListener() {
+
+        @Override
+        public byte[] onMessage(HL7Application hl7App, HL7Segment msh,
+                byte[] msg, int off, int len) throws HL7Exception {
+            if (tpls == null)
+                return super.onMessage(hl7App, msh, msg, off, len);
+            try {
+                String charsetName = HL7Charset.toCharsetName(
+                        msh.getField(17, charset));
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                TransformerHandler th = factory.newTransformerHandler(tpls);
+                Transformer t = th.getTransformer();
+                t.setParameter("MessageControlID", HL7Segment.nextMessageControlID());
+                t.setParameter("DateTimeOfMessage", HL7Segment.timeStamp(new Date()));
+                if (xsltParams != null)
+                    for (int i = 1; i < xsltParams.length; i++, i++)
+                        t.setParameter(xsltParams[i-1], xsltParams[i]);
+                th.setResult(new SAXResult(new HL7ContentHandler(
+                        new OutputStreamWriter(out, charsetName))));
+                new HL7Parser(th).parse(new InputStreamReader(
+                        new ByteArrayInputStream(msg, off, len),
+                        charsetName));
+                return out.toByteArray();
+            } catch (Exception e) {
+                throw new HL7Exception(HL7Exception.AE, e);
+            }
+        }
+    };
 
     public HL7Rcv() throws IOException {
         super("hl7rcv");
@@ -74,18 +129,55 @@ public class HL7Rcv extends HL7Device {
         addHL7Application(hl7App);
         hl7App.setAcceptedMessageTypes("*");
         hl7App.addConnection(conn);
-        hl7App.setHL7MessageListener(new HL7MessageListener());
+        hl7App.setHL7MessageListener(handler);
+    }
+
+    public void setXSLT(URL xslt) throws Exception {
+        tpls = SAXTransformer.newTemplates(
+                new StreamSource(xslt.openStream(), xslt.toExternalForm()));
+    }
+
+    public void setXSLTParameters(String[] xsltParams) {
+        this.xsltParams = xsltParams;
+    }
+
+    public void setCharacterSet(String charset) {
+        this.charset = charset;
     }
 
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
+        addXSLOptions(opts);
         addBindServerOption(opts);
         addIdleTimeoutOption(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, HL7Rcv.class);
+    }
+
+    @SuppressWarnings("static-access")
+    protected static void addXSLOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .withLongOpt("xsl")
+                .hasArg()
+                .withArgName("xsl-file")
+                .withDescription(rb.getString("xsl"))
+                .create("x"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("xsl-param")
+                .hasArgs()
+                .withValueSeparator('=')
+                .withArgName("name=value")
+                .withDescription(rb.getString("xsl-param"))
+                .create(null));
+        opts.addOption(OptionBuilder
+                .withLongOpt("charset")
+                .hasArg()
+                .withArgName("name")
+                .withDescription(rb.getString("charset"))
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -112,6 +204,12 @@ public class HL7Rcv extends HL7Device {
         try {
             CommandLine cl = parseComandLine(args);
             HL7Rcv main = new HL7Rcv();
+            if (cl.hasOption("x")) {
+                String s = cl.getOptionValue("x");
+                main.setXSLT(new File(s).toURI().toURL());
+                main.setXSLTParameters(cl.getOptionValues("xsl-param"));
+            }
+            main.setCharacterSet(cl.getOptionValue("charset"));
             configureBindServer(main.conn, cl);
             CLIUtils.configure(main.conn, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();

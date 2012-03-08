@@ -46,6 +46,10 @@ public class HL7Exception extends Exception {
 
     private static final long serialVersionUID = 5814384748456212615L;
 
+    public static final String AA = "AA";
+    public static final String AR = "AR";
+    public static final String AE = "AE";
+
     private final String ack;
 
     public HL7Exception(String ack) {

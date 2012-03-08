@@ -311,7 +311,7 @@ enum StringValueType implements ValueType {
 
         if (val instanceof String[])
             return cs(cs).encode(
-                    StringUtils.join((String[]) val, '\\'), delimiters);
+                    StringUtils.concat((String[]) val, '\\'), delimiters);
 
         throw new UnsupportedOperationException();
     } 

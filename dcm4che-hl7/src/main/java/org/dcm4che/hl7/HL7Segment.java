@@ -39,6 +39,8 @@
 package org.dcm4che.hl7;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,32 +73,33 @@ public class HL7Segment implements Serializable {
         this(size, '|', "^~\\&");
     }
 
-    public HL7Segment(String s, char fieldDelimiter, String encodingCharacters) {
-        this(count(s, fieldDelimiter), fieldDelimiter, encodingCharacters);
-        String[] ss = fields;
-        int count = ss.length;
-        int begin, end = s.length();
-        while (--count >= 0) {
-            begin = s.lastIndexOf(fieldDelimiter, end-1);
-            ss[count] = s.substring(begin+1, end);
-            end = begin;
-        }
-    }
-
-    private static int count(String s, char delim) {
-        int count = 1;
-        int pos = -1;
-        while ((pos = s.indexOf(delim, pos+1)) >= 0)
-            count++;
-
-        return count;
+    public HL7Segment(String s, char fieldSeparator, String encodingCharacters) {
+        this.fieldSeparator = fieldSeparator;
+        this.encodingCharacters = encodingCharacters;
+        this.fields = split(s, fieldSeparator);
     }
 
     public final char getFieldSeparator() {
         return fieldSeparator;
     }
 
-    public String getEncodingCharacters() {
+    public final char getComponentSeparator() {
+        return encodingCharacters.charAt(0);
+    }
+
+    public final char getRepetitionSeparator() {
+        return encodingCharacters.charAt(1);
+    }
+
+    public final char getEscapeCharacter() {
+        return encodingCharacters.charAt(2);
+    }
+
+    public final char getSubcomponentSeparator() {
+        return encodingCharacters.charAt(3);
+    }
+
+    public final String getEncodingCharacters() {
         return encodingCharacters;
     }
 
@@ -108,7 +111,7 @@ public class HL7Segment implements Serializable {
 
     public String getField(int index, String defVal) {
         String val = index < fields.length ? fields[index] : null;
-        return val != null ? val : defVal;
+        return val != null && !val.isEmpty() ? val : defVal;
     }
 
     public int size() {
@@ -119,25 +122,52 @@ public class HL7Segment implements Serializable {
         return getField(2, "") + '^' + getField(3, "");
     }
 
+    public void setSendingApplicationWithFacility(String s) {
+        String[] ss = split(s, '^');
+        setField(2, ss[0]);
+        if (ss.length > 1)
+            setField(3, ss[1]);
+    }
+
     public String getReceivingApplicationWithFacility() {
         return getField(4, "") + '^' + getField(5, "");
     }
 
+    public void setReceivingApplicationWithFacility(String s) {
+        String[] ss = split(s, '^');
+        setField(4, ss[0]);
+        if (ss.length > 1)
+            setField(5, ss[1]);
+    }
+
     public String getMessageType() {
-        return getField(8, "").replace(encodingCharacters.charAt(0), '^');
+        return getField(8, "").replace(getComponentSeparator(), '^');
+    }
+
+    public void setMessageType(String s) {
+        setField(8, s.replace('^', getComponentSeparator()));
     }
 
     public String toString() {
-        String[] ss = fields;
+        return concat(fields, fieldSeparator);
+    }
+
+    public static String concat(String[] ss, char delim) {
         int n = ss.length;
+        if (n == 0)
+            return "";
+        if (n == 1) {
+            String s = ss[0];
+            return s != null ? s : "";
+        }
         int len = n - 1;
         for (String s : ss)
-            len += s != null ? s.length() : 0;
-
+            if (s != null)
+                len += s.length();
         char[] cs = new char[len];
         for (int i = 0, off = 0; i < n; ++i) {
             if (i != 0)
-                cs[off++] = fieldSeparator;
+                cs[off++] = delim;
             String s = ss[i];
             if (s != null) {
                 int l = s.length();
@@ -148,12 +178,60 @@ public class HL7Segment implements Serializable {
         return new String(cs);
     }
 
+    public static String[] split(String s, char delim) {
+        int count = 1;
+        int delimPos = -1;
+        while ((delimPos = s.indexOf(delim, delimPos+1)) >= 0)
+            count++;
+
+        if (count == 1)
+            return new String[] { s };
+
+        String[] ss = new String[count];
+        int delimPos2 = s.length();
+        while (--count >= 0) {
+            delimPos = s.lastIndexOf(delim, delimPos2-1);
+            ss[count] = s.substring(delimPos+1, delimPos2);
+            delimPos2 = delimPos;
+        }
+        return ss;
+    }
+
     public static HL7Segment parseMSH(byte[] b) {
-        int i = 0;
-        while (i < b.length && b[i] != '\r')
-            i++;
-        String s = new String(b, 0, i);
+        return parseMSH(b, b.length, new ParsePosition(0));
+    }
+
+    static HL7Segment parseMSH(byte[] b, int size, ParsePosition pos) {
+        String s = parse(b, size, pos, null);
         return new HL7Segment(s, s.charAt(3), s.substring(4,8));
+    }
+
+    static HL7Segment parse(byte[] b, int size, ParsePosition pos,
+            char fieldSeparator, String encodingCharacters, String charsetName) {
+        String s = parse(b, size, pos, charsetName);
+        return s != null
+                ? new HL7Segment(s, fieldSeparator, encodingCharacters)
+                : null;
+    }
+
+    private static String parse(byte[] b, int size, ParsePosition pos,
+            String charsetName) {
+        int off = pos.getIndex();
+        int end = off;
+        while (end < size && b[end] != '\r')
+            end++;
+        int len = end - off;
+        if (len == 0)
+            return null;
+
+        pos.setIndex(end+1);
+        try {
+            return charsetName != null 
+                    ? new String(b, off, len, charsetName)
+                    : new String(b, off, len);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("charsetName: " + charsetName);
+        }
     }
 
     public static String nextMessageControlID() {

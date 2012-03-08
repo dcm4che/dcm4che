@@ -39,6 +39,7 @@
 package org.dcm4che.hl7;
 
 import java.io.UnsupportedEncodingException;
+import java.text.ParsePosition;
 import java.util.ArrayList;
 
 /**
@@ -86,12 +87,27 @@ public class HL7Message extends ArrayList<HL7Segment> {
         return new String(cs);
     }
 
-    public byte[] getBytes() {
+    public byte[] getBytes(String defCharset) {
         try {
-            return toString().getBytes(HL7Charset.toCharsetName(get(0).getField(17, "")));
+            return toString().getBytes(HL7Charset.toCharsetName(get(0).getField(17, defCharset)));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static HL7Message parse(byte[] b, int size, String defCharset) {
+        ParsePosition pos = new ParsePosition(0);
+        HL7Message msg = new HL7Message();
+        HL7Segment seg = HL7Segment.parseMSH(b, size, pos);
+        char fieldSeparator = seg.getFieldSeparator();
+        String encodingCharacters = seg.getEncodingCharacters();
+        String charsetName = HL7Charset.toCharsetName(seg.getField(17, defCharset));
+        msg.add(seg);
+        while ((seg = HL7Segment.parse(
+                b, size, pos, fieldSeparator, encodingCharacters, charsetName)) != null)
+            msg.add(seg);
+        msg.trimToSize();
+        return msg;
     }
 
     public static HL7Message makeACK(HL7Segment msh, String ackCode, String text) {
@@ -115,5 +131,24 @@ public class HL7Message extends ArrayList<HL7Segment> {
         ack.add(ackmsh);
         ack.add(msa);
         return ack;
+    }
+
+    public static HL7Message makePixQuery(String pid, String... domains) {
+        HL7Segment msh = HL7Segment.makeMSH();
+        msh.setField(8, "QBP^Q23^QBP_Q21");
+        HL7Segment qpd = new HL7Segment(5);
+        qpd.setField(0, "QPD");
+        qpd.setField(1, "IHE PIX Query");
+        qpd.setField(2, "QRY" + msh.getField(9, ""));
+        qpd.setField(3, pid);
+        qpd.setField(4, HL7Segment.concat(domains, '~'));
+        HL7Segment rcp = new HL7Segment(8);
+        rcp.setField(0, "RCP");
+        rcp.setField(1, "I");
+        HL7Message qbp = new HL7Message(3);
+        qbp.add(msh);
+        qbp.add(qpd);
+        qbp.add(rcp);
+        return qbp;
     }
 }

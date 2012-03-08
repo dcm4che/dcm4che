@@ -100,7 +100,7 @@ public class HL7Device extends Device {
             throws HL7Exception {
         HL7Application hl7App = getHL7Application(msh.getReceivingApplicationWithFacility());
         if (hl7App == null)
-            throw new HL7Exception("AR", "Receiving Application not recognized");
+            throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
         return hl7App.onMessage(msh, msg, off, len, conn);
     }
 }

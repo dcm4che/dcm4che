@@ -78,7 +78,7 @@ enum HL7ConnectionHandler implements ConnectionHandler {
                 rsp = ((HL7Device) conn.getDevice()).onMessage(msh, buf, 0, size, conn);
             } catch (HL7Exception e) {
                 rsp = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
-                        .getBytes();
+                        .getBytes(null);
             }
             inbuf.reset();
             Connection.LOG.info("Send HL7 Message: {}",

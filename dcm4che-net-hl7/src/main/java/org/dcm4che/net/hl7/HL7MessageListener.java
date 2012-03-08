@@ -50,6 +50,6 @@ public class HL7MessageListener {
 
     public byte[] onMessage(HL7Application hl7App, HL7Segment msh, byte[] msg,
             int off, int len) throws HL7Exception {
-        return HL7Message.makeACK(msh, "AA", null).getBytes();
+        return HL7Message.makeACK(msh, HL7Exception.AA, null).getBytes(null);
     }
 }

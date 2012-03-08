@@ -58,6 +58,7 @@
     <module>dcm4che-tool-findscu</module>
     <module>dcm4che-tool-getscu</module>
     <module>dcm4che-tool-hl72xml</module>
+    <module>dcm4che-tool-hl7pix</module>
     <module>dcm4che-tool-hl7rcv</module>
     <module>dcm4che-tool-hl7snd</module>
     <module>dcm4che-tool-movescu</module>

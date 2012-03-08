@@ -86,13 +86,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmdump/src</directory>
       <includes>
         <include>bin/dcmdump.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-dcmdump/src</directory>
-      <includes>
         <include>etc/dcmdump/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -111,13 +104,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
       <includes>
         <include>bin/dcm2xml.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
-      <includes>
         <include>etc/dcm2xml/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -136,13 +122,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmdir/src</directory>
       <includes>
         <include>bin/dcmdir.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-dcmdir/src</directory>
-      <includes>
         <include>etc/dcmdir/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -161,13 +140,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
       <includes>
         <include>bin/dcmqrscp.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-dcmqrscp/src</directory>
-      <includes>
         <include>etc/dcmqrscp/ae.properties</include>
         <include>etc/dcmqrscp/log4j.properties</include>
         <include>etc/dcmqrscp/storage-sop-classes.properties</include>
@@ -199,13 +171,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
         <include>bin/findscu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
-      <includes>
         <include>etc/findscu/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -233,13 +198,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
       <includes>
         <include>bin/getscu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-getscu/src</directory>
-      <includes>
         <include>etc/getscu/log4j.properties</include>
         <include>etc/getscu/store-tcs.properties</include>
       </includes>
@@ -268,17 +226,37 @@
       <directory>../dcm4che-tool/dcm4che-tool-hl72xml/src</directory>
       <includes>
         <include>bin/hl72xml.bat</include>
+        <include>etc/hl72xml/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-hl72xml/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7pix/src</directory>
       <includes>
-        <include>etc/hl72xml/log4j.properties</include>
+        <include>bin/hl7pix</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7pix/src</directory>
+      <includes>
+        <include>bin/hl7pix.bat</include>
+        <include>etc/hl7pix/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-hl7pix/src</directory>
+      <includes>
+        <include>etc/hl7pix/key.jks</include>
+        <include>etc/hl7pix/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
@@ -293,13 +271,8 @@
       <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
       <includes>
         <include>bin/hl7rcv.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-hl7rcv/src</directory>
-      <includes>
+        <include>etc/hl7rcv/ack.xsl</include>
+        <include>etc/hl7rcv/rsp_k23.xsl</include>
         <include>etc/hl7rcv/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -327,13 +300,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
       <includes>
         <include>bin/hl7snd.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-hl7snd/src</directory>
-      <includes>
         <include>etc/hl7snd/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -361,13 +327,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
       <includes>
         <include>bin/movescu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
-      <includes>
         <include>etc/movescu/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -395,13 +354,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-mppsscp/src</directory>
       <includes>
         <include>bin/mppsscp.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-mppsscp/src</directory>
-      <includes>
         <include>etc/mppsscp/log4j.properties</include>
         <include>etc/mppsscp/sop-classes.properties</include>
       </includes>
@@ -430,13 +382,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src</directory>
       <includes>
         <include>bin/mppsscu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src</directory>
-      <includes>
         <include>etc/mppsscu/code.properties</include>
         <include>etc/mppsscu/log4j.properties</include>
       </includes>
@@ -465,13 +410,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-storescp/src</directory>
       <includes>
         <include>bin/storescp.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-storescp/src</directory>
-      <includes>
         <include>etc/storescp/log4j.properties</include>
         <include>etc/storescp/sop-classes.properties</include>
       </includes>
@@ -500,13 +438,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-storescu/src</directory>
       <includes>
         <include>bin/storescu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-storescu/src</directory>
-      <includes>
         <include>etc/storescu/log4j.properties</include>
         <include>etc/storescu/rel-sop-classes.properties</include>
       </includes>
@@ -535,13 +466,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
       <includes>
         <include>bin/stgcmtscu.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-stgcmtscu/src</directory>
-      <includes>
         <include>etc/stgcmtscu/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -569,13 +493,6 @@
       <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
       <includes>
         <include>bin/xml2dcm.bat</include>
-      </includes>
-      <outputDirectory>.</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-xml2dcm/src</directory>
-      <includes>
         <include>etc/xml2dcm/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -622,6 +539,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
+        <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>

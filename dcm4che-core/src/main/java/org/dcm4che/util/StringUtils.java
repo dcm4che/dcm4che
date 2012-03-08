@@ -64,10 +64,10 @@ public class StringUtils {
         return sb.append(LINE_SEPARATOR);
     }
 
-    public static String join(String[] ss, char delim) {
+    public static String concat(String[] ss, char delim) {
         int n = ss.length;
         if (n == 0)
-            return null;
+            return "";
         
         if (n == 1) {
             String s = ss[0];
@@ -75,7 +75,8 @@ public class StringUtils {
         }
         int len = n - 1;
         for (String s : ss)
-            len += s != null ? s.length() : 0;
+            if (s != null)
+                len += s.length();
 
         char[] cs = new char[len];
         for (int i = 0, off = 0; i < n; ++i) {

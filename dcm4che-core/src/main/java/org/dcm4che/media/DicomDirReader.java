@@ -120,7 +120,7 @@ public class DicomDirReader implements Closeable {
             return null;
 
         return new File(file.getParent(),
-                StringUtils.join(fileIDs, File.separatorChar));
+                StringUtils.concat(fileIDs, File.separatorChar));
     }
 
     public String getDescriptorFileCharacterSet() {

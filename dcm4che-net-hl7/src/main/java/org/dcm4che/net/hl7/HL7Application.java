@@ -161,17 +161,17 @@ public class HL7Application {
     byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, Connection conn)
             throws HL7Exception {
         if (!(isInstalled() && conns.contains(conn)))
-            throw new HL7Exception("AR", "Receiving Application not recognized");
+            throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
         if (!(acceptedSendingApplications.isEmpty()
                 || acceptedSendingApplications.contains(msh.getSendingApplicationWithFacility())))
-            throw new HL7Exception("AR", "Sending Application not recognized");
+            throw new HL7Exception(HL7Exception.AR, "Sending Application not recognized");
         if (!(acceptedMessageTypes.contains("*")
                 || acceptedMessageTypes.contains(msh.getMessageType())))
-            throw new HL7Exception("AR", "Message Type not supported");
+            throw new HL7Exception(HL7Exception.AR, "Message Type not supported");
 
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
-            throw new HL7Exception("AE", "No HL7 Message Listener configured");
+            throw new HL7Exception(HL7Exception.AE, "No HL7 Message Listener configured");
         return listener.onMessage(this, msh, msg, off, len);
     }
 }

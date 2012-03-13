@@ -141,11 +141,9 @@ public class HL7Segment implements Serializable {
     }
 
     public String getMessageType() {
-        return getField(8, "").replace(getComponentSeparator(), '^');
-    }
-
-    public void setMessageType(String s) {
-        setField(8, s.replace('^', getComponentSeparator()));
+        String s = getField(8, "").replace(getComponentSeparator(), '^');
+        int end = s.indexOf('^', s.indexOf('^') + 1);
+        return end > 0 ? s.substring(0, end) : s;
     }
 
     public String toString() {

@@ -60,9 +60,9 @@ public class BasicMppsSCP extends DicomService implements NCreateSCP, NSetSCP {
     public static final String IN_PROGRESS = "IN PROGRESS";
     public static final String COMPLETED = "COMPLETED";
     public static final String DISCONTINUED = "DISCONTINUED";
-    public static final String NOT_IN_PROGRESS_ERROR_COMMENT =
+    public static final String MAY_NO_LONGER_BE_UPDATED =
             "Performed Procedure Step Object may no longer be updated";
-    public static final int NOT_IN_PROGRESS_ERROR_ID = 0xA710;
+    public static final int MAY_NO_LONGER_BE_UPDATED_ERROR_ID = 0xA710;
     private static final int[] NSET_NOT_ALLOWED = {
         Tag.Modality,
         Tag.PatientName,

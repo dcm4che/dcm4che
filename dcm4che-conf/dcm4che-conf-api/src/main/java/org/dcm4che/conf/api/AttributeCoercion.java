@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.api;
 
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability.Role;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.UIDUtils;
@@ -47,15 +48,13 @@ import org.dcm4che.util.UIDUtils;
  */
 public class AttributeCoercion {
 
-    public enum DIMSE { C_STORE_RQ, C_FIND_RQ, C_FIND_RSP }
-
     private final String sopClass;
-    private final DIMSE dimse;
+    private final Dimse dimse;
     private final Role role;
     private final String aeTitle;
     private final String uri;
 
-    public AttributeCoercion(String sopClass, DIMSE dimse, Role role, String aeTitle, String uri) {
+    public AttributeCoercion(String sopClass, Dimse dimse, Role role, String aeTitle, String uri) {
         this.sopClass = sopClass;
         this.dimse = dimse;
         this.role = role;
@@ -67,7 +66,7 @@ public class AttributeCoercion {
         return sopClass;
     }
 
-    public final DIMSE getDimse() {
+    public final Dimse getDimse() {
         return dimse;
     }
 

@@ -60,6 +60,7 @@ import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
@@ -880,8 +881,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences acNode = acsNode.node(acIndex);
             acs.add(new AttributeCoercion(
                     acNode.get("dicomSOPClass", null),
-                    AttributeCoercion.DIMSE.valueOf(
-                            acNode.get("dcmDIMSE", null)),
+                    Dimse.valueOf(acNode.get("dcmDIMSE", null)),
                     TransferCapability.Role.valueOf(
                             acNode.get("dicomTransferRole", null)),
                     acNode.get("dicomAETitle", null),

@@ -55,6 +55,7 @@ import org.dcm4che.conf.api.AttributeCoercion;
 import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
@@ -302,8 +303,7 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 Attributes attrs = sr.getAttributes();
                 acs.add(new AttributeCoercion(
                         stringValue(attrs.get("dicomSOPClass")),
-                        AttributeCoercion.DIMSE.valueOf(
-                                stringValue(attrs.get("dcmDIMSE"))),
+                        Dimse.valueOf(stringValue(attrs.get("dcmDIMSE"))),
                         TransferCapability.Role.valueOf(
                                 stringValue(attrs.get("dicomTransferRole"))),
                         stringValue(attrs.get("dicomAETitle")),

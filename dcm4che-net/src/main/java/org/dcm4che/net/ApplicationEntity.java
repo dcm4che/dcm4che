@@ -387,14 +387,14 @@ public class ApplicationEntity {
             throw new IllegalStateException("Not attached to Device");
     }
 
-    void onDimseRQ(Association as, PresentationContext pc, Attributes cmd,
-            PDVInputStream data) throws IOException {
+    void onDimseRQ(Association as, PresentationContext pc, Dimse cmd,
+            Attributes cmdAttrs, PDVInputStream data) throws IOException {
         DimseRQHandler tmp = getDimseRQHandler();
         if (tmp == null) {
             LOG.error("DimseRQHandler not initalized");
-            throw new AAbort(AAbort.UL_SERIVE_PROVIDER, 0);
+            throw new AAbort();
         }
-        tmp.onDimseRQ(as, pc, cmd, data);
+        tmp.onDimseRQ(as, pc, cmd, cmdAttrs, data);
     }
 
     public void addConnection(Connection conn) {

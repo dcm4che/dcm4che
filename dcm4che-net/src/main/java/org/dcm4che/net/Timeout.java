@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,21 +36,51 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.net;
 
-import java.io.IOException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import org.dcm4che.data.Attributes;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.pdu.PresentationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface CGetSCP {
+public class Timeout implements Runnable {
 
-    void onCGetRQ(Association as, PresentationContext pc, Attributes cmd,
-            Attributes dataset) throws IOException;
+    public static Logger LOG = LoggerFactory.getLogger(Timeout.class);
+    
+    private final Association as;
+    private final String expiredMsg;
+    private final String cancelMsg;
+    private final ScheduledFuture<?> future;
+    
+    private Timeout(Association as, String expiredMsg, String cancelMsg,
+            int timeout) {
+        this.as = as;
+        this.expiredMsg = expiredMsg;
+        this.cancelMsg = cancelMsg;
+        this.future = as.getApplicationEntity().getDevice()
+                .schedule(this, timeout, TimeUnit.MILLISECONDS);
+    }
+
+    public static Timeout start(Association as, String startMsg, 
+            String expiredMsg, String cancelMsg, int timeout) {
+        LOG.debug(startMsg, as, timeout);
+        return new Timeout(as, expiredMsg, cancelMsg, timeout);
+    }
+
+    public void stop() {
+        LOG.debug(cancelMsg, as);
+        future.cancel(false);
+    }
+
+    @Override
+    public void run() {
+        LOG.info(expiredMsg, as);
+        as.abort();
+    }
 
 }

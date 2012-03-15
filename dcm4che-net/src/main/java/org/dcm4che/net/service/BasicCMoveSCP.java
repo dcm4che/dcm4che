@@ -44,21 +44,26 @@ import java.util.Collections;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCMoveSCP extends DicomService implements CMoveSCP {
+public class BasicCMoveSCP extends DicomService {
 
     public BasicCMoveSCP(String... sopClasses) {
         super(sopClasses);
     }
 
     @Override
-    public void onCMoveRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
-            throws IOException {
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
+            Attributes rq, Attributes keys) throws IOException {
+        if (dimse != Dimse.C_MOVE_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
         RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
         as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
         as.getApplicationEntity().getDevice().execute(retrieveTask);

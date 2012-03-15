@@ -277,4 +277,9 @@ public class Status {
 
     public static final int UnableToProcess                    = 0xC000;
     public static final int CannotUnderstand                   = 0xC000;
+
+    public static boolean isPending(int status) {
+        return (status & Pending) == Pending;
+    }
+
 }

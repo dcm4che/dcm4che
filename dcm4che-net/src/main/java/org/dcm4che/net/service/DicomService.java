@@ -38,7 +38,15 @@
 
 package org.dcm4che.net.service;
 
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.DimseRQHandler;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomService {
+public class DicomService implements DimseRQHandler {
 
     public static final Logger LOG = LoggerFactory.getLogger(DicomService.class);
 
@@ -60,8 +68,29 @@ public class DicomService {
         return sopClasses;
     }
 
+    @Override
     public void onClose(Association as) {
         // NOOP
     }
 
+    @Override
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, PDVInputStream data) throws IOException {
+        onDimseRQ(as, pc, dimse, cmd, readDataset(pc, data));
+    }
+
+    private Attributes readDataset(PresentationContext pc, PDVInputStream data)
+            throws IOException {
+        if (data == null)
+            return null;
+
+        Attributes dataset = data.readDataset(pc.getTransferSyntax());
+        Dimse.LOG.debug("Dataset:\n{}", dataset);
+        return dataset;
+    }
+
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, Attributes data) throws IOException {
+        throw new DicomServiceException(Status.UnrecognizedOperation);
+    }
 }

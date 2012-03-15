@@ -155,13 +155,13 @@ class PDUDecoder extends PDVInputStream {
 
     public void nextPDU() throws IOException {
         checkThread();
-        Association.LOG_ACSE.trace("{}: waiting for PDU", as);
+        Association.LOG.trace("{}: waiting for PDU", as);
         readFully(0, 10);
         pos = 0;
         pdutype = get();
         get();
         pdulen = getInt();
-        Association.LOG_ACSE.trace("{} >> PDU[type={}, len={}]",
+        Association.LOG.trace("{} >> PDU[type={}, len={}]",
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         switch (pdutype) {
         case PDUType.A_ASSOCIATE_RQ:
@@ -229,7 +229,7 @@ class PDUDecoder extends PDVInputStream {
     }
 
     private void abort(int reason, String logmsg) throws AAbort {
-        Association.LOG_ACSE.warn(logmsg,
+        Association.LOG.warn(logmsg,
                 new Object[] { as, pdutype, pdulen & 0xFFFFFFFFL });
         throw new AAbort(AAbort.UL_SERIVE_PROVIDER, reason);
     }
@@ -427,56 +427,61 @@ class PDUDecoder extends PDVInputStream {
 
         PresentationContext pc = as.getPresentationContext(pcid);
         if (pc == null) {
-            Association.LOG_ACSE.warn(
+            Association.LOG.warn(
                     "{}: No Presentation Context with given ID - {}",
                     as, pcid);
-            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
-                    AAbort.REASON_NOT_SPECIFIED);
+            throw new AAbort();
         }
 
         if (!pc.isAccepted()) {
-            Association.LOG_ACSE.warn(
+            Association.LOG.warn(
                     "{}: No accepted Presentation Context with given ID - {}",
                     as, pcid);
-            throw new AAbort(AAbort.UL_SERIVE_PROVIDER,
-                    AAbort.REASON_NOT_SPECIFIED);
+            throw new AAbort();
         }
 
-        String tsuid = pc.getTransferSyntax();
         Attributes cmd = readCommand();
-        if (Association.LOG_DIMSE.isInfoEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(as).append(" >> ");
-            Commands.promptTo(cmd, pcid, tsuid, sb);
-            Association.LOG_DIMSE.info(sb.toString());
+        Dimse dimse = dimseOf(cmd);
+        String tsuid = pc.getTransferSyntax();
+        if (Dimse.LOG.isInfoEnabled()) {
+            Dimse.LOG.info("{} >> {}", as, dimse.toString(cmd, pcid, tsuid));
+            Dimse.LOG.debug("Command:\n{}", cmd);
         }
-        Association.LOG_DIMSE.debug("Command:\n{}", cmd);
-        int cmdField = cmd.getInt(Tag.CommandField, 0);
-        if (cmdField == Commands.C_CANCEL_RQ) {
+        if (dimse == Dimse.C_CANCEL_RQ) {
             as.onCancelRQ(cmd);
         } else if (Commands.hasDataset(cmd)) {
             nextPDV(PDVType.DATA, pcid);
-            if (Commands.isRSP(cmdField)) {
+            if (dimse.isRSP()) {
                 Attributes data = readDataset(tsuid);
-                Association.LOG_DIMSE.debug("Dataset:\n{}", data);
-                as.onDimseRSP(cmd, data);
+                Dimse.LOG.debug("Dataset:\n{}", data);
+                as.onDimseRSP(dimse, cmd, data);
             } else {
-                as.onDimseRQ(pc, cmd, this);
+                as.onDimseRQ(pc, dimse, cmd, this);
                 long skipped = skipAll();
                 if (skipped > 0)
-                    Association.LOG_ACSE.debug(
+                    Association.LOG.debug(
                         "{}: Service User did not consume {} bytes of DIMSE data.",
                         as, skipped);
             }
             skipAll();
         } else {
-            if (Commands.isRSP(cmdField)) {
-                as.onDimseRSP(cmd, null);
+            if (dimse.isRSP()) {
+                as.onDimseRSP(dimse, cmd, null);
             } else {
-                as.onDimseRQ(pc, cmd, null);
+                as.onDimseRQ(pc, dimse, cmd, null);
             }
         }
         pcid = -1;
+    }
+
+    private Dimse dimseOf(Attributes cmd) throws AAbort {
+        try {
+            return Dimse.valueOf(cmd.getInt(Tag.CommandField, 0));
+        } catch (IllegalArgumentException e) {
+            Dimse.LOG.info("{}: illegal DIMSE:", as);
+            Dimse.LOG.info("\n{}", cmd);
+            throw new AAbort();
+        }
     }
 
     private Attributes readCommand() throws IOException {
@@ -504,7 +509,7 @@ class PDUDecoder extends PDVInputStream {
         if (!hasRemaining()) {
             nextPDU();
             if (pdutype != PDUType.P_DATA_TF) {
-                Association.LOG_ACSE.info(
+                Association.LOG.info(
                         "{}: Expected P-DATA-TF PDU but received PDU[type={}]",
                         as, pdutype);
                 throw new EOFException();
@@ -518,7 +523,7 @@ class PDUDecoder extends PDVInputStream {
             abort(AAbort.INVALID_PDU_PARAMETER_VALUE, INVALID_PDV);
         this.pcid = get();
         this.pdvmch = get();
-        Association.LOG_ACSE.trace("{} >> PDV[len={}, pcid={}, mch={}]",
+        Association.LOG.trace("{} >> PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pcid, pdvmch } );
         if ((pdvmch & PDVType.COMMAND) != expectedPDVType)
             abort(AAbort.UNEXPECTED_PDU_PARAMETER, UNEXPECTED_PDV_TYPE);

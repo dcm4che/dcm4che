@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.pdu.AAbort;
@@ -378,7 +379,7 @@ class PDUEncoder extends PDVOutputStream {
         put(pdvpcid);
         put(pdvcmd | last);
         pos = endpos;
-        Association.LOG_ACSE.trace("{} << PDV[len={}, pcid={}, mch={}]",
+        Association.LOG.trace("{} << PDV[len={}, pcid={}, mch={}]",
                 new Object[] { as, pdvlen, pdvpcid, (pdvcmd | last) });
     }
 
@@ -388,7 +389,7 @@ class PDUEncoder extends PDVOutputStream {
         put(PDUType.P_DATA_TF);
         put(0);
         putInt(pdulen);
-        Association.LOG_ACSE.trace("{} << P-DATA-TF[len={}]",
+        Association.LOG.trace("{} << P-DATA-TF[len={}]",
                 new Object[] { as, pdulen });
         writePDU(pdulen);
     }
@@ -398,16 +399,14 @@ class PDUEncoder extends PDVOutputStream {
         synchronized (dimseLock) {
             int pcid = pc.getPCID();
             String tsuid = pc.getTransferSyntax();
-            if (Association.LOG_DIMSE.isInfoEnabled()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(as).append(" << ");
-                Commands.promptTo(cmd, pcid, tsuid, sb);
-                Association.LOG_DIMSE.info(sb.toString());
+            if (Dimse.LOG.isInfoEnabled()) {
+                Dimse dimse = Dimse.valueOf(cmd.getInt(Tag.CommandField, -1));
+                Dimse.LOG.info("{} << {}", as, dimse.toString(cmd, pcid, tsuid));
+                Dimse.LOG.debug("Command:\n{}", cmd);
+                if (dataWriter instanceof DataWriterAdapter)
+                    Dimse.LOG.debug("Dataset:\n{}",
+                            ((DataWriterAdapter) dataWriter).getDataset());
             }
-            Association.LOG_DIMSE.debug("Command:\n{}", cmd);
-            if (dataWriter instanceof DataWriterAdapter)
-                Association.LOG_DIMSE.debug("Dataset:\n{}",
-                        ((DataWriterAdapter) dataWriter).getDataset());
             this.th = Thread.currentThread();
             maxpdulen = as.getMaxPDULengthSend();
             if (buf.length < maxpdulen + 6)

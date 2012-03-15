@@ -79,6 +79,11 @@ public class BasicRetrieveTask implements RetrieveTask {
             void releaseStoreAssociation(Association storeas) throws IOException {
                 // NO OP
             }
+
+            @Override
+            int commandFieldOfRSP() {
+                return 0x8010;
+            }
         },
         C_MOVE {
             @Override
@@ -90,9 +95,15 @@ public class BasicRetrieveTask implements RetrieveTask {
             void releaseStoreAssociation(Association storeas) throws IOException {
                 storeas.release();
             }
+
+            @Override
+            int commandFieldOfRSP() {
+                return 0x8021;
+            }
         };
         abstract Attributes mkRSP(Attributes rq, int status);
         abstract void releaseStoreAssociation(Association storeas) throws IOException;
+        abstract int commandFieldOfRSP();
     }
 
     protected final Service service;
@@ -172,7 +183,8 @@ public class BasicRetrieveTask implements RetrieveTask {
             }
             writeRSP(status);
         } catch (DicomServiceException e) {
-            writeRSP(e.mkRSP(rq), e.getDataset());
+            Attributes rsp = e.mkRSP(service.commandFieldOfRSP(), rq.getInt(Tag.MessageID, 0));
+            writeRSP(rsp, e.getDataset());
         } finally {
             close();
         }

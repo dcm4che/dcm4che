@@ -53,6 +53,7 @@ import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -61,15 +62,18 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCStoreSCP extends DicomService implements CStoreSCP {
+public class BasicCStoreSCP extends DicomService {
 
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
     }
 
     @Override
-    public void onCStoreRQ(Association as, PresentationContext pc, Attributes rq,
-            PDVInputStream data) throws IOException {
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
+            Attributes rq, PDVInputStream data) throws IOException {
+        if (dimse != Dimse.C_STORE_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
         Attributes rsp = Commands.mkCStoreRSP(rq, Status.Success);
         store(as, pc, rq, data, rsp);
         try {

@@ -44,6 +44,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -52,7 +53,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCEchoSCP extends DicomService implements CEchoSCP {
+public class BasicCEchoSCP extends DicomService {
 
     public BasicCEchoSCP() {
         super(UID.VerificationSOPClass);
@@ -63,8 +64,10 @@ public class BasicCEchoSCP extends DicomService implements CEchoSCP {
     }
 
     @Override
-    public void onCEchoRQ(Association as, PresentationContext pc,
-            Attributes cmd) throws IOException {
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, Attributes data) throws IOException {
+        if (dimse != Dimse.C_ECHO_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
         try {
             as.writeDimseRSP(pc, Commands.mkEchoRSP(cmd, Status.Success), null);
         } catch (AssociationStateException e) {

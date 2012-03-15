@@ -47,6 +47,7 @@ import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -54,7 +55,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicNEventReportSCU extends DicomService implements NEventReportSCU {
+public class BasicNEventReportSCU extends DicomService {
 
     private int[] eventTypeIDs;
 
@@ -76,8 +77,11 @@ public class BasicNEventReportSCU extends DicomService implements NEventReportSC
     }
 
     @Override
-    public void onNEventReportRQ(Association as, PresentationContext pc,
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
             Attributes rq, Attributes eventInfo) throws IOException {
+        if (dimse != Dimse.N_EVENT_REPORT_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
         int eventTypeID = rq.getInt(Tag.EventTypeID, 0);
         checkEventTypeID(eventTypeID);
         Attributes rsp = Commands.mkNEventReportRSP(rq, Status.Success);

@@ -39,7 +39,6 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
-import java.util.concurrent.ScheduledFuture;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -52,7 +51,7 @@ public class DimseRSPHandler {
 
     private final int msgId;
     private PresentationContext pc;
-    private ScheduledFuture<?> timeout;
+    private Timeout timeout;
 
     public DimseRSPHandler(int msgId) {
         this.msgId = msgId;
@@ -66,7 +65,7 @@ public class DimseRSPHandler {
         return msgId;
     }
 
-    final void setTimeout(ScheduledFuture<?> timeout) {
+    final void setTimeout(Timeout timeout) {
         this.timeout = timeout;
     }
 
@@ -84,9 +83,7 @@ public class DimseRSPHandler {
 
     private void stopTimeout(Association as) {
         if (timeout != null) {
-            Association.LOG_TIMEOUT.debug(
-                    "{}: stop {}:DIMSE-RSP timeout", as, msgId);
-            timeout.cancel(false);
+            timeout.stop();
             timeout = null;
         }
     }

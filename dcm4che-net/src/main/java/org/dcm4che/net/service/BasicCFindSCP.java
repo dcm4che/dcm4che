@@ -43,21 +43,26 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCFindSCP extends DicomService implements CFindSCP {
+public class BasicCFindSCP extends DicomService {
 
     public BasicCFindSCP(String... sopClasses) {
         super(sopClasses);
     }
 
     @Override
-    public void onCFindRQ(Association as, PresentationContext pc, Attributes rq, Attributes keys)
-            throws IOException {
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
+            Attributes rq, Attributes keys) throws IOException {
+        if (dimse != Dimse.C_FIND_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
         QueryTask queryTask = calculateMatches(as, pc, rq, keys);
         as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), queryTask);
         as.getApplicationEntity().getDevice().execute(queryTask);

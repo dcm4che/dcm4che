@@ -47,6 +47,7 @@ import org.dcm4che.data.VR;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 
@@ -54,7 +55,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicNActionSCP extends DicomService implements NActionSCP {
+public class BasicNActionSCP extends DicomService {
 
     private int[] actionTypeIDs;
 
@@ -76,8 +77,11 @@ public class BasicNActionSCP extends DicomService implements NActionSCP {
     }
 
     @Override
-    public void onNActionRQ(Association as, PresentationContext pc,
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
             Attributes rq, Attributes actionInfo) throws IOException {
+        if (dimse != Dimse.N_ACTION_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
         int actionTypeID = rq.getInt(Tag.ActionTypeID, 0);
         checkActionTypeID(actionTypeID);
         Attributes rsp = Commands.mkNActionRSP(rq, Status.Success);

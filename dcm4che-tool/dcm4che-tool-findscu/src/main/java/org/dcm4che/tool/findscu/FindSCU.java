@@ -67,12 +67,12 @@ import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.QueryOption;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -433,7 +433,7 @@ public class FindSCU extends Device {
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
                 int status = cmd.getInt(Tag.Status, -1);
-                if (Commands.isPending(status )) {
+                if (Status.isPending(status)) {
                     FindSCU.this.onResult(data);
                     ++numMatches;
                     if (cancelAfter != 0 && numMatches >= cancelAfter)

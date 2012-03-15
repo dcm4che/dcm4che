@@ -47,6 +47,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.util.AttributesValidator;
@@ -55,7 +56,7 @@ import org.dcm4che.util.AttributesValidator;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicMppsSCP extends DicomService implements NCreateSCP, NSetSCP {
+public class BasicMppsSCP extends DicomService {
 
     public static final String IN_PROGRESS = "IN PROGRESS";
     public static final String COMPLETED = "COMPLETED";
@@ -90,7 +91,21 @@ public class BasicMppsSCP extends DicomService implements NCreateSCP, NSetSCP {
     }
 
     @Override
-    public void onNCreateRQ(Association as, PresentationContext pc,
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
+            Attributes rq, Attributes rqAttrs) throws IOException {
+        switch (dimse) {
+        case N_CREATE_RQ:
+            onNCreateRQ(as, pc, rq, rqAttrs);
+            break;
+        case N_SET_RQ:
+            onNSetRQ(as, pc, rq, rqAttrs);
+            break;
+        default:
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+        }
+    }
+
+    protected void onNCreateRQ(Association as, PresentationContext pc,
             Attributes rq, Attributes rqAttrs) throws IOException {
         checkNCreateRQ(rqAttrs);
         Attributes rsp = Commands.mkNCreateRSP(rq, Status.Success);
@@ -107,8 +122,7 @@ public class BasicMppsSCP extends DicomService implements NCreateSCP, NSetSCP {
         return null;
     }
 
-    @Override
-    public void onNSetRQ(Association as, PresentationContext pc,
+    protected void onNSetRQ(Association as, PresentationContext pc,
             Attributes rq, Attributes rqAttrs) throws IOException {
         checkNSetRQ(rqAttrs);
         Attributes rsp = Commands.mkNSetRSP(rq, Status.Success);

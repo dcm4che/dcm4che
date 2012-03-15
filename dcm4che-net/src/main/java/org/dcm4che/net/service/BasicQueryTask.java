@@ -86,7 +86,8 @@ public class BasicQueryTask implements QueryTask {
                 int status = canceled ? Status.Cancel : Status.Success;
                 as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status));
             } catch (DicomServiceException e) {
-                as.writeDimseRSP(pc, e.mkRSP(rq), e.getDataset());
+                Attributes rsp = e.mkRSP(0x8020, rq.getInt(Tag.MessageID, -1));
+                as.writeDimseRSP(pc, rsp, e.getDataset());
             } finally {
                 close();
             }

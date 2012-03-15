@@ -97,6 +97,10 @@ public class AAbort extends IOException {
         this.reason = reason;
     }
 
+    public AAbort() {
+        this(UL_SERIVE_USER, 0);
+    }
+
     private static String toString(String[] ss, int i) {
         try {
             return ss[i];

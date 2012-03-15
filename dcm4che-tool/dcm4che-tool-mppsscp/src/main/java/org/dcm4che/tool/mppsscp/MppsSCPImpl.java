@@ -81,7 +81,7 @@ class MppsSCPImpl extends BasicMppsSCP {
             out = new DicomOutputStream(file);
             out.writeDataset(
                     Attributes.createFileMetaInformation(iuid,
-                            UID.ModalityPerformedProcedureStepNotificationSOPClass,
+                            UID.ModalityPerformedProcedureStepSOPClass,
                             UID.ExplicitVRLittleEndian),
                     rqAttrs);
         } catch (IOException e) {

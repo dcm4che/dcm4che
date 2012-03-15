@@ -43,7 +43,6 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
-import org.dcm4che.net.Commands;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -126,10 +125,9 @@ public class DicomServiceException extends IOException {
         return this;
     }
 
-    public Attributes mkRSP(Attributes rq) {
-        rsp.setInt(Tag.CommandField, VR.US, Commands.rspFieldFor(rq));
-        rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US,
-                rq.getInt(Tag.MessageID, 0));
+    public Attributes mkRSP(int cmdField, int msgId) {
+        rsp.setInt(Tag.CommandField, VR.US, cmdField);
+        rsp.setInt(Tag.MessageIDBeingRespondedTo, VR.US, msgId);
         return rsp;
     }
 

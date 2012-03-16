@@ -55,7 +55,8 @@ import org.dcm4che.util.SafeClose;
 public abstract class DicomFiles {
 
     public interface Callback {
-        void dicomFile(File f, long dsPos, String tsuid, Attributes ds);
+        void dicomFile(File f, long dsPos, String tsuid, Attributes ds)
+                throws IOException;
     }
 
     public static void scan(List<String> fnames, Callback scb) {

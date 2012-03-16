@@ -61,8 +61,6 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -75,6 +73,7 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.DicomFiles;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
@@ -100,8 +99,6 @@ public class StoreSCU extends Device {
     private String tmpSuffix;
     private File tmpDir;
     private File tmpFile;
-    private boolean keepTmpFile;
-    private boolean scanOnly;
     private Association as;
 
     private long totalSize;
@@ -134,18 +131,6 @@ public class StoreSCU extends Device {
         this.tmpDir = tmpDir;
     }
 
-    public final void setScanResult(File file) {
-        this.tmpFile = file;
-    }
-
-    public final void setScanOnly(boolean scanOnly) {
-        this.scanOnly = scanOnly;
-    }
-
-    public final void setKeepTmpFile(boolean keepTmpFile) {
-        this.keepTmpFile = keepTmpFile;
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
@@ -155,23 +140,13 @@ public class StoreSCU extends Device {
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addPriorityOption(opts);
         CLIUtils.addCommonOptions(opts);
-        addScanOptions(opts);
+        addTmpFileOptions(opts);
         addRelatedSOPClassOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
     }
 
     @SuppressWarnings("static-access")
-    private static void addScanOptions(Options opts) {
-        opts.addOption(null, "scan-only", false,
-                rb.getString("scan-only"));
-        opts.addOption(null, "tmp-file-keep", false,
-                rb.getString("tmp-file-keep"));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("file")
-                .withDescription(rb.getString("scan-result"))
-                .withLongOpt("scan-result")
-                .create(null));
+    private static void addTmpFileOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("directory")
@@ -210,16 +185,14 @@ public class StoreSCU extends Device {
         try {
             CommandLine cl = parseComandLine(args);
             StoreSCU main = new StoreSCU();
-            configureScan(main, cl);
-            if (!main.scanOnly) {
-                CLIUtils.configureConnect(main.remote, main.rq, cl);
-                CLIUtils.configureBind(main.conn, main.ae, cl);
-                CLIUtils.configure(main.conn, cl);
-                main.remote.setTlsProtocols(main.conn.getTlsProtocols());
-                main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
-                configureRelatedSOPClass(main, cl);
-                main.setPriority(CLIUtils.priorityOf(cl));
-            }
+            configureTmpFile(main, cl);
+            CLIUtils.configureConnect(main.remote, main.rq, cl);
+            CLIUtils.configureBind(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
+            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
+            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
+            configureRelatedSOPClass(main, cl);
+            main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -232,9 +205,6 @@ public class StoreSCU extends Device {
                 System.out.println(MessageFormat.format(
                         rb.getString("scanned"), n,
                         (t2 - t1) / 1000F, (t2 - t1) / n));
-            }
-            if (main.scanOnly) {
-                return;
             }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -279,11 +249,7 @@ public class StoreSCU extends Device {
         }
     }
 
-    private static void configureScan(StoreSCU storescu, CommandLine cl) {
-        storescu.setScanOnly(cl.hasOption("scan-only"));
-        storescu.setKeepTmpFile(cl.hasOption("tmp-file-keep"));
-        if (cl.hasOption("scan-result"))
-            storescu.setScanResult(new File(cl.getOptionValue("scan-result")));
+    private static void configureTmpFile(StoreSCU storescu, CommandLine cl) {
         if (cl.hasOption("tmp-file-dir"))
             storescu.setTmpFileDirectory(new File(cl.getOptionValue("tmp-file-dir")));
         storescu.setTmpFilePrefix(cl.getOptionValue("tmp-file-prefix", "storescu-"));
@@ -308,18 +274,25 @@ public class StoreSCU extends Device {
     }
 
     public void scanFiles(List<String> fnames) throws IOException {
-        if (tmpFile == null) {
-            tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
-            if (!keepTmpFile)
-                tmpFile.deleteOnExit();
-        }
-        BufferedWriter fileInfos = new BufferedWriter(
+        tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
+        tmpFile.deleteOnExit();
+        final BufferedWriter fileInfos = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(tmpFile)));
         try {
-            for (String fname : fnames)
-                scanFile(fileInfos, new File(fname));
+            DicomFiles.scan(fnames, new DicomFiles.Callback() {
+                
+                @Override
+                public void dicomFile(File f, long dsPos, String tsuid, Attributes ds)
+                        throws IOException {
+                    addFile(fileInfos, f, dsPos,
+                            ds.getString(Tag.SOPClassUID, null),
+                            ds.getString(Tag.SOPInstanceUID, null),
+                            tsuid);
+                    filesScanned++;
+                }
+            });
         } finally {
-            SafeClose.close(fileInfos);
+            fileInfos.close();
         }
     }
 
@@ -345,39 +318,6 @@ public class StoreSCU extends Device {
             }
         } finally {
             SafeClose.close(fileInfos);
-        }
-    }
-
-    private void scanFile(BufferedWriter fileInfos, File f) {
-        if (f.isDirectory()) {
-            for (String s : f.list())
-                scanFile(fileInfos, new File(f, s));
-            return;
-        }
-        DicomInputStream in = null;
-        try {
-            in = new DicomInputStream(f);
-            Attributes fmi = in.readFileMetaInformation();
-            long dsPos = in.getPosition();
-            Attributes ds = in.readDataset(-1, Tag.SOPInstanceUID);
-            ds.setBytes(Tag.SOPInstanceUID, VR.UI, in.readValue());
-            addFile(fileInfos, f, dsPos,
-                    ds.getString(Tag.SOPClassUID, null),
-                    ds.getString(Tag.SOPInstanceUID, null),
-                    fmi != null
-                            ? fmi.getString(Tag.TransferSyntaxUID, null)
-                            : in.explicitVR() 
-                                    ? in.bigEndian()
-                                            ? UID.ExplicitVRBigEndian
-                                            : UID.ExplicitVRLittleEndian
-                                    : UID.ImplicitVRLittleEndian);
-            filesScanned++;
-            System.out.print('.');
-        } catch (IOException e) {
-            System.out.print('E');
-            e.printStackTrace();
-        } finally {
-            SafeClose.close(in);
         }
     }
 

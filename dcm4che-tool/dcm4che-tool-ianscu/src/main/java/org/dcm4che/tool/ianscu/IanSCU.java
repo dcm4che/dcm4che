@@ -168,9 +168,8 @@ public class IanSCU extends Device {
                 main.open();
                 if (echo)
                     main.echo();
-                else {
-                    main.sendIan();
-                }
+                else
+                    main.sendIans();
             } finally {
                 main.close();
                 executorService.shutdown();
@@ -266,7 +265,7 @@ public class IanSCU extends Device {
         as.cecho().next();
     }
 
-    public void sendIan() throws IOException, InterruptedException {
+    public void sendIans() throws IOException, InterruptedException {
         for (Attributes ian : map.values())
             sendIan(ian);
     }
@@ -280,7 +279,7 @@ public class IanSCU extends Device {
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
             return;
-        Attributes ian = map.get(inst.getString(Tag.StudyInstanceUID));
+        Attributes ian = map.get(suid);
         if (ian == null)
             map.put(suid, ian = createIAN(inst));
         updateIAN(ian, inst);

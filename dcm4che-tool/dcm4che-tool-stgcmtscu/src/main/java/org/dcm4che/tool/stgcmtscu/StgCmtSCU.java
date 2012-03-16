@@ -38,11 +38,10 @@
 
 package org.dcm4che.tool.stgcmtscu;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -69,12 +68,12 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicNEventReportSCU;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
-import org.dcm4che.util.SafeClose;
-import org.dcm4che.util.StringUtils;
+import org.dcm4che.tool.common.DicomFiles;
 import org.dcm4che.util.UIDUtils;
 
 /**
@@ -91,14 +90,10 @@ public class StgCmtSCU extends Device {
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
 
-    private int iuidFieldIndex = 0;
-    private int cuidFieldIndex = 1;
-    private char fieldDelim = '\t';
     private boolean keepAlive;
+    private int splitTag;
     private int status;
-
-    private Attributes actionInfo = new Attributes();
-
+    private HashMap<String,List<String>> map = new HashMap<String,List<String>>();
     private Association as;
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
@@ -126,16 +121,16 @@ public class StgCmtSCU extends Device {
         addApplicationEntity(ae);
         ae.addConnection(conn);
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-        serviceRegistry.addDicomService(
-                stgcmtResultHandler);
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        serviceRegistry.addDicomService(stgcmtResultHandler);
         ae.setDimseRQHandler(serviceRegistry);
-        actionInfo.newSequence(Tag.ReferencedSOPSequence, 10);
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            StgCmtSCU stgcmtscu = new StgCmtSCU();
+            final StgCmtSCU stgcmtscu = new StgCmtSCU();
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
             CLIUtils.configureBind(stgcmtscu.conn, stgcmtscu.ae, cl);
             CLIUtils.configure(stgcmtscu.conn, cl);
@@ -143,8 +138,20 @@ public class StgCmtSCU extends Device {
             stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
-            configureKeepAlive(stgcmtscu, cl);
-            configureRequest(stgcmtscu, cl);
+            stgcmtscu.setSplitTag(getSplitTag(cl));
+            stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
+            List<String> argList = cl.getArgList();
+            boolean echo = argList.isEmpty();
+            if (!echo) {
+                System.out.println(rb.getString("scanning"));
+                DicomFiles.scan(argList, new DicomFiles.Callback() {
+                    
+                    @Override
+                    public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                        stgcmtscu.addInstance(ds);
+                    }
+                });
+            }
             ExecutorService executorService =
                     Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService =
@@ -154,13 +161,11 @@ public class StgCmtSCU extends Device {
             stgcmtscu.activate();
             try {
                 stgcmtscu.open();
-                @SuppressWarnings("unchecked")
-                List<String> argList = cl.getArgList();
-                if (argList.isEmpty())
-                    stgcmtscu.sendRequest();
+                if (echo)
+                    stgcmtscu.echo();
                 else
-                    for (String arg : argList)
-                        stgcmtscu.sendRequest(new File(arg));
+                    for (List<String> refSOPs : stgcmtscu.map.values())
+                    stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
             } finally {
                 stgcmtscu.close();
                 executorService.shutdown();
@@ -177,74 +182,16 @@ public class StgCmtSCU extends Device {
         }
     }
 
-    private static void configureKeepAlive(StgCmtSCU stgcmtscu, CommandLine cl) {
-        stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
+    private static int getSplitTag(CommandLine cl) {
+        return cl.hasOption("one-by-study") 
+                ? Tag.StudyInstanceUID
+                : cl.hasOption("one-by-series")
+                        ? Tag.SeriesInstanceUID
+                        : 0;
     }
 
-    private static void configureRequest(StgCmtSCU stgcmtscu, CommandLine cl) {
-        if (cl.hasOption("cvs-delimiter"))
-            stgcmtscu.setFieldDelimiter(
-                    cl.getOptionValue("cvs-delimiter").charAt(0));
-        if (cl.hasOption("cvs-iuid-field"))
-            stgcmtscu.setIuidField(
-                    Integer.parseInt(cl.getOptionValue("cvs-iuid-field")));
-        if (cl.hasOption("cvs-cuid-field"))
-            stgcmtscu.setCuidField(
-                    Integer.parseInt(cl.getOptionValue("cvs-cuid-field")));
-        String[] fsRefs = cl.getOptionValues("ref-fs");
-        if (fsRefs != null && fsRefs.length == 2) {
-            stgcmtscu.setFileSetRef(fsRefs[0], fsRefs[1]);
-            fsRefs = null;
-        }
-        String[] sopRefs = cl.getOptionValues("r");
-        if (sopRefs != null) {
-            for (int i = 1; i < sopRefs.length; i++, i++) {
-                if (fsRefs == null || fsRefs.length <= i)
-                    stgcmtscu.addSOPRef(sopRefs[i - 1], sopRefs[i], null, null);
-                else
-                    stgcmtscu.addSOPRef(sopRefs[i - 1], sopRefs[i], fsRefs[i - 1], fsRefs[i]);
-            }
-        }
-    }
-
-    public void addSOPRef(String iuid, String cuid, String fsid, String fsuid) {
-        actionInfo.getSequence(Tag.ReferencedSOPSequence)
-            .add(newRefSOP(iuid, cuid, fsid, fsuid));
-    }
-
-    private static Attributes newRefSOP(String iuid, String cuid, String fsid, String fsuid) {
-        Attributes attrs = new Attributes(4);
-        attrs.setString(Tag.ReferencedSOPClassUID, VR.UI, cuid);
-        attrs.setString(Tag.ReferencedSOPInstanceUID, VR.UI, iuid);
-        addFileSetRef(attrs, fsid, fsuid);
-        return attrs;
-    }
-
-    public void setFileSetRef(String fsid, String fsuid) {
-        addFileSetRef(actionInfo, fsid, fsuid);
-    }
-
-    private static void addFileSetRef(Attributes attrs, String fsid, String fsuid) {
-        if (fsid != null)
-            attrs.setString(Tag.StorageMediaFileSetID, VR.SH, fsid);
-        if (fsuid != null)
-            attrs.setString(Tag.StorageMediaFileSetUID, VR.UI, fsuid);
-    }
-
-    public void setFieldDelimiter(char c) {
-        fieldDelim = c;
-    }
-
-    public void setIuidField(int i) {
-        if (i <= 0) 
-            throw new IllegalArgumentException(rb.getString("invalid-field"));
-       iuidFieldIndex = i - 1;
-    }
-
-    public void setCuidField(int i) {
-        if (i <= 0) 
-            throw new IllegalArgumentException(rb.getString("invalid-field"));
-       cuidFieldIndex = i - 1;
+    public void setSplitTag(int splitTag) {
+        this.splitTag = splitTag;
     }
 
     public void setKeepAlive(boolean keepAlive) {
@@ -257,9 +204,17 @@ public class StgCmtSCU extends Device {
 
     public void setTransferSyntaxes(String[] tss) {
         rq.addPresentationContext(
-                new PresentationContext(1,
+                new PresentationContext(1, UID.VerificationSOPClass,
+                        UID.ImplicitVRLittleEndian));
+        rq.addPresentationContext(
+                new PresentationContext(2,
                         UID.StorageCommitmentPushModelSOPClass,
                         tss));
+        ae.addTransferCapability(
+                new TransferCapability(null,
+                        UID.VerificationSOPClass,
+                        TransferCapability.Role.SCP,
+                        UID.ImplicitVRLittleEndian));
         ae.addTransferCapability(
                 new TransferCapability(null,
                         UID.StorageCommitmentPushModelSOPClass,
@@ -267,12 +222,27 @@ public class StgCmtSCU extends Device {
                         tss));
     }
 
+    public void addInstance(Attributes inst) {
+        String cuid = inst.getString(Tag.SOPClassUID);
+        String iuid = inst.getString(Tag.SOPInstanceUID);
+        String splitkey = splitTag != 0 ? inst.getString(splitTag) : "";
+        if (cuid == null || iuid == null || splitkey == null)
+            return;
+
+        List<String> refSOPs = map.get(splitkey);
+        if (refSOPs == null)
+            map.put(splitkey, refSOPs = new ArrayList<String>());
+
+        refSOPs.add(cuid);
+        refSOPs.add(iuid);
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
         addStatusOption(opts);
         addKeepAliveOption(opts);
-        addRequestOption(opts);
+        addSplitOption(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STGCMTSCU");
@@ -297,45 +267,18 @@ public class StgCmtSCU extends Device {
         opts.addOption(null, "keep-alive", false, rb.getString("keep-alive"));
     }
 
-    @SuppressWarnings("static-access")
-    private static void addRequestOption(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("delim")
-                .withDescription(rb.getString("cvs-delimiter"))
-                .withLongOpt("cvs-delimiter")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("field")
-                .withDescription(rb.getString("cvs-iuid-field"))
-                .withLongOpt("cvs-iuid-field")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("field")
-                .withDescription(rb.getString("cvs-cuid-field"))
-                .withLongOpt("cvs-cuid-field")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("iuid:cuid")
-                .withValueSeparator(':')
-                .withDescription(rb.getString("ref-sop"))
-                .withLongOpt("ref-sop")
-                .create("r"));
-        opts.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("id:iuid")
-                .withValueSeparator(':')
-                .withDescription(rb.getString("ref-fs"))
-                .withLongOpt("ref-fs")
-                .create(null));
-   }
+    private static void addSplitOption(Options opts) {
+        opts.addOption(null, "one-per-study", false, rb.getString("one-per-study"));
+        opts.addOption(null, "one-per-series", false, rb.getString("one-per-series"));
+    }
 
     public void open() throws IOException, InterruptedException,
             IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
+    }
+
+    public void echo() throws IOException, InterruptedException {
+        as.cecho().next();
     }
 
     public void close() throws IOException, InterruptedException {
@@ -376,37 +319,28 @@ public class StgCmtSCU extends Device {
         }
     }
 
-    public void sendRequest(File file) throws IOException, InterruptedException {
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(file)));
-        try {
-            String line;
-            Sequence refSopSeq = actionInfo.newSequence(Tag.ReferencedSOPSequence, 10);
-            while ((line = in.readLine()) != null) {
-                String[] fields = StringUtils.split(line, fieldDelim);
-                if (iuidFieldIndex < fields.length
-                        && cuidFieldIndex < fields.length)
-                    refSopSeq.add(newRefSOP(
-                            fields[iuidFieldIndex],
-                            fields[cuidFieldIndex],
-                            null, null));
-            }
-        } finally {
-            SafeClose.close(in);
+    private Attributes makeActionInfo(List<String> refSOPs) {
+        Attributes actionInfo = new Attributes(2);
+        actionInfo.setString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
+        int n = refSOPs.size() / 2;
+        Sequence refSOPSeq = actionInfo.newSequence(Tag.ReferencedSOPSequence, n);
+        for (int i = 0; i < n; ) {
+            Attributes refSOP = new Attributes(2);
+            refSOP.setString(Tag.ReferencedSOPClassUID, VR.UI, refSOPs.get(i++));
+            refSOP.setString(Tag.ReferencedSOPInstanceUID, VR.UI, refSOPs.get(i++));
+            refSOPSeq.add(refSOP);
         }
-        sendRequest();
+        return actionInfo;
     }
 
-    public void sendRequest() throws IOException, InterruptedException {
-        final String tuid = UIDUtils.createUID();
-        actionInfo.setString(Tag.TransactionUID, VR.UI, tuid);
+    public void sendRequest(Attributes actionInfo ) throws IOException, InterruptedException {
+        final String tuid = actionInfo.getString(Tag.TransactionUID);
         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
                 if (cmd.getInt(Tag.Status, -1) != Status.Success)
-                    removeOutstandingResult(tuid);
+                    removeOutstandingResult(tuid );
                 super.onDimseRSP(as, cmd, data);
             }
         };

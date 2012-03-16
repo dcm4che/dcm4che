@@ -513,7 +513,7 @@ public class MppsSCU extends Device {
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
             return;
-        Attributes mpps = map.get(inst.getString(Tag.StudyInstanceUID));
+        Attributes mpps = map.get(suid);
         if (mpps == null)
             map.put(suid, mpps = createMPPS(inst));
         updateMPPS(mpps, inst);

@@ -61,7 +61,6 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -72,8 +71,8 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.tool.common.DicomFiles;
 import org.dcm4che.util.DateUtils;
-import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -182,6 +181,7 @@ public class MppsSCU extends Device {
     private final AAssociateRQ rq = new AAssociateRQ();
     private boolean newPPSID;
     private int serialNo = (int) (System.currentTimeMillis() & 0x7FFFFFFFL);
+    private String ppsuid;
     private String ppsid;
     private DecimalFormat ppsidFormat = new DecimalFormat("PPS-0000000000");
     private String protocolName = "UNKNOWN";
@@ -199,6 +199,10 @@ public class MppsSCU extends Device {
         addConnection(conn);
         addApplicationEntity(ae);
         ae.addConnection(conn);
+    }
+
+    public final void setPPSUID(String ppsuid) {
+        this.ppsuid = ppsuid;
     }
 
     public final void setPPSID(String ppsid) {
@@ -261,7 +265,7 @@ public class MppsSCU extends Device {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
-            MppsSCU main = new MppsSCU();
+            final MppsSCU main = new MppsSCU();
             configureMPPS(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(main.conn, main.ae, cl);
@@ -273,8 +277,13 @@ public class MppsSCU extends Device {
             boolean echo = argList.isEmpty();
             if (!echo) {
                 System.out.println(rb.getString("scanning"));
-                for (String fname : argList)
-                    main.scanFile(new File(fname));
+                DicomFiles.scan(argList, new DicomFiles.Callback() {
+                    
+                    @Override
+                    public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                        main.addInstance(ds);
+                    }
+                });
             }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -308,14 +317,12 @@ public class MppsSCU extends Device {
     private static void configureMPPS(MppsSCU main, CommandLine cl)
             throws Exception {
         main.setNewPPSID(cl.hasOption("ppsid-new"));
-        if (cl.hasOption("ppsid"))
-            main.setPPSID(cl.getOptionValue("ppsid"));
+        main.setPPSUID(cl.getOptionValue("ppsuid"));
+        main.setPPSID(cl.getOptionValue("ppsid"));
         if (cl.hasOption("ppsid-start"))
             main.setPPSIDStart(Integer.parseInt(cl.getOptionValue("ppsid-start")));
-        if (cl.hasOption("ppsid-format"))
-            main.setPPSIDFormat(cl.getOptionValue("ppsid-format"));
-        if (cl.hasOption("protocol"))
-            main.setProtocolName(cl.getOptionValue("protocol"));
+        main.setPPSIDFormat(cl.getOptionValue("ppsid-format", "PPS-0000000000"));
+        main.setProtocolName(cl.getOptionValue("protocol", "UNKNOWN"));
         if (cl.hasOption("archive"))
             main.setArchiveRequested(cl.getOptionValue("archive"));
         main.setCodes(CLIUtils.loadProperties(
@@ -343,6 +350,12 @@ public class MppsSCU extends Device {
     @SuppressWarnings("static-access")
     private static void addMPPSOptions(Options opts) {
         opts.addOption(null, "ppsid-new", false, rb.getString("ppsid-new"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("uid")
+                .withDescription(rb.getString("ppsuid"))
+                .withLongOpt("ppsuid")
+                .create());
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("id")
@@ -408,11 +421,15 @@ public class MppsSCU extends Device {
     }
 
     public void sendMpps() throws IOException, InterruptedException {
+        String uidPrefix = ppsuid != null && map.size() > 1
+                ? ppsuid + '.' : null;
+        int suffix = 1;
         for (Attributes mpps : map.values())
-            sendMpps(mpps);
+            sendMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
     }
 
-    private void sendMpps(Attributes mpps) throws IOException, InterruptedException {
+    private void sendMpps(String iuid, Attributes mpps)
+            throws IOException, InterruptedException {
         final Attributes finalMpps = new Attributes(5);
         finalMpps.addSelected(mpps,
                 Tag.SpecificCharacterSet,
@@ -444,7 +461,7 @@ public class MppsSCU extends Device {
         };
         outstanding.incrementAndGet();
         try {
-            as.ncreate(UID.ModalityPerformedProcedureStepSOPClass, null, mpps, null, rspHandler);
+            as.ncreate(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null, rspHandler);
         } catch (IOException e) {
             outstanding.decrementAndGet();
             throw e;
@@ -490,26 +507,6 @@ public class MppsSCU extends Device {
             synchronized (outstanding) {
                 outstanding.notify();
             }
-    }
-
-    public void scanFile(File f) {
-        if (f.isDirectory()) {
-            for (String s : f.list())
-                scanFile(new File(f, s));
-            return;
-        }
-        DicomInputStream in = null;
-        try {
-            in = new DicomInputStream(f);
-            in.setIncludeBulkData(false);
-            addInstance(in.readDataset(-1, Tag.PixelData));
-            System.out.print('.');
-        } catch (IOException e) {
-            System.out.print('E');
-            e.printStackTrace();
-        } finally {
-            SafeClose.close(in);
-        }
     }
 
     public void addInstance(Attributes inst) {

@@ -84,19 +84,37 @@ public class AttributesValidator {
         return ss[index];
     }
 
-    public Sequence getType1Sequence(int tag) {
+    public Sequence getType1Sequence(int tag, int maxSize) {
+        return getSequence(tag, 1, maxSize);
+    }
+
+    public Sequence getType2Sequence(int tag, int maxSize) {
+        return getSequence(tag, 0, maxSize);
+    }
+
+    public Sequence getType3Sequence(int tag, int maxSize) {
+        return getSequence(tag, -1, maxSize);
+    }
+
+    private Sequence getSequence(int tag, int minSize, int maxSize) {
         Object value = attrs.getValue(tag);
         if (value == null) {
-            addMissingAttribute(tag);
+            if (minSize >= 0) 
+                addMissingAttribute(tag);
             return null;
         }
         if (value instanceof Value) {
             if (((Value) value).isEmpty()) {
-                addMissingAttributeValue(tag);
+                if (minSize >= 0) 
+                    addMissingAttributeValue(tag);
                 return null;
             }
-            if (value instanceof Sequence)
-                return (Sequence) value;
+            if (value instanceof Sequence) {
+                Sequence seq = (Sequence) value;
+                int seqSize = seq.size();
+                if (seqSize >= minSize && seqSize <= maxSize)
+                    return seq;
+            }
         }
         addInvalidAttribueValue(tag);
         return null;

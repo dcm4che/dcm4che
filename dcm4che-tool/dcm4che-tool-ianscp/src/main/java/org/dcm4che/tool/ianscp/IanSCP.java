@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.mppsscp;
+package org.dcm4che.tool.ianscp;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,16 +53,18 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
+import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.BasicMppsSCP;
 import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
@@ -74,37 +76,43 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class MppsSCP extends Device {
+public class IanSCP extends Device {
 
    private static ResourceBundle rb =
-            ResourceBundle.getBundle("org.dcm4che.tool.mppsscp.messages");
+            ResourceBundle.getBundle("org.dcm4che.tool.ianscp.messages");
 
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
    private File storageDir;
-   private final DicomService mppsSCP = new BasicMppsSCP() {
-       @Override
-       protected Attributes create(Association as, Attributes rq,
-               Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
-           return MppsSCP.this.create(as, rq, rqAttrs);
-       }
-       
-       @Override
-       protected Attributes set(Association as, Attributes rq, Attributes rqAttrs,
-               Attributes rsp) throws DicomServiceException {
-           return MppsSCP.this.set(as, rq, rqAttrs);
-       }
+
+   private final DicomService ianSCP =
+           new DicomService(UID.InstanceAvailabilityNotificationSOPClass) {
+
+            @Override
+            public void onDimseRQ(Association as, PresentationContext pc,
+                    Dimse dimse, Attributes cmd, Attributes data)
+                    throws IOException {
+                if (dimse != Dimse.N_CREATE_RQ)
+                    throw new DicomServiceException(Status.UnrecognizedOperation);
+                try {
+                    Attributes rsp = Commands.mkNCreateRSP(cmd, Status.Success);
+                    Attributes rspAttrs = IanSCP.this.create(as, cmd, data);
+                    as.writeDimseRSP(pc, rsp, rspAttrs);
+                } catch (AssociationStateException e) {
+                    LOG.warn("{} << C-CREATE-RSP failed: {}", as, e.getMessage());
+                }
+            }
    };
 
-   public MppsSCP() throws IOException {
-       super("mppsscp");
+   public IanSCP() throws IOException {
+       super("ianscp");
        addConnection(conn);
        addApplicationEntity(ae);
        ae.setAssociationAcceptor(true);
        ae.addConnection(conn);
        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
        serviceRegistry.addDicomService(new BasicCEchoSCP());
-       serviceRegistry.addDicomService(mppsSCP);
+       serviceRegistry.addDicomService(ianSCP);
        ae.setDimseRQHandler(serviceRegistry);
    }
 
@@ -121,7 +129,7 @@ public class MppsSCP extends Device {
    public static void main(String[] args) {
        try {
            CommandLine cl = parseComandLine(args);
-           MppsSCP main = new MppsSCP();
+           IanSCP main = new IanSCP();
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
            configureTransferCapability(main.ae, cl);
@@ -133,11 +141,11 @@ public class MppsSCP extends Device {
            main.setExecutor(executorService);
            main.activate();
        } catch (ParseException e) {
-           System.err.println("mppsscp: " + e.getMessage());
+           System.err.println("ianscp: " + e.getMessage());
            System.err.println(rb.getString("try"));
            System.exit(2);
        } catch (Exception e) {
-           System.err.println("mppsscp: " + e.getMessage());
+           System.err.println("ianscp: " + e.getMessage());
            e.printStackTrace();
            System.exit(2);
        }
@@ -150,7 +158,7 @@ public class MppsSCP extends Device {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, MppsSCP.class);
+        return CLIUtils.parseComandLine(args, opts, rb, IanSCP.class);
     }
 
     @SuppressWarnings("static-access")
@@ -175,7 +183,7 @@ public class MppsSCP extends Device {
                 .create(null));
     }
 
-    private static void configureStorageDirectory(MppsSCP main, CommandLine cl) {
+    private static void configureStorageDirectory(IanSCP main, CommandLine cl) {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(
                     new File(cl.getOptionValue("directory", ".")));
@@ -223,45 +231,7 @@ public class MppsSCP extends Device {
                             UID.ExplicitVRLittleEndian),
                     rqAttrs);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to store MPPS:", e);
-            throw new DicomServiceException(Status.ProcessingFailure, e);
-        } finally {
-            SafeClose.close(out);
-        }
-        return null;
-    }
-
-    private Attributes set(Association as, Attributes rq, Attributes rqAttrs)
-            throws DicomServiceException {
-        if (storageDir == null)
-            return null;
-        String cuid = rq.getString(Tag.RequestedSOPClassUID);
-        String iuid = rq.getString(Tag.RequestedSOPInstanceUID);
-        File file = new File(storageDir, iuid);
-        if (!file.exists())
-            throw new DicomServiceException(Status.NoSuchObjectInstance).
-                setUID(Tag.AffectedSOPInstanceUID, iuid);
-        DicomService.LOG.info("{}: M-UPDATE {}", as, file);
-        Attributes data;
-        DicomInputStream in = null;
-        try {
-            in = new DicomInputStream(file);
-            data = in.readDataset(-1, -1);
-        } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to read MPPS:", e);
-            throw new DicomServiceException(Status.ProcessingFailure, e);
-        } finally {
-            SafeClose.close(in);
-        }
-        data.addAll(rqAttrs);
-        DicomOutputStream out = null;
-        try {
-            out = new DicomOutputStream(file);
-            out.writeDataset(
-                    Attributes.createFileMetaInformation(iuid, cuid, UID.ExplicitVRLittleEndian),
-                    data);
-        } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to update MPPS:", e);
+            DicomService.LOG.warn(as + ": Failed to store Instance Available Notification:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(out);

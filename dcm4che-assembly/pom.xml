@@ -180,6 +180,16 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-ianscp</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-ianscu</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-movescu</artifactId>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>

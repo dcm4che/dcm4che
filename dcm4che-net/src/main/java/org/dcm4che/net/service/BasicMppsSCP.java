@@ -141,7 +141,9 @@ public class BasicMppsSCP extends DicomService {
 
     private void checkNCreateRQ(Attributes rqAttrs) throws DicomServiceException {
         AttributesValidator validator = new AttributesValidator(rqAttrs);
-        Sequence ssaSeq = validator.getType1Sequence(Tag.ScheduledStepAttributesSequence);
+        Sequence ssaSeq = validator.getType1Sequence(
+                Tag.ScheduledStepAttributesSequence,
+                Integer.MAX_VALUE);
         if (ssaSeq != null) {
             for (Attributes ssa : ssaSeq) {
                 if (!ssa.containsValue(Tag.StudyInstanceUID)) {

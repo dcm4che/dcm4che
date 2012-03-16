@@ -315,6 +315,62 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscp/src</directory>
+      <includes>
+        <include>bin/ianscp</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscp/src</directory>
+      <includes>
+        <include>bin/ianscp.bat</include>
+        <include>etc/ianscp/log4j.properties</include>
+        <include>etc/ianscp/sop-classes.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscp/src</directory>
+      <includes>
+        <include>etc/ianscp/key.jks</include>
+        <include>etc/ianscp/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscu/src</directory>
+      <includes>
+        <include>bin/ianscu</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscu/src</directory>
+      <includes>
+        <include>bin/ianscu.bat</include>
+        <include>etc/ianscu/code.properties</include>
+        <include>etc/ianscu/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-ianscu/src</directory>
+      <includes>
+        <include>etc/ianscu/key.jks</include>
+        <include>etc/ianscu/cacerts.jks</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>keep</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
       <includes>
         <include>bin/movescu</include>
@@ -542,6 +598,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
+        <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>

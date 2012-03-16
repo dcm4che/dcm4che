@@ -172,7 +172,7 @@ public class HL72Xml {
                 TransformerConfigurationException, SAXException {
             byte[] buf = new byte[256];
             int len = is.read(buf);
-            HL7Segment msh = HL7Segment.parseMSH(buf);
+            HL7Segment msh = HL7Segment.parseMSH(buf, buf.length);
             String charsetName = HL7Charset.toCharsetName(msh.getField(17, charset));
             Reader reader = new InputStreamReader(
                     new SequenceInputStream(

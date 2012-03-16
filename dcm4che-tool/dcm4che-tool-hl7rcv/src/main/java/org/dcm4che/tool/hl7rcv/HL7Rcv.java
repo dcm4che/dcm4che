@@ -97,9 +97,9 @@ public class HL7Rcv extends HL7Device {
 
         @Override
         public byte[] onMessage(HL7Application hl7App, HL7Segment msh,
-                byte[] msg, int off, int len) throws HL7Exception {
+                byte[] msg, int off, int len, int mshlen) throws HL7Exception {
             if (tpls == null)
-                return super.onMessage(hl7App, msh, msg, off, len);
+                return super.onMessage(hl7App, msh, msg, off, len, mshlen);
             try {
                 String charsetName = HL7Charset.toCharsetName(
                         msh.getField(17, charset));

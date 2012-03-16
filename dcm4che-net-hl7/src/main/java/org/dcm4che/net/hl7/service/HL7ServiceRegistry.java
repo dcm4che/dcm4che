@@ -74,14 +74,14 @@ public class HL7ServiceRegistry extends HL7MessageListener {
 
     @Override
     public byte[] onMessage(HL7Application hl7App, HL7Segment msh, byte[] msg,
-            int off, int len) throws HL7Exception {
+            int off, int len, int mshlen) throws HL7Exception {
         HL7MessageListener listener = listeners.get(msh.getMessageType());
         if (listener == null) {
             listener = listeners.get("*");
             if (listener == null)
-                return super.onMessage(hl7App, msh, msg, off, len);
+                return super.onMessage(hl7App, msh, msg, off, len, mshlen);
         }
-        return  listener.onMessage(hl7App, msh, msg, off, len);
+        return  listener.onMessage(hl7App, msh, msg, off, len, mshlen);
     }
  
 }

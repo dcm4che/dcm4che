@@ -42,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.text.ParsePosition;
 
 import org.dcm4che.hl7.HL7Charset;
 import org.dcm4che.hl7.HL7Exception;
@@ -69,13 +70,14 @@ enum HL7ConnectionHandler implements ConnectionHandler {
             mllpIn.copyTo(inbuf);
             byte[] buf = inbuf.buf();
             int size = inbuf.size();
-            HL7Segment msh = HL7Segment.parseMSH(buf);
+            ParsePosition pos = new ParsePosition(0);
+            HL7Segment msh = HL7Segment.parseMSH(buf, size, pos );
             String charsetName = HL7Charset.toCharsetName(msh.getField(17, null));
             Connection.LOG.info("Received HL7 Message: {}",
                     promptHL7(buf, size, charsetName));
             byte[] rsp;
             try {
-                rsp = ((HL7Device) conn.getDevice()).onMessage(msh, buf, 0, size, conn);
+                rsp = ((HL7Device) conn.getDevice()).onMessage(msh, buf, 0, size, pos.getIndex(), conn);
             } catch (HL7Exception e) {
                 rsp = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
                         .getBytes(null);

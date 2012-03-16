@@ -158,7 +158,7 @@ public class HL7Application {
         return conns;
     }
 
-    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, Connection conn)
+    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, int mshlen, Connection conn)
             throws HL7Exception {
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
@@ -172,6 +172,6 @@ public class HL7Application {
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
             throw new HL7Exception(HL7Exception.AE, "No HL7 Message Listener configured");
-        return listener.onMessage(this, msh, msg, off, len);
+        return listener.onMessage(this, msh, msg, off, len, mshlen);
     }
 }

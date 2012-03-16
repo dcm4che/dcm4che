@@ -195,11 +195,11 @@ public class HL7Segment implements Serializable {
         return ss;
     }
 
-    public static HL7Segment parseMSH(byte[] b) {
-        return parseMSH(b, b.length, new ParsePosition(0));
+    public static HL7Segment parseMSH(byte[] b, int size) {
+        return parseMSH(b, size, new ParsePosition(0));
     }
 
-    static HL7Segment parseMSH(byte[] b, int size, ParsePosition pos) {
+    public static HL7Segment parseMSH(byte[] b, int size, ParsePosition pos) {
         String s = parse(b, size, pos, null);
         return new HL7Segment(s, s.charAt(3), s.substring(4,8));
     }

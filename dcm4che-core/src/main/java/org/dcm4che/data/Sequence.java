@@ -140,11 +140,10 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
-    public int calcLength(DicomOutputStream out, VR vr) {
+    public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
         int len = 0;
-        DicomEncodingOptions encOpts = out.getEncodingOptions();
         for (Attributes item : this) {
-            len += 8 + item.calcLength(out);
+            len += 8 + item.calcLength(encOpts, explicitVR);
             if (item.isEmpty() ? encOpts.undefEmptyItemLength
                                : encOpts.undefItemLength)
                 len += 8;
@@ -157,8 +156,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
-    public int getEncodedLength(DicomOutputStream out, VR vr) {
-        DicomEncodingOptions encOpts = out.getEncodingOptions();
+    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
         return isEmpty() ? encOpts.undefEmptySequenceLength ? -1 : 0
                          : encOpts.undefSequenceLength ? -1 : length;
     }

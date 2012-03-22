@@ -1775,22 +1775,23 @@ public class Attributes implements Serializable {
         return sb;
     }
 
-    public int calcLength(DicomOutputStream out) {
+    public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR) {
         if (isEmpty())
             return 0;
 
-        this.groupLengths = out.getEncodingOptions().groupLength 
+        this.groupLengths = encOpts.groupLength 
                 ? new int[countGroups()]
                 : null;
-        this.length = calcLength(out, getSpecificCharacterSet(), groupLengths);
+        this.length = calcLength(encOpts, explicitVR, 
+                getSpecificCharacterSet(), groupLengths);
         return this.length;
     }
 
-    private int calcLength(DicomOutputStream out, SpecificCharacterSet cs, int[] groupLengths) {
+    private int calcLength(DicomEncodingOptions encOpts, boolean explicitVR,
+            SpecificCharacterSet cs, int[] groupLengths) {
         int len, totlen = 0;
         int groupLengthTag = -1;
         int groupLengthIndex = -1;
-        boolean explicitVR = out.isExplicitVR();
         VR vr;
         Object val;
         for (int i = 0; i < size; i++) {
@@ -1798,7 +1799,7 @@ public class Attributes implements Serializable {
             val = values[i];
             len = explicitVR ? vr.headerLength() : 8;
             if (val instanceof Value)
-                len += ((Value) val).calcLength(out, vr);
+                len += ((Value) val).calcLength(encOpts, explicitVR, vr);
             else {
                 if (!(val instanceof byte[]))
                     values[i] = val = vr.toBytes(val, cs);
@@ -1888,7 +1889,8 @@ public class Attributes implements Serializable {
         checkInGroup(0, groupLengthTag);
         checkInGroup(size-1, groupLengthTag);
         SpecificCharacterSet cs = getSpecificCharacterSet();
-        out.writeGroupLength(groupLengthTag, calcLength(out, cs, null));
+        out.writeGroupLength(groupLengthTag,
+                calcLength(out.getEncodingOptions(), out.isExplicitVR(), cs, null));
         writeTo(out, cs, 0, size, 0);
     }
 

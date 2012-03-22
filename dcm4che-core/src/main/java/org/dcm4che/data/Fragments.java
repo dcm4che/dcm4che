@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 
 /**
@@ -107,12 +108,12 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public int calcLength(DicomOutputStream out, VR vr) {
+    public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
         int len = 0;
         for (Object frag : this) {
             len += 8;
             if (frag instanceof Value)
-                len += ((Value) frag).calcLength(out, vr);
+                len += ((Value) frag).calcLength(encOpts, explicitVR, vr);
             else
                 len += (((byte[]) frag).length + 1) & ~1;
         }
@@ -120,7 +121,7 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public int getEncodedLength(DicomOutputStream out, VR vr) {
+    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
         return -1;
     }
 

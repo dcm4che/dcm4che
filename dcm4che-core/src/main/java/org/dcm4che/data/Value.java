@@ -40,6 +40,7 @@ package org.dcm4che.data;
 
 import java.io.IOException;
 
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.ByteUtils;
 
@@ -53,10 +54,8 @@ public interface Value {
         }
 
         @Override
-        public int getEncodedLength(DicomOutputStream out, VR vr) {
-            return vr == VR.SQ
-                    && out.getEncodingOptions().undefEmptySequenceLength
-                            ? -1 : 0;
+        public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
+            return vr == VR.SQ && encOpts.undefEmptySequenceLength ? -1 : 0;
         }
 
         @Override
@@ -64,10 +63,8 @@ public interface Value {
         }
 
         @Override
-        public int calcLength(DicomOutputStream out, VR vr) {
-             return vr == VR.SQ
-                     && out.getEncodingOptions().undefEmptySequenceLength
-                             ? 8 : 0;
+        public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
+             return vr == VR.SQ && encOpts.undefEmptySequenceLength  ? 8 : 0;
         }
 
         @Override
@@ -87,8 +84,8 @@ public interface Value {
 
     void writeTo(DicomOutputStream out, VR vr) throws IOException;
 
-    int calcLength(DicomOutputStream out, VR vr);
+    int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr);
 
-    int getEncodedLength(DicomOutputStream out, VR vr);
+    int getEncodedLength(DicomEncodingOptions encOpts, VR vr);
 
 }

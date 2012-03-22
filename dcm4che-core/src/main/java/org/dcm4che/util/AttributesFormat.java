@@ -79,7 +79,7 @@ public class AttributesFormat extends Format {
         char delim;
         char prevDelim = '}';
         int level = 0;
-        StringBuilder sb = new StringBuilder(s.length());
+        StringBuilder sb = new StringBuilder();
         while (stk.hasMoreTokens()) {
             tk = stk.nextToken();
             delim = tk.charAt(0);

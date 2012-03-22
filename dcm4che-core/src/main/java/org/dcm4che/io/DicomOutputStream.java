@@ -140,7 +140,7 @@ public class DicomOutputStream extends FilterOutputStream {
         if (needCalcLength || dataset.bigEndian() != bigEndian)
             dataset = new Attributes(dataset, bigEndian);
         if (needCalcLength)
-            dataset.calcLength(this);
+            dataset.calcLength(encOpts, explicitVR);
         dataset.writeTo(this);
     }
 
@@ -199,7 +199,7 @@ public class DicomOutputStream extends FilterOutputStream {
             writeHeader(tag, vr, BulkDataLocator.MAGIC_LEN);
             ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
         } else {
-            int length = val.getEncodedLength(this, vr);
+            int length = val.getEncodedLength(encOpts, vr);
             writeHeader(tag, vr, length);
             val.writeTo(this, vr);
             if (length == -1)

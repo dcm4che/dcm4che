@@ -45,6 +45,7 @@ import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
@@ -98,12 +99,12 @@ public class BulkDataLocator implements Value {
     }
 
     @Override
-    public int calcLength(DicomOutputStream out, VR vr) {
-        return getEncodedLength(out, vr);
+    public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
+        return getEncodedLength(encOpts, vr);
     }
 
     @Override
-    public int getEncodedLength(DicomOutputStream out, VR vr) {
+    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
         return (length + 1) & ~1;
     }
 

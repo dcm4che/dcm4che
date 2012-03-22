@@ -52,7 +52,7 @@ import org.junit.Test;
 public class AttributesFormatTest {
 
     private static final String TEST_PATTERN = 
-        "date:yyyy/MM/dd(0008,0020)/date:HH(0008,0030)/#(0020,000D)/#(0020,000E)/(0008,0008)[1]/(0008,0018).dcm";
+        "{00080020,date,yyyy/MM/dd}/{00080030,time,HH}/{0020000D,hash}/{0020000E,hash}/{00080008[1]}/{00080018}.dcm";
 
     @Test
     public void testFormat() {
@@ -65,11 +65,6 @@ public class AttributesFormatTest {
         attrs.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4.5");
         assertEquals("2011/10/12/09/02C82A3A/71668980/PRIMARY/1.2.3.4.5.dcm",
                 new AttributesFormat(TEST_PATTERN).format(attrs));
-    }
-
-    @Test
-    public void testToString() {
-        assertEquals(TEST_PATTERN, new AttributesFormat(TEST_PATTERN).toString());
     }
 
 }

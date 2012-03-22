@@ -1089,7 +1089,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             attr(attrId, vals)));
     }
 
-    private static boolean equals(Object[] a, Object[] a2) {
+    protected static <T> boolean equals(T[] a, T[] a2) {
         int length = a.length;
         if (a2.length != length)
             return false;
@@ -1136,8 +1136,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    protected static void storeDiff(List<ModificationItem> mods, String attrId,
-            String[] prevs, String[] vals) {
+    protected static <T> void storeDiff(List<ModificationItem> mods, String attrId,
+            T[] prevs, T[] vals) {
         if (!equals(prevs, vals))
             mods.add((vals != null && vals.length == 0)
                     ? new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
@@ -1251,15 +1251,27 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         attrs.put(attr);
     }
 
+    private static void storeNotEmpty(Attributes attrs, String attrID, byte[]... vals) {
+        if (vals != null && vals.length > 0)
+            attrs.put(attr(attrID, vals));
+    }
+
     protected static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {
         if (vals != null && vals.length > 0)
             attrs.put(attr(attrID, vals));
     }
 
-    private static <T> Attribute attr(String attrID, T... vals) {
+    private static <T> Attribute attr(String attrID, byte[]... vals) {
+        Attribute attr = new BasicAttribute(attrID);
+        for (byte[] val : vals)
+            attr.add(val);
+        return attr;
+    }
+
+    protected static <T> Attribute attr(String attrID, T... vals) {
         Attribute attr = new BasicAttribute(attrID);
         for (T val : vals)
-            attr.add(val);
+            attr.add(val.toString());
         return attr;
     }
 

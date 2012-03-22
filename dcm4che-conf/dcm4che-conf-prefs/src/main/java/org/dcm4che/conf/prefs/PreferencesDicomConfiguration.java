@@ -874,9 +874,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                     loadTransferCapability(tcsNode.node(tcIndex)));
     }
 
-    protected void load(AttributeCoercions acs, Preferences deviceNode)
+    protected void load(AttributeCoercions acs, Preferences aeNode)
             throws BackingStoreException {
-        Preferences acsNode = deviceNode.node("dcmAttributeCoercion");
+        Preferences acsNode = aeNode.node("dcmAttributeCoercion");
         for (String acIndex : acsNode.childrenNames()) {
             Preferences acNode = acsNode.node(acIndex);
             acs.add(new AttributeCoercion(
@@ -1094,11 +1094,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             prefs.put(key, value.toString());
     }
 
-    protected static void storeNotEmpty(Preferences prefs, String key, String[] values) {
+    protected static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
         if (values != null && values.length != 0) {
             int count = 0;
-            for (String value : values)
-                prefs.put(key + '.' + (++count), value);
+            for (T value : values)
+                prefs.put(key + '.' + (++count), value.toString());
             prefs.putInt(key + ".#", count);
         }
     }
@@ -1112,7 +1112,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected static void storeDiff(Preferences prefs, String key, Object prev, Object val) {
+    protected static <T> void storeDiff(Preferences prefs, String key, T prev, T val) {
         if (val == null) {
             if (prev != null)
                 prefs.remove(key);
@@ -1137,8 +1137,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.putInt(key, val);
      }
 
-    protected static void storeDiff(Preferences prefs, String key,
-            String[] prevs, String[] vals) {
+    protected static <T> void storeDiff(Preferences prefs, String key, T[] prevs, T[] vals) {
         if (!Arrays.equals(prevs, vals)) {
             removeKeys(prefs, key, vals.length, prevs.length);
             storeNotEmpty(prefs, key, vals);

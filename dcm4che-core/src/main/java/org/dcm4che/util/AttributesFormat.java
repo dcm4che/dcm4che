@@ -40,12 +40,11 @@ package org.dcm4che.util;
 
 import java.text.FieldPosition;
 import java.text.Format;
+import java.text.MessageFormat;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.StringTokenizer;
 
 import org.dcm4che.data.Attributes;
 
@@ -57,56 +56,106 @@ public class AttributesFormat extends Format {
 
     private static final long serialVersionUID = 1901510733531643054L;
 
-    private static final Pattern pattern = Pattern.compile(
-            "\\(\\p{XDigit}{4},\\p{XDigit}{4}\\)(\\[\\d+\\])?");
-
-    private final String[] strs;
+    private final String pattern;
     private final int[] tags;
     private final int[] index;
-    private final boolean[] hash;
-    private final SimpleDateFormat[] dateFormat;
+    private final Type[] types;
+    private final MessageFormat format;
 
-    public AttributesFormat(String s) {
-        Matcher m = pattern.matcher(s);
-        ArrayList<String> tokens = new ArrayList<String>();
-        int tagStart, tagEnd = 0;
-        while (m.find()) {
-            tagStart = m.start();
-            tokens.add(s.substring(tagEnd, tagStart));
-            tokens.add(m.group());
-            tagEnd = m.end();
-        }
-        tokens.add(s.substring(tagEnd));
-        final int n = tokens.size() / 2;
-        strs = new String[n + 1];
-        tags = new int[n];
-        index = new int[n];
-        hash = new boolean[n];
-        dateFormat = new SimpleDateFormat[n];
-        int j = 0;
-        for (int i = 0; i < n; i++) {
-            String str = tokens.get(j++);
-            String tagStr = tokens.get(j++);
-            int tagStrLen = tagStr.length();
-            tags[i] = TagUtils.toTag(
-                    Integer.parseInt(tagStr.substring(1,5), 16), 
-                    Integer.parseInt(tagStr.substring(6,10), 16));
-            if (tagStrLen > 13)
-                index[i] = Integer.parseInt(tagStr.substring(12, tagStrLen-1));
-            if (str.endsWith("#")) {
-                hash[i] = true;
-                str = str.substring(0, str.length()-1);
+    public AttributesFormat(String pattern) {
+        ArrayList<String> tokens = tokenize(pattern);
+        int n = tokens.size() / 2;
+        this.pattern = pattern;
+        this.tags = new int[n];
+        this.index = new int[n];
+        this.types = new Type[n];
+        this.format = buildMessageFormat(tokens);
+    }
+
+    private ArrayList<String> tokenize(String s) {
+        ArrayList<String> result = new ArrayList<String>();
+        StringTokenizer stk = new StringTokenizer(s, "{}", true);
+        String tk;
+        char delim;
+        char prevDelim = '}';
+        int level = 0;
+        StringBuilder sb = new StringBuilder(s.length());
+        while (stk.hasMoreTokens()) {
+            tk = stk.nextToken();
+            delim = tk.charAt(0);
+            if (delim == '{') {
+                if (level++ == 0) {
+                    if (prevDelim == '}')
+                        result.add("");
+                } else {
+                    sb.append(delim);
+                }
+            } else if (delim == '}') {
+                if (--level == 0) {
+                    result.add(sb.toString());
+                    sb.setLength(0);
+                } else if (level > 0){
+                    sb.append(delim);
+                } else
+                    throw new IllegalArgumentException(s);
             } else {
-                int datePos = str.lastIndexOf("date:");
-                if (datePos != -1)
-                    try {
-                        dateFormat[i] = new SimpleDateFormat(str.substring(datePos+5));
-                        str = str.substring(0, datePos);
-                    } catch (IllegalArgumentException e) {}
+                if (level == 0)
+                    result.add(tk);
+                else
+                    sb.append(tk);
             }
-            strs[i] = str;
+            prevDelim = delim;
         }
-        strs[n] = tokens.get(j);
+        return result;
+    }
+
+    private MessageFormat buildMessageFormat(ArrayList<String> tokens) {
+        StringBuilder formatBuilder = new StringBuilder(pattern.length());
+        int j = 0;
+        for (int i = 0; i < tags.length; i++) {
+            formatBuilder.append(tokens.get(j++)).append('{').append(i);
+            String tagStr = tokens.get(j++);
+            int typeStart = tagStr.indexOf(',') + 1;
+            if (!tagStr.startsWith("now")) {
+                int tagStrLen = typeStart != 0
+                        ? typeStart - 1
+                        : tagStr.length();
+                
+                int indexStart = tagStr.charAt(tagStrLen-1) == ']'
+                        ? tagStr.lastIndexOf('[', tagStrLen-3) + 1 
+                        : 0;
+                try {
+                    tags[i] = Integer.parseInt(tagStr.substring(0,
+                            indexStart != 0 ? indexStart - 1 : tagStrLen), 16);
+                    if (indexStart != 0)
+                        index[i] = Integer.parseInt(tagStr.substring(indexStart, tagStrLen-1));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(pattern);
+                }
+            }
+            if (typeStart != 0) {
+                int typeEnd = tagStr.indexOf(',', typeStart);
+                try {
+                    types[i] = Type.valueOf(tagStr.substring(typeStart,
+                            typeEnd < 0 ? tagStr.length() : typeEnd));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException(pattern);
+                }
+                if (types[i] != Type.hash)
+                    formatBuilder.append(
+                            typeStart > 0 ? tagStr.substring(typeStart-1) : tagStr);
+            } else {
+                types[i] = Type.none;
+            }
+            formatBuilder.append('}');
+        }
+        if (j < tokens.size())
+            formatBuilder.append(tokens.get(j));
+        try {
+            return new MessageFormat(formatBuilder.toString());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(pattern);
+        }
     }
 
     public static AttributesFormat valueOf(String s) {
@@ -114,31 +163,15 @@ public class AttributesFormat extends Format {
     }
 
     @Override
-    public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-        Attributes attrs = (Attributes) obj;
-        final int n = tags.length;
-        for (int i = 0; i < n; i++) {
-            toAppendTo.append(strs[i]);
-            if (dateFormat[i] != null) {
-                Date d = tags[i] != 0 ? attrs.getDate(tags[i], index[i]) : new Date();
-                if (d == null)
-                    toAppendTo.append(dateFormat[i].toPattern());
-                else
-                    dateFormat[i].format(d, toAppendTo, pos);
-            } else {
-                String s = attrs.getString(tags[i], index[i]);
-                if (hash[i]) {
-                    if (s == null)
-                        toAppendTo.append("00000000");
-                    else
-                        toAppendTo.append(TagUtils.toHexString(s.hashCode()));
-                } else {
-                    toAppendTo.append(s);
-                }
-            }
-        }
-        toAppendTo.append(strs[n]);
-        return toAppendTo;
+    public StringBuffer format(Object obj, StringBuffer result, FieldPosition pos) {
+        return format.format(toArgs((Attributes) obj), result, pos);
+    }
+
+    private Object[] toArgs(Attributes attrs) {
+        Object[] args = new Object[tags.length];
+        for (int i = 0; i < args.length; i++)
+            args[i] = types[i].toArg(attrs, tags[i], index[i]);
+        return args ;
     }
 
     @Override
@@ -148,20 +181,49 @@ public class AttributesFormat extends Format {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        int n = tags.length;
-        for (int i = 0; i < n; i++) {
-            sb.append(strs[i]);
-            if (hash[i])
-                sb.append('#');
-            else if (dateFormat[i] != null)
-                sb.append("date:").append(dateFormat[i].toPattern());
-            sb.append(TagUtils.toString(tags[i]));
-            if (index[i] != 0)
-                sb.append('[').append(index[i]).append(']');
-        }
-        sb.append(strs[n]);
-        return sb.toString();
+        return pattern;
+    }
+
+    private static enum Type {
+        none {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return attrs.getString(tag, index);
+            }
+        },
+        number {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return attrs.getDouble(tag, index);
+            }
+        },
+        date {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return tag != 0 ? attrs.getDate(tag, index) : new Date();
+            }
+        },
+        time {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return tag != 0 ? attrs.getDate(tag, index) : new Date();
+            }
+        },
+        choice {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                return attrs.getDouble(tag, index, 0.);
+            }
+        },
+        hash {
+            @Override
+            Object toArg(Attributes attrs, int tag, int index) {
+                String s = attrs.getString(tag, index);
+                return s != null ? TagUtils.toHexString(s.hashCode()) : null;
+            }
+        };
+
+        abstract Object toArg(Attributes attrs, int tag, int index);
     }
 
 }

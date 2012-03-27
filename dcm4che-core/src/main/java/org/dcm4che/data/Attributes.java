@@ -1560,23 +1560,29 @@ public class Attributes implements Serializable {
              }
              int j = indexOf(tag);
              boolean replace = j >= 0;
+             Object modifiedValue = null;
              if (replace) {
                  if (equalValues(newAttrs, j, i))
                      continue;
-             } else if (modified != null)
-                 modified.setNull(tag, vr);
+                 if (modified != null) {
+                     modifiedValue = values[j];
+                     if (modifiedValue instanceof Value
+                             && ((Value) modifiedValue).isEmpty())
+                         modifiedValue = null;
+                 }
+             }
              if (value instanceof Sequence) {
-                 if (replace && modified != null)
-                     modified.set(privateCreator, tag, (Sequence) values[j]);
+                 if (modifiedValue != null)
+                     modified.set(privateCreator, tag, (Sequence) modifiedValue);
                  set(privateCreator, tag, (Sequence) value);
              } else if (value instanceof Fragments) {
-                 if (replace && modified != null)
-                     modified.set(privateCreator, tag, (Fragments) values[j]);
+                 if (modifiedValue != null)
+                     modified.set(privateCreator, tag, (Fragments) modifiedValue);
                  set(privateCreator, tag, (Fragments) value);
              } else {
-                 if (replace && modified != null)
+                 if (modifiedValue != null)
                      modified.set(privateCreator, tag, vr,
-                             toggleEndian(vr, values[j], modifiedToggleEndian));
+                             toggleEndian(vr, modifiedValue, modifiedToggleEndian));
                  set(privateCreator, tag, vr,
                          toggleEndian(vr, value, toggleEndian));
              }

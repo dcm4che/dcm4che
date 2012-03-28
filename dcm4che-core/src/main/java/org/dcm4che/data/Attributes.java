@@ -1509,17 +1509,17 @@ public class Attributes implements Serializable {
         return numAdd != 0;
     }
 
-    public boolean updateAttributes(Attributes newAttrs, Attributes modified) {
-        return updateAttributes(newAttrs, modified, null);
+    public boolean update(Attributes newAttrs, Attributes modified) {
+        return update(newAttrs, modified, null);
     }
 
-    public boolean updateSelectedAttributes(Attributes newAttrs, Attributes modified,
+    public boolean updateSelected(Attributes newAttrs, Attributes modified,
             int... includes) {
         Arrays.sort(includes);
-        return updateAttributes(newAttrs, modified, includes);
+        return update(newAttrs, modified, includes);
     }
 
-    private boolean updateAttributes(Attributes newAttrs, Attributes modified, int... include) {
+    private boolean update(Attributes newAttrs, Attributes modified, int... include) {
          boolean toggleEndian = bigEndian != newAttrs.bigEndian;
          boolean modifiedToggleEndian = modified != null && bigEndian != modified.bigEndian;
          int numModified = 0;

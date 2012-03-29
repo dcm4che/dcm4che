@@ -464,11 +464,14 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
             throws NamingException {
         for (AttributeCoercion prev : prevs.getAll())
-            if (acs.getEquals(prev) == null)
+            if (acs.findEquals(prev.getSopClass(), prev.getDimse(),
+                    prev.getRole(), prev.getAETitle()) == null)
                 destroySubcontext(dnOf(prev, parentDN));
         for (AttributeCoercion ac : acs.getAll()) {
             String dn = dnOf(ac, parentDN);
-            AttributeCoercion prev = prevs.getEquals(ac);
+            AttributeCoercion prev = prevs.findEquals(
+                    ac.getSopClass(), ac.getDimse(),
+                    ac.getRole(), ac.getAETitle());
             if (prev == null)
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
             else

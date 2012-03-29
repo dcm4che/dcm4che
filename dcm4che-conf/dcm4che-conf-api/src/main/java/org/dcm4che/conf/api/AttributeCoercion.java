@@ -82,6 +82,28 @@ public class AttributeCoercion {
         return uri;
     }
 
+    public boolean matches(String sopClass, Dimse dimse, Role role, String aeTitle) {
+        return this.dimse == dimse
+                && this.role == role
+                && matches(this.sopClass, sopClass)
+                && matches(this.aeTitle, aeTitle);
+    }
+
+    public boolean equals(String sopClass, Dimse dimse, Role role, String aeTitle) {
+        return this.dimse == dimse
+            && this.role == role
+            && equals(this.sopClass, sopClass)
+            && equals(this.aeTitle, aeTitle);
+    }
+
+    private static boolean equals(Object o1, Object o2) {
+        return o1 == o2 || o1 != null && o1.equals(o2);
+    }
+
+    private static boolean matches(Object o1, Object o2) {
+        return o1 == null || o2 == null || o1.equals(o2);
+    }
+
     @Override
     public String toString() {
         return promptTo(new StringBuilder(64), "").toString();

@@ -39,9 +39,8 @@
 package org.dcm4che.conf.api;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability.Role;
@@ -51,96 +50,61 @@ import org.dcm4che.net.TransferCapability.Role;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class AttributeCoercions {
+    
+    private final ArrayList<AttributeCoercion> list =
+            new ArrayList<AttributeCoercion>();
+    private final int[] insertIndex = new int[4];
 
-    private final EnumMap<Dimse,EnumMap<Role,HashMap<String,HashMap<String,AttributeCoercion>>>> dimseMap =
-            new EnumMap<Dimse,EnumMap<Role,HashMap<String,HashMap<String,AttributeCoercion>>>>(Dimse.class);
+    public void add(AttributeCoercion ac) {
+        if (ac == null)
+            throw new NullPointerException();
 
-    public AttributeCoercion add(AttributeCoercion ac) {
-        EnumMap<Role, HashMap<String, HashMap<String, AttributeCoercion>>> roleMap =
-                dimseMap.get(ac.getDimse());
-        if (roleMap == null) {
-            roleMap =  new EnumMap<Role,HashMap<String,HashMap<String,AttributeCoercion>>>(Role.class);
-            dimseMap.put(ac.getDimse(), roleMap);
-        }
-        HashMap<String, HashMap<String, AttributeCoercion>> aetMap = roleMap.get(ac.getRole());
-        if (aetMap == null) {
-            aetMap = new HashMap<String,HashMap<String,AttributeCoercion>>();
-            roleMap.put(ac.getRole(), aetMap);
-        }
-        HashMap<String, AttributeCoercion> cuidMap = aetMap.get(ac.getAETitle());
-        if (cuidMap == null) {
-            cuidMap = new HashMap<String, AttributeCoercion>();
-            aetMap.put(ac.getAETitle(), cuidMap);
-        }
-        return cuidMap.put(ac.getSopClass(), ac);
+        int i = 3;
+        if (ac.getAETitle() == null)
+            i--;
+        if (ac.getSopClass() == null)
+            i -= 2;
+        list.add(insertIndex[i]++, ac);
+        while (--i >= 0)
+            insertIndex[i]++;
     }
 
-    public AttributeCoercion getEquals(AttributeCoercion ac) {
-        EnumMap<Role, HashMap<String, HashMap<String, AttributeCoercion>>> roleMap =
-                dimseMap.get(ac.getDimse());
-        if (roleMap == null)
-            return null;
-        HashMap<String, HashMap<String, AttributeCoercion>> aetMap = roleMap.get(ac.getRole());
-        if (aetMap == null)
-            return null;
-        HashMap<String, AttributeCoercion> cuidMap = aetMap.get(ac.getAETitle());
-        if (cuidMap == null)
-            return null;
-        return cuidMap.get(ac.getSopClass());
-    }
+    public boolean remove(AttributeCoercion ac) {
+        if (ac == null)
+            throw new NullPointerException();
 
-    public AttributeCoercion get(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        EnumMap<Role, HashMap<String, HashMap<String, AttributeCoercion>>> roleMap =
-                dimseMap.get(dimse);
-        if (roleMap == null)
-            return null;
-        HashMap<String, HashMap<String, AttributeCoercion>> aetMap = roleMap.get(role);
-        if (aetMap == null)
-            return null;
-
-        AttributeCoercion ac = get(aetMap, aeTitle, sopClass);
-        if (ac == null) {
-            ac = get(aetMap, aeTitle, null);
-            if (ac == null) {
-                ac = get(aetMap, null, sopClass);
-                if (ac == null) {
-                    ac = get(aetMap, null, null);
-                }
-            }
-        }
-        return ac;
-    }
-
-    private AttributeCoercion get(HashMap<String, HashMap<String, AttributeCoercion>> map1,
-            String aeTitle, String sopClass) {
-        HashMap<String, AttributeCoercion> map2 = map1.get(aeTitle);
-        return map2 != null ? map2.get(sopClass) : null;
-    }
-
-    public AttributeCoercion remove(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        EnumMap<Role, HashMap<String, HashMap<String, AttributeCoercion>>> roleMap =
-                dimseMap.get(dimse);
-        if (roleMap == null)
-            return null;
-        HashMap<String, HashMap<String, AttributeCoercion>> aetMap = roleMap.get(role);
-        if (aetMap == null)
-            return null;
-        HashMap<String, AttributeCoercion> cuidMap = aetMap.get(aeTitle);
-        if (cuidMap == null)
-            return null;
-        return cuidMap.remove(sopClass);
-    }
-
-    public Collection<AttributeCoercion> getAll() {
-        ArrayList<AttributeCoercion> list = new ArrayList<AttributeCoercion>();
-        for (EnumMap<Role, HashMap<String, HashMap<String, AttributeCoercion>>> roleMap : dimseMap.values())
-            for (HashMap<String, HashMap<String, AttributeCoercion>> aetMap : roleMap.values())
-                for (HashMap<String, AttributeCoercion> cuidMap : aetMap.values())
-                    list.addAll(cuidMap.values());
-        return list;
+        int index = list.indexOf(ac);
+        if (index < 0)
+            return false;
+        list.remove(index);
+        int i = 4;
+        while (--i >= 0 && insertIndex[i] > index)
+            insertIndex[i]--;
+        return true;
     }
 
     public void clear() {
-        dimseMap.clear();
+        list.clear();
+        Arrays.fill(insertIndex, 0);
+    }
+
+    public AttributeCoercion findEquals(String sopClass, Dimse dimse,
+            Role role, String aeTitle) {
+        for (AttributeCoercion ac2 : list)
+            if (ac2.equals(sopClass, dimse, role, aeTitle))
+                return ac2;
+        return null;
+    }
+
+    public AttributeCoercion findMatching(String sopClass, Dimse dimse,
+            Role role, String aeTitle) {
+        for (AttributeCoercion ac : list)
+            if (ac.matches(sopClass, dimse, role, aeTitle))
+                return ac;
+        return null;
+    }
+
+    public List<AttributeCoercion> getAll() {
+        return list;
     }
 }

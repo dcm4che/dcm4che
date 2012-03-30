@@ -63,6 +63,7 @@
     <module>dcm4che-tool-hl7snd</module>
     <module>dcm4che-tool-ianscp</module>
     <module>dcm4che-tool-ianscu</module>
+    <module>dcm4che-tool-mkkos</module>
     <module>dcm4che-tool-movescu</module>
     <module>dcm4che-tool-mppsscp</module>
     <module>dcm4che-tool-mppsscu</module>

@@ -70,6 +70,7 @@ import org.dcm4che.net.SSLManagerFactory;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.UserIdentityRQ;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StreamUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -556,7 +557,7 @@ public class CLIUtils {
             throws IOException {
         if (p == null)
             p = new Properties();
-        InputStream in = SSLManagerFactory.openFileOrURL(url);
+        InputStream in = StreamUtils.openFileOrURL(url);
         try {
             p.load(in);
         } finally {

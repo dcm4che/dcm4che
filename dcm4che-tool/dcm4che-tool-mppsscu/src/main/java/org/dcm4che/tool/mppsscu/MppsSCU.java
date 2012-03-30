@@ -189,7 +189,7 @@ public class MppsSCU extends Device {
     private String finalStatus = COMPLETED;
     private Attributes discontinuationReason;
 
-    private Properties codes = new Properties();
+    private Properties codes;
     private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
     private Association as;
     private final AtomicInteger outstanding = new AtomicInteger(0);

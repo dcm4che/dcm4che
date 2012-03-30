@@ -371,6 +371,25 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-mkkos/src</directory>
+      <includes>
+        <include>bin/mkkos</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-mkkos/src</directory>
+      <includes>
+        <include>bin/mkkos.bat</include>
+        <include>etc/mkkos/code.properties</include>
+        <include>etc/mkkos/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-movescu/src</directory>
       <includes>
         <include>bin/movescu</include>
@@ -600,6 +619,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>

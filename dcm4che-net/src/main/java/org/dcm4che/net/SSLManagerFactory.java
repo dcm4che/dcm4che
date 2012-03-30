@@ -38,10 +38,8 @@
 
 package org.dcm4che.net;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -55,6 +53,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StreamUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -88,22 +87,13 @@ public abstract class SSLManagerFactory {
             throws IOException, KeyStoreException, NoSuchAlgorithmException,
                 CertificateException {
         KeyStore ks = KeyStore.getInstance(type);
-        InputStream in = openFileOrURL(url);
+        InputStream in = StreamUtils.openFileOrURL(url);
         try {
             ks.load(in, password);
         } finally {
             SafeClose.close(in);
         }
         return ks;
-    }
-
-    public static InputStream openFileOrURL(String url) throws IOException {
-        if (url.startsWith("resource:"))
-            return Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(url.substring(9));
-        if (url.indexOf(':') < 2)
-            return new FileInputStream(url);
-        return new URL(url).openStream();
     }
 
     public static KeyManager createKeyManager(String type, String url,

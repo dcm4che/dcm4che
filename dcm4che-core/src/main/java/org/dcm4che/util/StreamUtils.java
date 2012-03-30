@@ -39,9 +39,12 @@
 package org.dcm4che.util;
 
 import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -130,5 +133,18 @@ public class StreamUtils {
             int swapBytes) throws IOException {
         copy(in, out, len, swapBytes,
                 new byte[Math.min(len, COPY_BUFFER_SIZE)]);
+    }
+
+    public static InputStream openFileOrURL(String name) throws IOException {
+        if (name.startsWith("resource:")) {
+            URL url = Thread.currentThread().getContextClassLoader()
+                    .getResource(name.substring(9));
+            if (url == null)
+                throw new FileNotFoundException(name);
+            return url.openStream();
+        }
+        if (name.indexOf(':') < 2)
+            return new FileInputStream(name);
+        return new URL(name).openStream();
     }
 }

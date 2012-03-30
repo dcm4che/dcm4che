@@ -75,6 +75,18 @@ public class StreamUtils {
         }
     }
 
+    public static void copy(InputStream in, OutputStream out, byte buf[])
+            throws IOException {
+        int count;
+        while ((count = in.read(buf, 0, buf.length)) > 0)
+            out.write(buf, 0, count);
+    }
+
+    public static  void copy(InputStream in, OutputStream out)
+            throws IOException {
+        copy(in, out, new byte[COPY_BUFFER_SIZE]);
+    }
+
     public static  void copy(InputStream in, OutputStream out, int len,
             byte buf[]) throws IOException {
         if (len < 0)

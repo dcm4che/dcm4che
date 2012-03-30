@@ -1,13 +1,13 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem xml2prefs  Launcher
+rem xml2hl7  Launcher
 rem -------------------------------------------------------------------------
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che.tool.xml2prefs.Xml2Prefs
-set MAIN_JAR=dcm4che-tool-xml2prefs-3.0.0-SNAPSHOT.jar
+set MAIN_CLASS=org.dcm4che.tool.xml2hl7.Xml2HL7
+set MAIN_JAR=dcm4che-tool-xml2hl7-3.0.0-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -41,5 +41,6 @@ set JAVA=%JAVA_HOME%\bin\java
 :SKIP_SET_JAVA_HOME
 
 set CP=%DCM4CHE_HOME%\lib\%MAIN_JAR%
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-hl7-3.0.0-SNAPSHOT.jar
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

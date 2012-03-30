@@ -574,6 +574,23 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-xml2hl7/src</directory>
+      <includes>
+        <include>bin/xml2hl7</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-xml2hl7/src</directory>
+      <includes>
+        <include>bin/xml2hl7.bat</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-xml2prefs/src</directory>
       <includes>
         <include>bin/xml2prefs</include>
@@ -627,6 +644,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>

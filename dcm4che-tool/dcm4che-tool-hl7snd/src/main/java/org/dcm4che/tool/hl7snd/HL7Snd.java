@@ -39,9 +39,10 @@
 package org.dcm4che.tool.hl7snd;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -58,6 +59,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
+import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,25 +177,26 @@ public class HL7Snd extends Device {
     }
 
     public void sendFiles(List<String> pathnames) throws IOException {
-        MyByteArrayOutputStream receiveBuf = new MyByteArrayOutputStream();
+        byte[] copyBuf = new byte[2048];
+        MyByteArrayOutputStream msgBuf = new MyByteArrayOutputStream();
         for (String pathname : pathnames) {
-            File f = new File(pathname);
-            byte[] b = new byte[(int) f.length()];
-            FileInputStream in = new FileInputStream(f);
+            InputStream in = pathname.equals("-") 
+                    ? new FileInputStream(FileDescriptor.in)
+                    : new FileInputStream(pathname);
             try {
-                in.read(b);
+                StreamUtils.copy(in, msgBuf, copyBuf);
             } finally {
                 SafeClose.close(in);
             }
-            LOG.info("Send HL7 Message: {}", promptHL7(b, b.length));
-            mllpOut.write(b);
+            LOG.info("Send HL7 Message: {}", promptHL7(msgBuf.buf(), msgBuf.size()));
+            mllpOut.write(msgBuf.buf(), 0, msgBuf.size());
             mllpOut.finish();
+            msgBuf.reset();
             if (!mllpIn.hasMoreInput())
                 throw new IOException("Connection closed by receiver");
-            mllpIn.copyTo(receiveBuf);
-            LOG.info("Received HL7 Message: {}",
-                    promptHL7(receiveBuf.buf(), receiveBuf.size()));
-            receiveBuf.reset();
+            mllpIn.copyTo(msgBuf);
+            LOG.info("Received HL7 Message: {}", promptHL7(msgBuf.buf(), msgBuf.size()));
+            msgBuf.reset();
         }
     }
 

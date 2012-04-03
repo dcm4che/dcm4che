@@ -175,8 +175,6 @@ public class MkKOS {
         addOptions(opts);
         CLIUtils.addCommonOptions(opts);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, MkKOS.class);
-        if (!cl.hasOption("o"))
-            throw new MissingOptionException(rb.getString("missing-o-file-opt"));
         if (cl.getArgList().isEmpty())
             throw new ParseException(rb.getString("missing"));
         return cl;

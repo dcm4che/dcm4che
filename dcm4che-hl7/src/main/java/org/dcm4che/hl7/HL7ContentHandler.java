@@ -54,6 +54,7 @@ public class HL7ContentHandler extends DefaultHandler {
     private final Writer writer;
     private char[] delimiters = Delimiter.DEFAULT.toCharArray();
     private final char[] escape = { '\\', 0, '\\' };
+    private boolean ignoreCharacters = true;
 
     public HL7ContentHandler(Writer writer) {
         this.writer = writer;
@@ -67,30 +68,35 @@ public class HL7ContentHandler extends DefaultHandler {
             case 'f':
                 if (qName.equals("field")) {
                     writer.write(delimiters[0]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
             case 'c':
                 if (qName.equals("component")) {
                     writer.write(delimiters[1]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
             case 'r':
                 if (qName.equals("repeat")) {
                     writer.write(delimiters[2]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
             case 'e':
                 if (qName.equals("escape")) {
                     writer.write(delimiters[3]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
             case 's':
                 if (qName.equals("subcomponent")) {
                     writer.write(delimiters[4]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
@@ -137,6 +143,7 @@ public class HL7ContentHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName)
             throws SAXException {
+        ignoreCharacters = true;
         try {
             switch (qName.charAt(0)) {
             case 'f':
@@ -151,6 +158,7 @@ public class HL7ContentHandler extends DefaultHandler {
             case 'e':
                 if (qName.equals("escape")) {
                     writer.write(delimiters[3]);
+                    ignoreCharacters = false;
                     return;
                 }
                 break;
@@ -172,6 +180,9 @@ public class HL7ContentHandler extends DefaultHandler {
     @Override
     public void characters(char[] cbuf, int start, int length)
             throws SAXException {
+        if (ignoreCharacters)
+            return;
+
         try {
             int off = start;
             int end = start + length;

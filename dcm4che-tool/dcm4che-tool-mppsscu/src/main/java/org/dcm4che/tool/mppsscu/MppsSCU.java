@@ -244,9 +244,16 @@ public class MppsSCU extends Device {
         if (codeMeaning == null)
             throw new IllegalArgumentException("undefined code value: "
                         + codeValue);
+        int endDesignator = codeValue.indexOf('-');
         Attributes attrs = new Attributes(3);
-        attrs.setString(Tag.CodeValue, VR.SH, codeValue);
-        attrs.setString(Tag.CodingSchemeDesignator, VR.SH, "DCM");
+        attrs.setString(Tag.CodeValue, VR.SH,
+                endDesignator >= 0
+                    ? codeValue.substring(endDesignator + 1)
+                    : codeValue);
+        attrs.setString(Tag.CodingSchemeDesignator, VR.SH,
+                endDesignator >= 0
+                    ? codeValue.substring(0, endDesignator)
+                    : "DCM");
         attrs.setString(Tag.CodeMeaning, VR.LO, codeMeaning);
         this.discontinuationReason = attrs;
     }

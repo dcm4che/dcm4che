@@ -1018,31 +1018,54 @@ public class Association {
         return rsp;
     }
 
-    public void nset(String cuid, String iuid,  Attributes data,
+    public void nset(String cuid, String iuid, Attributes data,
+            String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nset(cuid, cuid, iuid, new DataWriterAdapter(data), tsuid, rspHandler);
+    }
+
+    public void nset(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            throws IOException, InterruptedException {
+        nset(asuid, cuid, iuid, new DataWriterAdapter(data), tsuid, rspHandler);
+    }
+
+    public DimseRSP nset(String cuid, String iuid, Attributes data,
+            String tsuid) throws IOException,
+            InterruptedException {
+        return nset(cuid, cuid, iuid, new DataWriterAdapter(data), tsuid);
+    }
+
+    public DimseRSP nset(String asuid, String cuid, String iuid,
+            Attributes data, String tsuid)
+            throws IOException, InterruptedException {
+        return nset(asuid, cuid, iuid, new DataWriterAdapter(data), tsuid);
+    }
+
+    public void nset(String cuid, String iuid, DataWriter data,
             String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         nset(cuid, cuid, iuid, data, tsuid, rspHandler);
     }
 
     public void nset(String asuid, String cuid, String iuid,
-            Attributes data, String tsuid, DimseRSPHandler rspHandler)
+            DataWriter data, String tsuid, DimseRSPHandler rspHandler)
             throws IOException, InterruptedException {
         PresentationContext pc = pcFor(asuid, tsuid);
         checkIsSCU(cuid);
         Attributes nsetrq =
                 Commands.mkNSetRQ(rspHandler.getMessageID(), cuid, iuid);
-        invoke(pc, nsetrq, new DataWriterAdapter(data), rspHandler,
-                conn.getResponseTimeout());
+        invoke(pc, nsetrq, data, rspHandler, conn.getResponseTimeout());
     }
 
-    public DimseRSP nset(String cuid, String iuid, Attributes data,
+    public DimseRSP nset(String cuid, String iuid, DataWriter data,
             String tsuid) throws IOException,
             InterruptedException {
         return nset(cuid, cuid, iuid, data, tsuid);
     }
 
     public DimseRSP nset(String asuid, String cuid, String iuid,
-            Attributes data, String tsuid)
+            DataWriter data, String tsuid)
             throws IOException, InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP(nextMessageID());
         nset(asuid, cuid, iuid, data, tsuid, rsp);

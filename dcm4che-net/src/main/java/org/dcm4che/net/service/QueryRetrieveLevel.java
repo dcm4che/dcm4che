@@ -52,7 +52,7 @@ public enum QueryRetrieveLevel {
         @Override
         public void validateRetrieveKeys(AttributesValidator validator,
                 QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.StudyInstanceUID, 0, Integer.MAX_VALUE);
+            validator.getType1String(Tag.PatientID, 0, 1);
             check(validator);
         }
 

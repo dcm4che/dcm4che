@@ -64,6 +64,22 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicCStoreSCP extends DicomService {
 
+    public static class FileHolder {
+        private File file;
+
+        public FileHolder(File file) {
+            this.file = file;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public void setFile(File file) {
+            this.file = file;
+        }
+    }
+
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
     }
@@ -88,6 +104,7 @@ public class BasicCStoreSCP extends DicomService {
         Object storage = selectStorage(as, rq);
         File file = createFile(as, rq, storage);
         LOG.info("{}: M-WRITE {}", as, file);
+        FileHolder fileHolder = new FileHolder(file);
         try {
             FileOutputStream fout = new FileOutputStream(file);
             MessageDigest digest = getMessageDigest(as);
@@ -100,14 +117,19 @@ public class BasicCStoreSCP extends DicomService {
             } finally {
                 out.close();
             }
-            file = process(as, pc, rq, rsp, storage, file, digest);
+            if (process(as, pc, rq, rsp, storage, fileHolder, digest))
+                fileHolder.setFile(null);
         } finally {
-            if (file != null)
-                if (file.delete())
-                    LOG.info("{}: M-DELETE {}", as, file);
-                else
-                    LOG.warn("{}: Failed to M-DELETE {}", as, file);
+            deleteFile(as, fileHolder.getFile());
         }
+    }
+
+    private void deleteFile(Association as, File file) {
+        if (file != null)
+            if (file.delete())
+                LOG.info("{}: M-DELETE {}", as, file);
+            else
+                LOG.warn("{}: Failed to M-DELETE {}", as, file);
     }
 
     protected MessageDigest getMessageDigest(Association as) {
@@ -138,9 +160,9 @@ public class BasicCStoreSCP extends DicomService {
         return fmi;
     }
 
-    protected File process(Association as, PresentationContext pc, Attributes rq, Attributes rsp,
-            Object storage, File file, MessageDigest digest) throws IOException {
-        return null;
+    protected boolean process(Association as, PresentationContext pc, Attributes rq, Attributes rsp,
+            Object storage, FileHolder fileHolder, MessageDigest digest) throws IOException {
+        return true;
     }
 
 }

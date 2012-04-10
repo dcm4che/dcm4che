@@ -43,10 +43,11 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected File process(Association as, PresentationContext pc, Attributes rq,
-            Attributes rsp, Object storage, File file, MessageDigest digest)
+    protected boolean process(Association as, PresentationContext pc, Attributes rq,
+            Attributes rsp, Object storage, FileHolder fileHolder, MessageDigest digest)
             throws DicomServiceException {
         File dst;
+        File file = fileHolder.getFile();
         AttributesFormat filePathFormat = storeSCP.getStorageFilePathFormat();
         File storeDir = storeSCP.getStorageDirectory();
         if (filePathFormat == null) {
@@ -76,6 +77,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
             throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
         }
-        return null;
+        fileHolder.setFile(dst);
+        return true;
     }
 }

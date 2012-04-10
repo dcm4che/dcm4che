@@ -82,10 +82,11 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected File process(Association as, PresentationContext pc, Attributes rq,
-            Attributes rsp, Object storage, File file, MessageDigest digest)
+    protected boolean process(Association as, PresentationContext pc, Attributes rq,
+            Attributes rsp, Object storage, FileHolder fileHolder, MessageDigest digest)
             throws DicomServiceException {
         Attributes fmi, ds;
+        File file = fileHolder.getFile();
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(file);
@@ -111,10 +112,11 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
             throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
         }
+        fileHolder.setFile(dst);
         try {
             if (addDicomDirRecords(as, ds, fmi, dst)) {
                 LOG.info("{}: M-UPDATE {}", as, qrscp.getDicomDirectory());
-                return null;
+                return true;
             }
             LOG.info("{}: ignore received object", as);
         } catch (IOException e) {
@@ -125,7 +127,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             rsp.setInt(Tag.Status, VR.US, Status.OutOfResources);
             rsp.setString(Tag.ErrorComment, VR.LO, errorComment);
         }
-        return dst;
+        return false;
     }
 
     private boolean addDicomDirRecords(Association as, Attributes ds, 

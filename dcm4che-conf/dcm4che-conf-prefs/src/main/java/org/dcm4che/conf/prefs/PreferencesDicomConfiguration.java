@@ -62,6 +62,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Issuer;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
@@ -362,17 +363,39 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     protected void storeTo(Device device, Preferences prefs) {
         storeNotNull(prefs, "dicomDescription", device.getDescription());
         storeNotNull(prefs, "dicomManufacturer", device.getManufacturer());
-        storeNotNull(prefs, "dicomManufacturerModelName", device.getManufacturerModelName());
-        storeNotEmpty(prefs, "dicomSoftwareVersion", device.getSoftwareVersion());
+        storeNotNull(prefs, "dicomManufacturerModelName",
+                device.getManufacturerModelName());
+        storeNotEmpty(prefs, "dicomSoftwareVersion",
+                device.getSoftwareVersion());
         storeNotNull(prefs, "dicomStationName", device.getStationName());
-        storeNotNull(prefs, "dicomDeviceSerialNumber", device.getDeviceSerialNumber());
-        storeNotNull(prefs, "dicomIssuerOfPatientID", device.getIssuerOfPatientID());
-        storeNotEmpty(prefs, "dicomInstitutionName",device.getInstitutionNames());
-        storeNotEmpty(prefs, "dicomInstitutionAddress",device.getInstitutionAddresses());
+        storeNotNull(prefs, "dicomDeviceSerialNumber",
+                device.getDeviceSerialNumber());
+        storeNotNull(prefs, "dicomIssuerOfPatientID",
+                device.getIssuerOfPatientID());
+        storeNotNull(prefs, "dicomIssuerOfAccessionNumber",
+                device.getIssuerOfAccessionNumber());
+        storeNotNull(prefs, "dicomOrderPlacerIdentifier",
+                device.getOrderPlacerIdentifier());
+        storeNotNull(prefs, "dicomOrderFillerIdentifier",
+                device.getOrderFillerIdentifier());
+        storeNotNull(prefs, "dicomIssuerOfAdmissionID",
+                device.getIssuerOfAdmissionID());
+        storeNotNull(prefs, "dicomIssuerOfServiceEpisodeID",
+                device.getIssuerOfServiceEpisodeID());
+        storeNotNull(prefs, "dicomIssuerOfContainerIdentifier",
+                device.getIssuerOfContainerIdentifier());
+        storeNotNull(prefs, "dicomIssuerOfSpecimenIdentifier",
+                device.getIssuerOfSpecimenIdentifier());
+        storeNotEmpty(prefs, "dicomInstitutionName",
+                device.getInstitutionNames());
+        storeNotEmpty(prefs, "dicomInstitutionAddress",
+                device.getInstitutionAddresses());
         storeNotEmpty(prefs, "dicomInstitutionalDepartmentName",
                 device.getInstitutionalDepartmentNames());
-        storeNotEmpty(prefs, "dicomPrimaryDeviceType", device.getPrimaryDeviceTypes());
-        storeNotEmpty(prefs, "dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
+        storeNotEmpty(prefs, "dicomPrimaryDeviceType",
+                device.getPrimaryDeviceTypes());
+        storeNotEmpty(prefs, "dicomRelatedDeviceReference",
+                device.getRelatedDeviceRefs());
         storeNotEmpty(prefs, "dicomAuthorizedNodeCertificateReference",
                 device.getAuthorizedNodeCertificateRefs());
         storeNotEmpty(prefs, "dicomThisNodeCertificateReference",
@@ -500,6 +523,27 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
                 b.getIssuerOfPatientID());
+        storeDiff(prefs, "dicomIssuerOfAccessionNumber",
+                a.getIssuerOfAccessionNumber(),
+                b.getIssuerOfAccessionNumber());
+        storeDiff(prefs, "dicomOrderPlacerIdentifier",
+                a.getOrderPlacerIdentifier(),
+                b.getOrderPlacerIdentifier());
+        storeDiff(prefs, "dicomOrderFillerIdentifier",
+                a.getOrderFillerIdentifier(),
+                b.getOrderFillerIdentifier());
+        storeDiff(prefs, "dicomIssuerOfAdmissionID",
+                a.getIssuerOfAdmissionID(),
+                b.getIssuerOfAdmissionID());
+        storeDiff(prefs, "dicomIssuerOfServiceEpisodeID",
+                a.getIssuerOfServiceEpisodeID(),
+                b.getIssuerOfServiceEpisodeID());
+        storeDiff(prefs, "dicomIssuerOfContainerIdentifier",
+                a.getIssuerOfContainerIdentifier(),
+                b.getIssuerOfContainerIdentifier());
+        storeDiff(prefs, "dicomIssuerOfSpecimenIdentifier",
+                a.getIssuerOfSpecimenIdentifier(),
+                b.getIssuerOfSpecimenIdentifier());
         storeDiff(prefs, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
@@ -971,7 +1015,22 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         device.setSoftwareVersions(stringArray(prefs, "dicomSoftwareVersion"));
         device.setStationName(prefs.get("dicomStationName", null));
         device.setDeviceSerialNumber(prefs.get("dicomDeviceSerialNumber", null));
-        device.setIssuerOfPatientID(prefs.get("dicomIssuerOfPatientID", null));
+        device.setIssuerOfPatientID(
+                Issuer.valueOf(prefs.get("dicomIssuerOfPatientID", null)));
+        device.setIssuerOfAccessionNumber(
+                Issuer.valueOf(prefs.get("dicomIssuerOfAccessionNumber", null)));
+        device.setOrderPlacerIdentifier(
+                Issuer.valueOf(prefs.get("dicomOrderPlacerIdentifier", null)));
+        device.setOrderFillerIdentifier(
+                Issuer.valueOf(prefs.get("dicomOrderFillerIdentifier", null)));
+        device.setIssuerOfAdmissionID(
+                Issuer.valueOf(prefs.get("dicomIssuerOfAdmissionID", null)));
+        device.setIssuerOfServiceEpisodeID(
+                Issuer.valueOf(prefs.get("dicomIssuerOfServiceEpisodeID", null)));
+        device.setIssuerOfContainerIdentifier(
+                Issuer.valueOf(prefs.get("dicomIssuerOfContainerIdentifier", null)));
+        device.setIssuerOfSpecimenIdentifier(
+                Issuer.valueOf(prefs.get("dicomIssuerOfSpecimenIdentifier", null)));
         device.setInstitutionNames(stringArray(prefs, "dicomInstitutionName"));
         device.setInstitutionAddresses(stringArray(prefs, "dicomInstitutionAddress"));
         device.setInstitutionalDepartmentNames(

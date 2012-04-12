@@ -80,7 +80,14 @@ public class Device {
     private String manufacturerModelName;
     private String stationName;
     private String deviceSerialNumber;
-    private String issuerOfPatientID;
+    private Issuer issuerOfPatientID;
+    private Issuer issuerOfAccessionNumber;
+    private Issuer orderPlacerIdentifier;
+    private Issuer orderFillerIdentifier;
+    private Issuer issuerOfAdmissionID;
+    private Issuer issuerOfServiceEpisodeID;
+    private Issuer issuerOfContainerIdentifier;
+    private Issuer issuerOfSpecimenIdentifier;
     private String[] softwareVersions = {};
     private String[] primaryDeviceTypes = {};
     private String[] institutionNames = {};
@@ -345,27 +352,68 @@ public class Device {
         institutionalDepartmentNames = names;
     }
 
-    /**
-     * Get the issuer of patient IDs for this device.
-     * 
-     * @return A String containing the PID issuer value.
-     */
-    public final String getIssuerOfPatientID() {
+    public final Issuer getIssuerOfPatientID() {
         return issuerOfPatientID;
     }
 
-    /**
-     * Set the issuer of patient IDs for this device.
-     * <p>
-     * Default value for the Issuer of Patient ID (0010,0021) for SOP Instances
-     * created by this device. May be overridden by the values received in a
-     * worklist or other source.
-     * 
-     * @param issuerOfPatientID
-     *                A String containing the PID issuer value.
-     */
-    public final void setIssuerOfPatientID(String issuerOfPatientID) {
+    public final void setIssuerOfPatientID(Issuer issuerOfPatientID) {
         this.issuerOfPatientID = issuerOfPatientID;
+    }
+
+    public final Issuer getIssuerOfAccessionNumber() {
+        return issuerOfAccessionNumber;
+    }
+
+    public final void setIssuerOfAccessionNumber(Issuer issuerOfAccessionNumber) {
+        this.issuerOfAccessionNumber = issuerOfAccessionNumber;
+    }
+
+    public final Issuer getOrderPlacerIdentifier() {
+        return orderPlacerIdentifier;
+    }
+
+    public final void setOrderPlacerIdentifier(Issuer orderPlacerIdentifier) {
+        this.orderPlacerIdentifier = orderPlacerIdentifier;
+    }
+
+    public final Issuer getOrderFillerIdentifier() {
+        return orderFillerIdentifier;
+    }
+
+    public final void setOrderFillerIdentifier(Issuer orderFillerIdentifier) {
+        this.orderFillerIdentifier = orderFillerIdentifier;
+    }
+
+    public final Issuer getIssuerOfAdmissionID() {
+        return issuerOfAdmissionID;
+    }
+
+    public final void setIssuerOfAdmissionID(Issuer issuerOfAdmissionID) {
+        this.issuerOfAdmissionID = issuerOfAdmissionID;
+    }
+
+    public final Issuer getIssuerOfServiceEpisodeID() {
+        return issuerOfServiceEpisodeID;
+    }
+
+    public final void setIssuerOfServiceEpisodeID(Issuer issuerOfServiceEpisodeID) {
+        this.issuerOfServiceEpisodeID = issuerOfServiceEpisodeID;
+    }
+
+    public final Issuer getIssuerOfContainerIdentifier() {
+        return issuerOfContainerIdentifier;
+    }
+
+    public final void setIssuerOfContainerIdentifier(Issuer issuerOfContainerIdentifier) {
+        this.issuerOfContainerIdentifier = issuerOfContainerIdentifier;
+    }
+
+    public final Issuer getIssuerOfSpecimenIdentifier() {
+        return issuerOfSpecimenIdentifier;
+    }
+
+    public final void setIssuerOfSpecimenIdentifier(Issuer issuerOfSpecimenIdentifier) {
+        this.issuerOfSpecimenIdentifier = issuerOfSpecimenIdentifier;
     }
 
     public X509Certificate[] getAuthorizedNodeCertificates(String ref) {

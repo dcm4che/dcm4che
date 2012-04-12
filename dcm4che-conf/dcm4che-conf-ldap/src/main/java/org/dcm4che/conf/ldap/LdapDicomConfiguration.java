@@ -73,6 +73,7 @@ import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Issuer;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
@@ -500,16 +501,37 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeNotNull(attrs, "dicomManufacturer", device.getManufacturer());
         storeNotNull(attrs, "dicomManufacturerModelName",
                 device.getManufacturerModelName());
-        storeNotEmpty(attrs, "dicomSoftwareVersion", device.getSoftwareVersion());
+        storeNotEmpty(attrs, "dicomSoftwareVersion",
+                device.getSoftwareVersion());
         storeNotNull(attrs, "dicomStationName", device.getStationName());
-        storeNotNull(attrs, "dicomDeviceSerialNumber", device.getDeviceSerialNumber());
-        storeNotNull(attrs, "dicomIssuerOfPatientID", device.getIssuerOfPatientID());
-        storeNotEmpty(attrs, "dicomInstitutionName",device.getInstitutionNames());
-        storeNotEmpty(attrs, "dicomInstitutionAddress",device.getInstitutionAddresses());
+        storeNotNull(attrs, "dicomDeviceSerialNumber",
+                device.getDeviceSerialNumber());
+        storeNotNull(attrs, "dicomIssuerOfPatientID",
+                device.getIssuerOfPatientID());
+        storeNotNull(attrs, "dicomIssuerOfAccessionNumber",
+                device.getIssuerOfAccessionNumber());
+        storeNotNull(attrs, "dicomOrderPlacerIdentifier",
+                device.getOrderPlacerIdentifier());
+        storeNotNull(attrs, "dicomOrderFillerIdentifier",
+                device.getOrderFillerIdentifier());
+        storeNotNull(attrs, "dicomIssuerOfAdmissionID",
+                device.getIssuerOfAdmissionID());
+        storeNotNull(attrs, "dicomIssuerOfServiceEpisodeID",
+                device.getIssuerOfServiceEpisodeID());
+        storeNotNull(attrs, "dicomIssuerOfContainerIdentifier",
+                device.getIssuerOfContainerIdentifier());
+        storeNotNull(attrs, "dicomIssuerOfSpecimenIdentifier",
+                device.getIssuerOfSpecimenIdentifier());
+        storeNotEmpty(attrs, "dicomInstitutionName",
+                device.getInstitutionNames());
+        storeNotEmpty(attrs, "dicomInstitutionAddress",
+                device.getInstitutionAddresses());
         storeNotEmpty(attrs, "dicomInstitutionalDepartmentName",
                 device.getInstitutionalDepartmentNames());
-        storeNotEmpty(attrs, "dicomPrimaryDeviceType", device.getPrimaryDeviceTypes());
-        storeNotEmpty(attrs, "dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
+        storeNotEmpty(attrs, "dicomPrimaryDeviceType",
+                device.getPrimaryDeviceTypes());
+        storeNotEmpty(attrs, "dicomRelatedDeviceReference",
+                device.getRelatedDeviceRefs());
         storeNotEmpty(attrs, "dicomAuthorizedNodeCertificateReference",
                 device.getAuthorizedNodeCertificateRefs());
         storeNotEmpty(attrs, "dicomThisNodeCertificateReference",
@@ -691,7 +713,22 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         device.setSoftwareVersions(stringArray(attrs.get("dicomSoftwareVersion")));
         device.setStationName(stringValue(attrs.get("dicomStationName")));
         device.setDeviceSerialNumber(stringValue(attrs.get("dicomDeviceSerialNumber")));
-        device.setIssuerOfPatientID(stringValue(attrs.get("dicomIssuerOfPatientID")));
+        device.setIssuerOfPatientID(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfPatientID"))));
+        device.setIssuerOfAccessionNumber(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfAccessionNumber"))));
+        device.setOrderPlacerIdentifier(
+                Issuer.valueOf(stringValue(attrs.get("dicomOrderPlacerIdentifier"))));
+        device.setOrderFillerIdentifier(
+                Issuer.valueOf(stringValue(attrs.get("dicomOrderFillerIdentifier"))));
+        device.setIssuerOfAdmissionID(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfAdmissionID"))));
+        device.setIssuerOfServiceEpisodeID(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfServiceEpisodeID"))));
+        device.setIssuerOfContainerIdentifier(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfContainerIdentifier"))));
+        device.setIssuerOfSpecimenIdentifier(
+                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfSpecimenIdentifier"))));
         device.setInstitutionNames(stringArray(attrs.get("dicomInstitutionName")));
         device.setInstitutionAddresses(stringArray(attrs.get("dicomInstitutionAddress")));
         device.setInstitutionalDepartmentNames(
@@ -847,6 +884,27 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
                 b.getIssuerOfPatientID());
+        storeDiff(mods, "dicomIssuerOfAccessionNumber",
+                a.getIssuerOfAccessionNumber(),
+                b.getIssuerOfAccessionNumber());
+        storeDiff(mods, "dicomOrderPlacerIdentifier",
+                a.getOrderPlacerIdentifier(),
+                b.getOrderPlacerIdentifier());
+        storeDiff(mods, "dicomOrderFillerIdentifier",
+                a.getOrderFillerIdentifier(),
+                b.getOrderFillerIdentifier());
+        storeDiff(mods, "dicomIssuerOfAdmissionID",
+                a.getIssuerOfAdmissionID(),
+                b.getIssuerOfAdmissionID());
+        storeDiff(mods, "dicomIssuerOfServiceEpisodeID",
+                a.getIssuerOfServiceEpisodeID(),
+                b.getIssuerOfServiceEpisodeID());
+        storeDiff(mods, "dicomIssuerOfContainerIdentifier",
+                a.getIssuerOfContainerIdentifier(),
+                b.getIssuerOfContainerIdentifier());
+        storeDiff(mods, "dicomIssuerOfSpecimenIdentifier",
+                a.getIssuerOfSpecimenIdentifier(),
+                b.getIssuerOfSpecimenIdentifier());
         storeDiff(mods, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());

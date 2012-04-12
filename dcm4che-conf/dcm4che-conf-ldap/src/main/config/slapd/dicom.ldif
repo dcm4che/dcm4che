@@ -141,10 +141,11 @@ olcAttributeTypes: ( 1.2.840.10008.15.0.3.28 NAME 'dicomInstitutionDepartmentNam
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 olcAttributeTypes: ( 1.2.840.10008.15.0.3.29 NAME 'dicomIssuerOfPatientID'
-  DESC 'Default value for the Issuer of Patient ID (0010,0021) for SOP Instances created by this device.  May be overridden by the values received in a worklist or other source.'
-  EQUALITY caseIgnoreMatch
-  SUBSTR caseIgnoreSubstringsMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+  DESC 'Default value for the Issuer of Patient ID (0010,0021), and optionally also default values for the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Patient ID Qualifiers Sequence (0010,0024), for SOP Instances created or queried by this device.  May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.840.10008.15.0.3.30 NAME 'dicomPreferredCallingAETitle'
   DESC 'AE Title(s) to which associations may be preferably accepted.'
   EQUALITY caseExactIA5Match
@@ -153,6 +154,48 @@ olcAttributeTypes: ( 1.2.840.10008.15.0.3.31 NAME 'dicomSupportedCharacterSet'
   DESC 'The Character Set(s) supported by the Network AE for data sets it receives.'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.32 NAME 'dicomIssuerOfAccessionNumber'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Accession Number Sequence (0008,0051) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.33 NAME 'dicomOrderPlacerIdentifier'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Placer Identifier Sequence (0040,0026) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.34 NAME 'dicomOrderFillerIdentifier'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Order Filler Identifier Sequence (0040,0027) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.35 NAME 'dicomIssuerOfAdmissionID'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Admission ID Sequence (0038,0014) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.36 NAME 'dicomIssuerOfServiceEpisodeID'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Service Episode ID Sequence (0038,0064) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.37 NAME 'dicomIssuerOfContainerIdentifier'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Container Identifier Sequence (0040,0513) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.840.10008.15.0.3.38 NAME 'dicomIssuerOfSpecimenIdentifier'
+  DESC 'Default values for the Local Namespace Entity ID (0040,0031), the Universal Entity ID (0040,0032) and the Universal Entity ID Type (0040,0033) of the Item of the Issuer of Specimen Identifier Sequence (0040,0562) for SOP Instances created or queried by this device. May be overridden by the values received in a worklist or other source.'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
 olcObjectClasses: ( 1.2.840.10008.15.0.4.1 NAME 'dicomConfigurationRoot'
   DESC 'Root of the DICOM Configuration Hierarchy'
   SUP top STRUCTURAL
@@ -185,6 +228,13 @@ olcObjectClasses: ( 1.2.840.10008.15.0.4.4 NAME 'dicomDevice'
     dicomInstitutionAddress $
     dicomInstitutionDepartmentName $
     dicomIssuerOfPatientID $
+    dicomIssuerOfAccessionNumber $
+    dicomOrderPlacerIdentifier $
+    dicomOrderFillerIdentifier $
+    dicomIssuerOfAdmissionID $
+    dicomIssuerOfServiceEpisodeID $
+    dicomIssuerOfContainerIdentifier $
+    dicomIssuerOfSpecimenIdentifier $
     dicomVendorData $
     dicomPrimaryDeviceType $
     dicomRelatedDeviceReference $

@@ -59,12 +59,16 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.ElementDictionary;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.DataWriter;
+import org.dcm4che.net.DataWriterAdapter;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
@@ -93,6 +97,8 @@ public class StoreSCU extends Device {
     private final AAssociateRQ rq = new AAssociateRQ();
     private final RelatedGeneralSOPClasses relSOPClasses =
             new RelatedGeneralSOPClasses();
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private boolean relExtNeg;
     private int priority;
     private String tmpPrefix = "storescu-";
@@ -119,6 +125,10 @@ public class StoreSCU extends Device {
         this.priority = priority;
     }
 
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
+    }
+
     public final void setTmpFilePrefix(String prefix) {
         this.tmpPrefix = prefix;
     }
@@ -129,6 +139,29 @@ public class StoreSCU extends Device {
 
     public final void setTmpFileDirectory(File tmpDir) {
         this.tmpDir = tmpDir;
+    }
+
+    public void addAttribute(int[] tags, String... ss) {
+        Attributes item = attrs;
+        for (int i = 0; i < tags.length-1; i++) {
+            int tag = tags[i];
+            Sequence sq = (Sequence) item.getValue(tag);
+            if (sq == null)
+                sq = item.newSequence(tag, 1);
+            if (sq.isEmpty())
+                sq.add(new Attributes());
+            item = sq.get(0);
+        }
+        int tag = tags[tags.length-1];
+        VR vr = ElementDictionary.vrOf(tag,
+                item.getPrivateCreator(tag));
+        if (ss.length == 0)
+            if (vr == VR.SQ)
+                item.newSequence(tag, 1).add(new Attributes(0));
+            else
+                item.setNull(tag, vr);
+        else
+            item.setString(tag, vr, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -142,7 +175,29 @@ public class StoreSCU extends Device {
         CLIUtils.addCommonOptions(opts);
         addTmpFileOptions(opts);
         addRelatedSOPClassOptions(opts);
+        addAttributesOption(opts);
+        addUIDSuffixOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addAttributesOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("set"))
+                .create("s"));
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addUIDSuffixOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription(rb.getString("uid-suffix"))
+                .withLongOpt("uid-suffix")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -192,6 +247,8 @@ public class StoreSCU extends Device {
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
+            configureAttributes(main, cl);
+            main.setUIDSuffix(uidSuffixOf(cl));
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
@@ -247,6 +304,20 @@ public class StoreSCU extends Device {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static String uidSuffixOf(CommandLine cl) {
+        return cl.getOptionValue("uid-suffix");
+    }
+
+    private static void configureAttributes(StoreSCU main, CommandLine cl) {
+        String[] attrs = cl.getOptionValues("s");
+        if (attrs != null)
+            for (int i = 1; i < attrs.length; i++, i++)
+                main.addAttribute(
+                        CLIUtils.toTags(
+                                StringUtils.split(attrs[i-1], '/')),
+                                StringUtils.split(attrs[i], '/'));
     }
 
     private static void configureTmpFile(StoreSCU storescu, CommandLine cl) {
@@ -359,20 +430,45 @@ public class StoreSCU extends Device {
 
     public void send(final File f, long fmiEndPos, String cuid, String iuid,
             String ts) throws IOException, InterruptedException {
-        FileInputStream in = new FileInputStream(f);
-        in.skip(fmiEndPos);
-        DataWriter data = new InputStreamDataWriter(in);
+        if (uidSuffix == null && attrs.isEmpty()) {
+            FileInputStream in = new FileInputStream(f);
+            try {
+                in.skip(fmiEndPos);
+                InputStreamDataWriter data = new InputStreamDataWriter(in);
+                as.cstore(cuid, iuid, priority, data, ts, rspHandler(f));
+            } finally {
+                SafeClose.close(in);
+            }
+        } else {
+            DicomInputStream in = new DicomInputStream(f);
+            try {
+                in.setIncludeBulkDataLocator(true);
+                Attributes data = in.readDataset(-1, -1);
+                if (uidSuffix != null ) {
+                    data.setString(Tag.StudyInstanceUID, VR.UI,
+                            data.getString(Tag.StudyInstanceUID) + uidSuffix);
+                    data.setString(Tag.SeriesInstanceUID, VR.UI,
+                            data.getString(Tag.SeriesInstanceUID) + uidSuffix);
+                    data.setString(Tag.SOPInstanceUID, VR.UI, iuid += uidSuffix);
+                }
+                data.update(attrs, null);
+                as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
+                        rspHandler(f));
+            } finally {
+                SafeClose.close(in);
+            }
+         }
+    }
 
-        DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
-
+    private DimseRSPHandler rspHandler(final File f) {
+        return new DimseRSPHandler(as.nextMessageID()) {
+   
             @Override
             public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
                 super.onDimseRSP(as, cmd, data);
                 StoreSCU.this.onCStoreRSP(cmd, f);
             }
         };
-
-        as.cstore(cuid, iuid, priority, data , ts, rspHandler);
     }
 
     public void close() throws IOException, InterruptedException {

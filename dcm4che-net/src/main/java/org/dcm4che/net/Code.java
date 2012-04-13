@@ -43,65 +43,61 @@ import org.dcm4che.util.StringUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Issuer {
+public class Code {
 
-    private final String localNamespaceEntityID;
-    private final String universalEntityID;
-    private final String universalEntityIDType;
+    private final String codeValue;
+    private final String codingSchemeDesignator;
+    private final String codingSchemeVersion;
+    private final String codeMeaning;
 
-    public Issuer(String localNamespaceEntityID, String universalEntityID,
-            String universalEntityIDType) {
-        this.localNamespaceEntityID = localNamespaceEntityID;
-        this.universalEntityID = universalEntityID;
-        this.universalEntityIDType = universalEntityIDType;
-        validate();
+    public Code(String codeValue, String codingSchemeDesignator,
+            String codingSchemeVersion, String codeMeaning) {
+        if (codeValue == null)
+            throw new NullPointerException("codeValue");
+        if (codingSchemeDesignator == null)
+            throw new NullPointerException("codingSchemeDesignator");
+        if (codeMeaning == null)
+            throw new NullPointerException("codeMeaning");
+        this.codeValue = codeValue;
+        this.codingSchemeDesignator = codingSchemeDesignator;
+        this.codingSchemeVersion = codingSchemeVersion;
+        this.codeMeaning = codeMeaning;
     }
 
-    public Issuer(String s) {
+    public Code(String s) {
         String[] ss = StringUtils.split(s, '^');
-        if (ss.length > 3)
+        if (ss.length < 3 || ss.length > 4
+                || ss[0].isEmpty() || ss[1].isEmpty() || ss[2].isEmpty())
             throw new IllegalArgumentException(s);
-        this.localNamespaceEntityID = emptyToNull(ss[0]);
-        this.universalEntityID = ss.length > 1 ? emptyToNull(ss[1]) : null;
-        this.universalEntityIDType = ss.length > 2 ? emptyToNull(ss[2]) : null;
-        validate();
+        this.codeValue = ss[0];
+        this.codeMeaning = ss[1];
+        this.codingSchemeDesignator = ss[2];
+        this.codingSchemeVersion = ss.length > 3 && !ss[3].isEmpty() ? ss[3] : null;
     }
 
-    private void validate() {
-        if (localNamespaceEntityID == null && universalEntityID == null)
-            throw new IllegalArgumentException(
-                    "Missing Local Namespace Entity ID or Universal Entity ID");
-        if (universalEntityID != null) {
-            if (universalEntityIDType == null)
-                throw new IllegalArgumentException("Missing Universal Entity ID Type");
-        } else {
-            if (universalEntityIDType != null)
-                throw new IllegalArgumentException("Missing Universal Entity ID");
-        }
+    public final String getCodeValue() {
+        return codeValue;
     }
 
-    private String emptyToNull(String s) {
-        return s.isEmpty() ? null : s;
+    public final String getCodingSchemeDesignator() {
+        return codingSchemeDesignator;
     }
 
-    public final String getLocalNamespaceEntityID() {
-        return localNamespaceEntityID;
+    public final String getCodingSchemeVersion() {
+        return codingSchemeVersion;
     }
 
-    public final String getUniversalEntityID() {
-        return universalEntityID;
-    }
-
-    public final String getUniversalEntityIDType() {
-        return universalEntityIDType;
+    public final String getCodeMeaning() {
+        return codeMeaning;
     }
 
     @Override
     public int hashCode() {
-        return 37 * (
-                37 * hashCode(localNamespaceEntityID)
-                   + hashCode(universalEntityID))
-                + hashCode(universalEntityIDType);
+        return 37 * (37 * (37 * 
+            codeValue.hashCode() +
+            codeMeaning.hashCode()) +
+            codingSchemeDesignator.hashCode()) + 
+            hashCode(codingSchemeVersion);
     }
 
     private int hashCode(String s) {
@@ -112,12 +108,13 @@ public class Issuer {
     public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof Issuer))
+        if (!(o instanceof Code))
             return false;
-        Issuer other = (Issuer) o;
-        return equals(localNamespaceEntityID, other.localNamespaceEntityID)
-                && equals(universalEntityID, other.universalEntityID)
-                && equals(universalEntityIDType, other.universalEntityIDType);
+        Code other = (Code) o;
+        return codeValue.equals(other.codeValue)
+                && codeMeaning.equals(other.codeMeaning)
+                && codingSchemeDesignator.equals(other.codingSchemeDesignator)
+                && equals(codingSchemeVersion, other.codingSchemeVersion);
     }
 
     private boolean equals(String s1, String s2) {
@@ -126,14 +123,7 @@ public class Issuer {
 
     @Override
     public String toString() {
-        return universalEntityID == null
-            ? localNamespaceEntityID
-            : nullToEmpty(localNamespaceEntityID) + '^'
-                        + universalEntityID  + '^'
-                        + universalEntityIDType;
-    }
-
-    private String nullToEmpty(String s) {
-        return s == null ? "" : s;
+        String s = codeValue + '^' + codeMeaning + '^' + codingSchemeDesignator;
+        return codingSchemeVersion == null ? s : s + '^' + codingSchemeVersion;
     }
 }

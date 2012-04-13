@@ -91,6 +91,7 @@ public class Device {
     private String[] softwareVersions = {};
     private String[] primaryDeviceTypes = {};
     private String[] institutionNames = {};
+    private Code[] institutionCodes = {};
     private String[] institutionAddresses = {};
     private String[] institutionalDepartmentNames = {};
     private String[] relatedDeviceRefs = {};
@@ -306,6 +307,14 @@ public class Device {
      */
     public void setInstitutionNames(String... names) {
         institutionNames = names;
+    }
+
+    public final Code[] getInstitutionCodes() {
+        return institutionCodes;
+    }
+
+    public void setInstitutionCodes(Code... codes) {
+        institutionCodes = codes;
     }
 
     /**

@@ -44,6 +44,7 @@
 #   dicomIssuerOfServiceEpisodeID             string  Single
 #   dicomIssuerOfContainerIdentifier          string  Single
 #   dicomIssuerOfSpecimenIdentifier           string  Single
+#   dicomInstitutionCode                      string  Multiple
 #
 
 
@@ -770,6 +771,26 @@ attributetype ( 1.2.840.10008.15.0.3.38
     SINGLE-VALUE )
 
 
+# 3.39  dicomInstitutionCode                    string  Multiple
+#
+#    Should be the same as the code specified by the Institution Code Sequence (0008,0082)
+#    in SOP Instances created by this device.
+#
+#    Format:
+#      <Code Value> ^ <Code Meaning> ^ <Coding Scheme Designator> 
+#    or
+#      <Code Value> ^ <Code Meaning> ^ <Coding Scheme Designator> ^ <Coding Scheme Version>
+#
+#    It is a multi-valued attribute.
+#    This attribute's syntax is 'Directory String'.
+#    Its case is significant.
+# 
+attributetype ( 1.2.840.10008.15.0.3.39
+   NAME 'dicomInstitutionCode'
+   DESC 'Institution code of the device. Should be the same as the code specified by the Institution Code Sequence (0008,0082) in SOP Instances created by this device.'
+   EQUALITY caseExactMatch
+   SUBSTR caseExactSubstringsMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
 
 # 4 Object Class Definitions
@@ -860,6 +881,7 @@ objectclass ( 1.2.840.10008.15.0.4.4
       dicomDeviceSerialNumber $
       dicomInstitutionName $
       dicomInstitutionAddress $
+      dicomInstitutionCode $
       dicomInstitutionDepartmentName $
       dicomIssuerOfPatientID $
       dicomIssuerOfAccessionNumber $

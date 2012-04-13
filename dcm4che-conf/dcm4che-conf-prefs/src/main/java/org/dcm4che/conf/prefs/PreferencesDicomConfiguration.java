@@ -59,6 +59,7 @@ import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Code;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Device;
@@ -78,6 +79,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static final String USER_CERTIFICATE = "userCertificate";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
+    private static final Code[] EMPTY_CODES = {};
 
     private static final Logger LOG = LoggerFactory.getLogger(PreferencesDicomConfiguration.class);
 
@@ -388,6 +390,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 device.getIssuerOfSpecimenIdentifier());
         storeNotEmpty(prefs, "dicomInstitutionName",
                 device.getInstitutionNames());
+        storeNotEmpty(prefs, "dicomInstitutionCode",
+                device.getInstitutionCodes());
         storeNotEmpty(prefs, "dicomInstitutionAddress",
                 device.getInstitutionAddresses());
         storeNotEmpty(prefs, "dicomInstitutionalDepartmentName",
@@ -547,6 +551,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
+        storeDiff(prefs, "dicomInstitutionCode",
+                a.getInstitutionCodes(),
+                b.getInstitutionCodes());
         storeDiff(prefs, "dicomInstitutionAddress",
                 a.getInstitutionAddresses(),
                 b.getInstitutionAddresses());
@@ -1016,22 +1023,23 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         device.setStationName(prefs.get("dicomStationName", null));
         device.setDeviceSerialNumber(prefs.get("dicomDeviceSerialNumber", null));
         device.setIssuerOfPatientID(
-                Issuer.valueOf(prefs.get("dicomIssuerOfPatientID", null)));
+                issuerOf(prefs.get("dicomIssuerOfPatientID", null)));
         device.setIssuerOfAccessionNumber(
-                Issuer.valueOf(prefs.get("dicomIssuerOfAccessionNumber", null)));
+                issuerOf(prefs.get("dicomIssuerOfAccessionNumber", null)));
         device.setOrderPlacerIdentifier(
-                Issuer.valueOf(prefs.get("dicomOrderPlacerIdentifier", null)));
+                issuerOf(prefs.get("dicomOrderPlacerIdentifier", null)));
         device.setOrderFillerIdentifier(
-                Issuer.valueOf(prefs.get("dicomOrderFillerIdentifier", null)));
+                issuerOf(prefs.get("dicomOrderFillerIdentifier", null)));
         device.setIssuerOfAdmissionID(
-                Issuer.valueOf(prefs.get("dicomIssuerOfAdmissionID", null)));
+                issuerOf(prefs.get("dicomIssuerOfAdmissionID", null)));
         device.setIssuerOfServiceEpisodeID(
-                Issuer.valueOf(prefs.get("dicomIssuerOfServiceEpisodeID", null)));
+                issuerOf(prefs.get("dicomIssuerOfServiceEpisodeID", null)));
         device.setIssuerOfContainerIdentifier(
-                Issuer.valueOf(prefs.get("dicomIssuerOfContainerIdentifier", null)));
+                issuerOf(prefs.get("dicomIssuerOfContainerIdentifier", null)));
         device.setIssuerOfSpecimenIdentifier(
-                Issuer.valueOf(prefs.get("dicomIssuerOfSpecimenIdentifier", null)));
+                issuerOf(prefs.get("dicomIssuerOfSpecimenIdentifier", null)));
         device.setInstitutionNames(stringArray(prefs, "dicomInstitutionName"));
+        device.setInstitutionCodes(codeArray(prefs, "dicomInstitutionCode"));
         device.setInstitutionAddresses(stringArray(prefs, "dicomInstitutionAddress"));
         device.setInstitutionalDepartmentNames(
                 stringArray(prefs, "dicomInstitutionalDepartmentName"));
@@ -1136,6 +1144,21 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         for (int i = 0; i < n; i++)
             ss[i] = prefs.get(key + '.' + (i+1), null);
         return ss;
+    }
+
+    private static Issuer issuerOf(String s) {
+        return s != null ? new Issuer(s) : null;
+    }
+
+    private static Code[] codeArray(Preferences prefs, String key) {
+        int n = prefs.getInt(key + ".#", 0);
+        if (n == 0)
+            return EMPTY_CODES;
+        
+        Code[] codes = new Code[n];
+        for (int i = 0; i < n; i++)
+            codes[i] = new Code(prefs.get(key + '.' + (i+1), null));
+        return codes;
     }
 
     protected static void storeNotDef(Preferences prefs, String key, int value, int defVal) {

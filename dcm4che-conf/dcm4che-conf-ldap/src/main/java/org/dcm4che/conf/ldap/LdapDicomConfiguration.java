@@ -71,6 +71,7 @@ import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Code;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.Issuer;
@@ -94,6 +95,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static final String PKI_USER = "pkiUser";
     private static final String USER_CERTIFICATE_BINARY = "userCertificate;binary";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
+    private static final Code[] EMPTY_CODES = {};
 
     private final DirContext ctx;
     private final String baseDN;
@@ -524,6 +526,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 device.getIssuerOfSpecimenIdentifier());
         storeNotEmpty(attrs, "dicomInstitutionName",
                 device.getInstitutionNames());
+        storeNotEmpty(attrs, "dicomInstitutionCode",
+                device.getInstitutionCodes());
         storeNotEmpty(attrs, "dicomInstitutionAddress",
                 device.getInstitutionAddresses());
         storeNotEmpty(attrs, "dicomInstitutionalDepartmentName",
@@ -714,22 +718,23 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         device.setStationName(stringValue(attrs.get("dicomStationName")));
         device.setDeviceSerialNumber(stringValue(attrs.get("dicomDeviceSerialNumber")));
         device.setIssuerOfPatientID(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfPatientID"))));
+                issuerValue(attrs.get("dicomIssuerOfPatientID")));
         device.setIssuerOfAccessionNumber(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfAccessionNumber"))));
+                issuerValue(attrs.get("dicomIssuerOfAccessionNumber")));
         device.setOrderPlacerIdentifier(
-                Issuer.valueOf(stringValue(attrs.get("dicomOrderPlacerIdentifier"))));
+                issuerValue(attrs.get("dicomOrderPlacerIdentifier")));
         device.setOrderFillerIdentifier(
-                Issuer.valueOf(stringValue(attrs.get("dicomOrderFillerIdentifier"))));
+                issuerValue(attrs.get("dicomOrderFillerIdentifier")));
         device.setIssuerOfAdmissionID(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfAdmissionID"))));
+                issuerValue(attrs.get("dicomIssuerOfAdmissionID")));
         device.setIssuerOfServiceEpisodeID(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfServiceEpisodeID"))));
+                issuerValue(attrs.get("dicomIssuerOfServiceEpisodeID")));
         device.setIssuerOfContainerIdentifier(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfContainerIdentifier"))));
+                issuerValue(attrs.get("dicomIssuerOfContainerIdentifier")));
         device.setIssuerOfSpecimenIdentifier(
-                Issuer.valueOf(stringValue(attrs.get("dicomIssuerOfSpecimenIdentifier"))));
+                issuerValue(attrs.get("dicomIssuerOfSpecimenIdentifier")));
         device.setInstitutionNames(stringArray(attrs.get("dicomInstitutionName")));
+        device.setInstitutionCodes(codeArray(attrs.get("dicomInstitutionCode")));
         device.setInstitutionAddresses(stringArray(attrs.get("dicomInstitutionAddress")));
         device.setInstitutionalDepartmentNames(
                 stringArray(attrs.get("dicomInstitutionalDepartmentName")));
@@ -1033,6 +1038,17 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return ss;
     }
 
+    private Code[] codeArray(Attribute attr) throws NamingException {
+        if (attr == null)
+            return EMPTY_CODES;
+
+        Code[] codes = new Code[attr.size()];
+        for (int i = 0; i < codes.length; i++)
+            codes[i] = new Code((String) attr.get(i));
+
+        return codes;
+    }
+
     protected static String stringValue(Attribute attr) throws NamingException {
         return attr != null ? (String) attr.get() : null;
     }
@@ -1045,6 +1061,10 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     protected static Boolean booleanValue(Attribute attr, Boolean defVal)
             throws NamingException {
         return attr != null ? Boolean.valueOf((String) attr.get()) : defVal;
+    }
+
+    private static Issuer issuerValue(Attribute attr) throws NamingException {
+        return attr != null ? new Issuer((String) attr.get()) : null;
     }
 
     private void mergeAEs(Device prevDev, Device dev, String deviceDN)

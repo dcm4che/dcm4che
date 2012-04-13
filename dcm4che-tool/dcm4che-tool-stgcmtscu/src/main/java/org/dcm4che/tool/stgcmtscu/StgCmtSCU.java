@@ -58,10 +58,14 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
+import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.Status;
@@ -70,10 +74,12 @@ import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicNEventReportSCU;
+import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.DicomFiles;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.UIDUtils;
 
 /**
@@ -90,6 +96,7 @@ public class StgCmtSCU extends Device {
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
 
+    private File storageDir;
     private boolean keepAlive;
     private int splitTag;
     private int status;
@@ -97,22 +104,31 @@ public class StgCmtSCU extends Device {
     private Association as;
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
-    private final BasicNEventReportSCU stgcmtResultHandler =
-            new BasicNEventReportSCU(UID.StorageCommitmentPushModelSOPClass) {
+    private final DicomService stgcmtResultHandler =
+            new DicomService(UID.StorageCommitmentPushModelSOPClass) {
 
-        @Override
-        protected Attributes eventReport(Association as, int eventTypeID,
-                Attributes eventInfo, Attributes rsp,
-                Object[] handback) throws DicomServiceException {
-            rsp.setInt(Tag.Status, VR.US, status);
-            return null;
-        }
+             @Override
+             public void onDimseRQ(Association as, PresentationContext pc,
+                     Dimse dimse, Attributes cmd, Attributes data)
+                     throws IOException {
+                 if (dimse != Dimse.N_EVENT_REPORT_RQ)
+                     throw new DicomServiceException(Status.UnrecognizedOperation);
 
-        @Override
-        protected void postNEventReportRSP(Association as, int eventTypeID,
-                Attributes eventInfo, Attributes rsp, Object handback) {
-            removeOutstandingResult(eventInfo.getString(Tag.TransactionUID));
-        }
+                 int eventTypeID = cmd.getInt(Tag.EventTypeID, 0);
+                 if (eventTypeID != 1 && eventTypeID != 2) 
+                     throw new DicomServiceException(Status.NoSuchEventType)
+                                 .setEventTypeID(eventTypeID);
+                 String tuid = data.getString(Tag.TransactionUID);
+                 try {
+                     Attributes rsp = Commands.mkNEventReportRSP(cmd, status);
+                     Attributes rspAttrs = StgCmtSCU.this.eventRecord(as, cmd, data);
+                     as.writeDimseRSP(pc, rsp, rspAttrs);
+                 } catch (AssociationStateException e) {
+                     LOG.warn("{} << N-EVENT-RECORD-RSP failed: {}", as, e.getMessage());
+                 } finally {
+                     removeOutstandingResult(tuid);
+                 }
+             }
     };
 
     public StgCmtSCU() throws IOException {
@@ -124,6 +140,16 @@ public class StgCmtSCU extends Device {
         serviceRegistry.addDicomService(new BasicCEchoSCP());
         serviceRegistry.addDicomService(stgcmtResultHandler);
         ae.setDimseRQHandler(serviceRegistry);
+    }
+
+    public void setStorageDirectory(File storageDir) {
+        if (storageDir != null)
+            storageDir.mkdirs();
+        this.storageDir = storageDir;
+    }
+
+    public File getStorageDirectory() {
+        return storageDir;
     }
 
     @SuppressWarnings("unchecked")
@@ -140,6 +166,7 @@ public class StgCmtSCU extends Device {
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             stgcmtscu.setSplitTag(getSplitTag(cl));
             stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
+            stgcmtscu.setStorageDirectory(getStorageDirectory(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -165,7 +192,7 @@ public class StgCmtSCU extends Device {
                     stgcmtscu.echo();
                 else
                     for (List<String> refSOPs : stgcmtscu.map.values())
-                    stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
+                        stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
             } finally {
                 stgcmtscu.close();
                 executorService.shutdown();
@@ -180,6 +207,12 @@ public class StgCmtSCU extends Device {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private static File getStorageDirectory(CommandLine cl) {
+        return cl.hasOption("ignore")
+                ? null
+                : new File(cl.getOptionValue("directory", "."));
     }
 
     private static int getSplitTag(CommandLine cl) {
@@ -240,6 +273,7 @@ public class StgCmtSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
+        addStorageDirectoryOptions(opts);
         addStatusOption(opts);
         addKeepAliveOption(opts);
         addSplitOption(opts);
@@ -251,6 +285,18 @@ public class StgCmtSCU extends Device {
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addStorageDirectoryOptions(Options opts) {
+        opts.addOption(null, "ignore", false,
+                rb.getString("ignore"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("path")
+                .withDescription(rb.getString("directory"))
+                .withLongOpt("directory")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -351,4 +397,29 @@ public class StgCmtSCU extends Device {
         addOutstandingResult(tuid);
     }
 
+    private Attributes eventRecord(Association as, Attributes cmd, Attributes eventInfo)
+            throws DicomServiceException {
+        if (storageDir == null)
+            return null;
+
+        String cuid = cmd.getString(Tag.AffectedSOPClassUID);
+        String iuid = cmd.getString(Tag.AffectedSOPInstanceUID);
+        String tuid = eventInfo.getString(Tag.TransactionUID);
+        File file = new File(storageDir, tuid );
+        DicomOutputStream out = null;
+        DicomService.LOG.info("{}: M-WRITE {}", as, file);
+        try {
+            out = new DicomOutputStream(file);
+            out.writeDataset(
+                    Attributes.createFileMetaInformation(iuid, cuid,
+                            UID.ExplicitVRLittleEndian),
+                    eventInfo);
+        } catch (IOException e) {
+            DicomService.LOG.warn(as + ": Failed to store Storage Commitment Result:", e);
+            throw new DicomServiceException(Status.ProcessingFailure, e);
+        } finally {
+            SafeClose.close(out);
+        }
+        return null;
+    }
 }

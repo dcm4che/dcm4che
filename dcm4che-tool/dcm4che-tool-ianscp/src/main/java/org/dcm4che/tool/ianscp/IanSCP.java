@@ -84,6 +84,7 @@ public class IanSCP extends Device {
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
    private File storageDir;
+   private int status;
 
    private final DicomService ianSCP =
            new DicomService(UID.InstanceAvailabilityNotificationSOPClass) {
@@ -95,11 +96,11 @@ public class IanSCP extends Device {
                 if (dimse != Dimse.N_CREATE_RQ)
                     throw new DicomServiceException(Status.UnrecognizedOperation);
                 try {
-                    Attributes rsp = Commands.mkNCreateRSP(cmd, Status.Success);
+                    Attributes rsp = Commands.mkNCreateRSP(cmd, status);
                     Attributes rspAttrs = IanSCP.this.create(as, cmd, data);
                     as.writeDimseRSP(pc, rsp, rspAttrs);
                 } catch (AssociationStateException e) {
-                    LOG.warn("{} << C-CREATE-RSP failed: {}", as, e.getMessage());
+                    LOG.warn("{} << N-CREATE-RSP failed: {}", as, e.getMessage());
                 }
             }
    };
@@ -126,6 +127,10 @@ public class IanSCP extends Device {
        return storageDir;
    }
 
+   public void setStatus(int status) {
+       this.status = status;
+   }
+
    public static void main(String[] args) {
        try {
            CommandLine cl = parseComandLine(args);
@@ -133,7 +138,8 @@ public class IanSCP extends Device {
            CLIUtils.configureBindServer(main.conn, main.ae, cl);
            CLIUtils.configure(main.conn, cl);
            configureTransferCapability(main.ae, cl);
-           configureStorageDirectory(main, cl);
+           main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
+           main.setStorageDirectory(getStorageDirectory(cl));
            ExecutorService executorService = Executors.newCachedThreadPool();
            ScheduledExecutorService scheduledExecutorService = 
                    Executors.newSingleThreadScheduledExecutor();
@@ -158,6 +164,7 @@ public class IanSCP extends Device {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
+        addStatusOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, IanSCP.class);
     }
 
@@ -183,11 +190,20 @@ public class IanSCP extends Device {
                 .create(null));
     }
 
-    private static void configureStorageDirectory(IanSCP main, CommandLine cl) {
-        if (!cl.hasOption("ignore")) {
-            main.setStorageDirectory(
-                    new File(cl.getOptionValue("directory", ".")));
-        }
+    @SuppressWarnings("static-access")
+    private static void addStatusOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("code")
+                .withDescription(rb.getString("status"))
+                .withLongOpt("status")
+                .create(null));
+    }
+
+    private static File getStorageDirectory(CommandLine cl) {
+        return cl.hasOption("ignore")
+                ? null
+                : new File(cl.getOptionValue("directory", "."));
     }
 
     private static void configureTransferCapability(ApplicationEntity ae,

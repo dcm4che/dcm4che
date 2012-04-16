@@ -40,6 +40,7 @@ package org.dcm4che.tool.stgcmtscu;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,7 +74,6 @@ import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.BasicNEventReportSCU;
 import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
@@ -357,9 +357,9 @@ public class StgCmtSCU extends Device {
     private void waitForOutstandingResults() throws InterruptedException {
         synchronized (outstandingResults) {
             while (!outstandingResults.isEmpty()) {
-                BasicNEventReportSCU.LOG.info(
+                System.out.println(MessageFormat.format(
                         rb.getString("wait-for-results"),
-                        outstandingResults.size());
+                        outstandingResults.size()));
                 outstandingResults.wait();
             }
         }

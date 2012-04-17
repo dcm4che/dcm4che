@@ -225,8 +225,7 @@ public class StoreSCU extends Device {
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
-            String[] optVals = cl.getOptionValues("s");
-            CLIUtils.addAttributes(main.attrs, optVals);
+            CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
             main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
@@ -410,7 +409,7 @@ public class StoreSCU extends Device {
                 in.setIncludeBulkDataLocator(true);
                 Attributes data = in.readDataset(-1, -1);
                 if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
-                    iuid = attrs.getString(Tag.SOPInstanceUID);
+                    iuid = data.getString(Tag.SOPInstanceUID);
                 as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
                         rspHandler(f));
             } finally {

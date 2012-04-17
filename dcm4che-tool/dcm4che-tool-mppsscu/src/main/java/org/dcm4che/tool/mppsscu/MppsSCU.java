@@ -179,6 +179,8 @@ public class MppsSCU extends Device {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private boolean newPPSID;
     private int serialNo = (int) (System.currentTimeMillis() & 0x7FFFFFFFL);
     private String ppsuid;
@@ -199,6 +201,10 @@ public class MppsSCU extends Device {
         addConnection(conn);
         addApplicationEntity(ae);
         ae.addConnection(conn);
+    }
+
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
     }
 
     public final void setPPSUID(String ppsuid) {
@@ -280,6 +286,8 @@ public class MppsSCU extends Device {
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
+            main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -344,13 +352,13 @@ public class MppsSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        addMPPSOptions(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "MPPSSCU");
         CLIUtils.addAEOptions(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addMPPSOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCU.class);
     }
 
@@ -406,6 +414,18 @@ public class MppsSCU extends Device {
                 .withDescription(rb.getString("code-config"))
                 .withLongOpt("code-config")
                 .create());
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("set"))
+                .create("s"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription(rb.getString("uid-suffix"))
+                .withLongOpt("uid-suffix")
+                .create(null));
     }
 
     public void open() throws IOException, InterruptedException,
@@ -517,6 +537,7 @@ public class MppsSCU extends Device {
     }
 
     public void addInstance(Attributes inst) {
+        CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
             return;

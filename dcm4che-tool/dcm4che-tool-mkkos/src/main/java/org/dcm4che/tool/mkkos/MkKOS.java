@@ -89,6 +89,8 @@ public class MkKOS {
         Tag.StudyID 
     };
 
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private String fname;
     private boolean nofmi;
     private DicomEncodingOptions encOpts;
@@ -103,6 +105,10 @@ public class MkKOS {
     private Attributes kos;
     private Sequence evidenceSeq;
     private Sequence contentSeq;
+
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
+    }
 
     public void setOutputFile(String fname) {
         this.fname = fname;
@@ -172,8 +178,8 @@ public class MkKOS {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        addOptions(opts);
         CLIUtils.addCommonOptions(opts);
+        addOptions(opts);
         CommandLine cl = CLIUtils.parseComandLine(args, opts, rb, MkKOS.class);
         if (cl.getArgList().isEmpty())
             throw new ParseException(rb.getString("missing"));
@@ -235,6 +241,18 @@ public class MkKOS {
                .withDescription(rb.getString("transfer-syntax"))
                .create("t"));
        opts.addOptionGroup(group);
+       opts.addOption(OptionBuilder
+               .hasArgs()
+               .withArgName("[seq/]attr=value")
+               .withValueSeparator('=')
+               .withDescription(rb.getString("set"))
+               .create("s"));
+       opts.addOption(OptionBuilder
+               .hasArg()
+               .withArgName("suffix")
+               .withDescription(rb.getString("uid-suffix"))
+               .withLongOpt("uid-suffix")
+               .create(null));
        CLIUtils.addEncodingOptions(opts);
    }
 
@@ -253,6 +271,8 @@ public class MkKOS {
         main.setNoFileMetaInformation(cl.hasOption("F"));
         main.setTransferSyntax(cl.getOptionValue("t", UID.ExplicitVRLittleEndian));
         main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
+        CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
+        main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
     }
 
     private static String outputFileOf(CommandLine cl) throws MissingOptionException {
@@ -289,6 +309,7 @@ public class MkKOS {
     }
 
     public void addInstance(Attributes inst) {
+        CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String studyIUID = inst.getString(Tag.StudyInstanceUID);
         String seriesIUID = inst.getString(Tag.SeriesInstanceUID);
         String iuid = inst.getString(Tag.SOPInstanceUID);

@@ -95,7 +95,8 @@ public class StgCmtSCU extends Device {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
-
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private File storageDir;
     private boolean keepAlive;
     private int splitTag;
@@ -152,6 +153,10 @@ public class StgCmtSCU extends Device {
         return storageDir;
     }
 
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
+    }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
@@ -167,6 +172,8 @@ public class StgCmtSCU extends Device {
             stgcmtscu.setSplitTag(getSplitTag(cl));
             stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
             stgcmtscu.setStorageDirectory(getStorageDirectory(cl));
+            CLIUtils.addAttributes(stgcmtscu.attrs, cl.getOptionValues("s"));
+            stgcmtscu.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -256,6 +263,7 @@ public class StgCmtSCU extends Device {
     }
 
     public void addInstance(Attributes inst) {
+        CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String cuid = inst.getString(Tag.SOPClassUID);
         String iuid = inst.getString(Tag.SOPInstanceUID);
         String splitkey = splitTag != 0 ? inst.getString(splitTag) : "";
@@ -273,10 +281,6 @@ public class StgCmtSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        addStorageDirectoryOptions(opts);
-        addStatusOption(opts);
-        addKeepAliveOption(opts);
-        addSplitOption(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STGCMTSCU");
@@ -284,11 +288,12 @@ public class StgCmtSCU extends Device {
         CLIUtils.addAEOptions(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addStgCmtOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StgCmtSCU.class);
     }
 
     @SuppressWarnings("static-access")
-    private static void addStorageDirectoryOptions(Options opts) {
+    public static void addStgCmtOptions(Options opts) {
         opts.addOption(null, "ignore", false,
                 rb.getString("ignore"));
         opts.addOption(OptionBuilder
@@ -297,25 +302,27 @@ public class StgCmtSCU extends Device {
                 .withDescription(rb.getString("directory"))
                 .withLongOpt("directory")
                 .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addStatusOption(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("code")
                 .withDescription(rb.getString("status"))
                 .withLongOpt("status")
                 .create(null));
-    }
-
-    private static void addKeepAliveOption(Options opts) {
         opts.addOption(null, "keep-alive", false, rb.getString("keep-alive"));
-    }
-
-    private static void addSplitOption(Options opts) {
         opts.addOption(null, "one-per-study", false, rb.getString("one-per-study"));
         opts.addOption(null, "one-per-series", false, rb.getString("one-per-series"));
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("set"))
+                .create("s"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription(rb.getString("uid-suffix"))
+                .withLongOpt("uid-suffix")
+                .create(null));
     }
 
     public void open() throws IOException, InterruptedException,

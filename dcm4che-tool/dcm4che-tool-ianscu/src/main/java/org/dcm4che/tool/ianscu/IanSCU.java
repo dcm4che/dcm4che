@@ -80,6 +80,8 @@ public class IanSCU extends Device {
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+    private final Attributes attrs = new Attributes();
+    private String uidSuffix;
     private String refPpsIUID;
     private String refPpsCUID = UID.ModalityPerformedProcedureStepSOPClass;
     private String availability = "ONLINE";
@@ -94,6 +96,10 @@ public class IanSCU extends Device {
         addConnection(conn);
         addApplicationEntity(ae);
         ae.addConnection(conn);
+    }
+
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
     }
 
     public void setTransferSyntaxes(String[] tss) {
@@ -146,6 +152,8 @@ public class IanSCU extends Device {
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
+            main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
@@ -189,13 +197,13 @@ public class IanSCU extends Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
-        addIANOptions(opts);
         CLIUtils.addTransferSyntaxOptions(opts);
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "IANSCU");
         CLIUtils.addAEOptions(opts);
         CLIUtils.addResponseTimeoutOption(opts);
         CLIUtils.addCommonOptions(opts);
+        addIANOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, IanSCU.class);
     }
 
@@ -237,6 +245,18 @@ public class IanSCU extends Device {
                 .withDescription(rb.getString("retrieve-uid"))
                 .withLongOpt("retrieve-uid")
                 .create());
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("set"))
+                .create("s"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("suffix")
+                .withDescription(rb.getString("uid-suffix"))
+                .withLongOpt("uid-suffix")
+                .create(null));
     }
 
     private static void configureIAN(IanSCU main, CommandLine cl)
@@ -276,6 +296,7 @@ public class IanSCU extends Device {
     }
 
     public void addInstance(Attributes inst) {
+        CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
             return;

@@ -59,8 +59,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.ElementDictionary;
-import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
@@ -142,26 +140,7 @@ public class StoreSCU extends Device {
     }
 
     public void addAttribute(int[] tags, String... ss) {
-        Attributes item = attrs;
-        for (int i = 0; i < tags.length-1; i++) {
-            int tag = tags[i];
-            Sequence sq = (Sequence) item.getValue(tag);
-            if (sq == null)
-                sq = item.newSequence(tag, 1);
-            if (sq.isEmpty())
-                sq.add(new Attributes());
-            item = sq.get(0);
-        }
-        int tag = tags[tags.length-1];
-        VR vr = ElementDictionary.vrOf(tag,
-                item.getPrivateCreator(tag));
-        if (ss.length == 0)
-            if (vr == VR.SQ)
-                item.newSequence(tag, 1).add(new Attributes(0));
-            else
-                item.setNull(tag, vr);
-        else
-            item.setString(tag, vr, ss);
+        CLIUtils.addAttributes(attrs, tags, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -247,8 +226,9 @@ public class StoreSCU extends Device {
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
-            configureAttributes(main, cl);
-            main.setUIDSuffix(uidSuffixOf(cl));
+            String[] optVals = cl.getOptionValues("s");
+            CLIUtils.addAttributes(main.attrs, optVals);
+            main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
@@ -304,20 +284,6 @@ public class StoreSCU extends Device {
             e.printStackTrace();
             System.exit(2);
         }
-    }
-
-    private static String uidSuffixOf(CommandLine cl) {
-        return cl.getOptionValue("uid-suffix");
-    }
-
-    private static void configureAttributes(StoreSCU main, CommandLine cl) {
-        String[] attrs = cl.getOptionValues("s");
-        if (attrs != null)
-            for (int i = 1; i < attrs.length; i++, i++)
-                main.addAttribute(
-                        CLIUtils.toTags(
-                                StringUtils.split(attrs[i-1], '/')),
-                                StringUtils.split(attrs[i], '/'));
     }
 
     private static void configureTmpFile(StoreSCU storescu, CommandLine cl) {

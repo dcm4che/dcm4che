@@ -62,6 +62,7 @@ import org.apache.commons.cli.PosixParser;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Sequence;
+import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomEncodingOptions;
@@ -750,6 +751,22 @@ public class CLIUtils {
             for (int i = 1; i < optVals.length; i++, i++)
                 addAttributes(attrs,
                         toTags(StringUtils.split(optVals[i-1], '/')));
+    }
+
+    public static boolean updateAttributes(Attributes data, Attributes attrs,
+            String uidSuffix) {
+        if (attrs.isEmpty() && uidSuffix == null)
+            return false;
+        if (uidSuffix != null ) {
+            data.setString(Tag.StudyInstanceUID, VR.UI,
+                    data.getString(Tag.StudyInstanceUID) + uidSuffix);
+            data.setString(Tag.SeriesInstanceUID, VR.UI,
+                    data.getString(Tag.SeriesInstanceUID) + uidSuffix);
+            data.setString(Tag.SOPInstanceUID, VR.UI, 
+                    data.getString(Tag.SOPInstanceUID) + uidSuffix);
+        }
+        data.update(attrs, null);
+        return true;
     }
 
 }

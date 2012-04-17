@@ -61,7 +61,6 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
@@ -410,14 +409,8 @@ public class StoreSCU extends Device {
             try {
                 in.setIncludeBulkDataLocator(true);
                 Attributes data = in.readDataset(-1, -1);
-                if (uidSuffix != null ) {
-                    data.setString(Tag.StudyInstanceUID, VR.UI,
-                            data.getString(Tag.StudyInstanceUID) + uidSuffix);
-                    data.setString(Tag.SeriesInstanceUID, VR.UI,
-                            data.getString(Tag.SeriesInstanceUID) + uidSuffix);
-                    data.setString(Tag.SOPInstanceUID, VR.UI, iuid += uidSuffix);
-                }
-                data.update(attrs, null);
+                if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
+                    iuid = attrs.getString(Tag.SOPInstanceUID);
                 as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
                         rspHandler(f));
             } finally {

@@ -164,6 +164,10 @@ public class Association {
         return properties != null ? properties.get(key) : null;
     }
 
+    public boolean containsProperty(String key) {
+        return properties != null && properties.containsKey(key);
+    }
+
     public Object setProperty(String key, Object value) {
         if (properties == null)
             properties = new HashMap<String, Object>();

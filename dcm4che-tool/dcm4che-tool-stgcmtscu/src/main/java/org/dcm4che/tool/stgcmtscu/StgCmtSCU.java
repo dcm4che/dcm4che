@@ -84,23 +84,22 @@ import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
-public class StgCmtSCU extends Device {
+public class StgCmtSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.stgcmtscu.messages");
 
-    private final ApplicationEntity ae = new ApplicationEntity("STGCMTSCU");
-    private final Connection conn = new Connection();
-    private final Connection remote = new Connection();
+    private final ApplicationEntity ae;
+    private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
 
     private File storageDir;
     private boolean keepAlive;
     private int splitTag;
     private int status;
-    private HashMap<String,List<String>> map = new HashMap<String,List<String>>();
+    public HashMap<String,List<String>> map = new HashMap<String,List<String>>();
     private Association as;
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
@@ -132,14 +131,24 @@ public class StgCmtSCU extends Device {
     };
 
     public StgCmtSCU() throws IOException {
-        super("stgcmtscu");
-        addConnection(conn);
-        addApplicationEntity(ae);
-        ae.addConnection(conn);
+        this(new Connection(), new ApplicationEntity("STGCMTSCU"));
+    }
+
+    public StgCmtSCU(Connection remote, ApplicationEntity ae) throws IOException {
+        this.remote = remote;
+        this.ae = ae;
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
         serviceRegistry.addDicomService(stgcmtResultHandler);
         ae.setDimseRQHandler(serviceRegistry);
+    }
+
+    public Association getAs() {
+        return as;
+    }
+
+    public AAssociateRQ getRq() {
+        return rq;
     }
 
     public void setStorageDirectory(File storageDir) {
@@ -156,12 +165,18 @@ public class StgCmtSCU extends Device {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
+            Device device = new Device("stgcmtscu");
+            Connection conn = new Connection();
+            device.addConnection(conn);
+            ApplicationEntity ae = new ApplicationEntity("STGCMTSCU");
+            device.addApplicationEntity(ae);
+            ae.addConnection(conn);
             final StgCmtSCU stgcmtscu = new StgCmtSCU();
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
-            CLIUtils.configureBind(stgcmtscu.conn, stgcmtscu.ae, cl);
-            CLIUtils.configure(stgcmtscu.conn, cl);
-            stgcmtscu.remote.setTlsProtocols(stgcmtscu.conn.getTlsProtocols());
-            stgcmtscu.remote.setTlsCipherSuites(stgcmtscu.conn.getTlsCipherSuites());
+            CLIUtils.configureBind(conn, stgcmtscu.ae, cl);
+            CLIUtils.configure(conn, cl);
+            stgcmtscu.remote.setTlsProtocols(conn.getTlsProtocols());
+            stgcmtscu.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
             stgcmtscu.setSplitTag(getSplitTag(cl));
@@ -183,18 +198,18 @@ public class StgCmtSCU extends Device {
                     Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            stgcmtscu.setExecutor(executorService);
-            stgcmtscu.setScheduledExecutor(scheduledExecutorService);
-            stgcmtscu.activate();
+            device.setExecutor(executorService);
+            device.setScheduledExecutor(scheduledExecutorService);
+            device.activate();
             try {
-                stgcmtscu.open();
+                stgcmtscu.open(conn);
                 if (echo)
                     stgcmtscu.echo();
                 else
                     for (List<String> refSOPs : stgcmtscu.map.values())
                         stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
             } finally {
-                stgcmtscu.close();
+                stgcmtscu.close(conn, device);
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
             }
@@ -209,13 +224,13 @@ public class StgCmtSCU extends Device {
         }
     }
 
-    private static File getStorageDirectory(CommandLine cl) {
+    public static File getStorageDirectory(CommandLine cl) {
         return cl.hasOption("ignore")
                 ? null
                 : new File(cl.getOptionValue("directory", "."));
     }
 
-    private static int getSplitTag(CommandLine cl) {
+    public static int getSplitTag(CommandLine cl) {
         return cl.hasOption("one-by-study") 
                 ? Tag.StudyInstanceUID
                 : cl.hasOption("one-by-series")
@@ -318,7 +333,7 @@ public class StgCmtSCU extends Device {
         opts.addOption(null, "one-per-series", false, rb.getString("one-per-series"));
     }
 
-    public void open() throws IOException, InterruptedException,
+    public void open(Connection conn) throws IOException, InterruptedException,
             IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
@@ -327,7 +342,7 @@ public class StgCmtSCU extends Device {
         as.cecho().next();
     }
 
-    public void close() throws IOException, InterruptedException {
+    public void close(Connection conn, Device device) throws IOException, InterruptedException {
         if (as != null && as.isReadyForDataTransfer()) {
             as.waitForOutstandingRSP();
             if (keepAlive)
@@ -336,8 +351,8 @@ public class StgCmtSCU extends Device {
         }
         if (conn.isListening()) {
             waitForOutstandingResults();
-            waitForNoOpenConnections();
-            deactivate();
+            device.waitForNoOpenConnections();
+            device.deactivate();
         }
     }
 
@@ -365,7 +380,7 @@ public class StgCmtSCU extends Device {
         }
     }
 
-    private Attributes makeActionInfo(List<String> refSOPs) {
+    public Attributes makeActionInfo(List<String> refSOPs) {
         Attributes actionInfo = new Attributes(2);
         actionInfo.setString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
         int n = refSOPs.size() / 2;

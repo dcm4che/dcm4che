@@ -22,6 +22,7 @@
    -
    - Contributor(s):
    - Gunter Zeilinger <gunterze@gmail.com>
+   - Michael Backhaus <michael.backhaus@agfa.com>
    -
    - Alternatively, the contents of this file may be used under the terms of
    - either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -73,6 +74,8 @@
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
     <module>dcm4che-tool-xml2prefs</module>
+    
+    <module>dcm4che-tool-ihe</module>
   </modules>
   <build>
     <plugins>

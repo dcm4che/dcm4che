@@ -22,6 +22,7 @@
    -
    - Contributor(s):
    - Gunter Zeilinger <gunterze@gmail.com>
+   - Michael Backhaus <michael.backhaus@agfa.com>
    -
    - Alternatively, the contents of this file may be used under the terms of
    - either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -44,11 +45,9 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-assembly</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che-assembly</name>
-  <version>3.0.0-SNAPSHOT</version>
   <description>Assemble dcm4che distribution packages</description>
   <build>
     <finalName>dcm4che-${version}</finalName>
@@ -236,6 +235,11 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-xml2prefs</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-ihe</artifactId>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>

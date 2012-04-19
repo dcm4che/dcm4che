@@ -47,16 +47,13 @@ import java.util.Random;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
-import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
-import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.TagUtils;
 
 /**
@@ -70,7 +67,7 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected File createFile(Association as, Attributes rq, Object storage)
+    protected File createFile(Association as, Attributes rq)
             throws DicomServiceException {
         try {
             DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
@@ -82,25 +79,11 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected boolean process(Association as, PresentationContext pc, Attributes rq,
-            Attributes rsp, Object storage, FileHolder fileHolder, MessageDigest digest)
+    protected File rename(Association as, File file, Attributes attrs)
             throws DicomServiceException {
-        Attributes fmi, ds;
-        File file = fileHolder.getFile();
-        DicomInputStream in = null;
-        try {
-            in = new DicomInputStream(file);
-            in.setIncludeBulkData(false);
-            fmi = in.readFileMetaInformation();
-            ds = in.readDataset(-1, Tag.PixelData);
-        } catch (IOException e) {
-            LOG.warn(as + ": Failed to decode dataset:", e);
-            throw new DicomServiceException(Status.CannotUnderstand);
-        } finally {
-            SafeClose.close(in);
-        }
         DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
-        File dst = new File(qrscp.getStorageDirectory(), qrscp.getFilePathFormat().format(ds));
+        File dst = new File(qrscp.getStorageDirectory(),
+                qrscp.getFilePathFormat().format(attrs));
         File dir = dst.getParentFile();
         dir.mkdirs();
         while (dst.exists()) {
@@ -112,20 +95,23 @@ class CStoreSCPImpl extends BasicCStoreSCP {
             LOG.warn("{}: Failed to M-RENAME {} to {}", new Object[] {as, file, dst});
             throw new DicomServiceException(Status.OutOfResources, "Failed to rename file");
         }
-        fileHolder.setFile(dst);
+        return dst;
+    }
+
+    @Override
+    protected boolean process(Association as, Attributes rq, Attributes rsp,
+            File file, MessageDigest digest, Attributes fmi, Attributes attrs)
+            throws DicomServiceException {
+        DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         try {
-            if (addDicomDirRecords(as, ds, fmi, dst)) {
+            if (addDicomDirRecords(as, attrs, fmi, file)) {
                 LOG.info("{}: M-UPDATE {}", as, qrscp.getDicomDirectory());
                 return true;
             }
             LOG.info("{}: ignore received object", as);
         } catch (IOException e) {
             LOG.warn(as + ": Failed to M-UPDATE " + qrscp.getDicomDirectory(), e);
-            String errorComment = e.getMessage();
-            if (errorComment.length() > 64)
-                errorComment = errorComment.substring(0, 64);
-            rsp.setInt(Tag.Status, VR.US, Status.OutOfResources);
-            rsp.setString(Tag.ErrorComment, VR.LO, errorComment);
+            throw new DicomServiceException(Status.OutOfResources, e);
         }
         return false;
     }

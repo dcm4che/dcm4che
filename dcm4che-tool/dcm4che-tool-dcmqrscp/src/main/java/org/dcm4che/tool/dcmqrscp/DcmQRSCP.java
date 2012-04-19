@@ -564,7 +564,7 @@ public class DcmQRSCP extends Device {
     }
 
     public Attributes calculateStorageCommitmentResult(String calledAET,
-            Attributes actionInfo) {
+            Attributes actionInfo) throws DicomServiceException {
         Sequence requestSeq = actionInfo.getSequence(Tag.ReferencedSOPSequence);
         int size = requestSeq.size();
         String[] sopIUIDs = new String[size];
@@ -582,7 +582,6 @@ public class DcmQRSCP extends Device {
             map.put(sopIUIDs[i] = item.getString(Tag.ReferencedSOPInstanceUID),
                     item.getString(Tag.ReferencedSOPClassUID));
         }
-        int failureReason = Status.NoSuchObjectInstance;
         DicomDirReader ddr = ddReader;
         try {
             Attributes patRec = ddr.findPatientRecord();
@@ -608,11 +607,11 @@ public class DcmQRSCP extends Device {
                 patRec = ddr.findNextPatientRecord(patRec);
             }
         } catch (IOException e) {
-            DicomService.LOG.warn("Failed to M-READ " + dicomDir, e);
-            failureReason = Status.ProcessingFailure;
+            DicomService.LOG.info("Failed to M-READ " + dicomDir, e);
+            throw new DicomServiceException(Status.ProcessingFailure, e);
         }
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            failedSeq.add(refSOP(entry.getKey(), entry.getValue(), failureReason));
+            failedSeq.add(refSOP(entry.getKey(), entry.getValue(), Status.NoSuchObjectInstance));
         }
         if (failedSeq.isEmpty())
             eventInfo.remove(Tag.FailedSOPSequence);

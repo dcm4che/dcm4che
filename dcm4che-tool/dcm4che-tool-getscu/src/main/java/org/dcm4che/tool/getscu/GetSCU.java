@@ -134,7 +134,7 @@ public class GetSCU extends Device {
         }
 
         @Override
-        protected File createFile(Association as, Attributes rq, Object storage)
+        protected File createFile(Association as, Attributes rq)
                 throws DicomServiceException {
             return new File(storageDir, rq.getString(Tag.AffectedSOPInstanceUID));
         }

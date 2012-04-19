@@ -45,92 +45,112 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
+import org.dcm4che.net.AssociationStateException;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
-import org.dcm4che.net.service.BasicNActionSCP;
+import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 
-public class StgCmtSCPImpl extends BasicNActionSCP {
+public class StgCmtSCPImpl extends DicomService {
 
     public StgCmtSCPImpl() {
         super(UID.StorageCommitmentPushModelSOPClass);
-        setActionTypeIDs(1);
     }
 
     @Override
-    protected Attributes action(Association as, int actionTypeID,
-            Attributes actionInfo, Attributes rsp, Object[] handback)
-            throws DicomServiceException {
+    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
+            Attributes rq, Attributes actionInfo) throws IOException {
+        if (dimse != Dimse.N_ACTION_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+
+        int actionTypeID = rq.getInt(Tag.ActionTypeID, 0);
+        if (actionTypeID != 1)
+            throw new DicomServiceException(Status.NoSuchActionType)
+                        .setActionTypeID(actionTypeID);
+
+        Attributes rsp = Commands.mkNActionRSP(rq, Status.Success);
         String callingAET = as.getCallingAET();
+        String calledAET = as.getCalledAET();
         DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         if (qrscp.getRemoteConnection(callingAET) == null)
             throw new DicomServiceException(Status.ProcessingFailure,
                     "Unknown Calling AET: " + callingAET);
-        return null;
+        Attributes eventInfo =
+                qrscp.calculateStorageCommitmentResult(calledAET, actionInfo);
+        try {
+            as.writeDimseRSP(pc, rsp, null);
+            qrscp.execute(new SendStgCmtResult(as, eventInfo));
+        } catch (AssociationStateException e) {
+            LOG.warn("{} << N-ACTION-RSP failed: {}", as, e.getMessage());
+        }
     }
 
-    @Override
-    protected void postNActionRSP(final Association as, int actionTypeID,
-            final Attributes actionInfo, Attributes rsp, Object handback) {
-        final DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
-        final String calledAET = as.getCalledAET();
-        final String callingAET = as.getCallingAET();
-        final Attributes eventInfo = 
-                    qrscp.calculateStorageCommitmentResult(calledAET, actionInfo);
-        qrscp.execute(new Runnable() {
-            @Override
-            public void run() {
-                if (qrscp.isStgCmtOnSameAssoc()) {
-                    try {
-                        neventReport(as, eventInfo);
-                        return;
-                    } catch (Exception e) {
-                        LOG.info("Failed to return Storage Commitment Result in same Association:", e);
-                    }
-                }
+    private static class SendStgCmtResult implements Runnable {
+
+        private final DcmQRSCP qrscp;
+        private final Association as;
+        private final Attributes eventInfo;
+
+        SendStgCmtResult(Association as, Attributes eventInfo) {
+            this.qrscp = DcmQRSCP.deviceOf(as);
+            this.as = as;
+            this.eventInfo = eventInfo;
+        }
+
+        @Override
+        public void run() {
+            if (qrscp.isStgCmtOnSameAssoc()) {
                 try {
-                    Association diffAssoc = as.getApplicationEntity().connect(
-                            as.getConnection(),
-                            qrscp.getRemoteConnection(callingAET),
-                            makeAAssociateRQ(as));
-                    neventReport(diffAssoc, eventInfo);
-                    diffAssoc.release();
+                    neventReport(as);
+                    return;
                 } catch (Exception e) {
-                    LOG.error("Failed to return Storage Commitment Result in new Association:", e);
+                    LOG.info("Failed to return Storage Commitment Result in same Association:", e);
                 }
             }
-        });
-    }
+            try {
+                Association diffAssoc = as.getApplicationEntity().connect(
+                        as.getConnection(),
+                        qrscp.getRemoteConnection(as.getRemoteAET()),
+                        makeAAssociateRQ());
+                neventReport(diffAssoc);
+                diffAssoc.release();
+            } catch (Exception e) {
+                LOG.error("Failed to return Storage Commitment Result in new Association:", e);
+            }
+        }
 
-    private void neventReport(Association as, Attributes eventInfo)
-            throws IOException, InterruptedException {
-        as.neventReport(UID.StorageCommitmentPushModelSOPClass,
-                UID.StorageCommitmentPushModelSOPInstance, 
-                eventTypeId(eventInfo), eventInfo, null).next();
-    }
+        private void neventReport(Association as)
+                throws IOException, InterruptedException {
+            as.neventReport(UID.StorageCommitmentPushModelSOPClass,
+                    UID.StorageCommitmentPushModelSOPInstance, 
+                    eventTypeId(eventInfo), eventInfo, null).next();
+        }
+    
+        private int eventTypeId(Attributes eventInfo) {
+            return eventInfo.containsValue(Tag.FailedSOPSequence) ? 2 : 1;
+        }
+    
+        private AAssociateRQ makeAAssociateRQ() {
+            AAssociateRQ aarq = new AAssociateRQ();
+            aarq.setCallingAET(as.getLocalAET());
+            aarq.setCalledAET(as.getRemoteAET());
+            ApplicationEntity ae = as.getApplicationEntity();
+            TransferCapability tc = ae.getTransferCapabilityFor(
+                    UID.StorageCommitmentPushModelSOPClass, TransferCapability.Role.SCP);
+            aarq.addPresentationContext(
+                            new PresentationContext(
+                                    1,
+                                    UID.StorageCommitmentPushModelSOPClass,
+                                    tc.getTransferSyntaxes()));
+            aarq.addRoleSelection(
+                    new RoleSelection(UID.StorageCommitmentPushModelSOPClass, false, true));
+            return aarq;
+        }
 
-    private int eventTypeId(Attributes eventInfo) {
-        return eventInfo.containsValue(Tag.FailedSOPSequence) ? 2 : 1;
     }
-
-    private AAssociateRQ makeAAssociateRQ(Association as) {
-        AAssociateRQ aarq = new AAssociateRQ();
-        aarq.setCallingAET(as.getLocalAET());
-        aarq.setCalledAET(as.getRemoteAET());
-        ApplicationEntity ae = as.getApplicationEntity();
-        TransferCapability tc = ae.getTransferCapabilityFor(
-                UID.StorageCommitmentPushModelSOPClass, TransferCapability.Role.SCP);
-        aarq.addPresentationContext(
-                        new PresentationContext(
-                                1,
-                                UID.StorageCommitmentPushModelSOPClass,
-                                tc.getTransferSyntaxes()));
-        aarq.addRoleSelection(
-                new RoleSelection(UID.StorageCommitmentPushModelSOPClass, false, true));
-        return aarq;
-    }
-
 }

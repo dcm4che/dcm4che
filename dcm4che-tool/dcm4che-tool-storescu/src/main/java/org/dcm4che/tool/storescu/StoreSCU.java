@@ -59,11 +59,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.ElementDictionary;
-import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
-import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
@@ -158,26 +155,7 @@ public class StoreSCU {
     }
 
     public void addAttribute(int[] tags, String... ss) {
-        Attributes item = attrs;
-        for (int i = 0; i < tags.length-1; i++) {
-            int tag = tags[i];
-            Sequence sq = (Sequence) item.getValue(tag);
-            if (sq == null)
-                sq = item.newSequence(tag, 1);
-            if (sq.isEmpty())
-                sq.add(new Attributes());
-            item = sq.get(0);
-        }
-        int tag = tags[tags.length-1];
-        VR vr = ElementDictionary.vrOf(tag,
-                item.getPrivateCreator(tag));
-        if (ss.length == 0)
-            if (vr == VR.SQ)
-                item.newSequence(tag, 1).add(new Attributes(0));
-            else
-                item.setNull(tag, vr);
-        else
-            item.setString(tag, vr, ss);
+        CLIUtils.addAttributes(attrs, tags, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -269,8 +247,8 @@ public class StoreSCU {
             main.remote.setTlsProtocols(conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
-            configureAttributes(main, cl);
-            main.setUIDSuffix(uidSuffixOf(cl));
+            CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
+            main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
@@ -466,14 +444,8 @@ public class StoreSCU {
             try {
                 in.setIncludeBulkDataLocator(true);
                 Attributes data = in.readDataset(-1, -1);
-                if (uidSuffix != null ) {
-                    data.setString(Tag.StudyInstanceUID, VR.UI,
-                            data.getString(Tag.StudyInstanceUID) + uidSuffix);
-                    data.setString(Tag.SeriesInstanceUID, VR.UI,
-                            data.getString(Tag.SeriesInstanceUID) + uidSuffix);
-                    data.setString(Tag.SOPInstanceUID, VR.UI, iuid += uidSuffix);
-                }
-                data.update(attrs, null);
+                if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
+                    iuid = data.getString(Tag.SOPInstanceUID);
                 as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
                         rspHandler(f));
             } finally {

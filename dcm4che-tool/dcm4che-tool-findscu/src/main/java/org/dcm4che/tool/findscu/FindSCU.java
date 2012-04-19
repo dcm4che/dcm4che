@@ -58,8 +58,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.ElementDictionary;
-import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
@@ -78,7 +76,6 @@ import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
-import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -174,29 +171,6 @@ public class FindSCU extends Device {
 
     public final void setInputFilter(int[] inFilter) {
         this.inFilter = inFilter;
-    }
-
-    public void addKey(int[] tags, String... ss) {
-        Attributes item = keys;
-        for (int i = 0; i < tags.length-1; i++) {
-            int tag = tags[i];
-            Sequence sq = (Sequence) item.getValue(tag);
-            if (sq == null)
-                sq = item.newSequence(tag, 1);
-            if (sq.isEmpty())
-                sq.add(new Attributes());
-            item = sq.get(0);
-        }
-        int tag = tags[tags.length-1];
-        VR vr = ElementDictionary.vrOf(tag,
-                item.getPrivateCreator(tag));
-        if (ss.length == 0)
-            if (vr == VR.SQ)
-                item.newSequence(tag, 1).add(new Attributes(0));
-            else
-                item.setNull(tag, vr);
-        else
-            item.setString(tag, vr, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -355,17 +329,8 @@ public class FindSCU extends Device {
     }
 
     private static void configureKeys(FindSCU main, CommandLine cl) {
-        if (cl.hasOption("r")) {
-            String[] keys = cl.getOptionValues("r");
-            for (int i = 0; i < keys.length; i++)
-                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i], '/')));
-        }
-        if (cl.hasOption("m")) {
-            String[] keys = cl.getOptionValues("m");
-            for (int i = 1; i < keys.length; i++, i++)
-                main.addKey(CLIUtils.toTags(StringUtils.split(keys[i-1], '/')),
-                        StringUtils.split(keys[i], '/'));
-        }
+        CLIUtils.addEmptyAttributes(main.keys, cl.getOptionValues("r"));
+        CLIUtils.addAttributes(main.keys, cl.getOptionValues("m"));
         if (cl.hasOption("L"))
             main.addLevel(cl.getOptionValue("L"));
         if (cl.hasOption("i"))

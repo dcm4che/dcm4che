@@ -84,16 +84,15 @@ import org.dcm4che.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
-public class StoreSCU extends Device {
+public class StoreSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.storescu.messages");
 
-    private final ApplicationEntity ae = new ApplicationEntity("STORESCU");
-    private final Connection conn = new Connection();
-    private final Connection remote = new Connection();
+    private final ApplicationEntity ae;
+    private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
     private final RelatedGeneralSOPClasses relSOPClasses =
             new RelatedGeneralSOPClasses();
@@ -111,14 +110,31 @@ public class StoreSCU extends Device {
     private int filesScanned;
     private int filesSent;
 
+    public Association getAs() {
+        return as;
+    }
+
+    public AAssociateRQ getRq() {
+        return rq;
+    }
+
+    public Attributes getAttrs() {
+        return attrs;
+    }
+
+    public void setTmpFile(File tmpFile) {
+        this.tmpFile = tmpFile;
+    }
+
     public StoreSCU() throws IOException {
-        super("storescu");
-        addConnection(conn);
-        addApplicationEntity(ae);
-        ae.addConnection(conn);
-        rq.addPresentationContext(
-                new PresentationContext(1, UID.VerificationSOPClass,
-                        UID.ImplicitVRLittleEndian));
+        this(new Connection(), new ApplicationEntity("STORESCU"));
+    }
+    
+    public StoreSCU(Connection remote, ApplicationEntity ae) throws IOException {
+        this.remote = remote;
+        this.ae = ae;
+        rq.addPresentationContext(new PresentationContext(1, UID.VerificationSOPClass,
+                UID.ImplicitVRLittleEndian));
     }
 
     public final void setPriority(int priority) {
@@ -191,7 +207,7 @@ public class StoreSCU extends Device {
     }
 
     @SuppressWarnings("static-access")
-    private static void addUIDSuffixOption(Options opts) {
+    public static void addUIDSuffixOption(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("suffix")
@@ -201,7 +217,7 @@ public class StoreSCU extends Device {
     }
 
     @SuppressWarnings("static-access")
-    private static void addTmpFileOptions(Options opts) {
+    public static void addTmpFileOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("directory")
@@ -239,13 +255,19 @@ public class StoreSCU extends Device {
         long t1, t2;
         try {
             CommandLine cl = parseComandLine(args);
+            Device device = new Device("storescu");
+            Connection conn = new Connection();
+            device.addConnection(conn);
+            ApplicationEntity ae = new ApplicationEntity("STORESCU");
+            device.addApplicationEntity(ae);
+            ae.addConnection(conn);
             StoreSCU main = new StoreSCU();
             configureTmpFile(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
-            CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
-            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
+            CLIUtils.configureBind(conn, main.ae, cl);
+            CLIUtils.configure(conn, cl);
+            main.remote.setTlsProtocols(conn.getTlsProtocols());
+            main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
             configureAttributes(main, cl);
             main.setUIDSuffix(uidSuffixOf(cl));
@@ -267,11 +289,11 @@ public class StoreSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            device.setExecutor(executorService);
+            device.setScheduledExecutor(scheduledExecutorService);
             try {
                 t1 = System.currentTimeMillis();
-                main.open();
+                main.open(conn);
                 t2 = System.currentTimeMillis();
                 System.out.println(MessageFormat.format(
                         rb.getString("connected"),
@@ -306,11 +328,11 @@ public class StoreSCU extends Device {
         }
     }
 
-    private static String uidSuffixOf(CommandLine cl) {
+    public static String uidSuffixOf(CommandLine cl) {
         return cl.getOptionValue("uid-suffix");
     }
 
-    private static void configureAttributes(StoreSCU main, CommandLine cl) {
+    public static void configureAttributes(StoreSCU main, CommandLine cl) {
         String[] attrs = cl.getOptionValues("s");
         if (attrs != null)
             for (int i = 1; i < attrs.length; i++, i++)
@@ -327,7 +349,7 @@ public class StoreSCU extends Device {
         storescu.setTmpFileSuffix(cl.getOptionValue("tmp-file-suffix"));
     }
 
-    private static void configureRelatedSOPClass(StoreSCU storescu, CommandLine cl)
+    public static void configureRelatedSOPClass(StoreSCU storescu, CommandLine cl)
             throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
             storescu.enableSOPClassRelationshipExtNeg(true);
@@ -392,7 +414,7 @@ public class StoreSCU extends Device {
         }
     }
 
-    private void addFile(BufferedWriter fileInfos, File f, long endFmi,
+    public void addFile(BufferedWriter fileInfos, File f, long endFmi,
             String cuid, String iuid, String ts) throws IOException {
         fileInfos.write(iuid);
         fileInfos.write('\t');
@@ -476,7 +498,7 @@ public class StoreSCU extends Device {
             as.release();
     }
 
-    public void open()
+    public void open(Connection conn)
             throws IOException, InterruptedException, IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }

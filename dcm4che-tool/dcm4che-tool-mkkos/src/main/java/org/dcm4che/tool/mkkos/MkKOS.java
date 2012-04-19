@@ -67,6 +67,7 @@ import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class MkKOS {
 
@@ -104,6 +105,10 @@ public class MkKOS {
     private Sequence evidenceSeq;
     private Sequence contentSeq;
 
+    public String getFname() {
+        return fname;
+    }
+
     public void setOutputFile(String fname) {
         this.fname = fname;
     }
@@ -116,7 +121,7 @@ public class MkKOS {
         this.encOpts = encOpts;
     }
 
-    private final void setTransferSyntax(String tsuid) {
+    public final void setTransferSyntax(String tsuid) {
         this.tsuid = tsuid;
     }
 
@@ -181,7 +186,7 @@ public class MkKOS {
     }
 
     @SuppressWarnings("static-access")
-    private static void addOptions(Options opts) {
+    public static void addOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("code")
@@ -255,7 +260,7 @@ public class MkKOS {
         main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
     }
 
-    private static String outputFileOf(CommandLine cl) throws MissingOptionException {
+    public static String outputFileOf(CommandLine cl) throws MissingOptionException {
         if (!cl.hasOption("o"))
             throw new MissingOptionException(rb.getString("missing-o-file"));
         return cl.getOptionValue("o");

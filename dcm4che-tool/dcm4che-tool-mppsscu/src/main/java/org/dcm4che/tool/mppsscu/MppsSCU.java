@@ -220,6 +220,10 @@ public class MppsSCU {
         this.uidSuffix = uidSuffix;
     }
 
+    public final void setUIDSuffix(String uidSuffix) {
+        this.uidSuffix = uidSuffix;
+    }
+
     public final void setPPSUID(String ppsuid) {
         this.ppsuid = ppsuid;
     }

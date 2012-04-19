@@ -76,9 +76,9 @@ import org.dcm4che.util.DateUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
-public class MppsSCU extends Device {
+public class MppsSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.mppsscu.messages");
@@ -175,9 +175,8 @@ public class MppsSCU extends Device {
         ppsStartTime = DateUtils.formatTM(null, now);
     }
 
-    private final ApplicationEntity ae = new ApplicationEntity("MPPSSCU");
-    private final Connection conn = new Connection();
-    private final Connection remote = new Connection();
+    private final ApplicationEntity ae;
+    private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
     private boolean newPPSID;
     private int serialNo = (int) (System.currentTimeMillis() & 0x7FFFFFFFL);
@@ -195,10 +194,24 @@ public class MppsSCU extends Device {
     private final AtomicInteger outstanding = new AtomicInteger(0);
 
     public MppsSCU() throws IOException {
-        super("mppsscu");
-        addConnection(conn);
-        addApplicationEntity(ae);
-        ae.addConnection(conn);
+        this(new Connection(), new ApplicationEntity("MPPSSCU"));
+    }
+
+    public MppsSCU(Connection remote, ApplicationEntity ae) throws IOException {
+        this.remote = remote;
+        this.ae = ae;
+    }
+
+    public Association getAs() {
+        return as;
+    }
+
+    public AAssociateRQ getRq() {
+        return rq;
+    }
+
+    public HashMap<String, Attributes> getMap() {
+        return map;
     }
 
     public final void setPPSUID(String ppsuid) {
@@ -272,13 +285,19 @@ public class MppsSCU extends Device {
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
+            Device device = new Device("mppsscu");
+            Connection conn = new Connection();
+            device.addConnection(conn);
+            ApplicationEntity ae = new ApplicationEntity("MPPSSCU");
+            device.addApplicationEntity(ae);
+            ae.addConnection(conn);
             final MppsSCU main = new MppsSCU();
             configureMPPS(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
-            CLIUtils.configureBind(main.conn, main.ae, cl);
-            CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
-            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
+            CLIUtils.configureBind(conn, main.ae, cl);
+            CLIUtils.configure(conn, cl);
+            main.remote.setTlsProtocols(conn.getTlsProtocols());
+            main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
@@ -296,10 +315,10 @@ public class MppsSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            device.setExecutor(executorService);
+            device.setScheduledExecutor(scheduledExecutorService);
             try {
-                main.open();
+                main.open(conn);
                 if (echo)
                     main.echo();
                 else {
@@ -408,7 +427,7 @@ public class MppsSCU extends Device {
                 .create());
     }
 
-    public void open() throws IOException, InterruptedException,
+    public void open(Connection conn) throws IOException, InterruptedException,
             IncompatibleConnectionException {
         as = ae.connect(conn, remote, rq);
     }
@@ -435,7 +454,7 @@ public class MppsSCU extends Device {
             sendMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
     }
 
-    private void sendMpps(String iuid, Attributes mpps)
+    public void sendMpps(String iuid, Attributes mpps)
             throws IOException, InterruptedException {
         final Attributes finalMpps = new Attributes(5);
         finalMpps.addSelected(mpps,

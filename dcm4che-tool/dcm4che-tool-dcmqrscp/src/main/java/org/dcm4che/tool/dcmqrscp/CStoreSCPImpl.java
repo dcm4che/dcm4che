@@ -52,6 +52,7 @@ import org.dcm4che.media.RecordFactory;
 import org.dcm4che.media.RecordType;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Status;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.util.TagUtils;
@@ -99,9 +100,9 @@ class CStoreSCPImpl extends BasicCStoreSCP {
     }
 
     @Override
-    protected boolean process(Association as, Attributes rq, Attributes rsp,
-            File file, MessageDigest digest, Attributes fmi, Attributes attrs)
-            throws DicomServiceException {
+    protected boolean process(Association as, PresentationContext pc,
+            Attributes rq, Attributes rsp, File file, MessageDigest digest,
+            Attributes fmi, Attributes attrs) throws DicomServiceException {
         DcmQRSCP qrscp = DcmQRSCP.deviceOf(as);
         try {
             if (addDicomDirRecords(as, attrs, fmi, file)) {

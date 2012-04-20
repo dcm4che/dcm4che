@@ -96,7 +96,7 @@ public class BasicCStoreSCP extends DicomService {
             Attributes fmi = store(as, pc, rq, data, file, digest);
             Attributes attrs = parse(as, file);
             file = rename(as, file, attrs);
-            keepFile = process(as, rq, rsp, file, digest, fmi, attrs);
+            keepFile = process(as, pc, rq, rsp, file, digest, fmi, attrs);
         } finally {
             if (!keepFile)
                 if (file.delete())
@@ -168,9 +168,9 @@ public class BasicCStoreSCP extends DicomService {
         return fmi;
     }
 
-    protected boolean process(Association as, Attributes rq, Attributes rsp,
-            File file, MessageDigest digest, Attributes fmi, Attributes attrs)
-                    throws IOException {
+    protected boolean process(Association as, PresentationContext pc, Attributes rq,
+            Attributes rsp, File file, MessageDigest digest,
+            Attributes fmi, Attributes attrs) throws IOException {
         return true;
     }
 

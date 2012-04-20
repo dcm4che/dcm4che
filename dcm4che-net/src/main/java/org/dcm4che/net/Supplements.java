@@ -49,51 +49,53 @@ import org.dcm4che.data.VR;
 public abstract class Supplements {
 
     public static void supplementComposite(Attributes ds, Device device) {
-        supplementManufacturer(ds, device);
-        supplementManufacturerModelName(ds, device);
-        supplementStationName(ds, device);
-        supplementDeviceSerialNumber(ds, device);
-        supplementIssuerOfPatientID(ds, device);
-        supplementIssuerOfAccessionNumber(ds, device);
-        supplementOrderPlacerIdentifier(ds, device);
-        supplementOrderFillerIdentifier(ds, device);
-        supplementIssuerOfAdmissionID(ds, device);
-        supplementIssuerOfServiceEpisodeID(ds, device);
-        supplementIssuerOfContainerIdentifier(ds, device);
-        supplementIssuerOfSpecimenIdentifier(ds, device);
-        supplementSoftwareVersions(ds, device);
-        supplementInstitutionName(ds, device);
-        supplementInstitutionCode(ds, device);
-        supplementInstitutionalDepartmentName(ds, device);
+        supplementValue(ds, Tag.Manufacturer, VR.LO, device.getManufacturer());
+        supplementValue(ds, Tag.ManufacturerModelName, VR.LO, device.getManufacturerModelName());
+        supplementValue(ds, Tag.StationName, VR.SH, device.getStationName());
+        supplementValue(ds, Tag.DeviceSerialNumber, VR.LO, device.getDeviceSerialNumber());
+        supplementIssuerOfPatientID(ds, device.getIssuerOfPatientID());
+        supplementIssuer(ds, Tag.AccessionNumber,
+                Tag.IssuerOfAccessionNumberSequence,
+                device.getIssuerOfAccessionNumber());
+        supplementIssuer(ds, Tag.PlacerOrderNumberImagingServiceRequest,
+                Tag.OrderPlacerIdentifierSequence,
+                device.getOrderPlacerIdentifier());
+        supplementIssuer(ds, Tag.FillerOrderNumberImagingServiceRequest,
+                Tag.OrderFillerIdentifierSequence,
+                device.getOrderFillerIdentifier());
+        supplementIssuer(ds, Tag.AdmissionID,
+                Tag.IssuerOfAdmissionIDSequence,
+                device.getIssuerOfAdmissionID());
+        supplementIssuer(ds, Tag.ServiceEpisodeID,
+                Tag.IssuerOfServiceEpisodeID,
+                device.getIssuerOfServiceEpisodeID());
+        supplementIssuer(ds, Tag.ContainerIdentifier,
+                Tag.IssuerOfTheContainerIdentifierSequence,
+                device.getIssuerOfContainerIdentifier());
+        supplementIssuer(ds, Tag.SpecimenIdentifier,
+                Tag.IssuerOfTheSpecimenIdentifierSequence,
+                device.getIssuerOfSpecimenIdentifier());
+        supplementValues(ds, Tag.SoftwareVersions, VR.LO, device.getSoftwareVersions());
+        supplementValue(ds, Tag.InstitutionName, VR.LO, device.getInstitutionNames());
+        supplementCode(ds, Tag.InstitutionCodeSequence, device.getInstitutionCodes());
+        supplementValue(ds, Tag.InstitutionalDepartmentName, VR.LO,
+        device.getInstitutionalDepartmentNames());
         Sequence rqSeq = ds.getSequence(Tag.RequestAttributesSequence);
         if (rqSeq != null)
             for (Attributes rq : rqSeq) {
-                supplementIssuerOfAccessionNumber(rq, device);
-                supplementOrderPlacerIdentifier(rq, device);
-                supplementOrderFillerIdentifier(rq, device);
+                supplementIssuer(rq, Tag.AccessionNumber,
+                        Tag.IssuerOfAccessionNumberSequence,
+                        device.getIssuerOfAccessionNumber());
+                supplementIssuer(rq, Tag.PlacerOrderNumberImagingServiceRequest,
+                        Tag.OrderPlacerIdentifierSequence,
+                        device.getOrderPlacerIdentifier());
+                supplementIssuer(rq, Tag.FillerOrderNumberImagingServiceRequest,
+                        Tag.OrderFillerIdentifierSequence,
+                        device.getOrderFillerIdentifier());
             }
     }
 
-    public static boolean supplementManufacturer(Attributes ds, Device device) {
-        return supplement(ds, Tag.Manufacturer, VR.LO, device.getManufacturer());
-    }
-
-    public static boolean supplementManufacturerModelName(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.ManufacturerModelName, VR.LO,
-                device.getManufacturerModelName());
-    }
-
-    public static boolean supplementStationName(Attributes ds, Device device) {
-        return supplement(ds, Tag.StationName, VR.SH, device.getStationName());
-    }
-
-    public static boolean supplementDeviceSerialNumber(Attributes ds, Device device) {
-        return supplement(ds, Tag.DeviceSerialNumber, VR.LO, device.getDeviceSerialNumber());
-    }
-
-    public static boolean supplementIssuerOfPatientID(Attributes ds, Device device) {
-        Issuer issuer = device.getIssuerOfPatientID();
+    public static boolean supplementIssuerOfPatientID(Attributes ds, Issuer issuer) {
         if (issuer == null
                 || !ds.containsValue(Tag.PatientID)
                 || ds.containsValue(Tag.IssuerOfPatientID) 
@@ -114,91 +116,17 @@ public abstract class Supplements {
         return true;
     }
 
-    public static boolean supplementIssuerOfAccessionNumber(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.AccessionNumber,
-                Tag.IssuerOfAccessionNumberSequence,
-                device.getIssuerOfAccessionNumber());
-    }
-
-    public static boolean supplementOrderPlacerIdentifier(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.PlacerOrderNumberImagingServiceRequest,
-                Tag.OrderPlacerIdentifierSequence,
-                device.getOrderPlacerIdentifier());
-    }
-
-    public static boolean supplementOrderFillerIdentifier(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.FillerOrderNumberImagingServiceRequest,
-                Tag.OrderFillerIdentifierSequence,
-                device.getOrderFillerIdentifier());
-    }
-
-    public static boolean supplementIssuerOfAdmissionID(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.AdmissionID,
-                Tag.IssuerOfAdmissionIDSequence,
-                device.getIssuerOfAdmissionID());
-    }
-
-    public static boolean supplementIssuerOfServiceEpisodeID(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.ServiceEpisodeID,
-                Tag.IssuerOfServiceEpisodeID,
-                device.getIssuerOfServiceEpisodeID());
-    }
-
-    public static boolean supplementIssuerOfContainerIdentifier(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.ContainerIdentifier,
-                Tag.IssuerOfTheContainerIdentifierSequence,
-                device.getIssuerOfContainerIdentifier());
-    }
-
-    public static boolean supplementIssuerOfSpecimenIdentifier(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.SpecimenIdentifier,
-                Tag.IssuerOfTheSpecimenIdentifierSequence,
-                device.getIssuerOfSpecimenIdentifier());
-    }
-
-    public static boolean supplementSoftwareVersions(Attributes ds, Device device) {
-        return supplement(ds, Tag.SoftwareVersions, VR.LO,
-                device.getSoftwareVersions());
-    }
-
-    public static boolean supplementInstitutionName(Attributes ds, Device device) {
-        return supplement(ds, Tag.InstitutionName, VR.LO,
-                first(device.getInstitutionNames()));
-    }
-
-    public static boolean supplementInstitutionCode(Attributes ds, Device device) {
-        return supplement(ds, Tag.InstitutionCodeSequence,
-                first(device.getInstitutionCodes()));
-    }
-
-    public static boolean supplementInstitutionalDepartmentName(Attributes ds,
-            Device device) {
-        return supplement(ds, Tag.InstitutionalDepartmentName, VR.LO,
-                first(device.getInstitutionalDepartmentNames()));
-    }
-
-    private static <T> T first(T[] a) {
-        return a.length > 0 ? a[0] : null;
-    }
-
-    private static boolean supplement(Attributes ds, int tag, VR vr,
-            String value) {
-        if (value == null
+    private static boolean supplementValue(Attributes ds, int tag, VR vr,
+            String... values) {
+        if (values.length == 0 || values[0] == null
                 || ds.containsValue(tag))
             return false;
 
-        ds.setString(tag, vr, value);
+        ds.setString(tag, vr, values[0]);
         return true;
     }
 
-    private static boolean supplement(Attributes ds, int tag, VR vr,
+    private static boolean supplementValues(Attributes ds, int tag, VR vr,
             String... values) {
         if (values.length == 0
                 || ds.containsValue(tag))
@@ -208,7 +136,7 @@ public abstract class Supplements {
         return true;
     }
 
-    private static boolean supplement(Attributes ds, int tag, int seqTag,
+    public static boolean supplementIssuer(Attributes ds, int tag, int seqTag,
             Issuer issuer) {
         if (issuer == null
                 || !ds.containsValue(tag)
@@ -229,19 +157,18 @@ public abstract class Supplements {
         return true;
     }
 
-    private static boolean supplement(Attributes ds, int seqTag, Code code) {
-        if (code == null
-                || ds.containsValue(seqTag))
+    public static boolean supplementCode(Attributes ds, int seqTag, Code... codes) {
+        if (codes.length == 0 || codes[0] == null || ds.containsValue(seqTag))
             return false;
 
         Attributes item = new Attributes(ds.bigEndian(), 4);
-        item.setString(Tag.CodeValue, VR.SH, code.getCodeValue());
+        item.setString(Tag.CodeValue, VR.SH, codes[0].getCodeValue());
         item.setString(Tag.CodingSchemeDesignator, VR.SH,
-                code.getCodingSchemeDesignator());
-        String version = code.getCodingSchemeVersion();
+                codes[0].getCodingSchemeDesignator());
+        String version = codes[0].getCodingSchemeVersion();
         if (version != null)
             item.setString(Tag.CodingSchemeVersion, VR.SH, version);
-        item.setString(Tag.CodeMeaning, VR.LO, code.getCodeMeaning());
+        item.setString(Tag.CodeMeaning, VR.LO, codes[0].getCodeMeaning());
         ds.newSequence(seqTag, 1).add(item);
         return true;
     }

@@ -195,25 +195,17 @@ public class MppsSCU {
     private Association as;
     private final AtomicInteger outstanding = new AtomicInteger(0);
 
-    public MppsSCU() throws IOException {
-        this(new Connection(), new ApplicationEntity("MPPSSCU"));
-    }
-
-    public MppsSCU(Connection remote, ApplicationEntity ae) throws IOException {
-        this.remote = remote;
+    public MppsSCU( ApplicationEntity ae) throws IOException {
+        this.remote = new Connection();
         this.ae = ae;
     }
 
-    public Association getAs() {
-        return as;
+    public Connection getRemoteConnection() {
+        return remote;
     }
 
-    public AAssociateRQ getRq() {
+    public AAssociateRQ getAAssociateRQ() {
         return rq;
-    }
-
-    public HashMap<String, Attributes> getMap() {
-        return map;
     }
 
     public final void setUIDSuffix(String uidSuffix) {
@@ -297,7 +289,7 @@ public class MppsSCU {
             ApplicationEntity ae = new ApplicationEntity("MPPSSCU");
             device.addApplicationEntity(ae);
             ae.addConnection(conn);
-            final MppsSCU main = new MppsSCU();
+            final MppsSCU main = new MppsSCU(ae);
             configureMPPS(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(conn, main.ae, cl);
@@ -326,7 +318,7 @@ public class MppsSCU {
             device.setExecutor(executorService);
             device.setScheduledExecutor(scheduledExecutorService);
             try {
-                main.open(conn);
+                main.open();
                 if (echo)
                     main.echo();
                 else {
@@ -447,9 +439,9 @@ public class MppsSCU {
                 .create(null));
     }
 
-    public void open(Connection conn) throws IOException, InterruptedException,
+    public void open() throws IOException, InterruptedException,
             IncompatibleConnectionException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     public void close() throws IOException, InterruptedException {
@@ -459,6 +451,7 @@ public class MppsSCU {
                     outstanding.wait();
             }
             as.release();
+            as.waitForSocketClose();
         }
     }
 
@@ -474,7 +467,7 @@ public class MppsSCU {
             sendMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
     }
 
-    public void sendMpps(String iuid, Attributes mpps)
+    private void sendMpps(String iuid, Attributes mpps)
             throws IOException, InterruptedException {
         final Attributes finalMpps = new Attributes(5);
         finalMpps.addSelected(mpps,

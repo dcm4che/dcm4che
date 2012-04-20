@@ -439,6 +439,18 @@ public class Association {
         checkException();
     }
 
+    synchronized void waitForEntering(State state)
+            throws InterruptedException, IOException {
+        while (this.state != state)
+            wait();
+        checkException();
+    }
+
+    public void waitForSocketClose()
+            throws InterruptedException, IOException {
+        waitForEntering(State.Sta1);
+    }
+
     private void activate() {
         device.execute(new Runnable() {
 

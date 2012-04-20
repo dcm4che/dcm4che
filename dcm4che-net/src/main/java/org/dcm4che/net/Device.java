@@ -202,7 +202,7 @@ public class Device {
      * 
      * @return A String array containing the software versions.
      */
-    public final String[] getSoftwareVersion() {
+    public final String[] getSoftwareVersions() {
         return softwareVersions;
     }
 

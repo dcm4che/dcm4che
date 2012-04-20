@@ -504,7 +504,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeNotNull(attrs, "dicomManufacturerModelName",
                 device.getManufacturerModelName());
         storeNotEmpty(attrs, "dicomSoftwareVersion",
-                device.getSoftwareVersion());
+                device.getSoftwareVersions());
         storeNotNull(attrs, "dicomStationName", device.getStationName());
         storeNotNull(attrs, "dicomDeviceSerialNumber",
                 device.getDeviceSerialNumber());
@@ -878,8 +878,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 a.getManufacturerModelName(),
                 b.getManufacturerModelName());
         storeDiff(mods, "dicomSoftwareVersion",
-                a.getSoftwareVersion(),
-                b.getSoftwareVersion());
+                a.getSoftwareVersions(),
+                b.getSoftwareVersions());
         storeDiff(mods, "dicomStationName",
                 a.getStationName(),
                 b.getStationName());

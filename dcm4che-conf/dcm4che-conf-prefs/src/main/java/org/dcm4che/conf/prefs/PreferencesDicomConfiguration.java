@@ -368,7 +368,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dicomManufacturerModelName",
                 device.getManufacturerModelName());
         storeNotEmpty(prefs, "dicomSoftwareVersion",
-                device.getSoftwareVersion());
+                device.getSoftwareVersions());
         storeNotNull(prefs, "dicomStationName", device.getStationName());
         storeNotNull(prefs, "dicomDeviceSerialNumber",
                 device.getDeviceSerialNumber());
@@ -516,8 +516,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getManufacturerModelName(),
                 b.getManufacturerModelName());
         storeDiff(prefs, "dicomSoftwareVersion",
-                a.getSoftwareVersion(),
-                b.getSoftwareVersion());
+                a.getSoftwareVersions(),
+                b.getSoftwareVersions());
         storeDiff(prefs, "dicomStationName",
                 a.getStationName(),
                 b.getStationName());

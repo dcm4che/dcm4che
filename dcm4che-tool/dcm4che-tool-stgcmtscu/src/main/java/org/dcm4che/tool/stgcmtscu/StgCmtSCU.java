@@ -100,7 +100,7 @@ public class StgCmtSCU {
     private boolean keepAlive;
     private int splitTag;
     private int status;
-    public HashMap<String,List<String>> map = new HashMap<String,List<String>>();
+    private HashMap<String,List<String>> map = new HashMap<String,List<String>>();
     private Association as;
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
@@ -131,12 +131,8 @@ public class StgCmtSCU {
              }
     };
 
-    public StgCmtSCU() throws IOException {
-        this(new Connection(), new ApplicationEntity("STGCMTSCU"));
-    }
-
-    public StgCmtSCU(Connection remote, ApplicationEntity ae) throws IOException {
-        this.remote = remote;
+    public StgCmtSCU(ApplicationEntity ae) throws IOException {
+        this.remote = new Connection();
         this.ae = ae;
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
@@ -144,11 +140,11 @@ public class StgCmtSCU {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
-    public Association getAs() {
-        return as;
+    public Connection getRemoteConnection() {
+        return remote;
     }
 
-    public AAssociateRQ getRq() {
+    public AAssociateRQ getAAssociateRQ() {
         return rq;
     }
 
@@ -176,7 +172,7 @@ public class StgCmtSCU {
             ApplicationEntity ae = new ApplicationEntity("STGCMTSCU");
             device.addApplicationEntity(ae);
             ae.addConnection(conn);
-            final StgCmtSCU stgcmtscu = new StgCmtSCU();
+            final StgCmtSCU stgcmtscu = new StgCmtSCU(ae);
             CLIUtils.configureConnect(stgcmtscu.remote, stgcmtscu.rq, cl);
             CLIUtils.configureBind(conn, stgcmtscu.ae, cl);
             CLIUtils.configure(conn, cl);
@@ -209,14 +205,17 @@ public class StgCmtSCU {
             device.setScheduledExecutor(scheduledExecutorService);
             device.activate();
             try {
-                stgcmtscu.open(conn);
+                stgcmtscu.open();
                 if (echo)
                     stgcmtscu.echo();
                 else
-                    for (List<String> refSOPs : stgcmtscu.map.values())
-                        stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
-            } finally {
-                stgcmtscu.close(conn, device);
+                    stgcmtscu.sendRequests();
+             } finally {
+                stgcmtscu.close();
+                if (conn.isListening()) {
+                    device.waitForNoOpenConnections();
+                    device.deactivate();
+                }
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
             }
@@ -340,27 +339,26 @@ public class StgCmtSCU {
                 .create(null));
     }
 
-    public void open(Connection conn) throws IOException, InterruptedException,
+    public void open() throws IOException, InterruptedException,
             IncompatibleConnectionException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     public void echo() throws IOException, InterruptedException {
         as.cecho().next();
     }
 
-    public void close(Connection conn, Device device) throws IOException, InterruptedException {
-        if (as != null && as.isReadyForDataTransfer()) {
-            as.waitForOutstandingRSP();
-            if (keepAlive)
-                waitForOutstandingResults();
-            as.release();
+    public void close() throws IOException, InterruptedException {
+        if (as != null) {
+            if (as.isReadyForDataTransfer()) {
+                as.waitForOutstandingRSP();
+                if (keepAlive)
+                    waitForOutstandingResults();
+                as.release();
+            }
+            as.waitForSocketClose();
         }
-        if (conn.isListening()) {
-            waitForOutstandingResults();
-            device.waitForNoOpenConnections();
-            device.deactivate();
-        }
+        waitForOutstandingResults();
     }
 
     private void addOutstandingResult(String tuid) {
@@ -401,7 +399,12 @@ public class StgCmtSCU {
         return actionInfo;
     }
 
-    public void sendRequest(Attributes actionInfo ) throws IOException, InterruptedException {
+    public void sendRequests() throws IOException, InterruptedException {
+        for (List<String> refSOPs : map.values())
+            sendRequest(makeActionInfo(refSOPs));
+    }
+
+    private void sendRequest(Attributes actionInfo) throws IOException, InterruptedException {
         final String tuid = actionInfo.getString(Tag.TransactionUID);
         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 

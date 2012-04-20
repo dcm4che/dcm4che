@@ -67,7 +67,6 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
-import org.dcm4che.net.State;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.DicomFiles;
 import org.dcm4che.tool.mkkos.MkKOS;
@@ -108,12 +107,21 @@ public class SWFTest {
             device.addConnection(conn);
             device.addApplicationEntity(ae);
             ae.addConnection(conn);
-            Connection remote = new Connection();
-            remote.setTlsProtocols(conn.getTlsProtocols());
-            remote.setTlsCipherSuites(conn.getTlsCipherSuites());
-            final MppsSCU mppsscu = new MppsSCU(remote, ae);
-            final StoreSCU storescu = new StoreSCU(remote, ae);
-            final StgCmtSCU stgcmtscu = new StgCmtSCU(remote, ae);
+            final MppsSCU mppsscu = new MppsSCU(ae);
+            final StoreSCU storescu = new StoreSCU(ae);
+            final StgCmtSCU stgcmtscu = new StgCmtSCU(ae);
+            CLIUtils.configureConnect(mppsscu.getRemoteConnection(), mppsscu.getAAssociateRQ(), cl);
+            CLIUtils.configureConnect(stgcmtscu.getRemoteConnection(), stgcmtscu.getAAssociateRQ(), cl);
+            CLIUtils.configureConnect(storescu.getRemoteConnection(), storescu.getAAssociateRQ(), cl);
+            mppsscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            stgcmtscu.setStorageDirectory(StgCmtSCU.getStorageDirectory(cl));
+            StoreSCU.configureRelatedSOPClass(storescu, cl);
+            StoreSCU.configureAttributes(storescu, cl);
+            storescu.setUIDSuffix(StoreSCU.uidSuffixOf(cl));
+            setTlsParams(mppsscu.getRemoteConnection(), conn);
+            setTlsParams(storescu.getRemoteConnection(), conn);
+            setTlsParams(stgcmtscu.getRemoteConnection(), conn);
             String tmpPrefix = "iocmtest-";
             String tmpSuffix = null;
             File tmpDir = null;
@@ -128,13 +136,30 @@ public class SWFTest {
                 scanFiles(cl.getArgList(), tmpPrefix, tmpSuffix, tmpDir, mppsscu, storescu, stgcmtscu);
             }
             String mppsiuid = UIDUtils.createUID();
-            if(!cl.hasOption("late-mpps"))
-                sendMpps(cl, device, ae, remote, mppsscu, mppsiuid);
-            addRPPSS(mppsiuid, storescu);
-            sendObjects(cl, device, ae, remote, storescu);
-            if(cl.hasOption("late-mpps"))
-                sendMpps(cl, device, ae, remote, mppsscu, mppsiuid);
-            sendStgCmt(cl, device, ae, remote, stgcmtscu);
+            mppsscu.setPPSUID(mppsiuid);
+            ExecutorService executorService =
+                    Executors.newCachedThreadPool();
+            ScheduledExecutorService scheduledExecutorService =
+                    Executors.newSingleThreadScheduledExecutor();
+            device.setExecutor(executorService);
+            device.setScheduledExecutor(scheduledExecutorService);
+            device.activate();
+            try {
+                if(!cl.hasOption("late-mpps"))
+                    sendMpps(mppsscu);
+                addRPPSS(mppsiuid, storescu);
+                sendObjects(storescu);
+                if(cl.hasOption("late-mpps"))
+                    sendMpps(mppsscu);
+                sendStgCmt(stgcmtscu);
+            } finally {
+                if (conn.isListening()) {
+                    device.waitForNoOpenConnections();
+                    device.deactivate();
+                }
+                executorService.shutdown();
+                scheduledExecutorService.shutdown();
+            }
         } catch (ParseException e) {
             System.err.println(e.getMessage());
             System.err.println(rb.getString("try"));
@@ -147,8 +172,13 @@ public class SWFTest {
 
     }
 
+    public static void setTlsParams(Connection remote, Connection conn) {
+        remote.setTlsProtocols(conn.getTlsProtocols());
+        remote.setTlsCipherSuites(conn.getTlsCipherSuites());
+    }
+
     private static void addRPPSS(String mppsiuid, StoreSCU storescu) throws IOException {
-        Attributes attrs = storescu.getAttrs();
+        Attributes attrs = storescu.getAttributes();
         Sequence seq = attrs.newSequence(Tag.ReferencedPerformedProcedureStepSequence, 1);
         Attributes item = new Attributes(2);
         item.setString(Tag.ReferencedSOPClassUID, VR.UI, UID.ModalityPerformedProcedureStepSOPClass);
@@ -194,98 +224,46 @@ public class SWFTest {
         return cl.getOptionValue("kos-title");
     }
 
-    @SuppressWarnings("static-access")
-    private static void sendStgCmt(CommandLine cl, Device device, ApplicationEntity ae, 
-            Connection remote, StgCmtSCU stgcmtscu) throws ParseException, IOException,
+    private static void sendStgCmt(StgCmtSCU stgcmtscu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        CLIUtils.configureConnect(remote, stgcmtscu.getRq(), cl);
         System.out.println("\n===========================================================");
-        System.out.println("Will now send Storage Commitment to " + stgcmtscu.getRq().getCalledAET() + ". Press <enter> to continue.");
+        System.out.println("Will now send Storage Commitment to " + stgcmtscu.getAAssociateRQ().getCalledAET() + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
-        stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
-        stgcmtscu.setStatus(CLIUtils.getIntOption(cl, "status", 0));
-        stgcmtscu.setSplitTag(StgCmtSCU.getSplitTag(cl));
-        stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
-        stgcmtscu.setStorageDirectory(StgCmtSCU.getStorageDirectory(cl));
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        ScheduledExecutorService scheduledExecutorService = Executors
-                .newSingleThreadScheduledExecutor();
-        device.setExecutor(executorService);
-        device.setScheduledExecutor(scheduledExecutorService);
-        device.activate();
         try {
-            for (Connection conn : ae.getConnections())
-                stgcmtscu.open(conn);
-            for (List<String> refSOPs : stgcmtscu.map.values())
-                stgcmtscu.sendRequest(stgcmtscu.makeActionInfo(refSOPs));
+            stgcmtscu.open();
+            stgcmtscu.sendRequests();
         } finally {
-            for (Connection conn : ae.getConnections())
-                stgcmtscu.close(conn, device);
-            executorService.shutdown();
-            scheduledExecutorService.shutdown();
-            while(stgcmtscu.getAs().getState() != State.Sta1)
-                Thread.currentThread().sleep(10);
+            stgcmtscu.close();
         }
     }
 
-    @SuppressWarnings("static-access")
-    private static void sendMpps(CommandLine cl, Device device, ApplicationEntity ae,
-            Connection remote, MppsSCU mppsscu, String mppsiuid) throws IOException,
-            InterruptedException, IncompatibleConnectionException, ParseException {
-        CLIUtils.configureConnect(remote, mppsscu.getRq(), cl);
+    private static void sendMpps(MppsSCU mppsscu) throws IOException,
+            InterruptedException, IncompatibleConnectionException {
         System.out.println("\n===========================================================");
-        System.out.println("Will now send MPPS to " + mppsscu.getRq().getCalledAET()
+        System.out.println("Will now send MPPS to " + mppsscu.getAAssociateRQ().getCalledAET()
                 + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
-        mppsscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        ScheduledExecutorService scheduledExecutorService = Executors
-                .newSingleThreadScheduledExecutor();
-        device.setExecutor(executorService);
-        device.setScheduledExecutor(scheduledExecutorService);
         try {
-            for (Connection conn : ae.getConnections())
-                mppsscu.open(conn);
-            for (Attributes mpps : mppsscu.getMap().values())
-                mppsscu.sendMpps(mppsiuid, mpps);
+            mppsscu.open();
+            mppsscu.sendMpps();
         } finally {
             mppsscu.close();
-            executorService.shutdown();
-            scheduledExecutorService.shutdown();
-            while (mppsscu.getAs().getState() != State.Sta1)
-                Thread.currentThread().sleep(10);
         }
     }
     
-    @SuppressWarnings("static-access")
-    private static void sendObjects(CommandLine cl, Device device, ApplicationEntity ae,
-            Connection remote, StoreSCU storescu) throws IOException, ParseException,
+    private static void sendObjects(StoreSCU storescu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        CLIUtils.configureConnect(remote, storescu.getRq(), cl);
         System.out.println("\n===========================================================");
-        System.out.println("Will now send objects to " + storescu.getRq().getCalledAET() + ". Press <enter> to continue.");
+        System.out.println("Will now send objects to " + storescu.getAAssociateRQ().getCalledAET() + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
-        StoreSCU.configureRelatedSOPClass(storescu, cl);
-        StoreSCU.configureAttributes(storescu, cl);
-        storescu.setUIDSuffix(StoreSCU.uidSuffixOf(cl));
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        ScheduledExecutorService scheduledExecutorService = Executors
-                .newSingleThreadScheduledExecutor();
-        device.setExecutor(executorService);
-        device.setScheduledExecutor(scheduledExecutorService);
         try {
-            for (Connection conn : ae.getConnections())
-                storescu.open(conn);
+            storescu.open();
             storescu.sendFiles();
         } finally {
             storescu.close();
-            executorService.shutdown();
-            scheduledExecutorService.shutdown();
-            while(storescu.getAs().getState() != State.Sta1)
-                Thread.currentThread().sleep(10);
         }
     }
     

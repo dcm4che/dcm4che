@@ -107,31 +107,28 @@ public class StoreSCU {
     private int filesScanned;
     private int filesSent;
 
-    public Association getAs() {
-        return as;
+    public StoreSCU(ApplicationEntity ae) throws IOException {
+        this.remote = new Connection();
+        this.ae = ae;
+        rq.addPresentationContext(
+                new PresentationContext(1, UID.VerificationSOPClass,
+                        UID.ImplicitVRLittleEndian));
     }
 
-    public AAssociateRQ getRq() {
+    public AAssociateRQ getAAssociateRQ() {
         return rq;
     }
 
-    public Attributes getAttrs() {
+    public Connection getRemoteConnection() {
+        return remote;
+    }
+
+    public Attributes getAttributes() {
         return attrs;
     }
 
     public void setTmpFile(File tmpFile) {
         this.tmpFile = tmpFile;
-    }
-
-    public StoreSCU() throws IOException {
-        this(new Connection(), new ApplicationEntity("STORESCU"));
-    }
-    
-    public StoreSCU(Connection remote, ApplicationEntity ae) throws IOException {
-        this.remote = remote;
-        this.ae = ae;
-        rq.addPresentationContext(new PresentationContext(1, UID.VerificationSOPClass,
-                UID.ImplicitVRLittleEndian));
     }
 
     public final void setPriority(int priority) {
@@ -239,10 +236,10 @@ public class StoreSCU {
             ApplicationEntity ae = new ApplicationEntity("STORESCU");
             device.addApplicationEntity(ae);
             ae.addConnection(conn);
-            StoreSCU main = new StoreSCU();
+            StoreSCU main = new StoreSCU(ae);
             configureTmpFile(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
-            CLIUtils.configureBind(conn, main.ae, cl);
+            CLIUtils.configureBind(conn, ae, cl);
             CLIUtils.configure(conn, cl);
             main.remote.setTlsProtocols(conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
@@ -271,7 +268,7 @@ public class StoreSCU {
             device.setScheduledExecutor(scheduledExecutorService);
             try {
                 t1 = System.currentTimeMillis();
-                main.open(conn);
+                main.open();
                 t2 = System.currentTimeMillis();
                 System.out.println(MessageFormat.format(
                         rb.getString("connected"),
@@ -466,13 +463,16 @@ public class StoreSCU {
     }
 
     public void close() throws IOException, InterruptedException {
-        if (as != null && as.isReadyForDataTransfer())
-            as.release();
+        if (as != null) {
+            if (as.isReadyForDataTransfer())
+                as.release();
+            as.waitForSocketClose();
+        }
     }
 
-    public void open(Connection conn)
+    public void open()
             throws IOException, InterruptedException, IncompatibleConnectionException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     private void onCStoreRSP(Attributes cmd, File f) {

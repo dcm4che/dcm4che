@@ -748,9 +748,9 @@ public class CLIUtils {
 
     public static void addEmptyAttributes(Attributes attrs, String[] optVals) {
         if (optVals != null)
-            for (int i = 1; i < optVals.length; i++, i++)
+            for (int i = 0; i < optVals.length; i++)
                 addAttributes(attrs,
-                        toTags(StringUtils.split(optVals[i-1], '/')));
+                        toTags(StringUtils.split(optVals[i], '/')));
     }
 
     public static boolean updateAttributes(Attributes data, Attributes attrs,

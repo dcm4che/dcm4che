@@ -266,10 +266,10 @@ public class MkKOS {
                 cl.getOptionValue("code-config", "resource:code.properties"),
                 null));
         main.setDocumentTitle(main.toCodeItem(documentTitleOf(cl)));
-        if (cl.hasOption("group"))
+        if (cl.hasOption("modifier"))
             main.setDocumentTitleModifier(
-                    main.toCodeItem(cl.getOptionValue("group")));
-        main.setKeyObjectDescription(cl.getOptionValue("d"));
+                    main.toCodeItem(cl.getOptionValue("modifier")));
+        main.setKeyObjectDescription(cl.getOptionValue("desc"));
         main.setSeriesNumber(cl.getOptionValue("series-no", "999"));
         main.setInstanceNumber(cl.getOptionValue("inst-no", "1"));
         main.setOutputFile(outputFileOf(cl));

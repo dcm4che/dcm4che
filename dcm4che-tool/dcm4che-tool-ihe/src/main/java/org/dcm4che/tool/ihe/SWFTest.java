@@ -198,7 +198,7 @@ public class SWFTest {
                 cl.getOptionValue("code-config", "resource:code.properties"),
                 null));
         mkkos.setDocumentTitle(mkkos.toCodeItem(documentTitleOf(cl)));
-        mkkos.setKeyObjectDescription(cl.getOptionValue("d"));
+        mkkos.setKeyObjectDescription(cl.getOptionValue("desc"));
         mkkos.setSeriesNumber(cl.getOptionValue("series-no", "999"));
         mkkos.setInstanceNumber(cl.getOptionValue("inst-no", "1"));
         mkkos.setOutputFile(MkKOS.outputFileOf(cl));

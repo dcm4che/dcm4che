@@ -1,13 +1,13 @@
 @echo off
 rem -------------------------------------------------------------------------
-rem swftest  Launcher
+rem modality  Launcher
 rem -------------------------------------------------------------------------
 
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che.tool.ihe.SWFTest
-set MAIN_JAR=dcm4che-tool-ihe-3.0.0-SNAPSHOT.jar
+set MAIN_CLASS=org.dcm4che.tool.ihe.modality.Modality
+set MAIN_JAR=dcm4che-tool-ihe-modality-3.0.0-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -40,7 +40,7 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\etc\mppsscu\
+set CP=%DCM4CHE_HOME%\etc\modality\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.0.0-SNAPSHOT.jar

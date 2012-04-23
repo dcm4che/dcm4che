@@ -465,6 +465,14 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src/etc/mppsscu</directory>
+      <includes>
+        <include>code.properties</include>
+      </includes>
+      <outputDirectory>etc/modality</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src</directory>
       <includes>
         <include>etc/mppsscu/key.jks</include>
@@ -609,20 +617,19 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-ihe/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/src</directory>
       <includes>
-        <include>bin/swftest</include>
+        <include>bin/modality</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <fileMode>0755</fileMode>
       <lineEnding>unix</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-ihe/src</directory>
+      <directory>../dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/src</directory>
       <includes>
-        <include>bin/swftest.bat</include>
-        <include>etc/swftest/log4j.properties</include>
-        <include>etc/swftest/code.properties</include>
+        <include>bin/modality.bat</include>
+        <include>etc/modality/log4j.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
@@ -666,7 +673,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
-        <include>org.dcm4che.tool:dcm4che-tool-ihe</include>
+        <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>

@@ -21,7 +21,6 @@
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
-   - Gunter Zeilinger <gunterze@gmail.com>
    - Michael Backhaus <michael.backhaus@agfa.com>
    -
    - Alternatively, the contents of this file may be used under the terms of
@@ -38,19 +37,36 @@
    -
    - ***** END LICENSE BLOCK *****  -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>dcm4che-tool</artifactId>
-    <groupId>org.dcm4che.tool</groupId>
+    <artifactId>dcm4che-tool-ihe</artifactId>
+    <groupId>org.dcm4che.tool.ihe</groupId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.dcm4che.tool.ihe</groupId>
-  <artifactId>dcm4che-tool-ihe</artifactId>
-  <packaging>pom</packaging>
-  <name>dcm4che-tool-ihe</name>
-  <description>IHE integration profile test utilities</description>
-  <modules>
-    <module>dcm4che-tool-ihe-modality</module>
-  </modules>
+  <artifactId>dcm4che-tool-ihe-modality</artifactId>
+  <name>dcm4che-tool-ihe-modality</name>
+  <description>IHE Scheduled Workflow test utility</description>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-mppsscu</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-stgcmtscu</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-storescu</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-mkkos</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 </project>

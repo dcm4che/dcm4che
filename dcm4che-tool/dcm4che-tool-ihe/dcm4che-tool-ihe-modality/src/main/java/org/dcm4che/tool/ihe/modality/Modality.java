@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.tool.ihe;
+package org.dcm4che.tool.ihe.modality;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -77,12 +77,12 @@ import org.dcm4che.util.UIDUtils;
 
 /**
  * @author Michael Backhaus <michael.backhaus@agfa.com>
- *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class SWFTest {
+public class Modality {
     
     private static ResourceBundle rb =
-            ResourceBundle.getBundle("org.dcm4che.tool.swftest.messages");
+            ResourceBundle.getBundle("org.dcm4che.tool.ihe.modality.messages");
     
     static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     
@@ -93,9 +93,9 @@ public class SWFTest {
             if(cl.getArgList().isEmpty())
                 throw new MissingOptionException(
                         rb.getString("missing-i-file"));
-            final Device device = new Device("swftest");
+            final Device device = new Device("modality");
             final Connection conn = new Connection();
-            final ApplicationEntity ae = new ApplicationEntity("SWFTEST");
+            final ApplicationEntity ae = new ApplicationEntity("MODALITY");
             if (!cl.hasOption("b"))
                 throw new MissingOptionException(
                         CLIUtils.rb.getString("missing-bind-opt"));
@@ -279,7 +279,7 @@ public class SWFTest {
         StoreSCU.addTmpFileOptions(opts);
         StoreSCU.addUIDSuffixOption(opts);
         addOptions(opts);
-        return CLIUtils.parseComandLine(args, opts, rb, SWFTest.class);
+        return CLIUtils.parseComandLine(args, opts, rb, Modality.class);
     }
     
     @SuppressWarnings("static-access")

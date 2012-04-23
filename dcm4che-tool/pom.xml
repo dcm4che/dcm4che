@@ -74,7 +74,6 @@
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
     <module>dcm4che-tool-xml2prefs</module>
-    
     <module>dcm4che-tool-ihe</module>
   </modules>
   <build>

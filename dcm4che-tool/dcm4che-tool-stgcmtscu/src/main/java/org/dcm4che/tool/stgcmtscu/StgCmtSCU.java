@@ -187,6 +187,7 @@ public class StgCmtSCU {
             stgcmtscu.setSplitTag(getSplitTag(cl));
             stgcmtscu.setKeepAlive(cl.hasOption("keep-alive"));
             stgcmtscu.setStorageDirectory(getStorageDirectory(cl));
+            stgcmtscu.setAttributes(new Attributes());
             CLIUtils.addAttributes(stgcmtscu.attrs, cl.getOptionValues("s"));
             stgcmtscu.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             List<String> argList = cl.getArgList();

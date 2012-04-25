@@ -244,6 +244,7 @@ public class StoreSCU {
             main.remote.setTlsProtocols(conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             configureRelatedSOPClass(main, cl);
+            main.setAttributes(new Attributes());
             CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
             main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             main.setPriority(CLIUtils.priorityOf(cl));

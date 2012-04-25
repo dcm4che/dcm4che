@@ -301,6 +301,7 @@ public class MppsSCU {
             main.remote.setTlsProtocols(conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(conn.getTlsCipherSuites());
             main.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            main.setAttributes(new Attributes());
             CLIUtils.addAttributes(main.attrs, cl.getOptionValues("s"));
             main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             List<String> argList = cl.getArgList();

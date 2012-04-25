@@ -57,7 +57,19 @@ public class HL7Message extends ArrayList<HL7Segment> {
         super(initialCapacity);
     }
 
+    public HL7Segment getSegment(String name) {
+        for (HL7Segment seg : this)
+            if (name.equals(seg.getField(0, null)))
+                return seg;
+        return null;
+    }
+
+    @Override
     public String toString() {
+        return toString('\r');
+    }
+
+    public String toString(char segdelim) {
         int len = size();
         for (HL7Segment seg : this) {
             int segSize = seg.size();
@@ -82,7 +94,7 @@ public class HL7Message extends ArrayList<HL7Segment> {
                 }
                 cs[off++] = delim;
             }
-            cs[off-1] = '\r';
+            cs[off-1] = segdelim;
         }
         return new String(cs);
     }
@@ -93,6 +105,10 @@ public class HL7Message extends ArrayList<HL7Segment> {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static HL7Message parse(byte[] b, String defCharset) {
+        return parse(b, b.length, defCharset);
     }
 
     public static HL7Message parse(byte[] b, int size, String defCharset) {

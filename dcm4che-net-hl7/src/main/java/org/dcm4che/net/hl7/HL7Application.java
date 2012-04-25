@@ -38,13 +38,18 @@
 
 package org.dcm4che.net.hl7;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Segment;
+import org.dcm4che.hl7.MLLPConnection;
+import org.dcm4che.net.CompatibleConnection;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.IncompatibleConnectionException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -54,6 +59,7 @@ public class HL7Application {
 
     private HL7Device device;
     private String name;
+    private String hl7DefaultCharacterSet;
     private Boolean installed;
 
     private final LinkedHashSet<String> acceptedSendingApplications =
@@ -90,6 +96,14 @@ public class HL7Application {
         this.name = name;
         if (device != null)
             device.addHL7Application(this);
+    }
+
+    public final String getHL7DefaultCharacterSet() {
+        return hl7DefaultCharacterSet;
+    }
+
+    public final void setHL7DefaultCharacterSet(String hl7DefaultCharacterSet) {
+        this.hl7DefaultCharacterSet = hl7DefaultCharacterSet;
     }
 
     public String[] getAcceptedSendingApplications() {
@@ -173,5 +187,55 @@ public class HL7Application {
         if (listener == null)
             throw new HL7Exception(HL7Exception.AE, "No HL7 Message Listener configured");
         return listener.onMessage(this, msh, msg, off, len, mshlen);
+    }
+
+    public MLLPConnection connect(Connection remote)
+            throws IOException, IncompatibleConnectionException {
+        return connect(findCompatibelConnection(remote), remote);
+    }
+
+    public MLLPConnection connect(HL7Application remote)
+            throws IOException, IncompatibleConnectionException {
+        CompatibleConnection cc = findCompatibelConnection(remote);
+        return connect(cc.getLocalConnection(), cc.getRemoteConnection());
+    }
+
+    public MLLPConnection connect(Connection local, Connection remote)
+            throws IOException, IncompatibleConnectionException {
+        checkDevice();
+        checkInstalled();
+        Socket sock = local.connect(remote);
+        sock.setSoTimeout(local.getResponseTimeout());
+        return new MLLPConnection(sock);
+    }
+
+    public CompatibleConnection findCompatibelConnection(HL7Application remote)
+            throws IncompatibleConnectionException {
+        for (Connection remoteConn : remote.conns)
+            if (remoteConn.isInstalled() && remoteConn.isServer())
+                for (Connection conn : conns)
+                    if (conn.isInstalled() && conn.isCompatible(remoteConn))
+                        return new CompatibleConnection(conn, remoteConn);
+        throw new IncompatibleConnectionException(
+                "No compatible connection to " + remote + " available on " + this);
+    }
+
+    public Connection findCompatibelConnection(Connection remoteConn)
+            throws IncompatibleConnectionException {
+        for (Connection conn : conns)
+            if (conn.isInstalled() && conn.isCompatible(remoteConn))
+                return conn;
+        throw new IncompatibleConnectionException(
+                "No compatible connection to " + remoteConn + " available on " + this);
+    }
+
+    private void checkInstalled() {
+        if (!isInstalled())
+            throw new IllegalStateException("Not installed");
+    }
+
+    private void checkDevice() {
+        if (device == null)
+            throw new IllegalStateException("Not attached to Device");
     }
 }

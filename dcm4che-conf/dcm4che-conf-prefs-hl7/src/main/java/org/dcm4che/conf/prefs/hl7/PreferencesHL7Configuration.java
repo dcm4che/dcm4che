@@ -96,6 +96,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
             List<Connection> devConns) {
         storeNotEmpty(prefs, "hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
         storeNotEmpty(prefs, "hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
+        storeNotNull(prefs, "hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet());
         storeNotNull(prefs, "dicomInstalled", hl7App.getInstalled());
         storeConnRefs(prefs, hl7App.getConnections(), devConns);
     }
@@ -135,6 +136,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         hl7app.setAcceptedSendingApplications(
                 stringArray(prefs, "hl7AcceptedSendingApplication"));
         hl7app.setAcceptedMessageTypes(stringArray(prefs, "hl7AcceptedMessageType"));
+        hl7app.setHL7DefaultCharacterSet(prefs.get("hl7DefaultCharacterSet", null));
         hl7app.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
     }
 
@@ -184,6 +186,9 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         storeDiff(prefs, "hl7AcceptedMessageType",
                 a.getAcceptedMessageTypes(),
                 b.getAcceptedMessageTypes());
+        storeDiff(prefs, "hl7DefaultCharacterSet",
+                a.getHL7DefaultCharacterSet(),
+                b.getHL7DefaultCharacterSet());
         storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());

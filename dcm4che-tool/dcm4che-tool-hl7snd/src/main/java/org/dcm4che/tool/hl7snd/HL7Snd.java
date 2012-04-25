@@ -39,10 +39,10 @@
 package org.dcm4che.tool.hl7snd;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -52,8 +52,7 @@ import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che.hl7.MLLPInputStream;
-import org.dcm4che.hl7.MLLPOutputStream;
+import org.dcm4che.hl7.MLLPConnection;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
@@ -61,8 +60,6 @@ import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StreamUtils;
 import org.dcm4che.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -70,7 +67,6 @@ import org.slf4j.LoggerFactory;
  */
 public class HL7Snd extends Device {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HL7Snd.class);
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.hl7snd.messages");
 
@@ -78,8 +74,7 @@ public class HL7Snd extends Device {
     private final Connection remote = new Connection();
 
     private Socket sock;
-    private MLLPInputStream mllpIn;
-    private MLLPOutputStream mllpOut;
+    private MLLPConnection mllp;
 
     public HL7Snd() throws IOException {
         super("hl7snd");
@@ -168,8 +163,7 @@ public class HL7Snd extends Device {
     public void open() throws IOException, IncompatibleConnectionException {
         sock = conn.connect(remote);
         sock.setSoTimeout(conn.getResponseTimeout());
-        mllpIn = new MLLPInputStream(sock.getInputStream());
-        mllpOut = new MLLPOutputStream(sock.getOutputStream());
+        mllp = new MLLPConnection(sock);
     }
 
     public void close() {
@@ -177,37 +171,30 @@ public class HL7Snd extends Device {
     }
 
     public void sendFiles(List<String> pathnames) throws IOException {
-        byte[] copyBuf = new byte[2048];
-        MyByteArrayOutputStream msgBuf = new MyByteArrayOutputStream();
         for (String pathname : pathnames) {
-            InputStream in = pathname.equals("-") 
-                    ? new FileInputStream(FileDescriptor.in)
-                    : new FileInputStream(pathname);
-            try {
-                StreamUtils.copy(in, msgBuf, copyBuf);
-            } finally {
-                SafeClose.close(in);
-            }
-            LOG.info("Send HL7 Message: {}", promptHL7(msgBuf.buf(), msgBuf.size()));
-            mllpOut.write(msgBuf.buf(), 0, msgBuf.size());
-            mllpOut.finish();
-            msgBuf.reset();
-            if (!mllpIn.hasMoreInput())
+            mllp.writeMessage(readFile(pathname));
+            if (mllp.readMessage() == null)
                 throw new IOException("Connection closed by receiver");
-            mllpIn.copyTo(msgBuf);
-            LOG.info("Received HL7 Message: {}", promptHL7(msgBuf.buf(), msgBuf.size()));
-            msgBuf.reset();
         }
     }
 
-    private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
-
-        byte[] buf() {
-            return buf;
+    private byte[] readFile(String pathname) throws IOException {
+        FileInputStream in = null;
+        try {
+            if (pathname.equals("-")) {
+                in = new FileInputStream(FileDescriptor.in);
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                StreamUtils.copy(in, buf);
+                return buf.toByteArray();
+            } else {
+                File f = new File(pathname);
+                in = new FileInputStream(f);
+                byte[] b = new byte[(int) f.length()];
+                StreamUtils.readFully(in, b, 0, b.length);
+                return b;
+            }
+        } finally {
+            SafeClose.close(in);
         }
-    }
-
-    private static String promptHL7(byte[] buf, int size) {
-        return new String(buf, 0, size).replace('\r', '\n');
     }
 }

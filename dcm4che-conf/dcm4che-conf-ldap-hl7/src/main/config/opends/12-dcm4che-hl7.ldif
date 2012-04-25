@@ -22,6 +22,12 @@ attributeTypes: ( 1.2.40.0.13.1.0.15.0.3.3
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+attributeTypes: ( 1.2.40.0.13.1.0.15.0.3.4
+  NAME 'hl7DefaultCharacterSet'
+  DESC 'Character Set used to decode received messages if not specified by MSH-18, ASCII if absent'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
 objectClasses: ( 1.2.40.0.13.1.0.15.0.4.5
   NAME 'hl7Application'
   DESC 'HL7 Application information'
@@ -31,4 +37,5 @@ objectClasses: ( 1.2.40.0.13.1.0.15.0.4.5
     dicomNetworkConnectionReference )
   MAY (
     hl7AcceptedSendingApplication $
-    hl7AcceptedMessageType ) )
+    hl7AcceptedMessageType $
+    hl7DefaultCharacterSet ) )

@@ -36,32 +36,36 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.conf.api;
+package org.dcm4che.conf.api.hl7;
 
-import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.conf.api.ConfigurationCache;
+import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.conf.api.ConfigurationNotFoundException;
+import org.dcm4che.net.hl7.HL7Application;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class ApplicationEntityCache
-        extends ConfigurationCache<DicomConfiguration,ApplicationEntity> {
+public class HL7ApplicationCache
+        extends ConfigurationCache<HL7Configuration,HL7Application> {
 
-    public ApplicationEntityCache(DicomConfiguration conf) {
+    public HL7ApplicationCache(HL7Configuration conf) {
         super(conf);
     }
 
     @Override
-    protected ApplicationEntity find(DicomConfiguration conf, String key)
+    protected HL7Application find(HL7Configuration conf, String name)
             throws ConfigurationException {
-        return conf.findApplicationEntity(key);
+        return conf.findHL7Application(name);
     }
 
-    public ApplicationEntity findApplicationEntity(String remoteAET)
+    public HL7Application findHL7Application(String name)
             throws ConfigurationException {
-        ApplicationEntity ae = get(remoteAET);
+        HL7Application ae = get(name);
         if (ae == null)
             throw new ConfigurationNotFoundException(
-                    "Unknown AE: " + remoteAET);
+                    "Unknown HL7 Application: " + name);
         return ae;
     }
 }

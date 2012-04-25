@@ -38,7 +38,6 @@
 
 package org.dcm4che.tool.hl7pix;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
@@ -51,14 +50,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.hl7.HL7Message;
 import org.dcm4che.hl7.HL7Segment;
-import org.dcm4che.hl7.MLLPInputStream;
-import org.dcm4che.hl7.MLLPOutputStream;
+import org.dcm4che.hl7.MLLPConnection;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.tool.common.CLIUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -66,7 +62,6 @@ import org.slf4j.LoggerFactory;
  */
 public class HL7Pix extends Device {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HL7Pix.class);
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.hl7pix.messages");
 
@@ -77,8 +72,7 @@ public class HL7Pix extends Device {
     private String charset;
 
     private Socket sock;
-    private MLLPInputStream mllpIn;
-    private MLLPOutputStream mllpOut;
+    private MLLPConnection mllp;
 
     public HL7Pix() throws IOException {
         super("hl7pix");
@@ -214,8 +208,7 @@ public class HL7Pix extends Device {
     public void open() throws IOException, IncompatibleConnectionException {
         sock = conn.connect(remote);
         sock.setSoTimeout(conn.getResponseTimeout());
-        mllpIn = new MLLPInputStream(sock.getInputStream());
-        mllpOut = new MLLPOutputStream(sock.getOutputStream());
+        mllp = new MLLPConnection(sock);
     }
 
     public void close() {
@@ -228,26 +221,8 @@ public class HL7Pix extends Device {
         msh.setSendingApplicationWithFacility(sendingApplication);
         msh.setReceivingApplicationWithFacility(receivingApplication);
         msh.setField(17, charset);
-        MyByteArrayOutputStream receiveBuf = new MyByteArrayOutputStream();
-        byte[] b = qbp.getBytes(charset);
-        LOG.info("Send HL7 Message: {}", promptHL7(b, b.length));
-        mllpOut.write(b);
-        mllpOut.finish();
-        if (!mllpIn.hasMoreInput())
+        mllp.writeMessage(qbp.getBytes(charset));
+        if (mllp.readMessage() == null)
             throw new IOException("Connection closed by receiver");
-        mllpIn.copyTo(receiveBuf);
-        LOG.info("Received HL7 Message: {}",
-                promptHL7(receiveBuf.buf(), receiveBuf.size()));
-    }
-
-    private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
-
-        byte[] buf() {
-            return buf;
-        }
-    }
-
-    private static String promptHL7(byte[] buf, int size) {
-        return new String(buf, 0, size).replace('\r', '\n');
     }
 }

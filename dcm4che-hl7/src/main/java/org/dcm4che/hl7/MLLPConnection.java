@@ -36,32 +36,59 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.conf.api;
+package org.dcm4che.hl7;
 
-import org.dcm4che.net.ApplicationEntity;
+import java.io.IOException;
+import java.net.Socket;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class ApplicationEntityCache
-        extends ConfigurationCache<DicomConfiguration,ApplicationEntity> {
+public class MLLPConnection {
 
-    public ApplicationEntityCache(DicomConfiguration conf) {
-        super(conf);
+    private static Logger LOG = LoggerFactory.getLogger(MLLPConnection.class);
+
+    private final Socket sock;
+    private final MLLPInputStream mllpIn;
+    private final MLLPOutputStream mllpOut;
+
+    public MLLPConnection(Socket sock) throws IOException {
+        this.sock = sock;
+        mllpIn = new MLLPInputStream(sock.getInputStream());
+        mllpOut = new MLLPOutputStream(sock.getOutputStream());
     }
 
-    @Override
-    protected ApplicationEntity find(DicomConfiguration conf, String key)
-            throws ConfigurationException {
-        return conf.findApplicationEntity(key);
+    public final Socket getSocket() {
+        return sock;
     }
 
-    public ApplicationEntity findApplicationEntity(String remoteAET)
-            throws ConfigurationException {
-        ApplicationEntity ae = get(remoteAET);
-        if (ae == null)
-            throw new ConfigurationNotFoundException(
-                    "Unknown AE: " + remoteAET);
-        return ae;
+    public void writeMessage(byte[] b) throws IOException {
+       writeMessage(b, 0, b.length);
+    }
+
+    public void writeMessage(byte[] b, int off, int len) throws IOException {
+        log("{} << {}", b, off, len);
+        mllpOut.writeMessage(b, off, len);
+    }
+
+    public byte[] readMessage() throws IOException {
+        byte[] b = mllpIn.readMessage();
+        if (b != null)
+            log("{} >> {}", b, 0, b.length);
+        return b;
+    }
+
+    private void log(String format, byte[] b, int off, int len) {
+        if (!LOG.isInfoEnabled())
+            return;
+        int mshlen = 0;
+        while (mshlen < len && b[off + mshlen] != '\r')
+            mshlen++;
+        LOG.info(format, sock, new String(b, off, mshlen));
+        if (LOG.isDebugEnabled())
+            LOG.debug(format, sock, new String(b, off, len).replace('\r', '\n'));
     }
 }

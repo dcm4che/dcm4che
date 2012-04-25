@@ -38,18 +38,14 @@
 
 package org.dcm4che.net.hl7;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.text.ParsePosition;
 
-import org.dcm4che.hl7.HL7Charset;
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Message;
-import org.dcm4che.hl7.MLLPInputStream;
-import org.dcm4che.hl7.MLLPOutputStream;
 import org.dcm4che.hl7.HL7Segment;
+import org.dcm4che.hl7.MLLPConnection;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.ConnectionHandler;
 
@@ -63,49 +59,19 @@ enum HL7ConnectionHandler implements ConnectionHandler {
     @Override
     public void onAccept(Connection conn, Socket s) throws IOException {
         s.setSoTimeout(conn.getIdleTimeout());
-        MLLPInputStream mllpIn = new MLLPInputStream(s.getInputStream());
-        MLLPOutputStream mllpOut = new MLLPOutputStream(s.getOutputStream());
-        MyByteArrayOutputStream inbuf = new MyByteArrayOutputStream();
-        while (mllpIn.hasMoreInput()) {
-            mllpIn.copyTo(inbuf);
-            byte[] buf = inbuf.buf();
-            int size = inbuf.size();
+        MLLPConnection mllp = new MLLPConnection(s);
+        byte[] msg;
+        while ((msg = mllp.readMessage()) != null) {
             ParsePosition pos = new ParsePosition(0);
-            HL7Segment msh = HL7Segment.parseMSH(buf, size, pos );
-            String charsetName = HL7Charset.toCharsetName(msh.getField(17, null));
-            Connection.LOG.info("Received HL7 Message: {}",
-                    promptHL7(buf, size, charsetName));
-            byte[] rsp;
+            HL7Segment msh = HL7Segment.parseMSH(msg, msg.length, pos);
             try {
-                rsp = ((HL7Device) conn.getDevice()).onMessage(msh, buf, 0, size, pos.getIndex(), conn);
+                msg = ((HL7Device) conn.getDevice()).onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn);
             } catch (HL7Exception e) {
-                rsp = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
+                msg = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
                         .getBytes(null);
             }
-            inbuf.reset();
-            Connection.LOG.info("Send HL7 Message: {}",
-                    promptHL7(rsp, rsp.length, charsetName));
-            mllpOut.write(rsp);
-            mllpOut.finish();
+            mllp.writeMessage(msg);
         }
         conn.close(s);
-    }
-
-    private class MyByteArrayOutputStream extends ByteArrayOutputStream {
-
-        byte[] buf() {
-            return buf;
-        }
-
-    }
-
-    private String promptHL7(byte[] buf, int size, String charsetName) {
-        try {
-            String s = new String(buf, 0, Math.min(size, 1024), charsetName)
-                .replace('\r', '\n');
-            return size > 1024 ? s +  "..." : s;
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError(e.getMessage());
-        }
     }
 }

@@ -70,6 +70,21 @@ public class MLLPOutputStream extends FilterOutputStream {
         out.write(b, off, len);
     }
 
+    public void writeMessage(byte[] b) throws IOException {
+        writeMessage(b, 0, b.length);
+    }
+
+    public synchronized void writeMessage(byte b[], int off, int len)
+            throws IOException {
+        if (somWritten)
+            throw new IllegalStateException();
+
+        out.write(SOM);
+        out.write(b, off, len);
+        out.write(EOM);
+        out.flush();
+    }
+
     private void writeStartBlock() throws IOException {
         if (!somWritten) {
             out.write(SOM);

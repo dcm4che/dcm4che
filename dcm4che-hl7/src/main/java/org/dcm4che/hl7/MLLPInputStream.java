@@ -39,6 +39,7 @@
 package org.dcm4che.hl7;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +56,7 @@ public class MLLPInputStream extends BufferedInputStream {
     private static final int EOM2 = 0x0d; // End of Message Byte 2
 
     private boolean eom = true;
+    private ByteArrayOutputStream readBuffer = new ByteArrayOutputStream();
 
     public MLLPInputStream(InputStream in) {
         super(in);
@@ -126,7 +128,7 @@ public class MLLPInputStream extends BufferedInputStream {
         return remaining + 1;
     }
 
-    public int copyTo(OutputStream out) throws IOException {
+    public synchronized int copyTo(OutputStream out) throws IOException {
         if (eom)
             throw new IllegalStateException();
 
@@ -147,6 +149,15 @@ public class MLLPInputStream extends BufferedInputStream {
         pos += remaining + 1;
         eom();
         return totlen;
+    }
+
+    public synchronized byte[] readMessage() throws IOException {
+        if (!hasMoreInput())
+            return null;
+
+        readBuffer.reset();
+        copyTo(readBuffer);
+        return readBuffer.toByteArray();
     }
 
     private void eom() throws IOException {

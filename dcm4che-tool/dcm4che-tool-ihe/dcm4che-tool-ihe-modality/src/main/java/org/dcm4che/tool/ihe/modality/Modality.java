@@ -123,8 +123,12 @@ public class Modality {
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStorageDirectory(StgCmtSCU.getStorageDirectory(cl));
             StoreSCU.configureRelatedSOPClass(storescu, cl);
-            StoreSCU.configureAttributes(storescu, cl);
             storescu.setUIDSuffix(StoreSCU.uidSuffixOf(cl));
+            Attributes attrs = new Attributes();
+            CLIUtils.addAttributes(attrs, cl.getOptionValues("s"));
+            mppsscu.setAttributes(attrs);
+            storescu.setAttributes(attrs);
+            stgcmtscu.setAttributes(attrs);
             setTlsParams(mppsscu.getRemoteConnection(), conn);
             setTlsParams(storescu.getRemoteConnection(), conn);
             setTlsParams(stgcmtscu.getRemoteConnection(), conn);
@@ -153,7 +157,7 @@ public class Modality {
             try {
                 if(!cl.hasOption("late-mpps"))
                     sendMpps(mppsscu);
-                addRPPSS(mppsiuid, storescu);
+                addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
                 sendObjects(storescu);
                 if(cl.hasOption("late-mpps"))
                     sendMpps(mppsscu);
@@ -183,7 +187,8 @@ public class Modality {
         remote.setTlsCipherSuites(conn.getTlsCipherSuites());
     }
 
-    private static void addRPPSS(String mppsiuid, StoreSCU storescu) throws IOException {
+    private static void addReferencedPerformedProcedureStepSequence(String mppsiuid,
+            StoreSCU storescu) throws IOException {
         Attributes attrs = storescu.getAttributes();
         Sequence seq = attrs.newSequence(Tag.ReferencedPerformedProcedureStepSequence, 1);
         Attributes item = new Attributes(2);
@@ -318,6 +323,12 @@ public class Modality {
                 .withDescription(rb.getString("dc-reason"))
                 .withLongOpt("dc-reason")
                 .create());
+        opts.addOption(OptionBuilder
+                .hasArgs()
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("set"))
+                .create("s"));
    }
     
     private static void scanFiles(List<String> fnames, String tmpPrefix, String tmpSuffix,

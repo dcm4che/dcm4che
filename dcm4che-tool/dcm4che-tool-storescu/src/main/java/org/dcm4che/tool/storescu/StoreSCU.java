@@ -93,7 +93,7 @@ public class StoreSCU {
     private final AAssociateRQ rq = new AAssociateRQ();
     private final RelatedGeneralSOPClasses relSOPClasses =
             new RelatedGeneralSOPClasses();
-    private final Attributes attrs = new Attributes();
+    private Attributes attrs;
     private String uidSuffix;
     private boolean relExtNeg;
     private int priority;
@@ -126,6 +126,10 @@ public class StoreSCU {
     public Attributes getAttributes() {
         return attrs;
     }
+    
+    public void setAttributes(Attributes attrs) {
+        this.attrs = attrs;
+    }
 
     public void setTmpFile(File tmpFile) {
         this.tmpFile = tmpFile;
@@ -149,10 +153,6 @@ public class StoreSCU {
 
     public final void setTmpFileDirectory(File tmpDir) {
         this.tmpDir = tmpDir;
-    }
-
-    public void addAttribute(int[] tags, String... ss) {
-        CLIUtils.addAttributes(attrs, tags, ss);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -305,16 +305,6 @@ public class StoreSCU {
 
     public static String uidSuffixOf(CommandLine cl) {
         return cl.getOptionValue("uid-suffix");
-    }
-
-    public static void configureAttributes(StoreSCU main, CommandLine cl) {
-        String[] attrs = cl.getOptionValues("s");
-        if (attrs != null)
-            for (int i = 1; i < attrs.length; i++, i++)
-                main.addAttribute(
-                        CLIUtils.toTags(
-                                StringUtils.split(attrs[i-1], '/')),
-                                StringUtils.split(attrs[i], '/'));
     }
 
     private static void configureTmpFile(StoreSCU storescu, CommandLine cl) {

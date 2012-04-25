@@ -178,7 +178,7 @@ public class MppsSCU {
     private final ApplicationEntity ae;
     private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
-    private final Attributes attrs = new Attributes();
+    private Attributes attrs;
     private String uidSuffix;
     private boolean newPPSID;
     private int serialNo = (int) (System.currentTimeMillis() & 0x7FFFFFFFL);
@@ -246,6 +246,10 @@ public class MppsSCU {
 
     public final void setCodes(Properties codes) {
         this.codes = codes;
+    }
+
+    public void setAttributes(Attributes attrs) {
+        this.attrs = attrs;
     }
 
     public final void setDiscontinuationReason(String codeValue) {

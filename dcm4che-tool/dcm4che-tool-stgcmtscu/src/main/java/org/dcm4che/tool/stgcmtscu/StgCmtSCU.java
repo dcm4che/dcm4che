@@ -94,7 +94,7 @@ public class StgCmtSCU {
     private final ApplicationEntity ae;
     private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
-    private final Attributes attrs = new Attributes();
+    private Attributes attrs;
     private String uidSuffix;
     private File storageDir;
     private boolean keepAlive;
@@ -160,6 +160,10 @@ public class StgCmtSCU {
 
     public final void setUIDSuffix(String uidSuffix) {
         this.uidSuffix = uidSuffix;
+    }
+
+    public void setAttributes(Attributes attrs) {
+        this.attrs = attrs;
     }
 
     @SuppressWarnings("unchecked")

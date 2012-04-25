@@ -114,6 +114,12 @@ public class Modality {
             CLIUtils.configureConnect(stgcmtscu.getRemoteConnection(), stgcmtscu.getAAssociateRQ(), cl);
             CLIUtils.configureConnect(storescu.getRemoteConnection(), storescu.getAAssociateRQ(), cl);
             mppsscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
+            mppsscu.setCodes(CLIUtils.loadProperties(
+                    cl.getOptionValue("code-config", "resource:code.properties"), null));
+            if (cl.hasOption("dc"))
+                mppsscu.setFinalStatus("DISCONTINUED");
+            if (cl.hasOption("dc-reason"))
+                mppsscu.setDiscontinuationReason(cl.getOptionValue("dc-reason"));
             stgcmtscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             stgcmtscu.setStorageDirectory(StgCmtSCU.getStorageDirectory(cl));
             StoreSCU.configureRelatedSOPClass(storescu, cl);
@@ -286,7 +292,7 @@ public class Modality {
     private static void addOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("code")
+                .withArgName("code-value")
                 .withDescription(rb.getString("kos-title"))
                 .withLongOpt("kos-title")
                 .create());
@@ -297,13 +303,20 @@ public class Modality {
                 .create("o"));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("file|url")
+                .withArgName("file")
                 .withDescription(rb.getString("code-config"))
                 .withLongOpt("code-config")
                 .create());
         opts.addOption(OptionBuilder
                 .withDescription(rb.getString("late-mpps"))
                 .withLongOpt("late-mpps")
+                .create());
+        opts.addOption(null, "dc", false, rb.getString("dc"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("code-value")
+                .withDescription(rb.getString("dc-reason"))
+                .withLongOpt("dc-reason")
                 .create());
    }
     

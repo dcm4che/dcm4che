@@ -465,14 +465,6 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
-      <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src/etc/mppsscu</directory>
-      <includes>
-        <include>code.properties</include>
-      </includes>
-      <outputDirectory>etc/modality</outputDirectory>
-      <lineEnding>dos</lineEnding>
-    </fileSet>
-    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-mppsscu/src</directory>
       <includes>
         <include>etc/mppsscu/key.jks</include>
@@ -630,6 +622,7 @@
       <includes>
         <include>bin/modality.bat</include>
         <include>etc/modality/log4j.properties</include>
+        <include>etc/modality/code.properties</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

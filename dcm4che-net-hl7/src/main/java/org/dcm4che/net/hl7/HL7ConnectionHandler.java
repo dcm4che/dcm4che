@@ -65,7 +65,7 @@ enum HL7ConnectionHandler implements ConnectionHandler {
             ParsePosition pos = new ParsePosition(0);
             HL7Segment msh = HL7Segment.parseMSH(msg, msg.length, pos);
             try {
-                msg = ((HL7Device) conn.getDevice()).onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn);
+                msg = ((HL7Device) conn.getDevice()).onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn, s);
             } catch (HL7Exception e) {
                 msg = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
                         .getBytes(null);

@@ -41,9 +41,13 @@ package org.dcm4che.tool.hl7rcv;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -67,6 +71,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.hl7.HL7Charset;
 import org.dcm4che.hl7.HL7ContentHandler;
 import org.dcm4che.hl7.HL7Exception;
+import org.dcm4che.hl7.HL7Message;
 import org.dcm4che.hl7.HL7Parser;
 import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.io.SAXTransformer;
@@ -90,33 +95,18 @@ public class HL7Rcv extends HL7Device {
 
     private final HL7Application hl7App = new HL7Application("*");
     private final Connection conn = new Connection();
+    private String storageDir;
     private String charset;
     private Templates tpls;
     private String[] xsltParams;
     private final HL7MessageListener handler = new HL7MessageListener() {
 
         @Override
-        public byte[] onMessage(HL7Application hl7App, HL7Segment msh,
-                byte[] msg, int off, int len, int mshlen) throws HL7Exception {
-            if (tpls == null)
-                return super.onMessage(hl7App, msh, msg, off, len, mshlen);
+        public byte[] onMessage(HL7Application hl7App, Connection conn,
+                Socket s, HL7Segment msh, byte[] msg, int off, int len,
+                int mshlen) throws HL7Exception {
             try {
-                String charsetName = HL7Charset.toCharsetName(
-                        msh.getField(17, charset));
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                TransformerHandler th = factory.newTransformerHandler(tpls);
-                Transformer t = th.getTransformer();
-                t.setParameter("MessageControlID", HL7Segment.nextMessageControlID());
-                t.setParameter("DateTimeOfMessage", HL7Segment.timeStamp(new Date()));
-                if (xsltParams != null)
-                    for (int i = 1; i < xsltParams.length; i++, i++)
-                        t.setParameter(xsltParams[i-1], xsltParams[i]);
-                th.setResult(new SAXResult(new HL7ContentHandler(
-                        new OutputStreamWriter(out, charsetName))));
-                new HL7Parser(th).parse(new InputStreamReader(
-                        new ByteArrayInputStream(msg, off, len),
-                        charsetName));
-                return out.toByteArray();
+                return HL7Rcv.this.onMessage(msh, msg, off, len);
             } catch (Exception e) {
                 throw new HL7Exception(HL7Exception.AE, e);
             }
@@ -130,6 +120,10 @@ public class HL7Rcv extends HL7Device {
         hl7App.setAcceptedMessageTypes("*");
         hl7App.addConnection(conn);
         hl7App.setHL7MessageListener(handler);
+    }
+
+    public void setStorageDirectory(String storageDir) {
+        this.storageDir = storageDir;
     }
 
     public void setXSLT(URL xslt) throws Exception {
@@ -148,9 +142,7 @@ public class HL7Rcv extends HL7Device {
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         Options opts = new Options();
-        addXSLOptions(opts);
-        addBindServerOption(opts);
-        addIdleTimeoutOption(opts);
+        addOptions(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
@@ -158,7 +150,14 @@ public class HL7Rcv extends HL7Device {
     }
 
     @SuppressWarnings("static-access")
-    protected static void addXSLOptions(Options opts) {
+    public static void addOptions(Options opts) {
+        opts.addOption(null, "ignore", false, rb.getString("ignore"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("path")
+                .withDescription(rb.getString("directory"))
+                .withLongOpt("directory")
+                .create(null));
         opts.addOption(OptionBuilder
                 .withLongOpt("xsl")
                 .hasArg()
@@ -178,20 +177,12 @@ public class HL7Rcv extends HL7Device {
                 .withArgName("name")
                 .withDescription(rb.getString("charset"))
                 .create(null));
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addBindServerOption(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("[ip:]port")
                 .withDescription(rb.getString("bind-server"))
                 .withLongOpt("bind")
                 .create("b"));
-    }
-
-    @SuppressWarnings("static-access")
-    private static void addIdleTimeoutOption(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("ms")
@@ -204,14 +195,7 @@ public class HL7Rcv extends HL7Device {
         try {
             CommandLine cl = parseComandLine(args);
             HL7Rcv main = new HL7Rcv();
-            if (cl.hasOption("x")) {
-                String s = cl.getOptionValue("x");
-                main.setXSLT(new File(s).toURI().toURL());
-                main.setXSLTParameters(cl.getOptionValues("xsl-param"));
-            }
-            main.setCharacterSet(cl.getOptionValue("charset"));
-            configureBindServer(main.conn, cl);
-            CLIUtils.configure(main.conn, cl);
+            configure(main, cl);
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
@@ -229,6 +213,22 @@ public class HL7Rcv extends HL7Device {
         }
     }
 
+    private static void configure(HL7Rcv main, CommandLine cl)
+            throws Exception, MalformedURLException, ParseException,
+            IOException {
+        if (!cl.hasOption("ignore"))
+            main.setStorageDirectory(
+                    cl.getOptionValue("directory", "."));
+        if (cl.hasOption("x")) {
+            String s = cl.getOptionValue("x");
+            main.setXSLT(new File(s).toURI().toURL());
+            main.setXSLTParameters(cl.getOptionValues("xsl-param"));
+        }
+        main.setCharacterSet(cl.getOptionValue("charset"));
+        configureBindServer(main.conn, cl);
+        CLIUtils.configure(main.conn, cl);
+    }
+
     private static void configureBindServer(Connection conn, CommandLine cl)
             throws ParseException {
         if (!cl.hasOption("b"))
@@ -241,4 +241,48 @@ public class HL7Rcv extends HL7Device {
         if (portIndex > 0)
             conn.setHostname(hostAndPort[0]);
     }
+
+    private byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len)
+                throws Exception {
+            if (storageDir != null)
+                storeToFile(msg, off, len, 
+                        new File(
+                            new File(storageDir, msh.getMessageType()),
+                            msh.getField(9, "_NULL_")));
+            return (tpls == null)
+                ? HL7Message.makeACK(msh, HL7Exception.AA, null).getBytes(null)
+                : xslt(msh, msg, off, len);
+    }
+
+    private void storeToFile(byte[] msg, int off, int len, File f)
+            throws FileNotFoundException, IOException {
+        Connection.LOG.info("M-WRITE {}", f);
+        f.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(f);
+        try {
+            out.write(msg, off, len);
+        } finally {
+            out.close();
+        }
+    }
+
+    private byte[] xslt(HL7Segment msh, byte[] msg, int off, int len)
+            throws Exception {
+        String charsetName = HL7Charset.toCharsetName(msh.getField(17, charset));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        TransformerHandler th = factory.newTransformerHandler(tpls);
+        Transformer t = th.getTransformer();
+        t.setParameter("MessageControlID", HL7Segment.nextMessageControlID());
+        t.setParameter("DateTimeOfMessage", HL7Segment.timeStamp(new Date()));
+        if (xsltParams != null)
+            for (int i = 1; i < xsltParams.length; i++, i++)
+                t.setParameter(xsltParams[i-1], xsltParams[i]);
+        th.setResult(new SAXResult(new HL7ContentHandler(
+                new OutputStreamWriter(out, charsetName))));
+        new HL7Parser(th).parse(new InputStreamReader(
+                new ByteArrayInputStream(msg, off, len),
+                charsetName));
+        return out.toByteArray();
+    }
+
 }

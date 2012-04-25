@@ -38,6 +38,7 @@
 
 package org.dcm4che.net.hl7;
 
+import java.net.Socket;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
@@ -96,11 +97,11 @@ public class HL7Device extends Device {
         this.hl7MessageListener = listener;
     }
 
-    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, int mshlen, Connection conn)
-            throws HL7Exception {
+    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, int mshlen,
+            Connection conn, Socket s) throws HL7Exception {
         HL7Application hl7App = getHL7Application(msh.getReceivingApplicationWithFacility());
         if (hl7App == null)
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
-        return hl7App.onMessage(msh, msg, off, len, mshlen, conn);
+        return hl7App.onMessage(conn, s, msh, msg, off, len, mshlen);
     }
 }

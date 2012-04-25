@@ -38,11 +38,13 @@
 
 package org.dcm4che.net.hl7.service;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Segment;
+import org.dcm4che.net.Connection;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7MessageListener;
 
@@ -73,15 +75,15 @@ public class HL7ServiceRegistry extends HL7MessageListener {
     }
 
     @Override
-    public byte[] onMessage(HL7Application hl7App, HL7Segment msh, byte[] msg,
-            int off, int len, int mshlen) throws HL7Exception {
+    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s,
+            HL7Segment msh, byte[] msg, int off, int len, int mshlen) throws HL7Exception {
         HL7MessageListener listener = listeners.get(msh.getMessageType());
         if (listener == null) {
             listener = listeners.get("*");
             if (listener == null)
-                return super.onMessage(hl7App, msh, msg, off, len, mshlen);
+                return super.onMessage(hl7App, conn, s, msh, msg, off, len, mshlen);
         }
-        return  listener.onMessage(hl7App, msh, msg, off, len, mshlen);
+        return  listener.onMessage(hl7App, conn, s, msh, msg, off, len, mshlen);
     }
  
 }

@@ -103,6 +103,8 @@ public class Modality {
             if (!cl.hasOption("c"))
                 throw new MissingOptionException(
                         CLIUtils.rb.getString("missing-connect-opt"));
+            if (cl.hasOption("mpps") && cl.hasOption("mpps-late"))
+                throw new ParseException(rb.getString("mpps-error"));
             CLIUtils.configure(conn, cl);
             device.addConnection(conn);
             device.addApplicationEntity(ae);
@@ -155,12 +157,12 @@ public class Modality {
             device.setScheduledExecutor(scheduledExecutorService);
             device.activate();
             try {
-                if(!cl.hasOption("late-mpps"))
-                    sendMpps(mppsscu);
+                if(cl.hasOption("mpps") || cl.hasOption("mpps-late"))
+                    sendMpps(mppsscu, cl);
                 addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
                 sendObjects(storescu);
-                if(cl.hasOption("late-mpps"))
-                    sendMpps(mppsscu);
+                if(cl.hasOption("mpps-late"))
+                    updateMpps(mppsscu);
                 sendStgCmt(stgcmtscu);
             } finally {
                 if (conn.isListening()) {
@@ -249,8 +251,8 @@ public class Modality {
         }
     }
 
-    private static void sendMpps(MppsSCU mppsscu) throws IOException,
-            InterruptedException, IncompatibleConnectionException {
+    private static void sendMpps(MppsSCU mppsscu, CommandLine cl) throws IOException, InterruptedException,
+            IncompatibleConnectionException {
         System.out.println("\n===========================================================");
         System.out.println("Will now send MPPS to " + mppsscu.getAAssociateRQ().getCalledAET()
                 + ". Press <enter> to continue.");
@@ -259,7 +261,23 @@ public class Modality {
         try {
             mppsscu.open();
             mppsscu.createMpps();
-            mppsscu.setMpps();
+            if(cl.hasOption("mpps"))
+                mppsscu.updateMpps();
+        } finally {
+            mppsscu.close();
+        }
+    }
+
+    private static void updateMpps(MppsSCU mppsscu) throws IOException,
+            InterruptedException, IncompatibleConnectionException {
+        System.out.println("\n===========================================================");
+        System.out.println("Will now send MPPS n-set to " + mppsscu.getAAssociateRQ().getCalledAET()
+                + ". Press <enter> to continue.");
+        System.out.println("===========================================================");
+        bufferedReader.read();
+        try {
+            mppsscu.open();
+            mppsscu.updateMpps();
         } finally {
             mppsscu.close();
         }
@@ -314,8 +332,12 @@ public class Modality {
                 .withLongOpt("code-config")
                 .create());
         opts.addOption(OptionBuilder
-                .withDescription(rb.getString("late-mpps"))
-                .withLongOpt("late-mpps")
+                .withDescription(rb.getString("mpps-late"))
+                .withLongOpt("mpps-late")
+                .create());
+        opts.addOption(OptionBuilder
+                .withDescription(rb.getString("mpps"))
+                .withLongOpt("mpps")
                 .create());
         opts.addOption(null, "dc", false, rb.getString("dc"));
         opts.addOption(OptionBuilder

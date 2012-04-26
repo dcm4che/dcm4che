@@ -353,7 +353,7 @@ public class MppsSCU {
                     main.echo();
                 else {
                     main.createMpps();
-                    main.setMpps();
+                    main.updateMpps();
                 }
             } finally {
                 main.close();
@@ -523,7 +523,7 @@ public class MppsSCU {
                 rspHandler);
     }
 
-    public void setMpps() throws IOException, InterruptedException {
+    public void updateMpps() throws IOException, InterruptedException {
         for (MppsWithIUID mpps : created)
             setMpps(mpps.iuid, mpps.mpps);
     }

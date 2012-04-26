@@ -163,7 +163,8 @@ public class Modality {
                 sendObjects(storescu);
                 if(cl.hasOption("mpps-late"))
                     updateMpps(mppsscu);
-                sendStgCmt(stgcmtscu);
+                if(cl.hasOption("stgcmt"))
+                    sendStgCmt(stgcmtscu);
             } finally {
                 if (conn.isListening()) {
                     device.waitForNoOpenConnections();
@@ -338,6 +339,10 @@ public class Modality {
         opts.addOption(OptionBuilder
                 .withDescription(rb.getString("mpps"))
                 .withLongOpt("mpps")
+                .create());
+        opts.addOption(OptionBuilder
+                .withDescription(rb.getString("stgcmt"))
+                .withLongOpt("stgcmt")
                 .create());
         opts.addOption(null, "dc", false, rb.getString("dc"));
         opts.addOption(OptionBuilder

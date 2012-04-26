@@ -56,6 +56,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
@@ -96,15 +97,8 @@ public class Modality {
             final Device device = new Device("modality");
             final Connection conn = new Connection();
             final ApplicationEntity ae = new ApplicationEntity("MODALITY");
-            if (!cl.hasOption("b"))
-                throw new MissingOptionException(
-                        CLIUtils.rb.getString("missing-bind-opt"));
+            checkOptions(cl);
             CLIUtils.configureBind(conn, ae, cl);
-            if (!cl.hasOption("c"))
-                throw new MissingOptionException(
-                        CLIUtils.rb.getString("missing-connect-opt"));
-            if (cl.hasOption("mpps") && cl.hasOption("mpps-late"))
-                throw new ParseException(rb.getString("mpps-error"));
             CLIUtils.configure(conn, cl);
             device.addConnection(conn);
             device.addApplicationEntity(ae);
@@ -182,7 +176,17 @@ public class Modality {
             e.printStackTrace();
             System.exit(2);
         }
+    }
 
+    private static void checkOptions(CommandLine cl) throws MissingOptionException, ParseException {
+        if (!cl.hasOption("b"))
+            throw new MissingOptionException(
+                    CLIUtils.rb.getString("missing-bind-opt"));
+        if (!cl.hasOption("c"))
+            throw new MissingOptionException(
+                    CLIUtils.rb.getString("missing-connect-opt"));
+        if (cl.hasOption("mpps") && cl.hasOption("mpps-late"))
+            throw new ParseException(rb.getString("mpps-error"));
     }
 
     public static void setTlsParams(Connection remote, Connection conn) {
@@ -332,14 +336,16 @@ public class Modality {
                 .withDescription(rb.getString("code-config"))
                 .withLongOpt("code-config")
                 .create());
-        opts.addOption(OptionBuilder
+        OptionGroup mpps = new OptionGroup();
+        mpps.addOption(OptionBuilder
                 .withDescription(rb.getString("mpps-late"))
                 .withLongOpt("mpps-late")
                 .create());
-        opts.addOption(OptionBuilder
+        mpps.addOption(OptionBuilder
                 .withDescription(rb.getString("mpps"))
                 .withLongOpt("mpps")
                 .create());
+        opts.addOptionGroup(mpps);
         opts.addOption(OptionBuilder
                 .withDescription(rb.getString("stgcmt"))
                 .withLongOpt("stgcmt")

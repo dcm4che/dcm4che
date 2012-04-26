@@ -41,10 +41,10 @@ package org.dcm4che.tool.mppsscu;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -79,6 +79,15 @@ import org.dcm4che.util.DateUtils;
  * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class MppsSCU {
+
+    private static final class MppsWithIUID {
+        final String iuid;
+        final Attributes mpps;
+        MppsWithIUID(String iuid, Attributes mpps) {
+            this.iuid = iuid;
+            this.mpps = mpps;
+        }
+    }
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.mppsscu.messages");
@@ -123,7 +132,22 @@ public class MppsSCU {
         Tag.PerformedProcedureStepDescription,
         Tag.PerformedProcedureTypeDescription,
         Tag.PerformedProtocolCodeSequence,
-        Tag.PerformedProcedureStepDiscontinuationReasonCodeSequence
+    };
+
+    private static final int[] CREATE_MPPS_TOP_LEVEL_EMPTY_ATTRS = {
+        Tag.PerformedProcedureStepEndDate,
+        Tag.PerformedProcedureStepEndTime,
+        Tag.PerformedProcedureStepDiscontinuationReasonCodeSequence,
+        Tag.PerformedSeriesSequence
+    };
+
+    private static final int[] FINAL_MPPS_TOP_LEVEL_ATTRS = {
+        Tag.SpecificCharacterSet,
+        Tag.PerformedProcedureStepEndDate,
+        Tag.PerformedProcedureStepEndTime,
+        Tag.PerformedProcedureStepStatus,
+        Tag.PerformedProcedureStepDiscontinuationReasonCodeSequence,
+        Tag.PerformedSeriesSequence
     };
 
     private static final int[] SSA_ATTRS = {
@@ -167,6 +191,7 @@ public class MppsSCU {
         Tag.PerformingPhysicianName,
         Tag.OperatorsName
     };
+
     private static final String ppsStartDate;
     private static final String ppsStartTime;
     static {
@@ -192,7 +217,7 @@ public class MppsSCU {
 
     private Properties codes;
     private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
-    private HashMap<String,Attributes> created = new HashMap<String,Attributes>();
+    private ArrayList<MppsWithIUID> created = new ArrayList<MppsWithIUID>();
     private Association as;
 
     public MppsSCU( ApplicationEntity ae) throws IOException {
@@ -473,20 +498,10 @@ public class MppsSCU {
 
     private void createMpps(final String iuid, Attributes mpps)
             throws IOException, InterruptedException {
-        final Attributes finalMpps = new Attributes(5);
-        finalMpps.addSelected(mpps,
-                Tag.SpecificCharacterSet,
-                Tag.PerformedProcedureStepEndDate,
-                Tag.PerformedProcedureStepEndTime,
-                Tag.PerformedSeriesSequence);
-        finalMpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, finalStatus );
-        if (discontinuationReason != null)
-            finalMpps.newSequence(
-                    Tag.PerformedProcedureStepDiscontinuationReasonCodeSequence, 1)
-                .add(discontinuationReason);
-        mpps.setNull(Tag.PerformedSeriesSequence, VR.SQ);
-        mpps.setNull(Tag.PerformedProcedureStepEndDate, VR.DA);
-        mpps.setNull(Tag.PerformedProcedureStepEndTime, VR.TM);
+        final Attributes finalMpps = new Attributes(mpps, FINAL_MPPS_TOP_LEVEL_ATTRS);
+        mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, IN_PROGRESS);
+        for (int tag : CREATE_MPPS_TOP_LEVEL_EMPTY_ATTRS)
+            mpps.setNull(tag, dict.vrOf(tag));
 
         DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
@@ -496,9 +511,9 @@ public class MppsSCU {
                     case Status.Success:
                     case Status.AttributeListError:
                     case Status.AttributeValueOutOfRange:
-                        created.put(
+                        created.add(new MppsWithIUID(
                                 cmd.getString(Tag.AffectedSOPInstanceUID, iuid),
-                                finalMpps);
+                                finalMpps));
                 }
                 super.onDimseRSP(as, cmd, data);
             }
@@ -509,8 +524,8 @@ public class MppsSCU {
     }
 
     public void setMpps() throws IOException, InterruptedException {
-        for (Map.Entry<String, Attributes> entry : created.entrySet())
-            setMpps(entry.getKey(), entry.getValue());
+        for (MppsWithIUID mpps : created)
+            setMpps(mpps.iuid, mpps.mpps);
     }
 
     private void setMpps(String iuid, Attributes mpps)
@@ -555,7 +570,10 @@ public class MppsSCU {
                 mpps.getString(Tag.PerformedProcedureStepStartDate));
         mpps.setString(Tag.PerformedProcedureStepEndTime, VR.TM,
                 mpps.getString(Tag.PerformedProcedureStepStartTime));
-        mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, IN_PROGRESS);
+        mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, finalStatus);
+        Sequence dcrSeq = mpps.newSequence(Tag.PerformedProcedureStepDiscontinuationReasonCodeSequence, 1);
+        if (discontinuationReason != null)
+            dcrSeq.add(new Attributes(discontinuationReason));
 
         Sequence raSeq = inst.getSequence(Tag.RequestAttributesSequence);
         if (raSeq == null || raSeq.isEmpty()) {

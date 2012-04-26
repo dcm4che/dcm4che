@@ -79,8 +79,8 @@ class PatientQueryTask extends BasicQueryTask {
     }
 
     @Override
-    protected Attributes adjust(Attributes match, Attributes keys, Association as) {
-        Attributes adjust = super.adjust(match, keys, as);
+    protected Attributes adjust(Attributes match) {
+        Attributes adjust = super.adjust(match);
         adjust.remove(Tag.DirectoryRecordType);
         if (keys.contains(Tag.SOPClassUID))
              adjust.setString(Tag.SOPClassUID, VR.UI,

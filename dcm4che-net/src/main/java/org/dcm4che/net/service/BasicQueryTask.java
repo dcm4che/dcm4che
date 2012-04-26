@@ -77,8 +77,8 @@ public class BasicQueryTask implements QueryTask {
         try {
             try {
                 while (!canceled && hasMoreMatches()) {
-                    Attributes match = adjust(nextMatch(), keys, as);
-                    int status = optionalKeyNotSupported(match, keys)
+                    Attributes match = adjust(nextMatch());
+                    int status = optionalKeyNotSupported(match)
                             ? Status.PendingWarning
                             : Status.Pending;
                     as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status), match);
@@ -107,7 +107,7 @@ public class BasicQueryTask implements QueryTask {
         return false;
     }
 
-    protected Attributes adjust(Attributes match, Attributes keys, Association as) {
+    protected Attributes adjust(Attributes match) {
         Attributes filtered = new Attributes(match.size());
         // include SpecificCharacterSet also if not in keys
         if (!keys.contains(Tag.SpecificCharacterSet)) {
@@ -119,7 +119,7 @@ public class BasicQueryTask implements QueryTask {
         return filtered;
     }
 
-    protected boolean optionalKeyNotSupported(Attributes match, Attributes keys) {
+    protected boolean optionalKeyNotSupported(Attributes match) {
         Attributes notSupported = new Attributes(keys.size());
         notSupported.addNotSelected(keys, match);
         notSupported.remove(Tag.SpecificCharacterSet);

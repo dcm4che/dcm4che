@@ -258,7 +258,8 @@ public class Modality {
         bufferedReader.read();
         try {
             mppsscu.open();
-            mppsscu.sendMpps();
+            mppsscu.createMpps();
+            mppsscu.setMpps();
         } finally {
             mppsscu.close();
         }

@@ -44,12 +44,12 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -192,8 +192,8 @@ public class MppsSCU {
 
     private Properties codes;
     private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
+    private HashMap<String,Attributes> created = new HashMap<String,Attributes>();
     private Association as;
-    private final AtomicInteger outstanding = new AtomicInteger(0);
 
     public MppsSCU( ApplicationEntity ae) throws IOException {
         this.remote = new Connection();
@@ -327,7 +327,8 @@ public class MppsSCU {
                 if (echo)
                     main.echo();
                 else {
-                    main.sendMpps();
+                    main.createMpps();
+                    main.setMpps();
                 }
             } finally {
                 main.close();
@@ -451,10 +452,7 @@ public class MppsSCU {
 
     public void close() throws IOException, InterruptedException {
         if (as != null) {
-            synchronized (outstanding) {
-                while (outstanding.get() > 0)
-                    outstanding.wait();
-            }
+            as.waitForOutstandingRSP();
             as.release();
             as.waitForSocketClose();
         }
@@ -464,15 +462,16 @@ public class MppsSCU {
         as.cecho().next();
     }
 
-    public void sendMpps() throws IOException, InterruptedException {
+    public void createMpps() throws IOException, InterruptedException {
         String uidPrefix = ppsuid != null && map.size() > 1
                 ? ppsuid + '.' : null;
         int suffix = 1;
         for (Attributes mpps : map.values())
-            sendMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
+            createMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
+        as.waitForOutstandingRSP();
     }
 
-    private void sendMpps(String iuid, Attributes mpps)
+    private void createMpps(final String iuid, Attributes mpps)
             throws IOException, InterruptedException {
         final Attributes finalMpps = new Attributes(5);
         finalMpps.addSelected(mpps,
@@ -493,64 +492,31 @@ public class MppsSCU {
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                switch(cmd.getInt(Tag.Status, -1)) {
+                    case Status.Success:
+                    case Status.AttributeListError:
+                    case Status.AttributeValueOutOfRange:
+                        created.put(
+                                cmd.getString(Tag.AffectedSOPInstanceUID, iuid),
+                                finalMpps);
+                }
                 super.onDimseRSP(as, cmd, data);
-                MppsSCU.this.onNCreateRSP(cmd, data, finalMpps);
             }
 
-            @Override
-            public void onClose(Association as) {
-                super.onClose(as);
-                MppsSCU.this.decrementOutstanding();
-            }
         };
-        outstanding.incrementAndGet();
-        try {
-            as.ncreate(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null, rspHandler);
-        } catch (IOException e) {
-            outstanding.decrementAndGet();
-            throw e;
-        }
+        as.ncreate(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null,
+                rspHandler);
     }
 
-    private void onNCreateRSP(Attributes rsp, Attributes data, Attributes finalMpps) {
-        int status = rsp.getInt(Tag.Status, -1);
-        switch(status) {
-        case Status.Success:
-        case Status.AttributeListError:
-        case Status.AttributeValueOutOfRange:
-            try {
-                DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
-                
-                    @Override
-                    public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-                        super.onDimseRSP(as, cmd, data);
-                        decrementOutstanding();
-                    }
-
-                    @Override
-                    public void onClose(Association as) {
-                        super.onClose(as);
-                        decrementOutstanding();
-                    }
-                };
-                as.nset(UID.ModalityPerformedProcedureStepSOPClass,
-                        rsp.getString(Tag.AffectedSOPInstanceUID),
-                        finalMpps, null, rspHandler);
-            } catch (Exception e) {
-                e.printStackTrace();
-                decrementOutstanding();
-            }
-            break;
-        default:
-            decrementOutstanding();
-        }
+    public void setMpps() throws IOException, InterruptedException {
+        for (Map.Entry<String, Attributes> entry : created.entrySet())
+            setMpps(entry.getKey(), entry.getValue());
     }
 
-    private void decrementOutstanding() {
-        if (outstanding.decrementAndGet() <= 0)
-            synchronized (outstanding) {
-                outstanding.notify();
-            }
+    private void setMpps(String iuid, Attributes mpps)
+            throws IOException, InterruptedException {
+                DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID());
+        as.nset(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null, rspHandler);
     }
 
     public void addInstance(Attributes inst) {

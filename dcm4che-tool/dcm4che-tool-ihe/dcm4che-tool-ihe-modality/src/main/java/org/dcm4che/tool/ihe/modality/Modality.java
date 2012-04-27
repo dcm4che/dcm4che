@@ -87,6 +87,8 @@ public class Modality {
     
     static BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
     
+    private static String calledAET;
+    
     @SuppressWarnings({ "unchecked" })
     public static void main(String[] args) {
         try {
@@ -109,6 +111,7 @@ public class Modality {
             CLIUtils.configureConnect(mppsscu.getRemoteConnection(), mppsscu.getAAssociateRQ(), cl);
             CLIUtils.configureConnect(stgcmtscu.getRemoteConnection(), stgcmtscu.getAAssociateRQ(), cl);
             CLIUtils.configureConnect(storescu.getRemoteConnection(), storescu.getAAssociateRQ(), cl);
+            calledAET = storescu.getAAssociateRQ().getCalledAET();
             mppsscu.setTransferSyntaxes(CLIUtils.transferSyntaxesOf(cl));
             mppsscu.setCodes(CLIUtils.loadProperties(
                     cl.getOptionValue("code-config", "resource:code.properties"), null));
@@ -151,13 +154,15 @@ public class Modality {
             device.setScheduledExecutor(scheduledExecutorService);
             device.activate();
             try {
-                if(cl.hasOption("mpps") || cl.hasOption("mpps-late"))
-                    sendMpps(mppsscu, cl);
+                boolean sendMpps = cl.hasOption("mpps");
+                boolean sendLateMpps = cl.hasOption("mpps-late");
+                if (sendMpps || sendLateMpps)
+                    sendMpps(mppsscu, sendMpps);
                 addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
                 sendObjects(storescu);
-                if(cl.hasOption("mpps-late"))
+                if (sendLateMpps)
                     updateMpps(mppsscu);
-                if(cl.hasOption("stgcmt"))
+                if (cl.hasOption("stgcmt"))
                     sendStgCmt(stgcmtscu);
             } finally {
                 if (conn.isListening()) {
@@ -245,7 +250,7 @@ public class Modality {
     private static void sendStgCmt(StgCmtSCU stgcmtscu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
         System.out.println("\n===========================================================");
-        System.out.println("Will now send Storage Commitment to " + stgcmtscu.getAAssociateRQ().getCalledAET() + ". Press <enter> to continue.");
+        System.out.println("Will now send Storage Commitment to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
         try {
@@ -256,28 +261,26 @@ public class Modality {
         }
     }
 
-    private static void sendMpps(MppsSCU mppsscu, CommandLine cl) throws IOException, InterruptedException,
-            IncompatibleConnectionException {
+    private static void sendMpps(MppsSCU mppsscu, boolean updateMpps) throws IOException,
+            InterruptedException, IncompatibleConnectionException {
         System.out.println("\n===========================================================");
-        System.out.println("Will now send MPPS to " + mppsscu.getAAssociateRQ().getCalledAET()
-                + ". Press <enter> to continue.");
+        System.out.println("Will now send MPPS to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
         try {
             mppsscu.open();
             mppsscu.createMpps();
-            if(cl.hasOption("mpps"))
+            if (updateMpps)
                 mppsscu.updateMpps();
         } finally {
             mppsscu.close();
         }
     }
 
-    private static void updateMpps(MppsSCU mppsscu) throws IOException,
-            InterruptedException, IncompatibleConnectionException {
+    private static void updateMpps(MppsSCU mppsscu) throws IOException, InterruptedException,
+            IncompatibleConnectionException {
         System.out.println("\n===========================================================");
-        System.out.println("Will now send MPPS n-set to " + mppsscu.getAAssociateRQ().getCalledAET()
-                + ". Press <enter> to continue.");
+        System.out.println("Will now send MPPS n-set to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
         try {
@@ -291,7 +294,7 @@ public class Modality {
     private static void sendObjects(StoreSCU storescu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
         System.out.println("\n===========================================================");
-        System.out.println("Will now send objects to " + storescu.getAAssociateRQ().getCalledAET() + ". Press <enter> to continue.");
+        System.out.println("Will now send objects to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
         try {

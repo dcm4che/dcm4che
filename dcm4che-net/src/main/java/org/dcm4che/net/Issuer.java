@@ -38,6 +38,9 @@
 
 package org.dcm4che.net;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -58,7 +61,11 @@ public class Issuer {
     }
 
     public Issuer(String s) {
-        String[] ss = StringUtils.split(s, '^');
+        this(s, '^');
+    }
+
+    public Issuer(String s, char delim) {
+        String[] ss = StringUtils.split(s, delim);
         if (ss.length > 3)
             throw new IllegalArgumentException(s);
         this.localNamespaceEntityID = emptyToNull(ss[0]);
@@ -124,16 +131,90 @@ public class Issuer {
         return s1 == s2 || s1 != null && s1.equals(s2);
     }
 
+    public boolean matches(Issuer other) {
+        if (this == other)
+            return true;
+
+        int equalsID, equalsUID, equalsUIDType;
+        if ((equalsID = matches(localNamespaceEntityID, other.localNamespaceEntityID)) < 0
+                || (equalsUID = matches(universalEntityID, other.universalEntityID)) < 0
+                || (equalsUIDType = matches(universalEntityIDType, other.universalEntityIDType)) < 0)
+            return false;
+        return equalsID > 0 || equalsUID > 0 && equalsUIDType > 0;
+    }
+
+    private int matches(String s1, String s2) {
+        return s1 == null || s2 == null ? 0 : s1.equals(s2) ? 1 : -1;
+    }
+
     @Override
     public String toString() {
+        return toString('^');
+    }
+
+    public String toString(char delim) {
         return universalEntityID == null
             ? localNamespaceEntityID
-            : nullToEmpty(localNamespaceEntityID) + '^'
-                        + universalEntityID  + '^'
+            : (localNamespaceEntityID == null ? "" : localNamespaceEntityID) + delim
+                        + universalEntityID  + delim
                         + universalEntityIDType;
     }
 
-    private String nullToEmpty(String s) {
-        return s == null ? "" : s;
+    public Attributes toItem() {
+        int size = 0;
+        if (localNamespaceEntityID != null)
+            size++;
+        if (universalEntityID != null)
+            size++;
+        if (universalEntityIDType != null)
+            size++;
+
+        Attributes item = new Attributes(size);
+        if (localNamespaceEntityID != null)
+            item.setString(Tag.LocalNamespaceEntityID, VR.UT, localNamespaceEntityID);
+        if (universalEntityID != null)
+            item.setString(Tag.UniversalEntityID, VR.UT, universalEntityID);
+        if (universalEntityIDType != null)
+            item.setString(Tag.UniversalEntityIDType, VR.UT, universalEntityIDType);
+        return item ;
     }
+
+    public Attributes toIssuerOfPatientID(Attributes attrs) {
+        if (attrs == null)
+            attrs = new Attributes(2);
+        if (localNamespaceEntityID != null)
+            attrs.setString(Tag.IssuerOfPatientID, VR.LO, localNamespaceEntityID);
+        if (universalEntityID != null) {
+            Attributes item = new Attributes(2);
+            item.setString(Tag.UniversalEntityID, VR.UT, universalEntityID);
+            item.setString(Tag.UniversalEntityIDType, VR.UT, universalEntityIDType);
+            attrs.newSequence(Tag.IssuerOfPatientIDQualifiersSequence, 1).add(item);
+        }
+        return attrs;
+    }
+
+    public static Issuer valueOf(Attributes item) {
+        if (item == null || item.isEmpty())
+            return null;
+
+        return new Issuer(
+                item.getString(Tag.LocalNamespaceEntityID),
+                item.getString(Tag.UniversalEntityID),
+                item.getString(Tag.UniversalEntityIDType));
+    }
+
+    public static Issuer issuerOfPatientIDOf(Attributes attrs) {
+        String entityID = attrs.getString(Tag.IssuerOfPatientID);
+        Attributes item = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
+        if (entityID == null && (item == null || item.isEmpty()))
+            return null;
+
+        return item != null
+                ? new Issuer(
+                        entityID,
+                        item.getString(Tag.UniversalEntityID),
+                        item.getString(Tag.UniversalEntityIDType))
+                : new Issuer(entityID, null, null);
+    }
+
 }

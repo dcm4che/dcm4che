@@ -38,12 +38,16 @@
 
 package org.dcm4che.data;
 
+import java.io.Serializable;
+
 import org.dcm4che.util.TagUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class ValueSelector {
+public class ValueSelector implements Serializable {
+
+    private static final long serialVersionUID = 8346808223314626639L;
 
     private final int tag;
     private final String privateCreator;

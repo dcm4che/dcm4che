@@ -39,6 +39,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,7 +75,9 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ApplicationEntity {
+public class ApplicationEntity implements Serializable {
+
+    private static final long serialVersionUID = 3883790997057469573L;
 
     protected static final Logger LOG = 
             LoggerFactory.getLogger(ApplicationEntity.class);
@@ -97,9 +100,8 @@ public class ApplicationEntity {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
-    private UserIdentityNegotiator userIdNegotiator;
-    private DimseRQHandler dimseRQHandler;
-    private HashMap<String,Object> properties = new HashMap<String,Object>();
+    private transient UserIdentityNegotiator userIdNegotiator;
+    private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
@@ -358,25 +360,6 @@ public class ApplicationEntity {
         this.dimseRQHandler = dimseRQHandler;
     }
 
-    public Object getProperty(String key) {
-        Object value = properties.get(key);
-        if (value != null)
-            return value;
-
-        Device device = this.device;
-        return device != null
-                ? device.getProperty(key)
-                : null;
-    }
-
-    public Object setProperty(String key, Object value) {
-        return properties.put(key, value);
-    }
-
-    public Object clearProperty(String key) {
-        return properties.remove(key);
-    }
-
     private void checkInstalled() {
         if (!isInstalled())
             throw new IllegalStateException("Not installed");
@@ -630,4 +613,5 @@ public class ApplicationEntity {
             tc.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
         return sb.append(indent).append(']');
     }
+
 }

@@ -39,6 +39,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +47,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -70,7 +70,9 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Device {
+public class Device implements Serializable {
+
+    private static final long serialVersionUID = -5816872456184522866L;
 
     private static final int DEF_CONN_LIMIT = 100;
 
@@ -96,8 +98,8 @@ public class Device {
     private String[] institutionalDepartmentNames = {};
     private String[] relatedDeviceRefs = {};
     private byte[][] vendorData = {};
+    private int connLimit = DEF_CONN_LIMIT;
     private boolean installed = true;
-    private boolean activated = false;
     private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
             new LinkedHashMap<String, X509Certificate[]>();
     private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
@@ -106,18 +108,17 @@ public class Device {
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
 
-    private DimseRQHandler dimseRQHandler;
-    private HashMap<String,Object> properties = new HashMap<String,Object>();
+    private transient boolean activated = false;
+    private transient DimseRQHandler dimseRQHandler;
 
-    private int connLimit = DEF_CONN_LIMIT;
-    private int connCount = 0;
-    private final Object connCountLock = new Object();
+    private transient int connCount = 0;
+    private transient final Object connCountLock = new Object();
 
-    private Executor executor;
-    private ScheduledExecutorService scheduledExecutor;
-    private SSLContext sslContext;
-    private KeyManager km;
-    private TrustManager tm;
+    private transient Executor executor;
+    private transient ScheduledExecutorService scheduledExecutor;
+    private transient SSLContext sslContext;
+    private transient KeyManager km;
+    private transient TrustManager tm;
 
     public Device(String name) {
         if (name.isEmpty())
@@ -563,18 +564,6 @@ public class Device {
 
     public final DimseRQHandler getDimseRQHandler() {
         return dimseRQHandler;
-    }
-
-    public Object getProperty(String key) {
-        return properties.get(key);
-    }
-
-    public Object setProperty(String key, Object value) {
-        return properties.put(key, value);
-    }
-
-    public Object clearProperty(String key) {
-        return properties.remove(key);
     }
 
     public void activate() throws IOException {

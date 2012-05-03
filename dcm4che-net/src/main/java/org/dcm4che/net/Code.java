@@ -38,12 +38,16 @@
 
 package org.dcm4che.net;
 
+import java.io.Serializable;
+
 import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Code {
+public class Code implements Serializable {
+
+    private static final long serialVersionUID = 8807594793107889446L;
 
     private final String codeValue;
     private final String codingSchemeDesignator;

@@ -38,6 +38,7 @@
 
 package org.dcm4che.net;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 
 import org.dcm4che.data.UID;
@@ -57,7 +58,9 @@ import org.dcm4che.util.UIDUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class TransferCapability {
+public class TransferCapability implements Serializable {
+
+    private static final long serialVersionUID = 6386251434418693778L;
 
     public enum Role { SCU, SCP }
 

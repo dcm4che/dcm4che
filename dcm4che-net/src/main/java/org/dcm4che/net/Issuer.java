@@ -132,7 +132,7 @@ public class Issuer {
     }
 
     public boolean matches(Issuer other) {
-        if (this == other)
+        if (this == other || other == null)
             return true;
 
         int equalsID, equalsUID, equalsUIDType;

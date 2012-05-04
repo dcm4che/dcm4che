@@ -1428,18 +1428,46 @@ public class Attributes implements Serializable {
         return true;
     }
 
+    /**
+     * Add selected attributes from another Attributes object to this.
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @return <tt>true</tt> if one ore more attributes were added
+     */
     public boolean addSelected(Attributes other, int... selection) {
         return addSelected(other, selection, 0, selection.length);
     }
 
+    /**
+     * Add selected attributes from another Attributes object to this.
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[], int, int)} method) prior to making this call.
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @param fromIndex the index of the first tag (inclusive)
+     * @param toIndex the index of the last tag (exclusive)
+     * @return <tt>true</tt> if one ore more attributes were added
+     */
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        Arrays.sort(selection, fromIndex, toIndex);
         return addAll(other, selection, null, fromIndex, toIndex, false);
     }
 
+    /**
+     * Merge selected attributes from another Attributes object into this.
+     * Does not overwrite existing non-empty attributes.
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @return <tt>true</tt> if one ore more attributes were added
+     */
     public boolean mergeSelected(Attributes other, int... selection) {
-        Arrays.sort(selection);
         return addAll(other, selection, null, 0, selection.length, true);
     }
 
@@ -1447,13 +1475,32 @@ public class Attributes implements Serializable {
         return addAll(other, null, selection.tags, 0, selection.size, false);
     }
 
+    /**
+     * Add not selected attributes from another Attributes object to this.
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @return <tt>true</tt> if one ore more attributes were added
+     */
     public boolean addNotSelected(Attributes other, int... selection) {
         return addNotSelected(other, selection, 0, selection.length);
     }
 
+    /**
+     * Add not selected attributes from another Attributes object to this.
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @param fromIndex the index of the first tag (inclusive)
+     * @param toIndex the index of the last tag (exclusive)
+     * @return <tt>true</tt> if one ore more attributes were added
+     */
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        Arrays.sort(selection, fromIndex, toIndex);
         return addAll(other, null, selection, fromIndex, toIndex, false);
     }
 
@@ -1513,9 +1560,22 @@ public class Attributes implements Serializable {
         return update(newAttrs, modified, null);
     }
 
+    /**
+     * Add selected attributes from another Attributes object to this.
+     * Optionally, the original values of overwritten existing non-empty
+     * attributes are preserved in another Attributes object. 
+     * The specified array of tag values must be sorted (as by the
+     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
+     * 
+     * @param newAttrs the other Attributes object
+     * @param modified Attributes object to collect overwritten non-empty
+     *          attributes with original values or <tt>null</tt>
+     * @param includes sorted tag values
+     * @return <tt>true</tt> if one ore more attribute were added or
+     *          overwritten with a different value
+     */
     public boolean updateSelected(Attributes newAttrs, Attributes modified,
             int... includes) {
-        Arrays.sort(includes);
         return update(newAttrs, modified, includes);
     }
 

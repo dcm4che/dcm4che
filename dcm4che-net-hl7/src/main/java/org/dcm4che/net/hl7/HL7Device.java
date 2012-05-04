@@ -53,9 +53,12 @@ import org.dcm4che.net.Device;
  */
 public class HL7Device extends Device {
 
+    private static final long serialVersionUID = 5891363555469614152L;
+
     private final LinkedHashMap<String, HL7Application> hl7apps =
             new LinkedHashMap<String, HL7Application>();
-    private HL7MessageListener hl7MessageListener;
+
+    private transient HL7MessageListener hl7MessageListener;
 
     public HL7Device(String name) {
         super(name);

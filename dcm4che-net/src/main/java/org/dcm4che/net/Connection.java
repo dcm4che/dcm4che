@@ -39,6 +39,7 @@
 package org.dcm4che.net;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -75,7 +76,9 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Connection {
+public class Connection implements Serializable {
+
+    private static final long serialVersionUID = -7814748788035232055L;
 
     public static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
@@ -119,11 +122,11 @@ public class Connection {
     private String[] blacklist = {};
     private Boolean installed;
 
-    private InetAddress addr;
-    private List<InetAddress> blacklistAddrs;
-    private volatile ServerSocket server;
-    private boolean needRebind;
-    private ConnectionHandler connectionHandler;
+    private transient InetAddress addr;
+    private transient List<InetAddress> blacklistAddrs;
+    private transient volatile ServerSocket server;
+    private transient boolean needRebind;
+    private transient ConnectionHandler connectionHandler;
 
     public Connection() {
     }

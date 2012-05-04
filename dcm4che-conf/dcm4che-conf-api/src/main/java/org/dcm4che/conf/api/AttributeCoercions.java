@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.api;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +50,10 @@ import org.dcm4che.net.TransferCapability.Role;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class AttributeCoercions {
+public class AttributeCoercions implements Serializable {
     
+    private static final long serialVersionUID = -1960600890844978686L;
+
     private final ArrayList<AttributeCoercion> list =
             new ArrayList<AttributeCoercion>();
     private final int[] insertIndex = new int[4];

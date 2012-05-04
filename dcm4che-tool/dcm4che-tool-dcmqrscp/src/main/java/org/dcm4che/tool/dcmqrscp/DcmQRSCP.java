@@ -367,7 +367,7 @@ public class DcmQRSCP extends Device {
             throw new MissingOptionException(rb.getString("missing-dicomdir"));
         main.setDicomDirectory(new File(cl.getOptionValue("dicomdir")));
         main.setFilePathFormat(cl.getOptionValue("filepath", 
-                        "DICOM/#(0020,000D)/#(0020,000E)/#(0008,0018)"));
+                        "DICOM/{0020000D,hash}/{0020000E,hash}/{00080018,hash}"));
         main.setRecordFactory(new RecordFactory());
     }
 

@@ -38,6 +38,8 @@
 
 package org.dcm4che.net;
 
+import java.io.Serializable;
+
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
@@ -46,7 +48,9 @@ import org.dcm4che.util.StringUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class Issuer {
+public class Issuer implements Serializable {
+
+    private static final long serialVersionUID = 5350502680059507981L;
 
     private final String localNamespaceEntityID;
     private final String universalEntityID;
@@ -132,7 +136,7 @@ public class Issuer {
     }
 
     public boolean matches(Issuer other) {
-        if (this == other)
+        if (this == other || other == null)
             return true;
 
         int equalsID, equalsUID, equalsUIDType;

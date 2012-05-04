@@ -38,6 +38,8 @@
 
 package org.dcm4che.conf.api;
 
+import java.io.Serializable;
+
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability.Role;
 import org.dcm4che.util.StringUtils;
@@ -46,7 +48,9 @@ import org.dcm4che.util.UIDUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class AttributeCoercion {
+public class AttributeCoercion implements Serializable {
+
+    private static final long serialVersionUID = 7799241531490684097L;
 
     private final String sopClass;
     private final Dimse dimse;

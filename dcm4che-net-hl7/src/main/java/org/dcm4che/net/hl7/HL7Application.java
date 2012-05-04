@@ -39,6 +39,7 @@
 package org.dcm4che.net.hl7;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -55,7 +56,9 @@ import org.dcm4che.net.IncompatibleConnectionException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class HL7Application {
+public class HL7Application implements Serializable {
+
+    private static final long serialVersionUID = -1765110968524548056L;
 
     private HL7Device device;
     private String name;

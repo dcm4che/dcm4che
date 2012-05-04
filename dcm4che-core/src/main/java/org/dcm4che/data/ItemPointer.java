@@ -38,10 +38,14 @@
 
 package org.dcm4che.data;
 
+import java.io.Serializable;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class ItemPointer {
+public class ItemPointer implements Serializable {
+
+    private static final long serialVersionUID = 5183950023496022964L;
 
     public final int sequenceTag;
     public final String privateCreator;

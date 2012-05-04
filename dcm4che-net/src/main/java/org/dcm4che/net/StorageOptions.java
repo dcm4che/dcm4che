@@ -38,13 +38,17 @@
 
 package org.dcm4che.net;
 
+import java.io.Serializable;
+
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class StorageOptions {
+public class StorageOptions implements Serializable {
+
+    private static final long serialVersionUID = 6911502883119290413L;
 
     public enum LevelOfSupport {
         LEVEL_0, LEVEL_1, LEVEL_2, UNSPECIFIED;

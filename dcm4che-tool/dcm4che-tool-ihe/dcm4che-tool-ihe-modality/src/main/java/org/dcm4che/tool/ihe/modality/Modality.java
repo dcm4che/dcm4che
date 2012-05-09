@@ -211,7 +211,7 @@ public class Modality {
 
     @SuppressWarnings("unchecked")
     private static String mkkos(CommandLine cl) throws Exception {
-        System.out.println("\n===========================================================");
+        System.out.println("===========================================================");
         System.out.println("Will now generate a Key Object for files in " + cl.getArgList() + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
@@ -249,7 +249,7 @@ public class Modality {
 
     private static void sendStgCmt(StgCmtSCU stgcmtscu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        System.out.println("\n===========================================================");
+        System.out.println("===========================================================");
         System.out.println("Will now send Storage Commitment to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
@@ -265,7 +265,7 @@ public class Modality {
             InterruptedException, IncompatibleConnectionException {
         try {
             mppsscu.open();
-            System.out.println("\n===========================================================");
+            System.out.println("===========================================================");
             System.out.println("Will now send MPPS N-CREATE to " + calledAET + ". Press <enter> to continue.");
             System.out.println("===========================================================");
             bufferedReader.read();
@@ -289,7 +289,7 @@ public class Modality {
     }
 
     private static void updateMpps(MppsSCU mppsscu) throws IOException, InterruptedException {
-        System.out.println("\n===========================================================");
+        System.out.println("===========================================================");
         System.out.println("Will now send MPPS N-SET to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
@@ -298,7 +298,7 @@ public class Modality {
     
     private static void sendObjects(StoreSCU storescu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        System.out.println("\n===========================================================");
+        System.out.println("===========================================================");
         System.out.println("Will now send objects to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
@@ -376,7 +376,7 @@ public class Modality {
     private static void scanFiles(List<String> fnames, String tmpPrefix, String tmpSuffix,
             File tmpDir, final MppsSCU mppsscu, final StoreSCU storescu, final StgCmtSCU stgcmtscu)
             throws IOException {
-        System.out.println("\n===========================================================");
+        System.out.println("===========================================================");
         System.out.println("Press <enter> to scan files in " + fnames);
         System.out.println("===========================================================");
         bufferedReader.read();

@@ -161,7 +161,7 @@ public class Modality {
                 addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
                 sendObjects(storescu);
                 if (sendLateMpps)
-                    updateMpps(mppsscu);
+                    sendMppsNSet(mppsscu);
                 if (cl.hasOption("stgcmt"))
                     sendStgCmt(stgcmtscu);
             } finally {
@@ -261,34 +261,39 @@ public class Modality {
         }
     }
 
-    private static void sendMpps(MppsSCU mppsscu, boolean updateMpps) throws IOException,
+    private static void sendMpps(MppsSCU mppsscu, boolean sendNSet) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        System.out.println("\n===========================================================");
-        System.out.println("Will now send MPPS to " + calledAET + ". Press <enter> to continue.");
-        System.out.println("===========================================================");
-        bufferedReader.read();
         try {
             mppsscu.open();
+            System.out.println("\n===========================================================");
+            System.out.println("Will now send MPPS N-CREATE to " + calledAET + ". Press <enter> to continue.");
+            System.out.println("===========================================================");
+            bufferedReader.read();
             mppsscu.createMpps();
-            if (updateMpps)
-                mppsscu.updateMpps();
+            if (sendNSet) {
+                updateMpps(mppsscu);
+            }
         } finally {
             mppsscu.close();
         }
     }
 
-    private static void updateMpps(MppsSCU mppsscu) throws IOException, InterruptedException,
+    private static void sendMppsNSet(MppsSCU mppsscu) throws IOException, InterruptedException,
             IncompatibleConnectionException {
-        System.out.println("\n===========================================================");
-        System.out.println("Will now send MPPS n-set to " + calledAET + ". Press <enter> to continue.");
-        System.out.println("===========================================================");
-        bufferedReader.read();
         try {
             mppsscu.open();
-            mppsscu.updateMpps();
+            updateMpps(mppsscu);
         } finally {
             mppsscu.close();
         }
+    }
+
+    private static void updateMpps(MppsSCU mppsscu) throws IOException, InterruptedException {
+        System.out.println("\n===========================================================");
+        System.out.println("Will now send MPPS N-SET to " + calledAET + ". Press <enter> to continue.");
+        System.out.println("===========================================================");
+        bufferedReader.read();
+        mppsscu.updateMpps();
     }
     
     private static void sendObjects(StoreSCU storescu) throws IOException,

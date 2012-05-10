@@ -193,7 +193,7 @@ public class StgCmtSCU {
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
-                System.out.println(rb.getString("scanning"));
+                DicomService.LOG.info(rb.getString("scanning"));
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
@@ -395,7 +395,7 @@ public class StgCmtSCU {
         actionInfo.setString(Tag.TransactionUID, VR.UI, UIDUtils.createUID());
         int n = refSOPs.size() / 2;
         Sequence refSOPSeq = actionInfo.newSequence(Tag.ReferencedSOPSequence, n);
-        for (int i = 0; i < n; ) {
+        for (int i = 0, j = 0; j < n; j++) {
             Attributes refSOP = new Attributes(2);
             refSOP.setString(Tag.ReferencedSOPClassUID, VR.UI, refSOPs.get(i++));
             refSOP.setString(Tag.ReferencedSOPInstanceUID, VR.UI, refSOPs.get(i++));

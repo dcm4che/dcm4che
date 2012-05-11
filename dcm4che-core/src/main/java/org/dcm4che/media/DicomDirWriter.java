@@ -286,15 +286,15 @@ public class DicomDirWriter extends DicomDirReader {
         return toFileIDs(file, f);
     }
 
-    private static String[] toFileIDs(File file, File descFile) {
-        String dpath = file.getParent();
-        int dend = dpath.length();
-        String fpath = descFile.getPath();
-        if (!fpath.startsWith(dpath)
-                || fpath.charAt(dend) != File.separatorChar)
+    private static String[] toFileIDs(File dfile, File f) {
+        String dfilepath = dfile.getAbsolutePath();
+        int dend = dfilepath.lastIndexOf(File.separatorChar) + 1;
+        String dpath = dfilepath.substring(0, dend);
+        String fpath = f.getAbsolutePath();
+        if (dend == 0 || !fpath.startsWith(dpath))
             throw new IllegalArgumentException("file: " + fpath
-                    + " not in directory: " + dpath);
-        return StringUtils.split(fpath.substring(dend+1), File.separatorChar);
+                    + " not in directory: " + dfile.getAbsoluteFile());
+        return StringUtils.split(fpath.substring(dend), File.separatorChar);
     }
 
     private void updateDirInfoHeader() {

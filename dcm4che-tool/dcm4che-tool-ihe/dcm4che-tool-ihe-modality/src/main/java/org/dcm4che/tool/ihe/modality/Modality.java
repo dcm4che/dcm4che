@@ -264,14 +264,15 @@ public class Modality {
     private static void sendMpps(MppsSCU mppsscu, boolean sendNSet) throws IOException,
             InterruptedException, IncompatibleConnectionException {
         try {
-            mppsscu.open();
             System.out.println("===========================================================");
             System.out.println("Will now send MPPS N-CREATE to " + calledAET + ". Press <enter> to continue.");
             System.out.println("===========================================================");
             bufferedReader.read();
+            mppsscu.open();
             mppsscu.createMpps();
             if (sendNSet) {
-                updateMpps(mppsscu);
+                printMPPSNSetMessage();
+                mppsscu.updateMpps();
             }
         } finally {
             mppsscu.close();
@@ -281,21 +282,21 @@ public class Modality {
     private static void sendMppsNSet(MppsSCU mppsscu) throws IOException, InterruptedException,
             IncompatibleConnectionException {
         try {
+            printMPPSNSetMessage();
             mppsscu.open();
-            updateMpps(mppsscu);
+            mppsscu.updateMpps();
         } finally {
             mppsscu.close();
         }
     }
 
-    private static void updateMpps(MppsSCU mppsscu) throws IOException, InterruptedException {
+    private static void printMPPSNSetMessage() throws IOException {
         System.out.println("===========================================================");
         System.out.println("Will now send MPPS N-SET to " + calledAET + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
-        mppsscu.updateMpps();
     }
-    
+
     private static void sendObjects(StoreSCU storescu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
         System.out.println("===========================================================");

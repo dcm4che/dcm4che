@@ -211,10 +211,7 @@ public class Modality {
 
     @SuppressWarnings("unchecked")
     private static String mkkos(CommandLine cl) throws Exception {
-        System.out.println("===========================================================");
-        System.out.println("Will now generate a Key Object for files in " + cl.getArgList() + ". Press <enter> to continue.");
-        System.out.println("===========================================================");
-        bufferedReader.read();
+        printNextStepMessage("Will now generate a Key Object for files in " + cl.getArgList());
         final MkKOS mkkos = new MkKOS();
         mkkos.setUIDSuffix(cl.getOptionValue("uid-suffix"));
         mkkos.setCodes(CLIUtils.loadProperties(
@@ -249,10 +246,7 @@ public class Modality {
 
     private static void sendStgCmt(StgCmtSCU stgcmtscu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        System.out.println("===========================================================");
-        System.out.println("Will now send Storage Commitment to " + calledAET + ". Press <enter> to continue.");
-        System.out.println("===========================================================");
-        bufferedReader.read();
+        printNextStepMessage("Will now send Storage Commitment to " + calledAET);
         try {
             stgcmtscu.open();
             stgcmtscu.sendRequests();
@@ -264,14 +258,11 @@ public class Modality {
     private static void sendMpps(MppsSCU mppsscu, boolean sendNSet) throws IOException,
             InterruptedException, IncompatibleConnectionException {
         try {
-            System.out.println("===========================================================");
-            System.out.println("Will now send MPPS N-CREATE to " + calledAET + ". Press <enter> to continue.");
-            System.out.println("===========================================================");
-            bufferedReader.read();
+            printNextStepMessage("Will now send MPPS N-CREATE to " + calledAET);
             mppsscu.open();
             mppsscu.createMpps();
             if (sendNSet) {
-                printMPPSNSetMessage();
+                printNextStepMessage("Will now send MPPS N-SET to " + calledAET);
                 mppsscu.updateMpps();
             }
         } finally {
@@ -282,7 +273,7 @@ public class Modality {
     private static void sendMppsNSet(MppsSCU mppsscu) throws IOException, InterruptedException,
             IncompatibleConnectionException {
         try {
-            printMPPSNSetMessage();
+            printNextStepMessage("Will now send MPPS N-SET to " + calledAET);
             mppsscu.open();
             mppsscu.updateMpps();
         } finally {
@@ -290,19 +281,16 @@ public class Modality {
         }
     }
 
-    private static void printMPPSNSetMessage() throws IOException {
+    private static void printNextStepMessage(String message) throws IOException {
         System.out.println("===========================================================");
-        System.out.println("Will now send MPPS N-SET to " + calledAET + ". Press <enter> to continue.");
+        System.out.println(message + ". Press <enter> to continue.");
         System.out.println("===========================================================");
         bufferedReader.read();
     }
 
     private static void sendObjects(StoreSCU storescu) throws IOException,
             InterruptedException, IncompatibleConnectionException {
-        System.out.println("===========================================================");
-        System.out.println("Will now send objects to " + calledAET + ". Press <enter> to continue.");
-        System.out.println("===========================================================");
-        bufferedReader.read();
+        printNextStepMessage("Will now send DICOM object(s) to " + calledAET);
         try {
             storescu.open();
             storescu.sendFiles();
@@ -377,10 +365,7 @@ public class Modality {
     private static void scanFiles(List<String> fnames, String tmpPrefix, String tmpSuffix,
             File tmpDir, final MppsSCU mppsscu, final StoreSCU storescu, final StgCmtSCU stgcmtscu)
             throws IOException {
-        System.out.println("===========================================================");
-        System.out.println("Press <enter> to scan files in " + fnames);
-        System.out.println("===========================================================");
-        bufferedReader.read();
+        printNextStepMessage("Will now scan files in " + fnames);
         File tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
         tmpFile.deleteOnExit();
         final BufferedWriter fileInfos = new BufferedWriter(new OutputStreamWriter(

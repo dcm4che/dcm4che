@@ -41,6 +41,7 @@ package org.dcm4che.net.hl7;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -125,9 +126,9 @@ public class HL7Application implements Serializable {
                 new String[acceptedMessageTypes.size()]);
     }
 
-    public void setAcceptedMessageTypes(String... names) {
+    public void setAcceptedMessageTypes(String... types) {
         acceptedMessageTypes.clear();
-        for (String name : names)
+        for (String name : types)
             acceptedMessageTypes.add(name);
     }
 
@@ -193,18 +194,18 @@ public class HL7Application implements Serializable {
     }
 
     public MLLPConnection connect(Connection remote)
-            throws IOException, IncompatibleConnectionException {
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         return connect(findCompatibelConnection(remote), remote);
     }
 
     public MLLPConnection connect(HL7Application remote)
-            throws IOException, IncompatibleConnectionException {
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         CompatibleConnection cc = findCompatibelConnection(remote);
         return connect(cc.getLocalConnection(), cc.getRemoteConnection());
     }
 
     public MLLPConnection connect(Connection local, Connection remote)
-            throws IOException, IncompatibleConnectionException {
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         checkDevice();
         checkInstalled();
         Socket sock = local.connect(remote);
@@ -240,5 +241,28 @@ public class HL7Application implements Serializable {
     private void checkDevice() {
         if (device == null)
             throw new IllegalStateException("Not attached to Device");
+    }
+
+    void reconfigure(HL7Application src) {
+        setHL7ApplicationAttributes(src);
+        device.reconfigureConnections(conns, src.conns);
+    }
+
+    protected void setHL7ApplicationAttributes(HL7Application src) {
+        setHL7DefaultCharacterSet(src.hl7DefaultCharacterSet);
+        setAcceptedSendingApplications(src.getAcceptedSendingApplications());
+        setAcceptedMessageTypes(src.getAcceptedMessageTypes());
+        setInstalled(src.installed);
+    }
+
+    void addCopyTo(HL7Device hl7Device) {
+        try {
+            HL7Application hl7app = (HL7Application) clone();
+            hl7app.device = null;
+            device.reconfigureConnections(hl7app.conns, conns);
+            device.addHL7Application(hl7app);
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

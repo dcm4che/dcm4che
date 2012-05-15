@@ -40,6 +40,7 @@ package org.dcm4che.tool.dcmqrscp;
 
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 import org.dcm4che.data.Attributes;
@@ -100,6 +101,8 @@ class CMoveSCPImpl extends BasicCMoveSCP {
                 } catch (InterruptedException e) {
                     throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
                 } catch (IncompatibleConnectionException e) {
+                    throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
+                } catch (GeneralSecurityException e) {
                     throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
                 }
             }

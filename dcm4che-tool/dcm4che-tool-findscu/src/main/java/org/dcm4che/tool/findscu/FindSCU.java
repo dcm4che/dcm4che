@@ -42,7 +42,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.KeyManagementException;
+import java.security.GeneralSecurityException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.EnumSet;
@@ -356,7 +356,7 @@ public class FindSCU extends Device {
     }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException, KeyManagementException {
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(conn, remote, rq);
     }
 

@@ -72,6 +72,11 @@ public class AttributeCoercions implements Serializable {
             insertIndex[i]++;
     }
 
+    public void add(AttributeCoercions acs) {
+         for (AttributeCoercion ac : acs.list)
+             add(ac);
+    }
+
     public boolean remove(AttributeCoercion ac) {
         if (ac == null)
             throw new NullPointerException();

@@ -38,7 +38,9 @@
 
 package org.dcm4che.net.hl7;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
@@ -106,5 +108,23 @@ public class HL7Device extends Device {
         if (hl7App == null)
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
         return hl7App.onMessage(conn, s, msh, msg, off, len, mshlen);
+    }
+
+    @Override
+    public void reconfigure(Device from) throws IOException,
+            GeneralSecurityException {
+        super.reconfigure(from);
+        reconfigureHL7Applications((HL7Device) from);
+    }
+
+    private void reconfigureHL7Applications(HL7Device from) {
+        hl7apps.keySet().retainAll(from.hl7apps.keySet());
+        for (HL7Application src : from.hl7apps.values()) {
+            HL7Application hl7app = hl7apps.get(src.getApplicationName());
+            if (hl7app != null)
+                hl7app.reconfigure(src);
+            else
+                src.addCopyTo(this);
+        }
     }
 }

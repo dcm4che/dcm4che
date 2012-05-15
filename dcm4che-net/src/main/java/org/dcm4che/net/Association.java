@@ -515,7 +515,7 @@ public class Association {
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
             ae = device.getApplicationEntity(rq.getCalledAET());
-            if (ae == null)
+            if (ae == null || !ae.getConnections().contains(conn))
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
                         AAssociateRJ.SOURCE_SERVICE_USER,
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);

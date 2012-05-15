@@ -40,6 +40,7 @@ package org.dcm4che.tool.stgcmtscu;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -208,7 +209,7 @@ public class StgCmtSCU {
                     Executors.newSingleThreadScheduledExecutor();
             device.setExecutor(executorService);
             device.setScheduledExecutor(scheduledExecutorService);
-            device.activate();
+            device.bindConnections();
             try {
                 stgcmtscu.open();
                 if (echo)
@@ -219,7 +220,7 @@ public class StgCmtSCU {
                 stgcmtscu.close();
                 if (conn.isListening()) {
                     device.waitForNoOpenConnections();
-                    device.deactivate();
+                    device.unbindConnections();
                 }
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
@@ -345,7 +346,7 @@ public class StgCmtSCU {
     }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException {
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(remote, rq);
     }
 

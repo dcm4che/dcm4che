@@ -40,15 +40,18 @@ package org.dcm4che.net;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -108,7 +111,6 @@ public class Device implements Serializable {
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
 
-    private transient boolean activated = false;
     private transient DimseRQHandler dimseRQHandler;
 
     private transient int connCount = 0;
@@ -116,9 +118,9 @@ public class Device implements Serializable {
 
     private transient Executor executor;
     private transient ScheduledExecutorService scheduledExecutor;
-    private transient SSLContext sslContext;
-    private transient KeyManager km;
-    private transient TrustManager tm;
+    private transient volatile SSLContext sslContext;
+    private transient volatile KeyManager km;
+    private transient volatile TrustManager tm;
 
     public Device(String name) {
         if (name.isEmpty())
@@ -432,14 +434,18 @@ public class Device implements Serializable {
 
     public void setAuthorizedNodeCertificates(String ref, X509Certificate... certs) {
         authorizedNodeCertificates.put(ref, certs);
+        setTrustManager(null);
     }
 
     public X509Certificate[] removeAuthorizedNodeCertificates(String ref) {
-        return authorizedNodeCertificates.remove(ref);
+        X509Certificate[] certs = authorizedNodeCertificates.remove(ref);
+        setTrustManager(null);
+        return certs;
     }
 
-    public void removeAllAuthorizedNodeCertificates(String ref, X509Certificate... certs) {
-        authorizedNodeCertificates.put(ref, certs);
+    public void removeAllAuthorizedNodeCertificates() {
+        authorizedNodeCertificates.clear();
+        setTrustManager(null);
     }
 
     public X509Certificate[] getAllAuthorizedNodeCertificates() {
@@ -462,8 +468,8 @@ public class Device implements Serializable {
         return thisNodeCertificates.remove(ref);
     }
 
-    public void removeAllThisNodeCertificates(String ref, X509Certificate... certs) {
-        thisNodeCertificates.put(ref, certs);
+    public void removeAllThisNodeCertificates() {
+        thisNodeCertificates.clear();
     }
 
     public X509Certificate[] getAllThisNodeCertificates() {
@@ -535,27 +541,15 @@ public class Device implements Serializable {
      * @param installed
      *                A boolean which will be true if this device is installed.
      * @throws IOException 
+     * @throws GeneralSecurityException 
      * @throws KeyManagementException 
      */
-    public final void setInstalled(boolean installed) throws IOException {
+    public final void setInstalled(boolean installed) {
         if (this.installed == installed)
             return;
 
         this.installed = installed;
-        if (activated)
-            if (installed)
-                try {
-                    activateConnections();
-                } catch (IOException e) {
-                    this.installed = false;
-                    throw e;
-                }
-            else
-                deactivateConnections();
-    }
-
-    public final boolean isActivated() {
-        return activated;
+        needRebindConnections();
     }
 
     public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
@@ -566,39 +560,30 @@ public class Device implements Serializable {
         return dimseRQHandler;
     }
 
-    public void activate() throws IOException {
-        if (activated)
-            throw new IllegalStateException("already activated");
-
-        activateConnections();
-        activated = true;
+    public void bindConnections() throws IOException, GeneralSecurityException {
+        for (Connection con : conns)
+            con.bind();
     }
 
-    public void deactivate() {
-        if (!activated)
-            return;
-
-        deactivateConnections();
-        activated = false;
+    public void rebindConnections() throws IOException, GeneralSecurityException {
+        for (Connection con : conns)
+            if (con.isRebindNeeded())
+                con.rebind();
     }
 
-    private void activateConnections() throws IOException {
-        try {
-            for (Connection con : conns)
-                con.activate();
-        } catch (IOException e) {
-            deactivateConnections();
-            throw e;
-        }
-    }
+    private void needRebindConnections()  {
+        for (Connection con : conns)
+            con.needRebind();
+     }
 
-    private void needRebindTLSConnections()  {
+    private void needReconfigureTLS()  {
         for (Connection con : conns)
             if (con.isTls())
                 con.needRebind();
+        sslContext = null;
     }
 
-    private void deactivateConnections() {
+    public void unbindConnections() {
         for (Connection con : conns)
             con.unbind();
     }
@@ -619,16 +604,10 @@ public class Device implements Serializable {
         this.scheduledExecutor = executor;
     }
 
-    public void addConnection(Connection conn) throws IOException {
+    public void addConnection(Connection conn) {
         conn.setDevice(this);
         conns.add(conn);
-        if (activated)
-            try {
-                conn.activate();
-            } catch (IOException e) {
-                removeConnection(conn);
-                throw e;
-            }
+        conn.needRebind();
     }
 
     public boolean removeConnection(Connection conn) {
@@ -643,6 +622,15 @@ public class Device implements Serializable {
     public List<Connection> listConnections() {
         return Collections.unmodifiableList(conns);
     }
+
+    public Connection connectionWithEqualsRDN(Connection other) {
+        for (Connection conn : conns)
+            if (conn.equalsRDN(other))
+                return conn;
+
+        return null;
+    }
+
 
     public void addApplicationEntity(ApplicationEntity ae) {
         ae.setDevice(this);
@@ -710,48 +698,49 @@ public class Device implements Serializable {
         return aes.values();
     }
 
-    public final void setKeyManager(KeyManager km) throws KeyManagementException {
+    public final void setKeyManager(KeyManager km) {
         this.km = km;
-        if (tm != null)
-            initTLS();
+        needReconfigureTLS();
     }
 
     public final KeyManager getKeyManager() {
         return km;
     }
 
-    public final void setTrustManager(TrustManager tm) throws KeyManagementException {
+    public final void setTrustManager(TrustManager tm) {
         this.tm = tm;
-        if (tm != null)
-            initTLS();
+        needReconfigureTLS();
     }
 
     public final TrustManager getTrustManager() {
         return tm;
     }
 
-    public void initTrustManager() throws KeyStoreException, KeyManagementException {
-        setTrustManager(SSLManagerFactory.createTrustManager(
-                getAllAuthorizedNodeCertificates()));
+    private TrustManager tm() throws GeneralSecurityException {
+        TrustManager ret = tm;
+        if (ret != null || authorizedNodeCertificates.isEmpty())
+            return ret;
+
+        tm = ret = SSLManagerFactory.createTrustManager(
+                getAllAuthorizedNodeCertificates());
+        return ret;
     }
 
-    SSLContext sslContext() {
-        if (sslContext == null)
-            throw new IllegalStateException("TrustManager not initalized");
-        return sslContext;
+    SSLContext sslContext() throws GeneralSecurityException {
+        SSLContext ctx = sslContext;
+        if (ctx != null)
+            return ctx;
+
+        sslContext = ctx = createSSLContext(km, tm());
+        return ctx;
     }
 
-    private void initTLS() throws KeyManagementException {
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-        } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
-        }
-        KeyManager km = this.km;
-        TrustManager tm = this.tm;
-        sslContext.init(km != null ? new KeyManager[]{ km } : null, 
+    private static SSLContext createSSLContext(KeyManager km, TrustManager tm)
+            throws GeneralSecurityException {
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(km != null ? new KeyManager[]{ km } : null, 
                 tm != null ? new TrustManager[]{ tm } : null, null);
-        needRebindTLSConnections();
+        return ctx;
     }
 
     public void execute(Runnable command) {
@@ -796,4 +785,99 @@ public class Device implements Serializable {
             ae.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
         return sb.append(indent).append(']');
     }
+
+    public void reconfigure(Device from) throws IOException, GeneralSecurityException {
+        setDeviceAttributes(from);
+        reconfigureConnections(from);
+        reconfigureApplicationEntities(from);
+    }
+
+    protected void setDeviceAttributes(Device from) {
+        setDescription(from.description);
+        setManufacturer(from.manufacturer);
+        setManufacturerModelName(from.manufacturerModelName);
+        setSoftwareVersions(from.softwareVersions);
+        setStationName(from.stationName);
+        setDeviceSerialNumber(from.deviceSerialNumber);
+        setIssuerOfPatientID(from.issuerOfPatientID);
+        setIssuerOfAccessionNumber(from.issuerOfAccessionNumber);
+        setOrderPlacerIdentifier(from.orderPlacerIdentifier);
+        setOrderFillerIdentifier(from.orderFillerIdentifier);
+        setIssuerOfAdmissionID(from.issuerOfAdmissionID);
+        setIssuerOfServiceEpisodeID(from.issuerOfServiceEpisodeID);
+        setIssuerOfContainerIdentifier(from.issuerOfContainerIdentifier);
+        setIssuerOfSpecimenIdentifier(from.issuerOfSpecimenIdentifier);
+        setInstitutionNames(from.institutionNames);
+        setInstitutionCodes(from.institutionCodes);
+        setInstitutionAddresses(from.institutionAddresses);
+        setInstitutionalDepartmentNames(from.institutionalDepartmentNames);
+        setPrimaryDeviceTypes(from.primaryDeviceTypes);
+        setRelatedDeviceRefs(from.relatedDeviceRefs);
+        setAuthorizedNodeCertificates(from.authorizedNodeCertificates);
+        setThisNodeCertificates(from.thisNodeCertificates);
+        setVendorData(from.vendorData);
+        setInstalled(from.installed);
+     }
+
+     private void setAuthorizedNodeCertificates(Map<String, X509Certificate[]> from) {
+         if (update(authorizedNodeCertificates, from))
+             setTrustManager(null);
+     }
+
+     private void setThisNodeCertificates(Map<String, X509Certificate[]> from) {
+         update(thisNodeCertificates, from);
+     }
+
+     private boolean update(Map<String, X509Certificate[]> target,
+            Map<String, X509Certificate[]> from) {
+        boolean updated = target.keySet().retainAll(from.keySet());
+        for (Entry<String, X509Certificate[]> e : from.entrySet()) {
+            String key = e.getKey();
+            X509Certificate[] value = e.getValue();
+            X509Certificate[] certs = target.get(key);
+            if (certs == null || !Arrays.equals(value, certs)) {
+                target.put(key, value);
+                updated = true;
+            }
+        }
+        return updated;
+     }
+
+     private void reconfigureConnections(Device from) {
+         Iterator<Connection> connIter = conns.iterator();
+         while (connIter.hasNext()) {
+             Connection conn = connIter.next();
+             if (from.connectionWithEqualsRDN(conn) == null) {
+                 connIter.remove();
+                 conn.setDevice(null);
+                 conn.unbind();
+             }
+         }
+         for (Connection src : from.conns) {
+             Connection conn = connectionWithEqualsRDN(src);
+             if (conn != null)
+                 conn.reconfigure(src);
+             else
+                 src.addCopyTo(this);
+         }
+    }
+
+     private void reconfigureApplicationEntities(Device from) {
+         aes.keySet().retainAll(from.aes.keySet());
+         for (ApplicationEntity src : from.aes.values()) {
+             ApplicationEntity ae = aes.get(src.getAETitle());
+             if (ae != null)
+                 ae.reconfigure(src);
+             else
+                 src.addCopyTo(this);
+         }
+     }
+
+    public void reconfigureConnections(List<Connection> conns,
+            List<Connection> src) {
+        conns.clear();
+        for (Connection conn : src)
+            conns.add(connectionWithEqualsRDN(conn));
+    }
+
 }

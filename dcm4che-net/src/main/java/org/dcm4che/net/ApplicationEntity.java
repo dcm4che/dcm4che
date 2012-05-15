@@ -41,6 +41,7 @@ package org.dcm4che.net;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -75,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ApplicationEntity implements Serializable {
+public class ApplicationEntity implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 3883790997057469573L;
 
@@ -541,7 +542,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public Association connect(Connection local, Connection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException, IncompatibleConnectionException {
+            throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         checkDevice();
         checkInstalled();
         if (rq.getCallingAET() == null)
@@ -557,7 +558,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public Association connect(Connection remote, AAssociateRQ rq)
-            throws IOException, InterruptedException, IncompatibleConnectionException {
+            throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         return connect(findCompatibelConnection(remote), remote, rq);
     }
 
@@ -582,7 +583,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)
-        throws IOException, InterruptedException, IncompatibleConnectionException {
+        throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         CompatibleConnection cc = findCompatibelConnection(remote);
         if (rq.getCalledAET() == null)
             rq.setCalledAET(remote.getAETitle());
@@ -614,4 +615,46 @@ public class ApplicationEntity implements Serializable {
         return sb.append(indent).append(']');
     }
 
+    void reconfigure(ApplicationEntity src) {
+        setApplicationEntityAttributes(src);
+        device.reconfigureConnections(conns, src.conns);
+        reconfigureTransferCapabilities(src);
+    }
+
+    private void reconfigureTransferCapabilities(ApplicationEntity src) {
+        scuTCs.clear();
+        scuTCs.putAll(src.scuTCs);
+        scpTCs.clear();
+        scpTCs.putAll(src.scpTCs);
+    }
+
+    protected void setApplicationEntityAttributes(ApplicationEntity from) {
+        setDescription(from.description);
+        setVendorData(from.vendorData);
+        setApplicationClusters(from.applicationClusters);
+        setPreferredCalledAETitles(from.prefCalledAETs);
+        setPreferredCallingAETitles(from.prefCallingAETs);
+        setAcceptedCallingAETitles(from.getAcceptedCallingAETitles());
+        setSupportedCharacterSets(from.supportedCharacterSets);
+        setAssociationAcceptor(from.acceptor);
+        setAssociationInitiator(initiator);
+        setInstalled(installed);
+    }
+
+    public void setAcceptedCallingAETitles(
+            Collection<String> acceptedCallingAETs) {
+        acceptedCallingAETs.clear();
+        acceptedCallingAETs.addAll(acceptedCallingAETs);
+    }
+
+    void addCopyTo(Device device) {
+        try {
+            ApplicationEntity ae = (ApplicationEntity) clone();
+            ae.device = null;
+            device.reconfigureConnections(ae.conns, conns);
+            device.addApplicationEntity(ae);
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
 }

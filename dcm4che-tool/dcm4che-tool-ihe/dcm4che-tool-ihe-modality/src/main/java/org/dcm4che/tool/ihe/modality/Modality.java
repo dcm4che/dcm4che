@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -152,7 +153,7 @@ public class Modality {
                     Executors.newSingleThreadScheduledExecutor();
             device.setExecutor(executorService);
             device.setScheduledExecutor(scheduledExecutorService);
-            device.activate();
+            device.bindConnections();
             try {
                 boolean sendMpps = cl.hasOption("mpps");
                 boolean sendLateMpps = cl.hasOption("mpps-late");
@@ -167,7 +168,7 @@ public class Modality {
             } finally {
                 if (conn.isListening()) {
                     device.waitForNoOpenConnections();
-                    device.deactivate();
+                    device.unbindConnections();
                 }
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
@@ -245,7 +246,7 @@ public class Modality {
     }
 
     private static void sendStgCmt(StgCmtSCU stgcmtscu) throws IOException,
-            InterruptedException, IncompatibleConnectionException {
+            InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         printNextStepMessage("Will now send Storage Commitment to " + calledAET);
         try {
             stgcmtscu.open();
@@ -256,7 +257,7 @@ public class Modality {
     }
 
     private static void sendMpps(MppsSCU mppsscu, boolean sendNSet) throws IOException,
-            InterruptedException, IncompatibleConnectionException {
+            InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         try {
             printNextStepMessage("Will now send MPPS N-CREATE to " + calledAET);
             mppsscu.open();
@@ -271,7 +272,7 @@ public class Modality {
     }
 
     private static void sendMppsNSet(MppsSCU mppsscu) throws IOException, InterruptedException,
-            IncompatibleConnectionException {
+            IncompatibleConnectionException, GeneralSecurityException {
         try {
             printNextStepMessage("Will now send MPPS N-SET to " + calledAET);
             mppsscu.open();

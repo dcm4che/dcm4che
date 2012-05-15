@@ -40,6 +40,7 @@ package org.dcm4che.tool.mppsscu;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -471,7 +472,7 @@ public class MppsSCU {
     }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException {
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(remote, rq);
     }
 

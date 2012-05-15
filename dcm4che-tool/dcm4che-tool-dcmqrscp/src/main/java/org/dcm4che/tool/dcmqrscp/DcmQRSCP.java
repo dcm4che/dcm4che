@@ -349,7 +349,7 @@ public class DcmQRSCP extends Device {
                     Executors.newSingleThreadScheduledExecutor();
             main.setScheduledExecutor(scheduledExecutorService);
             main.setExecutor(executorService);
-            main.activate();
+            main.bindConnections();
         } catch (ParseException e) {
             System.err.println("dcmqrscp: " + e.getMessage());
             System.err.println(rb.getString("try"));

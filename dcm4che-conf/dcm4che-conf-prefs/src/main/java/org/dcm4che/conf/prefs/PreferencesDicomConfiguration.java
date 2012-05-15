@@ -39,7 +39,6 @@
 package org.dcm4che.conf.prefs;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -61,8 +60,8 @@ import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Code;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Issuer;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
@@ -895,11 +894,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         for (int connIndex : sort(connsNode.childrenNames())) {
             Connection conn = newConnection();
             loadFrom(conn, connsNode.node("" + connIndex));
-            try {
-                device.addConnection(conn);
-            } catch (IOException e) {
-                throw new AssertionError(e.getMessage());
-            }
+            device.addConnection(conn);
         }
         List<Connection> devConns = device.listConnections();
         Preferences aesNode = deviceNode.node("dcmNetworkAE");
@@ -1050,11 +1045,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         for (String ref : stringArray(prefs, "dicomThisNodeCertificateReference"))
             device.setThisNodeCertificates(ref, loadCertificates(ref));
         device.setVendorData(toVendorData(prefs, "dicomVendorData"));
-        try {
-            device.setInstalled(prefs.getBoolean("dicomInstalled", false));
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
+        device.setInstalled(prefs.getBoolean("dicomInstalled", false));
     }
 
     protected void loadFrom(Connection conn, Preferences prefs) {
@@ -1062,11 +1053,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setHostname(prefs.get("dicomHostname", null));
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
-        try {
-            conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
+        conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
         conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));
         conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
         conn.setConnectTimeout(

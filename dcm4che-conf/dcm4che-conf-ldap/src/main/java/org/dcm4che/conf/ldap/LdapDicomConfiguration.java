@@ -39,7 +39,6 @@
 package org.dcm4che.conf.ldap;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -745,11 +744,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         for (String dn : stringArray(attrs.get("dicomThisNodeCertificateReference")))
             device.setThisNodeCertificates(dn, loadCertificates(dn));
         device.setVendorData(byteArrays(attrs.get("dicomVendorData")));
-        try {
-            device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
+        device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
     }
 
     private void loadConnections(Device device, String deviceDN) throws NamingException {
@@ -761,11 +756,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 Attributes attrs = sr.getAttributes();
                 Connection conn = newConnection(attrs);
                 loadFrom(conn, attrs);
-                try {
-                    device.addConnection(conn);
-                } catch (IOException e) {
-                    throw new AssertionError(e.getMessage());
-                }
+                device.addConnection(conn);
             }
         } finally {
            safeClose(ne);
@@ -791,11 +782,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         conn.setHostname(stringValue(attrs.get("dicomHostname")));
         conn.setPort(intValue(attrs.get("dicomPort"), Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(stringArray(attrs.get("dicomTLSCipherSuite")));
-        try {
-            conn.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
-        } catch (IOException e) {
-            throw new AssertionError(e.getMessage());
-        }
+        conn.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
     }
 
     private void loadApplicationEntities(Device device, String deviceDN)

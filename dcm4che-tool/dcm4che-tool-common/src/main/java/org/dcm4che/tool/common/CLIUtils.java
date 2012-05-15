@@ -41,11 +41,7 @@ package org.dcm4che.tool.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -545,15 +541,7 @@ public class CLIUtils {
                     keyStoreType, keyStoreURL, keyStorePass, keyPass));
             device.setTrustManager(SSLManagerFactory.createTrustManager(
                     trustStoreType, trustStoreURL, trustStorePass));
-        } catch (UnrecoverableKeyException e) {
-            throw new IOException(e);
-        } catch (KeyStoreException e) {
-            throw new IOException(e);
-        } catch (KeyManagementException e) {
-            throw new IOException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IOException(e);
-        } catch (CertificateException e) {
+        } catch (GeneralSecurityException e) {
             throw new IOException(e);
         }
     }

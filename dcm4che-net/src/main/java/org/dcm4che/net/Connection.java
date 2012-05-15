@@ -47,6 +47,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,7 +77,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Connection implements Serializable {
+public class Connection implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
@@ -125,8 +126,8 @@ public class Connection implements Serializable {
     private transient InetAddress addr;
     private transient List<InetAddress> blacklistAddrs;
     private transient volatile ServerSocket server;
-    private transient boolean needRebind;
     private transient ConnectionHandler connectionHandler;
+    private transient boolean rebindNeeded;
 
     public Connection() {
     }
@@ -191,9 +192,12 @@ public class Connection implements Serializable {
         needRebind();
     }
 
+    boolean isRebindNeeded() {
+        return rebindNeeded;
+    }
+
     void needRebind() {
-        if (isListening())
-            needRebind = true;
+        this.rebindNeeded = true;
     }
 
     /**
@@ -558,28 +562,16 @@ public class Connection implements Serializable {
      * 
      * @param installed
      *                True if the NetworkConnection is installed on the network.
+     * @throws GeneralSecurityException 
      */
-    public void setInstalled(Boolean installed) throws IOException {
-        if (this.installed == null
-                ? installed == null 
-                : this.installed.equals(installed))
+    public void setInstalled(Boolean installed) {
+        if (this.installed == installed)
             return;
 
-        Boolean prev = this.installed;
+        boolean prev = isInstalled();
         this.installed = installed;
-        if (device != null && device.isInstalled() && device.isActivated()
-                && isServer()) {
-            if (isInstalled()) {
-                if (server == null)
-                    try {
-                         bind();
-                    } catch (IOException e) {
-                        this.installed = prev;
-                        throw e;
-                    }
-            } else
-                unbind();
-        }
+        if (isInstalled() != prev)
+            needRebind();
     }
 
     public ConnectionHandler getConnectionHandler() {
@@ -597,9 +589,9 @@ public class Connection implements Serializable {
         }
     }
 
-    void activate() throws IOException {
-        if (isInstalled() && isServer() && server == null)
-            bind();
+    synchronized void rebind() throws IOException, GeneralSecurityException {
+        unbind();
+        bind();
     }
 
     /**
@@ -723,23 +715,21 @@ public class Connection implements Serializable {
             throw new IncompatibleConnectionException(remoteConn.toString());
     }
 
-    private void checkDevice() {
-        if (device == null)
-            throw new IllegalStateException("Not attached to Device");
-    }
-
     /**
      * Bind this network connection to a TCP port and start a server socket
      * accept loop.
      * 
      * @throws IOException
      *             If there is a problem with the network interaction.
+     * @throws GeneralSecurityException 
      */
-    public synchronized void bind() throws IOException {
-        checkDevice();
-        checkInstalled();
-        if (!isServer())
-            throw new IllegalStateException("Does not accept connections");
+    public synchronized boolean bind() throws IOException, GeneralSecurityException {
+        if (!(isInstalled() && isServer())) {
+            rebindNeeded = false;
+            return false;
+        }
+        if (device == null)
+            throw new IllegalStateException("Not attached to Device");
         if (isListening())
             throw new IllegalStateException("Already listening - " + server);
         server = isTls() ? createTLSServerSocket() : new ServerSocket();
@@ -775,17 +765,15 @@ public class Connection implements Serializable {
                 LOG.info("Stop listening on {}", sockAddr);
             }
         });
+        rebindNeeded = false;
+        return true;
     }
 
     public final boolean isListening() {
         return server != null;
     }
 
-    public final boolean isNeedRebind() {
-        return needRebind;
-    }
-
-    private ServerSocket createTLSServerSocket() throws IOException {
+    private ServerSocket createTLSServerSocket() throws IOException, GeneralSecurityException {
         SSLContext sslContext = device.sslContext();
         SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
         SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
@@ -809,11 +797,10 @@ public class Connection implements Serializable {
         } catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
-        needRebind = false;
     }
 
     public Socket connect(Connection remoteConn)
-            throws IOException, IncompatibleConnectionException {
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         checkInstalled();
         checkCompatible(remoteConn);
         Socket s = isTls() ? createTLSSocket(remoteConn) : new Socket();
@@ -834,7 +821,7 @@ public class Connection implements Serializable {
         SafeClose.close(s);
     }
 
-    private Socket createTLSSocket(Connection remoteConn) throws IOException {
+    private Socket createTLSSocket(Connection remoteConn) throws IOException, GeneralSecurityException {
         SSLContext sslContext = device.sslContext();
         SSLSocketFactory sf = sslContext.getSocketFactory();
         SSLSocket s = (SSLSocket) sf.createSocket();
@@ -890,6 +877,52 @@ public class Connection implements Serializable {
 
     private static InetAddress maskLoopBackAddress(InetAddress addr) {
         return addr != null && addr.isLoopbackAddress() ? null : addr;
+    }
+
+    boolean equalsRDN(Connection other) {
+        return commonName != null
+                ? commonName.equals(other.commonName)
+                : other.commonName == null
+                    && hostname.equals(other.hostname)
+                    && port == other.port;
+    }
+
+    void reconfigure(Connection from) {
+        setCommonName(from.commonName);
+        setHostname(from.hostname);
+        setPort(from.port);
+        setBacklog(from.backlog);
+        setConnectTimeout(from.connectTimeout);
+        setRequestTimeout(from.requestTimeout);
+        setAcceptTimeout(from.acceptTimeout);
+        setReleaseTimeout(from.releaseTimeout);
+        setResponseTimeout(from.responseTimeout);
+        setRetrieveTimeout(from.retrieveTimeout);
+        setIdleTimeout(from.idleTimeout);
+        setSocketCloseDelay(from.socketCloseDelay);
+        setSendBufferSize(from.sendBufferSize);
+        setReceiveBufferSize(from.receiveBufferSize);
+        setSendPDULength(from.sendPDULength);
+        setReceivePDULength(from.receivePDULength);
+        setMaxOpsPerformed(from.maxOpsPerformed);
+        setMaxOpsPerformed(from.maxOpsInvoked);
+        setPackPDV(from.packPDV);
+        setTcpNoDelay(from.tcpNoDelay);
+        setTlsNeedClientAuth(from.tlsNeedClientAuth);
+        setTlsCipherSuites(from.tlsCipherSuites);
+        setTlsProtocols(from.tlsProtocols);
+        setBlacklist(from.blacklist);
+        setInstalled(from.installed);
+    }
+
+    void addCopyTo(Device device) {
+        try {
+            Connection conn = (Connection) super.clone();
+            conn.device = null;
+            device.addConnection(conn);
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
 }

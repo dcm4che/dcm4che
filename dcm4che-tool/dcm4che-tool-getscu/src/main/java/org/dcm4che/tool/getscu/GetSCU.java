@@ -40,13 +40,13 @@ package org.dcm4che.tool.getscu;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyManagementException;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -381,7 +381,7 @@ public class GetSCU extends Device {
         }
     }
 
-    public void open() throws IOException, InterruptedException, IncompatibleConnectionException, KeyManagementException {
+    public void open() throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(conn, remote, rq);
     }
 

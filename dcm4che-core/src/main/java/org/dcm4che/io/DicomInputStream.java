@@ -518,8 +518,10 @@ public class DicomInputStream extends FilterInputStream
             try {
                 StreamUtils.copy(this, blkOut, length);
             } finally {
-                if (!catBlkFiles)
+                if (!catBlkFiles) {
                     SafeClose.close(blkOut);
+                    blkOut = null;
+                }
             }
             locator = new BulkDataLocator(blkURI,
                     (super.in instanceof InflaterInputStream)

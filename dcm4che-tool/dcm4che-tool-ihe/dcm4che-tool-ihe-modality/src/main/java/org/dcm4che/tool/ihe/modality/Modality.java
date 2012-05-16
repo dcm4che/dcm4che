@@ -290,7 +290,7 @@ public class Modality {
     }
 
     private static void sendObjects(StoreSCU storescu) throws IOException,
-            InterruptedException, IncompatibleConnectionException {
+            InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         printNextStepMessage("Will now send DICOM object(s) to " + calledAET);
         try {
             storescu.open();

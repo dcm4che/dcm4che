@@ -40,6 +40,7 @@ package org.dcm4che.tool.ianscu;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -271,7 +272,7 @@ public class IanSCU extends Device {
     }
 
     public void open() throws IOException, InterruptedException,
-            IncompatibleConnectionException {
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(conn, remote, rq);
     }
 

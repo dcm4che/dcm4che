@@ -40,6 +40,7 @@ package org.dcm4che.tool.hl7pix;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -205,7 +206,7 @@ public class HL7Pix extends Device {
         }
     }
 
-    public void open() throws IOException, IncompatibleConnectionException {
+    public void open() throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         sock = conn.connect(remote);
         sock.setSoTimeout(conn.getResponseTimeout());
         mllp = new MLLPConnection(sock);

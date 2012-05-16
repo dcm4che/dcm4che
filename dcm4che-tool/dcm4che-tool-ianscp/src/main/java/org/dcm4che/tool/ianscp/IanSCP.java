@@ -145,7 +145,7 @@ public class IanSCP extends Device {
                    Executors.newSingleThreadScheduledExecutor();
            main.setScheduledExecutor(scheduledExecutorService);
            main.setExecutor(executorService);
-           main.activate();
+           main.bindConnections();
        } catch (ParseException e) {
            System.err.println("ianscp: " + e.getMessage());
            System.err.println(rb.getString("try"));

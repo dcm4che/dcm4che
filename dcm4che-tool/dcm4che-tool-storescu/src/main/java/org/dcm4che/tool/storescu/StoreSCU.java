@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
@@ -461,8 +462,8 @@ public class StoreSCU {
         }
     }
 
-    public void open()
-            throws IOException, InterruptedException, IncompatibleConnectionException {
+    public void open() throws IOException, InterruptedException,
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(remote, rq);
     }
 

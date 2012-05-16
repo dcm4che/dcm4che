@@ -201,7 +201,7 @@ public class HL7Rcv extends HL7Device {
                     Executors.newSingleThreadScheduledExecutor();
             main.setScheduledExecutor(scheduledExecutorService);
             main.setExecutor(executorService);
-            main.activate();
+            main.bindConnections();
         } catch (ParseException e) {
             System.err.println("hl7rcv: " + e.getMessage());
             System.err.println(rb.getString("try"));

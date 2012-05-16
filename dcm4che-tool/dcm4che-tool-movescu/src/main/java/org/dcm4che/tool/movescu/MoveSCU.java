@@ -40,6 +40,7 @@ package org.dcm4che.tool.movescu;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -292,7 +293,8 @@ public class MoveSCU extends Device {
         }
     }
 
-    public void open() throws IOException, InterruptedException, IncompatibleConnectionException {
+    public void open() throws IOException, InterruptedException,
+            IncompatibleConnectionException, GeneralSecurityException {
         as = ae.connect(conn, remote, rq);
     }
 

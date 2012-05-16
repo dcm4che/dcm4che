@@ -184,7 +184,7 @@ public class StoreSCP extends Device{
                     Executors.newSingleThreadScheduledExecutor();
             main.setScheduledExecutor(scheduledExecutorService);
             main.setExecutor(executorService);
-            main.activate();
+            main.bindConnections();
         } catch (ParseException e) {
             System.err.println("storescp: " + e.getMessage());
             System.err.println(rb.getString("try"));

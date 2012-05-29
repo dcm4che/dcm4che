@@ -610,7 +610,7 @@ public class Association {
    }
 
     void onAAbort(AAbort aa) {
-        LOG.info("{} << {}", name, aa);
+        LOG.info("{} >> {}", name, aa);
         stopTimeout();
         ex = aa;
         closeSocket();

@@ -194,7 +194,7 @@ public class AttributesFormat extends Format {
         number {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {
-                return attrs.getDouble(tag, index);
+                return attrs.getDouble(tag, index, 0.);
             }
         },
         date {

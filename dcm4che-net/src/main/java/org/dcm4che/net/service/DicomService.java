@@ -38,6 +38,7 @@
 
 package org.dcm4che.net.service;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
@@ -93,4 +94,26 @@ public class DicomService implements DimseRQHandler {
             Dimse dimse, Attributes cmd, Attributes data) throws IOException {
         throw new DicomServiceException(Status.UnrecognizedOperation);
     }
+
+    protected boolean delete(Association as, File file) {
+        boolean b;
+        if (b = file.delete())
+            LOG.info("{}: M-DELETE {}", as, file);
+        else
+            LOG.warn("{}: Failed to M-DELETE {}", as, file);
+        return b;
+    }
+
+
+    protected boolean rename(Association as, File src, File dest) {
+        boolean b;
+        if (b = src.renameTo(dest))
+            LOG.info("{}: M-RENAME {} to {}",
+                    new Object[] { as, src, dest });
+        else
+            LOG.warn("{}: Failed to M-RENAME {} to {}",
+                    new Object[] { as, src, dest });
+        return b;
+    }
+
 }

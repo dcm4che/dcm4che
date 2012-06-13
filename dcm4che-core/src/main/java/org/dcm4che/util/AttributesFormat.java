@@ -38,6 +38,8 @@
 
 package org.dcm4che.util;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -45,7 +47,6 @@ import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import org.dcm4che.data.Attributes;
 
@@ -56,8 +57,6 @@ import org.dcm4che.data.Attributes;
 public class AttributesFormat extends Format {
 
     private static final long serialVersionUID = 1901510733531643054L;
-
-    private static final Pattern NO_WORD = Pattern.compile("\\W");
 
     private final String pattern;
     private final int[] tags;
@@ -144,7 +143,7 @@ public class AttributesFormat extends Format {
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(pattern);
                 }
-                if (types[i] != Type.hash && types[i] != Type.word)
+                if (types[i] != Type.hash && types[i] != Type.urlencoded)
                     formatBuilder.append(
                             typeStart > 0 ? tagStr.substring(typeStart-1) : tagStr);
             } else {
@@ -225,11 +224,15 @@ public class AttributesFormat extends Format {
                 return s != null ? TagUtils.toHexString(s.hashCode()) : null;
             }
         },
-        word {
+        urlencoded {
             @Override
             Object toArg(Attributes attrs, int tag, int index) {
                 String s = attrs.getString(tag, index);
-                return s != null ? NO_WORD.matcher(s).replaceAll("_") : null;
+                try {
+                    return s != null ? URLEncoder.encode(s, "UTF-8") : null;
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionError(e);
+                }
             }
         };
 

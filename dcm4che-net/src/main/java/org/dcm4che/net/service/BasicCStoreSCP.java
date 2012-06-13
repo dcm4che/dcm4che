@@ -40,7 +40,6 @@ package org.dcm4che.net.service;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.DigestOutputStream;
@@ -88,69 +87,25 @@ public class BasicCStoreSCP extends DicomService {
 
     protected void store(Association as, PresentationContext pc, Attributes rq,
             PDVInputStream data, Attributes rsp) throws IOException {
-        File file = createFile(as, rq);
-        MessageDigest digest = getMessageDigest(as);
-        boolean keepFile = false;
-        try {
-            LOG.info("{}: M-WRITE {}", as, file);
-            Attributes fmi = store(as, pc, rq, data, file, digest);
-            Attributes attrs = parse(as, file);
-            file = rename(as, file, attrs);
-            keepFile = process(as, pc, rq, rsp, file, digest, fmi, attrs);
-        } finally {
-            if (!keepFile)
-                if (file.delete())
-                    LOG.info("{}: M-DELETE {}", as, file);
-                else
-                    LOG.warn("{}: Failed to M-DELETE {}", as, file);
-        }
-    }
-
-    protected File rename(Association as, File file, Attributes attrs)
-            throws DicomServiceException {
-        return file;
-    }
-
-    protected Attributes parse(Association as, File file)
-            throws DicomServiceException {
-        DicomInputStream in = null;
-        try {
-            in = new DicomInputStream(file);
-            in.setIncludeBulkData(false);
-            return in.readDataset(-1, Tag.PixelData);
-        } catch (IOException e) {
-            LOG.warn(as + ": Failed to decode dataset:", e);
-            throw new DicomServiceException(Status.CannotUnderstand);
-        } finally {
-            SafeClose.close(in);
-        }
-    }
-
-
-    private Attributes store(Association as, PresentationContext pc, Attributes rq,
-            PDVInputStream data, File file, MessageDigest digest)
-            throws FileNotFoundException, IOException {
         Attributes fmi = createFileMetaInformation(as, rq, pc.getTransferSyntax());
-        FileOutputStream fout = new FileOutputStream(file);
-        BufferedOutputStream bout = new BufferedOutputStream(
-                digest == null ? fout : new DigestOutputStream(fout, digest));
-        DicomOutputStream out = new DicomOutputStream(bout, UID.ExplicitVRLittleEndian);
-        out.writeFileMetaInformation(fmi);
+        File spoolFile = getSpoolFile(as, fmi);
+        File finalFile = null;
         try {
-            data.copyTo(out);
-        } finally {
-            out.close();
+            MessageDigest digest = getMessageDigest(as);
+            spool(as, fmi, data, spoolFile, digest);
+            Attributes attrs = parse(as, spoolFile);
+            finalFile = getFinalFile(as, fmi, attrs, spoolFile);
+            if (!finalFile.equals(spoolFile)) {
+                finalFile.getParentFile().mkdirs();
+                if (!rename(as, spoolFile, finalFile))
+                    throw new DicomServiceException(Status.OutOfResources,
+                            "Failed to rename file");
+            }
+            process(as, fmi, attrs, finalFile, digest, rsp);
+        } catch (IOException e) {
+            cleanup(as, spoolFile, finalFile);
+            throw e;
         }
-        return fmi;
-    }
-
-    protected MessageDigest getMessageDigest(Association as) {
-        return null;
-    }
-
-    protected File createFile(Association as, Attributes rq)
-            throws IOException {
-        return new File(rq.getString(Tag.AffectedSOPInstanceUID));
     }
 
     protected Attributes createFileMetaInformation(Association as, Attributes rq, String tsuid) {
@@ -168,10 +123,61 @@ public class BasicCStoreSCP extends DicomService {
         return fmi;
     }
 
-    protected boolean process(Association as, PresentationContext pc, Attributes rq,
-            Attributes rsp, File file, MessageDigest digest,
-            Attributes fmi, Attributes attrs) throws IOException {
-        return true;
+    protected MessageDigest getMessageDigest(Association as) {
+        return null;
     }
 
+    protected File getSpoolFile(Association as, Attributes fmi)
+            throws IOException {
+        return new File(fmi.getString(Tag.MediaStorageSOPInstanceUID));
+    }
+
+    protected File getFinalFile(Association as, Attributes fmi, Attributes attrs,
+            File spoolFile) {
+        return spoolFile;
+    }
+
+    private void spool(Association as, Attributes fmi,
+            PDVInputStream data, File file, MessageDigest digest)
+            throws IOException {
+        LOG.info("{}: M-WRITE {}", as, file);
+        file.getParentFile().mkdirs();
+        FileOutputStream fout = new FileOutputStream(file);
+        BufferedOutputStream bout = new BufferedOutputStream(
+                digest == null ? fout : new DigestOutputStream(fout, digest));
+        DicomOutputStream out = new DicomOutputStream(bout, UID.ExplicitVRLittleEndian);
+        out.writeFileMetaInformation(fmi);
+        try {
+            data.copyTo(out);
+        } finally {
+            out.close();
+        }
+    }
+
+    protected Attributes parse(Association as, File file)
+            throws DicomServiceException {
+        DicomInputStream in = null;
+        try {
+            in = new DicomInputStream(file);
+            in.setIncludeBulkData(false);
+            return in.readDataset(-1, Tag.PixelData);
+        } catch (IOException e) {
+            LOG.warn(as + ": Failed to decode dataset:", e);
+            throw new DicomServiceException(Status.CannotUnderstand);
+        } finally {
+            SafeClose.close(in);
+        }
+    }
+
+    protected void process(Association as, Attributes fmi, Attributes attrs,
+            File file, MessageDigest digest, Attributes rsp)
+            throws DicomServiceException {
+    }
+
+    protected void cleanup(Association as, File spoolFile, File finalFile) {
+        if (finalFile != null && finalFile.exists())
+            delete(as, finalFile);
+        else
+            delete(as, spoolFile);
+    }
 }

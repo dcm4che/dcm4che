@@ -50,12 +50,19 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
 import org.dcm4che.net.ApplicationEntity;
+import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
+import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.AttributesFormat;
@@ -65,31 +72,65 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class StoreSCP extends Device{
+public class StoreSCP {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.storescp.messages");
+    private static final String PART_EXT = ".part";
 
-    static final String PART_EXT = ".part";
-
+    private final Device device = new Device("storescp");
     private final ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
-    private final BasicCStoreSCP storageSCP = new CStoreSCPImpl(this);
     private File storageDir;
     private AttributesFormat filePathFormat;
     private int status;
+    private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
+        @Override
+        protected void store(Association as, PresentationContext pc, Attributes rq,
+                PDVInputStream data, Attributes rsp)
+                throws IOException {
+            rsp.setInt(Tag.Status, VR.US, status);
+            if (storageDir != null)
+                super.store(as, pc, rq, data, rsp);
+        }
+
+        @Override
+        protected File getSpoolFile(Association as, Attributes fmi)
+                throws DicomServiceException {
+            return new File(storageDir,
+                    fmi.getString(Tag.MediaStorageSOPInstanceUID) + PART_EXT);
+        }
+
+        @Override
+        protected Attributes parse(Association as, File file)
+                throws DicomServiceException {
+            return (filePathFormat != null) ? super.parse(as, file) : null;
+        }
+
+        @Override
+        protected File getFinalFile(Association as, Attributes fmi,
+                Attributes attrs, File spoolFile) {
+            return new File(storageDir,
+                    (filePathFormat != null)
+                        ? filePathFormat.format(attrs)
+                        : fmi.getString(Tag.MediaStorageSOPInstanceUID));
+        }
+    };
 
     public StoreSCP() throws IOException {
-        super("storescp");
-        addConnection(conn);
-        addApplicationEntity(ae);
+        device.setDimseRQHandler(createServiceRegistry());
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
+    }
+
+    private DicomServiceRegistry createServiceRegistry() {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
-        serviceRegistry.addDicomService(storageSCP);
-        ae.setDimseRQHandler(serviceRegistry);
+        serviceRegistry.addDicomService(cstoreSCP);
+        return serviceRegistry;
     }
 
     public void setStorageDirectory(File storageDir) {
@@ -98,24 +139,12 @@ public class StoreSCP extends Device{
         this.storageDir = storageDir;
     }
 
-    public File getStorageDirectory() {
-        return storageDir;
-    }
-
     public void setStorageFilePathFormat(String pattern) {
         this.filePathFormat = new AttributesFormat(pattern);
     }
 
-    public AttributesFormat getStorageFilePathFormat() {
-        return filePathFormat;
-    }
-
     public void setStatus(int status) {
         this.status = status;
-    }
-
-    public int getStatus() {
-        return status;
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -182,9 +211,9 @@ public class StoreSCP extends Device{
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
-            main.setScheduledExecutor(scheduledExecutorService);
-            main.setExecutor(executorService);
-            main.bindConnections();
+            main.device.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.bindConnections();
         } catch (ParseException e) {
             System.err.println("storescp: " + e.getMessage());
             System.err.println(rb.getString("try"));

@@ -83,7 +83,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class GetSCU extends Device {
+public class GetSCU {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
@@ -112,6 +112,7 @@ public class GetSCU extends Device {
         Tag.SeriesInstanceUID
     };
 
+    private final Device device = new Device("getscu");
     private final ApplicationEntity ae = new ApplicationEntity("GETSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -134,21 +135,24 @@ public class GetSCU extends Device {
         }
 
         @Override
-        protected File createFile(Association as, Attributes rq)
+        protected File getSpoolFile(Association as, Attributes fmi)
                 throws DicomServiceException {
-            return new File(storageDir, rq.getString(Tag.AffectedSOPInstanceUID));
+            return new File(storageDir, fmi.getString(Tag.MediaStorageSOPInstanceUID));
         }
 
     };
 
     public GetSCU() throws IOException {
-        super("getscu");
-        addConnection(conn);
-        addApplicationEntity(ae);
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
         ae.addConnection(conn);
+        device.setDimseRQHandler(createServiceRegistry());
+    }
+
+    private DicomServiceRegistry createServiceRegistry() {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(storageSCP);
-        ae.setDimseRQHandler(serviceRegistry);
+        return serviceRegistry;
     }
 
     public void setStorageDirectory(File storageDir) {
@@ -279,8 +283,8 @@ public class GetSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();

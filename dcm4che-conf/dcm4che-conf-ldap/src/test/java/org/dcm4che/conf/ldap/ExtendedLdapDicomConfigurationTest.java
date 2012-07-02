@@ -77,7 +77,8 @@ public class ExtendedLdapDicomConfigurationTest {
 //        env.setUrl("ldap://localhost:10389");
 //        env.setUserDN("uid=admin,ou=system");
 //        env.setPassword("secret");
-        config = new ExtendedLdapDicomConfiguration(env, "dc=nodomain");
+        config = new ExtendedLdapDicomConfiguration();
+        config.init(env, "dc=nodomain");
     }
 
     @After

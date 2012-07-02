@@ -67,6 +67,8 @@ import org.dcm4che.util.StringUtils;
  */
 public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
+    public ExtendedLdapDicomConfiguration() {}
+
     public ExtendedLdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         super(env, baseDN);

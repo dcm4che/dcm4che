@@ -82,11 +82,18 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(PreferencesDicomConfiguration.class);
 
-    private final Preferences rootPrefs;
+    private Preferences rootPrefs;
 
     private String configurationRoot = "org/dcm4che";
 
+    public PreferencesDicomConfiguration() {
+    }
+
     public PreferencesDicomConfiguration(Preferences rootPrefs) {
+        init(rootPrefs);
+    }
+
+    public void init(Preferences rootPrefs) {
         this.rootPrefs = rootPrefs;
     }
 
@@ -1301,6 +1308,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                     new ByteArrayInputStream(
                             prefs.getByteArray(USER_CERTIFICATE + '.' + (i+1), null)));
         return certs;
+    }
+
+    @Override
+    public void close() {
+        // NOOP
     }
 
 }

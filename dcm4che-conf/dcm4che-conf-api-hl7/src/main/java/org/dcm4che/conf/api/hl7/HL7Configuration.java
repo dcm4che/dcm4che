@@ -39,13 +39,14 @@
 package org.dcm4che.conf.api.hl7;
 
 import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.hl7.HL7Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface HL7Configuration {
+public interface HL7Configuration extends DicomConfiguration {
 
     HL7Application findHL7Application(String name) throws ConfigurationException;
 }

@@ -96,8 +96,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
     private static final Code[] EMPTY_CODES = {};
 
-    private final DirContext ctx;
-    private final String baseDN;
+    private DirContext ctx;
+    private String baseDN;
     private String configurationDN;
     private String devicesDN;
     private String aetsRegistryDN;
@@ -106,7 +106,14 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private String pkiUser = PKI_USER;
     private String userCertificate = USER_CERTIFICATE_BINARY;
 
+    public LdapDicomConfiguration() {}
+
     public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
+            throws NamingException {
+        init(env, baseDN);
+    }
+
+    public void init(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         if (baseDN == null)
             throw new NullPointerException("baseDN");
@@ -146,6 +153,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return userCertificate;
     }
 
+    @Override
     public void close() {
         safeClose(ctx);
     }

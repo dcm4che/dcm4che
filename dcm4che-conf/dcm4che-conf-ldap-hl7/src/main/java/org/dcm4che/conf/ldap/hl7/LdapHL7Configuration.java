@@ -65,6 +65,8 @@ import org.dcm4che.net.hl7.HL7Device;
 public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
         implements HL7Configuration {
 
+    public LdapHL7Configuration() {}
+
     public LdapHL7Configuration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         super(env, baseDN);

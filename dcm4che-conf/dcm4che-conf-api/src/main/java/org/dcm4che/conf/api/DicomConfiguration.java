@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.api;
 
+import java.io.Closeable;
 import java.security.cert.X509Certificate;
 
 import org.dcm4che.net.ApplicationEntity;
@@ -47,7 +48,7 @@ import org.dcm4che.net.Device;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface DicomConfiguration {
+public interface DicomConfiguration extends Closeable {
 
     boolean configurationExists() throws ConfigurationException;
 
@@ -76,4 +77,6 @@ public interface DicomConfiguration {
     void removeCertificates(String ref) throws ConfigurationException;
 
     X509Certificate[] findCertificates(String dn) throws ConfigurationException;
+
+    void close();
 }

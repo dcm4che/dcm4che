@@ -57,6 +57,9 @@ import org.dcm4che.net.hl7.HL7Device;
 public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         implements HL7Configuration {
 
+    public PreferencesHL7Configuration() {
+    }
+
     public PreferencesHL7Configuration(Preferences rootPrefs) {
         super(rootPrefs);
     }

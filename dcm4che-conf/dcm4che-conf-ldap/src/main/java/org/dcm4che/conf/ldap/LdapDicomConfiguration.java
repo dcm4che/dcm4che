@@ -537,7 +537,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 device.getInstitutionCodes());
         storeNotEmpty(attrs, "dicomInstitutionAddress",
                 device.getInstitutionAddresses());
-        storeNotEmpty(attrs, "dicomInstitutionalDepartmentName",
+        storeNotEmpty(attrs, "dicomInstitutionDepartmentName",
                 device.getInstitutionalDepartmentNames());
         storeNotEmpty(attrs, "dicomPrimaryDeviceType",
                 device.getPrimaryDeviceTypes());
@@ -744,7 +744,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         device.setInstitutionCodes(codeArray(attrs.get("dicomInstitutionCode")));
         device.setInstitutionAddresses(stringArray(attrs.get("dicomInstitutionAddress")));
         device.setInstitutionalDepartmentNames(
-                stringArray(attrs.get("dicomInstitutionalDepartmentName")));
+                stringArray(attrs.get("dicomInstitutionDepartmentName")));
         device.setPrimaryDeviceTypes(stringArray(attrs.get("dicomPrimaryDeviceType")));
         device.setRelatedDeviceRefs(stringArray(attrs.get("dicomRelatedDeviceReference")));
         for (String dn : stringArray(attrs.get("dicomAuthorizedNodeCertificateReference")))
@@ -911,7 +911,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstitutionAddress",
                 a.getInstitutionAddresses(),
                 b.getInstitutionAddresses());
-        storeDiff(mods, "dicomInstitutionalDepartmentName",
+        storeDiff(mods, "dicomInstitutionDepartmentName",
                 a.getInstitutionalDepartmentNames(),
                 b.getInstitutionalDepartmentNames());
         storeDiff(mods, "dicomPrimaryDeviceType",

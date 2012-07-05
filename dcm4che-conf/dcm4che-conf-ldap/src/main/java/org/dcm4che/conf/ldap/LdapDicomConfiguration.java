@@ -908,6 +908,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstitutionName",
                 a.getInstitutionNames(),
                 b.getInstitutionNames());
+        storeDiff(mods, "dicomInstitutionCode",
+                a.getInstitutionCodes(),
+                b.getInstitutionCodes());
         storeDiff(mods, "dicomInstitutionAddress",
                 a.getInstitutionAddresses(),
                 b.getInstitutionAddresses());

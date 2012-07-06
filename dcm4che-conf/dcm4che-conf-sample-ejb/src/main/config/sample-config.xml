@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<preferences EXTERNAL_XML_VERSION="1.0">
+  <root type="user">
+    <map/>
+    <node name="org">
+      <map/>
+      <node name="dcm4che">
+        <map/>
+        <node name="dicomDevicesRoot">
+          <map/>
+          <node name="echoscp">
+            <map>
+              <entry key="dicomInstalled" value="true"/>
+            </map>
+            <node name="dcmNetworkAE">
+              <map/>
+              <node name="ECHOSCP">
+                <map>
+                  <entry key="dicomAssociationAcceptor" value="true"/>
+                  <entry key="dicomAssociationInitiator" value="false"/>
+                  <entry key="dicomNetworkConnectionReference.#" value="2"/>
+                  <entry key="dicomNetworkConnectionReference.1" value="1"/>
+                  <entry key="dicomNetworkConnectionReference.2" value="2"/>
+                </map>
+                <node name="dicomTransferCapability">
+                  <map/>
+                  <node name="1">
+                    <map>
+                      <entry key="cn" value="Verification SOP Class SCP"/>
+                      <entry key="dicomSOPClass" value="1.2.840.10008.1.1"/>
+                      <entry key="dicomTransferRole" value="SCP"/>
+                      <entry key="dicomTransferSyntax.#" value="1"/>
+                      <entry key="dicomTransferSyntax.1" value="1.2.840.10008.1.2"/>
+                    </map>
+                  </node>
+                </node>
+              </node>
+            </node>
+            <node name="dcmNetworkConnection">
+              <map/>
+              <node name="1">
+                <map>
+                  <entry key="cn" value="dicom"/>
+                  <entry key="dicomHostname" value="localhost"/>
+                  <entry key="dicomPort" value="11112"/>
+                </map>
+              </node>
+              <node name="2">
+                <map>
+                  <entry key="cn" value="dicom-tls"/>
+                  <entry key="dcmTLSNeedClientAuth" value="false"/>
+                  <entry key="dcmTLSProtocol.#" value="2"/>
+                  <entry key="dcmTLSProtocol.1" value="TLSv1"/>
+                  <entry key="dcmTLSProtocol.2" value="SSLv3"/>
+                  <entry key="dicomHostname" value="localhost"/>
+                  <entry key="dicomPort" value="2762"/>
+                  <entry key="dicomTLSCipherSuite.#" value="2"/>
+                  <entry key="dicomTLSCipherSuite.1" value="TLS_RSA_WITH_AES_128_CBC_SHA"/>
+                  <entry key="dicomTLSCipherSuite.2" value="SSL_RSA_WITH_3DES_EDE_CBC_SHA"/>
+                </map>
+              </node>
+            </node>
+          </node>
+        </node>
+      </node>
+    </node>
+  </root>
+</preferences>

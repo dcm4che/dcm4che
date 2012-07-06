@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.conf.ldap">
+    <resources>
+        <resource-root path="dcm4che-conf-ldap-${version}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.dcm4che.conf.api" export="true"/>
+        <system export="true">
+            <paths>
+                <path name="javax/naming"/>
+                <path name="javax/naming/directory"/>
+                <path name="javax/naming/event"/>
+                <path name="javax/naming/ldap"/>
+                <path name="javax/naming/spi"/>
+            </paths>
+        </system>
+    </dependencies>
+</module>

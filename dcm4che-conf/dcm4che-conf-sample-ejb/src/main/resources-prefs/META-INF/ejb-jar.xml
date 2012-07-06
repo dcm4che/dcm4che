@@ -1,0 +1,24 @@
+<ejb-jar
+  xmlns="http://java.sun.com/xml/ns/javaee" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+  version="3.1">
+  <enterprise-beans>
+    <session>
+      <ejb-name>DicomConfiguration</ejb-name>
+      <business-local>org.dcm4che.conf.api.DicomConfiguration</business-local>
+      <ejb-class>org.dcm4che.conf.prefs.PreferencesDicomConfiguration</ejb-class>
+      <session-type>Singleton</session-type>
+      <init-on-startup>true</init-on-startup>
+    </session>
+  </enterprise-beans>
+  <assembly-descriptor>
+    <container-transaction>
+      <method>
+      <ejb-name>DicomConfiguration</ejb-name>
+      <method-name>*</method-name>
+      </method>
+      <trans-attribute>NotSupported</trans-attribute>
+    </container-transaction>
+  </assembly-descriptor>
+</ejb-jar>

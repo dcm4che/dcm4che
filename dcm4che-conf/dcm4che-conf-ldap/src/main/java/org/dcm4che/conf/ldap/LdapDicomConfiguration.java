@@ -87,6 +87,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(LdapDicomConfiguration.class);
 
+    public static final String LDAP_URL = "org.dcm4che.conf.ldap.url";
+    public static final String LDAP_USER_DN = "org.dcm4che.conf.ldap.userDN";
+    public static final String LDAP_PASSWORD = "org.dcm4che.conf.ldap.password";
+    public static final String LDAP_BASE_DN = "org.dcm4che.conf.ldap.baseDN";
+
     private static final String CN_UNIQUE_AE_TITLES_REGISTRY = "cn=Unique AE Titles Registry,";
     private static final String CN_DEVICES = "cn=Devices,";
     private static final String DICOM_CONFIGURATION = "DICOM Configuration";
@@ -106,14 +111,20 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private String pkiUser = PKI_USER;
     private String userCertificate = USER_CERTIFICATE_BINARY;
 
-    public LdapDicomConfiguration() {}
+    public LdapDicomConfiguration() throws NamingException {
+        LdapEnv env = new LdapEnv();
+        env.setUrl(System.getProperty(LDAP_URL));
+        env.setUserDN(System.getProperty(LDAP_USER_DN));
+        env.setPassword(System.getProperty(LDAP_PASSWORD));
+        init(env, System.getProperty(LDAP_BASE_DN));
+    }
 
     public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         init(env, baseDN);
     }
 
-    public void init(Hashtable<String, Object> env, String baseDN)
+    private void init(Hashtable<String, Object> env, String baseDN)
             throws NamingException {
         if (baseDN == null)
             throw new NullPointerException("baseDN");

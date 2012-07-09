@@ -76,8 +76,6 @@ import org.slf4j.LoggerFactory;
  */
 public class PreferencesDicomConfiguration implements DicomConfiguration {
 
-    public static final String CONFIGURATION_ROOT = "org.dcm4che.conf.prefs.configurationRoot";
-
     private static final String USER_CERTIFICATE = "userCertificate";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
     private static final Code[] EMPTY_CODES = {};
@@ -90,7 +88,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     public PreferencesDicomConfiguration() {
         this(Preferences.userRoot());
-        setConfigurationRoot(System.getProperty(CONFIGURATION_ROOT, "org/dcm4che"));
     }
 
     public PreferencesDicomConfiguration(Preferences rootPrefs) {

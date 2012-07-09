@@ -53,6 +53,7 @@ import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.api.AttributeCoercion;
 import org.dcm4che.conf.api.AttributeCoercions;
+import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Dimse;
@@ -67,11 +68,11 @@ import org.dcm4che.util.StringUtils;
  */
 public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
 
-    public ExtendedLdapDicomConfiguration() throws NamingException {}
+    public ExtendedLdapDicomConfiguration() throws ConfigurationException {}
 
-    public ExtendedLdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
-            throws NamingException {
-        super(env, baseDN);
+    public ExtendedLdapDicomConfiguration(Hashtable<?, ?> env)
+            throws ConfigurationException {
+        super(env);
     }
 
     @Override

@@ -1,4 +1,0 @@
-/system-property=org.dcm4che.conf.ldap.url:add(value="ldap://localhost:389")
-/system-property=org.dcm4che.conf.ldap.userDN:add(value="cn=admin,dc=nodomain")
-/system-property=org.dcm4che.conf.ldap.password:add(value="admin")
-/system-property=org.dcm4che.conf.ldap.baseDN:add(value="dc=nodomain")

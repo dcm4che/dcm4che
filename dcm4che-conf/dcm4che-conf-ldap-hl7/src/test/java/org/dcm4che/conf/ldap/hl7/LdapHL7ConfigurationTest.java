@@ -41,7 +41,6 @@ package org.dcm4che.conf.ldap.hl7;
 import static org.junit.Assert.assertEquals;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
-import org.dcm4che.conf.ldap.LdapEnv;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7Device;
@@ -59,17 +58,7 @@ public class LdapHL7ConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        LdapEnv env = new LdapEnv();
-        env.setUrl("ldap://localhost:389");
-        env.setUserDN("cn=admin,dc=nodomain");
-        env.setPassword("admin");
-//        env.setUrl("ldap://localhost:1389");
-//        env.setUserDN("cn=Directory Manager");
-//        env.setPassword("admin");
-//        env.setUrl("ldap://localhost:10389");
-//        env.setUserDN("uid=admin,ou=system");
-//        env.setPassword("secret");
-        config = new LdapHL7Configuration(env, "dc=nodomain");
+        config = new LdapHL7Configuration();
     }
 
     @After

@@ -67,17 +67,7 @@ public class ExtendedLdapDicomConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        LdapEnv env = new LdapEnv();
-        env.setUrl("ldap://localhost:389");
-        env.setUserDN("cn=admin,dc=nodomain");
-        env.setPassword("admin");
-//        env.setUrl("ldap://localhost:1389");
-//        env.setUserDN("cn=Directory Manager");
-//        env.setPassword("admin");
-//        env.setUrl("ldap://localhost:10389");
-//        env.setUserDN("uid=admin,ou=system");
-//        env.setPassword("secret");
-        config = new ExtendedLdapDicomConfiguration(env, "dc=nodomain");
+        config = new ExtendedLdapDicomConfiguration();
     }
 
     @After

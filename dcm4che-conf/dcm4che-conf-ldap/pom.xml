@@ -7,7 +7,19 @@
   </parent>
   <artifactId>dcm4che-conf-ldap</artifactId>
   <name>dcm4che-conf-ldap</name>
+  <properties>
+    <ldap>slapd</ldap>
+  </properties>
   <build>
+    <filters>
+      <filter>src/main/filters/${ldap}.properties</filter>
+    </filters>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

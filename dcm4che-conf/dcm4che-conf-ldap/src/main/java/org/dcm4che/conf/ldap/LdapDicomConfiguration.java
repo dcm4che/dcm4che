@@ -87,11 +87,6 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(LdapDicomConfiguration.class);
 
-    public static final String LDAP_URL = "org.dcm4che.conf.ldap.url";
-    public static final String LDAP_USER_DN = "org.dcm4che.conf.ldap.userDN";
-    public static final String LDAP_PASSWORD = "org.dcm4che.conf.ldap.password";
-    public static final String LDAP_BASE_DN = "org.dcm4che.conf.ldap.baseDN";
-
     private static final String CN_UNIQUE_AE_TITLES_REGISTRY = "cn=Unique AE Titles Registry,";
     private static final String CN_DEVICES = "cn=Devices,";
     private static final String DICOM_CONFIGURATION = "DICOM Configuration";
@@ -101,8 +96,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
     private static final Code[] EMPTY_CODES = {};
 
-    private DirContext ctx;
-    private String baseDN;
+    private final DirContext ctx;
+    private final String baseDN;
     private String configurationDN;
     private String devicesDN;
     private String aetsRegistryDN;
@@ -111,25 +106,25 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private String pkiUser = PKI_USER;
     private String userCertificate = USER_CERTIFICATE_BINARY;
 
-    public LdapDicomConfiguration() throws NamingException {
-        LdapEnv env = new LdapEnv();
-        env.setUrl(System.getProperty(LDAP_URL));
-        env.setUserDN(System.getProperty(LDAP_USER_DN));
-        env.setPassword(System.getProperty(LDAP_PASSWORD));
-        init(env, System.getProperty(LDAP_BASE_DN));
+    public LdapDicomConfiguration() throws ConfigurationException {
+        this(ResourceManager.getInitialEnvironment());
     }
 
-    public LdapDicomConfiguration(Hashtable<String, Object> env, String baseDN)
-            throws NamingException {
-        init(env, baseDN);
-    }
-
-    private void init(Hashtable<String, Object> env, String baseDN)
-            throws NamingException {
-        if (baseDN == null)
-            throw new NullPointerException("baseDN");
-        this.ctx = new InitialDirContext(env);
-        this.baseDN = baseDN;
+    @SuppressWarnings("unchecked")
+    public LdapDicomConfiguration(Hashtable<?,?> env)
+            throws ConfigurationException {
+        try {
+            // split baseDN from LDAP URL
+            env = (Hashtable<?,?>) env.clone();
+            String s = (String) env.get(Context.PROVIDER_URL);
+            int end = s.lastIndexOf('/');
+            ((Hashtable<Object,Object>) env)
+                .put(Context.PROVIDER_URL, s.substring(0, end));
+            this.baseDN = s.substring(end+1);
+            this.ctx = new InitialDirContext(env);
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     public final void setConfigurationCN(String configurationCN) {

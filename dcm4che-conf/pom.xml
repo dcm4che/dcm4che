@@ -15,6 +15,5 @@
     <module>dcm4che-conf-ldap-hl7</module>
     <module>dcm4che-conf-prefs</module>
     <module>dcm4che-conf-prefs-hl7</module>
-    <module>dcm4che-conf-sample-ejb</module>
   </modules>
 </project>

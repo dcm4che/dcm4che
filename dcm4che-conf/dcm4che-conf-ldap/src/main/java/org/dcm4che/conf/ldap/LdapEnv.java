@@ -67,4 +67,5 @@ public class LdapEnv extends Hashtable<String,Object> {
         put(Context.SECURITY_AUTHENTICATION, "simple");
         put(Context.SECURITY_CREDENTIALS, password);
     }
+
 }

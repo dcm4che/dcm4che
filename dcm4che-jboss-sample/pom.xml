@@ -8,10 +8,6 @@
   <artifactId>dcm4che-jboss-sample</artifactId>
   <packaging>ejb</packaging>
   <name>dcm4che-jboss-sample</name>
-  <properties>
-    <conf>ldap</conf>
-    <ldap>slapd</ldap>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
@@ -27,18 +23,6 @@
     </dependency>
   </dependencies>
   <build>
-    <filters>
-      <filter>src/main/filters/${ldap}.properties</filter>
-    </filters>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>src/main/resources-${conf}</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-ejb-plugin</artifactId>
@@ -47,11 +31,51 @@
           <ejbVersion>3.1</ejbVersion>
           <archive>
             <manifestEntries>
-              <Dependencies>org.dcm4che.conf.${conf}</Dependencies>
+              <Dependencies>${jboss-module}</Dependencies>
             </manifestEntries>
           </archive>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>prefs</id>
+      <activation><activeByDefault>true</activeByDefault></activation>
+      <properties>
+        <jboss-module>org.dcm4che.conf.prefs</jboss-module>
+      </properties>
+      <build>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+          </resource>
+          <resource>
+            <directory>src/main/resources-prefs</directory>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>ldap</id>
+      <activation><property><name>ldap</name></property></activation>
+      <properties>
+        <jboss-module>org.dcm4che.conf.ldap</jboss-module>
+      </properties>
+      <build>
+        <filters>
+          <filter>src/main/filters/${ldap}.properties</filter>
+        </filters>
+        <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+          </resource>
+          <resource>
+            <directory>src/main/resources-ldap</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+  </profiles>
 </project>

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.conf.sample.ee;
+package org.dcm4che.jboss.sample;
 
 import org.dcm4che.net.Device;
 

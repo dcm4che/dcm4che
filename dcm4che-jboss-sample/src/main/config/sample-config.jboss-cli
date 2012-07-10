@@ -1,0 +1,6 @@
+/system-property="org.dcm4che.jboss.sample.deviceName":add(value="echoscp")
+/system-property="org.dcm4che.jboss.sample.jmxName":add(value="dcm4chee:service=echoSCP")
+/system-property="org.dcm4che.jboss.sample.keyStoreType":add(value="JKS")
+/system-property="org.dcm4che.jboss.sample.keyStoreURL":add(value="")
+/system-property="org.dcm4che.jboss.sample.storePassword":add(value="secret")
+/system-property="org.dcm4che.jboss.sample.keyPassword":add(value="secret")

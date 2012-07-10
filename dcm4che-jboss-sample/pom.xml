@@ -8,6 +8,7 @@
   <artifactId>dcm4che-jboss-sample</artifactId>
   <packaging>ejb</packaging>
   <name>dcm4che-jboss-sample</name>
+  <description>Sample C-ECHO SCP as deployable ejb-jar</description>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>

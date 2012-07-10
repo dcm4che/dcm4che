@@ -18,8 +18,8 @@ specified in `src/main/filters/slapd.properties`:
     user-dn=cn=admin,dc=nodomain
     password=admin
 
-The device name can be specified by system property
-`org.dcm4che.jboss.sample.deviceName`. Default: `echoscp`.
+The device name can be specified by system property (default)
+- `org.dcm4che.jboss.sample.deviceName` (`echoscp`).
 
 You have to import a corresponding device configuration into `Preferences`(e.g.:
 
@@ -35,8 +35,8 @@ You have to import a corresponding device configuration into `Preferences`(e.g.:
 
 )
 
-The JMX name for the _jmx-view_ can be specified by system property
-`org.dcm4che.jboss.sample.jmxName'. Default: `dcm4chee:service=echoSCP`.
+The JMX name for the _jmx-view_ can be specified by system property (default)
+- `org.dcm4che.jboss.sample.jmxName` (`dcm4chee:service=echoSCP`).
 
 For TLS connections the certificate of `dcm4che-tools-storescp`:
 
@@ -62,12 +62,11 @@ For TLS connections the certificate of `dcm4che-tools-storescp`:
              Signature algorithm name: SHA1withRSA
              Version: 3
 
-is used by default. You may specify a different certificate by system
-properties `org.dcm4che.jboss.sample.keyStoreType` (default: `JKS`),
-`org.dcm4che.jboss.sample.keyStoreURL` (default: `resource:key.jks`),
-`org.dcm4che.jboss.sample.storePassword` (default: `secret') and
-`org.dcm4che.jboss.sample.keyPassword`
-(default:`${org.dcm4che.jboss.sample.storePassword}`).
+is used by default. You may specify a different certificate by system properties (default):
+- `org.dcm4che.jboss.sample.keyStoreType` (`JKS`)
+- `org.dcm4che.jboss.sample.keyStoreURL` (`resource:key.jks`)
+- `org.dcm4che.jboss.sample.storePassword` (`secret`)
+- `org.dcm4che.jboss.sample.keyPassword` (`${org.dcm4che.jboss.sample.storePassword}`)
 
 You may use JBoss's CLI to set system properties. e.g.:
 

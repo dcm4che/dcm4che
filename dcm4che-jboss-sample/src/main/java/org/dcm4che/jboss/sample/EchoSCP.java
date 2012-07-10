@@ -67,12 +67,12 @@ import org.dcm4che.net.SSLManagerFactory;
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
-    public static final String DEVICE_NAME = "org.dcm4che.jboss.sample.deviceName";
-    public static final String JMX_NAME = "org.dcm4che.jboss.sample.jmxName";
-    public static final String KS_TYPE = "org.dcm4che.jboss.sample.keyStoreType";
-    public static final String KS_URL = "org.dcm4che.jboss.sample.keyStoreURL";
-    public static final String KS_PASSWORD = "org.dcm4che.jboss.sample.storePassword";
-    public static final String KEY_PASSWORD = "org.dcm4che.jboss.sample.keyPassword";
+    static final String DEVICE_NAME = "org.dcm4che.jboss.sample.deviceName";
+    static final String JMX_NAME = "org.dcm4che.jboss.sample.jmxName";
+    static final String KS_TYPE = "org.dcm4che.jboss.sample.keyStoreType";
+    static final String KS_URL = "org.dcm4che.jboss.sample.keyStoreURL";
+    static final String KS_PASSWORD = "org.dcm4che.jboss.sample.storePassword";
+    static final String KEY_PASSWORD = "org.dcm4che.jboss.sample.keyPassword";
 
     @EJB(name="DicomConfiguration")
     DicomConfiguration dicomConfiguration;

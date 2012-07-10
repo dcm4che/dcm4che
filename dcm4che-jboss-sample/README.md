@@ -5,6 +5,7 @@ Sample C-ECHO SCP in deployable _ejb-jar_.
 
 Deploys `PreferencesDicomConfiguration` or `ExtendedLdapDicomConfiguration` as
 _Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
+
 ```xml
 <ejb-jar
   xmlns="http://java.sun.com/xml/ns/javaee" 
@@ -35,7 +36,7 @@ _Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
 </ejb-jar>
 ```
 
-to get injected by `EchoSCP` _Singleton EJB_:
+to get injected by another _Singleton EJB_ `EchoSCP`:
 ```java
 @Singleton
 @DependsOn("DicomConfiguration")
@@ -43,8 +44,67 @@ to get injected by `EchoSCP` _Singleton EJB_:
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
+    static final String DEVICE_NAME = "org.dcm4che.jboss.sample.deviceName";
+    static final String JMX_NAME = "org.dcm4che.jboss.sample.jmxName";
+    static final String KS_TYPE = "org.dcm4che.jboss.sample.keyStoreType";
+    static final String KS_URL = "org.dcm4che.jboss.sample.keyStoreURL";
+    static final String KS_PASSWORD = "org.dcm4che.jboss.sample.storePassword";
+    static final String KEY_PASSWORD = "org.dcm4che.jboss.sample.keyPassword";
+
     @EJB(name="DicomConfiguration")
     DicomConfiguration dicomConfiguration;
+
+    private ObjectInstance mbean;
+
+    @PostConstruct
+    void init() {
+        try {
+            super.init(dicomConfiguration.findDevice(
+                    System.getProperty(DEVICE_NAME, "echoscp")));
+            mbean = ManagementFactory.getPlatformMBeanServer()
+                    .registerMBean(this, new ObjectName(
+                            System.getProperty(JMX_NAME, "dcm4chee:service=echoSCP")));
+            start();
+        } catch (Exception e) {
+            destroy();
+            throw new RuntimeException(e);
+        }
+        
+    }
+
+    @PreDestroy
+    void destroy() {
+        stop();
+        if (mbean != null)
+            try {
+                ManagementFactory.getPlatformMBeanServer()
+                    .unregisterMBean(mbean.getObjectName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        mbean = null;
+        device = null;
+    }
+
+    @Override
+    public Device unwrapDevice() {
+        return device;
+    }
+
+    @Override
+    public void reloadConfiguration() throws Exception {
+        device.reconfigure(dicomConfiguration.findDevice(device.getDeviceName()));
+    }
+
+    protected KeyManager keyManager() throws Exception {
+        String url = System.getProperty(KS_URL, "resource:key.jks");
+        String kstype = System.getProperty(KS_TYPE, "JKS");
+        String kspw = System.getProperty(KS_PASSWORD, "secret");
+        String keypw = System.getProperty(KEY_PASSWORD, kspw);
+        return SSLManagerFactory.createKeyManager(kstype, url, kspw, keypw);
+    }
+
+}
 ```
 
     $ mvn clean install

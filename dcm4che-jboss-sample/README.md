@@ -3,6 +3,49 @@ dcm4che-jboss-sample
 
 Sample C-ECHO SCP in deployable _ejb-jar_.
 
+Deploys `PreferencesDicomConfiguration` or `ExtendedLdapDicomConfiguration` as
+_Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
+```xml
+<ejb-jar
+  xmlns="http://java.sun.com/xml/ns/javaee" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+  version="3.1">
+  <enterprise-beans>
+    <session>
+      <ejb-name>DicomConfiguration</ejb-name>
+      <business-local>org.dcm4che.conf.api.DicomConfiguration</business-local>
+      <ejb-class>${ejb-class}</ejb-class>
+      <session-type>Singleton</session-type>
+      <init-on-startup>true</init-on-startup>
+      <pre-destroy>
+        <lifecycle-callback-method>close</lifecycle-callback-method>
+      </pre-destroy>
+    </session>
+  </enterprise-beans>
+  <assembly-descriptor>
+    <container-transaction>
+      <method>
+      <ejb-name>DicomConfiguration</ejb-name>
+      <method-name>*</method-name>
+      </method>
+      <trans-attribute>NotSupported</trans-attribute>
+    </container-transaction>
+  </assembly-descriptor>
+</ejb-jar>
+```
+
+to get injected by `EchoSCP` _Singleton EJB_:
+```java
+@Singleton
+@DependsOn("DicomConfiguration")
+@Startup
+@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+public class EchoSCP extends DeviceService implements EchoSCPMBean {
+
+    @EJB(name="DicomConfiguration")
+    DicomConfiguration dicomConfiguration;
+```
 
     $ mvn clean install
 
@@ -11,8 +54,8 @@ builds a version using `PreferencesDicomConfiguration`.
 
     $ mvn -Dldap=slapd clean install
 
-builds a version using `LdapDicomConfiguration` with LDAP connection parameters
-specified in `src/main/filters/slapd.properties`:
+builds a version using `ExtendedLdapDicomConfiguration` with LDAP connection
+parameters specified in `src/main/filters/slapd.properties`:
 
     ldap-url=ldap://localhost:389/dc=nodomain
     user-dn=cn=admin,dc=nodomain

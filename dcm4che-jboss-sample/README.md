@@ -1,14 +1,14 @@
 dcm4che-jboss-sample
 ====================
 
-Sample C-ECHO SCP in deployable _ejb-jar_.
+Sample C-ECHO SCP in deployable ejb-jar.
 
 
 Description
 -----------
 
 Deploys an implementation of `org.dcm4che.conf.api.DicomConfiguration` as
-_Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
+Singleton Session Bean by EJB deployment descriptor `META-INF/ejb-jar.xml`:
 
 ```xml
 <ejb-jar
@@ -40,7 +40,7 @@ _Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
 </ejb-jar>
 ```
 
-to get injected by `DeviceService` _Singleton EJB_ `EchoSCP`:
+to get injected by `DeviceService` Singleton Session Bean `EchoSCP`:
 ```java
 @Singleton
 @DependsOn("DicomConfiguration")
@@ -110,7 +110,7 @@ public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
 }
 ```
-with _buisness interface_ and _jmx-view_ `EchoSCPMBean`:
+with business interface and jmx-view `EchoSCPMBean`:
 ```java
 public interface EchoSCPMBean {
     boolean isRunning();

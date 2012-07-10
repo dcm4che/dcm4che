@@ -29,6 +29,7 @@
         <version>2.3</version>
         <configuration>
           <ejbVersion>3.1</ejbVersion>
+          <filterDeploymentDescriptor>true</filterDeploymentDescriptor>
           <archive>
             <manifestEntries>
               <Dependencies>${jboss-module}</Dependencies>
@@ -43,23 +44,15 @@
       <id>prefs</id>
       <activation><activeByDefault>true</activeByDefault></activation>
       <properties>
+        <ejb-class>org.dcm4che.conf.prefs.PreferencesDicomConfiguration</ejb-class>
         <jboss-module>org.dcm4che.conf.prefs</jboss-module>
       </properties>
-      <build>
-        <resources>
-          <resource>
-            <directory>src/main/resources</directory>
-          </resource>
-          <resource>
-            <directory>src/main/resources-prefs</directory>
-          </resource>
-        </resources>
-      </build>
     </profile>
     <profile>
       <id>ldap</id>
       <activation><property><name>ldap</name></property></activation>
       <properties>
+        <ejb-class>org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration</ejb-class>
         <jboss-module>org.dcm4che.conf.ldap</jboss-module>
       </properties>
       <build>

@@ -3,7 +3,11 @@ dcm4che-jboss-sample
 
 Sample C-ECHO SCP in deployable _ejb-jar_.
 
-Deploys `PreferencesDicomConfiguration` or `ExtendedLdapDicomConfiguration` as
+
+Description
+-----------
+
+Deploys an implementation of `org.dcm4che.conf.api.DicomConfiguration` as
 _Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
 
 ```xml
@@ -36,7 +40,7 @@ _Singleton EJB_ by EJB deployment descriptor `META-INF/ejb-jar.xml`:
 </ejb-jar>
 ```
 
-to get injected by another _Singleton EJB_ `EchoSCP`:
+to get injected by `DeviceService` _Singleton EJB_ `EchoSCP`:
 ```java
 @Singleton
 @DependsOn("DicomConfiguration")
@@ -106,20 +110,43 @@ public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
 }
 ```
+with _buisness interface_ and _jmx-view_ `EchoSCPMBean`:
+```java
+public interface EchoSCPMBean {
+
+    boolean isRunning();
+
+    void start() throws Exception;
+
+    void stop();
+
+    void reloadConfiguration() throws Exception;
+
+    Device unwrapDevice();
+}
+```
+
+
+Build
+-----
 
     $ mvn clean install
 
-builds a version using `PreferencesDicomConfiguration`.
+builds a version using `org.dcm4che.conf.prefs.PreferencesDicomConfiguration`.
 
 
     $ mvn -Dldap=slapd clean install
 
-builds a version using `ExtendedLdapDicomConfiguration` with LDAP connection
-parameters specified in `src/main/filters/slapd.properties`:
+builds a version using `org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration`
+with LDAP connection parameters specified in `src/main/filters/slapd.properties`:
 
     ldap-url=ldap://localhost:389/dc=nodomain
     user-dn=cn=admin,dc=nodomain
     password=admin
+
+
+Configuration
+-------------
 
 The device name can be specified by system property (default)
 - `org.dcm4che.jboss.sample.deviceName` (`echoscp`).

@@ -113,15 +113,10 @@ public class EchoSCP extends DeviceService implements EchoSCPMBean {
 with _buisness interface_ and _jmx-view_ `EchoSCPMBean`:
 ```java
 public interface EchoSCPMBean {
-
     boolean isRunning();
-
     void start() throws Exception;
-
     void stop();
-
     void reloadConfiguration() throws Exception;
-
     Device unwrapDevice();
 }
 ```

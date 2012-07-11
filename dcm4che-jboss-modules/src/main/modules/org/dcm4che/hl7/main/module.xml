@@ -5,6 +5,6 @@
     </resources>
 
     <dependencies>
-        <module name="org.slf4j" export="true"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>

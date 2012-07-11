@@ -6,19 +6,7 @@
 
     <dependencies>
         <module name="org.dcm4che.core" export="true"/>
-        <system export="true">
-            <paths>
-                <path name="javax/net"/>
-                <path name="javax/net/ssl"/>
-                <path name="javax/security/auth"/>
-                <path name="javax/security/auth/callback"/>
-                <path name="javax/security/auth/kerberos"/>
-                <path name="javax/security/auth/login"/>
-                <path name="javax/security/auth/spi"/>
-                <path name="javax/security/auth/x500"/>
-                <path name="javax/security/cert"/>
-                <path name="javax/security/sasl"/>
-            </paths>
-        </system>
+        <module name="javax.api"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>

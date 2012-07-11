@@ -7,5 +7,6 @@
     <dependencies>
         <module name="org.dcm4che.hl7" export="true"/>
         <module name="org.dcm4che.net" export="true"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>

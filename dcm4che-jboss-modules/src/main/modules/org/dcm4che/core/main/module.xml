@@ -8,8 +8,11 @@
         <module name="org.slf4j" export="true"/>
         <system export="true">
             <paths>
+                <path name="javax/xml/parsers"/>
                 <path name="javax/xml/transform"/>
                 <path name="javax/xml/transform/sax"/>
+                <path name="org/xml/sax"/>
+                <path name="org/xml/sax/helpers"/>
             </paths>
         </system>
     </dependencies>

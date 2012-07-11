@@ -7,5 +7,6 @@
     <dependencies>
         <module name="org.dcm4che.conf.api-hl7" export="true"/>
         <module name="org.dcm4che.conf.ldap" export="true"/>
+        <module name="javax.api"/>
     </dependencies>
 </module>

@@ -89,7 +89,7 @@
     <dependencySet>
       <outputDirectory>/modules/org/dcm4che/net-hl7/main</outputDirectory>
       <includes>
-        <include>org.dcm4che:dcm4che-net</include>
+        <include>org.dcm4che:dcm4che-net-hl7</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>

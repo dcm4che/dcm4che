@@ -826,7 +826,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     protected Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {
         for (Connection conn : device.listConnections())
-            if (dnOf(conn, deviceDN).equals(connDN))
+            if (dnOf(conn, deviceDN).equalsIgnoreCase(connDN))
                 return conn;
 
         throw new NameNotFoundException(connDN);

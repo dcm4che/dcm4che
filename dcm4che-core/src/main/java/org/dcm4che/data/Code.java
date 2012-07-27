@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.data;
 
 import java.io.Serializable;
 
@@ -49,10 +49,12 @@ public class Code implements Serializable {
 
     private static final long serialVersionUID = 8807594793107889446L;
 
-    private final String codeValue;
-    private final String codingSchemeDesignator;
-    private final String codingSchemeVersion;
-    private final String codeMeaning;
+    private String codeValue;
+    private String codingSchemeDesignator;
+    private String codingSchemeVersion;
+    private String codeMeaning;
+
+    protected Code() {}
 
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
@@ -77,6 +79,13 @@ public class Code implements Serializable {
         this.codeMeaning = ss[1];
         this.codingSchemeDesignator = ss[2];
         this.codingSchemeVersion = ss.length > 3 && !ss[3].isEmpty() ? ss[3] : null;
+    }
+
+    public Code(Attributes item) {
+        this(item.getString(Tag.CodeValue, null),
+             item.getString(Tag.CodingSchemeDesignator, null),
+             item.getString(Tag.CodingSchemeVersion, null),
+             item.getString(Tag.CodeMeaning, null));
     }
 
     public final String getCodeValue() {
@@ -110,15 +119,23 @@ public class Code implements Serializable {
 
     @Override
     public boolean equals(Object o) {
+        return equals(o, false);
+    }
+
+    public boolean equalsIgnoreMeaning(Code o) {
+        return equals(o, true);
+    }
+
+    private boolean equals(Object o, boolean ignoreMeaning) {
         if (o == this)
             return true;
         if (!(o instanceof Code))
             return false;
         Code other = (Code) o;
         return codeValue.equals(other.codeValue)
-                && codeMeaning.equals(other.codeMeaning)
                 && codingSchemeDesignator.equals(other.codingSchemeDesignator)
-                && equals(codingSchemeVersion, other.codingSchemeVersion);
+                && equals(codingSchemeVersion, other.codingSchemeVersion)
+                && (ignoreMeaning || codeMeaning.equals(other.codeMeaning));
     }
 
     private boolean equals(String s1, String s2) {
@@ -130,4 +147,15 @@ public class Code implements Serializable {
         String s = codeValue + '^' + codeMeaning + '^' + codingSchemeDesignator;
         return codingSchemeVersion == null ? s : s + '^' + codingSchemeVersion;
     }
+
+    public Attributes toItem() {
+        Attributes codeItem = new Attributes(codingSchemeVersion != null ? 4 : 3);
+        codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
+        codeItem.setString(Tag.CodingSchemeDesignator, VR.SH, codingSchemeDesignator);
+        if (codingSchemeVersion != null)
+            codeItem.setString(Tag.CodingSchemeVersion, VR.SH, codingSchemeVersion);
+        codeItem.setString(Tag.CodeMeaning, VR.LO, codeMeaning);
+        return codeItem ;
+    }
+
 }

@@ -42,12 +42,12 @@ import java.lang.management.ManagementFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
 import javax.ejb.DependsOn;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.net.ssl.KeyManager;
@@ -64,8 +64,8 @@ import org.dcm4che.net.SSLManagerFactory;
 @Singleton
 @DependsOn("DicomConfiguration")
 @Startup
-@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class EchoSCP extends DeviceService implements EchoSCPMBean {
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+public class EchoSCP extends DeviceService<Device> implements EchoSCPMBean {
 
     static final String DEVICE_NAME = "org.dcm4che.jboss.sample.deviceName";
     static final String JMX_NAME = "org.dcm4che.jboss.sample.jmxName";

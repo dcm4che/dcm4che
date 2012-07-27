@@ -9,7 +9,6 @@
       <business-local>org.dcm4che.conf.api.DicomConfiguration</business-local>
       <ejb-class>${ejb-class}</ejb-class>
       <session-type>Singleton</session-type>
-      <init-on-startup>true</init-on-startup>
       <pre-destroy>
         <lifecycle-callback-method>close</lifecycle-callback-method>
       </pre-destroy>

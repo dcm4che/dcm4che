@@ -51,13 +51,13 @@ import org.dcm4che.net.service.DicomServiceRegistry;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService {
+public class DeviceService<T extends Device> {
 
-    protected Device device;
+    protected T device;
     protected ExecutorService executor;
     protected ScheduledExecutorService scheduledExecutor;
 
-    protected void init(Device device) throws Exception {
+    protected void init(T device) throws Exception {
         this.device = device;
         device.setKeyManager(keyManager());
         device.setDimseRQHandler(serviceRegistry());

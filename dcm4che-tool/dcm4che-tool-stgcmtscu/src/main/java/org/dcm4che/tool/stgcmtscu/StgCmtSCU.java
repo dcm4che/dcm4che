@@ -198,8 +198,8 @@ public class StgCmtSCU {
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
-                    public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
-                        stgcmtscu.addInstance(ds);
+                    public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                        return stgcmtscu.addInstance(ds);
                     }
                 });
             }
@@ -282,13 +282,13 @@ public class StgCmtSCU {
                         tss));
     }
 
-    public void addInstance(Attributes inst) {
+    public boolean addInstance(Attributes inst) {
         CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String cuid = inst.getString(Tag.SOPClassUID);
         String iuid = inst.getString(Tag.SOPInstanceUID);
         String splitkey = splitTag != 0 ? inst.getString(splitTag) : "";
         if (cuid == null || iuid == null || splitkey == null)
-            return;
+            return false;
 
         List<String> refSOPs = map.get(splitkey);
         if (refSOPs == null)
@@ -296,6 +296,7 @@ public class StgCmtSCU {
 
         refSOPs.add(cuid);
         refSOPs.add(iuid);
+        return true;
     }
 
     private static CommandLine parseComandLine(String[] args)

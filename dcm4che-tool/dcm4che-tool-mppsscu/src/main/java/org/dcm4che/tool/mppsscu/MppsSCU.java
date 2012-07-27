@@ -337,8 +337,8 @@ public class MppsSCU {
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
-                    public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
-                        main.addInstance(ds);
+                    public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                        return main.addInstance(ds);
                     }
                 });
             }
@@ -535,15 +535,16 @@ public class MppsSCU {
         as.nset(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null, rspHandler);
     }
 
-    public void addInstance(Attributes inst) {
+    public boolean addInstance(Attributes inst) {
         CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
-            return;
+            return false;
         Attributes mpps = map.get(suid);
         if (mpps == null)
             map.put(suid, mpps = createMPPS(inst));
         updateMPPS(mpps, inst);
+        return true;
     }
 
     private String mkPPSID() {

@@ -258,6 +258,8 @@ public class StoreSCU {
                 t2 = System.currentTimeMillis();
                 int n = main.filesScanned;
                 System.out.println();
+                if (n == 0)
+                    return;
                 System.out.println(MessageFormat.format(
                         rb.getString("scanned"), n,
                         (t2 - t1) / 1000F, (t2 - t1) / n));
@@ -342,13 +344,13 @@ public class StoreSCU {
             DicomFiles.scan(fnames, new DicomFiles.Callback() {
                 
                 @Override
-                public void dicomFile(File f, long dsPos, String tsuid, Attributes ds)
-                        throws IOException {
-                    addFile(fileInfos, f, dsPos,
-                            ds.getString(Tag.SOPClassUID, null),
-                            ds.getString(Tag.SOPInstanceUID, null),
-                            tsuid);
+                public boolean dicomFile(File f, long dsPos, String tsuid,
+                        Attributes ds) throws IOException {
+                    if (!addFile(fileInfos, f, dsPos, ds, tsuid))
+                        return false;
+
                     filesScanned++;
+                    return true;
                 }
             });
         } finally {
@@ -381,8 +383,13 @@ public class StoreSCU {
         }
     }
 
-    public void addFile(BufferedWriter fileInfos, File f, long endFmi,
-            String cuid, String iuid, String ts) throws IOException {
+    public boolean addFile(BufferedWriter fileInfos, File f, long endFmi,
+            Attributes ds, String ts) throws IOException {
+        String cuid = ds.getString(Tag.SOPClassUID);
+        String iuid = ds.getString(Tag.SOPInstanceUID);
+        if (cuid == null || iuid == null)
+            return false;
+
         fileInfos.write(iuid);
         fileInfos.write('\t');
         fileInfos.write(cuid);
@@ -395,7 +402,7 @@ public class StoreSCU {
         fileInfos.newLine();
 
         if (rq.containsPresentationContextFor(cuid, ts))
-            return;
+            return true;
 
         if (!rq.containsPresentationContextFor(cuid)) {
             if (relExtNeg)
@@ -411,6 +418,7 @@ public class StoreSCU {
                 new PresentationContext(
                         rq.getNumberOfPresentationContexts() * 2 + 1,
                         cuid, ts));
+        return true;
     }
 
     public void echo() throws IOException, InterruptedException {

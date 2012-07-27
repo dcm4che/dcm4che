@@ -165,8 +165,8 @@ public class MkKOS {
             DicomFiles.scan(cl.getArgList(), new DicomFiles.Callback() {
                 
                 @Override
-                public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
-                    main.addInstance(ds);
+                public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                    return main.addInstance(ds);
                 }
             });
             System.out.println();
@@ -313,18 +313,19 @@ public class MkKOS {
         return attrs;
     }
 
-    public void addInstance(Attributes inst) {
+    public boolean addInstance(Attributes inst) {
         CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String studyIUID = inst.getString(Tag.StudyInstanceUID);
         String seriesIUID = inst.getString(Tag.SeriesInstanceUID);
         String iuid = inst.getString(Tag.SOPInstanceUID);
         String cuid = inst.getString(Tag.SOPClassUID);
         if (studyIUID == null || seriesIUID == null || iuid == null || cuid == null)
-            return;
+            return false;
         if (kos == null)
             kos = createKOS(inst);
         refSOPSeq(studyIUID, seriesIUID).add(refSOP(cuid, iuid));
         contentSeq.add(contentItem(valueTypeOf(inst), refSOP(cuid, iuid)));
+        return true;
     }
 
     public void writeKOS() throws IOException {

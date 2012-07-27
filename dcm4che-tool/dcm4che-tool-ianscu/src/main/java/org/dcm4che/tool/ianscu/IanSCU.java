@@ -162,8 +162,8 @@ public class IanSCU extends Device {
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
-                    public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
-                        main.addInstance(ds);
+                    public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                        return main.addInstance(ds);
                     }
                 });
             }
@@ -296,15 +296,17 @@ public class IanSCU extends Device {
                 new DimseRSPHandler(as.nextMessageID()));
     }
 
-    public void addInstance(Attributes inst) {
+    public boolean addInstance(Attributes inst) {
         CLIUtils.updateAttributes(inst, attrs, uidSuffix);
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
-            return;
+            return false;
+
         Attributes ian = map.get(suid);
         if (ian == null)
             map.put(suid, ian = createIAN(inst));
         updateIAN(ian, inst);
+        return true;
     }
 
     private Attributes createIAN(Attributes inst) {

@@ -229,8 +229,8 @@ public class Modality {
         DicomFiles.scan(cl.getArgList(), new DicomFiles.Callback() {
 
             @Override
-            public void dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
-                mkkos.addInstance(ds);
+            public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                return mkkos.addInstance(ds);
             }
         });
         System.out.println();
@@ -375,12 +375,11 @@ public class Modality {
             DicomFiles.scan(fnames, new DicomFiles.Callback() {
 
                 @Override
-                public void dicomFile(File f, long dsPos, String tsuid, Attributes ds)
-                        throws IOException {
-                    mppsscu.addInstance(ds);
-                    storescu.addFile(fileInfos, f, dsPos, ds.getString(Tag.SOPClassUID, null),
-                            ds.getString(Tag.SOPInstanceUID, null), tsuid);
-                    stgcmtscu.addInstance(ds);
+                public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds)
+                        throws Exception {
+                    return mppsscu.addInstance(ds)
+                        && storescu.addFile(fileInfos, f, dsPos, ds, tsuid)
+                        && stgcmtscu.addInstance(ds);
                 }
             });
             storescu.setTmpFile(tmpFile);

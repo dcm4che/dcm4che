@@ -39,7 +39,6 @@
 package org.dcm4che.tool.common;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.dcm4che.data.Attributes;
@@ -55,8 +54,8 @@ import org.dcm4che.util.SafeClose;
 public abstract class DicomFiles {
 
     public interface Callback {
-        void dicomFile(File f, long dsPos, String tsuid, Attributes ds)
-                throws IOException;
+        boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds)
+                throws Exception;
     }
 
     public static void scan(List<String> fnames, Callback scb) {
@@ -84,11 +83,12 @@ public abstract class DicomFiles {
                                             : UID.ImplicitVRLittleEndian;
             long dsPos = in.getPosition();
             Attributes ds = in.readDataset(-1, Tag.PixelData);
-            scb.dicomFile(f, dsPos, tsuid, ds);
-            System.out.print('.');
-        } catch (IOException e) {
-            System.out.print('E');
-            e.printStackTrace();
+            boolean b = scb.dicomFile(f, dsPos, tsuid, ds);
+            System.out.print(b ? '.' : 'I');
+        } catch (Exception e) {
+            System.out.println();
+            System.out.println("Failed to scan file " + f + ": " + e.getMessage());
+            e.printStackTrace(System.out);
         } finally {
             SafeClose.close(in);
         }

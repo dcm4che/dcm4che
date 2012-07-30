@@ -78,14 +78,22 @@ public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
-    private static final int DEF_CONN_LIMIT = 100;
-
     private String deviceName;
     private String description;
     private String manufacturer;
     private String manufacturerModelName;
     private String stationName;
     private String deviceSerialNumber;
+    private String trustStoreURL;
+    private String trustStoreType;
+    private String trustStorePin;
+    private String trustStorePinProperty;
+    private String keyStoreURL;
+    private String keyStoreType;
+    private String keyStorePin;
+    private String keyStorePinProperty;
+    private String keyStoreKeyPin;
+    private String keyStoreKeyPinProperty;
     private Issuer issuerOfPatientID;
     private Issuer issuerOfAccessionNumber;
     private Issuer orderPlacerIdentifier;
@@ -102,7 +110,7 @@ public class Device implements Serializable {
     private String[] institutionalDepartmentNames = {};
     private String[] relatedDeviceRefs = {};
     private byte[][] vendorData = {};
-    private int connLimit = DEF_CONN_LIMIT;
+    private int limitOpenAssociations;
     private boolean installed = true;
     private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
             new LinkedHashMap<String, X509Certificate[]>();
@@ -114,8 +122,8 @@ public class Device implements Serializable {
 
     private transient DimseRQHandler dimseRQHandler;
 
-    private transient int connCount = 0;
-    private transient final Object connCountLock = new Object();
+    private transient int assocCount = 0;
+    private transient final Object assocCountLock = new Object();
 
     private transient Executor executor;
     private transient ScheduledExecutorService scheduledExecutor;
@@ -124,9 +132,13 @@ public class Device implements Serializable {
     private transient volatile TrustManager tm;
 
     public Device(String name) {
-        if (name.isEmpty())
-            throw new IllegalArgumentException("Device Name cannot be empty");
+        checkNotEmpty("Device Name", name);
         this.deviceName = name;
+    }
+
+    private void checkNotEmpty(String name, String val) {
+        if (val != null && val.isEmpty())
+            throw new IllegalArgumentException(name + " cannot be empty");
     }
 
     /**
@@ -457,6 +469,43 @@ public class Device implements Serializable {
         return authorizedNodeCertificates.keySet().toArray(StringUtils.EMPTY_STRING);
     }
 
+    public final String getTrustStoreURL() {
+        return trustStoreURL;
+    }
+
+    public final void setTrustStoreURL(String trustStoreURL) {
+        checkNotEmpty("trustStoreURL", trustStoreURL);
+        this.trustStoreURL = trustStoreURL;
+        setTrustManager(null);
+    }
+
+    public final String getTrustStoreType() {
+        return trustStoreType;
+    }
+
+    public final void setTrustStoreType(String trustStoreType) {
+        checkNotEmpty("trustStoreType", trustStoreType);
+        this.trustStoreType = trustStoreType;
+    }
+
+    public final String getTrustStorePin() {
+        return trustStorePin;
+    }
+
+    public final void setTrustStorePin(String trustStorePin) {
+        checkNotEmpty("trustStorePin", trustStorePin);
+        this.trustStorePin = trustStorePin;
+    }
+
+    public final String getTrustStorePinProperty() {
+        return trustStorePinProperty;
+    }
+
+    public final void setTrustStorePinProperty(String trustStorePinProperty) {
+        checkNotEmpty("keyPin", keyStoreKeyPin);
+        this.trustStorePinProperty = trustStorePinProperty;
+    }
+
     public X509Certificate[] getThisNodeCertificates(String ref) {
         return thisNodeCertificates.get(ref);
     }
@@ -467,6 +516,61 @@ public class Device implements Serializable {
 
     public X509Certificate[] removeThisNodeCertificates(String ref) {
         return thisNodeCertificates.remove(ref);
+    }
+
+    public final String getKeyStoreURL() {
+        return keyStoreURL;
+    }
+
+    public final void setKeyStoreURL(String keyStoreURL) {
+        checkNotEmpty("keyStoreURL", keyStoreURL);
+        this.keyStoreURL = keyStoreURL;
+        setKeyManager(null);
+    }
+
+    public final String getKeyStoreType() {
+        return keyStoreType;
+    }
+
+    public final void setKeyStoreType(String keyStoreType) {
+        checkNotEmpty("keyStoreType", keyStoreURL);
+        this.keyStoreType = keyStoreType;
+    }
+
+    public final String getKeyStorePin() {
+        return keyStorePin;
+    }
+
+    public final void setKeyStorePin(String keyStorePin) {
+        checkNotEmpty("keyStorePin", keyStorePin);
+        this.keyStorePin = keyStorePin;
+    }
+
+    public final String getKeyStorePinProperty() {
+        return keyStorePinProperty;
+    }
+
+    public final void setKeyStorePinProperty(String keyStorePinProperty) {
+        checkNotEmpty("keyStorePinProperty", keyStorePinProperty);
+        this.keyStorePinProperty = keyStorePinProperty;
+    }
+
+    public final String getKeyStoreKeyPin() {
+        return keyStoreKeyPin;
+    }
+
+    public final void setKeyStoreKeyPin(String keyStorePin) {
+        checkNotEmpty("keyStoreKeyPin", keyStorePin);
+        this.keyStoreKeyPin = keyStorePin;
+    }
+
+    public final String getKeyStoreKeyPinProperty() {
+        return keyStoreKeyPinProperty;
+    }
+
+    public final void setKeyStoreKeyPinProperty(String keyStoreKeyPinProperty) {
+        checkNotEmpty("keyStoreKeyPinProperty", keyStoreKeyPinProperty);
+        this.keyStoreKeyPinProperty = keyStoreKeyPinProperty;
     }
 
     public void removeAllThisNodeCertificates() {
@@ -649,43 +753,43 @@ public class Device implements Serializable {
         return ae;
     }
 
-    public final int getLimitOfOpenConnections() {
-        return connLimit;
+    public final int getLimitOpenAssociations() {
+        return limitOpenAssociations;
     }
 
-    public final void setLimitOfOpenConnections(int limit) {
-        if (limit <= 0)
+    public final void setLimitOpenAssociations(int limit) {
+        if (limit < 0)
             throw new IllegalArgumentException("limit: " + limit);
 
-        this.connLimit = limit;
+        this.limitOpenAssociations = limit;
     }
 
-    public int getNumberOfOpenConnections() {
-        return connCount;
+    public int getNumberOfOpenAssociations() {
+        return assocCount;
     }
 
-    void incrementNumberOfOpenConnections() {
-        synchronized (connCountLock) {
-            connCount++;
+    void incrementNumberOfOpenAssociations() {
+        synchronized (assocCountLock) {
+            assocCount++;
         }
     }
 
-    void decrementNumberOfOpenConnections() {
-        synchronized (connCountLock) {
-            if (--connCount <= 0)
-                connCountLock.notifyAll();
+    void decrementNumberOfOpenAssociations() {
+        synchronized (assocCountLock) {
+            if (--assocCount <= 0)
+                assocCountLock.notifyAll();
         }
     }
 
     public void waitForNoOpenConnections() throws InterruptedException {
-        synchronized (connCountLock) {
-            while (connCount > 0)
-                connCountLock.wait();
+        synchronized (assocCountLock) {
+            while (assocCount > 0)
+                assocCountLock.wait();
         }
     }
 
-    public boolean isLimitOfOpenConnectionsExceeded() {
-        return getNumberOfOpenConnections() > connLimit;
+    public boolean isLimitOfOpenAssociationsExceeded() {
+        return limitOpenAssociations > 0 && getNumberOfOpenAssociations() > limitOpenAssociations;
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
@@ -708,6 +812,54 @@ public class Device implements Serializable {
         return km;
     }
 
+    private KeyManager km() throws GeneralSecurityException, IOException {
+        KeyManager ret = km;
+        if (ret != null || keyStoreURL == null)
+            return ret;
+        String keyStorePin = keyStorePin();
+        km = ret = SSLManagerFactory.createKeyManager(keyStoreType(),
+                        keyStoreURL, keyStorePin(), keyPin(keyStorePin));
+        return ret;
+    }
+
+    private String keyStoreType() {
+        if (keyStoreType == null)
+            throw new IllegalStateException("keyStoreURL requires keyStoreType");
+            
+        return keyStoreType;
+    }
+
+    private String keyStorePin() {
+        if (keyStorePin != null)
+            return keyStorePin;
+
+        if (keyStorePinProperty == null)
+            throw new IllegalStateException(
+                    "keyStoreURL requires keyStorePin or keyStorePinProperty");
+
+        String pin = System.getProperty(keyStorePinProperty);
+        if (pin == null)
+            throw new IllegalStateException(
+                    "No such keyStorePinProperty: " + keyStorePinProperty);
+
+        return pin;
+    }
+
+    private String keyPin(String keyStorePin) {
+        if (keyStoreKeyPin != null)
+            return keyStoreKeyPin;
+
+        if (keyStoreKeyPinProperty == null)
+            return keyStorePin;
+
+        String pin = System.getProperty(keyStoreKeyPinProperty);
+        if (pin == null)
+            throw new IllegalStateException(
+                    "No such keyPinProperty: " + keyStoreKeyPinProperty);
+
+        return pin;
+    }
+
     public final void setTrustManager(TrustManager tm) {
         this.tm = tm;
         needReconfigureTLS();
@@ -717,22 +869,49 @@ public class Device implements Serializable {
         return tm;
     }
 
-    private TrustManager tm() throws GeneralSecurityException {
+    private TrustManager tm() throws GeneralSecurityException, IOException {
         TrustManager ret = tm;
-        if (ret != null || authorizedNodeCertificates.isEmpty())
+        if (ret != null
+                || trustStoreURL == null && authorizedNodeCertificates.isEmpty())
             return ret;
 
-        tm = ret = SSLManagerFactory.createTrustManager(
-                getAllAuthorizedNodeCertificates());
+        tm = ret = trustStoreURL != null
+                ? SSLManagerFactory.createTrustManager(trustStoreType(),
+                        trustStoreURL, trustStorePin())
+                : SSLManagerFactory.createTrustManager(
+                        getAllAuthorizedNodeCertificates());
         return ret;
     }
 
-    SSLContext sslContext() throws GeneralSecurityException {
+    private String trustStoreType() {
+        if (trustStoreType == null)
+            throw new IllegalStateException("trustStoreURL requires trustStoreType");
+            
+        return trustStoreType;
+    }
+
+    private String trustStorePin() {
+        if (trustStorePin != null)
+            return trustStorePin;
+
+        if (trustStorePinProperty == null)
+            throw new IllegalStateException(
+                    "trustStoreURL requires trustStorePin or trustStorePinProperty");
+
+        String pin = System.getProperty(trustStorePinProperty);
+        if (pin == null)
+            throw new IllegalStateException(
+                    "No such trustStorePinProperty: " + trustStorePinProperty);
+
+        return pin;
+    }
+
+    SSLContext sslContext() throws GeneralSecurityException, IOException {
         SSLContext ctx = sslContext;
         if (ctx != null)
             return ctx;
 
-        sslContext = ctx = createSSLContext(km, tm());
+        sslContext = ctx = createSSLContext(km(), tm());
         return ctx;
     }
 

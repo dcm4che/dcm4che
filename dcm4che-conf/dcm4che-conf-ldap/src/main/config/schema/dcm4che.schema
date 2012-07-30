@@ -201,6 +201,107 @@ attributetype ( 1.2.40.0.13.1.15.0.3.38
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.39
+  NAME 'dcmLimitOpenAssociations'
+  DESC 'Limit open DICOM connections; rejects Association requests if the limit is exceeded; 0 (=no limit) if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.40
+  NAME 'dcmTrustStoreURL'
+  DESC 'URL of Trust Store with Certificates for DICOM nodes that are authorized to connect to this node; overrides dicomAuthorizedNodeCertificateReference'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.41
+  NAME 'dcmTrustStoreType'
+  DESC 'Key Store Type of Trust Store specified by dcmTrustStoreURL. "JKS" or "PKCS12".'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.42
+  NAME 'dcmTrustStorePin'
+  DESC 'Key Store Password of Trust Store specified by dcmTrustStoreURL.'
+  EQUALITY octetStringMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.43
+  NAME 'dcmTrustStorePinProperty'
+  DESC 'System property of Key Store Password of Trust Store specified by dcmTrustStoreURL.'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.44
+  NAME 'dcmKeyStoreURL'
+  DESC 'URL of Key Store with private Key and certificate used to identify this DICOM node in TLS connections.'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.45
+  NAME 'dcmKeyStoreType'
+  DESC 'Key Store Type of Key Store specified by dcmKeyStoreURL. "JKS" or "PKCS12".'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.46
+  NAME 'dcmKeyStorePin'
+  DESC 'Key Store Password of Key Store specified by dcmKeyStoreURL.'
+  EQUALITY octetStringMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.47
+  NAME 'dcmKeyStorePinProperty'
+  DESC 'System property of Key Store Password of Key Store specified by dcmKeyStoreURL.'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.48
+  NAME 'dcmKeyStoreKeyPin'
+  DESC 'Key Password of Key Store specified by dcmKeyStoreURL.'
+  EQUALITY octetStringMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.49
+  NAME 'dcmKeyStoreKeyPinProperty'
+  DESC 'System property of Key Password of Key Store specified by dcmKeyStoreURL.'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+
+objectclass ( 1.2.40.0.13.1.15.0.4.4
+  NAME 'dcmDevice'
+  DESC 'Extended DICOM Device related information'
+  SUP top AUXILIARY
+  MAY (
+    dcmLimitOpenAssociations $
+    dcmTrustStoreURL $
+    dcmTrustStoreType $
+    dcmTrustStorePin $
+    dcmTrustStorePinProperty $
+    dcmKeyStoreURL $
+    dcmKeyStoreType $
+    dcmKeyStorePin $
+    dcmKeyStorePinProperty $
+    dcmKeyStoreKeyPin $
+    dcmKeyStoreKeyPinProperty ) )
+
 objectclass ( 1.2.40.0.13.1.15.0.4.5
   NAME 'dcmNetworkAE'
   DESC 'Extended DICOM Network AE related information'

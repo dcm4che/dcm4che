@@ -12,6 +12,9 @@
           <node name="echoscp">
             <map>
               <entry key="dicomInstalled" value="true"/>
+              <entry key="dcmKeyStoreURL" value="resource:key.jks"/>
+              <entry key="dcmKeyStoreType" value="JKS"/>
+              <entry key="dcmKeyStorePin" value="secret"/>
             </map>
             <node name="dcmNetworkAE">
               <map/>

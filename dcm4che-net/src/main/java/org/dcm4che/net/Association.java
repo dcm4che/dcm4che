@@ -457,7 +457,7 @@ public class Association {
             @Override
             public void run() {
                 decoder = new PDUDecoder(Association.this, in);
-                device.incrementNumberOfOpenConnections();
+                device.incrementNumberOfOpenAssociations();
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
@@ -467,7 +467,7 @@ public class Association {
                     onIOException(e);
                 } finally {
                     onClose();
-                    device.decrementNumberOfOpenConnections();
+                    device.decrementNumberOfOpenAssociations();
                 }
             }
         });

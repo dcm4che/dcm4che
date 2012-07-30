@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.ldap;
 
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Hashtable;
@@ -56,6 +57,7 @@ import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
@@ -73,6 +75,13 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     public ExtendedLdapDicomConfiguration(Hashtable<?, ?> env)
             throws ConfigurationException {
         super(env);
+    }
+
+    @Override
+    protected Attribute objectClassesOf(Device device, Attribute attr) {
+        super.objectClassesOf(device, attr);
+        attr.add("dcmDevice");
+        return attr;
     }
 
     @Override
@@ -140,6 +149,23 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     }
 
     @Override
+    protected Attributes storeTo(Device device, Attributes attrs) {
+        super.storeTo(device, attrs);
+        storeNotDef(attrs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+        storeNotNull(attrs, "dcmTrustStoreURL", device.getTrustStoreURL());
+        storeNotNull(attrs, "dcmTrustStoreType", device.getTrustStoreType());
+        storeNotNull(attrs, "dcmTrustStorePin", device.getTrustStorePin());
+        storeNotNull(attrs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty());
+        storeNotNull(attrs, "dcmKeyStoreURL", device.getKeyStoreURL());
+        storeNotNull(attrs, "dcmKeyStoreType", device.getKeyStoreType());
+        storeNotNull(attrs, "dcmKeyStorePin", device.getKeyStorePin());
+        storeNotNull(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
+        storeNotNull(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
+        storeNotNull(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
+        return attrs;
+    }
+
+    @Override
     protected Attributes storeTo(ApplicationEntity ae, String deviceDN, Attributes attrs) {
         super.storeTo(ae, deviceDN, attrs);
         storeNotEmpty(attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
@@ -199,6 +225,30 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         storeNotNull(attrs, "dicomSOPClass", ac.getSopClass());
         storeNotNull(attrs, "labeledURI", ac.getURI());
         return attrs;
+    }
+
+    @Override
+    protected void loadFrom(Device device, Attributes attrs)
+            throws NamingException, CertificateException {
+        super.loadFrom(device, attrs);
+        if (!hasObjectClass(attrs, "dcmDevice"))
+            return;
+        
+        device.setLimitOpenAssociations(
+                intValue(attrs.get("dcmLimitOpenAssociations"), 0));
+        device.setTrustStoreURL(stringValue(attrs.get("dcmTrustStoreURL")));
+        device.setTrustStoreType(stringValue(attrs.get("dcmTrustStoreType")));
+        device.setTrustStorePin(stringValue(attrs.get("dcmTrustStorePin")));
+        device.setTrustStorePinProperty(
+                stringValue(attrs.get("dcmTrustStorePinProperty")));
+        device.setKeyStoreURL(stringValue(attrs.get("dcmKeyStoreURL")));
+        device.setKeyStoreType(stringValue(attrs.get("dcmKeyStoreType")));
+        device.setKeyStorePin(stringValue(attrs.get("dcmKeyStorePin")));
+        device.setKeyStorePinProperty(
+                stringValue(attrs.get("dcmKeyStorePinProperty")));
+        device.setKeyStoreKeyPin(stringValue(attrs.get("dcmKeyStoreKeyPin")));
+        device.setKeyStoreKeyPinProperty(
+                stringValue(attrs.get("dcmKeyStoreKeyPinProperty")));
     }
 
     @Override
@@ -317,6 +367,46 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         }
     }
 
+
+    @Override
+    protected List<ModificationItem> storeDiffs(Device a, Device b,
+            List<ModificationItem> mods) {
+        super.storeDiffs(a, b, mods);
+        storeDiff(mods, "dcmLimitOpenAssociations",
+                a.getLimitOpenAssociations(),
+                b.getLimitOpenAssociations());
+        storeDiff(mods, "dcmTrustStoreURL",
+                a.getTrustStoreURL(),
+                b.getTrustStoreURL());
+        storeDiff(mods, "dcmTrustStoreType",
+                a.getTrustStoreType(),
+                b.getTrustStoreType());
+        storeDiff(mods, "dcmTrustStorePin",
+                a.getTrustStorePin(),
+                b.getTrustStorePin());
+        storeDiff(mods, "dcmTrustStorePinProperty",
+                a.getTrustStorePinProperty(),
+                b.getTrustStorePinProperty());
+        storeDiff(mods, "dcmKeyStoreURL",
+                a.getKeyStoreURL(),
+                b.getKeyStoreURL());
+        storeDiff(mods, "dcmKeyStoreType",
+                a.getKeyStoreType(),
+                b.getKeyStoreType());
+        storeDiff(mods, "dcmKeyStorePin",
+                a.getKeyStorePin(),
+                b.getKeyStorePin());
+        storeDiff(mods, "dcmKeyStorePinProperty",
+                a.getKeyStorePinProperty(),
+                b.getKeyStorePinProperty());
+        storeDiff(mods, "dcmKeyStoreKeyPin",
+                a.getKeyStoreKeyPin(),
+                b.getKeyStoreKeyPin());
+        storeDiff(mods, "dcmKeyStoreKeyPinProperty",
+                a.getKeyStoreKeyPinProperty(),
+                b.getKeyStoreKeyPinProperty());
+        return mods;
+    }
 
     @Override
     protected List<ModificationItem> storeDiffs(Connection a, Connection b,

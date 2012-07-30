@@ -430,7 +430,7 @@ public class ApplicationEntity implements Serializable, Cloneable {
         UserIdentityAC userIdentity = userIdNegotiator != null
                 ? userIdNegotiator.negotiate(as, rq.getUserIdentityRQ())
                 : null;
-        if (device.isLimitOfOpenConnectionsExceeded())
+        if (device.isLimitOfOpenAssociationsExceeded())
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
                     AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
                     AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);

@@ -42,8 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.net.ssl.KeyManager;
-
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomServiceRegistry;
 
@@ -59,7 +57,6 @@ public class DeviceService<T extends Device> {
 
     protected void init(T device) throws Exception {
         this.device = device;
-        device.setKeyManager(keyManager());
         device.setDimseRQHandler(serviceRegistry());
     }
 
@@ -101,10 +98,6 @@ public class DeviceService<T extends Device> {
 
     protected ScheduledExecutorService scheduledExecuterService() {
         return Executors.newSingleThreadScheduledExecutor();
-    }
-
-    protected KeyManager keyManager() throws Exception {
-        return null;
     }
 
     protected DicomServiceRegistry serviceRegistry() {

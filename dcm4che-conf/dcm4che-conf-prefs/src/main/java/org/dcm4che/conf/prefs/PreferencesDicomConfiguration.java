@@ -409,6 +409,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 device.getThisNodeCertificateRefs());
         storeNotEmpty(prefs, "dicomVendorData", device.getVendorData());
         prefs.putBoolean("dicomInstalled", device.isInstalled());
+        
+        storeNotDef(prefs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+        storeNotNull(prefs, "dcmTrustStoreURL", device.getTrustStoreURL());
+        storeNotNull(prefs, "dcmTrustStoreType", device.getTrustStoreType());
+        storeNotNull(prefs, "dcmTrustStorePin", device.getTrustStorePin());
+        storeNotNull(prefs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty());
+        storeNotNull(prefs, "dcmKeyStoreURL", device.getKeyStoreURL());
+        storeNotNull(prefs, "dcmKeyStoreType", device.getKeyStoreType());
+        storeNotNull(prefs, "dcmKeyStorePin", device.getKeyStorePin());
+        storeNotNull(prefs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
+        storeNotNull(prefs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
+        storeNotNull(prefs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
+
     }
 
     protected void storeTo(Connection conn, Preferences prefs) {
@@ -581,6 +594,41 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
+
+        storeDiff(prefs, "dcmLimitOpenAssociations",
+                a.getLimitOpenAssociations(),
+                b.getLimitOpenAssociations());
+        storeDiff(prefs, "dcmTrustStoreURL",
+                a.getTrustStoreURL(),
+                b.getTrustStoreURL());
+        storeDiff(prefs, "dcmTrustStoreType",
+                a.getTrustStoreType(),
+                b.getTrustStoreType());
+        storeDiff(prefs, "dcmTrustStorePin",
+                a.getTrustStorePin(),
+                b.getTrustStorePin());
+        storeDiff(prefs, "dcmTrustStorePinProperty",
+                a.getTrustStorePinProperty(),
+                b.getTrustStorePinProperty());
+        storeDiff(prefs, "dcmKeyStoreURL",
+                a.getKeyStoreURL(),
+                b.getKeyStoreURL());
+        storeDiff(prefs, "dcmKeyStoreType",
+                a.getKeyStoreType(),
+                b.getKeyStoreType());
+        storeDiff(prefs, "dcmKeyStorePin",
+                a.getKeyStorePin(),
+                b.getKeyStorePin());
+        storeDiff(prefs, "dcmKeyStorePinProperty",
+                a.getKeyStorePinProperty(),
+                b.getKeyStorePinProperty());
+        storeDiff(prefs, "dcmKeyStoreKeyPin",
+                a.getKeyStoreKeyPin(),
+                b.getKeyStoreKeyPin());
+        storeDiff(prefs, "dcmKeyStoreKeyPinProperty",
+                a.getKeyStoreKeyPinProperty(),
+                b.getKeyStoreKeyPinProperty());
+
     }
 
     protected void storeDiffs(Preferences prefs, Connection a, Connection b) {
@@ -1050,6 +1098,22 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             device.setThisNodeCertificates(ref, loadCertificates(ref));
         device.setVendorData(toVendorData(prefs, "dicomVendorData"));
         device.setInstalled(prefs.getBoolean("dicomInstalled", false));
+        
+        device.setLimitOpenAssociations(
+                prefs.getInt("dcmLimitOpenAssociations", 0));
+        device.setTrustStoreURL(prefs.get("dcmTrustStoreURL", null));
+        device.setTrustStoreType(prefs.get("dcmTrustStoreType", null));
+        device.setTrustStorePin(prefs.get("dcmTrustStorePin", null));
+        device.setTrustStorePinProperty(
+                prefs.get("dcmTrustStorePinProperty", null));
+        device.setKeyStoreURL(prefs.get("dcmKeyStoreURL", null));
+        device.setKeyStoreType(prefs.get("dcmKeyStoreType", null));
+        device.setKeyStorePin(prefs.get("dcmKeyStorePin", null));
+        device.setKeyStorePinProperty(
+                prefs.get("dcmKeyStorePinProperty", null));
+        device.setKeyStoreKeyPin(prefs.get("dcmKeyStoreKeyPin", null));
+        device.setKeyStoreKeyPinProperty(
+                prefs.get("dcmKeyStoreKeyPinProperty", null));
     }
 
     protected void loadFrom(Connection conn, Preferences prefs) {

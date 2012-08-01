@@ -85,8 +85,8 @@ public class AttributeCoercions implements Serializable {
         if (index < 0)
             return false;
         list.remove(index);
-        int i = 4;
-        while (--i >= 0 && insertIndex[i] > index)
+        int i = -1;
+        while (++i < 4 && insertIndex[i] > index)
             insertIndex[i]--;
         return true;
     }

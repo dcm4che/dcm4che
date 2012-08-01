@@ -76,35 +76,47 @@ import org.slf4j.LoggerFactory;
  */
 public class PreferencesDicomConfiguration implements DicomConfiguration {
 
+    private static final String DICOM_CONFIGURATION_ROOT =
+            "dicomConfigurationRoot";
+    private static final String DICOM_DEVICES_ROOT = 
+            "dicomConfigurationRoot/dicomDevicesRoot";
+    private static final String DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT =
+            "dicomConfigurationRoot/dicomUniqueAETitlesRegistryRoot";
     private static final String CONF_ROOT_PROPERTY = 
             "org.dcm4che.conf.prefs.configurationRoot";
-    private static final String CONF_ROOT_DEF = "com/dcm4che";
     private static final String USER_CERTIFICATE = "userCertificate";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
     private static final Code[] EMPTY_CODES = {};
 
-    private static final Logger LOG = LoggerFactory.getLogger(PreferencesDicomConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(
+            PreferencesDicomConfiguration.class);
 
     private final Preferences rootPrefs;
 
-    private final String configurationRoot;
-
     public PreferencesDicomConfiguration() {
-        this(Preferences.userRoot(), System.getProperty(CONF_ROOT_PROPERTY, CONF_ROOT_DEF));
+        this(rootPrefs());
     }
 
-    public PreferencesDicomConfiguration(Preferences rootPrefs, String configurationRoot) {
+    private static Preferences rootPrefs() {
+        Preferences prefs = Preferences.userRoot();
+        String pathName = System.getProperty(CONF_ROOT_PROPERTY);
+        return pathName != null ? prefs.node(pathName) : prefs;
+    }
+
+    public PreferencesDicomConfiguration(Preferences rootPrefs) {
         this.rootPrefs = rootPrefs;
-        this.configurationRoot = configurationRoot;
-    }
-
-    public final String getConfigurationRoot() {
-        return configurationRoot;
     }
 
     @Override
     public boolean configurationExists() throws ConfigurationException {
-        return nodeExists(rootPrefs, configurationRoot);
+        return nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT);
+    }
+
+    public Preferences getDicomConfigurationRoot() throws ConfigurationException {
+        if (!nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT))
+            throw new ConfigurationNotFoundException();
+
+        return rootPrefs.node(DICOM_CONFIGURATION_ROOT);
     }
 
     @Override
@@ -113,7 +125,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             return false;
 
         try {
-            Preferences node = rootPrefs.node(configurationRoot);
+            Preferences node = rootPrefs.node(DICOM_CONFIGURATION_ROOT);
             node.removeNode();
             node.flush();
             LOG.info("Purge DICOM Configuration {}", node);
@@ -150,16 +162,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private String aetRegistryPathNameOf(String aet) {
-        return configurationRoot + "/dicomUniqueAETitlesRegistryRoot/" + aet;
+        return DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT + '/' + aet;
     }
 
     @Override
     public String deviceRef(String name) {
-        return configurationRoot + "/dicomDevicesRoot/" + name;
-    }
-
-    private String devicesPathName() {
-        return configurationRoot + "/dicomDevicesRoot";
+        return DICOM_DEVICES_ROOT + '/' + name;
     }
 
     @Override
@@ -170,12 +178,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     protected Device findDevice(String nodeName, String childName)
             throws ConfigurationException {
-        String pathName = devicesPathName();
-        if (!nodeExists(rootPrefs, pathName))
+         if (!nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             throw new ConfigurationNotFoundException();
         
         try {
-            Preferences devicePrefs = rootPrefs.node(pathName);
+            Preferences devicePrefs = rootPrefs.node(DICOM_DEVICES_ROOT);
             for (String deviceName : devicePrefs.childrenNames()) {
                 Preferences deviceNode = devicePrefs.node(deviceName);
                 for (String aet2 : deviceNode.node(nodeName).childrenNames())
@@ -199,12 +206,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String[] listDeviceNames() throws ConfigurationException {
-        String pathName = devicesPathName();
-        if (!nodeExists(rootPrefs, pathName))
+        if (!nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             return StringUtils.EMPTY_STRING;
 
         try {
-            return rootPrefs.node(pathName).childrenNames();
+            return rootPrefs.node(DICOM_DEVICES_ROOT).childrenNames();
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }

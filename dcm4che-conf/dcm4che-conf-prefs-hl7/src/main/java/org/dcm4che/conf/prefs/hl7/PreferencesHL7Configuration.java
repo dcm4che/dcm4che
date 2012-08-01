@@ -60,9 +60,8 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
     public PreferencesHL7Configuration() {
     }
 
-    public PreferencesHL7Configuration(Preferences rootPrefs,
-            String configurationRoot) {
-        super(rootPrefs, configurationRoot);
+    public PreferencesHL7Configuration(Preferences rootPrefs) {
+        super(rootPrefs);
     }
 
     @Override

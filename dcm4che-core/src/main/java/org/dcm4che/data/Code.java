@@ -40,8 +40,6 @@ package org.dcm4che.data;
 
 import java.io.Serializable;
 
-import org.dcm4che.util.StringUtils;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -71,14 +69,34 @@ public class Code implements Serializable {
     }
 
     public Code(String s) {
-        String[] ss = StringUtils.split(s, '^');
-        if (ss.length < 3 || ss.length > 4
-                || ss[0].isEmpty() || ss[1].isEmpty() || ss[2].isEmpty())
+        int len = s.length();
+        if (len < 9 
+                || s.charAt(0) != '('
+                || s.charAt(len-2) != '"'
+                || s.charAt(len-1) != ')')
             throw new IllegalArgumentException(s);
-        this.codeValue = ss[0];
-        this.codeMeaning = ss[1];
-        this.codingSchemeDesignator = ss[2];
-        this.codingSchemeVersion = ss.length > 3 && !ss[3].isEmpty() ? ss[3] : null;
+        
+        int endVal = s.indexOf(',');
+        int endScheme = s.indexOf(',', endVal + 1);
+        int startMeaning = s.indexOf('"', endScheme + 1) + 1;
+        this.codeValue = trimsubstring(s, 1, endVal);
+        this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
+        this.codeMeaning = trimsubstring(s, startMeaning, len-2);
+        if (codingSchemeDesignator.endsWith("]")) {
+            int endVersion = s.lastIndexOf(']', endScheme - 1);
+            endScheme = s.lastIndexOf('[', endVersion - 1);
+            this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
+            this.codingSchemeVersion = trimsubstring(s, endScheme+1, endVersion);
+        }
+    }
+
+    private String trimsubstring(String s, int start, int end) {
+        try {
+            String trim = s.substring(start, end).trim();
+            if (!trim.isEmpty())
+                return trim;
+        } catch (StringIndexOutOfBoundsException e) {}
+        throw new IllegalArgumentException(s);
     }
 
     public Code(Attributes item) {
@@ -144,8 +162,12 @@ public class Code implements Serializable {
 
     @Override
     public String toString() {
-        String s = codeValue + '^' + codeMeaning + '^' + codingSchemeDesignator;
-        return codingSchemeVersion == null ? s : s + '^' + codingSchemeVersion;
+        StringBuilder sb = new StringBuilder();
+        sb.append('(').append(codeValue).append(" ,").append(codingSchemeDesignator);
+        if (codingSchemeVersion != null)
+            sb.append(" [").append(codingSchemeVersion).append(']');
+        sb.append(" ,\"").append(codeMeaning).append("\")");
+        return sb.toString();
     }
 
     public Attributes toItem() {

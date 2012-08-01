@@ -1,2 +1,3 @@
+/system-property="org.dcm4che.conf.prefs.configurationRoot":add(value="org/dcm4che/jboss/sample")
 /system-property="org.dcm4che.jboss.sample.deviceName":add(value="echoscp")
 /system-property="org.dcm4che.jboss.sample.jmxName":add(value="dcm4chee:service=echoSCP")

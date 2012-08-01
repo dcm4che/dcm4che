@@ -475,6 +475,11 @@ public class Device implements Serializable {
 
     public final void setTrustStoreURL(String trustStoreURL) {
         checkNotEmpty("trustStoreURL", trustStoreURL);
+        if (trustStoreURL == null
+                ? this.trustStoreURL == null
+                : trustStoreURL.equals(this.trustStoreURL))
+            return;
+
         this.trustStoreURL = trustStoreURL;
         setTrustManager(null);
     }
@@ -524,6 +529,11 @@ public class Device implements Serializable {
 
     public final void setKeyStoreURL(String keyStoreURL) {
         checkNotEmpty("keyStoreURL", keyStoreURL);
+        if (keyStoreURL == null
+                ? this.keyStoreURL == null
+                : keyStoreURL.equals(this.keyStoreURL))
+            return;
+
         this.keyStoreURL = keyStoreURL;
         setKeyManager(null);
     }
@@ -979,6 +989,13 @@ public class Device implements Serializable {
         setSoftwareVersions(from.softwareVersions);
         setStationName(from.stationName);
         setDeviceSerialNumber(from.deviceSerialNumber);
+        setTrustStoreURL(from.trustStoreURL);
+        setTrustStoreType(from.trustStoreType);
+        setTrustStorePin(from.trustStorePin);
+        setKeyStoreURL(from.keyStoreURL);
+        setKeyStoreType(from.keyStoreType);
+        setKeyStorePin(from.keyStorePin);
+        setKeyStoreKeyPin(from.keyStoreKeyPin);
         setIssuerOfPatientID(from.issuerOfPatientID);
         setIssuerOfAccessionNumber(from.issuerOfAccessionNumber);
         setOrderPlacerIdentifier(from.orderPlacerIdentifier);
@@ -996,6 +1013,7 @@ public class Device implements Serializable {
         setAuthorizedNodeCertificates(from.authorizedNodeCertificates);
         setThisNodeCertificates(from.thisNodeCertificates);
         setVendorData(from.vendorData);
+        setLimitOpenAssociations(from.limitOpenAssociations);
         setInstalled(from.installed);
      }
 

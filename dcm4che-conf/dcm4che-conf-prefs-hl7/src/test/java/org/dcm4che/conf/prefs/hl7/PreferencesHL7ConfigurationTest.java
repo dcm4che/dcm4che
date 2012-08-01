@@ -60,8 +60,8 @@ public class PreferencesHL7ConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        config = new PreferencesHL7Configuration(Preferences.userRoot());
-        config.setConfigurationRoot("PreferencesHL7ConfigurationTest");
+        config = new PreferencesHL7Configuration(Preferences.userRoot(),
+                "PreferencesHL7ConfigurationTest");
     }
 
     @After

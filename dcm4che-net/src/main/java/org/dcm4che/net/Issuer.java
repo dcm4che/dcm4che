@@ -65,7 +65,7 @@ public class Issuer implements Serializable {
     }
 
     public Issuer(String s) {
-        this(s, '^');
+        this(s, '&');
     }
 
     public Issuer(String s, char delim) {
@@ -153,7 +153,7 @@ public class Issuer implements Serializable {
 
     @Override
     public String toString() {
-        return toString('^');
+        return toString('&');
     }
 
     public String toString(char delim) {

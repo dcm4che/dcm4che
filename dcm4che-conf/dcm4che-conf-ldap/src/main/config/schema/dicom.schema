@@ -754,9 +754,9 @@ attributetype ( 1.2.840.10008.15.0.3.37
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -776,10 +776,7 @@ attributetype ( 1.2.840.10008.15.0.3.38
 #    Should be the same as the code specified by the Institution Code Sequence (0008,0082)
 #    in SOP Instances created by this device.
 #
-#    Format:
-#      <Code Value> ^ <Code Meaning> ^ <Coding Scheme Designator> 
-#    or
-#      <Code Value> ^ <Code Meaning> ^ <Coding Scheme Designator> ^ <Coding Scheme Version>
+#    Format: (CV, CSD, "CM") or (CV, CSD [CSV], "CM")
 #
 #    It is a multi-valued attribute.
 #    This attribute's syntax is 'Directory String'.

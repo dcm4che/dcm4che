@@ -254,25 +254,35 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String[] listDeviceNames() throws ConfigurationException {
+        return list(devicesDN, "(objectclass=dicomDevice)", "dicomDeviceName");
+    }
+
+    @Override
+    public String[] listRegisteredAETitles() throws ConfigurationException {
+        return list(aetsRegistryDN, "(objectclass=dicomUniqueAETitle)", "dicomAETitle");
+    }
+
+    private String[] list(String dn, String filter, String attrID)
+            throws ConfigurationException {
         if (!configurationExists())
             return StringUtils.EMPTY_STRING;
 
+        ArrayList<String> values = new ArrayList<String>();
         NamingEnumeration<SearchResult> ne = null;
-        ArrayList<String> deviceNames = new ArrayList<String>();
         try {
-            ne = search(devicesDN, "(objectclass=dicomDevice)",
-                    new String[]{ "dicomDeviceName" });
+            ne = search(dn, filter,
+                    new String[]{ attrID });
             while (ne.hasMore()) {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
-                deviceNames.add(stringValue(attrs.get("dicomDeviceName")));
+                 values.add(stringValue(attrs.get(attrID)));
             }
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } finally {
            safeClose(ne);
         }
-        return deviceNames.toArray(new String[deviceNames.size()]);
+        return values.toArray(new String[values.size()]);
     }
 
     @Override

@@ -217,6 +217,18 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
+    public String[] listRegisteredAETitles() throws ConfigurationException {
+        if (!nodeExists(rootPrefs, DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT))
+            return StringUtils.EMPTY_STRING;
+
+        try {
+            return rootPrefs.node(DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT).childrenNames();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
     public void persist(Device device) throws ConfigurationException {
         String deviceName = device.getDeviceName();
         String pathName = deviceRef(deviceName);

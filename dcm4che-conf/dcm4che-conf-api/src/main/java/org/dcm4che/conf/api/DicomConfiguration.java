@@ -64,6 +64,8 @@ public interface DicomConfiguration extends Closeable {
 
     String[] listDeviceNames() throws ConfigurationException;
 
+    String[] listRegisteredAETitles() throws ConfigurationException;
+
     void persist(Device device) throws ConfigurationException;
 
     void merge(Device device) throws ConfigurationException;

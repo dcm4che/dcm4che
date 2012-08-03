@@ -36,62 +36,48 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.jboss.sample;
+package org.dcm4che.sample.servlet;
 
 import java.lang.management.ManagementFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 
 import org.dcm4che.conf.api.DicomConfiguration;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.DeviceService;
 
-/**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
- */
-@Singleton
-@DependsOn("DicomConfiguration")
-@Startup
-@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
-public class EchoSCP extends DeviceService<Device> implements EchoSCPMBean {
-
-    static final String DEVICE_NAME = "org.dcm4che.jboss.sample.deviceName";
-    static final String JMX_NAME = "org.dcm4che.jboss.sample.jmxName";
-
-    @EJB(name="DicomConfiguration")
-    DicomConfiguration dicomConfiguration;
+@SuppressWarnings("serial")
+public class EchoSCPServlet extends HttpServlet {
 
     private ObjectInstance mbean;
 
-    @PostConstruct
-    void init() {
+    private EchoSCP echoSCP;
+
+    private DicomConfiguration dicomConfig;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         try {
-            super.init(dicomConfiguration.findDevice(
-                    System.getProperty(DEVICE_NAME, "echoscp")));
+            dicomConfig = (DicomConfiguration) Class.forName(
+                    config.getInitParameter("dicomConfigurationClass"), false,
+                    Thread.currentThread().getContextClassLoader()).newInstance();
+            echoSCP = new EchoSCP(dicomConfig,
+                    config.getInitParameter("deviceName"));
+            echoSCP.start();
             mbean = ManagementFactory.getPlatformMBeanServer()
-                    .registerMBean(this, new ObjectName(
-                            System.getProperty(JMX_NAME, "dcm4chee:service=echoSCP")));
-            start();
+                    .registerMBean(echoSCP, 
+                            new ObjectName(config.getInitParameter("jmxName")));
         } catch (Exception e) {
             destroy();
-            throw new RuntimeException(e);
+            throw new ServletException(e);
         }
-        
     }
 
-    @PreDestroy
-    void destroy() {
-        stop();
+    @Override
+    public void destroy() {
         if (mbean != null)
             try {
                 ManagementFactory.getPlatformMBeanServer()
@@ -99,18 +85,10 @@ public class EchoSCP extends DeviceService<Device> implements EchoSCPMBean {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        mbean = null;
-        device = null;
-    }
-
-    @Override
-    public Device unwrapDevice() {
-        return device;
-    }
-
-    @Override
-    public void reloadConfiguration() throws Exception {
-        device.reconfigure(dicomConfiguration.findDevice(device.getDeviceName()));
+        if (echoSCP != null)
+            echoSCP.stop();
+        if (dicomConfig != null)
+            dicomConfig.close();
     }
 
 }

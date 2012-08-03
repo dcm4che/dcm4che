@@ -36,9 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.jboss.sample;
-
-import org.dcm4che.net.Device;
+package org.dcm4che.sample.servlet;
 
 public interface EchoSCPMBean {
 
@@ -49,7 +47,5 @@ public interface EchoSCPMBean {
     void stop();
 
     void reloadConfiguration() throws Exception;
-
-    Device unwrapDevice();
 
 }

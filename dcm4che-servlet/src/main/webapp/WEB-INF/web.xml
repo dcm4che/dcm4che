@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+  xsi:schemaLocation="
+    http://java.sun.com/xml/ns/javaee
+    http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+  version="2.5">
+  <display-name>dcm4che-sample-servlet</display-name>
+  <servlet>
+    <servlet-name>echoscp</servlet-name>
+    <servlet-class>org.dcm4che.sample.servlet.EchoSCPServlet</servlet-class>
+    <init-param>
+      <param-name>dicomConfigurationClass</param-name>
+      <param-value>${config-class}</param-value>
+    </init-param>
+    <init-param>
+      <param-name>deviceName</param-name>
+      <param-value>echoscp</param-value>
+    </init-param>
+    <init-param>
+      <param-name>jmxName</param-name>
+      <param-value>dcm4che:service=echoscp</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+</web-app>

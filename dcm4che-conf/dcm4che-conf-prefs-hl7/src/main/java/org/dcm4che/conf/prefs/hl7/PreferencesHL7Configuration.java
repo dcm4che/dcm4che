@@ -65,7 +65,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
     }
 
     @Override
-    public HL7Application findHL7Application(String name)
+    public synchronized HL7Application findHL7Application(String name)
             throws ConfigurationException {
         return ((HL7Device) findDevice("hl7Application", name))
             .getHL7Application(name);

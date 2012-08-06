@@ -120,7 +120,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public boolean purgeConfiguration() throws ConfigurationException {
+    public synchronized boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists())
             return false;
 
@@ -136,7 +136,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public boolean registerAETitle(String aet) throws ConfigurationException {
+    public synchronized boolean registerAETitle(String aet) throws ConfigurationException {
         String pathName = aetRegistryPathNameOf(aet);
         if (nodeExists(rootPrefs, pathName))
             return false;
@@ -149,7 +149,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
    @Override
-    public void unregisterAETitle(String aet) throws ConfigurationException {
+    public synchronized void unregisterAETitle(String aet) throws ConfigurationException {
         String pathName = aetRegistryPathNameOf(aet);
         if (nodeExists(rootPrefs, pathName))
         try {
@@ -171,7 +171,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public ApplicationEntity findApplicationEntity(String aet)
+    public synchronized ApplicationEntity findApplicationEntity(String aet)
             throws ConfigurationException {
         return findDevice("dcmNetworkAE", aet).getApplicationEntity(aet);
     }
@@ -196,7 +196,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public Device findDevice(String name) throws ConfigurationException {
+    public synchronized Device findDevice(String name) throws ConfigurationException {
         String pathName = deviceRef(name);
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
@@ -229,7 +229,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void persist(Device device) throws ConfigurationException {
+    public synchronized void persist(Device device) throws ConfigurationException {
         String deviceName = device.getDeviceName();
         String pathName = deviceRef(deviceName);
         if (nodeExists(rootPrefs, pathName))
@@ -318,7 +318,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void merge(Device device) throws ConfigurationException {
+    public synchronized void merge(Device device) throws ConfigurationException {
         String pathName = deviceRef(device.getDeviceName());
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
@@ -360,7 +360,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void removeDevice(String name) throws ConfigurationException {
+    public synchronized void removeDevice(String name) throws ConfigurationException {
         String pathName = deviceRef(name);
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
@@ -1326,7 +1326,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void persistCertificates(String certRef, X509Certificate... certs)
+    public synchronized void persistCertificates(String certRef, X509Certificate... certs)
             throws ConfigurationException {
         try {
             storeCertificates(certRef, certs);
@@ -1351,7 +1351,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void removeCertificates(String certRef)
+    public synchronized void removeCertificates(String certRef)
             throws ConfigurationException {
         Preferences prefs = rootPrefs.node(certRef);
         removeKeys(prefs, USER_CERTIFICATE, 0, 
@@ -1364,7 +1364,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public X509Certificate[] findCertificates(String certRef)
+    public synchronized X509Certificate[] findCertificates(String certRef)
             throws ConfigurationException {
         try {
             return loadCertificates(certRef);

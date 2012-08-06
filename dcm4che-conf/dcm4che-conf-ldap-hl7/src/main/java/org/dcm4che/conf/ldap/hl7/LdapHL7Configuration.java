@@ -73,7 +73,7 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     }
 
     @Override
-    public HL7Application findHL7Application(String name)
+    public synchronized HL7Application findHL7Application(String name)
             throws ConfigurationException {
         return ((HL7Device) findDevice(
                 "(&(objectclass=hl7Application)(hl7ApplicationName=" + name + "))", name))

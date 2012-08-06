@@ -160,17 +160,17 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         safeClose(ctx);
     }
 
     @Override
-    public boolean configurationExists() throws ConfigurationException {
+    public synchronized boolean configurationExists() throws ConfigurationException {
         return configurationDN != null || findConfiguration();
     }
 
     @Override
-    public boolean purgeConfiguration() throws ConfigurationException {
+    public synchronized boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists())
             return false;
 
@@ -185,7 +185,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public boolean registerAETitle(String aet) throws ConfigurationException {
+    public synchronized boolean registerAETitle(String aet) throws ConfigurationException {
         ensureConfigurationExists();
         try {
             createSubcontext(aetDN(aet, aetsRegistryDN),
@@ -199,7 +199,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void unregisterAETitle(String aet) throws ConfigurationException {
+    public synchronized void unregisterAETitle(String aet) throws ConfigurationException {
         if (configurationExists())
             try {
                 ctx.destroySubcontext(aetDN(aet, aetsRegistryDN));
@@ -210,7 +210,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public ApplicationEntity findApplicationEntity(String aet)
+    public synchronized ApplicationEntity findApplicationEntity(String aet)
             throws ConfigurationException {
         return findDevice(
                 "(&(objectclass=dicomNetworkAE)(dicomAETitle=" + aet + "))", aet)
@@ -245,7 +245,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public Device findDevice(String name) throws ConfigurationException {
+    public synchronized Device findDevice(String name) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -253,12 +253,12 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public String[] listDeviceNames() throws ConfigurationException {
+    public synchronized String[] listDeviceNames() throws ConfigurationException {
         return list(devicesDN, "(objectclass=dicomDevice)", "dicomDeviceName");
     }
 
     @Override
-    public String[] listRegisteredAETitles() throws ConfigurationException {
+    public synchronized String[] listRegisteredAETitles() throws ConfigurationException {
         return list(aetsRegistryDN, "(objectclass=dicomUniqueAETitle)", "dicomAETitle");
     }
 
@@ -286,7 +286,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void persist(Device device) throws ConfigurationException {
+    public synchronized void persist(Device device) throws ConfigurationException {
         ensureConfigurationExists();
         String deviceName = device.getDeviceName();
         String deviceDN = deviceRef(deviceName);
@@ -347,7 +347,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void merge(Device device) throws ConfigurationException {
+    public synchronized void merge(Device device) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -389,7 +389,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void removeDevice(String name) throws ConfigurationException {
+    public synchronized void removeDevice(String name) throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
 
@@ -614,7 +614,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void persistCertificates(String dn, X509Certificate... certs)
+    public synchronized void persistCertificates(String dn, X509Certificate... certs)
             throws ConfigurationException {
         try {
             storeCertificates(dn, certs);
@@ -647,7 +647,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public void removeCertificates(String dn) throws ConfigurationException {
+    public synchronized void removeCertificates(String dn) throws ConfigurationException {
         try {
             ModificationItem removeCert = new ModificationItem(
                     DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(userCertificate));
@@ -660,7 +660,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public X509Certificate[] findCertificates(String dn) throws ConfigurationException {
+    public synchronized X509Certificate[] findCertificates(String dn) throws ConfigurationException {
         try {
             return loadCertificates(dn);
         } catch (NameNotFoundException e) {

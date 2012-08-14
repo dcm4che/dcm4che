@@ -112,6 +112,9 @@ public class StringUtils {
     }
 
     public static String[] split(String s, char delim) {
+        if (s == null || s.isEmpty())
+            return EMPTY_STRING;
+
         int count = 1;
         int delimPos = -1;
         while ((delimPos = s.indexOf(delim, delimPos+1)) >= 0)

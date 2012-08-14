@@ -1,292 +1,251 @@
 # dcm4che extensions of the DICOM Application Configuration Data Model Hierarchy LDAP Schema
 
-attributetype ( 1.2.40.0.13.1.15.0.3.1
-  NAME 'dcmTLSNeedClientAuth'
+attributetype ( 1.2.40.0.13.1.15.0.3.1 NAME 'dcmTLSNeedClientAuth'
   DESC 'Indicates if TLS client authentication is required; required if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.2
-  NAME 'dcmTLSProtocol'
+attributetype ( 1.2.40.0.13.1.15.0.3.2 NAME 'dcmTLSProtocol'
   DESC 'The Supported TLS Protocols; "TLSv1", "SSLv3" if absent'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.3
-  NAME 'dcmTCPBacklog'
+attributetype ( 1.2.40.0.13.1.15.0.3.3 NAME 'dcmTCPBacklog'
   DESC 'Maximum queue length for incoming TCP connections; 50 if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.4
-  NAME 'dcmTCPConnectTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.4 NAME 'dcmTCPConnectTimeout'
   DESC 'TCP connect timeout in ms; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.5
-  NAME 'dcmAARQTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.5 NAME 'dcmAARQTimeout'
   DESC 'Timeout in ms for receive of A-ASSOCIATE-RQ PDU after TCP connect; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.6
-  NAME 'dcmAAACTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.6 NAME 'dcmAAACTimeout'
   DESC 'Timeout in ms for receive of A-ASSOCIATE-AC PDU after send of A-ASSOCIATE-RQ PDU; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.7
-  NAME 'dcmARRPTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.7 NAME 'dcmARRPTimeout'
   DESC 'Timeout in ms for receive of A-RELEASE-RP PDU after send of A-RELEASE-RQ PDU; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.8
-  NAME 'dcmResponseTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.8 NAME 'dcmResponseTimeout'
   DESC 'Timeout in ms for receive of response message; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.9
-  NAME 'dcmRetrieveTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.9 NAME 'dcmRetrieveTimeout'
   DESC 'Timeout in ms for receive of C-GET-RSP or C-MOVE-RSP; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.19
-  NAME 'dcmIdleTimeout'
+attributetype ( 1.2.40.0.13.1.15.0.3.19 NAME 'dcmIdleTimeout'
   DESC 'Indicates aborting of idle Associations after specified timeout in ms; no timeout if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.20
-  NAME 'dcmTCPCloseDelay'
+attributetype ( 1.2.40.0.13.1.15.0.3.20 NAME 'dcmTCPCloseDelay'
   DESC 'TCP socket close delay in ms after send of A-ASSOCIATE-RJ, A-RELEASE-RP or A-ABORT PDU; 50 ms if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.21
-  NAME 'dcmTCPSendBufferSize'
+attributetype ( 1.2.40.0.13.1.15.0.3.21 NAME 'dcmTCPSendBufferSize'
   DESC 'TCP send buffer size; use system defaults if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.22
-  NAME 'dcmTCPReceiveBufferSize'
+attributetype ( 1.2.40.0.13.1.15.0.3.22 NAME 'dcmTCPReceiveBufferSize'
   DESC 'TCP receive buffer size; use system defaults if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.23
-  NAME 'dcmTCPNoDelay'
+attributetype ( 1.2.40.0.13.1.15.0.3.23 NAME 'dcmTCPNoDelay'
   DESC 'Enable/disable TCP_NODELAY (disable/enable Nagle algorithm); disable Nagle algorithm if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.24
-  NAME 'dcmBlacklistedHostname'
+attributetype ( 1.2.40.0.13.1.15.0.3.24 NAME 'dcmBlacklistedHostname'
   DESC 'blacklisted DNS hostnames'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.25
-  NAME 'dcmSendPDULength'
+attributetype ( 1.2.40.0.13.1.15.0.3.25 NAME 'dcmSendPDULength'
   DESC 'Maximal length of emitted PDUs; 16378 if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.26
-  NAME 'dcmReceivePDULength'
+attributetype ( 1.2.40.0.13.1.15.0.3.26 NAME 'dcmReceivePDULength'
   DESC 'Maximal length of received PDUs; 16378 if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.27
-  NAME 'dcmMaxOpsPerformed'
+attributetype ( 1.2.40.0.13.1.15.0.3.27 NAME 'dcmMaxOpsPerformed'
   DESC 'Maximal number of operations to perform asynchronously; 1 (=synchronous) if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.28
-  NAME 'dcmMaxOpsInvoked'
+attributetype ( 1.2.40.0.13.1.15.0.3.28 NAME 'dcmMaxOpsInvoked'
   DESC 'Maximal number of operations to invoke asynchronously; 1 (=synchronous) if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.29
-  NAME 'dcmPackPDV'
+attributetype ( 1.2.40.0.13.1.15.0.3.29 NAME 'dcmPackPDV'
   DESC 'Enable/disable packing of command and data PDVs into one P-DATA-TF PDU; enabled if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.30
-  NAME 'dcmAcceptedCallingAETitle'
+attributetype ( 1.2.40.0.13.1.15.0.3.30 NAME 'dcmAcceptedCallingAETitle'
   DESC 'AE Title(s) to which associations are accepted; any if absent'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.31
-  NAME 'dcmRelationalQueries'
+attributetype ( 1.2.40.0.13.1.15.0.3.31 NAME 'dcmRelationalQueries'
   DESC 'Enable/disable relational queries; disabled if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.32
-  NAME 'dcmCombinedDateTimeMatching'
+attributetype ( 1.2.40.0.13.1.15.0.3.32 NAME 'dcmCombinedDateTimeMatching'
   DESC 'Enable/disable combined date time matching; disabled if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.33
-  NAME 'dcmFuzzySemanticMatching'
+attributetype ( 1.2.40.0.13.1.15.0.3.33 NAME 'dcmFuzzySemanticMatching'
   DESC 'Enable/disable fuzzy semantic matching of person  NAMEs; disabled if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.34
-  NAME 'dcmTimezoneQueryAdjustment'
+attributetype ( 1.2.40.0.13.1.15.0.3.34 NAME 'dcmTimezoneQueryAdjustment'
   DESC 'Enable/disable timezone query adjustment; disabled if absent'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.35
-  NAME 'dcmStorageConformance'
+attributetype ( 1.2.40.0.13.1.15.0.3.35 NAME 'dcmStorageConformance'
   DESC 'Indicates level of Conformance of a Storage SCP'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.36
-  NAME 'dcmDigitalSignatureSupport'
+attributetype ( 1.2.40.0.13.1.15.0.3.36 NAME 'dcmDigitalSignatureSupport'
   DESC 'Indicates level of Digital Signature Support of a Storage SCP'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.37
-  NAME 'dcmDataElementCoercion'
+attributetype ( 1.2.40.0.13.1.15.0.3.37 NAME 'dcmDataElementCoercion'
   DESC 'Indicates coercion of Data Elements of a Storage SCP'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.38
-  NAME 'dcmDIMSE'
+attributetype ( 1.2.40.0.13.1.15.0.3.38 NAME 'dcmDIMSE'
   DESC 'DIMSE: "C_STORE_RQ", "C_FIND_RQ", "C_FIND_RSP"'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.39
-  NAME 'dcmLimitOpenAssociations'
+attributetype ( 1.2.40.0.13.1.15.0.3.39 NAME 'dcmLimitOpenAssociations'
   DESC 'Limit open DICOM connections; rejects Association requests if the limit is exceeded; 0 (=no limit) if absent'
   EQUALITY integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.40
-  NAME 'dcmTrustStoreURL'
+attributetype ( 1.2.40.0.13.1.15.0.3.40 NAME 'dcmTrustStoreURL'
   DESC 'URL of Trust Store with Certificates for DICOM nodes that are authorized to connect to this node; overrides dicomAuthorizedNodeCertificateReference'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.41
-  NAME 'dcmTrustStoreType'
+attributetype ( 1.2.40.0.13.1.15.0.3.41 NAME 'dcmTrustStoreType'
   DESC 'Key Store Type of Trust Store specified by dcmTrustStoreURL. "JKS" or "PKCS12".'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.42
-  NAME 'dcmTrustStorePin'
+attributetype ( 1.2.40.0.13.1.15.0.3.42 NAME 'dcmTrustStorePin'
   DESC 'Key Store Password of Trust Store specified by dcmTrustStoreURL.'
   EQUALITY octetStringMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.43
-  NAME 'dcmTrustStorePinProperty'
+attributetype ( 1.2.40.0.13.1.15.0.3.43 NAME 'dcmTrustStorePinProperty'
   DESC 'System property of Key Store Password of Trust Store specified by dcmTrustStoreURL.'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.44
-  NAME 'dcmKeyStoreURL'
+attributetype ( 1.2.40.0.13.1.15.0.3.44 NAME 'dcmKeyStoreURL'
   DESC 'URL of Key Store with private Key and certificate used to identify this DICOM node in TLS connections.'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.45
-  NAME 'dcmKeyStoreType'
+attributetype ( 1.2.40.0.13.1.15.0.3.45 NAME 'dcmKeyStoreType'
   DESC 'Key Store Type of Key Store specified by dcmKeyStoreURL. "JKS" or "PKCS12".'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.46
-  NAME 'dcmKeyStorePin'
+attributetype ( 1.2.40.0.13.1.15.0.3.46 NAME 'dcmKeyStorePin'
   DESC 'Key Store Password of Key Store specified by dcmKeyStoreURL.'
   EQUALITY octetStringMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.47
-  NAME 'dcmKeyStorePinProperty'
+attributetype ( 1.2.40.0.13.1.15.0.3.47 NAME 'dcmKeyStorePinProperty'
   DESC 'System property of Key Store Password of Key Store specified by dcmKeyStoreURL.'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.48
-  NAME 'dcmKeyStoreKeyPin'
+attributetype ( 1.2.40.0.13.1.15.0.3.48 NAME 'dcmKeyStoreKeyPin'
   DESC 'Key Password of Key Store specified by dcmKeyStoreURL.'
   EQUALITY octetStringMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.40
   SINGLE-VALUE )
 
-attributetype ( 1.2.40.0.13.1.15.0.3.49
-  NAME 'dcmKeyStoreKeyPinProperty'
+attributetype ( 1.2.40.0.13.1.15.0.3.49 NAME 'dcmKeyStoreKeyPinProperty'
   DESC 'System property of Key Password of Key Store specified by dcmKeyStoreURL.'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.4
-  NAME 'dcmDevice'
+objectclass ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
   MAY (
@@ -302,15 +261,13 @@ objectclass ( 1.2.40.0.13.1.15.0.4.4
     dcmKeyStoreKeyPin $
     dcmKeyStoreKeyPinProperty ) )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.5
-  NAME 'dcmNetworkAE'
+objectclass ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
   DESC 'Extended DICOM Network AE related information'
   SUP top AUXILIARY
   MAY (
     dcmAcceptedCallingAETitle ) )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.6
-  NAME 'dcmNetworkConnection'
+objectclass ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'
   SUP top AUXILIARY
   MAY (
@@ -335,8 +292,7 @@ objectclass ( 1.2.40.0.13.1.15.0.4.6
     dcmRetrieveTimeout $
     dcmIdleTimeout ) )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.8
-  NAME 'dcmTransferCapability'
+objectclass ( 1.2.40.0.13.1.15.0.4.8 NAME 'dcmTransferCapability'
   DESC 'Extended Transfer Capabilities for an Application Entity'
   SUP top AUXILIARY
   MAY (
@@ -348,8 +304,7 @@ objectclass ( 1.2.40.0.13.1.15.0.4.8
     dcmDigitalSignatureSupport $
     dcmDataElementCoercion ) )
 
-objectclass ( 1.2.40.0.13.1.15.0.4.9
-  NAME 'dcmAttributeCoercion'
+objectclass ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
   DESC 'Attribute Coercion of received/sent DIMSE'
   SUP top STRUCTURAL
   MUST (

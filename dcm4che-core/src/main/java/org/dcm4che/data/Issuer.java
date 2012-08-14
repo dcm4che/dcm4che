@@ -36,13 +36,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.data;
 
 import java.io.Serializable;
 
-import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.VR;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -52,9 +50,9 @@ public class Issuer implements Serializable {
 
     private static final long serialVersionUID = 5350502680059507981L;
 
-    private final String localNamespaceEntityID;
-    private final String universalEntityID;
-    private final String universalEntityIDType;
+    private String localNamespaceEntityID;
+    private String universalEntityID;
+    private String universalEntityIDType;
 
     public Issuer(String localNamespaceEntityID, String universalEntityID,
             String universalEntityIDType) {
@@ -77,6 +75,26 @@ public class Issuer implements Serializable {
         this.universalEntityIDType = ss.length > 2 ? emptyToNull(ss[2]) : null;
         validate();
     }
+
+    public Issuer(String issuerOfPatientID, Attributes item) {
+        this(issuerOfPatientID,
+             item != null ? item.getString(Tag.UniversalEntityID) : null,
+             item != null ? item.getString(Tag.UniversalEntityIDType) : null);
+    }
+
+    public Issuer(Attributes item) {
+        this(item.getString(Tag.LocalNamespaceEntityID),
+             item.getString(Tag.UniversalEntityID),
+             item.getString(Tag.UniversalEntityIDType));
+    }
+
+    public Issuer(Issuer other) {
+        this(other.getLocalNamespaceEntityID(),
+             other.getUniversalEntityID(),
+             other.getUniversalEntityIDType());
+    }
+
+    protected Issuer() {} // needed for JPA
 
     private void validate() {
         if (localNamespaceEntityID == null && universalEntityID == null)
@@ -195,30 +213,6 @@ public class Issuer implements Serializable {
             attrs.newSequence(Tag.IssuerOfPatientIDQualifiersSequence, 1).add(item);
         }
         return attrs;
-    }
-
-    public static Issuer valueOf(Attributes item) {
-        if (item == null || item.isEmpty())
-            return null;
-
-        return new Issuer(
-                item.getString(Tag.LocalNamespaceEntityID),
-                item.getString(Tag.UniversalEntityID),
-                item.getString(Tag.UniversalEntityIDType));
-    }
-
-    public static Issuer issuerOfPatientIDOf(Attributes attrs) {
-        String entityID = attrs.getString(Tag.IssuerOfPatientID);
-        Attributes item = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
-        if (entityID == null && (item == null || item.isEmpty()))
-            return null;
-
-        return item != null
-                ? new Issuer(
-                        entityID,
-                        item.getString(Tag.UniversalEntityID),
-                        item.getString(Tag.UniversalEntityIDType))
-                : new Issuer(entityID, null, null);
     }
 
 }

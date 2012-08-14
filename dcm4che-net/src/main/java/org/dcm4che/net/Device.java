@@ -62,6 +62,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
 import org.dcm4che.data.Code;
+import org.dcm4che.data.Issuer;
 import org.dcm4che.util.StringUtils;
 
 /**

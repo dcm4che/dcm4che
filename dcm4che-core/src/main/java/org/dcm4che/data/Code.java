@@ -52,16 +52,14 @@ public class Code implements Serializable {
     private String codingSchemeVersion;
     private String codeMeaning;
 
-    protected Code() {}
-
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
         if (codeValue == null)
-            throw new NullPointerException("codeValue");
+            throw new NullPointerException("Missing Code Value");
         if (codingSchemeDesignator == null)
-            throw new NullPointerException("codingSchemeDesignator");
+            throw new NullPointerException("Missing Coding Scheme Designator");
         if (codeMeaning == null)
-            throw new NullPointerException("codeMeaning");
+            throw new NullPointerException("Missing Code Meaning");
         this.codeValue = codeValue;
         this.codingSchemeDesignator = codingSchemeDesignator;
         this.codingSchemeVersion = codingSchemeVersion;
@@ -105,6 +103,8 @@ public class Code implements Serializable {
              item.getString(Tag.CodingSchemeVersion, null),
              item.getString(Tag.CodeMeaning, null));
     }
+
+    protected Code() {} // needed for JPA
 
     public final String getCodeValue() {
         return codeValue;

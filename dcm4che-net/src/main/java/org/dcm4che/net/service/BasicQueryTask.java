@@ -77,11 +77,14 @@ public class BasicQueryTask implements QueryTask {
         try {
             try {
                 while (!canceled && hasMoreMatches()) {
-                    Attributes match = adjust(nextMatch());
-                    int status = optionalKeyNotSupported(match)
-                            ? Status.PendingWarning
-                            : Status.Pending;
-                    as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status), match);
+                    Attributes match = nextMatch();
+                    if (match != null) {
+                        match = adjust(match);
+                        int status = optionalKeyNotSupported(match)
+                                ? Status.PendingWarning
+                                : Status.Pending;
+                        as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status), match);
+                    }
                 }
                 int status = canceled ? Status.Cancel : Status.Success;
                 as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status));

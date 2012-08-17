@@ -75,6 +75,8 @@ public class BasicQueryTask implements QueryTask {
     @Override
     public void run() {
         try {
+            int msgId = rq.getInt(Tag.MessageID, -1);
+            as.addCancelRQHandler(msgId, this);
             try {
                 while (!canceled && hasMoreMatches()) {
                     Attributes match = nextMatch();
@@ -89,9 +91,10 @@ public class BasicQueryTask implements QueryTask {
                 int status = canceled ? Status.Cancel : Status.Success;
                 as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status));
             } catch (DicomServiceException e) {
-                Attributes rsp = e.mkRSP(0x8020, rq.getInt(Tag.MessageID, -1));
+                Attributes rsp = e.mkRSP(0x8020, msgId);
                 as.writeDimseRSP(pc, rsp, e.getDataset());
             } finally {
+                as.removeCancelRQHandler(msgId);
                 close();
             }
         } catch (IOException e) {

@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.Collections;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
@@ -65,7 +64,6 @@ public class BasicCMoveSCP extends DicomService {
             throw new DicomServiceException(Status.UnrecognizedOperation);
 
         RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
-        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), retrieveTask);
         as.getApplicationEntity().getDevice().execute(retrieveTask);
     }
 

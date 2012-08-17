@@ -41,7 +41,6 @@ package org.dcm4che.net.service;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
@@ -64,7 +63,6 @@ public class BasicCFindSCP extends DicomService {
             throw new DicomServiceException(Status.UnrecognizedOperation);
 
         QueryTask queryTask = calculateMatches(as, pc, rq, keys);
-        as.addCancelRQHandler(rq.getInt(Tag.MessageID, -1), queryTask);
         as.getApplicationEntity().getDevice().execute(queryTask);
     }
 

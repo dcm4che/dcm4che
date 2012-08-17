@@ -672,7 +672,6 @@ public class Association {
                     : conn.getResponseTimeout());
         else {
             removeDimseRSPHandler(msgId);
-            removeCancelRQHandler(msgId);
             if (rspHandlerForMsgId.isEmpty() && performing == 0)
                 startIdleOrReleaseTimeout();
         }
@@ -748,7 +747,7 @@ public class Association {
         }
     }
 
-    private CancelRQHandler removeCancelRQHandler(int msgId) {
+    public CancelRQHandler removeCancelRQHandler(int msgId) {
         synchronized (cancelHandlerForMsgId) {
             return cancelHandlerForMsgId.remove(msgId);
         }

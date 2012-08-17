@@ -147,6 +147,8 @@ public class BasicRetrieveTask implements RetrieveTask {
 
     @Override
     public void run() {
+        int msgId = rq.getInt(Tag.MessageID, -1);
+        as.addCancelRQHandler(msgId, this);
         try {
             if (!insts.isEmpty()) {
                 Association storeas = getStoreAssociation();
@@ -186,6 +188,7 @@ public class BasicRetrieveTask implements RetrieveTask {
             Attributes rsp = e.mkRSP(service.commandFieldOfRSP(), rq.getInt(Tag.MessageID, 0));
             writeRSP(rsp, e.getDataset());
         } finally {
+            as.removeCancelRQHandler(msgId);
             close();
         }
     }

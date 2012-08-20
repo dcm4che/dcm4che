@@ -62,7 +62,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.BasicMppsSCP;
+import org.dcm4che.net.service.BasicMPPSSCP;
 import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
@@ -82,7 +82,7 @@ public class MppsSCP extends Device {
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
    private File storageDir;
-   private final DicomService mppsSCP = new BasicMppsSCP() {
+   private final DicomService mppsSCP = new BasicMPPSSCP() {
        @Override
        protected Attributes create(Association as, Attributes rq,
                Attributes rqAttrs, Attributes rsp) throws DicomServiceException {

@@ -56,7 +56,7 @@ import org.dcm4che.util.AttributesValidator;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicMppsSCP extends DicomService {
+public class BasicMPPSSCP extends DicomService {
 
     public static final String IN_PROGRESS = "IN PROGRESS";
     public static final String COMPLETED = "COMPLETED";
@@ -86,7 +86,7 @@ public class BasicMppsSCP extends DicomService {
         Tag.PerformedProcedureStepID,
     };
 
-    public BasicMppsSCP() {
+    public BasicMPPSSCP() {
         super(UID.ModalityPerformedProcedureStepSOPClass);
     }
 

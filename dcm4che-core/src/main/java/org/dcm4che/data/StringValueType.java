@@ -134,7 +134,7 @@ enum StringValueType implements ValueType {
         public float toFloat(Object val, boolean bigEndian, int valueIndex,
                 float defVal) {
             double[] ds = (double[]) val;
-            return valueIndex < ds.length && ds[valueIndex] != Double.NaN
+            return valueIndex < ds.length && !Double.isNaN(ds[valueIndex])
                     ? (float) ds[valueIndex]
                     : defVal;
         } 

@@ -76,16 +76,16 @@ public class Issuer implements Serializable {
         validate();
     }
 
-    public Issuer(String issuerOfPatientID, Attributes item) {
+    public Issuer(String issuerOfPatientID, Attributes qualifiers) {
         this(issuerOfPatientID,
-             item != null ? item.getString(Tag.UniversalEntityID) : null,
-             item != null ? item.getString(Tag.UniversalEntityIDType) : null);
+             qualifiers != null ? qualifiers.getString(Tag.UniversalEntityID) : null,
+             qualifiers != null ? qualifiers.getString(Tag.UniversalEntityIDType) : null);
     }
 
-    public Issuer(Attributes item) {
-        this(item.getString(Tag.LocalNamespaceEntityID),
-             item.getString(Tag.UniversalEntityID),
-             item.getString(Tag.UniversalEntityIDType));
+    public Issuer(Attributes issuerItem) {
+        this(issuerItem.getString(Tag.LocalNamespaceEntityID),
+             issuerItem.getString(Tag.UniversalEntityID),
+             issuerItem.getString(Tag.UniversalEntityIDType));
     }
 
     public Issuer(Issuer other) {
@@ -95,6 +95,22 @@ public class Issuer implements Serializable {
     }
 
     protected Issuer() {} // needed for JPA
+
+    public static Issuer issuerOfPatientID(Attributes attrs) {
+        String issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID);
+        Attributes qualifiers = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
+        if (issuerOfPatientID == null && (qualifiers == null || qualifiers.isEmpty()))
+            return null;
+
+        return new Issuer(issuerOfPatientID, qualifiers);
+    }
+
+    public static Issuer valueOf(Attributes issuerItem) {
+        if (issuerItem == null || issuerItem.isEmpty())
+            return null;
+
+        return new Issuer(issuerItem);
+    }
 
     private void validate() {
         if (localNamespaceEntityID == null && universalEntityID == null)

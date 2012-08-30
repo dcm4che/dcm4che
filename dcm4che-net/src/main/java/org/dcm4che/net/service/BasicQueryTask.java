@@ -79,9 +79,8 @@ public class BasicQueryTask implements QueryTask {
             as.addCancelRQHandler(msgId, this);
             try {
                 while (!canceled && hasMoreMatches()) {
-                    Attributes match = nextMatch();
+                    Attributes match = adjust(nextMatch());
                     if (match != null) {
-                        match = adjust(match);
                         int status = optionalKeyNotSupported(match)
                                 ? Status.PendingWarning
                                 : Status.Pending;
@@ -114,6 +113,9 @@ public class BasicQueryTask implements QueryTask {
     }
 
     protected Attributes adjust(Attributes match) {
+        if (match == null)
+            return null;
+
         Attributes filtered = new Attributes(match.size());
         // include SpecificCharacterSet also if not in keys
         if (!keys.contains(Tag.SpecificCharacterSet)) {

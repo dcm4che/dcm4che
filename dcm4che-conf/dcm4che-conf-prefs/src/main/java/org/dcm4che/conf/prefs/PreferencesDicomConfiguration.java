@@ -449,6 +449,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
         storeNotNull(prefs, "dicomInstalled", conn.getInstalled());
 
+        storeNotNull(prefs, "dcmHTTPProxy", conn.getHttpProxy());
         storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
         storeNotDef(prefs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
@@ -667,6 +668,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getInstalled(),
                 b.getInstalled());
 
+        storeDiff(prefs, "dcmHTTPProxy",
+                a.getHttpProxy(),
+                b.getHttpProxy());
         storeDiff(prefs, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
@@ -1140,6 +1144,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
         conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+
+        conn.setHttpProxy(prefs.get("dcmHTTPProxy", null));
         conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));
         conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
         conn.setConnectTimeout(

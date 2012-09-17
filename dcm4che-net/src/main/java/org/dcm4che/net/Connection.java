@@ -38,7 +38,10 @@
 
 package org.dcm4che.net;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -99,6 +102,7 @@ public class Connection implements Serializable, Cloneable {
     private Device device;
     private String commonName;
     private String hostname;
+    private String httpProxy;
     private int port = NOT_LISTENING;
     private int backlog = DEF_BACKLOG;
     private int connectTimeout;
@@ -249,6 +253,18 @@ public class Connection implements Serializable, Cloneable {
 
         this.port = port;
         needRebind();
+    }
+
+    public final String getHttpProxy() {
+        return httpProxy;
+    }
+
+    public final void setHttpProxy(String proxy) {
+        this.httpProxy = proxy;
+    }
+
+    public final boolean useHttpProxy() {
+        return httpProxy != null;
     }
 
     public final boolean isServer() {
@@ -803,33 +819,113 @@ public class Connection implements Serializable, Cloneable {
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         checkInstalled();
         checkCompatible(remoteConn);
-        Socket s = isTls() ? createTLSSocket(remoteConn) : new Socket();
         InetSocketAddress bindPoint = getBindPoint();
-        InetSocketAddress endpoint = new InetSocketAddress(
-                remoteConn.getHostname(), remoteConn.getPort());
-        LOG.info("Initiate connection from {} to {}", bindPoint, endpoint);
+        String remoteHostname = remoteConn.getHostname();
+        int remotePort = remoteConn.getPort();
+        LOG.info("Initiate connection from {} to {}:{}",
+                new Object[] {bindPoint, remoteHostname, remotePort});
+        Socket s = new Socket();
         s.bind(bindPoint);
         setReceiveBufferSize(s);
         setSocketSendOptions(s);
-        s.connect(endpoint, connectTimeout);
+        if (remoteConn.useHttpProxy()) {
+            s.connect(remoteConn.getProxyAddress(), connectTimeout);
+            try {
+                doProxyHandshake(s, remoteHostname, remotePort, connectTimeout);
+            } catch (IOException e) {
+                SafeClose.close(s);
+                throw e;
+            }
+        } else {
+            s.connect(new InetSocketAddress(remoteHostname, remotePort),
+                    connectTimeout);
+        }
+        if (isTls())
+            try {
+                s = createTLSSocket(s, remoteConn);
+            } catch (GeneralSecurityException e) {
+                SafeClose.close(s);
+                throw e;
+            } catch (IOException e) {
+                SafeClose.close(s);
+                throw e;
+            }
         LOG.info("Established connection {}", s);
         return s;
+    }
+
+    private void doProxyHandshake(Socket s, String hostname, int port,
+            int connectTimeout) throws IOException {
+
+        String request = "CONNECT " + hostname + ':' +  port + " HTTP/1.1\r\n"
+                         + "Host: " + hostname + ':' +  port + "\r\n"
+                         + "\r\n";
+        OutputStream out = s.getOutputStream();
+        out.write(request.getBytes("US-ASCII"));
+        out.flush();
+
+        s.setSoTimeout(connectTimeout);
+        @SuppressWarnings("resource")
+        String response = new HTTPResponse(s).toString();
+        s.setSoTimeout(0);
+        if (!response.startsWith("HTTP/1.1 2"))
+            throw new IOException("Unable to tunnel through " + s
+                    + ". Proxy returns \"" + response + '\"');
+    }
+
+    private static class HTTPResponse extends ByteArrayOutputStream {
+
+        private final String rsp;
+
+        public HTTPResponse(Socket s) throws IOException {
+            super(64);
+            InputStream in = s.getInputStream();
+            boolean eol = false;
+            int b;
+            while ((b = in.read()) != -1) {
+                if (b == '\n') {
+                    if (eol) {
+                        rsp = new String(super.buf, 0, super.count, "US-ASCII");
+                        return;
+                    }
+                    eol = true;
+                } else if (b != '\r') {
+                    eol = false;
+                    write(b);
+                }
+            }
+            throw new IOException("Unexpected EOF from " + s);
+        }
+
+        @Override
+        public String toString() {
+            return rsp;
+        }
+    }
+
+    private InetSocketAddress getProxyAddress() {
+        String[] ss = StringUtils.split(httpProxy, ':');
+        return new InetSocketAddress(ss[0], 
+                ss.length > 1 ? Integer.parseInt(ss[1]) : 8080);
+    }
+
+    private SSLSocket createTLSSocket(Socket s, Connection remoteConn)
+            throws GeneralSecurityException, IOException {
+        SSLContext sslContext = device.sslContext();
+        SSLSocketFactory sf = sslContext.getSocketFactory();
+        SSLSocket ssl = (SSLSocket) sf.createSocket(s,
+                remoteConn.getHostname(), remoteConn.getPort(), true);
+        ssl.setEnabledProtocols(
+                intersect(remoteConn.tlsProtocols, tlsProtocols));
+        ssl.setEnabledCipherSuites(
+                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
+        ssl.startHandshake();
+        return ssl;
     }
 
     public void close(Socket s) {
         LOG.info("Close connection {}", s);
         SafeClose.close(s);
-    }
-
-    private Socket createTLSSocket(Connection remoteConn) throws IOException, GeneralSecurityException {
-        SSLContext sslContext = device.sslContext();
-        SSLSocketFactory sf = sslContext.getSocketFactory();
-        SSLSocket s = (SSLSocket) sf.createSocket();
-        s.setEnabledProtocols(
-                intersect(remoteConn.tlsProtocols, tlsProtocols));
-        s.setEnabledCipherSuites(
-                intersect(remoteConn.tlsCipherSuites, tlsCipherSuites));
-        return s;
     }
 
     public boolean isCompatible(Connection remoteConn) {
@@ -891,6 +987,7 @@ public class Connection implements Serializable, Cloneable {
         setCommonName(from.commonName);
         setHostname(from.hostname);
         setPort(from.port);
+        setHttpProxy(from.httpProxy);
         setBacklog(from.backlog);
         setConnectTimeout(from.connectTimeout);
         setRequestTimeout(from.requestTimeout);

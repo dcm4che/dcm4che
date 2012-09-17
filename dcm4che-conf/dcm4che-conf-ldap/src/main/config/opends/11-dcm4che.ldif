@@ -208,6 +208,13 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.49 NAME 'dcmKeyStoreKeyPinProperty'
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.50 NAME 'dcmHTTPProxy'
+  DESC 'HTTP Proxy: host:port'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+  
 objectClasses: ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
@@ -232,6 +239,7 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'
   SUP top AUXILIARY
   MAY (
+    dcmHTTPProxy $
     dcmTLSNeedClientAuth $
     dcmTLSProtocol $
     dcmTCPBacklog $

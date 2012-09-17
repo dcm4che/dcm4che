@@ -108,6 +108,7 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected Attributes storeTo(Connection conn, Attributes attrs) {
         super.storeTo(conn, attrs);
+        storeNotNull(attrs, "dcmHTTPProxy", conn.getHttpProxy());
         storeNotEmpty(attrs, "dcmBlacklistedHostname", conn.getBlacklist());
         storeNotDef(attrs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
@@ -256,6 +257,7 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.loadFrom(conn, attrs);
         if (!hasObjectClass(attrs, "dcmNetworkConnection"))
             return;
+        conn.setHttpProxy(stringValue(attrs.get("dcmHTTPProxy")));
         conn.setBlacklist(stringArray(attrs.get("dcmBlacklistedHostname")));
         conn.setBacklog(intValue(attrs.get("dcmTCPBacklog"), Connection.DEF_BACKLOG));
         conn.setConnectTimeout(intValue(attrs.get("dcmTCPConnectTimeout"),
@@ -412,6 +414,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected List<ModificationItem> storeDiffs(Connection a, Connection b,
             List<ModificationItem> mods) {
         super.storeDiffs(a, b, mods);
+        storeDiff(mods, "dcmHTTPProxy",
+                a.getHttpProxy(),
+                b.getHttpProxy());
         storeDiff(mods, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());

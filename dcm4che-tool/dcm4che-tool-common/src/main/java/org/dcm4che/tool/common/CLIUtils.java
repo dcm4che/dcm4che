@@ -119,6 +119,12 @@ public class CLIUtils {
                 .create("c"));
         opts.addOption(OptionBuilder
                 .hasArg()
+                .withArgName("host:port")
+                .withDescription(rb.getString("proxy"))
+                .withLongOpt("proxy")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
                 .withArgName("name")
                 .withDescription(rb.getString("user"))
                 .withLongOpt("user")
@@ -370,6 +376,8 @@ public class CLIUtils {
         rq.setCalledAET(aeHostPort[0]);
         conn.setHostname(hostPort[0]);
         conn.setPort(Integer.parseInt(hostPort[1]));
+
+        conn.setHttpProxy(cl.getOptionValue("proxy"));
 
         if (cl.hasOption("user"))
             rq.setUserIdentityRQ(cl.hasOption("user-pass")

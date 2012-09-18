@@ -246,7 +246,7 @@ attributetype ( 1.2.40.0.13.1.15.0.3.49 NAME 'dcmKeyStoreKeyPinProperty'
   SINGLE-VALUE )
 
 attributetype ( 1.2.40.0.13.1.15.0.3.50 NAME 'dcmHTTPProxy'
-  DESC 'HTTP Proxy: host:port'
+  DESC 'HTTP Proxy: [user:password@]host:port'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15

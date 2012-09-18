@@ -119,7 +119,7 @@ public class CLIUtils {
                 .create("c"));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("host:port")
+                .withArgName("[user:password@]host:port")
                 .withDescription(rb.getString("proxy"))
                 .withLongOpt("proxy")
                 .create(null));

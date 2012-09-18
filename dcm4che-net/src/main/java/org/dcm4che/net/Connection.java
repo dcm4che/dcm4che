@@ -61,6 +61,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.dcm4che.util.Base64;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
@@ -828,10 +829,20 @@ public class Connection implements Serializable, Cloneable {
         s.bind(bindPoint);
         setReceiveBufferSize(s);
         setSocketSendOptions(s);
-        if (remoteConn.useHttpProxy()) {
-            s.connect(remoteConn.getProxyAddress(), connectTimeout);
+        String remoteProxy = remoteConn.getHttpProxy();
+        if (remoteProxy != null) {
+            String userauth = null;
+            String[] ss = StringUtils.split(remoteProxy, '@');
+            if (ss.length > 1) {
+                userauth = ss[0];
+                remoteProxy = ss[1];
+            }
+            ss = StringUtils.split(remoteProxy, ':');
+            int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
+            s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
             try {
-                doProxyHandshake(s, remoteHostname, remotePort, connectTimeout);
+                doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                        connectTimeout);
             } catch (IOException e) {
                 SafeClose.close(s);
                 throw e;
@@ -855,13 +866,23 @@ public class Connection implements Serializable, Cloneable {
     }
 
     private void doProxyHandshake(Socket s, String hostname, int port,
-            int connectTimeout) throws IOException {
+            String userauth, int connectTimeout) throws IOException {
 
-        String request = "CONNECT " + hostname + ':' +  port + " HTTP/1.1\r\n"
-                         + "Host: " + hostname + ':' +  port + "\r\n"
-                         + "\r\n";
+        StringBuilder request = new StringBuilder(128);
+        request.append("CONNECT ")
+          .append(hostname).append(':').append(port)
+          .append(" HTTP/1.1\r\nHost: ")
+          .append(hostname).append(':').append(port);
+        if (userauth != null) {
+           byte[] b = userauth.getBytes("UTF-8");
+           char[] base64 = new char[(b.length + 2) / 3 * 4];
+           Base64.encode(b, 0, b.length, base64, 0);
+           request.append("\r\nProxy-Authorization: basic ")
+               .append(base64);
+        }
+        request.append("\r\n\r\n");
         OutputStream out = s.getOutputStream();
-        out.write(request.getBytes("US-ASCII"));
+        out.write(request.toString().getBytes("US-ASCII"));
         out.flush();
 
         s.setSoTimeout(connectTimeout);
@@ -901,12 +922,6 @@ public class Connection implements Serializable, Cloneable {
         public String toString() {
             return rsp;
         }
-    }
-
-    private InetSocketAddress getProxyAddress() {
-        String[] ss = StringUtils.split(httpProxy, ':');
-        return new InetSocketAddress(ss[0], 
-                ss.length > 1 ? Integer.parseInt(ss[1]) : 8080);
     }
 
     private SSLSocket createTLSSocket(Socket s, Connection remoteConn)

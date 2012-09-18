@@ -904,6 +904,7 @@ public class Connection implements Serializable, Cloneable {
             boolean eol = false;
             int b;
             while ((b = in.read()) != -1) {
+                write(b);
                 if (b == '\n') {
                     if (eol) {
                         rsp = new String(super.buf, 0, super.count, "US-ASCII");
@@ -912,7 +913,6 @@ public class Connection implements Serializable, Cloneable {
                     eol = true;
                 } else if (b != '\r') {
                     eol = false;
-                    write(b);
                 }
             }
             throw new IOException("Unexpected EOF from " + s);

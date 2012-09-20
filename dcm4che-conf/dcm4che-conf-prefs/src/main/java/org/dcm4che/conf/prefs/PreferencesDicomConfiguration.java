@@ -1084,7 +1084,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    protected void loadFrom(Device device, Preferences prefs) throws CertificateException {
+    protected void loadFrom(Device device, Preferences prefs)
+            throws CertificateException, BackingStoreException {
         device.setDescription(prefs.get("dicomDescription", null));
         device.setManufacturer(prefs.get("dicomManufacturer", null));
         device.setManufacturerModelName(prefs.get("dicomManufacturerModelName", null));
@@ -1376,11 +1377,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             return loadCertificates(certRef);
         } catch (CertificateException e) {
             throw new ConfigurationException(e);
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
         }
     }
 
     private X509Certificate[] loadCertificates(String certRef)
-            throws CertificateException {
+            throws CertificateException, BackingStoreException {
+        if (!rootPrefs.nodeExists(certRef))
+            return EMPTY_X509_CERTIFICATES;
+
         Preferences prefs = rootPrefs.node(certRef);
         int n = prefs.getInt(USER_CERTIFICATE + ".#", 0);
         if (n == 0)

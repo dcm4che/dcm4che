@@ -38,127 +38,170 @@
 
 package org.dcm4che.net.service;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.IOD;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.VR;
+import org.dcm4che.data.ValidationResult;
 import org.dcm4che.net.Status;
-import org.dcm4che.util.AttributesValidator;
 
 public enum QueryRetrieveLevel {
     PATIENT {
         @Override
-        public void validateQueryKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+        protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = new IOD();
+            iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
+                            IOD.DataElementType.TYPE_0, -1, -1, false));
+            iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_0, -1, -1, false));
+            iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_0, -1, -1, false));
+            return iod;
         }
 
         @Override
-        public void validateRetrieveKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.PatientID, 0, 1);
-            check(validator);
+        protected IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = queryKeysIOD(rootLevel, relational);
+            iod.add(new IOD.DataElement(Tag.PatientID, VR.LO,
+                    IOD.DataElementType.TYPE_1, 1, 1, false));
+            return iod;
         }
 
     },
     STUDY {
         @Override
-        public void validateQueryKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
-                validator.getType1String(Tag.PatientID, 0, 1);
-            else
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            check(validator);
+        protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = new IOD();
+            iod.add(new IOD.DataElement(Tag.PatientID, VR.LO,
+                    !relational && rootLevel == QueryRetrieveLevel.PATIENT
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_0, -1, -1, false));
+            iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_0, -1, -1, false));
+            return iod;
         }
 
         @Override
-        public void validateRetrieveKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.StudyInstanceUID, 0, Integer.MAX_VALUE);
-            validateQueryKeys(validator, rootLevel, relational);
+        protected IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = queryKeysIOD(rootLevel, relational);
+            iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_1, -1, -1, false));
+            return iod;
         }
     },
     SERIES {
         @Override
-        public void validateQueryKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
-                validator.getType1String(Tag.PatientID, 0, 1);
-            else
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            if (relational)
-                validator.getType3String(Tag.StudyInstanceUID, 0, 1, null);
-            else
-                validator.getType1String(Tag.StudyInstanceUID, 0, 1);
-            check(validator);
+        protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = new IOD();
+            iod.add(new IOD.DataElement(Tag.PatientID, VR.LO,
+                    !relational && rootLevel == QueryRetrieveLevel.PATIENT
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
+                        !relational 
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_0, -1, -1, false));
+            return iod;
         }
 
         @Override
-        public void validateRetrieveKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.SeriesInstanceUID, 0, Integer.MAX_VALUE);
-            validateQueryKeys(validator, rootLevel, relational);
+        protected IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = queryKeysIOD(rootLevel, relational);
+            iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_1, -1, -1, false));
+            return iod;
         }
     },
     IMAGE {
         @Override
-        public void validateQueryKeys(AttributesValidator validator,
-            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            if (!relational && rootLevel == QueryRetrieveLevel.PATIENT)
-                validator.getType1String(Tag.PatientID, 0, 1);
-            else
-                validator.getType3String(Tag.PatientID, 0, 1, null);
-            if (relational) {
-                validator.getType3String(Tag.StudyInstanceUID, 0, 1, null);
-                validator.getType3String(Tag.SeriesInstanceUID, 0, 1, null);
-            } else {
-                validator.getType1String(Tag.StudyInstanceUID, 0, 1);
-                validator.getType1String(Tag.SeriesInstanceUID, 0, 1);
-            }
-            check(validator);
+        protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = new IOD();
+            iod.add(new IOD.DataElement(Tag.PatientID, VR.LO,
+                    !relational && rootLevel == QueryRetrieveLevel.PATIENT
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
+                        !relational 
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
+                        !relational 
+                        ? IOD.DataElementType.TYPE_1
+                        : IOD.DataElementType.TYPE_3,
+                    1, 1, false));
+            return iod;
         }
 
         @Override
-        public void validateRetrieveKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.SOPInstanceUID, 0, Integer.MAX_VALUE);
-            if (rootLevel != QueryRetrieveLevel.IMAGE)
-                validateQueryKeys(validator, rootLevel, relational);
-            else
-                check(validator);
+        protected IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            IOD iod = queryKeysIOD(rootLevel, relational);
+            iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
+                    IOD.DataElementType.TYPE_1, -1, -1, false));
+            return iod;
         }
     },
     FRAME {
         @Override
-        public void validateQueryKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
+        protected IOD queryKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void validateRetrieveKeys(AttributesValidator validator,
-                QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException {
-            validator.getType1String(Tag.SOPInstanceUID, 0, 1);
-            check(validator);
+        protected IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel,
+                boolean relational) {
+            return IMAGE.retrieveKeysIOD(rootLevel, relational);
         }
     };
 
-    public static QueryRetrieveLevel valueOf(AttributesValidator validator,
+    public static QueryRetrieveLevel valueOf(Attributes attrs,
             String[] qrLevels) throws DicomServiceException {
-        String qrLevel = validator.getType1String(Tag.QueryRetrieveLevel, 0, 1, qrLevels);
-        check(validator);
-        return QueryRetrieveLevel.valueOf(qrLevel);
+        ValidationResult result = new ValidationResult();
+        attrs.validate(new IOD.DataElement(Tag.PatientID, VR.LO,
+                IOD.DataElementType.TYPE_1, 1, 1, false).setValues(qrLevels),
+                result);
+        check(result);
+        return QueryRetrieveLevel.valueOf(attrs.getString(Tag.QueryRetrieveLevel));
     }
 
-    public abstract void validateQueryKeys(AttributesValidator validator,
-            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException;
-
-    public abstract void validateRetrieveKeys(AttributesValidator validator,
-            QueryRetrieveLevel rootLevel, boolean relational) throws DicomServiceException;
-
-    private static void check(AttributesValidator validator)
+    public void validateQueryKeys(Attributes attrs,
+            QueryRetrieveLevel rootLevel, boolean relational)
             throws DicomServiceException {
-        if (validator.hasOffendingElements())
+        check(attrs.validate(queryKeysIOD(rootLevel, relational)));
+    }
+
+    public void validateRetrieveKeys(Attributes attrs,
+            QueryRetrieveLevel rootLevel, boolean relational)
+            throws DicomServiceException {
+        check(attrs.validate(retrieveKeysIOD(rootLevel, relational)));
+    }
+
+    protected abstract IOD queryKeysIOD(QueryRetrieveLevel rootLevel, boolean relational);
+
+    protected abstract IOD retrieveKeysIOD(QueryRetrieveLevel rootLevel, boolean relational);
+
+    private static void check(ValidationResult result) throws DicomServiceException {
+        if (!result.isValid())
             throw new DicomServiceException(
                     Status.IdentifierDoesNotMatchSOPClass,
-                    validator.getErrorComment())
-                .setOffendingElements(validator.getOffendingElements());
+                    result.getErrorComment())
+                .setOffendingElements(result.getOffendingElements());
     }
 }

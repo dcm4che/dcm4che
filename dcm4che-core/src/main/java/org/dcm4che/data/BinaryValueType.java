@@ -71,6 +71,11 @@ enum BinaryValueType implements ValueType {
     SHORT(2, 2) {
 
         @Override
+        public boolean isIntValue() {
+            return true;
+        }
+
+        @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
             return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
         }
@@ -88,6 +93,11 @@ enum BinaryValueType implements ValueType {
     USHORT(2, 2) {
 
         @Override
+        public boolean isIntValue() {
+            return true;
+        }
+
+        @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
             return ByteUtils.swapShorts(preserve ? b.clone() : b, 0, b.length);
         }
@@ -103,6 +113,11 @@ enum BinaryValueType implements ValueType {
         }
     },
     INT(4, 4) {
+
+        @Override
+        public boolean isIntValue() {
+            return true;
+        }
 
         @Override
         public byte[] toggleEndian(byte[] b, boolean preserve) {
@@ -223,6 +238,11 @@ enum BinaryValueType implements ValueType {
     private BinaryValueType(int numBytes, int numEndianBytes) {
         this.numBytes = numBytes;
         this.numEndianBytes = numEndianBytes;
+    }
+
+    @Override
+    public boolean isIntValue() {
+        return false;
     }
 
     @Override
@@ -528,4 +548,13 @@ enum BinaryValueType implements ValueType {
             }
         }
     }
+
+    @Override
+    public int vmOf(Object val) {
+        if (val instanceof byte[]) {
+            return ((byte[]) val).length / numBytes;
+        }
+        throw new UnsupportedOperationException();
+    }
+
 }

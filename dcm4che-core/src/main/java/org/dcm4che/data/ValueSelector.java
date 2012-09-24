@@ -77,7 +77,6 @@ public class ValueSelector implements Serializable {
         return privateCreator;
     }
 
-
     public final int index() {
         return index;
     }

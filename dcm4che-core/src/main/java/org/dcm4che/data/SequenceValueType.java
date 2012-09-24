@@ -56,6 +56,11 @@ enum SequenceValueType implements ValueType {
     }
 
     @Override
+    public boolean isIntValue() {
+        return false;
+    }
+
+    @Override
     public boolean isTemporalType() {
         return false;
     }
@@ -177,5 +182,10 @@ enum SequenceValueType implements ValueType {
     public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
             SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int vmOf(Object val) {
+        return 1;
     }
 }

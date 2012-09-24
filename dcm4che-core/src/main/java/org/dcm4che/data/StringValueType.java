@@ -195,6 +195,11 @@ enum StringValueType implements ValueType {
     IS("\\", null) {
 
         @Override
+        public boolean isIntValue() {
+            return true;
+        }
+
+        @Override
         public byte[] toBytes(Object val, SpecificCharacterSet cs) {
 
             if (val instanceof int[])
@@ -278,6 +283,11 @@ enum StringValueType implements ValueType {
     @Override
     public boolean isStringValue() {
         return true;
+    }
+
+    @Override
+    public boolean isIntValue() {
+        return false;
     }
 
     @Override
@@ -542,5 +552,18 @@ enum StringValueType implements ValueType {
             throws SAXException {
         if (s != null)
             saxWriter.writeValue(i, s);
+    }
+
+    @Override
+    public int vmOf(Object val) {
+        if (val instanceof String)
+            return 1;
+
+        if (val instanceof String[]) {
+            String[] ss = (String[]) val;
+            return ss.length;
+        }
+
+        throw new UnsupportedOperationException();
     }
 }

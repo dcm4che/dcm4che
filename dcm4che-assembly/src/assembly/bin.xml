@@ -432,6 +432,8 @@
         <include>bin/mppsscp.bat</include>
         <include>etc/mppsscp/log4j.properties</include>
         <include>etc/mppsscp/sop-classes.properties</include>
+        <include>etc/mppsscp/mpps-ncreate-iod.xml</include>
+        <include>etc/mppsscp/mpps-nset-iod.xml</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

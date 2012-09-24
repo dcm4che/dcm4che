@@ -157,6 +157,10 @@ public enum VR {
         return valueType.isStringValue();
     }
 
+    public boolean isIntType() {
+        return valueType.isIntValue();
+    }
+
     public boolean isXMLBase64() {
         return xmlbase64;
     }
@@ -253,4 +257,9 @@ public enum VR {
             SpecificCharacterSet cs, SAXWriter saxWriter) throws SAXException {
         valueType.toXML(val, bigEndian, cs, saxWriter, xmlbase64);
     }
+
+    public int vmOf(Object val) {
+        return headerLength == 12 ? 1 : valueType.vmOf(val);
+    }
+
 }

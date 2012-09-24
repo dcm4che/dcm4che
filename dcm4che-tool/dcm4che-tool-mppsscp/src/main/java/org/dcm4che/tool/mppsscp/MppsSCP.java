@@ -51,6 +51,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
+import org.dcm4che.data.IOD;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomInputStream;
@@ -74,15 +75,16 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class MppsSCP extends Device {
+public class MppsSCP {
 
    private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.mppsscp.messages");
 
+   private final Device device = new Device("mppsscp");
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
    private File storageDir;
-   private final DicomService mppsSCP = new BasicMPPSSCP() {
+   private final BasicMPPSSCP mppsSCP = new BasicMPPSSCP() {
        @Override
        protected Attributes create(Association as, Attributes rq,
                Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
@@ -97,9 +99,8 @@ public class MppsSCP extends Device {
    };
 
    public MppsSCP() throws IOException {
-       super("mppsscp");
-       addConnection(conn);
-       addApplicationEntity(ae);
+       device.addConnection(conn);
+       device.addApplicationEntity(ae);
        ae.setAssociationAcceptor(true);
        ae.addConnection(conn);
        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
@@ -126,12 +127,13 @@ public class MppsSCP extends Device {
            CLIUtils.configure(main.conn, cl);
            configureTransferCapability(main.ae, cl);
            configureStorageDirectory(main, cl);
+           configureIODs(main, cl);
            ExecutorService executorService = Executors.newCachedThreadPool();
            ScheduledExecutorService scheduledExecutorService = 
                    Executors.newSingleThreadScheduledExecutor();
-           main.setScheduledExecutor(scheduledExecutorService);
-           main.setExecutor(executorService);
-           main.bindConnections();
+           main.device.setScheduledExecutor(scheduledExecutorService);
+           main.device.setExecutor(executorService);
+           main.device.bindConnections();
        } catch (ParseException e) {
            System.err.println("mppsscp: " + e.getMessage());
            System.err.println(rb.getString("try"));
@@ -150,6 +152,7 @@ public class MppsSCP extends Device {
         CLIUtils.addCommonOptions(opts);
         addStorageDirectoryOptions(opts);
         addTransferCapabilityOptions(opts);
+        addIODOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, MppsSCP.class);
     }
 
@@ -175,10 +178,40 @@ public class MppsSCP extends Device {
                 .create(null));
     }
 
+    @SuppressWarnings("static-access")
+    private static void addIODOptions(Options opts) {
+        opts.addOption(null, "no-validate", false,
+                rb.getString("no-validate"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("ncreate-iod"))
+                .withLongOpt("ncreate-iod")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("file|url")
+                .withDescription(rb.getString("nset-iod"))
+                .withLongOpt("nset-iod")
+                .create(null));
+    }
+
     private static void configureStorageDirectory(MppsSCP main, CommandLine cl) {
         if (!cl.hasOption("ignore")) {
             main.setStorageDirectory(
                     new File(cl.getOptionValue("directory", ".")));
+        }
+    }
+
+    private static void configureIODs(MppsSCP main, CommandLine cl)
+            throws IOException {
+        if (!cl.hasOption("no-validate")) {
+            main.mppsSCP.setMppsNCreateIOD(IOD.load(
+                    cl.getOptionValue("mpps-ncreate-iod", 
+                            "resource:mpps-ncreate-iod.xml")));
+            main.mppsSCP.setMppsNSetIOD(IOD.load(
+                    cl.getOptionValue("mpps-nset-iod", 
+                            "resource:mpps-nset-iod.xml")));
         }
     }
 

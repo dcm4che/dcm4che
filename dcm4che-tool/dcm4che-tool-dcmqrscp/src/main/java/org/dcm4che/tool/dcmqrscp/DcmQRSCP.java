@@ -98,7 +98,6 @@ import org.dcm4che.net.service.RetrieveTask;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.AttributesFormat;
-import org.dcm4che.util.AttributesValidator;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 import org.dcm4che.util.UIDUtils;
@@ -226,9 +225,9 @@ public class DcmQRSCP {
         @Override
         protected QueryTask calculateMatches(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys) throws DicomServiceException {
-            AttributesValidator validator = new AttributesValidator(keys);
-            QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
-            level.validateQueryKeys(validator, rootLevel, relational(as, rq));
+            QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(keys, qrLevels);
+            level.validateQueryKeys(keys, rootLevel,
+                    rootLevel == QueryRetrieveLevel.IMAGE || relational(as, rq));
             DicomDirReader ddr = getDicomDirReader();
             String availability =  getInstanceAvailability();
             switch(level) {
@@ -240,6 +239,8 @@ public class DcmQRSCP {
                 return new SeriesQueryTask(as, pc, rq, keys, ddr, availability);
             case IMAGE:
                 return new InstanceQueryTask(as, pc, rq, keys, ddr, availability);
+            default:
+                assert true;
             }
             throw new AssertionError();
         }
@@ -269,11 +270,10 @@ public class DcmQRSCP {
         @Override
         protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
                 Attributes rq, Attributes keys) throws DicomServiceException {
-            AttributesValidator validator = new AttributesValidator(keys);
             QueryRetrieveLevel level = withoutBulkData 
                     ? QueryRetrieveLevel.IMAGE
-                    : QueryRetrieveLevel.valueOf(validator, qrLevels);
-            level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
+                    : QueryRetrieveLevel.valueOf(keys, qrLevels);
+            level.validateRetrieveKeys(keys, rootLevel, relational(as, rq));
             List<InstanceLocator> matches = DcmQRSCP.this.calculateMatches(keys);
             RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
             retrieveTask.setSendPendingRSP(isSendPendingCGet());
@@ -302,9 +302,8 @@ public class DcmQRSCP {
         @Override
         protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
                 final Attributes rq, Attributes keys) throws DicomServiceException {
-            AttributesValidator validator = new AttributesValidator(keys);
-            QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(validator, qrLevels);
-            level.validateRetrieveKeys(validator, rootLevel, relational(as, rq));
+            QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(keys, qrLevels);
+            level.validateRetrieveKeys(keys, rootLevel, relational(as, rq));
             String dest = rq.getString(Tag.MoveDestination);
             final Connection remote = getRemoteConnection(dest);
             if (remote == null)

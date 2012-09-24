@@ -100,6 +100,7 @@ public class MppsSCU {
     private static final int[] MPPS_TOP_LEVEL_ATTRS = {
         Tag.SpecificCharacterSet,
         Tag.Modality,
+        Tag.ProcedureCodeSequence,
         Tag.ReferencedPatientSequence,
         Tag.PatientName,
         Tag.PatientID,
@@ -122,6 +123,7 @@ public class MppsSCU {
     };
 
     private static final int[] MPPS_TOP_LEVEL_TYPE_2_ATTRS = {
+        Tag.ProcedureCodeSequence,
         Tag.ReferencedPatientSequence,
         Tag.PatientName,
         Tag.PatientID,
@@ -175,6 +177,7 @@ public class MppsSCU {
         Tag.RequestedProcedureDescription,
         Tag.RequestedProcedureID,
         Tag.ScheduledProcedureStepDescription,
+        Tag.ScheduledProtocolCodeSequence,
         Tag.ScheduledProcedureStepID,
     };
 
@@ -190,7 +193,8 @@ public class MppsSCU {
         Tag.RetrieveAETitle,
         Tag.SeriesDescription,
         Tag.PerformingPhysicianName,
-        Tag.OperatorsName
+        Tag.OperatorsName,
+        Tag.ReferencedNonImageCompositeSOPInstanceSequence
     };
 
     private static final String ppsStartDate;
@@ -638,6 +642,6 @@ public class MppsSCU {
         prefSeries.newSequence(Tag.ReferencedImageSequence, 10);
         if (archiveRequested != null)
             prefSeries.setString(Tag.ArchiveRequested, VR.CS, archiveRequested);
-        return prefSeries ;
+        return prefSeries;
     }
 }

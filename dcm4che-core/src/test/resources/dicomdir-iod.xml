@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IOD xml-space="preserved">
+<DataElement keyword="FileSetID" tag="00041130" vr="CS" type="2" vm="1"/>
+<DataElement keyword="FileSetDescriptoFileID" tag="00041141" vr="CS" type="3" vm="1-8"/>
+<DataElement keyword="OffsetOfTheFirstDirectoryRecordOfTheRootDirectoryEntity" tag="00041200" vr="UL" type="1" vm="1"/>
+<DataElement keyword="OffsetOfTheLastDirectoryRecordOfTheRootDirectoryEntity" tag="00041202" vr="UL" type="1" vm="1"/>
+<DataElement keyword="FileSetConsistencyFlag" tag="00041212" vr="US" type="1" vm="1">
+<Value>0</Value>
+</DataElement>
+<DataElement keyword="DirectoryRecordSequence" tag="00041220" vr="SQ" type="2" items="0-n">
+<Item>
+<DataElement keyword="OffsetOfTheNextDirectoryRecord" tag="00041400" vr="UL" type="1" vm="1"/>
+<DataElement keyword="RecordInUseFlag" tag="00041410" vr="US" type="1" vm="1">
+<Value>65535</Value>
+</DataElement>
+<DataElement keyword="OffsetOfReferencedLowerLevelDirectoryEntity" tag="00041420" vr="UL" type="1" vm="1"/>
+<DataElement keyword="DirectoryRecordType" tag="00041430" vr="CS" type="1" vm="1">
+<Value>PATIENT</Value>
+<Value>STUDY</Value>
+<Value>SERIES</Value>
+<Value>IMAGE</Value>
+<Value>RT DOSE</Value>
+<Value>RT STRUCTURE SET</Value>
+<Value>RT PLAN</Value>
+<Value>RT TREAT RECORD</Value>
+<Value>PRESENTATION</Value>
+<Value>WAVEFORM</Value>
+<Value>SR DOCUMENT</Value>
+<Value>KEY OBJECT DOC</Value>
+<Value>SPECTROSCOPY</Value>
+<Value>RAW DATA</Value>
+<Value>REGISTRATION</Value>
+<Value>FIDUCIAL</Value>
+<Value>HANGING PROTOCOL</Value>
+<Value>ENCAP DOC</Value>
+<Value>HL7 STRUC DOC</Value>
+<Value>VALUE MAP</Value>
+<Value>STEREOMETRIC</Value>
+<Value>PALETTE</Value>
+<Value>IMPLANT</Value>
+<Value>IMPLANT GROUP</Value>
+<Value>IMPLANT ASSY</Value>
+<Value>MEASUREMENT</Value>
+<Value>SURFACE</Value>
+<Value>PRIVATE</Value>
+</DataElement>
+<DataElement keyword="PrivateRecordUID" tag="00041432" vr="UI" type="1C" vm="1"/>
+<DataElement keyword="ReferencedFileID" tag="00041500" vr="CS" type="1C" vm="1-n"/>
+<DataElement keyword="ReferencedSOPClassUIDInFile" tag="00041510" vr="UI" type="1C" vm="1"/>
+<DataElement keyword="ReferencedSOPInstanceUIDInFile" tag="00041511" vr="UI" type="1C" vm="1"/>
+<DataElement keyword="ReferencedTransferSyntaxUIDInFile" tag="00041512" vr="UI" type="1C" vm="1"/>
+</Item>
+</DataElement>
+</IOD>

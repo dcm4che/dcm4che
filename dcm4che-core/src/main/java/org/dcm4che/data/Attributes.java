@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
+import org.dcm4che.data.IOD.DataElement;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
@@ -2108,5 +2109,158 @@ public class Attributes implements Serializable {
                 bigEndian ? UID.ExplicitVRBigEndian
                           : UID.ExplicitVRLittleEndian);
         din.readAttributes(this, -1, Tag.ItemDelimitationItem);
+    }
+
+    public ValidationResult validate(IOD iod) {
+        ValidationResult result = new ValidationResult();
+        for (IOD.DataElement el : iod) {
+            validate(el, result);
+        }
+        return result;
+    }
+
+    public void validate(DataElement el, ValidationResult result) {
+        int index = indexOf(el.tag);
+        if (index < 0) {
+            if (el.type == IOD.DataElementType.TYPE_1 
+                    || el.type == IOD.DataElementType.TYPE_2) {
+                result.addMissingAttribute(el);
+            }
+            return;
+        }
+        if (el.type == IOD.DataElementType.TYPE_0) {
+            result.addNotAllowedAttribute(el);
+            return;
+        }
+        Object value = values[index];
+        if (isEmpty(value)) {
+            if (el.type == IOD.DataElementType.TYPE_1) {
+                result.addMissingAttributeValue(el);
+            }
+            return;
+        }
+        
+        Object validVals = el.getValues();
+        if (el.vr == VR.SQ) {
+            if (!(value instanceof Sequence)) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
+                return;
+            }
+            Sequence seq = (Sequence) value;
+            int seqSize = seq.size();
+            if (el.singleItem && seqSize > 1) {
+                result.addInvalidAttributeValue(el, 
+                        ValidationResult.Invalid.MultipleItems);
+                return;
+            }
+            if (validVals instanceof IOD) {
+                boolean invalidItem = false;
+                ValidationResult[] itemValidationResults = new ValidationResult[seqSize];
+                for (int i = 0; i < itemValidationResults.length; i++) {
+                    itemValidationResults[i] = seq.get(i).validate((IOD) validVals);
+                    invalidItem = invalidItem || !itemValidationResults[i].isValid();
+                }
+                if (invalidItem) {
+                    result.addInvalidAttributeValue(el, 
+                            ValidationResult.Invalid.Item, itemValidationResults);
+                }
+            }
+            return;
+        }
+
+        VR vr = vrs[index];
+        if (vr.isStringType())
+            value = decodeStringValue(index);
+        
+        if (el.maxVM > 0 || el.minVM > 1) {
+            int vm = vr.vmOf(value);
+            if (el.maxVM > 0 && vm > el.maxVM
+             || el.minVM > 1 && vm < el.minVM) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.VM);
+                return;
+            }
+        }
+        if (validVals == null)
+            return;
+        
+        if (validVals instanceof String[] || validVals instanceof String[][]) {
+            if (!vr.isStringType()) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
+                return;
+            }
+            if (!isValidValue(toStrings(value), validVals)) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
+            }
+        } else if (validVals instanceof int[] || validVals instanceof int[][]) {
+            if (vr == VR.IS)
+                value = decodeISValue(index);
+            else if (!vr.isIntType()) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
+                return;
+            }
+            if (!isValidValue(vr.toInts(value, bigEndian), validVals)) {
+                result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
+            }
+        }
+    }
+
+    private boolean isValidValue(String[] val, Object validVals) {
+        if (validVals instanceof String[])
+            return validateValue(val, (String[])validVals);
+        else
+            return validateValue(val, (String[][])validVals);
+    }
+
+    private boolean validateValue(String[] val, String[] validVals) {
+        for (int i = 0; i < val.length; i++)
+            if (!isOneOf(val[i], validVals))
+                return false;
+        return true;
+    }
+
+    private boolean validateValue(String[] val, String[][] validVals) {
+        for (int i = 0; i < val.length; i++)
+            if (validVals.length < i && !isOneOf(val[i], validVals[i]))
+                return false;
+        return true;
+    }
+
+    private boolean isOneOf(String val, String[] ss) {
+        if (ss == null)
+            return true;
+        for (String s : ss)
+            if (val.equals(s))
+                return true;
+        return false;
+    }
+
+    private boolean isValidValue(int[] val, Object validVals) {
+        if (validVals instanceof int[])
+            return isValidValue(val, (int[])validVals);
+        else
+            return isValidValue(val, (int[][])validVals);
+    }
+
+    private boolean isValidValue(int[] val, int[] validVals) {
+        for (int i = 0; i < val.length; i++)
+            if (!isOneOf(val[i], validVals))
+                return false;
+        return true;
+    }
+
+    private boolean isValidValue(int[] val, int[][] validVals) {
+        for (int i = 0; i < val.length; i++)
+            if (validVals.length < i && !isOneOf(val[i], validVals[i]))
+                return false;
+        return true;
+    }
+
+    private boolean isOneOf(int val, int[] is) {
+        if (is == null)
+            return true;
+        for (int i : is)
+            if (val == i)
+                return true;
+        return false;
     }
 }

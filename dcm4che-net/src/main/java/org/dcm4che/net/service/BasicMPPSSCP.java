@@ -108,7 +108,13 @@ public class BasicMPPSSCP extends DicomService {
         return null;
     }
 
-    public void validate(Attributes rqAttrs, IOD iod)
+    public static void mayNoLongerBeUpdated() throws DicomServiceException {
+        throw new DicomServiceException(Status.ProcessingFailure,
+                "Performed Procedure Step Object may no longer be updated")
+            .setErrorID(0xA710);
+    }
+
+    public static void validate(Attributes rqAttrs, IOD iod)
             throws DicomServiceException {
         ValidationResult result = rqAttrs.validate(iod);
         if (result.hasNotAllowedAttributes())

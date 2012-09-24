@@ -251,7 +251,7 @@ public class MppsSCP {
     private Attributes create(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
         if (mppsNCreateIOD != null)
-            mppsSCP.validate(rqAttrs, mppsNCreateIOD);
+            BasicMPPSSCP.validate(rqAttrs, mppsNCreateIOD);
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.AffectedSOPClassUID);
@@ -280,7 +280,7 @@ public class MppsSCP {
     private Attributes set(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
         if (mppsNSetIOD != null)
-            mppsSCP.validate(rqAttrs, mppsNSetIOD);
+            BasicMPPSSCP.validate(rqAttrs, mppsNSetIOD);
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.RequestedSOPClassUID);
@@ -301,7 +301,9 @@ public class MppsSCP {
         } finally {
             SafeClose.close(in);
         }
-        
+        if (!"IN PROGRESS".equals(data.getString(Tag.PerformedProcedureStepStatus)))
+            BasicMPPSSCP.mayNoLongerBeUpdated();
+
         data.addAll(rqAttrs);
         DicomOutputStream out = null;
         try {

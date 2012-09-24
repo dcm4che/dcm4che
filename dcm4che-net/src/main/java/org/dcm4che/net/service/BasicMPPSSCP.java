@@ -57,19 +57,8 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicMPPSSCP extends DicomService {
 
-    private IOD mppsNSetIOD;
-    private IOD mppsNCreateIOD;
-
     public BasicMPPSSCP() {
         super(UID.ModalityPerformedProcedureStepSOPClass);
-    }
-
-    public void setMppsNCreateIOD(IOD mppsNCreateIOD) {
-        this.mppsNCreateIOD = mppsNCreateIOD;
-    }
-
-    public void setMppsNSetIOD(IOD mppsNSetIOD) {
-        this.mppsNSetIOD = mppsNSetIOD;
     }
 
     @Override
@@ -89,8 +78,6 @@ public class BasicMPPSSCP extends DicomService {
 
     protected void onNCreateRQ(Association as, PresentationContext pc,
             Attributes rq, Attributes rqAttrs) throws IOException {
-        if (mppsNCreateIOD != null)
-            check(rqAttrs.validate(mppsNCreateIOD), rqAttrs);
         Attributes rsp = Commands.mkNCreateRSP(rq, Status.Success);
         Attributes rspAttrs = create(as, rq, rqAttrs, rsp);
         try {
@@ -107,9 +94,6 @@ public class BasicMPPSSCP extends DicomService {
 
     protected void onNSetRQ(Association as, PresentationContext pc,
             Attributes rq, Attributes rqAttrs) throws IOException {
-        if (mppsNSetIOD != null)
-            check(rqAttrs.validate(mppsNSetIOD), rqAttrs);
-
         Attributes rsp = Commands.mkNSetRSP(rq, Status.Success);
         Attributes rspAttrs = set(as, rq, rqAttrs, rsp);
         try {
@@ -124,8 +108,9 @@ public class BasicMPPSSCP extends DicomService {
         return null;
     }
 
-    private void check(ValidationResult result, Attributes rqAttrs)
+    public void validate(Attributes rqAttrs, IOD iod)
             throws DicomServiceException {
+        ValidationResult result = rqAttrs.validate(iod);
         if (result.hasNotAllowedAttributes())
             throw new DicomServiceException(Status.NoSuchAttribute)
                 .setAttributeIdentifierList(result.tagsOfNotAllowedAttributes());

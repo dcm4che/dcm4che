@@ -84,6 +84,9 @@ public class MppsSCP {
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
    private File storageDir;
+   private IOD mppsNCreateIOD;
+   private IOD mppsNSetIOD;
+
    private final BasicMPPSSCP mppsSCP = new BasicMPPSSCP() {
        @Override
        protected Attributes create(Association as, Attributes rq,
@@ -117,6 +120,14 @@ public class MppsSCP {
 
    public File getStorageDirectory() {
        return storageDir;
+   }
+
+   private void setMppsNCreateIOD(IOD mppsNCreateIOD) {
+       this.mppsNCreateIOD = mppsNCreateIOD;
+   }
+
+   private void setMppsNSetIOD(IOD mppsNSetIOD) {
+       this.mppsNSetIOD = mppsNSetIOD;
    }
 
    public static void main(String[] args) {
@@ -206,10 +217,10 @@ public class MppsSCP {
     private static void configureIODs(MppsSCP main, CommandLine cl)
             throws IOException {
         if (!cl.hasOption("no-validate")) {
-            main.mppsSCP.setMppsNCreateIOD(IOD.load(
+            main.setMppsNCreateIOD(IOD.load(
                     cl.getOptionValue("mpps-ncreate-iod", 
                             "resource:mpps-ncreate-iod.xml")));
-            main.mppsSCP.setMppsNSetIOD(IOD.load(
+            main.setMppsNSetIOD(IOD.load(
                     cl.getOptionValue("mpps-nset-iod", 
                             "resource:mpps-nset-iod.xml")));
         }
@@ -239,6 +250,8 @@ public class MppsSCP {
 
     private Attributes create(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
+        if (mppsNCreateIOD != null)
+            mppsSCP.validate(rqAttrs, mppsNCreateIOD);
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.AffectedSOPClassUID);
@@ -266,6 +279,8 @@ public class MppsSCP {
 
     private Attributes set(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
+        if (mppsNSetIOD != null)
+            mppsSCP.validate(rqAttrs, mppsNSetIOD);
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.RequestedSOPClassUID);
@@ -286,6 +301,7 @@ public class MppsSCP {
         } finally {
             SafeClose.close(in);
         }
+        
         data.addAll(rqAttrs);
         DicomOutputStream out = null;
         try {

@@ -41,9 +41,7 @@ package org.dcm4che.net.service;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.IOD;
 import org.dcm4che.data.UID;
-import org.dcm4che.data.ValidationResult;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
@@ -112,23 +110,6 @@ public class BasicMPPSSCP extends DicomService {
         throw new DicomServiceException(Status.ProcessingFailure,
                 "Performed Procedure Step Object may no longer be updated")
             .setErrorID(0xA710);
-    }
-
-    public static void validate(Attributes rqAttrs, IOD iod)
-            throws DicomServiceException {
-        ValidationResult result = rqAttrs.validate(iod);
-        if (result.hasNotAllowedAttributes())
-            throw new DicomServiceException(Status.NoSuchAttribute)
-                .setAttributeIdentifierList(result.tagsOfNotAllowedAttributes());
-        if (result.hasMissingAttributes())
-            throw new DicomServiceException(Status.MissingAttribute)
-                .setAttributeIdentifierList(result.tagsOfMissingAttributes());
-        if (result.hasMissingAttributeValues())
-            throw new DicomServiceException(Status.MissingAttributeValue)
-                .setDataset(new Attributes(rqAttrs, result.tagsOfMissingAttributeValues()));
-        if (result.hasInvalidAttributeValues())
-            throw new DicomServiceException(Status.InvalidAttributeValue)
-                .setDataset(new Attributes(rqAttrs, result.tagsOfInvalidAttributeValues()));
     }
 
 }

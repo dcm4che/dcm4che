@@ -54,6 +54,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.IOD;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.data.ValidationResult;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
@@ -250,8 +251,11 @@ public class MppsSCP {
 
     private Attributes create(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
-        if (mppsNCreateIOD != null)
-            BasicMPPSSCP.validate(rqAttrs, mppsNCreateIOD);
+        if (mppsNCreateIOD != null) {
+            ValidationResult result = rqAttrs.validate(mppsNCreateIOD);
+            if (!result.isValid())
+                throw DicomServiceException.valueOf(result, rqAttrs);
+        }
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.AffectedSOPClassUID);
@@ -279,8 +283,11 @@ public class MppsSCP {
 
     private Attributes set(Association as, Attributes rq, Attributes rqAttrs)
             throws DicomServiceException {
-        if (mppsNSetIOD != null)
-            BasicMPPSSCP.validate(rqAttrs, mppsNSetIOD);
+        if (mppsNSetIOD != null) {
+            ValidationResult result = rqAttrs.validate(mppsNSetIOD);
+            if (!result.isValid())
+                throw DicomServiceException.valueOf(result, rqAttrs);
+        }
         if (storageDir == null)
             return null;
         String cuid = rq.getString(Tag.RequestedSOPClassUID);

@@ -43,6 +43,8 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.data.ValidationResult;
+import org.dcm4che.net.Status;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -138,5 +140,22 @@ public class DicomServiceException extends IOException {
     public final DicomServiceException setDataset(Attributes data) {
         this.data = data;
         return this;
+    }
+
+    public static DicomServiceException valueOf(ValidationResult result,
+            Attributes attrs) {
+        if (result.hasNotAllowedAttributes())
+            return new DicomServiceException(Status.NoSuchAttribute)
+                .setAttributeIdentifierList(result.tagsOfNotAllowedAttributes());
+        if (result.hasMissingAttributes())
+            return new DicomServiceException(Status.MissingAttribute)
+                .setAttributeIdentifierList(result.tagsOfMissingAttributes());
+        if (result.hasMissingAttributeValues())
+            return new DicomServiceException(Status.MissingAttributeValue)
+                .setDataset(new Attributes(attrs, result.tagsOfMissingAttributeValues()));
+        if (result.hasInvalidAttributeValues())
+            return new DicomServiceException(Status.InvalidAttributeValue)
+                .setDataset(new Attributes(attrs, result.tagsOfInvalidAttributeValues()));
+        return null;
     }
 }

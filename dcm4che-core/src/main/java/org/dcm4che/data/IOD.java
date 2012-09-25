@@ -152,6 +152,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
         private Map<String, List<String>> values = 
                 new HashMap<String, List<String>>();
         private LinkedList<IOD> iods = new LinkedList<IOD>();
+        private Map<String, IOD> refs = new HashMap<String, IOD>();
 
         public SAXHandler(IOD iod) {
             iods.add(iod);
@@ -172,7 +173,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 break;
             case 'I':
                 if (qName.equals("Item"))
-                    startItem();
+                    startItem(atts.getValue("id"), atts.getValue("idref"));
                 break;
             case 'V':
                 if (qName.equals("Value"))
@@ -209,7 +210,10 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
         private void startDataElement(String tagStr, String vrStr,
-                String typeStr, String vm, String items) {
+                String typeStr, String vm, String items) throws SAXException {
+            IOD iod = iods.getLast();
+            if (iod == null)
+                throw new SAXException("Item with idref must be empty");
             int tag = (int) Long.parseLong(tagStr, 16);
             VR vr = VR.valueOf(vrStr);
             DataElementType type = DataElementType.valueOf("TYPE_" + typeStr);
@@ -229,7 +233,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             boolean singleItem = items != null && items.endsWith("1");
             el = new DataElement(tag, vr, type, minVM, maxVM, singleItem);
-            iods.getLast().add(el);
+            iod.add(el);
         }
 
         private void endDataElement() {
@@ -292,10 +296,20 @@ public class IOD extends ArrayList<IOD.DataElement> {
             list.add(sb.toString());
         }
 
-        private void startItem() {
-            IOD iod = new IOD();
-            iods.add(iod);
+        private void startItem(String id, String idref) throws SAXException {
+            IOD iod;
+            if (idref != null) {
+                iod = refs.get(idref);
+                if (iod == null)
+                    throw new SAXException("undefined idref:" + idref);
+                iods.add(null);
+            } else { 
+                iod = new IOD();
+                iods.add(iod);
+            }
             el.setItemIOD(iod);
+            if (id != null)
+                refs.put(id, iod);
         }
 
         private void endItem() {

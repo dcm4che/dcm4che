@@ -45,6 +45,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
@@ -2113,13 +2114,31 @@ public class Attributes implements Serializable {
 
     public ValidationResult validate(IOD iod) {
         ValidationResult result = new ValidationResult();
+        HashMap<String,Boolean> resolvedConditions = new HashMap<String,Boolean>();
         for (IOD.DataElement el : iod) {
-            validate(el, result);
+            validate(el, result, resolvedConditions);
         }
         return result;
     }
 
     public void validate(DataElement el, ValidationResult result) {
+        validate(el, result, null);
+    }
+
+    private void validate(DataElement el, ValidationResult result,
+            Map<String, Boolean> processedConditions) {
+        IOD.Condition condition = el.getCondition();
+        if (condition != null) {
+            String id = condition.id();
+            Boolean match = id != null ? processedConditions.get(id) : null;
+            if (match == null) {
+                match = condition.match(this);
+                if (id != null)
+                    processedConditions.put(id, match);
+            }
+            if (!match)
+                return;
+        }
         int index = indexOf(el.tag);
         if (index < 0) {
             if (el.type == IOD.DataElementType.TYPE_1 
@@ -2148,7 +2167,7 @@ public class Attributes implements Serializable {
             }
             Sequence seq = (Sequence) value;
             int seqSize = seq.size();
-            if (el.singleItem && seqSize > 1) {
+            if (el.maxVM > 0 && seqSize > el.maxVM) {
                 result.addInvalidAttributeValue(el, 
                         ValidationResult.Invalid.MultipleItems);
                 return;
@@ -2183,44 +2202,33 @@ public class Attributes implements Serializable {
         if (validVals == null)
             return;
         
-        if (validVals instanceof String[] || validVals instanceof String[][]) {
+        if (validVals instanceof String[]) {
             if (!vr.isStringType()) {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
                 return;
             }
-            if (!isValidValue(toStrings(value), validVals)) {
+            if (!isValidValue(toStrings(value), el.valueNumber, (String[]) validVals)) {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
             }
-        } else if (validVals instanceof int[] || validVals instanceof int[][]) {
+        } else if (validVals instanceof int[]) {
             if (vr == VR.IS)
                 value = decodeISValue(index);
             else if (!vr.isIntType()) {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.VR);
                 return;
             }
-            if (!isValidValue(vr.toInts(value, bigEndian), validVals)) {
+            if (!isValidValue(vr.toInts(value, bigEndian), el.valueNumber, (int[]) validVals)) {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
             }
         }
     }
 
-    private boolean isValidValue(String[] val, Object validVals) {
-        if (validVals instanceof String[])
-            return validateValue(val, (String[])validVals);
-        else
-            return validateValue(val, (String[][])validVals);
-    }
+    private boolean isValidValue(String[] val, int valueNumber, String[] validVals) {
+        if (valueNumber != 0)
+            return val.length < valueNumber || isOneOf(val[valueNumber-1], validVals);
 
-    private boolean validateValue(String[] val, String[] validVals) {
         for (int i = 0; i < val.length; i++)
             if (!isOneOf(val[i], validVals))
-                return false;
-        return true;
-    }
-
-    private boolean validateValue(String[] val, String[][] validVals) {
-        for (int i = 0; i < val.length; i++)
-            if (validVals.length < i && !isOneOf(val[i], validVals[i]))
                 return false;
         return true;
     }
@@ -2234,23 +2242,12 @@ public class Attributes implements Serializable {
         return false;
     }
 
-    private boolean isValidValue(int[] val, Object validVals) {
-        if (validVals instanceof int[])
-            return isValidValue(val, (int[])validVals);
-        else
-            return isValidValue(val, (int[][])validVals);
-    }
+    private boolean isValidValue(int[] val, int valueNumber, int[] validVals) {
+        if (valueNumber != 0)
+            return val.length < valueNumber || isOneOf(val[valueNumber-1], validVals);
 
-    private boolean isValidValue(int[] val, int[] validVals) {
         for (int i = 0; i < val.length; i++)
             if (!isOneOf(val[i], validVals))
-                return false;
-        return true;
-    }
-
-    private boolean isValidValue(int[] val, int[][] validVals) {
-        for (int i = 0; i < val.length; i++)
-            if (validVals.length < i && !isOneOf(val[i], validVals[i]))
                 return false;
         return true;
     }

@@ -30,7 +30,7 @@
     <Item id="CodedEntry">
       <DataElement keyword="CodeValue" tag="00080100" vr="SH" type="1" vm="1"/>
       <DataElement keyword="CodingSchemeDesignator" tag="00080102" vr="SH" type="1" vm="1"/>
-      <DataElement keyword="CodingSchemeVersion" tag="00080103" vr="SH" type="1C" vm="1"/>
+      <DataElement keyword="CodingSchemeVersion" tag="00080103" vr="SH" type="3" vm="1"/>
       <DataElement keyword="CodeMeaning" tag="00080104" vr="LO" type="1" vm="1"/>
     </Item>
   </DataElement>

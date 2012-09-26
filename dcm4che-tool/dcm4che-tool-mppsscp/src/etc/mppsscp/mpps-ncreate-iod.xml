@@ -12,9 +12,21 @@
       <DataElement keyword="AccessionNumber" tag="00080050" vr="SH" type="2" vm="1"/>
       <DataElement keyword="IssuerOfAccessionNumberSequence" tag="00080051" vr="SQ" type="3" items="1">
         <Item id="HL7v2HierarchicDesignator">
-          <DataElement keyword="LocalNamespaceEntityID" tag="00400031" vr="UT" type="1C" vm="1"/>
-          <DataElement keyword="UniversalEntityID" tag="00400032" vr="UT" type="1C" vm="1"/>
-          <DataElement keyword="UniversalEntityIDType" tag="00400033" vr="CS" type="1C" vm="1"/>
+          <DataElement keyword="LocalNamespaceEntityID" tag="00400031" vr="UT" type="1" vm="1">
+            <If>
+              <NotPresent keyword="UniversalEntityID" tag="00400032"/>
+            </If>
+          </DataElement>
+          <DataElement keyword="UniversalEntityID" tag="00400032" vr="UT" type="1" vm="1">
+            <If>
+              <NotPresent keyword="LocalNamespaceEntityID" tag="00400031"/>
+            </If>
+          </DataElement>
+          <DataElement keyword="UniversalEntityIDType" tag="00400033" vr="CS" type="1" vm="1">
+            <If id="UniversalEntityID">
+              <Present keyword="UniversalEntityID" tag="00400032"/>
+            </If>
+          </DataElement>
         </Item>
       </DataElement>
       <DataElement keyword="PlacerOrderNumberImagingServiceRequest" tag="00402016" vr="LO" type="3" vm="1"/>
@@ -30,7 +42,7 @@
         <Item id="CodedEntry">
           <DataElement keyword="CodeValue" tag="00080100" vr="SH" type="1" vm="1"/>
           <DataElement keyword="CodingSchemeDesignator" tag="00080102" vr="SH" type="1" vm="1"/>
-          <DataElement keyword="CodingSchemeVersion" tag="00080103" vr="SH" type="1C" vm="1"/>
+          <DataElement keyword="CodingSchemeVersion" tag="00080103" vr="SH" type="3" vm="1"/>
           <DataElement keyword="CodeMeaning" tag="00080104" vr="LO" type="1" vm="1"/>
         </Item>
       </DataElement>
@@ -48,7 +60,9 @@
   <DataElement keyword="IssuerOfPatientIDQualifiersSequence" tag="00100024" vr="SQ" type="3" items="1">
     <Item>
       <DataElement keyword="UniversalEntityID" tag="00400032" vr="UT" type="3" vm="1"/>
-      <DataElement keyword="UniversalEntityIDType" tag="00400033" vr="CS" type="1C" vm="1"/>
+      <DataElement keyword="UniversalEntityIDType" tag="00400033" vr="CS" type="1" vm="1">
+        <If idref="UniversalEntityID"/>
+      </DataElement>
     </Item>
   </DataElement>
   <DataElement keyword="PatientBirthDate" tag="00100030" vr="DA" type="2" vm="1"/>

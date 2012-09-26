@@ -52,11 +52,11 @@ public enum QueryRetrieveLevel {
                 boolean relational) {
             IOD iod = new IOD();
             iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
-                            IOD.DataElementType.TYPE_0, -1, -1, false));
+                            IOD.DataElementType.TYPE_0, -1, -1, 0));
             iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_0, -1, -1, false));
+                    IOD.DataElementType.TYPE_0, -1, -1, 0));
             iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_0, -1, -1, false));
+                    IOD.DataElementType.TYPE_0, -1, -1, 0));
             return iod;
         }
 
@@ -65,7 +65,7 @@ public enum QueryRetrieveLevel {
                 boolean relational) {
             IOD iod = queryKeysIOD(rootLevel, relational);
             iod.add(new IOD.DataElement(Tag.PatientID, VR.LO,
-                    IOD.DataElementType.TYPE_1, 1, 1, false));
+                    IOD.DataElementType.TYPE_1, 1, 1, 0));
             return iod;
         }
 
@@ -79,11 +79,11 @@ public enum QueryRetrieveLevel {
                     !relational && rootLevel == QueryRetrieveLevel.PATIENT
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_0, -1, -1, false));
+                    IOD.DataElementType.TYPE_0, -1, -1, 0));
             iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_0, -1, -1, false));
+                    IOD.DataElementType.TYPE_0, -1, -1, 0));
             return iod;
         }
 
@@ -92,7 +92,7 @@ public enum QueryRetrieveLevel {
                 boolean relational) {
             IOD iod = queryKeysIOD(rootLevel, relational);
             iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_1, -1, -1, false));
+                    IOD.DataElementType.TYPE_1, -1, -1, 0));
             return iod;
         }
     },
@@ -105,14 +105,14 @@ public enum QueryRetrieveLevel {
                     !relational && rootLevel == QueryRetrieveLevel.PATIENT
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
                         !relational 
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_0, -1, -1, false));
+                    IOD.DataElementType.TYPE_0, -1, -1, 0));
             return iod;
         }
 
@@ -121,7 +121,7 @@ public enum QueryRetrieveLevel {
                 boolean relational) {
             IOD iod = queryKeysIOD(rootLevel, relational);
             iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_1, -1, -1, false));
+                    IOD.DataElementType.TYPE_1, -1, -1, 0));
             return iod;
         }
     },
@@ -134,17 +134,17 @@ public enum QueryRetrieveLevel {
                     !relational && rootLevel == QueryRetrieveLevel.PATIENT
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             iod.add(new IOD.DataElement(Tag.StudyInstanceUID, VR.UI,
                         !relational 
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             iod.add(new IOD.DataElement(Tag.SeriesInstanceUID, VR.UI,
                         !relational 
                         ? IOD.DataElementType.TYPE_1
                         : IOD.DataElementType.TYPE_3,
-                    1, 1, false));
+                    1, 1, 0));
             return iod;
         }
 
@@ -153,7 +153,7 @@ public enum QueryRetrieveLevel {
                 boolean relational) {
             IOD iod = queryKeysIOD(rootLevel, relational);
             iod.add(new IOD.DataElement(Tag.SOPInstanceUID, VR.UI,
-                    IOD.DataElementType.TYPE_1, -1, -1, false));
+                    IOD.DataElementType.TYPE_1, -1, -1, 0));
             return iod;
         }
     },
@@ -175,7 +175,7 @@ public enum QueryRetrieveLevel {
             String[] qrLevels) throws DicomServiceException {
         ValidationResult result = new ValidationResult();
         attrs.validate(new IOD.DataElement(Tag.PatientID, VR.LO,
-                IOD.DataElementType.TYPE_1, 1, 1, false).setValues(qrLevels),
+                IOD.DataElementType.TYPE_1, 1, 1, 0).setValues(qrLevels),
                 result);
         check(result);
         return QueryRetrieveLevel.valueOf(attrs.getString(Tag.QueryRetrieveLevel));

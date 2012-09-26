@@ -323,15 +323,6 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
     }
 
-    @Override
-    public void trimToSize() {
-        super.trimToSize();
-        for (DataElement el : this) {
-            if (el.values instanceof IOD)
-                ((IOD) el.values).trimToSize();
-        }
-    }
-
     public void parse(String uri) throws IOException {
         try {
             SAXParserFactory f = SAXParserFactory.newInstance();
@@ -607,7 +598,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
         private void endItem() {
-            iodStack.removeLast();
+            iodStack.removeLast().trimToSize();
         }
 
         private void startIf(String id, String idref) throws SAXException {

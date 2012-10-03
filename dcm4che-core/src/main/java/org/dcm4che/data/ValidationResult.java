@@ -183,30 +183,121 @@ public class ValidationResult {
     }
 
     public String getErrorComment() {
-        if (missingAttributes != null)
-            return errorComment("Missing Attribute",
-                    tagsOfMissingAttributes());
-        if (missingAttributeValues != null)
-            return errorComment("Missing Value of Attribute",
-                    tagsOfMissingAttributeValues());
-        if (invalidAttributeValues != null)
-            return errorComment("Invalid Attribute",
-                    tagsOfInvalidAttributeValues());
+        StringBuilder sb = new StringBuilder();
         if (notAllowedAttributes != null)
-            return errorComment("Not allowed Attribute",
-                    tagsOfNotAllowedAttributes());
+            return errorComment(sb, "Not allowed Attribute",
+                    tagsOfNotAllowedAttributes()).toString();
+        if (missingAttributes != null)
+            return errorComment(sb, "Missing Attribute",
+                    tagsOfMissingAttributes()).toString();
+        if (missingAttributeValues != null)
+            return errorComment(sb, "Missing Value of Attribute",
+                    tagsOfMissingAttributeValues()).toString();
+        if (invalidAttributeValues != null)
+            return errorComment(sb, "Invalid Attribute",
+                    tagsOfInvalidAttributeValues()).toString();
         return null;
     }
 
-    private static String errorComment(String prompt, int[] tags) {
-        StringBuffer sb = new StringBuffer();
+    private static StringBuilder errorComment(StringBuilder sb, String prompt,
+            int[] tags) {
         sb.append(prompt);
         String prefix = tags.length > 1 ? "s: " : ": ";
         for (int tag : tags) {
             sb.append(prefix).append(TagUtils.toString(tag));
             prefix = ", ";
         }
-        return sb.toString();
+        return sb;
+    }
+
+    @Override
+    public String toString() {
+        if (isValid())
+            return "VALID";
+
+        StringBuilder sb = new StringBuilder();
+        if (notAllowedAttributes != null)
+            errorComment(sb, "Not allowed Attribute",
+                    tagsOfNotAllowedAttributes()).append('\n');
+        if (missingAttributes != null)
+            errorComment(sb, "Missing Attribute",
+                    tagsOfMissingAttributes()).append('\n');
+        if (missingAttributeValues != null)
+            errorComment(sb, "Missing Value of Attribute",
+                    tagsOfMissingAttributeValues()).append('\n');
+        if (invalidAttributeValues != null)
+            errorComment(sb, "Invalid Attribute",
+                    tagsOfInvalidAttributeValues()).append('\n');
+
+        return sb.substring(0, sb.length()-1);
+    }
+
+    public String asText(Attributes attrs) {
+        if (isValid())
+            return "VALID";
+
+        StringBuilder sb = new StringBuilder();
+        appendTextTo(0, attrs, sb);
+        return sb.substring(0, sb.length()-1);
+    }
+
+    private void appendTextTo(int level, Attributes attrs, StringBuilder sb) {
+        if (notAllowedAttributes != null)
+            appendTextTo(level, attrs, "Not allowed Attributes:\n", notAllowedAttributes, sb);
+        if (missingAttributes != null)
+            appendTextTo(level, attrs, "Missing Attributes:\n", missingAttributes, sb);
+        if (missingAttributeValues != null)
+            appendTextTo(level, attrs, "Missing Attribute Values:\n", missingAttributeValues, sb);
+        if (invalidAttributeValues != null)
+            appendInvalidAttributeValues(level, attrs, "Invalid Attribute Values:\n", sb);
+    }
+
+    private void appendTextTo(int level, Attributes attrs, String title, 
+            List<DataElement> list, StringBuilder sb) {
+        appendPrefixTo(level, sb);
+        sb.append(title);
+        for (DataElement el : list) {
+            appendAttribute(level, el.tag, sb);
+            sb.append('\n');
+        }
+    }
+
+    private void appendInvalidAttributeValues(int level, Attributes attrs,
+            String title, StringBuilder sb) {
+        appendPrefixTo(level, sb);
+        sb.append(title);
+        for (InvalidAttributeValue iav : invalidAttributeValues) {
+            int tag = iav.dataElement.tag;
+            appendAttribute(level, tag, sb);
+            sb.append(" [");
+            attrs.getVR(tag).prompt(attrs.getValue(tag),
+                    attrs.bigEndian(), 
+                    attrs.getSpecificCharacterSet(), 200, sb);
+            sb.append("]\n");
+            if (iav.itemValidationResults != null) {
+                Sequence seq = attrs.getSequence(tag);
+                for (int i = 0; i < iav.itemValidationResults.length; i++) {
+                    ValidationResult itemResult = iav.itemValidationResults[i];
+                    if (!itemResult.isValid()) {
+                        appendPrefixTo(level+1, sb);
+                        sb.append("Invalid Item ").append(i+1).append(":\n");
+                        itemResult.appendTextTo(level+1, seq.get(i), sb);
+                    }
+                }
+            }
+        }
+    }
+
+    private void appendAttribute(int level, int tag, StringBuilder sb) {
+        appendPrefixTo(level, sb);
+        sb.append(TagUtils.toString(tag))
+          .append(' ')
+          .append(ElementDictionary.keywordOf(tag, null));
+    }
+
+    private void appendPrefixTo(int level, StringBuilder sb) {
+        while (level-- > 0)
+            sb.append('>');
     }
 
 }

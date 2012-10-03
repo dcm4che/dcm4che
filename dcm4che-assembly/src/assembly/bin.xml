@@ -160,6 +160,25 @@
       <lineEnding>keep</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmvalidate/src</directory>
+      <includes>
+        <include>bin/dcmvalidate</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcmvalidate/src</directory>
+      <includes>
+        <include>bin/dcmvalidate.bat</include>
+        <include>etc/dcmvalidate/log4j.properties</include>
+        <include>etc/dcmvalidate/dicomdir-iod.xml</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-findscu/src</directory>
       <includes>
         <include>bin/findscu</include>
@@ -650,6 +669,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
         <include>org.dcm4che.tool:dcm4che-tool-findscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-getscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl72xml</include>
@@ -674,6 +694,7 @@
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
       </includes>
+      <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
   </dependencySets>
 </assembly>

@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,6 +53,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 import org.xml.sax.SAXException;
@@ -249,26 +251,39 @@ public class IOD extends ArrayList<IOD.DataElement> {
    }
 
     public static class Present extends Condition {
-        private final int tag;
+        protected final int tag;
+        protected final int[] itemPath;
 
-        public Present(int tag) {
+        public Present(int tag, int... itemPath) {
             this.tag = tag;
+            this.itemPath = itemPath;
         }
 
         public boolean match(Attributes attrs) {
-            return not ? !attrs.containsValue(tag) : attrs.containsValue(tag);
+            return not ? !item(attrs).containsValue(tag)
+                        : item(attrs).containsValue(tag);
+        }
+
+        protected Attributes item(Attributes attrs) {
+            for (int sqtag : itemPath) {
+                if (sqtag == -1)
+                attrs = (sqtag == -1)
+                        ? attrs.getParent()
+                        : attrs.getNestedDataset(sqtag);
+            }
+            return attrs;
         }
     }
 
-    public static class MemberOf extends Condition {
-        private final int tag;
+    public static class MemberOf extends Present {
         private final VR vr;
         private final int valueIndex;
         private final boolean matchNotPresent;
         private Object values;
 
-        public MemberOf(int tag, VR vr, int valueIndex, boolean matchNotPresent) {
-            this.tag = tag;
+        public MemberOf(int tag, VR vr, int valueIndex,
+                boolean matchNotPresent, int... itemPath) {
+            super(tag, itemPath);
             this.vr = vr;
             this.valueIndex = valueIndex;
             this.matchNotPresent = matchNotPresent;
@@ -291,16 +306,20 @@ public class IOD extends ArrayList<IOD.DataElement> {
         public boolean match(Attributes attrs) {
             if (values == null)
                 throw new IllegalStateException("values not initialized");
+            Attributes item = item(attrs);
+            if (item == null)
+                return matchNotPresent;
+
             if (values instanceof int[])
-                return not ? !match(attrs, ((int[]) values))
-                           : match(attrs, ((int[]) values));
+                return not ? !match(item, ((int[]) values))
+                           : match(item, ((int[]) values));
             else
-                return not ? !match(attrs, ((String[]) values))
-                           : match(attrs, ((String[]) values));
+                return not ? !match(item, ((String[]) values))
+                           : match(item, ((String[]) values));
         }
 
-        private boolean match(Attributes attrs, String[] ss) {
-            String val = attrs.getString(tag, valueIndex);
+        private boolean match(Attributes item, String[] ss) {
+            String val = item.getString(tag, valueIndex);
             if (val == null)
                 return not ? !matchNotPresent : matchNotPresent;
             for (String s : ss) {
@@ -310,8 +329,8 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return not;
         }
 
-        private boolean match(Attributes attrs, int[] is) {
-            int val = attrs.getInt(tag, valueIndex, Integer.MIN_VALUE);
+        private boolean match(Attributes item, int[] is) {
+            int val = item.getInt(tag, valueIndex, Integer.MIN_VALUE);
             if (val == Integer.MIN_VALUE)
                 return matchNotPresent;
             for (int i : is) {
@@ -377,27 +396,17 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 break;
             case 'M':
                 if (qName.equals("MemberOf"))
-                    startCondition(qName, new MemberOf(
-                            tagOf(atts.getValue("tag")),
-                            vrOf(atts.getValue("vr")),
-                            valueNumberOf(atts.getValue("valueNumber"), 1) - 1,
-                            matchNotPresentOf(atts.getValue("matchNotPresent"))));
+                    startCondition(qName, memberOf(atts));
                 break;
             case 'N':
                 if (qName.equals("NotAnd"))
                     startCondition(qName, new And().not());
                 else if (qName.equals("NotMemberOf"))
-                    startCondition(qName, new MemberOf(
-                            tagOf(atts.getValue("tag")),
-                            vrOf(atts.getValue("vr")),
-                            valueNumberOf(atts.getValue("valueNumber"), 1) - 1,
-                            matchNotPresentOf(atts.getValue("matchNotPresent")))
-                        .not());
+                    startCondition(qName, memberOf(atts).not());
                 else if (qName.equals("NotOr"))
                     startCondition(qName, new Or().not());
                 else if (qName.equals("NotPresent"))
-                    startCondition(qName,
-                            new Present(tagOf(atts.getValue("tag"))).not());
+                    startCondition(qName, present(atts).not());
                 break;
             case 'O':
                 if (qName.equals("Or"))
@@ -405,14 +414,35 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 break;
             case 'P':
                 if (qName.equals("Present"))
-                    startCondition(qName,
-                            new Present(tagOf(atts.getValue("tag"))));
+                    startCondition(qName, present(atts));
                 break;
             case 'V':
                 if (qName.equals("Value"))
                     startValue();
                 break;
             }
+        }
+
+        private Present present(org.xml.sax.Attributes atts)
+                throws SAXException {
+            int[] tagPath = tagPathOf(atts.getValue("tag"));
+            int lastIndex = tagPath.length-1;
+            return new Present(tagPath[lastIndex],
+                    lastIndex > 0 ? Arrays.copyOf(tagPath, lastIndex)
+                            : ByteUtils.EMPTY_INTS);
+        }
+
+        private MemberOf memberOf(org.xml.sax.Attributes atts)
+                throws SAXException {
+            int[] tagPath = tagPathOf(atts.getValue("tag"));
+            int lastIndex = tagPath.length-1;
+            return new MemberOf(
+                    tagPath[lastIndex],
+                    vrOf(atts.getValue("vr")),
+                    valueNumberOf(atts.getValue("valueNumber"), 1) - 1,
+                    matchNotPresentOf(atts.getValue("matchNotPresent")),
+                    lastIndex > 0 ? Arrays.copyOf(tagPath, lastIndex)
+                                  : ByteUtils.EMPTY_INTS);
         }
 
         @Override
@@ -538,6 +568,24 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 throw new SAXException("invalid tag=\"" + s + '"');
             }
         }
+
+        private int[] tagPathOf(String s) throws SAXException {
+            String[] ss = StringUtils.split(s, '/');
+            if (ss.length == 0)
+                throw new SAXException("missing tag attribute");
+            
+            try {
+                int[] tagPath = new int[ss.length];
+                for (int i = 0; i < tagPath.length; i++)
+                    tagPath[i] = ss[i].equals("..") 
+                                ? -1
+                                : (int) Long.parseLong(s, 16);
+                return tagPath;
+            } catch (IllegalArgumentException e) {
+                throw new SAXException("invalid tag=\"" + s + '"');
+            }
+        }
+
 
         private int valueNumberOf(String s, int def) throws SAXException {
             try {

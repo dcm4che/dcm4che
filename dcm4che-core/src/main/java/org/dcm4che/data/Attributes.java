@@ -488,6 +488,19 @@ public class Attributes implements Serializable {
         return values[index];
     }
 
+
+    public VR getVR(int tag) {
+        return getVR(null, tag);
+    }
+
+    public VR getVR(String privateCreator, int tag) {
+        int index = indexOf(privateCreator, tag);
+        if (index < 0)
+            return null;
+        
+        return vrs[index];
+    }
+
     public Sequence getSequence(int tag) {
         return getSequence(null, tag);
     }

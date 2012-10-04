@@ -63,6 +63,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+         <artifactId>wagon-ssh</artifactId>
+         <version>2.2</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -86,9 +93,16 @@
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-servlet</module>
   </modules>
+  <distributionManagement>
+    <repository>
+      <id>www.dcm4che.org</id>
+      <name>dcm4che Repository</name>
+      <url>scp://www.dcm4che.org:443/home/maven2</url>
+    </repository>
+  </distributionManagement>
   <repositories>
     <repository>
-      <id>dcm4che</id>
+      <id>www.dcm4che.org</id>
       <name>dcm4che Repository</name>
       <url>http://www.dcm4che.org/maven2</url>
     </repository>

@@ -46,7 +46,7 @@
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-xml2hl7</artifactId>
-  <name>dcm4che-tool.xml2hl7</name>
+  <name>dcm4che-tool-xml2hl7</name>
   <description>Convert XML to HL7 V2 message</description>
   <dependencies>
     <dependency>

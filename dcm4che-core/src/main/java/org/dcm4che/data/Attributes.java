@@ -952,7 +952,7 @@ public class Attributes implements Serializable {
         }
         try {
             return vr.toDate(decodeStringValue(index),
-                    getTimeZone(), valueIndex, false, defVal);
+                    vr != VR.DA ? getTimeZone() : null, valueIndex, false, defVal);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;

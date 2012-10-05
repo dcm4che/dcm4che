@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-conf</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
   </parent>
   <artifactId>dcm4che-conf-prefs</artifactId>
   <name>dcm4che-conf-prefs</name>
@@ -11,7 +11,7 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-api</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

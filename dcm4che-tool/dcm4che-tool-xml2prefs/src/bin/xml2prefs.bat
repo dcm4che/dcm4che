@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che.tool.xml2prefs.Xml2Prefs
-set MAIN_JAR=dcm4che-tool-xml2prefs-3.0.0-SNAPSHOT.jar
+set MAIN_JAR=dcm4che-tool-xml2prefs-3.0.0.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

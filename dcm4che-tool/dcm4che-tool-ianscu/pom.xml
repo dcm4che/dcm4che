@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-ianscu</artifactId>
@@ -52,19 +52,19 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-net</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-common</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

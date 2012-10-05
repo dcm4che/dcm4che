@@ -790,6 +790,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     protected void storeDiffs(Preferences prefs,
             TransferCapability a, TransferCapability b) {
+        storeDiff(prefs, "cn",
+                a.getCommonName(),
+                b.getCommonName());
         storeDiff(prefs, "dicomSOPClass",
                 a.getSopClass(),
                 b.getSopClass());

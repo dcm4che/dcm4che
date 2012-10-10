@@ -755,7 +755,8 @@ public class Connection implements Serializable, Cloneable {
         device.execute(new Runnable() {
 
             public void run() {
-                SocketAddress sockAddr = server.getLocalSocketAddress();
+                ServerSocket tmp = server;
+                SocketAddress sockAddr = tmp.getLocalSocketAddress();
                 LOG.info("Start listening on {}", sockAddr);
                 try {
                     for (;;) {
@@ -776,7 +777,7 @@ public class Connection implements Serializable, Cloneable {
                         }
                     }
                 } catch (Throwable e) {
-                    if (server != null)
+                    if (server == tmp) // ignore exception caused by unbind()
                         LOG.error("Exception on listing on " + sockAddr + ":", e);
                 }
                 LOG.info("Stop listening on {}", sockAddr);

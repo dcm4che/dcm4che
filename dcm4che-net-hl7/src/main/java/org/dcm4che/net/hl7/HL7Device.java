@@ -66,6 +66,17 @@ public class HL7Device extends Device {
         super(name);
     }
 
+    @Override
+    public boolean removeConnection(Connection conn) {
+        for (HL7Application app : hl7apps.values())
+            if (app.getConnections().contains(conn))
+                throw new IllegalStateException(conn
+                        + " used by HL7 Application: "
+                        + app.getApplicationName());
+
+        return super.removeConnection(conn);
+    }
+
     public void addHL7Application(HL7Application hl7App) {
         hl7App.setDevice(this);
         hl7apps.put(hl7App.getApplicationName(), hl7App);

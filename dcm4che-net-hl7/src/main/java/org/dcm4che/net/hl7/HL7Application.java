@@ -82,8 +82,15 @@ public class HL7Application implements Serializable {
     }
 
     void setDevice(HL7Device device) {
-        if (device != null  && this.device != null)
-            throw new IllegalStateException("already owned by " + this.device);
+        if (device != null) {
+            if (this.device != null)
+                throw new IllegalStateException("already owned by " + 
+                        this.device.getDeviceName());
+            for (Connection conn : conns)
+                if (conn.getDevice() != device)
+                    throw new IllegalStateException(conn + " not owned by " + 
+                            device.getDeviceName());
+        }
         this.device = device;
     }
 
@@ -164,6 +171,9 @@ public class HL7Application implements Serializable {
     }
 
     public void addConnection(Connection conn) {
+        if (device != null && device != conn.getDevice())
+            throw new IllegalStateException(conn + " not contained by " + 
+                    device.getDeviceName());
         conn.setConnectionHandler(HL7ConnectionHandler.INSTANCE);
         conns.add(conn);
     }

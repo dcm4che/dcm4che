@@ -727,6 +727,11 @@ public class Device implements Serializable {
     }
 
     public boolean removeConnection(Connection conn) {
+        for (ApplicationEntity ae : aes.values())
+            if (ae.getConnections().contains(conn))
+                throw new IllegalStateException(conn + " used by AE: " + 
+                        ae.getAETitle());
+
         if (!conns.remove(conn))
             return false;
 

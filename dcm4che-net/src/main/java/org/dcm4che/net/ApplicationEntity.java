@@ -124,8 +124,15 @@ public class ApplicationEntity implements Serializable, Cloneable {
      *                The owning <code>Device</code>.
      */
     void setDevice(Device device) {
-        if (device != null  && this.device != null)
-            throw new IllegalStateException("already owned by " + this.device);
+        if (device != null) {
+            if (this.device != null)
+                throw new IllegalStateException("already owned by " + 
+                        this.device.getDeviceName());
+            for (Connection conn : conns)
+                if (conn.getDevice() != device)
+                    throw new IllegalStateException(conn + " not owned by " + 
+                            device.getDeviceName());
+        }
         this.device = device;
     }
 
@@ -379,6 +386,9 @@ public class ApplicationEntity implements Serializable, Cloneable {
     }
 
     public void addConnection(Connection conn) {
+        if (device != null && device != conn.getDevice())
+            throw new IllegalStateException(conn + " not contained by Device: " + 
+                    device.getDeviceName());
         conn.setConnectionHandler(DicomConnectionHandler.INSTANCE);
         conns.add(conn);
     }

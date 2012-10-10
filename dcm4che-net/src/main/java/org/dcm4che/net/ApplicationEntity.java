@@ -340,9 +340,6 @@ public class ApplicationEntity implements Serializable, Cloneable {
      *                the AE is inherited from the device
      */
     public void setInstalled(Boolean installed) {
-        if (installed != null && installed.booleanValue()
-                && device != null && !device.isInstalled())
-            throw new IllegalStateException("owning device not installed");
         this.installed = installed;
     }
 

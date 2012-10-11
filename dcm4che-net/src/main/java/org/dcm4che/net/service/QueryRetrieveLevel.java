@@ -174,7 +174,7 @@ public enum QueryRetrieveLevel {
     public static QueryRetrieveLevel valueOf(Attributes attrs,
             String[] qrLevels) throws DicomServiceException {
         ValidationResult result = new ValidationResult();
-        attrs.validate(new IOD.DataElement(Tag.PatientID, VR.LO,
+        attrs.validate(new IOD.DataElement(Tag.QueryRetrieveLevel, VR.LO,
                 IOD.DataElementType.TYPE_1, 1, 1, 0).setValues(qrLevels),
                 result);
         check(result);

@@ -877,7 +877,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.DS)
-            value = decodeStringValue(index);
+            value = decodeDSValue(index);
         try {
             return vr.toDoubles(value, bigEndian);
         } catch (UnsupportedOperationException e) {

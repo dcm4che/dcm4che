@@ -176,4 +176,12 @@ public class AttributesTest {
         assertArrayEquals(new String[]{ "0.5","0.5" }, a1.getStrings(Tag.PixelSpacing));
         assertArrayEquals(new String[]{ "0.5","0.5" }, a2.getStrings(Tag.PixelSpacing));
     }
+
+    @Test
+    public void testGetDS() {
+        Attributes a = new Attributes();
+        a.setString(Tag.PixelSpacing, VR.DS, ".5",".5");
+        assertArrayEquals(new double[]{ 0.5, 0.5 }, a.getDoubles(Tag.PixelSpacing), 0);
+        assertArrayEquals(new float[]{ 0.5f, 0.5f }, a.getFloats(Tag.PixelSpacing), 0);
+    }
 }

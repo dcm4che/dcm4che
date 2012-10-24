@@ -842,7 +842,7 @@ public class Attributes implements Serializable {
         else
             updateVR(index, vr);
         if (vr == VR.DS)
-            value = decodeStringValue(index);
+            value = decodeDSValue(index);
 
         try {
             return vr.toDouble(value, bigEndian, valueIndex, defVal);

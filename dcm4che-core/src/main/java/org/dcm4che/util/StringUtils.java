@@ -251,4 +251,8 @@ public class StringUtils {
         return s.length() > maxlen ? s.substring(0, 64) : s;
     }
 
+    public static <T> boolean equals(T o1, T o2) {
+        return o1 == o2 || o1 != null && o1.equals(o2);
+    }
+
 }

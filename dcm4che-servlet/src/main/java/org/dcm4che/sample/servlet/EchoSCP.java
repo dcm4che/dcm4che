@@ -54,7 +54,7 @@ public class EchoSCP extends DeviceService<Device> implements EchoSCPMBean {
 
     public EchoSCP(DicomConfiguration dicomConfiguration, String deviceName)
             throws Exception {
-        super(dicomConfiguration.findDevice(deviceName));
+        init(dicomConfiguration.findDevice(deviceName));
         this.dicomConfiguration = dicomConfiguration;
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());

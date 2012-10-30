@@ -76,11 +76,11 @@ public abstract class DicomFiles {
             Attributes fmi = in.readFileMetaInformation();
             String tsuid = fmi != null
                     ? fmi.getString(Tag.TransferSyntaxUID, null)
-                            : in.explicitVR() 
-                            ? in.bigEndian()
+                    : !in.explicitVR() 
+                            ? UID.ImplicitVRLittleEndian
+                            : in.bigEndian()
                                     ? UID.ExplicitVRBigEndian
-                                            : UID.ExplicitVRLittleEndian
-                                            : UID.ImplicitVRLittleEndian;
+                                    : UID.ExplicitVRLittleEndian;
             long dsPos = in.getPosition();
             Attributes ds = in.readDataset(-1, Tag.PixelData);
             boolean b = scb.dicomFile(f, dsPos, tsuid, ds);

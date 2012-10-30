@@ -38,10 +38,11 @@
 
 package org.dcm4che.sample.servlet;
 
-import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DeviceService;
+import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomServiceRegistry;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -52,9 +53,12 @@ public class EchoSCP extends DeviceService<Device> implements EchoSCPMBean {
     private final DicomConfiguration dicomConfiguration;
 
     public EchoSCP(DicomConfiguration dicomConfiguration, String deviceName)
-            throws ConfigurationException, Exception {
+            throws Exception {
+        super(dicomConfiguration.findDevice(deviceName));
         this.dicomConfiguration = dicomConfiguration;
-        init(dicomConfiguration.findDevice(deviceName));
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        device.setDimseRQHandler(serviceRegistry);
     }
 
     @Override

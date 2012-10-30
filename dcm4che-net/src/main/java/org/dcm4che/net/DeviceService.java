@@ -42,9 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.DicomServiceRegistry;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
@@ -55,9 +52,8 @@ public class DeviceService<T extends Device> {
     protected ExecutorService executor;
     protected ScheduledExecutorService scheduledExecutor;
 
-    protected void init(T device) throws Exception {
+    protected void init(T device) {
         this.device = device;
-        device.setDimseRQHandler(serviceRegistry());
     }
 
     public boolean isRunning() {
@@ -98,12 +94,6 @@ public class DeviceService<T extends Device> {
 
     protected ScheduledExecutorService scheduledExecuterService() {
         return Executors.newSingleThreadScheduledExecutor();
-    }
-
-    protected DicomServiceRegistry serviceRegistry() {
-        DicomServiceRegistry services = new DicomServiceRegistry();
-        services.addDicomService(new BasicCEchoSCP());
-        return services ;
     }
 
 }

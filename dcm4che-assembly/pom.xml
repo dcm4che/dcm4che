@@ -57,7 +57,7 @@
         <version>2.3</version>
         <configuration>
           <descriptors>
-            <descriptor>src/assembly/bin.xml</descriptor>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
           </descriptors>
           <attach>false</attach>
         </configuration>

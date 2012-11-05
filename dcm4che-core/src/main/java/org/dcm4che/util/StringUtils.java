@@ -38,6 +38,7 @@
 
 package org.dcm4che.util;
 
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.StringTokenizer;
@@ -255,4 +256,31 @@ public class StringUtils {
         return o1 == o2 || o1 != null && o1.equals(o2);
     }
 
+    public static String replaceSystemProperties(String s) {
+        int i = s.indexOf("${");
+        if (i == -1)
+            return s;
+
+        StringBuilder sb = new StringBuilder(s.length());
+        int j = -1;
+        do {
+            sb.append(s.substring(j+1, i));
+            if ((j = s.indexOf('}')) == -1) {
+                j = i-1;
+                break;
+            }
+            String val = System.getProperty(s.substring(i+2, j));
+            sb.append(val != null ? val : s.substring(i, j+1));
+            i = s.indexOf("${", j+1);
+        } while (i != -1);
+        sb.append(s.substring(j+1));
+        return sb.toString();
+    }
+
+
+    public static String resourceURL(String name) {
+        ClassLoader tcl = Thread.currentThread().getContextClassLoader();
+        URL url = tcl.getResource(name);
+        return url != null ? url.toString() : null;
+    }
 }

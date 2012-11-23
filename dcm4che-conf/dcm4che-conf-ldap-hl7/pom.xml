@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-conf</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-conf-ldap-hl7</artifactId>
@@ -16,13 +16,13 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-ldap</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-api-hl7</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

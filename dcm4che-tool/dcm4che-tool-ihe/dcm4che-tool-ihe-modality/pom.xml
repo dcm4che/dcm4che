@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool-ihe</artifactId>
     <groupId>org.dcm4che.tool.ihe</groupId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
   </parent>
   <artifactId>dcm4che-tool-ihe-modality</artifactId>
   <name>dcm4che-tool-ihe-modality</name>
@@ -51,22 +51,22 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-mppsscu</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-stgcmtscu</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-storescu</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-mkkos</artifactId>
-      <version>3.0.0</version>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

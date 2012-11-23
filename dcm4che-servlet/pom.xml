@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
   </parent>
   <artifactId>dcm4che-servlet</artifactId>
   <packaging>war</packaging>
@@ -23,7 +23,7 @@
       <dependency>
         <groupId>org.jboss.spec</groupId>
         <artifactId>jboss-javaee-6.0</artifactId>
-        <version>3.0.0.Final</version>
+        <version>3.0.1.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

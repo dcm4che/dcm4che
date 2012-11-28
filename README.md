@@ -1,10 +1,8 @@
-dcm4che-3.x
-===========
+dcm4che-3.x DICOM Toolkit
+=========================
 Sources: https://github.com/dcm4che/dcm4che  
-Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3
+Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
 Issue Tracker: http://www.dcm4che.org/jira/browse/LIB  
-
-DICOM library and utilities.
 
 This is a complete rewrite of [dcm4che-2.x](http://www.dcm4che.org/confluence/display/d2/).
 
@@ -47,29 +45,53 @@ Modules
 
 Utilities
 ---------
-- [dcm2xml](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md)
-- [dcmdump](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md)
-- [dcmdir](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md)
-- [dcmqrscp](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md)
-- [findscu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md)
-- [getscu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md)
-- [hl72xml](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl72xml/README.md)
-- [hl7pix](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7pix/README.md)
-- [hl7rcv](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7rcv/README.md)
-- [hl7snd](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7snd/README.md)
-- [ianscp](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md)
-- [ianscu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md)
-- [mkkos](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md)
-- [modality](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md)
-- [movescu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md)
-- [mppsscp](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscp/README.md)
-- [mppsscu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscu/README.md)
-- [stgcmtscu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md)
-- [storescp](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md)
-- [storescu](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md)
-- [xml2dcm](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md)
-- [xml2hl7](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md)
-- [xml2prefs](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2prefs/README.md)
+- [dcm2xml][]: Convert DICOM file in XML presentation
+- [dcmdump][]: Dump DICOM file in textual form
+- [dcmdir][]: Dump, create or update DICOMDIR file
+- [dcmqrscp][]: Simple DICOM archive
+- [findscu][]: Invoke DICOM C-FIND Query Request
+- [getscu][]: Invoke DICOM C-GET Retrieve Request
+- [hl72xml][]: Convert HL7 v2.x message in XML presentation
+- [hl7pix][]: Query HL7 v2.x PIX Manager
+- [hl7rcv][]: HL7 v2.x Receiver
+- [hl7snd][]: Send HL7 v2.x message
+- [ianscp][]: DICOM Instance Availability Notification receiver 
+- [ianscu][]: Send DICOM Instance Availability Notification
+- [mkkos][]: Make DICOM Key Object Selection Document
+- [modality][]: Simulates DICOM Modality
+- [movescu][]: Invoke DICOM C-MOVE Retrieve request
+- [mppsscp][]: DICOM Modality Performed Procedure Step Receiver
+- [mppsscu][]: Send DICOM Modality Performed Procedure Step
+- [stgcmtscu][]: Invoke DICOM Storage Commitment Request
+- [storescp][]: DICOM Composite Object Receiver
+- [storescu][]: Send DICOM Composite Objects
+- [xml2dcm][]: Create/Update DICOM file from/with XML presentation
+- [xml2hl7][]: Create HL7 v2.x message from XML presentation
+- [xml2prefs][]: Import Java Preferences
+
+[dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
+[dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
+[dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
+[dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
+[findscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md
+[getscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md
+[hl72xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl72xml/README.md
+[hl7pix]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7pix/README.md
+[hl7rcv]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7rcv/README.md
+[hl7snd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7snd/README.md
+[ianscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md
+[ianscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md
+[mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
+[modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md
+[movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md
+[mppsscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscp/README.md
+[mppsscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscu/README.md
+[stgcmtscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md
+[storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
+[storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md
+[xml2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md
+[xml2hl7]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md
+[xml2prefs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2prefs/README.md
 
 License
 -------

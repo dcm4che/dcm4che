@@ -48,6 +48,14 @@
   </formats>
   <fileSets>
     <fileSet>
+      <directory>..</directory>
+      <includes>
+        <include>README.md</include>
+        <include>LICENSE.txt</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>    <fileSet>
       <directory>../dcm4che-soundex/src</directory>
       <includes>
         <include>bin/soundex</include>

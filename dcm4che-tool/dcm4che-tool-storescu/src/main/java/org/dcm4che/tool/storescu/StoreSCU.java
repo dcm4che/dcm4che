@@ -344,9 +344,9 @@ public class StoreSCU {
             DicomFiles.scan(fnames, new DicomFiles.Callback() {
                 
                 @Override
-                public boolean dicomFile(File f, long dsPos, String tsuid,
+                public boolean dicomFile(File f, Attributes fmi, long dsPos,
                         Attributes ds) throws IOException {
-                    if (!addFile(fileInfos, f, dsPos, ds, tsuid))
+                    if (!addFile(fileInfos, f, dsPos, fmi, ds))
                         return false;
 
                     filesScanned++;
@@ -384,9 +384,10 @@ public class StoreSCU {
     }
 
     public boolean addFile(BufferedWriter fileInfos, File f, long endFmi,
-            Attributes ds, String ts) throws IOException {
-        String cuid = ds.getString(Tag.SOPClassUID);
-        String iuid = ds.getString(Tag.SOPInstanceUID);
+            Attributes fmi, Attributes ds) throws IOException {
+        String cuid = fmi.getString(Tag.MediaStorageSOPClassUID);
+        String iuid = fmi.getString(Tag.MediaStorageSOPInstanceUID);
+        String ts = fmi.getString(Tag.TransferSyntaxUID);
         if (cuid == null || iuid == null)
             return false;
 

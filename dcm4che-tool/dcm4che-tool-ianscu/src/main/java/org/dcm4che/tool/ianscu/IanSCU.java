@@ -162,7 +162,8 @@ public class IanSCU extends Device {
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
-                    public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                    public boolean dicomFile(File f, Attributes fmi, long dsPos,
+                            Attributes ds) {
                         return main.addInstance(ds);
                     }
                 });

@@ -184,7 +184,7 @@ public class Modality {
         }
     }
 
-    private static void checkOptions(CommandLine cl) throws MissingOptionException, ParseException {
+    private static void checkOptions(CommandLine cl) throws ParseException {
         if (!cl.hasOption("b"))
             throw new MissingOptionException(
                     CLIUtils.rb.getString("missing-bind-opt"));
@@ -229,7 +229,8 @@ public class Modality {
         DicomFiles.scan(cl.getArgList(), new DicomFiles.Callback() {
 
             @Override
-            public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+            public boolean dicomFile(File f, Attributes fmi,
+                    long dsPos, Attributes ds) {
                 return mkkos.addInstance(ds);
             }
         });
@@ -375,10 +376,10 @@ public class Modality {
             DicomFiles.scan(fnames, new DicomFiles.Callback() {
 
                 @Override
-                public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds)
-                        throws Exception {
+                public boolean dicomFile(File f, Attributes fmi, long dsPos,
+                        Attributes ds) throws Exception {
                     return mppsscu.addInstance(ds)
-                        && storescu.addFile(fileInfos, f, dsPos, ds, tsuid)
+                        && storescu.addFile(fileInfos, f, dsPos, fmi, ds)
                         && stgcmtscu.addInstance(ds);
                 }
             });

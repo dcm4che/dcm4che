@@ -54,7 +54,7 @@ import org.dcm4che.util.SafeClose;
 public abstract class DicomFiles {
 
     public interface Callback {
-        boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds)
+        boolean dicomFile(File f, Attributes fmi, long dsPos, Attributes ds)
                 throws Exception;
     }
 
@@ -74,16 +74,15 @@ public abstract class DicomFiles {
             in = new DicomInputStream(f);
             in.setIncludeBulkData(false);
             Attributes fmi = in.readFileMetaInformation();
-            String tsuid = fmi != null
-                    ? fmi.getString(Tag.TransferSyntaxUID, null)
-                    : !in.explicitVR() 
+            long dsPos = in.getPosition();
+            Attributes ds = in.readDataset(-1, Tag.PixelData);
+            if (fmi == null)
+                fmi = ds.createFileMetaInformation(!in.explicitVR() 
                             ? UID.ImplicitVRLittleEndian
                             : in.bigEndian()
                                     ? UID.ExplicitVRBigEndian
-                                    : UID.ExplicitVRLittleEndian;
-            long dsPos = in.getPosition();
-            Attributes ds = in.readDataset(-1, Tag.PixelData);
-            boolean b = scb.dicomFile(f, dsPos, tsuid, ds);
+                                    : UID.ExplicitVRLittleEndian);
+            boolean b = scb.dicomFile(f, fmi, dsPos, ds);
             System.out.print(b ? '.' : 'I');
         } catch (Exception e) {
             System.out.println();

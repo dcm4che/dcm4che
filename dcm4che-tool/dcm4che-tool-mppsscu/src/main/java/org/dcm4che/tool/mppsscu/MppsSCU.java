@@ -82,8 +82,8 @@ import org.dcm4che.util.DateUtils;
 public class MppsSCU {
 
     private static final class MppsWithIUID {
-        final String iuid;
-        final Attributes mpps;
+        String iuid;
+        Attributes mpps;
         MppsWithIUID(String iuid, Attributes mpps) {
             this.iuid = iuid;
             this.mpps = mpps;
@@ -221,7 +221,7 @@ public class MppsSCU {
     private Attributes discontinuationReason;
 
     private Properties codes;
-    private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
+    private HashMap<String,MppsWithIUID> map = new HashMap<String,MppsWithIUID>();
     private ArrayList<MppsWithIUID> created = new ArrayList<MppsWithIUID>();
     private Association as;
 
@@ -341,7 +341,14 @@ public class MppsSCU {
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
-                    public boolean dicomFile(File f, long dsPos, String tsuid, Attributes ds) {
+                    public boolean dicomFile(File f, Attributes fmi, 
+                            long dsPos, Attributes ds) {
+                        if (UID.ModalityPerformedProcedureStepSOPClass.equals(
+                                fmi.getString(Tag.MediaStorageSOPClassUID))) {
+                            return main.addMPPS(
+                                    fmi.getString(Tag.MediaStorageSOPInstanceUID),
+                                    ds);
+                        }
                         return main.addInstance(ds);
                     }
                 });
@@ -493,17 +500,16 @@ public class MppsSCU {
     }
 
     public void createMpps() throws IOException, InterruptedException {
-        String uidPrefix = ppsuid != null && map.size() > 1
-                ? ppsuid + '.' : null;
-        int suffix = 1;
-        for (Attributes mpps : map.values())
-            createMpps(uidPrefix != null ? uidPrefix + (suffix++) : ppsuid , mpps);
+        for (MppsWithIUID mppsWithUID : map.values())
+            createMpps(mppsWithUID);
         as.waitForOutstandingRSP();
     }
 
-    private void createMpps(final String iuid, Attributes mpps)
+    private void createMpps(final MppsWithIUID mppsWithUID)
             throws IOException, InterruptedException {
-        final Attributes finalMpps = new Attributes(mpps, FINAL_MPPS_TOP_LEVEL_ATTRS);
+        final String iuid = mppsWithUID.iuid;
+        Attributes mpps = mppsWithUID.mpps;
+        mppsWithUID.mpps = new Attributes(mpps, FINAL_MPPS_TOP_LEVEL_ATTRS);
         mpps.setString(Tag.PerformedProcedureStepStatus, VR.CS, IN_PROGRESS);
         for (int tag : CREATE_MPPS_TOP_LEVEL_EMPTY_ATTRS)
             mpps.setNull(tag, dict.vrOf(tag));
@@ -516,27 +522,28 @@ public class MppsSCU {
                     case Status.Success:
                     case Status.AttributeListError:
                     case Status.AttributeValueOutOfRange:
-                        created.add(new MppsWithIUID(
-                                cmd.getString(Tag.AffectedSOPInstanceUID, iuid),
-                                finalMpps));
+                        mppsWithUID.iuid = cmd.getString(
+                                Tag.AffectedSOPInstanceUID, mppsWithUID.iuid);
+                        created.add(mppsWithUID);
                 }
                 super.onDimseRSP(as, cmd, data);
             }
 
         };
-        as.ncreate(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null,
-                rspHandler);
+        as.ncreate(UID.ModalityPerformedProcedureStepSOPClass,
+                iuid, mpps, null, rspHandler);
     }
 
     public void updateMpps() throws IOException, InterruptedException {
-        for (MppsWithIUID mpps : created)
-            setMpps(mpps.iuid, mpps.mpps);
+        for (MppsWithIUID mppsWithIUID : created)
+            setMpps(mppsWithIUID);
     }
 
-    private void setMpps(String iuid, Attributes mpps)
+    private void setMpps(MppsWithIUID mppsWithIUID)
             throws IOException, InterruptedException {
                 DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID());
-        as.nset(UID.ModalityPerformedProcedureStepSOPClass, iuid, mpps, null, rspHandler);
+        as.nset(UID.ModalityPerformedProcedureStepSOPClass,
+                mppsWithIUID.iuid, mppsWithIUID.mpps, null, rspHandler);
     }
 
     public boolean addInstance(Attributes inst) {
@@ -544,12 +551,32 @@ public class MppsSCU {
         String suid = inst.getString(Tag.StudyInstanceUID);
         if (suid == null)
             return false;
-        Attributes mpps = map.get(suid);
-        if (mpps == null)
-            map.put(suid, mpps = createMPPS(inst));
-        updateMPPS(mpps, inst);
+        MppsWithIUID mppsWithIUID = map.get(suid);
+        if (mppsWithIUID == null)
+            map.put(suid, new MppsWithIUID(ppsuid(null), createMPPS(inst)));
+        updateMPPS(mppsWithIUID.mpps, inst);
         return true;
     }
+
+    public boolean addMPPS(String iuid, Attributes mpps) {
+        map.put(iuid, new MppsWithIUID(ppsuid(iuid), mpps));
+        return true;
+    }
+
+    private String ppsuid(String defval) {
+        if (ppsuid == null)
+            return defval;
+        
+        int size = map.size();
+        switch (size) {
+        case 0:
+            return ppsuid;
+        case 1:
+            map.values().iterator().next().iuid += ".1";
+        }
+        return ppsuid + '.' + (size + 1);
+    }
+
 
     private String mkPPSID() {
         if (ppsid != null)

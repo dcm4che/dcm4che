@@ -474,7 +474,7 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         checkIsThis(dis);
         if (length == 0) {
-            if (includeBulkData || includeBulkDataLocator || isBulkData(attrs))
+            if (includeBulkData || includeBulkDataLocator || !isBulkData(attrs))
                 attrs.setNull(tag, vr);
         } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);

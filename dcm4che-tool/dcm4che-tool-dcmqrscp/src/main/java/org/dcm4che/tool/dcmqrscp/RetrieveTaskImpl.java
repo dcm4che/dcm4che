@@ -44,6 +44,7 @@ import java.util.List;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DataWriter;
 import org.dcm4che.net.DataWriterAdapter;
@@ -72,10 +73,10 @@ class RetrieveTaskImpl extends BasicRetrieveTask {
         DicomInputStream in = new DicomInputStream(inst.getFile());
         try {
             if (withoutBulkData) {
-                in.setIncludeBulkData(false);
+                in.setIncludeBulkData(IncludeBulkData.NO);
                 attrs = in.readDataset(-1, Tag.PixelData);
             } else {
-                in.setIncludeBulkDataLocator(true);
+                in.setIncludeBulkData(IncludeBulkData.LOCATOR);
                 attrs = in.readDataset(-1, -1);
             }
         } finally {

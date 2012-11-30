@@ -51,6 +51,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
@@ -159,7 +160,7 @@ public class BasicCStoreSCP extends DicomService {
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(file);
-            in.setIncludeBulkData(false);
+            in.setIncludeBulkData(IncludeBulkData.NO);
             return in.readDataset(-1, Tag.PixelData);
         } catch (IOException e) {
             LOG.warn(as + ": Failed to decode dataset:", e);

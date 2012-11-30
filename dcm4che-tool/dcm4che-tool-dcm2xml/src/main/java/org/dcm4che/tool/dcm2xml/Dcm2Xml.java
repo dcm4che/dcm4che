@@ -63,6 +63,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.SAXWriter;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.tool.common.CLIUtils;
 
 /**
@@ -77,8 +78,7 @@ public class Dcm2Xml {
     private boolean indent = false;
     private boolean includeKeyword = true;
     private boolean includeNamespaceDeclaration = false;
-    private boolean includeBulkData = false;
-    private boolean includeBulkDataLocator = true;
+    private IncludeBulkData includeBulkData = IncludeBulkData.LOCATOR;
     private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
@@ -101,12 +101,8 @@ public class Dcm2Xml {
         this.includeNamespaceDeclaration = includeNamespaceDeclaration;
     }
 
-    public final void setIncludeBulkData(boolean includeBulkData) {
+    public final void setIncludeBulkData(IncludeBulkData includeBulkData) {
         this.includeBulkData = includeBulkData;
-    }
-
-    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
-        this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
     public final void setConcatenateBulkDataFiles(boolean catBlkFiles) {
@@ -227,12 +223,10 @@ public class Dcm2Xml {
     private static void configureBulkdata(Dcm2Xml dcm2xml, CommandLine cl)
             throws Exception {
         if (cl.hasOption("b")) {
-            dcm2xml.setIncludeBulkData(true);
-            dcm2xml.setIncludeBulkDataLocator(false);
+            dcm2xml.setIncludeBulkData(IncludeBulkData.YES);
         }
         if (cl.hasOption("B")) {
-            dcm2xml.setIncludeBulkData(false);
-            dcm2xml.setIncludeBulkDataLocator(false);
+            dcm2xml.setIncludeBulkData(IncludeBulkData.NO);
         }
         if (cl.hasOption("blk-file-prefix")) {
             dcm2xml.setBulkDataFilePrefix(
@@ -274,7 +268,6 @@ public class Dcm2Xml {
     public void parse(DicomInputStream dis) throws IOException,
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
-        dis.setIncludeBulkDataLocator(includeBulkDataLocator);
         dis.setBulkDataAttributes(blkAttrs);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);

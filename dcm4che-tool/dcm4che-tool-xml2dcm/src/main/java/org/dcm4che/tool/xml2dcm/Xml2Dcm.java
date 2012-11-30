@@ -61,6 +61,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.tool.common.CLIUtils;
 
@@ -72,8 +73,7 @@ public class Xml2Dcm {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.xml2dcm.messages");
 
-    private boolean includeBulkData = false;
-    private boolean includeBulkDataLocator = true;
+    private IncludeBulkData includeBulkData = IncludeBulkData.LOCATOR;
     private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
@@ -87,12 +87,8 @@ public class Xml2Dcm {
     private Attributes fmi;
     private Attributes dataset;
 
-    public final void setIncludeBulkData(boolean includeBulkData) {
+    public final void setIncludeBulkData(IncludeBulkData includeBulkData) {
         this.includeBulkData = includeBulkData;
-    }
-
-    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
-        this.includeBulkDataLocator = includeBulkDataLocator;
     }
 
     public final void setConcatenateBulkDataFiles(boolean catBlkFiles) {
@@ -283,12 +279,10 @@ public class Xml2Dcm {
     private static void configureBulkdata(Xml2Dcm xml2dcm, CommandLine cl)
             throws Exception {
         if (cl.hasOption("b")) {
-            xml2dcm.setIncludeBulkData(true);
-            xml2dcm.setIncludeBulkDataLocator(false);
+            xml2dcm.setIncludeBulkData(IncludeBulkData.YES);
         }
         if (cl.hasOption("B")) {
-            xml2dcm.setIncludeBulkData(false);
-            xml2dcm.setIncludeBulkDataLocator(false);
+            xml2dcm.setIncludeBulkData(IncludeBulkData.NO);
         }
         if (cl.hasOption("blk-file-prefix")) {
             xml2dcm.setBulkDataFilePrefix(
@@ -339,7 +333,6 @@ public class Xml2Dcm {
 
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
-        dis.setIncludeBulkDataLocator(includeBulkDataLocator);
         dis.setBulkDataAttributes(blkAttrs);
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);

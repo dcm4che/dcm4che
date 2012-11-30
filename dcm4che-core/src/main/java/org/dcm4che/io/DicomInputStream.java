@@ -78,6 +78,8 @@ import org.slf4j.LoggerFactory;
 public class DicomInputStream extends FilterInputStream
     implements DicomInputHandler {
 
+    public enum IncludeBulkData { NO, YES, LOCATOR }
+
     private static final Logger LOG = 
         LoggerFactory.getLogger(DicomInputStream.class);
 
@@ -106,8 +108,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean hasfmi;
     private boolean bigEndian;
     private boolean explicitVR;
-    private boolean includeBulkData = true;
-    private boolean includeBulkDataLocator;
+    private IncludeBulkData includeBulkData = IncludeBulkData.YES;
     private long pos;
     private long fmiEndPos = -1L;
     private long tagPos;
@@ -173,24 +174,14 @@ public class DicomInputStream extends FilterInputStream
         this.uri = uri;
     }
 
-    public final boolean isIncludeBulkData() {
+    public final IncludeBulkData getIncludeBulkData() {
         return includeBulkData;
     }
 
-    public final void setIncludeBulkData(boolean includeBulkData) {
+    public final void setIncludeBulkData(IncludeBulkData includeBulkData) {
+        if (includeBulkData == null)
+            throw new NullPointerException();
         this.includeBulkData = includeBulkData;
-        if (includeBulkData)
-            includeBulkDataLocator = false;
-    }
-
-    public final boolean isIncludeBulkDataLocator() {
-        return includeBulkDataLocator;
-    }
-
-    public final void setIncludeBulkDataLocator(boolean includeBulkDataLocator) {
-        this.includeBulkDataLocator = includeBulkDataLocator;
-        if (includeBulkDataLocator)
-            includeBulkData = false;
     }
 
     public final String getBulkDataFilePrefix() {
@@ -473,9 +464,10 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Attributes attrs)
             throws IOException {
         checkIsThis(dis);
-        if (length == 0) {
-            if (includeBulkData || includeBulkDataLocator || !isBulkData(attrs))
-                attrs.setNull(tag, vr);
+        if (includeBulkData == IncludeBulkData.NO && length != -1 && isBulkData(attrs)) {
+            skipFully(length);
+        } else if (length == 0) {
+            attrs.setNull(tag, vr);
         } else if (vr == VR.SQ) {
             readSequence(length, attrs, tag);
         } else if (length == -1) {
@@ -484,7 +476,9 @@ public class DicomInputStream extends FilterInputStream
                 && super.in instanceof ObjectInputStream) {
             attrs.setValue(tag, vr, BulkDataLocator.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else if (includeBulkData || !isBulkData(attrs)){
+        } else if (includeBulkData == IncludeBulkData.LOCATOR && isBulkData(attrs)) {
+            attrs.setValue(tag, vr, createBulkDataLocator());
+        } else {
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
                 if (bigEndian != attrs.bigEndian())
@@ -492,10 +486,6 @@ public class DicomInputStream extends FilterInputStream
                 attrs.setBytes(tag, vr, b);
             } else if (tag == Tag.FileMetaInformationGroupLength)
                 setFileMetaInformationGroupLength(b);
-        } else if (includeBulkDataLocator) {
-            attrs.setValue(tag, vr, createBulkDataLocator());
-        } else {
-            skipFully(length);
         }
     }
 
@@ -590,24 +580,20 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         checkIsThis(dis);
-        if (length == 0) {
-            if (includeBulkData || includeBulkDataLocator ||
-                    isBulkDataFragment())
-                frags.add(ByteUtils.EMPTY_BYTES);
+        if (includeBulkData == IncludeBulkData.NO && isBulkDataFragment()) {
+            skipFully(length);
+        } else if (length == 0) {
+            frags.add(ByteUtils.EMPTY_BYTES);
         } else if (length == BulkDataLocator.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
-            frags.add(BulkDataLocator.deserializeFrom(
-                    (ObjectInputStream) super.in));
-        } else if (includeBulkData && !includeBulkDataLocator 
-                || !isBulkDataFragment()){
+            frags.add(BulkDataLocator.deserializeFrom((ObjectInputStream) super.in));
+        } else if (includeBulkData == IncludeBulkData.LOCATOR && isBulkDataFragment()) {
+            frags.add(createBulkDataLocator());
+        } else {
             byte[] b = readValue();
             if (bigEndian != frags.bigEndian())
                 vr.toggleEndian(b, false);
             frags.add(b);
-        } else if (includeBulkDataLocator) {
-            frags.add(createBulkDataLocator());
-        } else {
-            skipFully(length);
         }
     }
 
@@ -632,6 +618,10 @@ public class DicomInputStream extends FilterInputStream
 
     private void readSequence(int len, Attributes attrs, int sqtag)
             throws IOException {
+        if (len == 0) {
+            attrs.setNull(sqtag, VR.SQ);
+            return;
+        }
         Sequence seq = attrs.newSequence(sqtag, 10);
         String privateCreator = attrs.getPrivateCreator(sqtag);
         boolean undefLen = len == -1;

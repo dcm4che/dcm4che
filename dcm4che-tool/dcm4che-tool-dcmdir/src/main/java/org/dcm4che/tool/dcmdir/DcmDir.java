@@ -55,6 +55,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
@@ -399,7 +400,7 @@ public class DcmDir {
         DicomInputStream din = null;
         try {
             din = new DicomInputStream(f);
-            din.setIncludeBulkData(false);
+            din.setIncludeBulkData(IncludeBulkData.NO);
             fmi = din.readFileMetaInformation();
             dataset = din.readDataset(-1, Tag.PixelData);
         } catch (IOException e) {
@@ -494,7 +495,7 @@ public class DcmDir {
         DicomInputStream din = null;
         try {
             din = new DicomInputStream(f);
-            din.setIncludeBulkData(false);
+            din.setIncludeBulkData(IncludeBulkData.NO);
             Attributes fmi = din.readFileMetaInformation();
             Attributes dataset = din.readDataset(-1, Tag.StudyID);
             iuid = (fmi != null)

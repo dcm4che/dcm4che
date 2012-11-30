@@ -63,6 +63,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -440,7 +441,7 @@ public class StoreSCU {
         } else {
             DicomInputStream in = new DicomInputStream(f);
             try {
-                in.setIncludeBulkDataLocator(true);
+                in.setIncludeBulkData(IncludeBulkData.LOCATOR);
                 Attributes data = in.readDataset(-1, -1);
                 if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
                     iuid = data.getString(Tag.SOPInstanceUID);

@@ -45,6 +45,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.util.SafeClose;
 
 /**
@@ -72,7 +73,7 @@ public abstract class DicomFiles {
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(f);
-            in.setIncludeBulkData(false);
+            in.setIncludeBulkData(IncludeBulkData.NO);
             Attributes fmi = in.readFileMetaInformation();
             long dsPos = in.getPosition();
             Attributes ds = in.readDataset(-1, Tag.PixelData);

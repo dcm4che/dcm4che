@@ -662,6 +662,7 @@
     <dependencySet>
       <outputDirectory>lib</outputDirectory>
       <includes>
+        <include>org.dcm4che:dcm4che-audit</include>
         <include>org.dcm4che:dcm4che-conf-api</include>
         <include>org.dcm4che:dcm4che-conf-api-hl7</include>
         <include>org.dcm4che:dcm4che-conf-ldap</include>

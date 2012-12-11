@@ -82,6 +82,7 @@
     </plugins>
   </build>
   <modules>
+    <module>dcm4che-audit</module>
     <module>dcm4che-conf</module>
     <module>dcm4che-core</module>
     <module>dcm4che-hl7</module>

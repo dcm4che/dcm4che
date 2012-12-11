@@ -1,0 +1,1 @@
+(new java.util.Random(System.currentTimeMillis()).nextInt()) & 0x8ffffff(int) 147408212(int) 11184944(int) -1929507560(int) 2009551679

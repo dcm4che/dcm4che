@@ -1,0 +1,28 @@
+<bindings xmlns="http://java.sun.com/xml/ns/jaxb" version="2.0"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <globalBindings>
+    <javaType name="java.util.Calendar" xmlType="xs:dateTime"
+      parseMethod="javax.xml.bind.DatatypeConverter.parseDateTime"
+      printMethod="javax.xml.bind.DatatypeConverter.printDateTime" />
+  </globalBindings>
+  <bindings schemaLocation="../xsd/audit-message.xsd" node="/xs:schema">
+    <bindings node="//xs:complexType[@name='AuditMessageType']">
+      <class name="AuditMessage" />
+    </bindings>
+    <bindings node="//xs:complexType[@name='EventIdentificationType']">
+      <class name="EventIdentification" />
+    </bindings>
+    <bindings node="//xs:complexType[@name='ActiveParticipantType']">
+      <class name="ActiveParticipant" />
+    </bindings>
+    <bindings node="//xs:complexType[@name='AuditSourceIdentificationType']">
+      <class name="AuditSourceIdentification" />
+    </bindings>
+    <bindings node="//xs:complexType[@name='ParticipantObjectIdentificationType']">
+      <class name="ParticipantObjectIdentification" />
+    </bindings>
+    <bindings node="//xs:complexType[@name='ParticipantObjectDescriptionType']">
+      <class name="ParticipantObjectDescription" />
+    </bindings>
+  </bindings>
+</bindings>

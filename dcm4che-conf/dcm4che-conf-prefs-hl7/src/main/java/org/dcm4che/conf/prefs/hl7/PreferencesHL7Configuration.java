@@ -161,7 +161,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         Preferences appsNode = deviceNode.node("hl7Application");
         for (HL7Application app : prevDev.getHL7Applications()) {
             String appName = app.getApplicationName();
-            if (dev.getApplicationEntity(appName) == null)
+            if (dev.getHL7Application(appName) == null)
                 appsNode.node(appName).removeNode();
         }
         List<Connection> devConns = dev.listConnections();

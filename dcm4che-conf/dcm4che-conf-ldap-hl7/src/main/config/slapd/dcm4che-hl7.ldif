@@ -32,4 +32,5 @@ olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.5 NAME 'hl7Application'
   MAY (
     hl7AcceptedSendingApplication $
     hl7AcceptedMessageType $
-    hl7DefaultCharacterSet ) )
+    hl7DefaultCharacterSet $
+    dicomInstalled ) )

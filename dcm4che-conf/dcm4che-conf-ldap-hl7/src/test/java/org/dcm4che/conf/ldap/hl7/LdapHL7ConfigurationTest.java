@@ -42,6 +42,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7Device;
 import org.junit.After;
@@ -93,6 +94,7 @@ public class LdapHL7ConfigurationTest {
         Connection conn = new Connection();
         conn.setHostname(hostname);
         conn.setPort(port);
+        conn.setProtocol(Protocol.HL7);
         return conn;
     }
 

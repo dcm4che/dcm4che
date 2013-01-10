@@ -11,6 +11,11 @@
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-audit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-api</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -26,12 +31,22 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-conf-ldap-audit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-ldap-hl7</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-conf-prefs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-conf-prefs-audit</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -52,6 +67,11 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-net</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-net-audit</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

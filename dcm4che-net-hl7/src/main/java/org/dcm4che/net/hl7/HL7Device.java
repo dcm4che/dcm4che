@@ -57,6 +57,11 @@ public class HL7Device extends Device {
 
     private static final long serialVersionUID = 5891363555469614152L;
 
+    static {
+        Connection.registerProtocolHandler(
+                Connection.Protocol.HL7, HL7ProtocolHandler.INSTANCE);
+    }
+
     private final LinkedHashMap<String, HL7Application> hl7apps =
             new LinkedHashMap<String, HL7Application>();
 

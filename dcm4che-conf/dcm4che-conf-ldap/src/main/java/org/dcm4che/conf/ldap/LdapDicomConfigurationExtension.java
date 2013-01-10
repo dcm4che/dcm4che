@@ -36,21 +36,48 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.conf.ldap;
 
-import java.io.IOException;
-import java.net.Socket;
+import java.util.List;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.ModificationItem;
+
+import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.net.Device;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum DicomConnectionHandler implements ConnectionHandler {
-    INSTANCE;
+public class LdapDicomConfigurationExtension {
 
-    @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        new Association(null, conn, s);
+    protected LdapDicomConfiguration config;
+
+    public LdapDicomConfiguration getDicomConfiguration() {
+        return config;
     }
+
+    public void setDicomConfiguration(LdapDicomConfiguration config) {
+        if (config != null && this.config != null)
+            throw new IllegalStateException("already owned by other Dicom Configuration");
+        this.config = config;
+    }
+
+    protected void storeTo(Device device, Attributes attrs) { }
+
+    protected void storeChilds(String deviceDN, Device device)
+            throws NamingException { }
+
+    protected void loadFrom(Device device, Attributes attrs) { }
+
+    protected void loadChilds(Device device, String deviceDN)
+            throws NamingException, ConfigurationException { }
+
+    protected void storeDiffs(Device prev, Device device, List<ModificationItem> mods) {}
+
+    protected void mergeChilds(Device prev, Device device, String deviceDN)
+            throws NamingException { }
 
 }

@@ -33,7 +33,7 @@
   </dependencies>
   <build>
     <filters>
-      <filter>src/main/filters/${ldap}.properties</filter>
+      <filter>src/test/filters/${ldap}.properties</filter>
     </filters>
     <testResources>
       <testResource>

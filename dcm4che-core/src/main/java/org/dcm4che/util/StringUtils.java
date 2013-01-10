@@ -244,6 +244,10 @@ public class StringUtils {
         return o == null ? mask : o;
     }
 
+    public static <T> T nullify(T o, T mask) {
+        return o.equals(mask) ? null : o;
+    }
+
     public static String maskEmpty(String s, String mask) {
         return s == null || s.isEmpty() ? mask : s;
     }

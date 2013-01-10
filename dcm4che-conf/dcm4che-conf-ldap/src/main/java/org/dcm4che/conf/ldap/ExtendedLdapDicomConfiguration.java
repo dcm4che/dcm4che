@@ -57,6 +57,7 @@ import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
@@ -108,6 +109,8 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     @Override
     protected Attributes storeTo(Connection conn, Attributes attrs) {
         super.storeTo(conn, attrs);
+        storeNotNull(attrs, "dcmProtocol", 
+                StringUtils.nullify(conn.getProtocol(), Protocol.DICOM));
         storeNotNull(attrs, "dcmHTTPProxy", conn.getHttpProxy());
         storeNotEmpty(attrs, "dcmBlacklistedHostname", conn.getBlacklist());
         storeNotDef(attrs, "dcmTCPBacklog",
@@ -237,19 +240,19 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         
         device.setLimitOpenAssociations(
                 intValue(attrs.get("dcmLimitOpenAssociations"), 0));
-        device.setTrustStoreURL(stringValue(attrs.get("dcmTrustStoreURL")));
-        device.setTrustStoreType(stringValue(attrs.get("dcmTrustStoreType")));
-        device.setTrustStorePin(stringValue(attrs.get("dcmTrustStorePin")));
+        device.setTrustStoreURL(stringValue(attrs.get("dcmTrustStoreURL"), null));
+        device.setTrustStoreType(stringValue(attrs.get("dcmTrustStoreType"), null));
+        device.setTrustStorePin(stringValue(attrs.get("dcmTrustStorePin"), null));
         device.setTrustStorePinProperty(
-                stringValue(attrs.get("dcmTrustStorePinProperty")));
-        device.setKeyStoreURL(stringValue(attrs.get("dcmKeyStoreURL")));
-        device.setKeyStoreType(stringValue(attrs.get("dcmKeyStoreType")));
-        device.setKeyStorePin(stringValue(attrs.get("dcmKeyStorePin")));
+                stringValue(attrs.get("dcmTrustStorePinProperty"), null));
+        device.setKeyStoreURL(stringValue(attrs.get("dcmKeyStoreURL"), null));
+        device.setKeyStoreType(stringValue(attrs.get("dcmKeyStoreType"), null));
+        device.setKeyStorePin(stringValue(attrs.get("dcmKeyStorePin"), null));
         device.setKeyStorePinProperty(
-                stringValue(attrs.get("dcmKeyStorePinProperty")));
-        device.setKeyStoreKeyPin(stringValue(attrs.get("dcmKeyStoreKeyPin")));
+                stringValue(attrs.get("dcmKeyStorePinProperty"), null));
+        device.setKeyStoreKeyPin(stringValue(attrs.get("dcmKeyStoreKeyPin"), null));
         device.setKeyStoreKeyPinProperty(
-                stringValue(attrs.get("dcmKeyStoreKeyPinProperty")));
+                stringValue(attrs.get("dcmKeyStoreKeyPinProperty"), null));
     }
 
     @Override
@@ -257,7 +260,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         super.loadFrom(conn, attrs);
         if (!hasObjectClass(attrs, "dcmNetworkConnection"))
             return;
-        conn.setHttpProxy(stringValue(attrs.get("dcmHTTPProxy")));
+
+        conn.setProtocol(Protocol.valueOf(stringValue(attrs.get("dcmProtocol"), "DICOM")));
+        conn.setHttpProxy(stringValue(attrs.get("dcmHTTPProxy"), null));
         conn.setBlacklist(stringArray(attrs.get("dcmBlacklistedHostname")));
         conn.setBacklog(intValue(attrs.get("dcmTCPBacklog"), Connection.DEF_BACKLOG));
         conn.setConnectTimeout(intValue(attrs.get("dcmTCPConnectTimeout"),
@@ -357,12 +362,12 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
                 acs.add(new AttributeCoercion(
-                        stringValue(attrs.get("dicomSOPClass")),
-                        Dimse.valueOf(stringValue(attrs.get("dcmDIMSE"))),
+                        stringValue(attrs.get("dicomSOPClass"), null),
+                        Dimse.valueOf(stringValue(attrs.get("dcmDIMSE"), null)),
                         TransferCapability.Role.valueOf(
-                                stringValue(attrs.get("dicomTransferRole"))),
-                        stringValue(attrs.get("dicomAETitle")),
-                        stringValue(attrs.get("labeledURI"))));
+                                stringValue(attrs.get("dicomTransferRole"), null)),
+                        stringValue(attrs.get("dicomAETitle"), null),
+                        stringValue(attrs.get("labeledURI"), null)));
             }
         } finally {
            safeClose(ne);
@@ -414,6 +419,9 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
     protected List<ModificationItem> storeDiffs(Connection a, Connection b,
             List<ModificationItem> mods) {
         super.storeDiffs(a, b, mods);
+        storeDiff(mods, "dcmProtocol",
+                StringUtils.nullify(a.getProtocol(), Protocol.DICOM),
+                StringUtils.nullify(b.getProtocol(), Protocol.DICOM));
         storeDiff(mods, "dcmHTTPProxy",
                 a.getHttpProxy(),
                 b.getHttpProxy());

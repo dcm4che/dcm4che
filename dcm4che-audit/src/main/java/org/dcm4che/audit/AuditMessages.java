@@ -41,7 +41,6 @@ package org.dcm4che.audit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
@@ -61,15 +60,6 @@ public class AuditMessages {
             Pattern.compile("[0-9a-fA-F]*(\\:[0-9a-fA-F]*){7}");
     public static final String SCHEMA_URI =
             "http://www.dcm4che.org/DICOM/audit-message.rnc";
-
-    public static final String PROCESS_ID;
-    public static final String MACHINE_NAME;
-    static {
-        String s = ManagementFactory.getRuntimeMXBean().getName();
-        int index = s.indexOf('@');
-        PROCESS_ID = s.substring(0, index);
-        MACHINE_NAME = s.substring(index + 1);
-    }
 
     private static final ObjectFactory of = new ObjectFactory();
     private static JAXBContext jc;

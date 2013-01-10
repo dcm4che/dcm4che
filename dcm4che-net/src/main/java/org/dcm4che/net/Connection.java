@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -53,6 +54,7 @@ import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
@@ -84,6 +86,11 @@ import org.slf4j.LoggerFactory;
 public class Connection implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -7814748788035232055L;
+
+    public enum Protocol { DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
+        public boolean isTCP() { return this != SYSLOG_UDP; }
+        public boolean isSyslog() { return this == SYSLOG_TLS || this == SYSLOG_UDP; }
+    }
 
     public static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
@@ -127,12 +134,18 @@ public class Connection implements Serializable, Cloneable {
     private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
     private String[] blacklist = {};
     private Boolean installed;
+    private Protocol protocol = Protocol.DICOM;
+    private static final EnumMap<Protocol, ProtocolHandler> handlers =
+            new EnumMap<Protocol, ProtocolHandler>(Protocol.class);
 
     private transient InetAddress addr;
     private transient List<InetAddress> blacklistAddrs;
     private transient volatile ServerSocket server;
-    private transient ConnectionHandler connectionHandler;
     private transient boolean rebindNeeded;
+
+    static {
+        registerProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
+    }
 
     public Connection() {
     }
@@ -145,6 +158,16 @@ public class Connection implements Serializable, Cloneable {
         this.commonName = commonName;
         this.hostname = hostname;
         this.port = port;
+    }
+
+    public static ProtocolHandler registerProtocolHandler(
+            Protocol protocol, ProtocolHandler handler) {
+        return handlers.put(protocol, handler);
+    }
+
+    public static ProtocolHandler unregisterProtocolHandler(
+            Protocol protocol) {
+        return handlers.remove(protocol);
     }
 
     /**
@@ -194,6 +217,21 @@ public class Connection implements Serializable, Cloneable {
             return;
 
         this.hostname = hostname;
+        needRebind();
+    }
+
+    public Protocol getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(Protocol protocol) {
+        if (protocol == null)
+            throw new NullPointerException();
+
+        if (this.protocol == protocol)
+            return;
+
+        this.protocol = protocol;
         needRebind();
     }
 
@@ -591,21 +629,6 @@ public class Connection implements Serializable, Cloneable {
             needRebind();
     }
 
-    public ConnectionHandler getConnectionHandler() {
-        return connectionHandler != null 
-                ? connectionHandler
-                : DicomConnectionHandler.INSTANCE;
-    }
-
-    public void setConnectionHandler(ConnectionHandler connectionHandler) {
-        if (this.connectionHandler != connectionHandler) {
-            if (connectionHandler != null && this.connectionHandler != null) 
-                throw new IllegalStateException(
-                        "Connection already associated with different Connection Handler");
-            this.connectionHandler = connectionHandler;
-        }
-    }
-
     synchronized void rebind() throws IOException, GeneralSecurityException {
         unbind();
         bind();
@@ -705,7 +728,7 @@ public class Connection implements Serializable, Cloneable {
     }
 
 
-    InetSocketAddress getEndPoint() throws UnknownHostException {
+    public InetSocketAddress getEndPoint() throws UnknownHostException {
         return new InetSocketAddress(addr(), port);
     }
 
@@ -749,6 +772,9 @@ public class Connection implements Serializable, Cloneable {
             throw new IllegalStateException("Not attached to Device");
         if (isListening())
             throw new IllegalStateException("Already listening - " + server);
+        final ProtocolHandler connectionHandler = handlers.get(protocol);
+        if (connectionHandler == null)
+            throw new IllegalStateException("No ConnectionHandler for protocol " + protocol);
         server = isTls() ? createTLSServerSocket() : new ServerSocket();
         setReceiveBufferSize(server);
         server.bind(getEndPoint(), backlog);
@@ -769,7 +795,7 @@ public class Connection implements Serializable, Cloneable {
                             LOG.info("Accept connection {}", s);
                             try {
                                 setSocketSendOptions(s);
-                                getConnectionHandler().onAccept(Connection.this, s);
+                                connectionHandler.onAccept(Connection.this, s);
                             } catch (Throwable e) {
                                 LOG.warn("Exception on accepted connection " + s + ":", e);
                                 close(s);
@@ -820,6 +846,8 @@ public class Connection implements Serializable, Cloneable {
     public Socket connect(Connection remoteConn)
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         checkInstalled();
+        if (protocol.isTCP())
+            throw new IllegalStateException("Not a TCP Connection");
         checkCompatible(remoteConn);
         InetSocketAddress bindPoint = getBindPoint();
         String remoteHostname = remoteConn.getHostname();
@@ -864,6 +892,22 @@ public class Connection implements Serializable, Cloneable {
             }
         LOG.info("Established connection {}", s);
         return s;
+    }
+
+    public DatagramSocket createDatagramSocket() throws IOException {
+        checkInstalled();
+        if (protocol.isTCP())
+            throw new IllegalStateException("Not a UDP Connection");
+
+        DatagramSocket ds = new DatagramSocket(getBindPoint());
+        int size = ds.getSendBufferSize();
+        if (sendBufferSize == 0) {
+            sendBufferSize = size;
+        } else if (sendBufferSize != size) {
+            ds.setSendBufferSize(sendBufferSize);
+            sendBufferSize = ds.getSendBufferSize();
+        }
+        return ds;
     }
 
     private void doProxyHandshake(Socket s, String hostname, int port,
@@ -945,11 +989,17 @@ public class Connection implements Serializable, Cloneable {
     }
 
     public boolean isCompatible(Connection remoteConn) {
-        return remoteConn.isTls() 
-                ? isTls()
-                        && hasCommon(remoteConn.tlsProtocols, tlsProtocols)
-                        && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites)
-                : !isTls();
+        if (remoteConn.protocol != protocol)
+            return false;
+        
+        if (!protocol.isTCP())
+            return true;
+        
+        if (!isTls())
+            return !remoteConn.isTls();
+        
+        return hasCommon(remoteConn.tlsProtocols, tlsProtocols)
+            && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
     }
 
     private boolean hasCommon(String[] ss1,  String[] ss2) {
@@ -996,13 +1046,15 @@ public class Connection implements Serializable, Cloneable {
                 ? commonName.equals(other.commonName)
                 : other.commonName == null
                     && hostname.equals(other.hostname)
-                    && port == other.port;
+                    && port == other.port
+                    && protocol == other.protocol;
     }
 
     void reconfigure(Connection from) {
         setCommonName(from.commonName);
         setHostname(from.hostname);
         setPort(from.port);
+        setProtocol(from.protocol);
         setHttpProxy(from.httpProxy);
         setBacklog(from.backlog);
         setConnectTimeout(from.connectTimeout);

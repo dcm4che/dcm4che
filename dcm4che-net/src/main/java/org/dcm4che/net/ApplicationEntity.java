@@ -386,10 +386,13 @@ public class ApplicationEntity implements Serializable, Cloneable {
     }
 
     public void addConnection(Connection conn) {
+        if (conn.getProtocol() != Connection.Protocol.DICOM)
+            throw new IllegalArgumentException(
+                    "protocol != DICOM - " + conn.getProtocol());
+
         if (device != null && device != conn.getDevice())
             throw new IllegalStateException(conn + " not contained by Device: " + 
                     device.getDeviceName());
-        conn.setConnectionHandler(DicomConnectionHandler.INSTANCE);
         conns.add(conn);
     }
 

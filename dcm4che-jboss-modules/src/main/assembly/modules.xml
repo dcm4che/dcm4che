@@ -15,6 +15,14 @@
   </fileSets>
   <dependencySets>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/audit/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-audit</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/conf/api/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-conf-api</include>
@@ -39,6 +47,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/conf/ldap-audit/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-conf-ldap-audit</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/conf/ldap-hl7/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
@@ -50,6 +66,14 @@
       <outputDirectory>/modules/org/dcm4che/conf/prefs/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-conf-prefs</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/conf/prefs-audit/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-conf-prefs-audit</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>
@@ -87,6 +111,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/net-audit/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-net-audit</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/net-hl7/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-net-hl7</include>
@@ -94,7 +126,7 @@
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
-     <dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/soundex/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-soundex</include>

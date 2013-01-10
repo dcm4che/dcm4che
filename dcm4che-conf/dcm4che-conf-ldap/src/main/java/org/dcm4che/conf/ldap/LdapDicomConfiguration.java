@@ -106,6 +106,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     private String pkiUser = PKI_USER;
     private String userCertificate = USER_CERTIFICATE_BINARY;
 
+    private final List<LdapDicomConfigurationExtension> extensions =
+            new ArrayList<LdapDicomConfigurationExtension>();
+
     public LdapDicomConfiguration() throws ConfigurationException {
         this(ResourceManager.getInitialEnvironment());
     }
@@ -157,6 +160,20 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     public String getUserCertificate() {
         return userCertificate;
+    }
+
+    public void addDicomConfigurationExtension(LdapDicomConfigurationExtension ext) {
+        ext.setDicomConfiguration(this);
+        extensions.add(ext);
+    }
+
+    public boolean removeDicomConfigurationExtension(
+            LdapDicomConfigurationExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        ext.setDicomConfiguration(null);
+        return true;
     }
 
     @Override
@@ -275,7 +292,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             while (ne.hasMore()) {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
-                 values.add(stringValue(attrs.get(attrID)));
+                values.add(stringValue(attrs.get(attrID), null));
             }
         } catch (NamingException e) {
             throw new ConfigurationException(e);
@@ -338,6 +355,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             createSubcontext(aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
             storeChilds(aeDN, ae);
         }
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(deviceDN, device);
     }
 
     protected void storeChilds(String aeDN, ApplicationEntity ae)
@@ -386,6 +405,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             throws NamingException {
         mergeConnections(prev, device, deviceDN);
         mergeAEs(prev, device, deviceDN);
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.mergeChilds(prev, device, deviceDN);
     }
 
     @Override
@@ -406,15 +427,15 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void createSubcontext(String name, Attributes attrs) throws NamingException {
+    public void createSubcontext(String name, Attributes attrs) throws NamingException {
         safeClose(ctx.createSubcontext(name, attrs));
     }
 
-    protected void destroySubcontext(String dn) throws NamingException {
+    public void destroySubcontext(String dn) throws NamingException {
         ctx.destroySubcontext(dn);
     }
 
-    protected void destroySubcontextWithChilds(String name) throws NamingException {
+    public void destroySubcontextWithChilds(String name) throws NamingException {
         NamingEnumeration<NameClassPair> list = ctx.list(name);
         try {
             while (list.hasMore())
@@ -565,6 +586,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                 device.getThisNodeCertificateRefs());
         storeNotEmpty(attrs, "dicomVendorData", device.getVendorData());
         storeBoolean(attrs, "dicomInstalled", device.isInstalled());
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeTo(device, attrs);
         return attrs;
     }
 
@@ -687,9 +710,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return certs;
     }
 
-    private Device loadDevice(String deviceDN) throws ConfigurationException {
+    public Device loadDevice(String deviceDN) throws ConfigurationException {
         try {
-            Attributes attrs = ctx.getAttributes(deviceDN);
+            Attributes attrs = getAttributes(deviceDN);
             Device device = newDevice(attrs);
             loadFrom(device, attrs);
             loadChilds(device, deviceDN);
@@ -703,14 +726,20 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
+    public Attributes getAttributes(String name) throws NamingException {
+        return ctx.getAttributes(name);
+    }
+
     protected void loadChilds(Device device, String deviceDN)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         loadConnections(device, deviceDN);
         loadApplicationEntities(device, deviceDN);
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.loadChilds(device, deviceDN);
     }
 
     protected Device newDevice(Attributes attrs) throws NamingException {
-        return new Device(stringValue(attrs.get("dicomDeviceName")));
+        return new Device(stringValue(attrs.get("dicomDeviceName"), null));
     }
 
     protected Connection newConnection(Attributes attrs) throws NamingException {
@@ -718,7 +747,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected ApplicationEntity newApplicationEntity(Attributes attrs) throws NamingException {
-        return new ApplicationEntity(stringValue(attrs.get("dicomAETitle")));
+        return new ApplicationEntity(stringValue(attrs.get("dicomAETitle"), null));
     }
 
     protected TransferCapability newTransferCapability(Attributes attrs) throws NamingException {
@@ -726,20 +755,21 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected void loadFrom(TransferCapability tc, Attributes attrs) throws NamingException {
-        tc.setCommonName(stringValue(attrs.get("cn")));
-        tc.setSopClass(stringValue(attrs.get("dicomSOPClass")));
-        tc.setRole(TransferCapability.Role.valueOf(stringValue(attrs.get("dicomTransferRole"))));
+        tc.setCommonName(stringValue(attrs.get("cn"), null));
+        tc.setSopClass(stringValue(attrs.get("dicomSOPClass"), null));
+        tc.setRole(TransferCapability.Role.valueOf(
+                stringValue(attrs.get("dicomTransferRole"), null)));
         tc.setTransferSyntaxes(stringArray(attrs.get("dicomTransferSyntax")));
     }
 
     protected void loadFrom(Device device, Attributes attrs)
             throws NamingException, CertificateException {
-        device.setDescription(stringValue(attrs.get("dicomDescription")));
-        device.setManufacturer(stringValue(attrs.get("dicomManufacturer")));
-        device.setManufacturerModelName(stringValue(attrs.get("dicomManufacturerModelName")));
+        device.setDescription(stringValue(attrs.get("dicomDescription"), null));
+        device.setManufacturer(stringValue(attrs.get("dicomManufacturer"), null));
+        device.setManufacturerModelName(stringValue(attrs.get("dicomManufacturerModelName"), null));
         device.setSoftwareVersions(stringArray(attrs.get("dicomSoftwareVersion")));
-        device.setStationName(stringValue(attrs.get("dicomStationName")));
-        device.setDeviceSerialNumber(stringValue(attrs.get("dicomDeviceSerialNumber")));
+        device.setStationName(stringValue(attrs.get("dicomStationName"), null));
+        device.setDeviceSerialNumber(stringValue(attrs.get("dicomDeviceSerialNumber"), null));
         device.setIssuerOfPatientID(
                 issuerValue(attrs.get("dicomIssuerOfPatientID")));
         device.setIssuerOfAccessionNumber(
@@ -769,6 +799,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             device.setThisNodeCertificates(dn, loadCertificates(dn));
         device.setVendorData(byteArrays(attrs.get("dicomVendorData")));
         device.setInstalled(booleanValue(attrs.get("dicomInstalled"), true));
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.loadFrom(device, attrs);
     }
 
     private void loadConnections(Device device, String deviceDN) throws NamingException {
@@ -802,8 +834,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected void loadFrom(Connection conn, Attributes attrs) throws NamingException {
-        conn.setCommonName(stringValue(attrs.get("cn")));
-        conn.setHostname(stringValue(attrs.get("dicomHostname")));
+        conn.setCommonName(stringValue(attrs.get("cn"), null));
+        conn.setHostname(stringValue(attrs.get("dicomHostname"), null));
         conn.setPort(intValue(attrs.get("dicomPort"), Connection.NOT_LISTENING));
         conn.setTlsCipherSuites(stringArray(attrs.get("dicomTLSCipherSuite")));
         conn.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
@@ -833,7 +865,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return ae ;
     }
 
-    protected Connection findConnection(String connDN, String deviceDN, Device device)
+    public static Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {
         for (Connection conn : device.listConnections())
             if (dnOf(conn, deviceDN).equalsIgnoreCase(connDN))
@@ -843,7 +875,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     protected void loadFrom(ApplicationEntity ae, Attributes attrs) throws NamingException {
-        ae.setDescription(stringValue(attrs.get("dicomDescription")));
+        ae.setDescription(stringValue(attrs.get("dicomDescription"), null));
         ae.setVendorData(byteArrays(attrs.get("dicomVendorData")));
         ae.setApplicationClusters(stringArray(attrs.get("dicomApplicationCluster")));
         ae.setPreferredCallingAETitles(stringArray(attrs.get("dicomPreferredCallingAETitle")));
@@ -951,6 +983,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, mods);
         return mods;
     }
 
@@ -1022,12 +1056,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return mods;
     }
 
-    protected static int intValue(Attribute attr, int defVal) throws NamingException {
+    public static int intValue(Attribute attr, int defVal) throws NamingException {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
-    }
-
-    protected static Integer intValue(Attribute attr, Integer defVal) throws NamingException {
-        return attr != null ? Integer.valueOf((String) attr.get()) : defVal;
     }
 
     protected static byte[][] byteArrays(Attribute attr) throws NamingException {
@@ -1041,7 +1071,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return bb;
     }
 
-    protected static String[] stringArray(Attribute attr) throws NamingException {
+    public static String[] stringArray(Attribute attr) throws NamingException {
         if (attr == null)
             return StringUtils.EMPTY_STRING;
 
@@ -1063,16 +1093,16 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return codes;
     }
 
-    protected static String stringValue(Attribute attr) throws NamingException {
-        return attr != null ? (String) attr.get() : null;
+    public static String stringValue(Attribute attr, String defVal) throws NamingException {
+        return attr != null ? (String) attr.get() : defVal;
     }
 
-    protected static boolean booleanValue(Attribute attr, boolean defVal)
+    public static boolean booleanValue(Attribute attr, boolean defVal)
             throws NamingException {
         return attr != null ? Boolean.parseBoolean((String) attr.get()) : defVal;
     }
 
-    protected static Boolean booleanValue(Attribute attr, Boolean defVal)
+    public static Boolean booleanValue(Attribute attr, Boolean defVal)
             throws NamingException {
         return attr != null ? Boolean.valueOf((String) attr.get()) : defVal;
     }
@@ -1113,7 +1143,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         merge(prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
     }
 
-    protected void modifyAttributes(String dn, List<ModificationItem> mods)
+    public void modifyAttributes(String dn, List<ModificationItem> mods)
             throws NamingException {
         if (!mods.isEmpty())
             ctx.modifyAttributes(dn, mods.toArray(new ModificationItem[mods.size()]));
@@ -1211,7 +1241,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    protected static void storeDiff(List<ModificationItem> mods, String attrId,
+    public static void storeDiff(List<ModificationItem> mods, String attrId,
             List<Connection> prevs, List<Connection> conns, String deviceDN) {
         if (!equalsConnRefs(prevs, conns, deviceDN))
             mods.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -1228,7 +1258,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-    protected static <T> void storeDiff(List<ModificationItem> mods, String attrId,
+    public static <T> void storeDiff(List<ModificationItem> mods, String attrId,
             T[] prevs, T[] vals) {
         if (!equals(prevs, vals))
             mods.add((vals != null && vals.length == 0)
@@ -1238,7 +1268,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             attr(attrId, vals)));
     }
 
-    protected static void storeDiff(List<ModificationItem> mods, String attrId,
+    public static void storeDiff(List<ModificationItem> mods, String attrId,
             Object prev, Object val) {
         if (val == null) {
             if (prev != null)
@@ -1249,7 +1279,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                     new BasicAttribute(attrId, toString(val))));
     }
 
-    protected static void storeDiff(List<ModificationItem> mods,
+    public static void storeDiff(List<ModificationItem> mods,
             String attrId, int prev, int val, int defVal) {
         if (val != prev)
             mods.add((val == defVal)
@@ -1259,7 +1289,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
                             new BasicAttribute(attrId, "" + val)));
     }
 
-    protected static void storeDiff(List<ModificationItem> mods,
+    public static void storeDiff(List<ModificationItem> mods,
             String attrId, boolean prev, boolean val, boolean defVal) {
         if (val != prev)
             mods.add((val == defVal)
@@ -1276,7 +1306,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     protected static String dnOf(String attrID1, String attrValue1,
             String attrID2, String attrValue2, String baseDN) {
-        return attrID1 + '=' + attrValue1 + '+' + attrID2 + '=' + attrValue2 + ','  + baseDN;
+        return attrID1 + '=' + attrValue1
+                + '+' + attrID2 + '=' + attrValue2
+                + ','  + baseDN;
     }
 
     private static String aetDN(String aet, String parentDN) {
@@ -1292,10 +1324,11 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         String cn = conn.getCommonName();
         return (cn != null)
             ? dnOf("cn", cn , deviceDN)
-            : conn.isServer()
-                 ? dnOf("dicomHostname", conn.getHostname(), "dicomPort",
-                         Integer.toString(conn.getPort()) , deviceDN)
-                 : dnOf("dicomHostname", conn.getHostname(), deviceDN);
+            : (conn.isServer()
+                    ? dnOf("dicomHostname", conn.getHostname(),
+                           "dicomPort", Integer.toString(conn.getPort()),
+                            deviceDN)
+                    : dnOf("dicomHostname", conn.getHostname(), deviceDN));
     }
 
     private static String dnOf(TransferCapability tc, String aeDN) {
@@ -1313,17 +1346,17 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attrs;
     }
 
-    protected static void storeNotNull(Attributes attrs, String attrID, Object val) {
+    public static void storeNotNull(Attributes attrs, String attrID, Object val) {
         if (val != null)
             attrs.put(attrID, toString(val));
     }
 
-    protected static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
+    public static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
         if (val != defVal)
             storeInt(attrs, attrID, val);
     }
 
-    protected static void storeNotDef(Attributes attrs, String attrID, boolean val, boolean defVal) {
+    public static void storeNotDef(Attributes attrs, String attrID, boolean val, boolean defVal) {
         if (val != defVal)
             storeBoolean(attrs, attrID, val);
     }
@@ -1336,19 +1369,12 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attrs.put(attrID, "" + val);
     }
 
-    protected static void storeInts(Attributes attrs, String attrID, int... vals) {
-        Attribute attr = new BasicAttribute(attrID);
-        for (int val : vals)
-            attr.add("" + val);
-        attrs.put(attr);
-    }
-
     private static void storeNotEmpty(Attributes attrs, String attrID, byte[]... vals) {
         if (vals != null && vals.length > 0)
             attrs.put(attr(attrID, vals));
     }
 
-    protected static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {
+    public static <T> void storeNotEmpty(Attributes attrs, String attrID, T... vals) {
         if (vals != null && vals.length > 0)
             attrs.put(attr(attrID, vals));
     }
@@ -1367,7 +1393,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         return attr;
     }
 
-    protected static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
+    public static void storeConnRefs(Attributes attrs, Collection<Connection> conns,
             String deviceDN) {
         if (!conns.isEmpty())
             attrs.put(connRefs(conns, deviceDN));

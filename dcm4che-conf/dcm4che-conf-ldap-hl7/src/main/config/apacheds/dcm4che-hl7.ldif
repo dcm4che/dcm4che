@@ -117,6 +117,7 @@ m-must: dicomNetworkConnectionReference
 m-may: hl7AcceptedSendingApplication
 m-may: hl7AcceptedMessageType
 m-may: hl7DefaultCharacterSet
+m-may: dicomInstalled
 
 dn: ou=syntaxCheckers, cn=dcm4che-hl7, ou=schema
 objectclass: organizationalUnit

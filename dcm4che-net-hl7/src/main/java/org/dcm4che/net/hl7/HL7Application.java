@@ -171,10 +171,13 @@ public class HL7Application implements Serializable {
     }
 
     public void addConnection(Connection conn) {
+        if (conn.getProtocol() != Connection.Protocol.HL7)
+            throw new IllegalArgumentException(
+                    "protocol != HL7 - " + conn.getProtocol());
+            
         if (device != null && device != conn.getDevice())
             throw new IllegalStateException(conn + " not contained by " + 
                     device.getDeviceName());
-        conn.setConnectionHandler(HL7ConnectionHandler.INSTANCE);
         conns.add(conn);
     }
 

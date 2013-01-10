@@ -120,6 +120,7 @@ public class Device implements Serializable {
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
+    private final List<DeviceExtension> extensions = new ArrayList<DeviceExtension>();
 
     private transient DimseRQHandler dimseRQHandler;
 
@@ -769,6 +770,19 @@ public class Device implements Serializable {
         return ae;
     }
 
+    public void addDeviceExtension(DeviceExtension ext) {
+        ext.setDevice(this);
+        extensions.add(ext);
+    }
+
+    public boolean removeDeviceExtension(DeviceExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        ext.setDevice(null);
+        return true;
+    }
+
     public final int getLimitOpenAssociations() {
         return limitOpenAssociations;
     }
@@ -1084,6 +1098,14 @@ public class Device implements Serializable {
         conns.clear();
         for (Connection conn : src)
             conns.add(connectionWithEqualsRDN(conn));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends DeviceExtension> T getDeviceExtension(Class<T> clazz) {
+        for (DeviceExtension ext : extensions)
+            if (clazz.isAssignableFrom(ext.getClass()))
+                return (T) ext;
+        return null;
     }
 
 }

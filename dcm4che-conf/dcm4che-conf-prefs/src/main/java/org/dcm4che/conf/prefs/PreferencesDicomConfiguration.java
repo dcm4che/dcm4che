@@ -43,6 +43,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -66,6 +67,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +94,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             PreferencesDicomConfiguration.class);
 
     private final Preferences rootPrefs;
+    private final List<PreferencesDicomConfigurationExtension> extensions =
+            new ArrayList<PreferencesDicomConfigurationExtension>();
 
     public PreferencesDicomConfiguration() {
         this(rootPrefs());
@@ -105,6 +109,20 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     public PreferencesDicomConfiguration(Preferences rootPrefs) {
         this.rootPrefs = rootPrefs;
+    }
+
+    public void addDicomConfigurationExtension(PreferencesDicomConfigurationExtension ext) {
+        ext.setDicomConfiguration(this);
+        extensions.add(ext);
+    }
+
+    public boolean removeDicomConfigurationExtension(
+            PreferencesDicomConfigurationExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        ext.setDicomConfiguration(null);
+        return true;
     }
 
     @Override
@@ -197,7 +215,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public synchronized Device findDevice(String name) throws ConfigurationException {
-        String pathName = deviceRef(name);
+        return loadDevice(deviceRef(name));
+    }
+
+    public synchronized Device loadDevice(String pathName) throws ConfigurationException,
+            ConfigurationNotFoundException {
         if (!nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
 
@@ -286,6 +308,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             storeTo(ae, aeNode, devConns);
             storeChilds(ae, aeNode);
         }
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(device, deviceNode);
     }
 
     protected void storeChilds(ApplicationEntity ae, Preferences aeNode) {
@@ -357,6 +382,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences devicePrefs) throws BackingStoreException {
         mergeConnections(prev, device, devicePrefs);
         mergeAEs(prev, device, devicePrefs);
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.mergeChilds(prev, device, devicePrefs);
     }
 
     @Override
@@ -440,6 +467,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
         storeNotNull(prefs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
 
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeTo(device, prefs);
     }
 
     protected void storeTo(Connection conn, Preferences prefs) {
@@ -449,6 +478,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
         storeNotNull(prefs, "dicomInstalled", conn.getInstalled());
 
+        storeNotNull(prefs, "dcmProtocol", 
+                StringUtils.nullify(conn.getProtocol(), Protocol.DICOM));
         storeNotNull(prefs, "dcmHTTPProxy", conn.getHttpProxy());
         storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
         storeNotDef(prefs, "dcmTCPBacklog",
@@ -503,7 +534,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
     }
 
-    protected void storeConnRefs(Preferences prefs, List<Connection> connRefs,
+    public static void storeConnRefs(Preferences prefs, List<Connection> connRefs,
             List<Connection> devConns) {
         int refCount = 0;
         for (Connection conn : connRefs) {
@@ -648,6 +679,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getKeyStoreKeyPinProperty(),
                 b.getKeyStoreKeyPinProperty());
 
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, prefs);
+
     }
 
     protected void storeDiffs(Preferences prefs, Connection a, Connection b) {
@@ -668,6 +702,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getInstalled(),
                 b.getInstalled());
 
+        storeDiff(prefs, "dcmProtocol",
+                StringUtils.nullify(a.getProtocol(), Protocol.DICOM),
+                StringUtils.nullify(b.getProtocol(), Protocol.DICOM));
         storeDiff(prefs, "dcmHTTPProxy",
                 a.getHttpProxy(),
                 b.getHttpProxy());
@@ -848,7 +885,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 -1);
     }
 
-    protected static void storeDiffConnRefs(Preferences prefs,
+    public static void storeDiffConnRefs(Preferences prefs,
             List<Connection> prevConnRefs, List<Connection> prevDevConns,
             List<Connection> connRefs, List<Connection> devConns) {
         int prevSize = prevConnRefs.size();
@@ -966,7 +1003,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     protected void loadChilds(Device device, Preferences deviceNode)
-            throws BackingStoreException {
+            throws BackingStoreException, ConfigurationException {
         Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         for (int connIndex : sort(connsNode.childrenNames())) {
             Connection conn = newConnection();
@@ -987,6 +1024,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             loadChilds(ae, aeNode);
             device.addApplicationEntity(ae);
         }
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.loadChilds(device, deviceNode);
     }
 
     protected void loadChilds(ApplicationEntity ae, Preferences aeNode)
@@ -1140,6 +1179,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         device.setKeyStoreKeyPin(prefs.get("dcmKeyStoreKeyPin", null));
         device.setKeyStoreKeyPinProperty(
                 prefs.get("dcmKeyStoreKeyPinProperty", null));
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.loadFrom(device, prefs);
     }
 
     protected void loadFrom(Connection conn, Preferences prefs) {
@@ -1149,6 +1191,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
         conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
 
+        conn.setProtocol(Protocol.valueOf(prefs.get("dcmProtocol", "DICOM")));
         conn.setHttpProxy(prefs.get("dcmHTTPProxy", null));
         conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));
         conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
@@ -1186,7 +1229,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setPackPDV(prefs.getBoolean("dcmPackPDV", true));
     }
 
-    protected static Boolean booleanValue(String s) {
+    public static Boolean booleanValue(String s) {
         return s != null ? Boolean.valueOf(s) : null;
     }
 
@@ -1218,7 +1261,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
        return bb;
     }
 
-    protected static String[] stringArray(Preferences prefs, String key)  {
+    public static String[] stringArray(Preferences prefs, String key)  {
         int n = prefs.getInt(key + ".#", 0);
         if (n == 0)
             return StringUtils.EMPTY_STRING;
@@ -1244,22 +1287,22 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return codes;
     }
 
-    protected static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
+    public static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
         if (value != defVal)
             prefs.putInt(key, value);
     }
 
-    protected static void storeNotDef(Preferences prefs, String key, boolean val, boolean defVal) {
+    public static void storeNotDef(Preferences prefs, String key, boolean val, boolean defVal) {
         if (val != defVal)
             prefs.putBoolean(key, val);
     }
 
-    protected static void storeNotNull(Preferences prefs, String key, Object value) {
+    public static void storeNotNull(Preferences prefs, String key, Object value) {
         if (value != null)
             prefs.put(key, value.toString());
     }
 
-    protected static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
+    public static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
         if (values != null && values.length != 0) {
             int count = 0;
             for (T value : values)
@@ -1269,7 +1312,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     protected static void storeNotEmpty(Preferences prefs, String key, byte[][] values) {
-        if (values.length != 0) {
+        if (values != null && values.length != 0) {
             int count = 0;
             for (byte[] value : values)
                 prefs.putByteArray(key + '.' + (++count), value);
@@ -1277,7 +1320,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected static <T> void storeDiff(Preferences prefs, String key, T prev, T val) {
+    public static <T> void storeDiff(Preferences prefs, String key, T prev, T val) {
         if (val == null) {
             if (prev != null)
                 prefs.remove(key);
@@ -1285,7 +1328,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             prefs.put(key, val.toString());
     }
 
-    protected static void storeDiff(Preferences prefs, String key,
+    public static void storeDiff(Preferences prefs, String key,
             boolean prev, boolean val, boolean defVal) {
         if (prev != val)
             if (val == defVal)
@@ -1294,7 +1337,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.putBoolean(key, val);
     }
 
-    protected static void storeDiff(Preferences prefs, String key, int prev, int val, int defVal) {
+    public static void storeDiff(Preferences prefs, String key, int prev, int val, int defVal) {
         if (prev != val)
             if (val == defVal)
                 prefs.remove(key);

@@ -87,11 +87,11 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
 
     @Override
     protected Device newDevice(Attributes attrs) throws NamingException {
-        return new HL7Device(stringValue(attrs.get("dicomDeviceName")));
+        return new HL7Device(stringValue(attrs.get("dicomDeviceName"), null));
     }
 
     protected HL7Application newHL7Application(Attributes attrs) throws NamingException {
-        return new HL7Application(stringValue(attrs.get("hl7ApplicationName")));
+        return new HL7Application(stringValue(attrs.get("hl7ApplicationName"), null));
     }
 
     @Override
@@ -126,7 +126,8 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     }
 
     @Override
-    protected void loadChilds(Device device, String deviceDN) throws NamingException {
+    protected void loadChilds(Device device, String deviceDN)
+            throws NamingException, ConfigurationException {
         super.loadChilds(device, deviceDN);
         if (!(device instanceof HL7Device))
             return;
@@ -162,7 +163,7 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
         hl7app.setAcceptedSendingApplications(stringArray(attrs.get("hl7AcceptedSendingApplication")));
         hl7app.setAcceptedMessageTypes(stringArray(attrs.get("hl7AcceptedMessageType")));
-        hl7app.setHL7DefaultCharacterSet(stringValue(attrs.get("hl7DefaultCharacterSet")));
+        hl7app.setHL7DefaultCharacterSet(stringValue(attrs.get("hl7DefaultCharacterSet"), null));
         hl7app.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
     }
 

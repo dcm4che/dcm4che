@@ -45,7 +45,7 @@ import java.net.Socket;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface ConnectionHandler {
+public interface ProtocolHandler {
 
     void onAccept(Connection conn, Socket s) throws IOException;
 

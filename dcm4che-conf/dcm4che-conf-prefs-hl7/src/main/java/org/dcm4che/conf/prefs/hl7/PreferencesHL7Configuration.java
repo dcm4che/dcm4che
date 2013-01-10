@@ -109,7 +109,7 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
 
     @Override
     protected void loadChilds(Device device, Preferences deviceNode)
-            throws BackingStoreException {
+            throws BackingStoreException, ConfigurationException {
         super.loadChilds(device, deviceNode);
         if (!(device instanceof HL7Device))
             return;

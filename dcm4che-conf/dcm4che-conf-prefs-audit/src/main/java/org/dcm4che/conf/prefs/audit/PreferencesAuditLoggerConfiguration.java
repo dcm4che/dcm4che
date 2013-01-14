@@ -163,7 +163,7 @@ public class PreferencesAuditLoggerConfiguration
                 prefs.get("dcmAuditMessageSchemaURI", null));
         logger.setIncludeBOM(
                 prefs.getBoolean("dcmAuditMessageBOM", true));
-        logger.setIncludeBOM(
+        logger.setFormatXML(
                 prefs.getBoolean("dcmAuditMessageFormatXML", false));
         logger.setTimestampInUTC(
                 prefs.getBoolean("dcmAuditTimestampInUTC", false));

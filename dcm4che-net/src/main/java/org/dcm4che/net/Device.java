@@ -829,6 +829,10 @@ public class Device implements Serializable {
         return ae;
     }
 
+    public Collection<String> getApplicationAETitles() {
+        return aes.keySet();
+    }
+
     public Collection<ApplicationEntity> getApplicationEntities() {
         return aes.values();
     }

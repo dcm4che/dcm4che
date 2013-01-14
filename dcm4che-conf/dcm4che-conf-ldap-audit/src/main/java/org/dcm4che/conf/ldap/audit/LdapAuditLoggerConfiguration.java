@@ -175,7 +175,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 stringValue(attrs.get("dcmAuditMessageSchemaURI"), null));
         logger.setIncludeBOM(
                 booleanValue(attrs.get("dcmAuditMessageBOM"), true));
-        logger.setIncludeBOM(
+        logger.setFormatXML(
                 booleanValue(attrs.get("dcmAuditMessageFormatXML"), false));
         logger.setTimestampInUTC(
                 booleanValue(attrs.get("dcmAuditTimestampInUTC"), false));

@@ -41,7 +41,6 @@ package org.dcm4che.net.audit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.lang.management.ManagementFactory;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -52,16 +51,19 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
 
+import org.dcm4che.audit.ActiveParticipant;
 import org.dcm4che.audit.AuditMessage;
 import org.dcm4che.audit.AuditMessages;
 import org.dcm4che.audit.AuditSourceIdentification;
 import org.dcm4che.audit.AuditSourceTypeCode;
+import org.dcm4che.audit.AuditMessages.RoleIDCode;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DeviceExtension;
@@ -141,6 +143,7 @@ public class AuditLogger extends DeviceExtension {
         '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
     };
     private static final byte[] BOM = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+    private static final char SYSLOG_VERSION = '1';
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
 
@@ -276,7 +279,27 @@ public class AuditLogger extends DeviceExtension {
         this.auditSourceTypeCodes = auditSourceTypeCode;
     }
 
-    public AuditSourceIdentification getAuditSourceIdentification() {
+    public ActiveParticipant createActiveParticipant(
+            boolean requestor, RoleIDCode... roleIDs) {
+        ActiveParticipant ap = new ActiveParticipant();
+        ap.setUserID(processID());
+        Collection<String> aets = device.getApplicationAETitles();
+        ap.setAlternativeUserID(
+                AuditMessages.alternativeUserIDForAETitle(
+                        aets.toArray(new String[aets.size()])));
+        ap.setUserName(applicationName());
+        ap.setUserIsRequestor(requestor);
+        String hostName = localHost().getHostName();
+        ap.setNetworkAccessPointID(hostName);
+        ap.setNetworkAccessPointTypeCode(AuditMessages.isIP(hostName) 
+                ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
+                : AuditMessages.NetworkAccessPointTypeCode.MachineName);
+        for (RoleIDCode roleID : roleIDs)
+            ap.getRoleIDCode().add(roleID);
+        return ap;
+    }
+
+    public AuditSourceIdentification createAuditSourceIdentification() {
         AuditSourceIdentification asi = new AuditSourceIdentification();
         asi.setAuditSourceID(auditSourceID());
         if (auditEnterpriseSiteID != null) {
@@ -467,11 +490,9 @@ public class AuditLogger extends DeviceExtension {
     }
 
     private abstract class ActiveConnection extends ByteArrayOutputStream {
-        final OutputStreamWriter charOut;
         final Connection conn;
         final Connection remoteConn;
         ActiveConnection(Connection conn, Connection remoteConn) {
-            this.charOut = new OutputStreamWriter(this);
             this.conn = conn;
             this.remoteConn = remoteConn;
         }
@@ -492,7 +513,7 @@ public class AuditLogger extends DeviceExtension {
             }
             try {
                 connect();
-                flush();
+                sendMessage();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -502,23 +523,23 @@ public class AuditLogger extends DeviceExtension {
         void writeHeader(Severity severity, Calendar timeStamp)
                 throws IOException {
             write('<');
-            charOut.write(Integer.toString(prival(severity)));
+            writeInt(prival(severity));
             write('>');
-            write('1'); // version
+            write(SYSLOG_VERSION);
             write(' ');
             write(timeStamp);
             write(' ');
             if (localHost != null)
-                charOut.write(localHost.getCanonicalHostName());
+                write(localHost.getCanonicalHostName().getBytes(encoding));
             else
                 write('-');
             write(' ');
-            charOut.write(applicationName());
+            write(applicationName().getBytes(encoding));
             write(' ');
-            charOut.write(processID);
+            write(processID.getBytes(encoding));
             write(' ');
             if (messageID != null)
-                charOut.write(messageID);
+                write(messageID.getBytes(encoding));
             else
                 write('-');
             write(' ');
@@ -526,6 +547,15 @@ public class AuditLogger extends DeviceExtension {
             write(' ');
             if (includeBOM && encoding.equals("UTF-8"))
                 write(BOM);
+        }
+
+        private void writeInt(int i) {
+            if (i >= 100)
+                writeNNN(i);
+            else if (i >= 10)
+                writeNN(i);
+            else
+                writeN(i);
         }
 
         private void write(Calendar timeStamp) {
@@ -566,12 +596,16 @@ public class AuditLogger extends DeviceExtension {
         }
 
         void writeNNN(int i) {
-            write(DIGITS_0X[i / 100]);
+            writeN(i / 100);
             writeNN(i % 100);
         }
 
         void writeNN(int i) {
             write(DIGITS_X0[i]);
+            write(DIGITS_0X[i]);
+        }
+
+        void writeN(int i) {
             write(DIGITS_0X[i]);
         }
     }

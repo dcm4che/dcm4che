@@ -658,18 +658,17 @@ public class AuditMessages {
     }
 
     public static String alternativeUserIDForAETitle(String... aets) {
-        int iMax = aets.length - 1;
-        if (iMax == -1)
+        if (aets.length == 0)
             return null;
 
+        if (aets.length == 1)
+            return aets[0];
+
         StringBuilder b = new StringBuilder();
-        b.append("AETITLES=");
-        for (int i = 0; ; i++) {
-            b.append(aets[i]);
-            if (i == iMax)
-                return b.toString();
-            b.append(';');
-        }
+        b.append("AETITLES=").append(aets[0]);
+        for (int i = 1; i < aets.length; i++)
+            b.append(';').append(aets[i]);
+        return b.toString();
     }
 
     public static void toXML(AuditMessage message, OutputStream os)

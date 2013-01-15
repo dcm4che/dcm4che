@@ -852,7 +852,7 @@ public class Device implements Serializable {
             return ret;
         String keyStorePin = keyStorePin();
         km = ret = SSLManagerFactory.createKeyManager(keyStoreType(),
-                        StringUtils.replaceSystemProperties(keyStoreURL),
+                        StringUtils.replaceSystemProperties(keyStoreURL).replace('\\', '/'),
                         keyStorePin(), keyPin(keyStorePin));
         return ret;
     }
@@ -912,7 +912,7 @@ public class Device implements Serializable {
 
         tm = ret = trustStoreURL != null
                 ? SSLManagerFactory.createTrustManager(trustStoreType(),
-                        StringUtils.replaceSystemProperties(trustStoreURL),
+                        StringUtils.replaceSystemProperties(trustStoreURL).replace('\\', '/'),
                         trustStorePin())
                 : SSLManagerFactory.createTrustManager(
                         getAllAuthorizedNodeCertificates());

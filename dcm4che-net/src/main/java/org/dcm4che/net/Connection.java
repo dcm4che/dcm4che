@@ -846,7 +846,7 @@ public class Connection implements Serializable, Cloneable {
     public Socket connect(Connection remoteConn)
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         checkInstalled();
-        if (protocol.isTCP())
+        if (!protocol.isTCP())
             throw new IllegalStateException("Not a TCP Connection");
         checkCompatible(remoteConn);
         InetSocketAddress bindPoint = getBindPoint();

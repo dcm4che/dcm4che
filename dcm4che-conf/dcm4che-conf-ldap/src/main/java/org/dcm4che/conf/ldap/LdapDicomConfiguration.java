@@ -271,19 +271,22 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     @Override
     public synchronized String[] listDeviceNames() throws ConfigurationException {
+        if (!configurationExists())
+            return StringUtils.EMPTY_STRING;
+
         return list(devicesDN, "(objectclass=dicomDevice)", "dicomDeviceName");
     }
 
     @Override
     public synchronized String[] listRegisteredAETitles() throws ConfigurationException {
+        if (!configurationExists())
+            return StringUtils.EMPTY_STRING;
+
         return list(aetsRegistryDN, "(objectclass=dicomUniqueAETitle)", "dicomAETitle");
     }
 
     private String[] list(String dn, String filter, String attrID)
             throws ConfigurationException {
-        if (!configurationExists())
-            return StringUtils.EMPTY_STRING;
-
         ArrayList<String> values = new ArrayList<String>();
         NamingEnumeration<SearchResult> ne = null;
         try {

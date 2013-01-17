@@ -451,14 +451,14 @@ public class AuditLogger extends DeviceExtension {
     }
 
 
-    private static String processID() {
+    public static String processID() {
         String s =  ManagementFactory.getRuntimeMXBean().getName();
         int atPos = s.indexOf('@');
         return atPos > 0 ? s.substring(0, atPos)
                 : Integer.toString(new Random().nextInt() & 0x7fffffff);
     }
 
-    private static InetAddress localHost() {
+    public static InetAddress localHost() {
         try {
             return InetAddress.getLocalHost();
         } catch (UnknownHostException e) {

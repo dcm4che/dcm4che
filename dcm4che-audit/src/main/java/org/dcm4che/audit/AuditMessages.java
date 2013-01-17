@@ -214,6 +214,41 @@ public class AuditMessages {
                 new EventTypeCode("110141", "DCM", "Local Service Operation Started");
         public static final EventTypeCode LocalServiceOperationStopped = 
                 new EventTypeCode("110142", "DCM", "Local Service Operation Stopped");
+        //Defined in IHE IT Infrastructure (ITI)
+        public static final EventTypeCode ITI_8_PatientIdentityFeed = 
+            new EventTypeCode("ITI-8", "IHE Transactions", "Patient Identity Feed");
+        public static final EventTypeCode ITI_9_PIXQuery = 
+            new EventTypeCode("ITI-9", "IHE Transactions", "PIX Query");
+        public static final EventTypeCode ITI_10_PIXUpdateNotification = 
+            new EventTypeCode("ITI-10", "IHE Transactions", "PIX Update Notification");
+        public static final EventTypeCode ITI_18_RegistryStoredQuery = 
+            new EventTypeCode("ITI-18", "IHE Transactions", "Registry Stored Query");
+        public static final EventTypeCode ITI_21_PatientDemographicsQuery = 
+            new EventTypeCode("ITI-21", "IHE Transactions", "Patient Demographics Query");
+        public static final EventTypeCode ITI_22_PatientDemographicsAndVisitQuery = 
+            new EventTypeCode("ITI-22", "IHE Transactions", "Patient Demographics and Visit Query");
+        public static final EventTypeCode ITI_38_CrossGatewayQuery = 
+            new EventTypeCode("ITI-38", "IHE Transactions", "Cross Gateway Query");
+        public static final EventTypeCode ITI_39_CrossGatewayRetrieve = 
+            new EventTypeCode("ITI-39", "IHE Transactions", "Cross Gateway Retrieve");
+        public static final EventTypeCode ITI_41_ProvideAndRegisterDocumentSetB = 
+            new EventTypeCode("ITI-41", "IHE Transactions", "Provide and Register Document Set-b");
+        public static final EventTypeCode ITI_42_RegisterDocumentSetB = 
+            new EventTypeCode("ITI-42", "IHE Transactions", "Register Document Set-b");
+        public static final EventTypeCode ITI_43_RetrieveDocumentSet = 
+            new EventTypeCode("ITI-43", "IHE Transactions", "Retrieve Document Set");
+        public static final EventTypeCode ITI_44_PatientIdentityFeed = 
+            new EventTypeCode("ITI-44", "IHE Transactions", "Patient Identity Feed");
+        public static final EventTypeCode ITI_45_PIXQuery = 
+            new EventTypeCode("ITI-45", "IHE Transactions", "PIX Query");
+        public static final EventTypeCode ITI_46_PIXUpdateNotification = 
+            new EventTypeCode("ITI-46", "IHE Transactions", "PIX Update Notification");
+        public static final EventTypeCode ITI_47_PatientDemographicsQuery = 
+            new EventTypeCode("ITI-47", "IHE Transactions", "Patient Demographics Query");
+        public static final EventTypeCode ITI_51_MultiPatientQuery = 
+            new EventTypeCode("ITI-51", "IHE Transactions", "Multi-Patient Query");
+        public static final EventTypeCode ITI_63_XCFFetch = 
+            new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
 
         public EventTypeCode(String code, String codeSystemName,
                 String displayName) {
@@ -549,7 +584,7 @@ public class AuditMessages {
 
     public static EventIdentification createEventIdentification(
             EventID eventID, String action, Calendar eventDateTime,
-            String outcome, String outcomeDescription, EventTypeCode... types) {
+            String outcome, String outcomeDescription, org.dcm4che.audit.EventTypeCode... types) {
         EventIdentification ei = new EventIdentification();
         ei.setEventID(eventID);
         ei.setEventDateTime(
@@ -557,7 +592,7 @@ public class AuditMessages {
         ei.setEventActionCode(action);
         ei.setEventOutcomeIndicator(outcome);
         ei.setEventOutcomeDescription(outcomeDescription);
-        for (EventTypeCode type : types)
+        for (org.dcm4che.audit.EventTypeCode type : types)
             ei.getEventTypeCode().add(type);
         return ei;
     }

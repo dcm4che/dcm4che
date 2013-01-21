@@ -19,7 +19,6 @@ There are still gaps compared to the functionality of dcm4che-2.x:
 - no IIO Image Reader/Writer implementation for DICOM images
 - no DICOM Image rendering support
 - no DICOM Hanging Protocol support
-- no Audit log message support
 
 In long term, 3.x will provide the functionality of 2.x.
 

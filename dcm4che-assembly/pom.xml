@@ -123,6 +123,11 @@
       <artifactId>dcm4che-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+     <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-emf</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-hl7</artifactId>
@@ -171,6 +176,11 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-dcmvalidate</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-emf2sf</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

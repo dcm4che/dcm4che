@@ -87,7 +87,7 @@ public class RecordFactory {
     public void loadConfiguration(String uri) 
             throws ParserConfigurationException, SAXException, IOException {
         Attributes attrs = parseXML(uri);
-        Sequence sq = (Sequence) attrs.getValue(Tag.DirectoryRecordSequence);
+        Sequence sq = attrs.getSequence(Tag.DirectoryRecordSequence);
         if (sq == null)
             throw new IllegalArgumentException(
                     "Missing Directory Record Sequence in " + uri);
@@ -252,7 +252,7 @@ public class RecordFactory {
                     fmi.getString(Tag.TransferSyntaxUID, null));
         }
         rec.addSelected(dataset, keys, 0, keys.length);
-        Sequence contentSeq = (Sequence) dataset.getValue(Tag.ContentSequence);
+        Sequence contentSeq = dataset.getSequence(Tag.ContentSequence);
         if (contentSeq != null)
             copyConceptMod(contentSeq, rec);
         return rec ;

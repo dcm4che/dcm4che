@@ -18,14 +18,14 @@ public class DicomInputStreamTest {
     @Test
     public void testPart10ExplicitVR() throws Exception {
         Attributes attrs = readFromResource("DICOMDIR", IncludeBulkData.YES);
-        Sequence seq = (Sequence) attrs.getValue(null, Tag.DirectoryRecordSequence);
+        Sequence seq = attrs.getSequence(null, Tag.DirectoryRecordSequence);
         assertEquals(44, seq.size());
    }
 
     @Test
     public void testPart10Deflated() throws Exception {
         Attributes attrs = readFromResource("report_dfl", IncludeBulkData.YES);
-        Sequence seq = (Sequence) attrs.getValue(null, Tag.ContentSequence);
+        Sequence seq = attrs.getSequence(null, Tag.ContentSequence);
         assertEquals(5, seq.size());
     }
 

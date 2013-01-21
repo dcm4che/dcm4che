@@ -270,7 +270,9 @@ public class ValidationResult {
             int tag = iav.dataElement.tag;
             appendAttribute(level, tag, sb);
             sb.append(" [");
-            attrs.getVR(tag).prompt(attrs.getValue(tag),
+            VR.Holder vr = new VR.Holder();
+            Object value = attrs.getValue(tag, vr);
+            vr.vr.prompt(value,
                     attrs.bigEndian(), 
                     attrs.getSpecificCharacterSet(), 200, sb);
             sb.append("]\n");

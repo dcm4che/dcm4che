@@ -84,26 +84,42 @@ public class UIDUtils {
     }
 
     public static String createUID() {
-        return doCreateUID(root);
+        return randomUID(root);
+    }
+
+    public static String createNameBasedUID(byte[] name) {
+        return nameBasedUID(name, root);
+    }
+
+    public static String createNameUID(byte[] name, String root) {
+        checkRoot(root);
+        return nameBasedUID(name, root);
     }
 
     public static String createUID(String root) {
         checkRoot(root);
-        return doCreateUID(root);
+        return randomUID(root);
     }
 
     public static String createUIDIfNull(String uid) {
-        return uid == null ? doCreateUID(root) : uid;
+        return uid == null ? randomUID(root) : uid;
     }
 
     public static String createUIDIfNull(String uid, String root) {
         checkRoot(root);
-        return uid == null ? doCreateUID(root) : uid;
+        return uid == null ? randomUID(root) : uid;
     }
 
-    private static String doCreateUID(String root) {
+    private static String randomUID(String root) {
+        return toUID(root, UUID.randomUUID());
+    }
+
+    private static String nameBasedUID(byte[] name, String root) {
+        return toUID(root, UUID.nameUUIDFromBytes(name));
+    }
+
+    private static String toUID(String root, UUID uuid) {
         byte[] b17 = new byte[17];
-        UUID uuid = UUID.randomUUID();
         ByteUtils.longToBytesBE(uuid.getMostSignificantBits(), b17, 1);
         ByteUtils.longToBytesBE(uuid.getLeastSignificantBits(), b17, 9);
         String uuidStr = new BigInteger(b17).toString();

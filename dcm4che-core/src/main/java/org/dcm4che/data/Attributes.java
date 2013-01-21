@@ -468,26 +468,27 @@ public class Attributes implements Serializable {
         return VR.LO.toString(decodeStringValue(index), false, 0, null);
     }
 
-    public VR vrOf(int tag) {
-        int index = indexOf(tag);
-        if (index < 0)
-            return null;
-
-        return vrs[index];
+    public Object getValue(int tag) {
+        return getValue(null, tag, null);
     }
 
-    public Object getValue(int tag) {
-        return getValue(null, tag);
+    public Object getValue(int tag, VR.Holder vr) {
+        return getValue(null, tag, vr);
     }
 
     public Object getValue(String privateCreator, int tag) {
+        return getValue(privateCreator, tag, null);
+    }
+
+    public Object getValue(String privateCreator, int tag, VR.Holder vr) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
         
+        if (vr != null)
+            vr.vr = vrs[index];
         return values[index];
     }
-
 
     public VR getVR(int tag) {
         return getVR(null, tag);

@@ -529,16 +529,14 @@ public class DicomInputStream extends FilterInputStream
         int grtag = TagUtils.groupNumber(tag);
         if (grtag < 8)
             return false;
-        if (bulkData == null)
-            bulkData = DicomInputStream.defaultBulkData();
         Attributes item = bulkData;
+        if (item == null)
+            bulkData = item = DicomInputStream.defaultBulkData();
         for (int i = 0; i < level; i++) {
             ItemPointer ip = itemPointers[i];
-            Sequence sq = (Sequence)
-                    item.getValue(ip.privateCreator, ip.sequenceTag);
-            if (sq == null)
+            item = item.getNestedDataset(ip.privateCreator, ip.sequenceTag);
+            if (item == null)
                 return false;
-            item = sq.get(0);
         }
         int tag0 = ((grtag &= 0xff01) == 0x5000 || grtag == 0x6000)
                 ? tag & 0xff00ffff : tag;
@@ -550,6 +548,7 @@ public class DicomInputStream extends FilterInputStream
             return false;
         if (bulkData == null)
             bulkData = DicomInputStream.defaultBulkData();
+        
         Attributes item = bulkData;
         for (int i = 0; i < level; i++) {
             ItemPointer ip = itemPointers[i];

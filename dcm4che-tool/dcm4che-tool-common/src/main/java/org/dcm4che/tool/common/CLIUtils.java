@@ -714,7 +714,7 @@ public class CLIUtils {
         Attributes item = attrs;
         for (int i = 0; i < tags.length-1; i++) {
             int tag = tags[i];
-            Sequence sq = (Sequence) item.getValue(tag);
+            Sequence sq = item.getSequence(tag);
             if (sq == null)
                 sq = item.newSequence(tag, 1);
             if (sq.isEmpty())

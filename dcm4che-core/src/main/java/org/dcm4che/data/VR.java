@@ -262,4 +262,7 @@ public enum VR {
         return headerLength == 12 ? 1 : valueType.vmOf(val);
     }
 
+    public static class Holder {
+        public VR vr;
+    }
 }

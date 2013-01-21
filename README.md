@@ -31,14 +31,19 @@ After installation of [Maven 3](http://maven.apache.org):
 
 Modules
 -------
-- dcm4che-core
-- dcm4che-net
+- dcm4che-audit
 - dcm4che-conf
   - dcm4che-conf-api
   - dcm4che-conf-ldap
+  - dcm4che-conf-ldap-audit
   - dcm4che-conf-ldap-hl7
   - dcm4che-conf-prefs
+  - dcm4che-conf-prefs-audit
   - dcm4che-conf-prefs-hl7
+- dcm4che-core
+- dcm4che-net
+- dcm4che-net-audit
+- dcm4che-net-hl7
 - dcm4che-soundex
 - dcm4che-jboss-modules
 - dcm4che-servlet
@@ -49,6 +54,7 @@ Utilities
 - [dcmdump][]: Dump DICOM file in textual form
 - [dcmdir][]: Dump, create or update DICOMDIR file
 - [dcmqrscp][]: Simple DICOM archive
+- [emf2sf][]: Convert DICOM Enhanced Multi-frame image to corresponding legacy DICOM Single-frame images
 - [findscu][]: Invoke DICOM C-FIND Query Request
 - [getscu][]: Invoke DICOM C-GET Retrieve Request
 - [hl72xml][]: Convert HL7 v2.x message in XML presentation
@@ -73,6 +79,7 @@ Utilities
 [dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
 [dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
+[emf2sf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-emf2sf/README.md
 [findscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md
 [getscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md
 [hl72xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl72xml/README.md

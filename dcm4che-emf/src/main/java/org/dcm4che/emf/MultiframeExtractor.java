@@ -38,8 +38,7 @@
 
 package org.dcm4che.emf;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
@@ -54,22 +53,120 @@ import org.dcm4che.data.VR;
  */
 public class MultiframeExtractor {
 
+    private enum Impl {
+        EnhancedCTImageExtractor(UID.CTImageStorage),
+        EnhancedMRImageExtractor(UID.MRImageStorage) {
+            Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
+                Attributes sf = super.extract(mfe, emf, frame);
+                adjustImageType(sf);
+                setEchoTime(sf);
+                setScanningSequence(sf);
+                setSequenceVariant(sf);
+                setScanOptions(sf);
+                return sf;
+            }
+
+            private void adjustImageType(Attributes sf) {
+                // TODO Auto-generated method stub
+                
+            }
+
+            void setEchoTime(Attributes sf) {
+                double echoTime = sf.getDouble(Tag.EffectiveEchoTime, 0);
+                if (echoTime == 0)
+                    sf.setNull(Tag.EchoTime, VR.DS);
+                else
+                    sf.setDouble(Tag.EchoTime, VR.DS, echoTime);
+            }
+
+            void setScanningSequence(Attributes sf) {
+                ArrayList<String> list = new ArrayList<String>(3);
+                list.add(
+                        "GRADIENT".equals(sf.getString(Tag.EchoPulseSequence))
+                            ? "GR"
+                            : "SE");
+                if ("YES".equals(sf.getString(Tag.InversionRecovery)))
+                    list.add("IR");
+                if ("YES".equals(sf.getString(Tag.EchoPlanarPulseSequence)))
+                    list.add("EP");
+                sf.setString(Tag.ScanningSequence, VR.CS,
+                        list.toArray(new String[list.size()]));
+            }
+
+            void setSequenceVariant(Attributes sf) {
+                ArrayList<String> list = new ArrayList<String>(5);
+                if ("PARTIAL".equals(sf.getString(Tag.SegmentedKSpaceTraversal)))
+                    list.add("SK");
+                String mf = sf.getString(Tag.MagnetizationTransfer);
+                if (mf != null && !"NONE".equals(mf))
+                    list.add("MTC");
+                String ssps = sf.getString(Tag.SteadyStatePulseSequence);
+                if (ssps != null && !"NONE".equals(ssps))
+                    list.add("TIME_REVERSED".equals(ssps) ? "TRSS" :"SS");
+                String sp = sf.getString(Tag.Spoiling);
+                if (sp != null && !"NONE".equals(sp))
+                    list.add("SP");
+                String op = sf.getString(Tag.OversamplingPhase);
+                if (op != null && !"NONE".equals(op))
+                    list.add("OSP");
+                if (list.isEmpty())
+                    list.add("NONE");
+                sf.setString(Tag.SequenceVariant, VR.CS,
+                        list.toArray(new String[list.size()]));
+            }
+
+            void setScanOptions(Attributes sf) {
+                ArrayList<String> list = new ArrayList<String>(3);
+                String per = sf.getString(Tag.RectilinearPhaseEncodeReordering);
+                if (per != null && !"LINEAR".equals(per))
+                    list.add("PER");
+                String frameType3 = sf.getString(Tag.FrameType, 2);
+                if ("ANGIO".equals(frameType3))
+                    sf.setString(Tag.AngioFlag, VR.CS, "Y");
+                if (frameType3.startsWith("CARD"))
+                    list.add("CG");
+                if (frameType3.endsWith("RESP_GATED"))
+                    list.add("RG");
+                String pfd = sf.getString(Tag.PartialFourierDirection);
+                if ("PHASE".equals(pfd))
+                    list.add("PFP");
+                if ("FREQUENCY".equals(pfd))
+                    list.add("PFF");
+                String sp = sf.getString(Tag.SpatialPresaturation);
+                if (sp != null && !"NONE".equals(sp))
+                    list.add("SP");
+                String sss = sf.getString(Tag.SpectrallySelectedSuppression);
+                if (sss != null && sss.startsWith("FAT"))
+                    list.add("FS");
+                String fc = sf.getString(Tag.FlowCompensation);
+                if (fc != null && !"NONE".equals(fc))
+                    list.add("FC");
+                sf.setString(Tag.ScanOptions, VR.CS,
+                        list.toArray(new String[list.size()]));
+            }
+
+        },
+        EnhancedPETImageExtractor(UID.PositronEmissionTomographyImageStorage);
+
+        private final String cuid;
+
+        Impl(String cuid) {
+            this.cuid = cuid;
+        }
+
+        Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
+            return mfe.extract(emf, frame, cuid);
+        }
+    }
+
     private boolean preserveSeriesInstanceUID;
     private String instanceNumberFormat = "%s%04d";
     private UIDMapper uidMapper = new HashUIDMapper();
-    private Map<String,String> cuidmap = new HashMap<String,String>(8);
-    private final int[] EXCLUDE_TAGS = {
+    private static final int[] EXCLUDE_TAGS = {
             Tag.NumberOfFrames,
             Tag.SharedFunctionalGroupsSequence,
             Tag.PerFrameFunctionalGroupsSequence,
             Tag.PixelData };
-
-    public MultiframeExtractor() {
-        cuidmap.put(UID.EnhancedCTImageStorage, UID.CTImageStorage);
-        cuidmap.put(UID.EnhancedMRImageStorage, UID.MRImageStorage);
-        cuidmap.put(UID.EnhancedPETImageStorage, 
-                UID.PositronEmissionTomographyImageStorage);
-    }
 
     public final boolean isPreserveSeriesInstanceUID() {
         return preserveSeriesInstanceUID;
@@ -99,19 +196,6 @@ public class MultiframeExtractor {
         this.uidMapper = uidMapper;
     }
 
-    public String legacySOPClassUIDFor(String enhancedCUID) {
-        return cuidmap.get(enhancedCUID);
-    }
-
-    public String addSOPClassUIDMapping(String enhancedSOPClassUID, 
-            String legacySOPClassUID) {
-        return cuidmap.put(enhancedSOPClassUID, legacySOPClassUID);
-    }
-
-    public String removeSOPClassUIDMapping(String enhancedSOPClassUID) {
-        return cuidmap.remove(enhancedSOPClassUID);
-    }
-
     /** Extract specified frame from Enhanced Multi-frame image and return it
      * as correponding legacy Single-frame image.
      * 
@@ -120,11 +204,22 @@ public class MultiframeExtractor {
      * @return legacy Single-frame image
      */
     public Attributes extract(Attributes emf, int frame) {
+        return implFor(emf).extract(this, emf, frame);
+    }
+
+    private Impl implFor(Attributes emf) {
         String mfcuid = emf.getString(Tag.SOPClassUID);
-        String sfcuid = cuidmap.get(mfcuid);
-        if (sfcuid == null)
-            throw new IllegalArgumentException(
-                    "Unsupported SOP Class: " + mfcuid);
+        if (mfcuid.equals(UID.EnhancedCTImageStorage))
+            return Impl.EnhancedCTImageExtractor;
+        if (mfcuid.equals(UID.EnhancedMRImageStorage))
+            return Impl.EnhancedMRImageExtractor;
+        if (mfcuid.equals(UID.EnhancedPETImageStorage))
+            return Impl.EnhancedPETImageExtractor;
+        throw new IllegalArgumentException(
+                "Unsupported SOP Class: " + mfcuid);
+    }
+
+    private Attributes extract(Attributes emf, int frame, String sopClassUID) {
         Attributes sfgs = emf.getNestedDataset(Tag.SharedFunctionalGroupsSequence);
         if (sfgs == null)
             throw new IllegalArgumentException(
@@ -138,7 +233,7 @@ public class MultiframeExtractor {
         addFunctionGroups(dest, sfgs);
         addFunctionGroups(dest, fgs);
         addPixelData(dest, emf, frame);
-        dest.setString(Tag.SOPClassUID, VR.UI, sfcuid);
+        dest.setString(Tag.SOPClassUID, VR.UI, sopClassUID);
         dest.setString(Tag.SOPInstanceUID, VR.UI, uidMapper.get(
                 dest.getString(Tag.SOPInstanceUID)) + '.' + (frame + 1));
         dest.setString(Tag.InstanceNumber, VR.IS,

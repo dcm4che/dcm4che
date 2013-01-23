@@ -201,6 +201,8 @@
         <include>bin/dcmvalidate.bat</include>
         <include>etc/dcmvalidate/log4j.properties</include>
         <include>etc/dcmvalidate/dicomdir-iod.xml</include>
+        <include>etc/dcmvalidate/ct-iod.xml</include>
+        <include>etc/dcmvalidate/mr-iod.xml</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

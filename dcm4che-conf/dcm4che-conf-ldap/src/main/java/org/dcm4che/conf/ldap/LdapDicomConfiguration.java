@@ -1116,9 +1116,9 @@ public class LdapDicomConfiguration implements DicomConfiguration {
 
     private void mergeAEs(Device prevDev, Device dev, String deviceDN)
             throws NamingException {
-        for (ApplicationEntity ae : prevDev.getApplicationEntities()) {
-            String aet = ae.getAETitle();
-            if (dev.getApplicationEntity(aet) == null)
+        Collection<String> aets = dev.getApplicationAETitles();
+        for (String aet : prevDev.getApplicationAETitles()) {
+            if (!aets.contains(aet))
                 destroySubcontextWithChilds(aetDN(aet, deviceDN));
         }
         for (ApplicationEntity ae : dev.getApplicationEntities()) {

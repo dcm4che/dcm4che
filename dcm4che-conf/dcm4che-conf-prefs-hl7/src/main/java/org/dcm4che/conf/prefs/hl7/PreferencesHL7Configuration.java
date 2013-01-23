@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.prefs.hl7;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -159,9 +160,9 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
     private void mergeHL7Apps(HL7Device prevDev, HL7Device dev, Preferences deviceNode)
             throws BackingStoreException {
         Preferences appsNode = deviceNode.node("hl7Application");
-        for (HL7Application app : prevDev.getHL7Applications()) {
-            String appName = app.getApplicationName();
-            if (dev.getHL7Application(appName) == null)
+        Collection<String> appNames = dev.getHL7ApplicationNames();
+        for (String appName : prevDev.getHL7ApplicationNames()) {
+            if (!appNames.contains(appName))
                 appsNode.node(appName).removeNode();
         }
         List<Connection> devConns = dev.listConnections();

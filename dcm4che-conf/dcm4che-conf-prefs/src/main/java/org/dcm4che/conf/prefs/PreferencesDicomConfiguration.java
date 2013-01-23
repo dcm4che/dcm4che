@@ -919,9 +919,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     private void mergeAEs(Device prevDev, Device dev, Preferences deviceNode)
             throws BackingStoreException {
         Preferences aesNode = deviceNode.node("dcmNetworkAE");
-        for (ApplicationEntity ae : prevDev.getApplicationEntities()) {
-            String aet = ae.getAETitle();
-            if (dev.getApplicationEntity(aet) == null)
+        Collection<String> aets = dev.getApplicationAETitles();
+        for (String aet : prevDev.getApplicationAETitles()) {
+            if (!aets.contains(aet))
                 aesNode.node(aet).removeNode();
         }
         List<Connection> devConns = dev.listConnections();

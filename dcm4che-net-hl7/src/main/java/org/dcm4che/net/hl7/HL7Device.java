@@ -106,6 +106,10 @@ public class HL7Device extends Device {
         return hl7App;
     }
 
+    public Collection<String> getHL7ApplicationNames() {
+        return hl7apps.keySet();
+    }
+
     public Collection<HL7Application> getHL7Applications() {
         return hl7apps.values();
     }

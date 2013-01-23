@@ -39,6 +39,7 @@
 package org.dcm4che.conf.ldap.hl7;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -179,10 +180,10 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
 
     private void mergeHL7Apps(HL7Device prevDev, HL7Device dev, String deviceDN)
             throws NamingException {
-        for (HL7Application ae : prevDev.getHL7Applications()) {
-            String aet = ae.getApplicationName();
-            if (dev.getHL7Application(aet) == null)
-                destroySubcontextWithChilds(hl7appDN(aet, deviceDN));
+        Collection<String> appNames = dev.getHL7ApplicationNames();
+        for (String appName : prevDev.getHL7ApplicationNames()) {
+            if (!appNames.contains(appName))
+                destroySubcontextWithChilds(hl7appDN(appName, deviceDN));
         }
         for (HL7Application ae : dev.getHL7Applications()) {
             String aet = ae.getApplicationName();

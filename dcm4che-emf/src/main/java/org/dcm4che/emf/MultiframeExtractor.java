@@ -39,10 +39,13 @@
 package org.dcm4che.emf;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
@@ -58,17 +61,11 @@ public class MultiframeExtractor {
         EnhancedMRImageExtractor(UID.MRImageStorage) {
             Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
                 Attributes sf = super.extract(mfe, emf, frame);
-                adjustImageType(sf);
                 setEchoTime(sf);
                 setScanningSequence(sf);
                 setSequenceVariant(sf);
                 setScanOptions(sf);
                 return sf;
-            }
-
-            private void adjustImageType(Attributes sf) {
-                // TODO Auto-generated method stub
-                
             }
 
             void setEchoTime(Attributes sf) {
@@ -81,10 +78,12 @@ public class MultiframeExtractor {
 
             void setScanningSequence(Attributes sf) {
                 ArrayList<String> list = new ArrayList<String>(3);
-                list.add(
-                        "GRADIENT".equals(sf.getString(Tag.EchoPulseSequence))
-                            ? "GR"
-                            : "SE");
+                
+                String eps = sf.getString(Tag.EchoPulseSequence);
+                if (!"GRADIENT".equals(eps))
+                    list.add("SE");
+                if (!"SPIN".equals(eps))
+                    list.add("GR");
                 if ("YES".equals(sf.getString(Tag.InversionRecovery)))
                     list.add("IR");
                 if ("YES".equals(sf.getString(Tag.EchoPlanarPulseSequence)))
@@ -95,7 +94,7 @@ public class MultiframeExtractor {
 
             void setSequenceVariant(Attributes sf) {
                 ArrayList<String> list = new ArrayList<String>(5);
-                if ("PARTIAL".equals(sf.getString(Tag.SegmentedKSpaceTraversal)))
+                if (!"SINGLE".equals(sf.getString(Tag.SegmentedKSpaceTraversal)))
                     list.add("SK");
                 String mf = sf.getString(Tag.MagnetizationTransfer);
                 if (mf != null && !"NONE".equals(mf))
@@ -120,7 +119,7 @@ public class MultiframeExtractor {
                 String per = sf.getString(Tag.RectilinearPhaseEncodeReordering);
                 if (per != null && !"LINEAR".equals(per))
                     list.add("PER");
-                String frameType3 = sf.getString(Tag.FrameType, 2);
+                String frameType3 = sf.getString(Tag.ImageType, 2);
                 if ("ANGIO".equals(frameType3))
                     sf.setString(Tag.AngioFlag, VR.CS, "Y");
                 if (frameType3.startsWith("CARD"))
@@ -148,25 +147,46 @@ public class MultiframeExtractor {
         },
         EnhancedPETImageExtractor(UID.PositronEmissionTomographyImageStorage);
 
-        private final String cuid;
+        private final String sfcuid;
 
-        Impl(String cuid) {
-            this.cuid = cuid;
+        Impl(String sfcuid) {
+            this.sfcuid = sfcuid;
         }
 
         Attributes extract(MultiframeExtractor mfe, Attributes emf, int frame) {
-            return mfe.extract(emf, frame, cuid);
+            return mfe.extract(emf, frame, sfcuid);
         }
     }
+
+    private static final HashMap<String,Impl> impls = new HashMap<String,Impl>(8);
+    static {
+        impls.put(UID.EnhancedCTImageStorage, Impl.EnhancedCTImageExtractor);
+        impls.put(UID.EnhancedMRImageStorage, Impl.EnhancedMRImageExtractor);
+        impls.put(UID.EnhancedPETImageStorage, Impl.EnhancedPETImageExtractor);
+    }
+
+    private static final int[] EXCLUDE_TAGS = {
+        Tag.ReferencedImageEvidenceSequence,
+        Tag.SourceImageEvidenceSequence,
+        Tag.DimensionIndexSequence,
+        Tag.NumberOfFrames,
+        Tag.SharedFunctionalGroupsSequence,
+        Tag.PerFrameFunctionalGroupsSequence,
+        Tag.PixelData };
 
     private boolean preserveSeriesInstanceUID;
     private String instanceNumberFormat = "%s%04d";
     private UIDMapper uidMapper = new HashUIDMapper();
-    private static final int[] EXCLUDE_TAGS = {
-            Tag.NumberOfFrames,
-            Tag.SharedFunctionalGroupsSequence,
-            Tag.PerFrameFunctionalGroupsSequence,
-            Tag.PixelData };
+    private NumberOfFramesAccessor nofAccessor = new NumberOfFramesAccessor();
+
+    public static boolean isSupportedSOPClass(String cuid) {
+        return impls.containsKey(cuid);
+    }
+
+    public static String legacySOPClassUID(String mfcuid) {
+        Impl impl = impls.get(mfcuid);
+        return impl != null ? impl.sfcuid : null;
+    }
 
     public final boolean isPreserveSeriesInstanceUID() {
         return preserveSeriesInstanceUID;
@@ -196,6 +216,16 @@ public class MultiframeExtractor {
         this.uidMapper = uidMapper;
     }
 
+    public final NumberOfFramesAccessor getNumberOfFramesAccessorr() {
+        return nofAccessor;
+    }
+
+    public final void setNumberOfFramesAccessor(NumberOfFramesAccessor accessor) {
+        if (accessor == null)
+            throw new NullPointerException();
+        this.nofAccessor = accessor;
+    }
+
     /** Extract specified frame from Enhanced Multi-frame image and return it
      * as correponding legacy Single-frame image.
      * 
@@ -204,22 +234,19 @@ public class MultiframeExtractor {
      * @return legacy Single-frame image
      */
     public Attributes extract(Attributes emf, int frame) {
-        return implFor(emf).extract(this, emf, frame);
+        return implFor(emf.getString(Tag.SOPClassUID))
+                .extract(this, emf, frame);
     }
 
-    private Impl implFor(Attributes emf) {
-        String mfcuid = emf.getString(Tag.SOPClassUID);
-        if (mfcuid.equals(UID.EnhancedCTImageStorage))
-            return Impl.EnhancedCTImageExtractor;
-        if (mfcuid.equals(UID.EnhancedMRImageStorage))
-            return Impl.EnhancedMRImageExtractor;
-        if (mfcuid.equals(UID.EnhancedPETImageStorage))
-            return Impl.EnhancedPETImageExtractor;
-        throw new IllegalArgumentException(
-                "Unsupported SOP Class: " + mfcuid);
+    private static Impl implFor(String mfcuid) {
+        Impl impl = impls.get(mfcuid);
+        if (impl == null)
+            throw new IllegalArgumentException(
+                    "Unsupported SOP Class: " + mfcuid);
+        return impl;
     }
 
-    private Attributes extract(Attributes emf, int frame, String sopClassUID) {
+    private Attributes extract(Attributes emf, int frame, String cuid) {
         Attributes sfgs = emf.getNestedDataset(Tag.SharedFunctionalGroupsSequence);
         if (sfgs == null)
             throw new IllegalArgumentException(
@@ -233,20 +260,56 @@ public class MultiframeExtractor {
         addFunctionGroups(dest, sfgs);
         addFunctionGroups(dest, fgs);
         addPixelData(dest, emf, frame);
-        dest.setString(Tag.SOPClassUID, VR.UI, sopClassUID);
+        dest.setString(Tag.SOPClassUID, VR.UI, cuid);
         dest.setString(Tag.SOPInstanceUID, VR.UI, uidMapper.get(
                 dest.getString(Tag.SOPInstanceUID)) + '.' + (frame + 1));
         dest.setString(Tag.InstanceNumber, VR.IS,
                 createInstanceNumber(dest.getString(Tag.InstanceNumber, ""), frame));
+        dest.setString(Tag.ImageType, VR.CS, dest.getStrings(Tag.FrameType));
+        dest.remove(Tag.FrameType);
         if (!preserveSeriesInstanceUID)
             dest.setString(Tag.SeriesInstanceUID, VR.UI, uidMapper.get(
                     dest.getString(Tag.SeriesInstanceUID)));
+        adjustReferencedImages(dest, Tag.ReferencedImageSequence);
+        adjustReferencedImages(dest, Tag.SourceImageSequence);
         return dest;
     }
 
+    private void adjustReferencedImages(Attributes attrs, int sqtag) {
+        Sequence sq = attrs.getSequence(sqtag);
+        if (sq == null)
+            return;
+        
+        ArrayList<Attributes> newRefs = new ArrayList<Attributes>();
+        for (Iterator<Attributes> itr = sq.iterator(); itr.hasNext();) {
+            Attributes ref = (Attributes) itr.next();
+            String cuid = legacySOPClassUID(ref.getString(Tag.ReferencedSOPClassUID));
+            if (cuid == null)
+                continue;
+
+            itr.remove();
+            String iuid = uidMapper.get(ref.getString(Tag.ReferencedSOPInstanceUID));
+            int[] frames = ref.getInts(Tag.ReferencedFrameNumber);
+            int n = frames == null ? nofAccessor.getNumberOfFrames(iuid)
+                                   : frames.length;
+            ref.remove(Tag.ReferencedFrameNumber);
+            ref.setString(Tag.ReferencedSOPClassUID, VR.UI, cuid);
+            for (int i = 0; i < n; i++) {
+                Attributes newRef = new Attributes(ref);
+                newRef.setString(Tag.ReferencedSOPInstanceUID, VR.UI,
+                        iuid + '.' + (frames != null ? frames[i] : (i+1)));
+                newRefs.add(newRef);
+            }
+        }
+        for (Attributes ref : newRefs)
+            sq.add(ref);
+    }
+
     private void addFunctionGroups(Attributes dest, Attributes fgs) {
-        for (int sequenceTag : fgs.tags())
-            dest.addAll(fgs.getNestedDataset(sequenceTag));
+        dest.addSelected(fgs, Tag.ReferencedImageSequence);
+        for (int sqTag : fgs.tags())
+            if (sqTag != Tag.ReferencedImageSequence)
+                dest.addAll(fgs.getNestedDataset(sqTag));
     }
 
     private void addPixelData(Attributes dest, Attributes src, int frame) {

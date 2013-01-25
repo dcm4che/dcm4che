@@ -72,11 +72,12 @@ import org.dcm4che.tool.common.DicomFiles;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class IanSCU extends Device {
+public class IanSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.ianscu.messages");
 
+    private final Device device = new Device("ianscu");
     private final ApplicationEntity ae = new ApplicationEntity("IANSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -92,10 +93,9 @@ public class IanSCU extends Device {
     private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
     private Association as;
 
-    public IanSCU() throws IOException {
-        super("ianscu");
-        addConnection(conn);
-        addApplicationEntity(ae);
+    public IanSCU() {
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
         ae.addConnection(conn);
     }
 
@@ -141,7 +141,7 @@ public class IanSCU extends Device {
         this.retrieveUID = retrieveUID;
     }
 
-     @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         try {
             CommandLine cl = parseComandLine(args);
@@ -164,6 +164,12 @@ public class IanSCU extends Device {
                     @Override
                     public boolean dicomFile(File f, Attributes fmi, long dsPos,
                             Attributes ds) {
+                        if (UID.InstanceAvailabilityNotificationSOPClass.equals(
+                                fmi.getString(Tag.MediaStorageSOPClassUID))) {
+                            return main.addIAN(
+                                    fmi.getString(Tag.MediaStorageSOPInstanceUID),
+                                    ds);
+                        }
                         return main.addInstance(ds);
                     }
                 });
@@ -172,8 +178,8 @@ public class IanSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 if (echo)
@@ -277,7 +283,7 @@ public class IanSCU extends Device {
         as = ae.connect(conn, remote, rq);
     }
 
-   public void close() throws IOException, InterruptedException {
+    public void close() throws IOException, InterruptedException {
         if (as != null) {
             as.release();
         }
@@ -307,6 +313,11 @@ public class IanSCU extends Device {
         if (ian == null)
             map.put(suid, ian = createIAN(inst));
         updateIAN(ian, inst);
+        return true;
+    }
+
+    public boolean addIAN(String iuid, Attributes ian) {
+        map.put(iuid, ian);
         return true;
     }
 

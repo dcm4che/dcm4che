@@ -43,6 +43,8 @@
         --fuzzy                               negotiate fuzzy semantic person
                                               name attribute matching
      -h,--help                                display this help and exit
+     -I,--indent                              use additional whitespace in XML
+                                              output
      -i <attr>                                specifies which attribute(s) of
                                               given DICOM file(s) dcmfile_in
                                               will be included in the C-FIND
@@ -57,6 +59,9 @@
         --implicit-vr                         propose only implicit VR little
                                               endian (default: all
                                               uncompressed TS)
+     -K,--no-keyword                          do not include keyword attribute
+                                              of DicomAttribute element in XML
+                                              output
         --key-pass <password>                 password for accessing the key
                                               in the key store, key store
                                               password by default
@@ -123,6 +128,8 @@
                                               P-Data-TF PDU; pack command and
                                               data PDV in one P-DATA-TF PDU by
                                               default
+        --out-cat                             concatenate received matches
+                                              into one file
         --out-dir <directory>                 specifies directory where
                                               attributes of received matches
                                               are stored into DICOM files with
@@ -234,6 +241,16 @@
                                               positive response requested
      -V,--version                             output version information and
                                               exit
+     -X,--xml                                 write received matches as XML
+                                              Infoset specified in DICOM Part
+                                              19
+     -x,--xsl <xsl-file>                      apply specified XSLT stylesheet
+                                              to XML representation of
+                                              received matches; implies -X
+        --xmlns                               include
+                                              xmlns='http://dicom.nema.org/PS3
+                                              .19/models/NativeDICOM'
+                                              attribute in root element
     -
     Examples:
     $ findscu -c DCMQRSCP@localhost:11112 -m PatientName=Doe^John -m

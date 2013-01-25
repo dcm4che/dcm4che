@@ -42,6 +42,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
@@ -53,6 +54,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -63,6 +72,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.io.SAXWriter;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -81,7 +91,7 @@ import org.dcm4che.util.SafeClose;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class FindSCU extends Device {
+public class FindSCU {
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
@@ -111,7 +121,9 @@ public class FindSCU extends Device {
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.findscu.messages");
+    private static SAXTransformerFactory saxtf;
 
+    private final Device device = new Device("findscu");
     private final ApplicationEntity ae = new ApplicationEntity("FINDSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -125,13 +137,21 @@ public class FindSCU extends Device {
     private int[] inFilter;
     private Attributes keys = new Attributes();
 
+    private boolean catOut = false;
+    private boolean xml = false;
+    private boolean xmlIndent = false;
+    private boolean xmlIncludeKeyword = true;
+    private boolean xmlIncludeNamespaceDeclaration = false;
+    private File xsltFile;
+    private Templates xsltTpls;
+    private OutputStream out;
+
     private Association as;
     private AtomicInteger totNumMatches = new AtomicInteger();
 
     public FindSCU() throws IOException {
-        super("findscu");
-        addConnection(conn);
-        addApplicationEntity(ae);
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
         ae.addConnection(conn);
     }
 
@@ -167,6 +187,31 @@ public class FindSCU extends Device {
 
     public final void setOutputFileFormat(String outFileFormat) {
         this.outFileFormat = new DecimalFormat(outFileFormat);
+    }
+
+    public final void setXSLT(File xsltFile) {
+        this.xsltFile = xsltFile;
+    }
+
+    public final void setXML(boolean xml) {
+        this.xml = xml;
+    }
+
+    public final void setXMLIndent(boolean indent) {
+        this.xmlIndent = indent;
+    }
+
+    public final void setXMLIncludeKeyword(boolean includeKeyword) {
+        this.xmlIncludeKeyword = includeKeyword;
+    }
+
+    public final void setXMLIncludeNamespaceDeclaration(
+            boolean includeNamespaceDeclaration) {
+        this.xmlIncludeNamespaceDeclaration = includeNamespaceDeclaration;
+    }
+
+    public final void setConcatenateOutputFiles(boolean catOut) {
+        this.catOut = catOut;
     }
 
     public final void setInputFilter(int[] inFilter) {
@@ -257,6 +302,17 @@ public class FindSCU extends Device {
                 .withArgName("name")
                 .withDescription(rb.getString("out-file"))
                 .create());
+        opts.addOption("X", "xml", false, rb.getString("xml"));
+        opts.addOption(OptionBuilder
+                .withLongOpt("xsl")
+                .hasArg()
+                .withArgName("xsl-file")
+                .withDescription(rb.getString("xsl"))
+                .create("x"));
+        opts.addOption("I", "indent", false, rb.getString("indent"));
+        opts.addOption("K", "no-keyword", false, rb.getString("no-keyword"));
+        opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
+        opts.addOption(null, "out-cat", false, rb.getString("out-cat"));
     }
 
     @SuppressWarnings("unchecked")
@@ -278,8 +334,8 @@ public class FindSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();
@@ -321,6 +377,15 @@ public class FindSCU extends Device {
         if (cl.hasOption("out-dir"))
             main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
         main.setOutputFileFormat(cl.getOptionValue("out-file", "000.dcm"));
+        main.setConcatenateOutputFiles(cl.hasOption("out-cat"));
+        main.setXML(cl.hasOption("X"));
+        if (cl.hasOption("x")) {
+            main.setXML(true);
+            main.setXSLT(new File(cl.getOptionValue("x")));
+        }
+        main.setXMLIndent(cl.hasOption("I"));
+        main.setXMLIncludeKeyword(!cl.hasOption("K"));
+        main.setXMLIncludeNamespaceDeclaration(cl.hasOption("xmlns"));
     }
 
     private static void configureCancel(FindSCU main, CommandLine cl) {
@@ -365,6 +430,8 @@ public class FindSCU extends Device {
             as.waitForOutstandingRSP();
             as.release();
         }
+        SafeClose.close(out);
+        out = null;
     }
 
     public void query(File f) throws IOException, InterruptedException {
@@ -417,17 +484,31 @@ public class FindSCU extends Device {
 
     private void onResult(Attributes data) {
         int numMatches = totNumMatches.incrementAndGet();
-        if (outDir != null) {
-            File f = new File(outDir, fname(numMatches));
-            DicomOutputStream dos = null;
-            try {
-                dos = new DicomOutputStream(new BufferedOutputStream(
-                        new FileOutputStream(f)), UID.ImplicitVRLittleEndian);
+        if (outDir == null) 
+            return;
+
+        try {
+            if (out == null) {
+                File f = new File(outDir, fname(numMatches));
+                out = new BufferedOutputStream(
+                        new FileOutputStream(f));
+            }
+            if (xml) {
+                writeAsXML(data, out);
+            } else {
+                DicomOutputStream dos = 
+                        new DicomOutputStream(out, UID.ImplicitVRLittleEndian);
                 dos.writeDataset(null, data);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } finally {
-                SafeClose.close(dos);
+            }
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+            SafeClose.close(out);
+            out = null;
+        } finally {
+            if (!catOut) {
+                SafeClose.close(out);
+                out = null;
             }
         }
     }
@@ -438,4 +519,29 @@ public class FindSCU extends Device {
         }
     }
 
+    private void writeAsXML(Attributes attrs, OutputStream out) throws Exception {
+        TransformerHandler th = getTransformerHandler();
+        th.getTransformer().setOutputProperty(OutputKeys.INDENT,
+                xmlIndent ? "yes" : "no");
+        th.setResult(new StreamResult(out));
+        SAXWriter saxWriter = new SAXWriter(th);
+        saxWriter.setIncludeKeyword(xmlIncludeKeyword);
+        saxWriter.setIncludeNamespaceDeclaration(xmlIncludeNamespaceDeclaration);
+        saxWriter.write(attrs);
+    }
+
+    private TransformerHandler getTransformerHandler() throws Exception {
+        SAXTransformerFactory tf = saxtf;
+        if (tf == null)
+            saxtf = tf = (SAXTransformerFactory) TransformerFactory
+                .newInstance();
+        if (xsltFile == null)
+            return tf.newTransformerHandler();
+
+        Templates tpls = xsltTpls;
+        if (tpls == null);
+            xsltTpls = tpls = tf.newTemplates(new StreamSource(xsltFile));
+
+        return tf.newTransformerHandler(tpls);
+    }
 }

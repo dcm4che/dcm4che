@@ -40,7 +40,6 @@ package org.dcm4che.tool.dcm2xml;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -74,7 +73,7 @@ public class Dcm2Xml {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.dcm2xml.messages");
 
-    private URL xslt;
+    private File xsltFile;
     private boolean indent = false;
     private boolean includeKeyword = true;
     private boolean includeNamespaceDeclaration = false;
@@ -85,8 +84,8 @@ public class Dcm2Xml {
     private File blkDirectory;
     private Attributes blkAttrs;
 
-    public final void setXSLT(URL xslt) {
-        this.xslt = xslt;
+    public final void setXSLT(File xsltFile) {
+        this.xsltFile = xsltFile;
     }
 
     public final void setIndent(boolean indent) {
@@ -189,10 +188,8 @@ public class Dcm2Xml {
         try {
             CommandLine cl = parseComandLine(args);
             Dcm2Xml main = new Dcm2Xml();
-            if (cl.hasOption("x")) {
-                String s = cl.getOptionValue("x");
-                main.setXSLT(new File(s).toURI().toURL());
-            }
+            if (cl.hasOption("x"))
+                main.setXSLT(new File(cl.getOptionValue("x")));
             main.setIndent(cl.hasOption("I"));
             main.setIncludeKeyword(!cl.hasOption("K"));
             main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns"));
@@ -288,11 +285,11 @@ public class Dcm2Xml {
             throws TransformerConfigurationException, IOException {
         SAXTransformerFactory tf = (SAXTransformerFactory)
                 TransformerFactory.newInstance();
-        if (xslt == null)
+        if (xsltFile == null)
             return tf.newTransformerHandler();
 
         TransformerHandler th = tf.newTransformerHandler(
-                new StreamSource(xslt.openStream(), xslt.toExternalForm()));
+                new StreamSource(xsltFile));
         return th;
     }
 }

@@ -138,7 +138,6 @@ public class Connection implements Serializable, Cloneable {
     private static final EnumMap<Protocol, ProtocolHandler> handlers =
             new EnumMap<Protocol, ProtocolHandler>(Protocol.class);
 
-    private transient InetAddress addr;
     private transient List<InetAddress> blacklistAddrs;
     private transient volatile ServerSocket server;
     private transient boolean rebindNeeded;
@@ -709,9 +708,7 @@ public class Connection implements Serializable, Cloneable {
     }
 
     private InetAddress addr() throws UnknownHostException {
-        if (addr == null && hostname != null)
-            addr = InetAddress.getByName(hostname);
-        return addr;
+        return hostname != null ? InetAddress.getByName(hostname) : null;
     }
 
     private List<InetAddress> blacklistAddrs() {

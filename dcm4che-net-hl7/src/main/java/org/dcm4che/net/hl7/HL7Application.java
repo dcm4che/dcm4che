@@ -51,6 +51,7 @@ import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.hl7.MLLPConnection;
 import org.dcm4che.net.CompatibleConnection;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.IncompatibleConnectionException;
 
 /**
@@ -61,7 +62,7 @@ public class HL7Application implements Serializable {
 
     private static final long serialVersionUID = -1765110968524548056L;
 
-    private HL7Device device;
+    private Device device;
     private String name;
     private String hl7DefaultCharacterSet;
     private Boolean installed;
@@ -77,19 +78,19 @@ public class HL7Application implements Serializable {
         setApplicationName(name);
     }
 
-    public final HL7Device getDevice() {
+    public final Device getDevice() {
         return device;
     }
 
-    void setDevice(HL7Device device) {
+    void setDevice(Device device) {
         if (device != null) {
             if (this.device != null)
                 throw new IllegalStateException("already owned by " + 
                         this.device.getDeviceName());
-            for (Connection conn : conns)
-                if (conn.getDevice() != device)
-                    throw new IllegalStateException(conn + " not owned by " + 
-                            device.getDeviceName());
+                for (Connection conn : conns)
+                    if (conn.getDevice() != device)
+                        throw new IllegalStateException(conn + " not owned by " + 
+                                device.getDeviceName());
         }
         this.device = device;
     }
@@ -101,12 +102,14 @@ public class HL7Application implements Serializable {
     public void setApplicationName(String name) {
         if (name.isEmpty())
             throw new IllegalArgumentException("name cannot be empty");
-        HL7Device device = this.device;
-        if (device != null)
-            device.removeHL7Application(this.name);
+        HL7DeviceExtension ext = device != null
+                ? device.getDeviceExtension(HL7DeviceExtension.class)
+                : null;
+        if (ext != null)
+            ext.removeHL7Application(this.name);
         this.name = name;
-        if (device != null)
-            device.addHL7Application(this);
+        if (ext != null)
+            ext.addHL7Application(this);
     }
 
     public final String getHL7DefaultCharacterSet() {
@@ -160,9 +163,9 @@ public class HL7Application implements Serializable {
         if (listener != null)
             return listener;
 
-        HL7Device device = this.device;
-        return device != null
-                ? device.getHL7MessageListener()
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        return hl7Ext != null
+                ? hl7Ext.getHL7MessageListener()
                 : null;
     }
 
@@ -268,12 +271,12 @@ public class HL7Application implements Serializable {
         setInstalled(src.installed);
     }
 
-    void addCopyTo(HL7Device hl7Device) {
+    void addCopyTo(HL7DeviceExtension hl7Ext) {
         try {
             HL7Application hl7app = (HL7Application) clone();
             hl7app.device = null;
-            device.reconfigureConnections(hl7app.conns, conns);
-            device.addHL7Application(hl7app);
+            hl7Ext.getDevice().reconfigureConnections(hl7app.conns, conns);
+            hl7Ext.addHL7Application(hl7app);
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }

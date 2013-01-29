@@ -38,14 +38,22 @@
 
 package org.dcm4che.conf.ldap.hl7;
 
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.booleanValue;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.dnOf;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.findConnection;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.safeClose;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeConnRefs;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeDiff;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotEmpty;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotNull;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.stringArray;
+import static org.dcm4che.conf.ldap.LdapDicomConfiguration.stringValue;
+
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
 import java.util.List;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
@@ -53,74 +61,56 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.hl7.HL7Configuration;
-import org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration;
+import org.dcm4che.conf.api.hl7.HL7ConfigurationExtension;
+import org.dcm4che.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
-import org.dcm4che.net.hl7.HL7Device;
+import org.dcm4che.net.hl7.HL7DeviceExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
-        implements HL7Configuration {
-
-    public LdapHL7Configuration() throws ConfigurationException {}
-
-    public LdapHL7Configuration(Hashtable<?, ?> env)
-            throws ConfigurationException {
-        super(env);
-    }
+public class LdapHL7Configuration extends LdapDicomConfigurationExtension
+        implements HL7ConfigurationExtension {
 
     @Override
     public synchronized HL7Application findHL7Application(String name)
             throws ConfigurationException {
-        return ((HL7Device) findDevice(
-                "(&(objectclass=hl7Application)(hl7ApplicationName=" + name + "))", name))
-            .getHL7Application(name);
-    }
-
-    protected Attribute objectClassesOf(HL7Application hl7App, Attribute attr) {
-        attr.add("hl7Application");
-        return attr;
-    }
-
-    @Override
-    protected Device newDevice(Attributes attrs) throws NamingException {
-        return new HL7Device(stringValue(attrs.get("dicomDeviceName"), null));
-    }
-
-    protected HL7Application newHL7Application(Attributes attrs) throws NamingException {
-        return new HL7Application(stringValue(attrs.get("hl7ApplicationName"), null));
+        Device device = config.findDevice(
+            "(&(objectclass=hl7Application)(hl7ApplicationName=" + name + "))",
+            name);
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        return hl7Ext.getHL7Application(name);
     }
 
     @Override
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
-        super.storeChilds(deviceDN, device);
-        if (!(device instanceof HL7Device))
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        if (hl7Ext == null)
             return;
-        HL7Device hl7Dev = (HL7Device) device;
-        for (HL7Application hl7App : hl7Dev.getHL7Applications()) {
-            String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
-            createSubcontext(appDN, storeTo(hl7App, deviceDN, new BasicAttributes(true)));
-            storeChilds(appDN, hl7App);
-        }
-    }
 
-    protected void storeChilds(String appDN, HL7Application hl7App) {
+        for (HL7Application hl7App : hl7Ext.getHL7Applications()) {
+            String appDN = hl7appDN(hl7App.getApplicationName(), deviceDN);
+            config.createSubcontext(appDN,
+                    storeTo(hl7App, deviceDN, new BasicAttributes(true)));
+        }
     }
 
     private String hl7appDN(String name, String deviceDN) {
         return dnOf("hl7ApplicationName" , name, deviceDN);
     }
 
-    protected Attributes storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {
-        attrs.put(objectClassesOf(hl7App, new BasicAttribute("objectclass")));
-        storeNotNull(attrs, "hl7ApplicationName", hl7App.getApplicationName());
-        storeNotEmpty(attrs, "hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
-        storeNotEmpty(attrs, "hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
-        storeNotNull(attrs, "hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet());
+    private Attributes storeTo(HL7Application hl7App, String deviceDN, Attributes attrs) {
+        attrs.put(new BasicAttribute("objectclass", "hl7Application"));
+        storeNotNull(attrs, "hl7ApplicationName",
+                hl7App.getApplicationName());
+        storeNotEmpty(attrs, "hl7AcceptedSendingApplication",
+                hl7App.getAcceptedSendingApplications());
+        storeNotEmpty(attrs, "hl7AcceptedMessageType",
+                hl7App.getAcceptedMessageTypes());
+        storeNotNull(attrs, "hl7DefaultCharacterSet",
+                hl7App.getHL7DefaultCharacterSet());
         storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
         storeNotNull(attrs, "dicomInstalled", hl7App.getInstalled());
         return attrs;
@@ -129,36 +119,32 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     @Override
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException {
-        super.loadChilds(device, deviceDN);
-        if (!(device instanceof HL7Device))
-            return;
-        loadHL7Applications((HL7Device) device, deviceDN);
-    }
-
-    private void loadHL7Applications(HL7Device device, String deviceDN) throws NamingException {
-        NamingEnumeration<SearchResult> ne = search(deviceDN, "(objectclass=hl7Application)");
+        NamingEnumeration<SearchResult> ne =
+                config.search(deviceDN, "(objectclass=hl7Application)");
         try {
-            while (ne.hasMore()) {
-                device.addHL7Application(
+            if (!ne.hasMore())
+                return;
+
+            HL7DeviceExtension hl7Ext = new HL7DeviceExtension();
+            device.addDeviceExtension(hl7Ext);
+            do {
+                hl7Ext.addHL7Application(
                         loadHL7Application(ne.next(), deviceDN, device));
-            }
+            } while (ne.hasMore());
         } finally {
-           safeClose(ne);
+            safeClose(ne);
         }
     }
 
-    protected HL7Application loadHL7Application(SearchResult sr, String deviceDN,
-            HL7Device device) throws NamingException {
+    private HL7Application loadHL7Application(SearchResult sr, String deviceDN,
+            Device device) throws NamingException {
         Attributes attrs = sr.getAttributes();
-        HL7Application hl7app = newHL7Application(attrs);
+        HL7Application hl7app = new HL7Application(stringValue(attrs.get("hl7ApplicationName"), null));
         loadFrom(hl7app, attrs);
         for (String connDN : stringArray(attrs.get("dicomNetworkConnectionReference")))
             hl7app.addConnection(findConnection(connDN, deviceDN, device));
-        loadChilds(hl7app, sr.getNameInNamespace());
-        return hl7app;
-    }
 
-    protected void loadChilds(HL7Application hl7app, String hl7appDN) throws NamingException {
+        return hl7app;
     }
 
     protected void loadFrom(HL7Application hl7app, Attributes attrs) throws NamingException {
@@ -171,45 +157,42 @@ public class LdapHL7Configuration extends ExtendedLdapDicomConfiguration
     @Override
     protected void mergeChilds(Device prev, Device device, String deviceDN)
             throws NamingException {
-        super.mergeChilds(prev, device, deviceDN);
-        if (!(prev instanceof HL7Device && device instanceof HL7Device))
+        HL7DeviceExtension prevHL7Ext =
+                prev.getDeviceExtension(HL7DeviceExtension.class);
+        HL7DeviceExtension hl7Ext = 
+                device.getDeviceExtension(HL7DeviceExtension.class);
+
+        if (prevHL7Ext != null)
+            for (String appName : prevHL7Ext.getHL7ApplicationNames()) {
+                if (hl7Ext == null || !hl7Ext.containsHL7Application(appName))
+                    config.destroySubcontextWithChilds(hl7appDN(appName, deviceDN));
+            }
+
+        if (hl7Ext == null)
             return;
 
-        mergeHL7Apps((HL7Device) prev, (HL7Device) device, deviceDN);
-    }
-
-    private void mergeHL7Apps(HL7Device prevDev, HL7Device dev, String deviceDN)
-            throws NamingException {
-        Collection<String> appNames = dev.getHL7ApplicationNames();
-        for (String appName : prevDev.getHL7ApplicationNames()) {
-            if (!appNames.contains(appName))
-                destroySubcontextWithChilds(hl7appDN(appName, deviceDN));
-        }
-        for (HL7Application ae : dev.getHL7Applications()) {
-            String aet = ae.getApplicationName();
-            HL7Application prevAE = prevDev.getHL7Application(aet);
-            if (prevAE == null) {
-                String aeDN = hl7appDN(ae.getApplicationName(), deviceDN);
-                createSubcontext(aeDN,
-                        storeTo(ae, deviceDN, new BasicAttributes(true)));
-                storeChilds(aeDN, ae);
+        for (HL7Application hl7app : hl7Ext.getHL7Applications()) {
+            String appName = hl7app.getApplicationName();
+            HL7Application prevHL7App = prevHL7Ext != null
+                    ? prevHL7Ext.getHL7Application(appName)
+                    : null;
+            if (prevHL7App == null) {
+                String appDN = hl7appDN(hl7app.getApplicationName(), deviceDN);
+                config.createSubcontext(appDN,
+                        storeTo(hl7app, deviceDN, new BasicAttributes(true)));
             } else
-                merge(prevAE, ae, deviceDN);
+                merge(prevHL7App, hl7app, deviceDN);
         }
     }
 
     private void merge(HL7Application prev, HL7Application app, String deviceDN)
             throws NamingException {
         String appDN = hl7appDN(app.getApplicationName(), deviceDN);
-        modifyAttributes(appDN, storeDiffs(prev, app, deviceDN, 
+        config.modifyAttributes(appDN, storeDiffs(prev, app, deviceDN, 
                 new ArrayList<ModificationItem>()));
-        mergeChilds(prev, app, appDN);
     }
 
-    protected void mergeChilds(HL7Application prev, HL7Application app, String appDN) {
-    }
-
-    protected List<ModificationItem> storeDiffs(HL7Application a, HL7Application b,
+    private List<ModificationItem> storeDiffs(HL7Application a, HL7Application b,
             String deviceDN, List<ModificationItem> mods) {
         storeDiff(mods, "hl7AcceptedSendingApplication",
                 a.getAcceptedSendingApplications(),

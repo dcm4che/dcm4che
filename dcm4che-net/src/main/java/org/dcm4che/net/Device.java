@@ -733,6 +733,9 @@ public class Device implements Serializable {
                 throw new IllegalStateException(conn + " used by AE: " + 
                         ae.getAETitle());
 
+        for (DeviceExtension ext : extensions)
+            ext.verifyNotUsed(conn);
+
         if (!conns.remove(conn))
             return false;
 
@@ -1006,6 +1009,7 @@ public class Device implements Serializable {
         setDeviceAttributes(from);
         reconfigureConnections(from);
         reconfigureApplicationEntities(from);
+        reconfigureDeviceExtensions(from);
     }
 
     protected void setDeviceAttributes(Device from) {
@@ -1102,6 +1106,24 @@ public class Device implements Serializable {
         conns.clear();
         for (Connection conn : src)
             conns.add(connectionWithEqualsRDN(conn));
+    }
+
+    private void reconfigureDeviceExtensions(Device from) {
+        for (Iterator<DeviceExtension> it = extensions.iterator();
+                it.hasNext();) {
+            DeviceExtension ext = it.next();
+            if (from.getDeviceExtension(ext.getClass()) == null) {
+                ext.remove();
+                it.remove();
+            }
+        }
+        for (DeviceExtension src : from.extensions) {
+            DeviceExtension ext = getDeviceExtension(src.getClass());
+            if (ext != null)
+                ext.reconfigure(src);
+            else
+                src.addTo(this);
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -65,7 +65,8 @@ enum HL7ProtocolHandler implements ProtocolHandler {
             ParsePosition pos = new ParsePosition(0);
             HL7Segment msh = HL7Segment.parseMSH(msg, msg.length, pos);
             try {
-                msg = ((HL7Device) conn.getDevice()).onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn, s);
+                msg = conn.getDevice().getDeviceExtension(HL7DeviceExtension.class)
+                        .onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn, s);
             } catch (HL7Exception e) {
                 msg = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
                         .getBytes(null);

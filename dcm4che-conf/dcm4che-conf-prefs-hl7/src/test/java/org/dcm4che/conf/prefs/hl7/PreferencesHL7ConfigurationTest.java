@@ -43,10 +43,12 @@ import static org.junit.Assert.*;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
+import org.dcm4che.conf.prefs.PreferencesDicomConfiguration;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Connection.Protocol;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
-import org.dcm4che.net.hl7.HL7Device;
+import org.dcm4che.net.hl7.HL7DeviceExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,12 +59,15 @@ import org.junit.Test;
  */
 public class PreferencesHL7ConfigurationTest {
 
-    private PreferencesHL7Configuration config;
+    private PreferencesDicomConfiguration config;
+    private PreferencesHL7Configuration hl7Ext;
 
     @Before
     public void setUp() throws Exception {
-        config = new PreferencesHL7Configuration(Preferences.userRoot()
+        config = new PreferencesDicomConfiguration(Preferences.userRoot()
                 .node("PreferencesHL7ConfigurationTest"));
+        hl7Ext = new PreferencesHL7Configuration();
+        config.addDicomConfigurationExtension(hl7Ext);
     }
 
     @After
@@ -75,21 +80,23 @@ public class PreferencesHL7ConfigurationTest {
         try {
             config.removeDevice("Test-Device-1");
         }  catch (ConfigurationNotFoundException e) {}
-        HL7Device device = createDevice("Test-Device-1", "TEST1^DCM4CHE");
+        Device device = createDevice("Test-Device-1", "TEST1^DCM4CHE");
         config.persist(device);
-        HL7Application app = config.findHL7Application("TEST1^DCM4CHE");
+        HL7Application app = hl7Ext.findHL7Application("TEST1^DCM4CHE");
         assertEquals(2575, app.getConnections().get(0).getPort());
         assertEquals("TEST2^DCM4CHE", app.getAcceptedSendingApplications()[0]);
         assertEquals(7, app.getAcceptedMessageTypes().length);
         config.removeDevice("Test-Device-1");
     }
 
-    private static HL7Device createDevice(String name, String appName) throws Exception {
-        HL7Device device = new HL7Device(name);
+    private static Device createDevice(String name, String appName) throws Exception {
+        Device device = new Device(name);
+        HL7DeviceExtension hl7Ext = new HL7DeviceExtension();
+        device.addDeviceExtension(hl7Ext);
         Connection conn = createConn("host.dcm4che.org", 2575);
         device.addConnection(conn);
         HL7Application app = createHL7App(appName, conn);
-        device.addHL7Application(app);
+        hl7Ext.addHL7Application(app);
         return device ;
     }
 

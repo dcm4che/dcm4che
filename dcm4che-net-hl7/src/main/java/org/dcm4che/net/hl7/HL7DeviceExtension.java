@@ -38,24 +38,22 @@
 
 package org.dcm4che.net.hl7;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.net.Connection;
-import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class HL7Device extends Device {
+public class HL7DeviceExtension extends DeviceExtension {
 
-    private static final long serialVersionUID = 5891363555469614152L;
+    private static final long serialVersionUID = -411853996726542266L;
 
     static {
         Connection.registerProtocolHandler(
@@ -67,23 +65,17 @@ public class HL7Device extends Device {
 
     private transient HL7MessageListener hl7MessageListener;
 
-    public HL7Device(String name) {
-        super(name);
-    }
-
     @Override
-    public boolean removeConnection(Connection conn) {
+    public void verifyNotUsed(Connection conn) {
         for (HL7Application app : hl7apps.values())
             if (app.getConnections().contains(conn))
                 throw new IllegalStateException(conn
                         + " used by HL7 Application: "
                         + app.getApplicationName());
-
-        return super.removeConnection(conn);
     }
 
     public void addHL7Application(HL7Application hl7App) {
-        hl7App.setDevice(this);
+        hl7App.setDevice(device);
         hl7apps.put(hl7App.getApplicationName(), hl7App);
     }
 
@@ -104,6 +96,10 @@ public class HL7Device extends Device {
         if (hl7App == null)
             hl7App = hl7apps.get("*");
         return hl7App;
+    }
+
+    public boolean containsHL7Application(String name) {
+        return hl7apps.containsKey(name);
     }
 
     public Collection<String> getHL7ApplicationNames() {
@@ -131,13 +127,12 @@ public class HL7Device extends Device {
     }
 
     @Override
-    public void reconfigure(Device from) throws IOException,
-            GeneralSecurityException {
+    public void reconfigure(DeviceExtension from)  {
         super.reconfigure(from);
-        reconfigureHL7Applications((HL7Device) from);
+        reconfigureHL7Applications((HL7DeviceExtension) from);
     }
 
-    private void reconfigureHL7Applications(HL7Device from) {
+    private void reconfigureHL7Applications(HL7DeviceExtension from) {
         hl7apps.keySet().retainAll(from.hl7apps.keySet());
         for (HL7Application src : from.hl7apps.values()) {
             HL7Application hl7app = hl7apps.get(src.getApplicationName());

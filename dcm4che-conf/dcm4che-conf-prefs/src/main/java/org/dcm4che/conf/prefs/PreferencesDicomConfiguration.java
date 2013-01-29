@@ -194,7 +194,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return findDevice("dcmNetworkAE", aet).getApplicationEntity(aet);
     }
 
-    protected Device findDevice(String nodeName, String childName)
+    public Device findDevice(String nodeName, String childName)
             throws ConfigurationException {
          if (!nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             throw new ConfigurationNotFoundException();

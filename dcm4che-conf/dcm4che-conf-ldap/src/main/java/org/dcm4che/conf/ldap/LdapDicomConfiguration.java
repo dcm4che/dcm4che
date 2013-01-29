@@ -234,7 +234,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             .getApplicationEntity(aet);
     }
 
-    protected Device findDevice(String filter, String childName)
+    public Device findDevice(String filter, String childName)
             throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
@@ -822,7 +822,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected NamingEnumeration<SearchResult> search(String dn, String filter)
+    public NamingEnumeration<SearchResult> search(String dn, String filter)
             throws NamingException {
         return search(dn, filter, null);
     }
@@ -1303,7 +1303,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
 
-    protected static String dnOf(String attrID, String attrValue, String parentDN) {
+    public static String dnOf(String attrID, String attrValue, String parentDN) {
         return attrID + '=' + attrValue + ',' + parentDN;
     }
 
@@ -1418,7 +1418,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             }
     }
 
-    protected static <T> void safeClose(NamingEnumeration<T> enumeration) {
+    public static <T> void safeClose(NamingEnumeration<T> enumeration) {
         if (enumeration != null)
             try {
                 enumeration.close();

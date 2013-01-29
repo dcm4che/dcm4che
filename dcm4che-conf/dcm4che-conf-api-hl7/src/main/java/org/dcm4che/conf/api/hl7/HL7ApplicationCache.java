@@ -48,14 +48,14 @@ import org.dcm4che.net.hl7.HL7Application;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class HL7ApplicationCache
-        extends ConfigurationCache<HL7Configuration,HL7Application> {
+        extends ConfigurationCache<HL7ConfigurationExtension,HL7Application> {
 
-    public HL7ApplicationCache(HL7Configuration conf) {
+    public HL7ApplicationCache(HL7ConfigurationExtension conf) {
         super(conf);
     }
 
     @Override
-    protected HL7Application find(HL7Configuration conf, String name)
+    protected HL7Application find(HL7ConfigurationExtension conf, String name)
             throws ConfigurationException {
         return conf.findHL7Application(name);
     }

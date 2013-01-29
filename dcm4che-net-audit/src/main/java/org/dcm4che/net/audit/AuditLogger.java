@@ -404,6 +404,12 @@ public class AuditLogger extends DeviceExtension {
         conns.add(conn);
     }
 
+    @Override
+    public void verifyNotUsed(Connection conn) {
+        if (conns.contains(conn))
+            throw new IllegalStateException(conn + " used by Audit Logger");
+    }
+
     public boolean removeConnection(Connection conn) {
         return conns.remove(conn);
     }

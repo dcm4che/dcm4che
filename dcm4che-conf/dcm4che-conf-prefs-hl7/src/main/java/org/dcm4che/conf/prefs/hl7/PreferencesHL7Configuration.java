@@ -38,43 +38,40 @@
 
 package org.dcm4che.conf.prefs.hl7;
 
-import java.util.Collection;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.booleanValue;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeConnRefs;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiff;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiffConnRefs;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotEmpty;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotNull;
+import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.stringArray;
+
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.hl7.HL7Configuration;
-import org.dcm4che.conf.prefs.PreferencesDicomConfiguration;
+import org.dcm4che.conf.api.hl7.HL7ConfigurationExtension;
+import org.dcm4che.conf.prefs.PreferencesDicomConfigurationExtension;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
-import org.dcm4che.net.hl7.HL7Device;
+import org.dcm4che.net.hl7.HL7DeviceExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
-        implements HL7Configuration {
-
-    public PreferencesHL7Configuration() {
-    }
-
-    public PreferencesHL7Configuration(Preferences rootPrefs) {
-        super(rootPrefs);
-    }
+public class PreferencesHL7Configuration 
+        extends PreferencesDicomConfigurationExtension
+        implements HL7ConfigurationExtension {
 
     @Override
     public synchronized HL7Application findHL7Application(String name)
             throws ConfigurationException {
-        return ((HL7Device) findDevice("hl7Application", name))
-            .getHL7Application(name);
-    }
-
-    @Override
-    protected Device newDevice(Preferences deviceNode) {
-         return new HL7Device(deviceNode.name());
+        Device device = config.findDevice("hl7Application", name);
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        return hl7Ext.getHL7Application(name);
     }
 
     protected HL7Application newHL7Application(Preferences appNode) {
@@ -83,44 +80,39 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
 
     @Override
     protected void storeChilds(Device device, Preferences deviceNode) {
-        super.storeChilds(device, deviceNode);
-        if (!(device instanceof HL7Device))
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+        if (hl7Ext == null)
             return;
+
         List<Connection> devConns = device.listConnections();
-        HL7Device hl7Dev = (HL7Device) device;
         Preferences parent = deviceNode.node("hl7Application");
-        for (HL7Application hl7App : hl7Dev.getHL7Applications()) {
+        for (HL7Application hl7App : hl7Ext.getHL7Applications()) {
             Preferences appNode = parent.node(hl7App.getApplicationName());
             storeTo(hl7App, appNode, devConns);
-            storeChilds(hl7App, appNode);
         }
     }
 
-    protected void storeTo(HL7Application hl7App, Preferences prefs,
+    private void storeTo(HL7Application hl7App, Preferences prefs,
             List<Connection> devConns) {
-        storeNotEmpty(prefs, "hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
-        storeNotEmpty(prefs, "hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
-        storeNotNull(prefs, "hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet());
+        storeNotEmpty(prefs, "hl7AcceptedSendingApplication",
+                hl7App.getAcceptedSendingApplications());
+        storeNotEmpty(prefs, "hl7AcceptedMessageType",
+                hl7App.getAcceptedMessageTypes());
+        storeNotNull(prefs, "hl7DefaultCharacterSet",
+                hl7App.getHL7DefaultCharacterSet());
         storeNotNull(prefs, "dicomInstalled", hl7App.getInstalled());
         storeConnRefs(prefs, hl7App.getConnections(), devConns);
-    }
-
-    protected void storeChilds(HL7Application hl7App, Preferences appNode) {
     }
 
     @Override
     protected void loadChilds(Device device, Preferences deviceNode)
             throws BackingStoreException, ConfigurationException {
-        super.loadChilds(device, deviceNode);
-        if (!(device instanceof HL7Device))
+        if (!deviceNode.nodeExists("hl7Application"))
             return;
 
-        loadHL7Applications((HL7Device) device, deviceNode);
-    }
-
-    private void loadHL7Applications(HL7Device hl7dev, Preferences deviceNode)
-            throws BackingStoreException {
-        List<Connection> devConns = hl7dev.listConnections();
+        HL7DeviceExtension hl7Ext = new HL7DeviceExtension();
+        device.addDeviceExtension(hl7Ext);
+        List<Connection> devConns = device.listConnections();
         Preferences appsNode = deviceNode.node("hl7Application");
         for (String appName : appsNode.childrenNames()) {
             Preferences appNode = appsNode.node(appName);
@@ -131,12 +123,11 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
                 hl7app.addConnection(devConns.get(
                         appNode.getInt("dicomNetworkConnectionReference." + (i+1), 0) - 1));
             }
-            loadChilds(hl7app, appNode);
-            hl7dev.addHL7Application(hl7app);
+            hl7Ext.addHL7Application(hl7app);
         }
     }
 
-    protected void loadFrom(HL7Application hl7app, Preferences prefs) {
+    private void loadFrom(HL7Application hl7app, Preferences prefs) {
         hl7app.setAcceptedSendingApplications(
                 stringArray(prefs, "hl7AcceptedSendingApplication"));
         hl7app.setAcceptedMessageTypes(stringArray(prefs, "hl7AcceptedMessageType"));
@@ -144,43 +135,39 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         hl7app.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
     }
 
-    protected void loadChilds(HL7Application hl7app, Preferences appNode) {
-    }
-
     @Override
     protected void mergeChilds(Device prev, Device device,
-            Preferences devicePrefs) throws BackingStoreException {
-        super.mergeChilds(prev, device, devicePrefs);
-        if (!(prev instanceof HL7Device && device instanceof HL7Device))
+            Preferences deviceNode) throws BackingStoreException {
+        HL7DeviceExtension prevHL7Ext = prev.getDeviceExtension(HL7DeviceExtension.class);
+        HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);
+
+        if (hl7Ext == null) {
+            if (prevHL7Ext != null)
+                deviceNode.node("hl7Application").removeNode();
             return;
-
-        mergeHL7Apps((HL7Device) prev, (HL7Device) device, devicePrefs);
-    }
-
-    private void mergeHL7Apps(HL7Device prevDev, HL7Device dev, Preferences deviceNode)
-            throws BackingStoreException {
-        Preferences appsNode = deviceNode.node("hl7Application");
-        Collection<String> appNames = dev.getHL7ApplicationNames();
-        for (String appName : prevDev.getHL7ApplicationNames()) {
-            if (!appNames.contains(appName))
-                appsNode.node(appName).removeNode();
         }
-        List<Connection> devConns = dev.listConnections();
-        for (HL7Application app : dev.getHL7Applications()) {
+
+        Preferences appsNode = deviceNode.node("hl7Application");
+        if (prevHL7Ext != null)
+            for (String appName : prevHL7Ext.getHL7ApplicationNames()) {
+                if (!prevHL7Ext.containsHL7Application(appName))
+                    appsNode.node(appName).removeNode();
+            }
+
+        List<Connection> devConns = device.listConnections();
+        for (HL7Application app : hl7Ext.getHL7Applications()) {
             String appName = app.getApplicationName();
-            HL7Application prevApp = prevDev.getHL7Application(appName);
+            HL7Application prevApp = prevHL7Ext.getHL7Application(appName);
             Preferences appNode = appsNode.node(appName);
             if (prevApp == null) {
                 storeTo(app, appNode, devConns);
-                storeChilds(app, appNode);
             } else {
                 storeDiffs(appNode, prevApp, app);
-                mergeChilds(prevApp, app, appNode);
             }
         }
     }
 
-    protected void storeDiffs(Preferences prefs, HL7Application a, HL7Application b) {
+    private void storeDiffs(Preferences prefs, HL7Application a, HL7Application b) {
         storeDiffConnRefs(prefs, 
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
@@ -196,10 +183,6 @@ public class PreferencesHL7Configuration extends PreferencesDicomConfiguration
         storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
-    }
-
-    protected void mergeChilds(HL7Application prev, HL7Application app,
-            Preferences appNode) {
     }
 
 }

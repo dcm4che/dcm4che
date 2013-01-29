@@ -76,8 +76,9 @@ import org.dcm4che.hl7.HL7Parser;
 import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.io.SAXTransformer;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
-import org.dcm4che.net.hl7.HL7Device;
+import org.dcm4che.net.hl7.HL7DeviceExtension;
 import org.dcm4che.net.hl7.HL7MessageListener;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.StringUtils;
@@ -86,13 +87,15 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class HL7Rcv extends HL7Device {
+public class HL7Rcv {
 
     private static final ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.hl7rcv.messages");
     private static SAXTransformerFactory factory =
             (SAXTransformerFactory) TransformerFactory.newInstance();
 
+    private final Device device = new Device("hl7rcv");
+    private final HL7DeviceExtension hl7Ext = new HL7DeviceExtension();
     private final HL7Application hl7App = new HL7Application("*");
     private final Connection conn = new Connection();
     private String storageDir;
@@ -114,9 +117,9 @@ public class HL7Rcv extends HL7Device {
     };
 
     public HL7Rcv() throws IOException {
-        super("hl7rcv");
-        addConnection(conn);
-        addHL7Application(hl7App);
+        device.addDeviceExtension(hl7Ext);
+        device.addConnection(conn);
+        hl7Ext.addHL7Application(hl7App);
         hl7App.setAcceptedMessageTypes("*");
         hl7App.addConnection(conn);
         hl7App.setHL7MessageListener(handler);
@@ -199,9 +202,9 @@ public class HL7Rcv extends HL7Device {
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = 
                     Executors.newSingleThreadScheduledExecutor();
-            main.setScheduledExecutor(scheduledExecutorService);
-            main.setExecutor(executorService);
-            main.bindConnections();
+            main.device.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.bindConnections();
         } catch (ParseException e) {
             System.err.println("hl7rcv: " + e.getMessage());
             System.err.println(rb.getString("try"));

@@ -38,8 +38,11 @@
 
 package org.dcm4che.io;
 
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
+import javax.net.ssl.SSLContext;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -50,7 +53,23 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class TemplatesCache {
 
+    private static TemplatesCache defaultCache;
+
     private final HashMap<String, Templates> map = new HashMap<String, Templates>();
+
+    public static synchronized TemplatesCache getDefault() {
+        if (defaultCache == null) {
+            defaultCache = new TemplatesCache();
+        }
+        return defaultCache;
+    }
+
+    public static synchronized void setDefault(TemplatesCache cache) {
+        if (cache == null) {
+            throw new NullPointerException();
+        }
+        defaultCache = cache;
+    }
 
     public void clear() {
         map.clear();

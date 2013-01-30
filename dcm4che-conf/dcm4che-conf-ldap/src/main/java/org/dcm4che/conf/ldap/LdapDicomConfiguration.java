@@ -65,6 +65,8 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.dcm4che.conf.api.AttributeCoercion;
+import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
@@ -74,6 +76,7 @@ import org.dcm4che.data.Issuer;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
@@ -353,13 +356,16 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
         for (Connection conn : device.listConnections())
             createSubcontext(dnOf(conn, deviceDN), storeTo(conn, new BasicAttributes(true)));
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(deviceDN, device);
         for (ApplicationEntity ae : device.getApplicationEntities()) {
             String aeDN = aetDN(ae.getAETitle(), deviceDN);
             createSubcontext(aeDN, storeTo(ae, deviceDN, new BasicAttributes(true)));
             storeChilds(aeDN, ae);
+            for (LdapDicomConfigurationExtension ext : extensions) {
+                ext.storeChilds(aeDN, ae);
+            }
         }
-        for (LdapDicomConfigurationExtension ext : extensions)
-            ext.storeChilds(deviceDN, device);
     }
 
     protected void storeChilds(String aeDN, ApplicationEntity ae)
@@ -529,7 +535,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    protected static boolean hasObjectClass(Attributes attrs, String objectClass)
+    public static boolean hasObjectClass(Attributes attrs, String objectClass)
            throws NamingException {
        NamingEnumeration<String> ne =
            (NamingEnumeration<String>) attrs.get("objectclass").getAll();
@@ -617,6 +623,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeConnRefs(attrs, ae.getConnections(), deviceDN);
         storeNotEmpty(attrs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
         storeNotNull(attrs, "dicomInstalled", ae.getInstalled());
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeTo(ae, attrs);
         return attrs;
     }
 
@@ -887,10 +895,14 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         ae.setAssociationAcceptor(booleanValue(attrs.get("dicomAssociationAcceptor"), false));
         ae.setSupportedCharacterSets(stringArray(attrs.get("dicomSupportedCharacterSet")));
         ae.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.loadFrom(ae, attrs);
     }
 
     protected void loadChilds(ApplicationEntity ae, String aeDN) throws NamingException {
         loadTransferCapabilities(ae, aeDN);
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.loadChilds(ae, aeDN);
     }
 
     private void loadTransferCapabilities(ApplicationEntity ae, String aeDN)
@@ -986,6 +998,7 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
+
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;
@@ -1042,6 +1055,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
         storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, mods);
         return mods;
     }
 
@@ -1144,6 +1159,8 @@ public class LdapDicomConfiguration implements DicomConfiguration {
     protected void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
             String aeDN) throws NamingException {
         merge(prev.getTransferCapabilities(), ae.getTransferCapabilities(), aeDN);
+        for (LdapDicomConfigurationExtension ext : extensions)
+            ext.mergeChilds(prev, ae, aeDN);
     }
 
     public void modifyAttributes(String dn, List<ModificationItem> mods)
@@ -1426,4 +1443,74 @@ public class LdapDicomConfiguration implements DicomConfiguration {
             }
     }
 
+    public void store(AttributeCoercions coercions, String parentDN)
+            throws NamingException {
+            for (AttributeCoercion ac : coercions.getAll())
+                createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
+        }
+
+    private static String dnOf(AttributeCoercion ac, String parentDN) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("dcmDIMSE=").append(ac.getDimse());
+        sb.append("+dicomTransferRole=").append(ac.getRole());
+        if (ac.getAETitle() != null)
+            sb.append("+dicomAETitle=").append(ac.getAETitle());
+        if (ac.getSopClass() != null)
+            sb.append("+dicomSOPClass=").append(ac.getSopClass());
+        sb.append(',').append(parentDN);
+        return sb.toString();
+    }
+
+    private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
+        attrs.put("objectclass", "dcmAttributeCoercion");
+        storeNotNull(attrs, "dcmDIMSE", ac.getDimse());
+        storeNotNull(attrs, "dicomTransferRole", ac.getRole());
+        storeNotNull(attrs, "dicomAETitle", ac.getAETitle());
+        storeNotNull(attrs, "dicomSOPClass", ac.getSopClass());
+        storeNotNull(attrs, "labeledURI", ac.getURI());
+        return attrs;
+    }
+
+    public void load(AttributeCoercions acs, String dn) throws NamingException {
+        NamingEnumeration<SearchResult> ne = search(dn, "(objectclass=dcmAttributeCoercion)");
+        try {
+            while (ne.hasMore()) {
+                SearchResult sr = ne.next();
+                Attributes attrs = sr.getAttributes();
+                acs.add(new AttributeCoercion(
+                        stringValue(attrs.get("dicomSOPClass"), null),
+                        Dimse.valueOf(stringValue(attrs.get("dcmDIMSE"), null)),
+                        TransferCapability.Role.valueOf(
+                                stringValue(attrs.get("dicomTransferRole"), null)),
+                        stringValue(attrs.get("dicomAETitle"), null),
+                        stringValue(attrs.get("labeledURI"), null)));
+            }
+        } finally {
+           safeClose(ne);
+        }
+    }
+
+    public void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
+            throws NamingException {
+        for (AttributeCoercion prev : prevs.getAll())
+            if (acs.findEquals(prev.getSopClass(), prev.getDimse(),
+                    prev.getRole(), prev.getAETitle()) == null)
+                destroySubcontext(dnOf(prev, parentDN));
+        for (AttributeCoercion ac : acs.getAll()) {
+            String dn = dnOf(ac, parentDN);
+            AttributeCoercion prev = prevs.findEquals(
+                    ac.getSopClass(), ac.getDimse(),
+                    ac.getRole(), ac.getAETitle());
+            if (prev == null)
+                createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
+            else
+                modifyAttributes(dn, storeDiffs(prev, ac, new ArrayList<ModificationItem>()));
+        }
+    }
+
+    private List<ModificationItem> storeDiffs(AttributeCoercion prev,
+            AttributeCoercion ac, ArrayList<ModificationItem> mods) {
+        storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
+        return mods;
+    }
 }

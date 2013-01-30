@@ -38,6 +38,7 @@
 
 package org.dcm4che.conf.ldap;
 
+import java.security.cert.CertificateException;
 import java.util.List;
 
 import javax.naming.NamingException;
@@ -45,6 +46,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Device;
 
 /**
@@ -70,7 +72,8 @@ public class LdapDicomConfigurationExtension {
     protected void storeChilds(String deviceDN, Device device)
             throws NamingException { }
 
-    protected void loadFrom(Device device, Attributes attrs) { }
+    protected void loadFrom(Device device, Attributes attrs)
+            throws NamingException, CertificateException { }
 
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException { }
@@ -79,5 +82,26 @@ public class LdapDicomConfigurationExtension {
 
     protected void mergeChilds(Device prev, Device device, String deviceDN)
             throws NamingException { }
+
+    protected void storeTo(ApplicationEntity ae, Attributes attrs) {}
+
+    protected void storeChilds(String aeDN, ApplicationEntity ae)
+            throws NamingException { }
+
+    protected void loadFrom(ApplicationEntity ae, Attributes attrs)
+            throws NamingException {
+    }
+
+    protected void loadChilds(ApplicationEntity ae, String aeDN)
+            throws NamingException {
+    }
+
+    protected void storeDiffs(ApplicationEntity a, ApplicationEntity b,
+            List<ModificationItem> mods) {
+    }
+
+    protected void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
+            String aeDN) throws NamingException {
+    }
 
 }

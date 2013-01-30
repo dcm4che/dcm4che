@@ -44,6 +44,7 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -101,6 +102,9 @@ public class ApplicationEntity implements Serializable, Cloneable {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
+    private final List<AEExtension> extensions =
+            new ArrayList<AEExtension>();
+
     private transient UserIdentityNegotiator userIdNegotiator;
     private transient DimseRQHandler dimseRQHandler;
 
@@ -666,5 +670,30 @@ public class ApplicationEntity implements Serializable, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
+    }
+
+    public void addAEExtension(AEExtension ext) {
+        ext.setApplicationEntity(this);
+        extensions.add(ext);
+    }
+
+    public boolean removeAEExtension(AEExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        ext.setApplicationEntity(null);
+        return true;
+    }
+
+    public List<AEExtension> listAEExtensions() {
+        return Collections.unmodifiableList(extensions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AEExtension> T getAEExtension(Class<T> clazz) {
+        for (AEExtension ext : extensions)
+            if (clazz.isAssignableFrom(ext.getClass()))
+                return (T) ext;
+        return null;
     }
 }

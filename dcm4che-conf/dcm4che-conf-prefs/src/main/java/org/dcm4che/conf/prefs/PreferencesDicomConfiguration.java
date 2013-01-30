@@ -315,6 +315,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
     protected void storeChilds(ApplicationEntity ae, Preferences aeNode) {
         storeTransferCapabilities(ae, aeNode);
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeChilds(ae, aeNode);
     }
 
     private void storeTransferCapabilities(ApplicationEntity ae,
@@ -327,7 +330,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void store(AttributeCoercions acs, Preferences parentNode) {
+    public void store(AttributeCoercions acs, Preferences parentNode) {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
         int acIndex = 1;
         for (AttributeCoercion ac : acs.getAll())
@@ -532,6 +535,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotNull(prefs, "dicomInstalled", ae.getInstalled());
         storeConnRefs(prefs, ae.getConnections(), devConns);
         storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeTo(ae, prefs);
     }
 
     public static void storeConnRefs(Preferences prefs, List<Connection> connRefs,
@@ -681,7 +686,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, prefs);
-
     }
 
     protected void storeDiffs(Preferences prefs, Connection a, Connection b) {
@@ -823,6 +827,8 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.getAcceptedCallingAETitles(),
                 b.getAcceptedCallingAETitles());
 
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, prefs);
     }
 
     protected void storeDiffs(Preferences prefs,
@@ -939,7 +945,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void merge(AttributeCoercions prevs, AttributeCoercions acs,
+    public void merge(AttributeCoercions prevs, AttributeCoercions acs,
             Preferences parentNode) throws BackingStoreException {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
         int acIndex = 1;
@@ -968,6 +974,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     protected void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
             Preferences aeNode) throws BackingStoreException {
         merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.mergeChilds(prevAE, ae, aeNode);
     }
 
     private void merge(Collection<TransferCapability> prevs,
@@ -1034,9 +1043,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         for (String tcIndex : tcsNode.childrenNames())
             ae.addTransferCapability(
                     loadTransferCapability(tcsNode.node(tcIndex)));
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.loadChilds(ae, aeNode);
     }
 
-    protected void load(AttributeCoercions acs, Preferences aeNode)
+    public void load(AttributeCoercions acs, Preferences aeNode)
             throws BackingStoreException {
         Preferences acsNode = aeNode.node("dcmAttributeCoercion");
         for (String acIndex : acsNode.childrenNames()) {
@@ -1251,6 +1263,9 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         ae.setAcceptedCallingAETitles(
                 stringArray(prefs, "dcmAcceptOnlyPreferredCallingAETitle"));
+
+        for (PreferencesDicomConfigurationExtension ext : extensions)
+            ext.loadFrom(ae, prefs);
 }
 
     private static byte[][] toVendorData(Preferences prefs, String key) {
@@ -1360,7 +1375,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected static void removeKeys(Preferences prefs, String key, int from, int to) {
+    public static void removeKeys(Preferences prefs, String key, int from, int to) {
         for (int i = from; i < to;) 
             prefs.remove(key + '.' + (++i));
         if (from == 0)

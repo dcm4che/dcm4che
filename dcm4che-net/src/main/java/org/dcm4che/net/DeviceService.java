@@ -46,13 +46,13 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService<T extends Device> {
+public class DeviceService {
 
-    protected T device;
+    protected Device device;
     protected ExecutorService executor;
     protected ScheduledExecutorService scheduledExecutor;
 
-    protected void init(T device) {
+    protected void init(Device device) {
         this.device = device;
     }
 

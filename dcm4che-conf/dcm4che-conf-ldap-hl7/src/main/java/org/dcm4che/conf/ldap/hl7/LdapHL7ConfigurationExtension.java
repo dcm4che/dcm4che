@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,37 +35,28 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.conf.ldap.hl7;
 
-package org.dcm4che.conf.api.hl7;
+import java.util.List;
 
-import org.dcm4che.conf.api.ConfigurationCache;
-import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.ConfigurationNotFoundException;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.ModificationItem;
+
 import org.dcm4che.net.hl7.HL7Application;
-
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public class HL7ApplicationCache
-        extends ConfigurationCache<HL7Configuration,HL7Application> {
+public interface LdapHL7ConfigurationExtension {
 
-    public HL7ApplicationCache(HL7Configuration conf) {
-        super(conf);
-    }
+    void storeTo(HL7Application hl7App, String deviceDN, Attributes attrs);
 
-    @Override
-    protected HL7Application find(HL7Configuration conf, String name)
-            throws ConfigurationException {
-        return conf.findHL7Application(name);
-    }
+    void loadFrom(HL7Application hl7App, Attributes attrs)
+            throws NamingException;
 
-    public HL7Application findHL7Application(String name)
-            throws ConfigurationException {
-        HL7Application ae = get(name);
-        if (ae == null)
-            throw new ConfigurationNotFoundException(
-                    "Unknown HL7 Application: " + name);
-        return ae;
-    }
+    void storeDiffs(HL7Application a, HL7Application b,
+            List<ModificationItem> mods);
+
 }

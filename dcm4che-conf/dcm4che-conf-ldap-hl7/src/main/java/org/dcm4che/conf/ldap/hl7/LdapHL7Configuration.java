@@ -61,7 +61,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
 import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.hl7.HL7ConfigurationExtension;
+import org.dcm4che.conf.api.hl7.HL7Configuration;
 import org.dcm4che.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
@@ -72,7 +72,22 @@ import org.dcm4che.net.hl7.HL7DeviceExtension;
  *
  */
 public class LdapHL7Configuration extends LdapDicomConfigurationExtension
-        implements HL7ConfigurationExtension {
+        implements HL7Configuration {
+
+    private final List<LdapHL7ConfigurationExtension> extensions =
+            new ArrayList<LdapHL7ConfigurationExtension>();
+
+    public void addHL7ConfigurationExtension(LdapHL7ConfigurationExtension ext) {
+        extensions.add(ext);
+    }
+
+    public boolean removeHL7ConfigurationExtension(
+            LdapHL7ConfigurationExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        return true;
+    }
 
     @Override
     public synchronized HL7Application findHL7Application(String name)
@@ -113,6 +128,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
                 hl7App.getHL7DefaultCharacterSet());
         storeConnRefs(attrs, hl7App.getConnections(), deviceDN);
         storeNotNull(attrs, "dicomInstalled", hl7App.getInstalled());
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.storeTo(hl7App, deviceDN, attrs);
         return attrs;
     }
 
@@ -152,6 +169,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         hl7app.setAcceptedMessageTypes(stringArray(attrs.get("hl7AcceptedMessageType")));
         hl7app.setHL7DefaultCharacterSet(stringValue(attrs.get("hl7DefaultCharacterSet"), null));
         hl7app.setInstalled(booleanValue(attrs.get("dicomInstalled"), null));
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.loadFrom(hl7app, attrs);
     }
 
     @Override
@@ -210,6 +229,8 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        for (LdapHL7ConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, mods);
         return mods;
     }
 }

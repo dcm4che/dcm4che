@@ -43,6 +43,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -72,7 +73,9 @@ public class HL7Application implements Serializable {
     private final LinkedHashSet<String> acceptedMessageTypes =
             new LinkedHashSet<String>();
     private final List<Connection> conns = new ArrayList<Connection>(1);
-    private HL7MessageListener hl7MessageListener;
+    private final List<HL7ApplicationExtension> extensions =
+            new ArrayList<HL7ApplicationExtension>();
+    private transient HL7MessageListener hl7MessageListener;
 
     public HL7Application(String name) {
         setApplicationName(name);
@@ -280,5 +283,30 @@ public class HL7Application implements Serializable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
+    }
+    public void addHL7ApplicationExtension(HL7ApplicationExtension ext) {
+        ext.setHL7Application(this);
+        extensions.add(ext);
+    }
+
+    public boolean removeHL7ApplicationExtension(HL7ApplicationExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        ext.setHL7Application(null);
+        return true;
+    }
+
+    public List<HL7ApplicationExtension> listHL7ApplicationExtensions() {
+        return Collections.unmodifiableList(extensions);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends HL7ApplicationExtension> T getHL7ApplicationExtension(Class<T> clazz) {
+        for (HL7ApplicationExtension ext : extensions)
+            if (clazz.isAssignableFrom(ext.getClass()))
+                return (T) ext;
+
+        return null;
     }
 }

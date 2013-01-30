@@ -38,10 +38,12 @@
 
 package org.dcm4che.conf.prefs;
 
+import java.security.cert.CertificateException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationException;
+import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Device;
 
 /**
@@ -66,7 +68,8 @@ public class PreferencesDicomConfigurationExtension {
 
     protected void storeChilds(Device device, Preferences prefs) {}
 
-    protected void loadFrom(Device device, Preferences prefs) {}
+    protected void loadFrom(Device device, Preferences prefs)
+            throws CertificateException, BackingStoreException {}
 
     protected void loadChilds(Device device, Preferences prefs)
             throws BackingStoreException, ConfigurationException {}
@@ -75,4 +78,19 @@ public class PreferencesDicomConfigurationExtension {
 
     protected void mergeChilds(Device a, Device b, Preferences prefs)
             throws BackingStoreException {}
+
+    protected void storeTo(ApplicationEntity ae, Preferences prefs) {}
+
+    protected void storeChilds(ApplicationEntity ae, Preferences aeNode) {}
+
+    protected void loadFrom(ApplicationEntity ae, Preferences prefs) {}
+
+    protected void loadChilds(ApplicationEntity ae, Preferences aeNode)
+            throws BackingStoreException {}
+
+    protected void storeDiffs(ApplicationEntity a, ApplicationEntity b,
+            Preferences prefs) {}
+
+    protected void mergeChilds(ApplicationEntity prev, ApplicationEntity ae,
+            Preferences aePrefs) throws BackingStoreException {}
 }

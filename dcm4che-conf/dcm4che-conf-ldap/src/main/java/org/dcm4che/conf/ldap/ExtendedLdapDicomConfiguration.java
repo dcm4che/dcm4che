@@ -39,27 +39,20 @@
 package org.dcm4che.conf.ldap;
 
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchResult;
 
-import org.dcm4che.conf.api.AttributeCoercion;
-import org.dcm4che.conf.api.AttributeCoercions;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.Device;
-import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
@@ -203,34 +196,6 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
         return attrs;
     }
 
-    protected void store(AttributeCoercions coercions, String parentDN)
-        throws NamingException {
-        for (AttributeCoercion ac : coercions.getAll())
-            createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
-    }
-
-    private static String dnOf(AttributeCoercion ac, String parentDN) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("dcmDIMSE=").append(ac.getDimse());
-        sb.append("+dicomTransferRole=").append(ac.getRole());
-        if (ac.getAETitle() != null)
-            sb.append("+dicomAETitle=").append(ac.getAETitle());
-        if (ac.getSopClass() != null)
-            sb.append("+dicomSOPClass=").append(ac.getSopClass());
-        sb.append(',').append(parentDN);
-        return sb.toString();
-    }
-
-    private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
-        attrs.put("objectclass", "dcmAttributeCoercion");
-        storeNotNull(attrs, "dcmDIMSE", ac.getDimse());
-        storeNotNull(attrs, "dicomTransferRole", ac.getRole());
-        storeNotNull(attrs, "dicomAETitle", ac.getAETitle());
-        storeNotNull(attrs, "dicomSOPClass", ac.getSopClass());
-        storeNotNull(attrs, "labeledURI", ac.getURI());
-        return attrs;
-    }
-
     @Override
     protected void loadFrom(Device device, Attributes attrs)
             throws NamingException, CertificateException {
@@ -354,26 +319,6 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 StorageOptions.ElementCoercion.valueOf(intValue(coercion, 2)));
         return opts;
     }
-
-    protected void load(AttributeCoercions acs, String dn) throws NamingException {
-        NamingEnumeration<SearchResult> ne = search(dn, "(objectclass=dcmAttributeCoercion)");
-        try {
-            while (ne.hasMore()) {
-                SearchResult sr = ne.next();
-                Attributes attrs = sr.getAttributes();
-                acs.add(new AttributeCoercion(
-                        stringValue(attrs.get("dicomSOPClass"), null),
-                        Dimse.valueOf(stringValue(attrs.get("dcmDIMSE"), null)),
-                        TransferCapability.Role.valueOf(
-                                stringValue(attrs.get("dicomTransferRole"), null)),
-                        stringValue(attrs.get("dicomAETitle"), null),
-                        stringValue(attrs.get("labeledURI"), null)));
-            }
-        } finally {
-           safeClose(ne);
-        }
-    }
-
 
     @Override
     protected List<ModificationItem> storeDiffs(Device a, Device b,
@@ -565,30 +510,6 @@ public class ExtendedLdapDicomConfiguration extends LdapDicomConfiguration {
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
-    }
-
-    protected void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
-            throws NamingException {
-        for (AttributeCoercion prev : prevs.getAll())
-            if (acs.findEquals(prev.getSopClass(), prev.getDimse(),
-                    prev.getRole(), prev.getAETitle()) == null)
-                destroySubcontext(dnOf(prev, parentDN));
-        for (AttributeCoercion ac : acs.getAll()) {
-            String dn = dnOf(ac, parentDN);
-            AttributeCoercion prev = prevs.findEquals(
-                    ac.getSopClass(), ac.getDimse(),
-                    ac.getRole(), ac.getAETitle());
-            if (prev == null)
-                createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
-            else
-                modifyAttributes(dn, storeDiffs(prev, ac, new ArrayList<ModificationItem>()));
-        }
-    }
-
-    private List<ModificationItem> storeDiffs(AttributeCoercion prev,
-            AttributeCoercion ac, ArrayList<ModificationItem> mods) {
-        storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
-        return mods;
     }
 
 }

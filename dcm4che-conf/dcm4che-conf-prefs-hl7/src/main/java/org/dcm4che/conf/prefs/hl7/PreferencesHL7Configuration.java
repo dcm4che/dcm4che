@@ -46,12 +46,13 @@ import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotEmpty
 import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotNull;
 import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.stringArray;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.hl7.HL7ConfigurationExtension;
+import org.dcm4che.conf.api.hl7.HL7Configuration;
 import org.dcm4che.conf.prefs.PreferencesDicomConfigurationExtension;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
@@ -64,8 +65,22 @@ import org.dcm4che.net.hl7.HL7DeviceExtension;
  */
 public class PreferencesHL7Configuration 
         extends PreferencesDicomConfigurationExtension
-        implements HL7ConfigurationExtension {
+        implements HL7Configuration {
 
+    private final List<PreferencesHL7ConfigurationExtension> extensions =
+            new ArrayList<PreferencesHL7ConfigurationExtension>();
+
+    public void addHL7ConfigurationExtension(PreferencesHL7ConfigurationExtension ext) {
+        extensions.add(ext);
+    }
+
+    public boolean removeHL7ConfigurationExtension(
+            PreferencesHL7ConfigurationExtension ext) {
+        if (!extensions.remove(ext))
+            return false;
+
+        return true;
+    }
     @Override
     public synchronized HL7Application findHL7Application(String name)
             throws ConfigurationException {
@@ -102,6 +117,9 @@ public class PreferencesHL7Configuration
                 hl7App.getHL7DefaultCharacterSet());
         storeNotNull(prefs, "dicomInstalled", hl7App.getInstalled());
         storeConnRefs(prefs, hl7App.getConnections(), devConns);
+
+        for (PreferencesHL7ConfigurationExtension ext : extensions)
+            ext.storeTo(hl7App, prefs);
     }
 
     @Override
@@ -133,6 +151,9 @@ public class PreferencesHL7Configuration
         hl7app.setAcceptedMessageTypes(stringArray(prefs, "hl7AcceptedMessageType"));
         hl7app.setHL7DefaultCharacterSet(prefs.get("hl7DefaultCharacterSet", null));
         hl7app.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+
+        for (PreferencesHL7ConfigurationExtension ext : extensions)
+            ext.loadFrom(hl7app, prefs);
     }
 
     @Override
@@ -183,6 +204,9 @@ public class PreferencesHL7Configuration
         storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+
+        for (PreferencesHL7ConfigurationExtension ext : extensions)
+            ext.storeDiffs(a, b, prefs);
     }
 
 }

@@ -1126,6 +1126,10 @@ public class Device implements Serializable {
         }
     }
 
+    public List<DeviceExtension> listDeviceExtensions() {
+        return Collections.unmodifiableList(extensions);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends DeviceExtension> T getDeviceExtension(Class<T> clazz) {
         for (DeviceExtension ext : extensions)

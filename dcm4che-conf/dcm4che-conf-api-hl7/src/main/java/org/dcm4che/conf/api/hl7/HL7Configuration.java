@@ -45,7 +45,7 @@ import org.dcm4che.net.hl7.HL7Application;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface HL7ConfigurationExtension {
+public interface HL7Configuration {
 
     HL7Application findHL7Application(String name) throws ConfigurationException;
 }

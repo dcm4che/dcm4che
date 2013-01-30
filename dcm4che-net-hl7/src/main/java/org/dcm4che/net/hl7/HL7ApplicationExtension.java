@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,37 +35,31 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.net.hl7;
 
-package org.dcm4che.conf.api.hl7;
-
-import org.dcm4che.conf.api.ConfigurationCache;
-import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.ConfigurationNotFoundException;
-import org.dcm4che.net.hl7.HL7Application;
-
+import java.io.Serializable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public class HL7ApplicationCache
-        extends ConfigurationCache<HL7Configuration,HL7Application> {
+public class HL7ApplicationExtension implements Serializable {
 
-    public HL7ApplicationCache(HL7Configuration conf) {
-        super(conf);
+    private static final long serialVersionUID = -6314667837949323448L;
+
+    protected HL7Application hl7App;
+
+    public final HL7Application getHL7Application() {
+        return hl7App;
     }
 
-    @Override
-    protected HL7Application find(HL7Configuration conf, String name)
-            throws ConfigurationException {
-        return conf.findHL7Application(name);
+    void setHL7Application(HL7Application hl7App) {
+        if (hl7App != null && this.hl7App != null)
+            throw new IllegalStateException(
+                    "already owned by HL7 Application: "
+                    + hl7App.getApplicationName());
+        this.hl7App = hl7App;
     }
 
-    public HL7Application findHL7Application(String name)
-            throws ConfigurationException {
-        HL7Application ae = get(name);
-        if (ae == null)
-            throw new ConfigurationNotFoundException(
-                    "Unknown HL7 Application: " + name);
-        return ae;
-    }
+    public void reconfigure(HL7ApplicationExtension from) { }
 }

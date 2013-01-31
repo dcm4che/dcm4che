@@ -38,17 +38,6 @@
 
 package org.dcm4che.conf.ldap.audit;
 
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.booleanValue;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.findConnection;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.intValue;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeConnRefs;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeDiff;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotDef;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotEmpty;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotNull;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.stringArray;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.stringValue;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +50,7 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che.conf.ldap.LdapUtils;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditLogger;
 import org.dcm4che.util.StringUtils;
@@ -88,40 +78,40 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     private Attributes storeTo(AuditLogger logger, String deviceDN, Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditLogger"));
-        storeNotDef(attrs, "dcmAuditFacility",
+        LdapUtils.storeNotDef(attrs, "dcmAuditFacility",
                 logger.getFacility().ordinal(), 10);
-        storeNotDef(attrs, "dcmAuditSuccessSeverity",
+        LdapUtils.storeNotDef(attrs, "dcmAuditSuccessSeverity",
                 logger.getSuccessSeverity().ordinal(), 5);
-        storeNotDef(attrs, "dcmAuditMinorFailureSeverity",
+        LdapUtils.storeNotDef(attrs, "dcmAuditMinorFailureSeverity",
                 logger.getMinorFailureSeverity().ordinal(), 4);
-        storeNotDef(attrs, "dcmAuditSeriousFailureSeverity",
+        LdapUtils.storeNotDef(attrs, "dcmAuditSeriousFailureSeverity",
                 logger.getSeriousFailureSeverity().ordinal(), 3);
-        storeNotDef(attrs, "dcmAuditMajorFailureSeverity",
+        LdapUtils.storeNotDef(attrs, "dcmAuditMajorFailureSeverity",
                 logger.getMajorFailureSeverity().ordinal(), 2);
-        storeNotNull(attrs, "dcmAuditSourceID",
+        LdapUtils.storeNotNull(attrs, "dcmAuditSourceID",
                 logger.getAuditSourceID());
-        storeNotNull(attrs, "dcmAuditEnterpriseSiteID",
+        LdapUtils.storeNotNull(attrs, "dcmAuditEnterpriseSiteID",
                 logger.getAuditEnterpriseSiteID());
-        storeNotEmpty(attrs, "dcmAuditSourceTypeCode",
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditSourceTypeCode",
                 logger.getAuditSourceTypeCodes());
-        storeNotNull(attrs, "dcmAuditApplicationName",
+        LdapUtils.storeNotNull(attrs, "dcmAuditApplicationName",
                 logger.getApplicationName());
-        storeNotNull(attrs, "dcmAuditMessageID",
+        LdapUtils.storeNotNull(attrs, "dcmAuditMessageID",
                 StringUtils.nullify(logger.getMessageID(), AuditLogger.MESSAGE_ID));
-        storeNotNull(attrs, "dcmAuditMessageEncoding",
+        LdapUtils.storeNotNull(attrs, "dcmAuditMessageEncoding",
                 StringUtils.nullify(logger.getEncoding(), "UTF-8"));
-        storeNotNull(attrs, "dcmAuditMessageSchemaURI",
+        LdapUtils.storeNotNull(attrs, "dcmAuditMessageSchemaURI",
                 logger.getSchemaURI());
-        storeNotDef(attrs, "dcmAuditMessageBOM",
+        LdapUtils.storeNotDef(attrs, "dcmAuditMessageBOM",
                 logger.isIncludeBOM(), true);
-        storeNotDef(attrs, "dcmAuditMessageFormatXML",
+        LdapUtils.storeNotDef(attrs, "dcmAuditMessageFormatXML",
                 logger.isFormatXML(), false);
-        storeNotDef(attrs, "dcmAuditTimestampInUTC",
+        LdapUtils.storeNotDef(attrs, "dcmAuditTimestampInUTC",
                 logger.isTimestampInUTC(), false);
-        storeConnRefs(attrs, logger.getConnections(), deviceDN);
-        storeNotNull(attrs, "dcmAuditRecordRepositoryDeviceReference",
+        LdapUtils.storeConnRefs(attrs, logger.getConnections(), deviceDN);
+        LdapUtils.storeNotNull(attrs, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
-        storeNotNull(attrs, "dicomInstalled",
+        LdapUtils.storeNotNull(attrs, "dicomInstalled",
                 logger.getInstalled());
         return attrs;
     }
@@ -137,11 +127,11 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         }
         AuditLogger logger = new AuditLogger();
         loadFrom(logger, attrs);
-        for (String connDN : stringArray(
+        for (String connDN : LdapUtils.stringArray(
                 attrs.get("dicomNetworkConnectionReference")))
             logger.addConnection(
-                    findConnection(connDN, deviceDN, device));
-        String arrDeviceDN = stringValue(
+                    LdapUtils.findConnection(connDN, deviceDN, device));
+        String arrDeviceDN = LdapUtils.stringValue(
                 attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
         logger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
                 ? device
@@ -151,36 +141,36 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     private void loadFrom(AuditLogger logger, Attributes attrs) throws NamingException {
         logger.setFacility(AuditLogger.Facility.values()
-                [intValue(attrs.get("dcmAuditFacility"), 10)]);
+                [LdapUtils.intValue(attrs.get("dcmAuditFacility"), 10)]);
         logger.setSuccessSeverity(AuditLogger.Severity.values()
-                [intValue(attrs.get("dcmAuditSuccessSeverity"), 5)]);
+                [LdapUtils.intValue(attrs.get("dcmAuditSuccessSeverity"), 5)]);
         logger.setMinorFailureSeverity(AuditLogger.Severity.values()
-                [intValue(attrs.get("dcmAuditMinorFailureSeverity"), 4)]);
+                [LdapUtils.intValue(attrs.get("dcmAuditMinorFailureSeverity"), 4)]);
         logger.setSeriousFailureSeverity(AuditLogger.Severity.values()
-                [intValue(attrs.get("dcmAuditSeriousFailureSeverity"), 3)]);
+                [LdapUtils.intValue(attrs.get("dcmAuditSeriousFailureSeverity"), 3)]);
         logger.setMajorFailureSeverity(AuditLogger.Severity.values()
-                [intValue(attrs.get("dcmAuditMajorFailureSeverity"), 2)]);
-        logger.setAuditSourceID(stringValue(attrs.get("dcmAuditSourceID"), null));
+                [LdapUtils.intValue(attrs.get("dcmAuditMajorFailureSeverity"), 2)]);
+        logger.setAuditSourceID(LdapUtils.stringValue(attrs.get("dcmAuditSourceID"), null));
         logger.setAuditEnterpriseSiteID(
-                stringValue(attrs.get("dcmAuditEnterpriseSiteID"), null));
+                LdapUtils.stringValue(attrs.get("dcmAuditEnterpriseSiteID"), null));
         logger.setAuditSourceTypeCodes(
-                stringArray(attrs.get("dcmAuditSourceTypeCode")));
+                LdapUtils.stringArray(attrs.get("dcmAuditSourceTypeCode")));
         logger.setApplicationName(
-                stringValue(attrs.get("dcmAuditApplicationName"), null));
+                LdapUtils.stringValue(attrs.get("dcmAuditApplicationName"), null));
         logger.setMessageID(
-                stringValue(attrs.get("dcmAuditMessageID"), AuditLogger.MESSAGE_ID));
+                LdapUtils.stringValue(attrs.get("dcmAuditMessageID"), AuditLogger.MESSAGE_ID));
         logger.setEncoding(
-                stringValue(attrs.get("dcmAuditMessageEncoding"), "UTF-8"));
+                LdapUtils.stringValue(attrs.get("dcmAuditMessageEncoding"), "UTF-8"));
         logger.setSchemaURI(
-                stringValue(attrs.get("dcmAuditMessageSchemaURI"), null));
+                LdapUtils.stringValue(attrs.get("dcmAuditMessageSchemaURI"), null));
         logger.setIncludeBOM(
-                booleanValue(attrs.get("dcmAuditMessageBOM"), true));
+                LdapUtils.booleanValue(attrs.get("dcmAuditMessageBOM"), true));
         logger.setFormatXML(
-                booleanValue(attrs.get("dcmAuditMessageFormatXML"), false));
+                LdapUtils.booleanValue(attrs.get("dcmAuditMessageFormatXML"), false));
         logger.setTimestampInUTC(
-                booleanValue(attrs.get("dcmAuditTimestampInUTC"), false));
+                LdapUtils.booleanValue(attrs.get("dcmAuditTimestampInUTC"), false));
         logger.setInstalled(
-                booleanValue(attrs.get("dicomInstalled"), null));
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
     }
 
     @Override
@@ -204,67 +194,67 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     private List<ModificationItem> storeDiffs(AuditLogger a, AuditLogger b,
             String deviceDN, ArrayList<ModificationItem> mods) {
-        storeDiff(mods, "dcmAuditFacility",
+        LdapUtils.storeDiff(mods, "dcmAuditFacility",
                 a.getFacility().ordinal(),
                 b.getFacility().ordinal(),
                 10);
-        storeDiff(mods, "dcmAuditSuccessSeverity",
+        LdapUtils.storeDiff(mods, "dcmAuditSuccessSeverity",
                 a.getSuccessSeverity().ordinal(),
                 b.getSuccessSeverity().ordinal(),
                 5);
-        storeDiff(mods, "dcmAuditMinorFailureSeverity",
+        LdapUtils.storeDiff(mods, "dcmAuditMinorFailureSeverity",
                 a.getMinorFailureSeverity().ordinal(),
                 b.getMinorFailureSeverity().ordinal(),
                 4);
-        storeDiff(mods, "dcmAuditSeriousFailureSeverity",
+        LdapUtils.storeDiff(mods, "dcmAuditSeriousFailureSeverity",
                 a.getSeriousFailureSeverity().ordinal(),
                 b.getSeriousFailureSeverity().ordinal(),
                 3);
-        storeDiff(mods, "dcmAuditMajorFailureSeverity",
+        LdapUtils.storeDiff(mods, "dcmAuditMajorFailureSeverity",
                 a.getMajorFailureSeverity().ordinal(),
                 b.getMajorFailureSeverity().ordinal(),
                 2);
-        storeDiff(mods, "dcmAuditSourceID",
+        LdapUtils.storeDiff(mods, "dcmAuditSourceID",
                 a.getAuditSourceID(),
                 b.getAuditSourceID());
-        storeDiff(mods, "dcmAuditEnterpriseSiteID",
+        LdapUtils.storeDiff(mods, "dcmAuditEnterpriseSiteID",
                 a.getAuditEnterpriseSiteID(),
                 b.getAuditEnterpriseSiteID());
-        storeDiff(mods, "dcmAuditSourceTypeCode",
+        LdapUtils.storeDiff(mods, "dcmAuditSourceTypeCode",
                 a.getAuditSourceTypeCodes(),
                 b.getAuditSourceTypeCodes());
-        storeDiff(mods, "dcmAuditApplicationName",
+        LdapUtils.storeDiff(mods, "dcmAuditApplicationName",
                 a.getApplicationName(),
                 b.getApplicationName());
-        storeDiff(mods, "dcmAuditMessageID",
+        LdapUtils.storeDiff(mods, "dcmAuditMessageID",
                 a.getMessageID(),
                 b.getMessageID());
-        storeDiff(mods, "dcmAuditMessageEncoding",
+        LdapUtils.storeDiff(mods, "dcmAuditMessageEncoding",
                 StringUtils.nullify(a.getEncoding(), "UTF-8"),
                 StringUtils.nullify(b.getEncoding(), "UTF-8"));
-        storeDiff(mods, "dcmAuditMessageSchemaURI",
+        LdapUtils.storeDiff(mods, "dcmAuditMessageSchemaURI",
                 a.getSchemaURI(),
                 b.getSchemaURI());
-        storeDiff(mods, "dcmAuditMessageBOM",
+        LdapUtils.storeDiff(mods, "dcmAuditMessageBOM",
                 a.isIncludeBOM(),
                 b.isIncludeBOM(),
                 true);
-        storeDiff(mods, "dcmAuditMessageFormatXML",
+        LdapUtils.storeDiff(mods, "dcmAuditMessageFormatXML",
                 a.isFormatXML(),
                 b.isFormatXML(),
                 false);
-        storeDiff(mods, "dcmAuditTimestampInUTC",
+        LdapUtils.storeDiff(mods, "dcmAuditTimestampInUTC",
                 a.isTimestampInUTC(),
                 b.isTimestampInUTC(),
                 false);
-        storeDiff(mods, "dicomNetworkConnectionReference",
+        LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        storeDiff(mods, "dcmAuditRecordRepositoryDeviceReference",
+        LdapUtils.storeDiff(mods, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(a.getAuditRecordRepositoryDeviceName()),
                 config.deviceRef(b.getAuditRecordRepositoryDeviceName()));
-        storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
         return mods;

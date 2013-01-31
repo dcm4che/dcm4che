@@ -38,13 +38,6 @@
 
 package org.dcm4che.conf.ldap.audit;
 
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.booleanValue;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.findConnection;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeConnRefs;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeDiff;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.storeNotNull;
-import static org.dcm4che.conf.ldap.LdapDicomConfiguration.stringArray;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +49,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che.conf.ldap.LdapUtils;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditRecordRepository;
 
@@ -86,9 +80,9 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
     private Attributes storeTo(AuditRecordRepository arr, String deviceDN,
             Attributes attrs) {
         attrs.put(new BasicAttribute("objectclass", "dcmAuditRecordRepository"));
-        storeConnRefs(attrs, arr.getConnections(),
+        LdapUtils.storeConnRefs(attrs, arr.getConnections(),
                 deviceDN);
-        storeNotNull(attrs, "dicomInstalled",
+        LdapUtils.storeNotNull(attrs, "dicomInstalled",
                 arr.getInstalled());
         return attrs;
     }
@@ -104,16 +98,16 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
         }
         AuditRecordRepository arr = new AuditRecordRepository();
         loadFrom(arr, attrs);
-        for (String connDN : stringArray(
+        for (String connDN : LdapUtils.stringArray(
                 attrs.get("dicomNetworkConnectionReference")))
             arr.addConnection(
-                    findConnection(connDN, deviceDN, device));
+                    LdapUtils.findConnection(connDN, deviceDN, device));
         device.addDeviceExtension(arr);
     }
 
     private void loadFrom(AuditRecordRepository arr, Attributes attrs) throws NamingException {
         arr.setInstalled(
-                booleanValue(attrs.get("dicomInstalled"), null));
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
     }
 
     @Override
@@ -137,11 +131,11 @@ public class LdapAuditRecordRepositoryConfiguration extends LdapDicomConfigurati
     private List<ModificationItem> storeDiffs(AuditRecordRepository a,
             AuditRecordRepository b, String deviceDN,
             ArrayList<ModificationItem> mods) {
-        storeDiff(mods, "dicomNetworkConnectionReference",
+        LdapUtils.storeDiff(mods, "dicomNetworkConnectionReference",
                 a.getConnections(),
                 b.getConnections(),
                 deviceDN);
-        storeDiff(mods, "dicomInstalled",
+        LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
         return mods;

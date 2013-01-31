@@ -61,13 +61,13 @@ import org.junit.Test;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ExtendedLdapDicomConfigurationTest {
+public class LdapDicomConfigurationTest {
 
-    private ExtendedLdapDicomConfiguration config;
+    private LdapDicomConfiguration config;
 
     @Before
     public void setUp() throws Exception {
-        config = new ExtendedLdapDicomConfiguration();
+        config = new LdapDicomConfiguration();
     }
 
     @After

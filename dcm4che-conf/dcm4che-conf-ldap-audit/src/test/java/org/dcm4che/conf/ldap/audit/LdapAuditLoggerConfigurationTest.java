@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
 
 import org.dcm4che.audit.AuditMessages;
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
-import org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration;
+import org.dcm4che.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditLogger;
@@ -57,11 +57,11 @@ import org.junit.Test;
  */
 public class LdapAuditLoggerConfigurationTest {
 
-    private ExtendedLdapDicomConfiguration config;
+    private LdapDicomConfiguration config;
 
     @Before
     public void setUp() throws Exception {
-        config = new ExtendedLdapDicomConfiguration();
+        config = new LdapDicomConfiguration();
         config.addDicomConfigurationExtension(new LdapAuditLoggerConfiguration());
         config.addDicomConfigurationExtension(new LdapAuditRecordRepositoryConfiguration());
     }

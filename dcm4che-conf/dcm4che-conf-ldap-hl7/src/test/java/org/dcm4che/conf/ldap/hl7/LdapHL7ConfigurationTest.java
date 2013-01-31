@@ -41,7 +41,7 @@ package org.dcm4che.conf.ldap.hl7;
 import static org.junit.Assert.assertEquals;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
-import org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration;
+import org.dcm4che.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.Device;
@@ -57,12 +57,12 @@ import org.junit.Test;
  */
 public class LdapHL7ConfigurationTest {
 
-    private ExtendedLdapDicomConfiguration config;
+    private LdapDicomConfiguration config;
     private LdapHL7Configuration hl7Ext;
 
     @Before
     public void setUp() throws Exception {
-        config = new ExtendedLdapDicomConfiguration();
+        config = new LdapDicomConfiguration();
         hl7Ext = new LdapHL7Configuration();
         config.addDicomConfigurationExtension(hl7Ext);
     }

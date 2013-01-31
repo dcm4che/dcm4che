@@ -43,6 +43,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.prefs.PreferencesDicomConfigurationExtension;
+import org.dcm4che.conf.prefs.PreferencesUtils;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditRecordRepository;
@@ -51,13 +52,6 @@ import org.dcm4che.net.audit.AuditRecordRepository;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.booleanValue;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiff;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiffConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotNull;
-
 public class PreferencesAuditRecordRepositoryConfiguration extends
         PreferencesDicomConfigurationExtension {
 
@@ -70,8 +64,8 @@ public class PreferencesAuditRecordRepositoryConfiguration extends
     }
 
     private void storeTo(AuditRecordRepository arr, Preferences prefs) {
-        storeConnRefs(prefs, arr.getConnections(), arr.getDevice().listConnections());
-        storeNotNull(prefs, "dicomInstalled", arr.getInstalled());
+        PreferencesUtils.storeConnRefs(prefs, arr.getConnections(), arr.getDevice().listConnections());
+        PreferencesUtils.storeNotNull(prefs, "dicomInstalled", arr.getInstalled());
     }
 
     @Override
@@ -93,7 +87,7 @@ public class PreferencesAuditRecordRepositoryConfiguration extends
     }
 
     private void loadFrom(AuditRecordRepository arr, Preferences prefs) {
-        arr.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+        arr.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
     }
 
     @Override
@@ -117,10 +111,10 @@ public class PreferencesAuditRecordRepositoryConfiguration extends
 
     private void storeDiffs(Preferences prefs, AuditRecordRepository a,
             AuditRecordRepository b) {
-        storeDiffConnRefs(prefs, 
+        PreferencesUtils.storeDiffConnRefs(prefs, 
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
     }

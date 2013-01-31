@@ -38,21 +38,13 @@
 
 package org.dcm4che.conf.prefs.audit;
 
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.booleanValue;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiff;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiffConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotDef;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotEmpty;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotNull;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.stringArray;
-
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.prefs.PreferencesDicomConfigurationExtension;
+import org.dcm4che.conf.prefs.PreferencesUtils;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditLogger;
@@ -74,41 +66,41 @@ public class PreferencesAuditLoggerConfiguration
     }
 
     private void storeTo(AuditLogger logger, Preferences prefs) {
-        storeNotDef(prefs, "dcmAuditFacility",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditFacility",
                 logger.getFacility().ordinal(), 10);
-        storeNotDef(prefs, "dcmAuditSuccessSeverity",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditSuccessSeverity",
                 logger.getSuccessSeverity().ordinal(), 5);
-        storeNotDef(prefs, "dcmAuditMinorFailureSeverity",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditMinorFailureSeverity",
                 logger.getMinorFailureSeverity().ordinal(), 4);
-        storeNotDef(prefs, "dcmAuditSeriousFailureSeverity",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditSeriousFailureSeverity",
                 logger.getSeriousFailureSeverity().ordinal(), 3);
-        storeNotDef(prefs, "dcmAuditMajorFailureSeverity",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditMajorFailureSeverity",
                 logger.getMajorFailureSeverity().ordinal(), 2);
-        storeNotNull(prefs, "dcmAuditSourceID",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditSourceID",
                 logger.getAuditSourceID());
-        storeNotNull(prefs, "dcmAuditEnterpriseSiteID",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditEnterpriseSiteID",
                 logger.getAuditEnterpriseSiteID());
-        storeNotEmpty(prefs, "dcmAuditSourceTypeCode",
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditSourceTypeCode",
                 logger.getAuditSourceTypeCodes());
-        storeNotNull(prefs, "dcmAuditApplicationName",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditApplicationName",
                 logger.getApplicationName());
-        storeNotNull(prefs, "dcmAuditMessageID",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditMessageID",
                 StringUtils.nullify(logger.getMessageID(), AuditLogger.MESSAGE_ID));
-        storeNotNull(prefs, "dcmAuditMessageEncoding",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditMessageEncoding",
                 StringUtils.nullify(logger.getEncoding(), "UTF-8"));
-        storeNotNull(prefs, "dcmAuditMessageSchemaURI",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditMessageSchemaURI",
                 logger.getSchemaURI());
-        storeNotDef(prefs, "dcmAuditMessageBOM",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditMessageBOM",
                 logger.isIncludeBOM(), true);
-        storeNotDef(prefs, "dcmAuditMessageFormatXML",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditMessageFormatXML",
                 logger.isFormatXML(), false);
-        storeNotDef(prefs, "dcmAuditTimestampInUTC",
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditTimestampInUTC",
                 logger.isTimestampInUTC(), false);
-        storeConnRefs(prefs, logger.getConnections(),
+        PreferencesUtils.storeConnRefs(prefs, logger.getConnections(),
                 logger.getDevice().listConnections());
-        storeNotNull(prefs, "dcmAuditRecordRepositoryDeviceReference",
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
-        storeNotNull(prefs, "dicomInstalled", logger.getInstalled());
+        PreferencesUtils.storeNotNull(prefs, "dicomInstalled", logger.getInstalled());
     }
 
     @Override
@@ -152,7 +144,7 @@ public class PreferencesAuditLoggerConfiguration
         logger.setAuditEnterpriseSiteID(
                 prefs.get("dcmAuditEnterpriseSiteID", null));
         logger.setAuditSourceTypeCodes(
-                stringArray(prefs, "dcmAuditSourceTypeCode"));
+                PreferencesUtils.stringArray(prefs, "dcmAuditSourceTypeCode"));
         logger.setApplicationName(
                 prefs.get("dcmAuditApplicationName", null));
         logger.setMessageID(
@@ -167,7 +159,7 @@ public class PreferencesAuditLoggerConfiguration
                 prefs.getBoolean("dcmAuditMessageFormatXML", false));
         logger.setTimestampInUTC(
                 prefs.getBoolean("dcmAuditTimestampInUTC", false));
-        logger.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+        logger.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
     }
 
     @Override
@@ -190,66 +182,66 @@ public class PreferencesAuditLoggerConfiguration
     }
 
     private void storeDiffs(Preferences prefs, AuditLogger a, AuditLogger b) {
-        storeDiff(prefs, "dcmAuditFacility",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditFacility",
                 a.getFacility().ordinal(),
                 b.getFacility().ordinal(),
                 10);
-        storeDiff(prefs, "dcmAuditSuccessSeverity",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditSuccessSeverity",
                 a.getSuccessSeverity().ordinal(),
                 b.getSuccessSeverity().ordinal(),
                 5);
-        storeDiff(prefs, "dcmAuditMinorFailureSeverity",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMinorFailureSeverity",
                 a.getMinorFailureSeverity().ordinal(),
                 b.getMinorFailureSeverity().ordinal(),
                 4);
-        storeDiff(prefs, "dcmAuditSeriousFailureSeverity",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditSeriousFailureSeverity",
                 a.getSeriousFailureSeverity().ordinal(),
                 b.getSeriousFailureSeverity().ordinal(),
                 3);
-        storeDiff(prefs, "dcmAuditMajorFailureSeverity",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMajorFailureSeverity",
                 a.getMajorFailureSeverity().ordinal(),
                 b.getMajorFailureSeverity().ordinal(),
                 2);
-        storeDiff(prefs, "dcmAuditSourceID",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditSourceID",
                 a.getAuditSourceID(),
                 b.getAuditSourceID());
-        storeDiff(prefs, "dcmAuditEnterpriseSiteID",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditEnterpriseSiteID",
                 a.getAuditEnterpriseSiteID(),
                 b.getAuditEnterpriseSiteID());
-        storeDiff(prefs, "dcmAuditSourceTypeCode",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditSourceTypeCode",
                 a.getAuditSourceTypeCodes(),
                 b.getAuditSourceTypeCodes());
-        storeDiff(prefs, "dcmAuditApplicationName",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditApplicationName",
                 a.getApplicationName(),
                 b.getApplicationName());
-        storeDiff(prefs, "dcmAuditMessageID",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMessageID",
                 a.getMessageID(),
                 b.getMessageID());
-        storeDiff(prefs, "dcmAuditMessageEncoding",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMessageEncoding",
                 StringUtils.nullify(a.getEncoding(), "UTF-8"),
                 StringUtils.nullify(b.getEncoding(), "UTF-8"));
-        storeDiff(prefs, "dcmAuditMessageSchemaURI",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMessageSchemaURI",
                 a.getSchemaURI(),
                 b.getSchemaURI());
-        storeDiff(prefs, "dcmAuditMessageBOM",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMessageBOM",
                 a.isIncludeBOM(),
                 b.isIncludeBOM(),
                 true);
-        storeDiff(prefs, "dcmAuditMessageFormatXML",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditMessageFormatXML",
                 a.isFormatXML(),
                 b.isFormatXML(),
                 false);
-        storeDiff(prefs, "dcmAuditTimestampInUTC",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditTimestampInUTC",
                 a.isTimestampInUTC(),
                 b.isTimestampInUTC(),
                 false);
-        storeDiffConnRefs(prefs, 
+        PreferencesUtils.storeDiffConnRefs(prefs, 
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
-        storeDiff(prefs, "dcmAuditRecordRepositoryDeviceReference",
+        PreferencesUtils.storeDiff(prefs, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(a.getAuditRecordRepositoryDeviceName()),
                 config.deviceRef(b.getAuditRecordRepositoryDeviceName()));
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
     }

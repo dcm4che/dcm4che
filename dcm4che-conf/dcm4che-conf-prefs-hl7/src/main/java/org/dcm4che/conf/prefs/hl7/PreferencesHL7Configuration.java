@@ -38,14 +38,6 @@
 
 package org.dcm4che.conf.prefs.hl7;
 
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.booleanValue;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiff;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeDiffConnRefs;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotEmpty;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.storeNotNull;
-import static org.dcm4che.conf.prefs.PreferencesDicomConfiguration.stringArray;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -54,6 +46,7 @@ import java.util.prefs.Preferences;
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.hl7.HL7Configuration;
 import org.dcm4che.conf.prefs.PreferencesDicomConfigurationExtension;
+import org.dcm4che.conf.prefs.PreferencesUtils;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
@@ -109,14 +102,14 @@ public class PreferencesHL7Configuration
 
     private void storeTo(HL7Application hl7App, Preferences prefs,
             List<Connection> devConns) {
-        storeNotEmpty(prefs, "hl7AcceptedSendingApplication",
+        PreferencesUtils.storeNotEmpty(prefs, "hl7AcceptedSendingApplication",
                 hl7App.getAcceptedSendingApplications());
-        storeNotEmpty(prefs, "hl7AcceptedMessageType",
+        PreferencesUtils.storeNotEmpty(prefs, "hl7AcceptedMessageType",
                 hl7App.getAcceptedMessageTypes());
-        storeNotNull(prefs, "hl7DefaultCharacterSet",
+        PreferencesUtils.storeNotNull(prefs, "hl7DefaultCharacterSet",
                 hl7App.getHL7DefaultCharacterSet());
-        storeNotNull(prefs, "dicomInstalled", hl7App.getInstalled());
-        storeConnRefs(prefs, hl7App.getConnections(), devConns);
+        PreferencesUtils.storeNotNull(prefs, "dicomInstalled", hl7App.getInstalled());
+        PreferencesUtils.storeConnRefs(prefs, hl7App.getConnections(), devConns);
 
         for (PreferencesHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, prefs);
@@ -147,10 +140,10 @@ public class PreferencesHL7Configuration
 
     private void loadFrom(HL7Application hl7app, Preferences prefs) {
         hl7app.setAcceptedSendingApplications(
-                stringArray(prefs, "hl7AcceptedSendingApplication"));
-        hl7app.setAcceptedMessageTypes(stringArray(prefs, "hl7AcceptedMessageType"));
+                PreferencesUtils.stringArray(prefs, "hl7AcceptedSendingApplication"));
+        hl7app.setAcceptedMessageTypes(PreferencesUtils.stringArray(prefs, "hl7AcceptedMessageType"));
         hl7app.setHL7DefaultCharacterSet(prefs.get("hl7DefaultCharacterSet", null));
-        hl7app.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+        hl7app.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
 
         for (PreferencesHL7ConfigurationExtension ext : extensions)
             ext.loadFrom(hl7app, prefs);
@@ -189,19 +182,19 @@ public class PreferencesHL7Configuration
     }
 
     private void storeDiffs(Preferences prefs, HL7Application a, HL7Application b) {
-        storeDiffConnRefs(prefs, 
+        PreferencesUtils.storeDiffConnRefs(prefs, 
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
-        storeDiff(prefs, "hl7AcceptedSendingApplication",
+        PreferencesUtils.storeDiff(prefs, "hl7AcceptedSendingApplication",
                 a.getAcceptedSendingApplications(),
                 b.getAcceptedSendingApplications());
-        storeDiff(prefs, "hl7AcceptedMessageType",
+        PreferencesUtils.storeDiff(prefs, "hl7AcceptedMessageType",
                 a.getAcceptedMessageTypes(),
                 b.getAcceptedMessageTypes());
-        storeDiff(prefs, "hl7DefaultCharacterSet",
+        PreferencesUtils.storeDiff(prefs, "hl7DefaultCharacterSet",
                 a.getHL7DefaultCharacterSet(),
                 b.getHL7DefaultCharacterSet());
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
 

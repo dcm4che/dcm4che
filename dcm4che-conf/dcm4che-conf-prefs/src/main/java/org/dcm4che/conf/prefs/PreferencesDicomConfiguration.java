@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class PreferencesDicomConfiguration implements DicomConfiguration {
+public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static final String DICOM_CONFIGURATION_ROOT =
             "dicomConfigurationRoot";
@@ -296,7 +296,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             storeCertificates(ref, certs);
     }
 
-    protected void storeChilds(Device device, Preferences deviceNode) {
+    private void storeChilds(Device device, Preferences deviceNode) {
         Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         int connIndex = 1;
         List<Connection> devConns = device.listConnections();
@@ -313,7 +313,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             ext.storeChilds(device, deviceNode);
     }
 
-    protected void storeChilds(ApplicationEntity ae, Preferences aeNode) {
+    private void storeChilds(ApplicationEntity ae, Preferences aeNode) {
         storeTransferCapabilities(ae, aeNode);
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
@@ -338,11 +338,11 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private static void storeTo(AttributeCoercion ac, Preferences prefs) {
-        storeNotNull(prefs, "dcmDIMSE", ac.getDimse());
-        storeNotNull(prefs, "dicomTransferRole", ac.getRole());
-        storeNotNull(prefs, "dicomAETitle", ac.getAETitle());
-        storeNotNull(prefs, "dicomSOPClass", ac.getSopClass());
-        storeNotNull(prefs, "labeledURI", ac.getURI());
+        PreferencesUtils.storeNotNull(prefs, "dcmDIMSE", ac.getDimse());
+        PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", ac.getRole());
+        PreferencesUtils.storeNotNull(prefs, "dicomAETitle", ac.getAETitle());
+        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", ac.getSopClass());
+        PreferencesUtils.storeNotNull(prefs, "labeledURI", ac.getURI());
     }
 
     @Override
@@ -381,7 +381,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void mergeChilds(Device prev, Device device,
+    private void mergeChilds(Device prev, Device device,
             Preferences devicePrefs) throws BackingStoreException {
         mergeConnections(prev, device, devicePrefs);
         mergeAEs(prev, device, devicePrefs);
@@ -413,156 +413,146 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void storeTo(Device device, Preferences prefs) {
-        storeNotNull(prefs, "dicomDescription", device.getDescription());
-        storeNotNull(prefs, "dicomManufacturer", device.getManufacturer());
-        storeNotNull(prefs, "dicomManufacturerModelName",
+    private void storeTo(Device device, Preferences prefs) {
+        PreferencesUtils.storeNotNull(prefs, "dicomDescription", device.getDescription());
+        PreferencesUtils.storeNotNull(prefs, "dicomManufacturer", device.getManufacturer());
+        PreferencesUtils.storeNotNull(prefs, "dicomManufacturerModelName",
                 device.getManufacturerModelName());
-        storeNotEmpty(prefs, "dicomSoftwareVersion",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomSoftwareVersion",
                 device.getSoftwareVersions());
-        storeNotNull(prefs, "dicomStationName", device.getStationName());
-        storeNotNull(prefs, "dicomDeviceSerialNumber",
+        PreferencesUtils.storeNotNull(prefs, "dicomStationName", device.getStationName());
+        PreferencesUtils.storeNotNull(prefs, "dicomDeviceSerialNumber",
                 device.getDeviceSerialNumber());
-        storeNotNull(prefs, "dicomIssuerOfPatientID",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfPatientID",
                 device.getIssuerOfPatientID());
-        storeNotNull(prefs, "dicomIssuerOfAccessionNumber",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfAccessionNumber",
                 device.getIssuerOfAccessionNumber());
-        storeNotNull(prefs, "dicomOrderPlacerIdentifier",
+        PreferencesUtils.storeNotNull(prefs, "dicomOrderPlacerIdentifier",
                 device.getOrderPlacerIdentifier());
-        storeNotNull(prefs, "dicomOrderFillerIdentifier",
+        PreferencesUtils.storeNotNull(prefs, "dicomOrderFillerIdentifier",
                 device.getOrderFillerIdentifier());
-        storeNotNull(prefs, "dicomIssuerOfAdmissionID",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfAdmissionID",
                 device.getIssuerOfAdmissionID());
-        storeNotNull(prefs, "dicomIssuerOfServiceEpisodeID",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfServiceEpisodeID",
                 device.getIssuerOfServiceEpisodeID());
-        storeNotNull(prefs, "dicomIssuerOfContainerIdentifier",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfContainerIdentifier",
                 device.getIssuerOfContainerIdentifier());
-        storeNotNull(prefs, "dicomIssuerOfSpecimenIdentifier",
+        PreferencesUtils.storeNotNull(prefs, "dicomIssuerOfSpecimenIdentifier",
                 device.getIssuerOfSpecimenIdentifier());
-        storeNotEmpty(prefs, "dicomInstitutionName",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomInstitutionName",
                 device.getInstitutionNames());
-        storeNotEmpty(prefs, "dicomInstitutionCode",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomInstitutionCode",
                 device.getInstitutionCodes());
-        storeNotEmpty(prefs, "dicomInstitutionAddress",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomInstitutionAddress",
                 device.getInstitutionAddresses());
-        storeNotEmpty(prefs, "dicomInstitutionalDepartmentName",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomInstitutionalDepartmentName",
                 device.getInstitutionalDepartmentNames());
-        storeNotEmpty(prefs, "dicomPrimaryDeviceType",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomPrimaryDeviceType",
                 device.getPrimaryDeviceTypes());
-        storeNotEmpty(prefs, "dicomRelatedDeviceReference",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomRelatedDeviceReference",
                 device.getRelatedDeviceRefs());
-        storeNotEmpty(prefs, "dicomAuthorizedNodeCertificateReference",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomAuthorizedNodeCertificateReference",
                 device.getAuthorizedNodeCertificateRefs());
-        storeNotEmpty(prefs, "dicomThisNodeCertificateReference",
+        PreferencesUtils.storeNotEmpty(prefs, "dicomThisNodeCertificateReference",
                 device.getThisNodeCertificateRefs());
         storeNotEmpty(prefs, "dicomVendorData", device.getVendorData());
         prefs.putBoolean("dicomInstalled", device.isInstalled());
         
-        storeNotDef(prefs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
-        storeNotNull(prefs, "dcmTrustStoreURL", device.getTrustStoreURL());
-        storeNotNull(prefs, "dcmTrustStoreType", device.getTrustStoreType());
-        storeNotNull(prefs, "dcmTrustStorePin", device.getTrustStorePin());
-        storeNotNull(prefs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty());
-        storeNotNull(prefs, "dcmKeyStoreURL", device.getKeyStoreURL());
-        storeNotNull(prefs, "dcmKeyStoreType", device.getKeyStoreType());
-        storeNotNull(prefs, "dcmKeyStorePin", device.getKeyStorePin());
-        storeNotNull(prefs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
-        storeNotNull(prefs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
-        storeNotNull(prefs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
+        PreferencesUtils.storeNotDef(prefs, "dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+        PreferencesUtils.storeNotNull(prefs, "dcmTrustStoreURL", device.getTrustStoreURL());
+        PreferencesUtils.storeNotNull(prefs, "dcmTrustStoreType", device.getTrustStoreType());
+        PreferencesUtils.storeNotNull(prefs, "dcmTrustStorePin", device.getTrustStorePin());
+        PreferencesUtils.storeNotNull(prefs, "dcmTrustStorePinProperty", device.getTrustStorePinProperty());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreURL", device.getKeyStoreURL());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreType", device.getKeyStoreType());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStorePin", device.getKeyStorePin());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
+        PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.storeTo(device, prefs);
     }
 
-    protected void storeTo(Connection conn, Preferences prefs) {
-        storeNotNull(prefs, "cn", conn.getCommonName());
-        storeNotNull(prefs, "dicomHostname", conn.getHostname());
-        storeNotDef(prefs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
-        storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
-        storeNotNull(prefs, "dicomInstalled", conn.getInstalled());
+    private void storeTo(Connection conn, Preferences prefs) {
+        PreferencesUtils.storeNotNull(prefs, "cn", conn.getCommonName());
+        PreferencesUtils.storeNotNull(prefs, "dicomHostname", conn.getHostname());
+        PreferencesUtils.storeNotDef(prefs, "dicomPort", conn.getPort(), Connection.NOT_LISTENING);
+        PreferencesUtils.storeNotEmpty(prefs, "dicomTLSCipherSuite", conn.getTlsCipherSuites());
+        PreferencesUtils.storeNotNull(prefs, "dicomInstalled", conn.getInstalled());
 
-        storeNotNull(prefs, "dcmProtocol", 
+        PreferencesUtils.storeNotNull(prefs, "dcmProtocol", 
                 StringUtils.nullify(conn.getProtocol(), Protocol.DICOM));
-        storeNotNull(prefs, "dcmHTTPProxy", conn.getHttpProxy());
-        storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
-        storeNotDef(prefs, "dcmTCPBacklog",
+        PreferencesUtils.storeNotNull(prefs, "dcmHTTPProxy", conn.getHttpProxy());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmBlacklistedHostname", conn.getBlacklist());
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPBacklog",
                 conn.getBacklog(), Connection.DEF_BACKLOG);
-        storeNotDef(prefs, "dcmTCPConnectTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPConnectTimeout",
                 conn.getConnectTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmAARQTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmAARQTimeout",
                 conn.getRequestTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmAAACTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmAAACTimeout",
                 conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmARRPTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmARRPTimeout",
                 conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmResponseTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmResponseTimeout",
                 conn.getResponseTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmRetrieveTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmRetrieveTimeout",
                 conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmIdleTimeout",
+        PreferencesUtils.storeNotDef(prefs, "dcmIdleTimeout",
                 conn.getIdleTimeout(), Connection.NO_TIMEOUT);
-        storeNotDef(prefs, "dcmTCPCloseDelay",
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPCloseDelay",
                 conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
-        storeNotDef(prefs, "dcmTCPSendBufferSize",
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPSendBufferSize",
                 conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeNotDef(prefs, "dcmTCPReceiveBufferSize",
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
-        storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
-        storeNotDef(prefs, "dcmSendPDULength",
+        PreferencesUtils.storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        PreferencesUtils.storeNotDef(prefs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcmReceivePDULength",
+        PreferencesUtils.storeNotDef(prefs, "dcmReceivePDULength",
                 conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH);
-        storeNotDef(prefs, "dcmMaxOpsPerformed",
+        PreferencesUtils.storeNotDef(prefs, "dcmMaxOpsPerformed",
                 conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE);
-        storeNotDef(prefs, "dcmMaxOpsInvoked",
+        PreferencesUtils.storeNotDef(prefs, "dcmMaxOpsInvoked",
                 conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
-        storeNotDef(prefs, "dcmPackPDV", conn.isPackPDV(), true);
+        PreferencesUtils.storeNotDef(prefs, "dcmPackPDV", conn.isPackPDV(), true);
         if (conn.isTls()) {
-            storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
-            storeNotDef(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
+            PreferencesUtils.storeNotEmpty(prefs, "dcmTLSProtocol", conn.getTlsProtocols());
+            PreferencesUtils.storeNotDef(prefs, "dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
         }
     }
 
-    protected void storeTo(ApplicationEntity ae, Preferences prefs, List<Connection> devConns) {
-        storeNotNull(prefs, "dicomDescription", ae.getDescription());
+    private void storeTo(ApplicationEntity ae, Preferences prefs, List<Connection> devConns) {
+        PreferencesUtils.storeNotNull(prefs, "dicomDescription", ae.getDescription());
         storeNotEmpty(prefs, "dicomVendorData", ae.getVendorData());
-        storeNotEmpty(prefs, "dicomApplicationCluster", ae.getApplicationClusters());
-        storeNotEmpty(prefs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
-        storeNotEmpty(prefs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
+        PreferencesUtils.storeNotEmpty(prefs, "dicomApplicationCluster", ae.getApplicationClusters());
+        PreferencesUtils.storeNotEmpty(prefs, "dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
+        PreferencesUtils.storeNotEmpty(prefs, "dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
         prefs.putBoolean("dicomAssociationInitiator", ae.isAssociationInitiator());
         prefs.putBoolean("dicomAssociationAcceptor",  ae.isAssociationAcceptor());
-        storeNotEmpty(prefs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
-        storeNotNull(prefs, "dicomInstalled", ae.getInstalled());
-        storeConnRefs(prefs, ae.getConnections(), devConns);
-        storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        PreferencesUtils.storeNotEmpty(prefs, "dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
+        PreferencesUtils.storeNotNull(prefs, "dicomInstalled", ae.getInstalled());
+        PreferencesUtils.storeConnRefs(prefs, ae.getConnections(), devConns);
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.storeTo(ae, prefs);
     }
 
-    public static void storeConnRefs(Preferences prefs, List<Connection> connRefs,
-            List<Connection> devConns) {
-        int refCount = 0;
-        for (Connection conn : connRefs) {
-            prefs.putInt("dicomNetworkConnectionReference." + (++refCount), 
-                    devConns.indexOf(conn) + 1);
-        }
-        prefs.putInt("dicomNetworkConnectionReference.#", refCount);
-    }
-
-    protected void storeTo(TransferCapability tc, Preferences prefs) {
-        storeNotNull(prefs, "cn", tc.getCommonName());
-        storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
-        storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
-        storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
+    private void storeTo(TransferCapability tc, Preferences prefs) {
+        PreferencesUtils.storeNotNull(prefs, "cn", tc.getCommonName());
+        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
+        PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
+        PreferencesUtils.storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
-            storeNotDef(prefs, "dcmRelationalQueries",
+            PreferencesUtils.storeNotDef(prefs, "dcmRelationalQueries",
                     queryOpts.contains(QueryOption.RELATIONAL), false);
-            storeNotDef(prefs, "dcmCombinedDateTimeMatching",
+            PreferencesUtils.storeNotDef(prefs, "dcmCombinedDateTimeMatching",
                     queryOpts.contains(QueryOption.DATETIME), false);
-            storeNotDef(prefs, "dcmFuzzySemanticMatching",
+            PreferencesUtils.storeNotDef(prefs, "dcmFuzzySemanticMatching",
                     queryOpts.contains(QueryOption.FUZZY), false);
-            storeNotDef(prefs, "dcmTimezoneQueryAdjustment",
+            PreferencesUtils.storeNotDef(prefs, "dcmTimezoneQueryAdjustment",
                     queryOpts.contains(QueryOption.TIMEZONE), false);
         }
         StorageOptions storageOpts = tc.getStorageOptions();
@@ -576,47 +566,47 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void storeDiffs(Preferences prefs, Device a, Device b) {
-        storeDiff(prefs, "dicomDescription",
+    private void storeDiffs(Preferences prefs, Device a, Device b) {
+        PreferencesUtils.storeDiff(prefs, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
-        storeDiff(prefs, "dicomManufacturer",
+        PreferencesUtils.storeDiff(prefs, "dicomManufacturer",
                 a.getManufacturer(),
                 b.getManufacturer());
-        storeDiff(prefs, "dicomManufacturerModelName",
+        PreferencesUtils.storeDiff(prefs, "dicomManufacturerModelName",
                 a.getManufacturerModelName(),
                 b.getManufacturerModelName());
         storeDiff(prefs, "dicomSoftwareVersion",
                 a.getSoftwareVersions(),
                 b.getSoftwareVersions());
-        storeDiff(prefs, "dicomStationName",
+        PreferencesUtils.storeDiff(prefs, "dicomStationName",
                 a.getStationName(),
                 b.getStationName());
-        storeDiff(prefs, "dicomDeviceSerialNumber",
+        PreferencesUtils.storeDiff(prefs, "dicomDeviceSerialNumber",
                 a.getDeviceSerialNumber(),
                 b.getDeviceSerialNumber());
-        storeDiff(prefs, "dicomIssuerOfPatientID",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfPatientID",
                 a.getIssuerOfPatientID(),
                 b.getIssuerOfPatientID());
-        storeDiff(prefs, "dicomIssuerOfAccessionNumber",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfAccessionNumber",
                 a.getIssuerOfAccessionNumber(),
                 b.getIssuerOfAccessionNumber());
-        storeDiff(prefs, "dicomOrderPlacerIdentifier",
+        PreferencesUtils.storeDiff(prefs, "dicomOrderPlacerIdentifier",
                 a.getOrderPlacerIdentifier(),
                 b.getOrderPlacerIdentifier());
-        storeDiff(prefs, "dicomOrderFillerIdentifier",
+        PreferencesUtils.storeDiff(prefs, "dicomOrderFillerIdentifier",
                 a.getOrderFillerIdentifier(),
                 b.getOrderFillerIdentifier());
-        storeDiff(prefs, "dicomIssuerOfAdmissionID",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfAdmissionID",
                 a.getIssuerOfAdmissionID(),
                 b.getIssuerOfAdmissionID());
-        storeDiff(prefs, "dicomIssuerOfServiceEpisodeID",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfServiceEpisodeID",
                 a.getIssuerOfServiceEpisodeID(),
                 b.getIssuerOfServiceEpisodeID());
-        storeDiff(prefs, "dicomIssuerOfContainerIdentifier",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfContainerIdentifier",
                 a.getIssuerOfContainerIdentifier(),
                 b.getIssuerOfContainerIdentifier());
-        storeDiff(prefs, "dicomIssuerOfSpecimenIdentifier",
+        PreferencesUtils.storeDiff(prefs, "dicomIssuerOfSpecimenIdentifier",
                 a.getIssuerOfSpecimenIdentifier(),
                 b.getIssuerOfSpecimenIdentifier());
         storeDiff(prefs, "dicomInstitutionName",
@@ -646,41 +636,41 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomVendorData",
                 a.getVendorData(),
                 b.getVendorData());
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.isInstalled(),
                 b.isInstalled());
 
-        storeDiff(prefs, "dcmLimitOpenAssociations",
+        PreferencesUtils.storeDiff(prefs, "dcmLimitOpenAssociations",
                 a.getLimitOpenAssociations(),
                 b.getLimitOpenAssociations());
-        storeDiff(prefs, "dcmTrustStoreURL",
+        PreferencesUtils.storeDiff(prefs, "dcmTrustStoreURL",
                 a.getTrustStoreURL(),
                 b.getTrustStoreURL());
-        storeDiff(prefs, "dcmTrustStoreType",
+        PreferencesUtils.storeDiff(prefs, "dcmTrustStoreType",
                 a.getTrustStoreType(),
                 b.getTrustStoreType());
-        storeDiff(prefs, "dcmTrustStorePin",
+        PreferencesUtils.storeDiff(prefs, "dcmTrustStorePin",
                 a.getTrustStorePin(),
                 b.getTrustStorePin());
-        storeDiff(prefs, "dcmTrustStorePinProperty",
+        PreferencesUtils.storeDiff(prefs, "dcmTrustStorePinProperty",
                 a.getTrustStorePinProperty(),
                 b.getTrustStorePinProperty());
-        storeDiff(prefs, "dcmKeyStoreURL",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStoreURL",
                 a.getKeyStoreURL(),
                 b.getKeyStoreURL());
-        storeDiff(prefs, "dcmKeyStoreType",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStoreType",
                 a.getKeyStoreType(),
                 b.getKeyStoreType());
-        storeDiff(prefs, "dcmKeyStorePin",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStorePin",
                 a.getKeyStorePin(),
                 b.getKeyStorePin());
-        storeDiff(prefs, "dcmKeyStorePinProperty",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStorePinProperty",
                 a.getKeyStorePinProperty(),
                 b.getKeyStorePinProperty());
-        storeDiff(prefs, "dcmKeyStoreKeyPin",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStoreKeyPin",
                 a.getKeyStoreKeyPin(),
                 b.getKeyStoreKeyPin());
-        storeDiff(prefs, "dcmKeyStoreKeyPinProperty",
+        PreferencesUtils.storeDiff(prefs, "dcmKeyStoreKeyPinProperty",
                 a.getKeyStoreKeyPinProperty(),
                 b.getKeyStoreKeyPinProperty());
 
@@ -688,111 +678,111 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             ext.storeDiffs(a, b, prefs);
     }
 
-    protected void storeDiffs(Preferences prefs, Connection a, Connection b) {
-        storeDiff(prefs, "cn",
+    private void storeDiffs(Preferences prefs, Connection a, Connection b) {
+        PreferencesUtils.storeDiff(prefs, "cn",
                 a.getCommonName(),
                 b.getCommonName());
-        storeDiff(prefs, "dicomHostname",
+        PreferencesUtils.storeDiff(prefs, "dicomHostname",
                 a.getHostname(),
                 b.getHostname());
-        storeDiff(prefs, "dicomPort",
+        PreferencesUtils.storeDiff(prefs, "dicomPort",
                 a.getPort(),
                 b.getPort(),
                 Connection.NOT_LISTENING);
         storeDiff(prefs, "dicomTLSCipherSuite",
                 a.getTlsCipherSuites(),
                 b.getTlsCipherSuites());
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
 
-        storeDiff(prefs, "dcmProtocol",
+        PreferencesUtils.storeDiff(prefs, "dcmProtocol",
                 StringUtils.nullify(a.getProtocol(), Protocol.DICOM),
                 StringUtils.nullify(b.getProtocol(), Protocol.DICOM));
-        storeDiff(prefs, "dcmHTTPProxy",
+        PreferencesUtils.storeDiff(prefs, "dcmHTTPProxy",
                 a.getHttpProxy(),
                 b.getHttpProxy());
         storeDiff(prefs, "dcmBlacklistedHostname",
                 a.getBlacklist(),
                 b.getBlacklist());
-        storeDiff(prefs, "dcmTCPBacklog",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPBacklog",
                 a.getBacklog(),
                 b.getBacklog(),
                 Connection.DEF_BACKLOG);
-        storeDiff(prefs, "dcmTCPConnectTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPConnectTimeout",
                 a.getConnectTimeout(),
                 b.getConnectTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmAARQTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmAARQTimeout",
                 a.getRequestTimeout(),
                 b.getRequestTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmAAACTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmAAACTimeout",
                 a.getAcceptTimeout(),
                 b.getAcceptTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmARRPTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmARRPTimeout",
                 a.getReleaseTimeout(),
                 b.getReleaseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmResponseTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmResponseTimeout",
                 a.getResponseTimeout(),
                 b.getResponseTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmRetrieveTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmRetrieveTimeout",
                 a.getRetrieveTimeout(),
                 b.getRetrieveTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmIdleTimeout",
+        PreferencesUtils.storeDiff(prefs, "dcmIdleTimeout",
                 a.getIdleTimeout(),
                 b.getIdleTimeout(),
                 Connection.NO_TIMEOUT);
-        storeDiff(prefs, "dcmTCPCloseDelay",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPCloseDelay",
                 a.getSocketCloseDelay(),
                 b.getSocketCloseDelay(),
                 Connection.DEF_SOCKETDELAY);
-        storeDiff(prefs, "dcmTCPSendBufferSize",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPSendBufferSize",
                 a.getSendBufferSize(),
                 b.getSendBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        storeDiff(prefs, "dcmTCPReceiveBufferSize",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPReceiveBufferSize",
                 a.getReceiveBufferSize(),
                 b.getReceiveBufferSize(),
                 Connection.DEF_BUFFERSIZE);
-        storeDiff(prefs, "dcmTCPNoDelay",
+        PreferencesUtils.storeDiff(prefs, "dcmTCPNoDelay",
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
         storeDiff(prefs, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
-        storeDiff(prefs, "dcmTLSNeedClientAuth",
+        PreferencesUtils.storeDiff(prefs, "dcmTLSNeedClientAuth",
                 !a.isTls() || a.isTlsNeedClientAuth(),
                 !a.isTls() || a.isTlsNeedClientAuth(),
                 true);
-        storeDiff(prefs, "dcmSendPDULength",
+        PreferencesUtils.storeDiff(prefs, "dcmSendPDULength",
                 a.getSendPDULength(),
                 b.getSendPDULength(),
                 Connection.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcmReceivePDULength",
+        PreferencesUtils.storeDiff(prefs, "dcmReceivePDULength",
                 a.getReceivePDULength(),
                 b.getReceivePDULength(),
                 Connection.DEF_MAX_PDU_LENGTH);
-        storeDiff(prefs, "dcmMaxOpsPerformed",
+        PreferencesUtils.storeDiff(prefs, "dcmMaxOpsPerformed",
                 a.getMaxOpsPerformed(),
                 b.getMaxOpsPerformed(),
                 Connection.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcmMaxOpsInvoked",
+        PreferencesUtils.storeDiff(prefs, "dcmMaxOpsInvoked",
                 a.getMaxOpsInvoked(),
                 b.getMaxOpsInvoked(),
                 Connection.SYNCHRONOUS_MODE);
-        storeDiff(prefs, "dcmPackPDV",
+        PreferencesUtils.storeDiff(prefs, "dcmPackPDV",
                 a.isPackPDV(),
                 b.isPackPDV());
 }
 
-    protected void storeDiffs(Preferences prefs, ApplicationEntity a, ApplicationEntity b) {
-        storeDiff(prefs, "dicomDescription",
+    private void storeDiffs(Preferences prefs, ApplicationEntity a, ApplicationEntity b) {
+        PreferencesUtils.storeDiff(prefs, "dicomDescription",
                 a.getDescription(),
                 b.getDescription());
         storeDiff(prefs, "dicomVendorData",
@@ -807,19 +797,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         storeDiff(prefs, "dicomPreferredCalledAETitle",
                 a.getPreferredCalledAETitles(),
                 b.getPreferredCalledAETitles());
-        storeDiff(prefs, "dicomAssociationInitiator",
+        PreferencesUtils.storeDiff(prefs, "dicomAssociationInitiator",
                 a.isAssociationInitiator(),
                 b.isAssociationInitiator());
-        storeDiff(prefs, "dicomAssociationAcceptor",
+        PreferencesUtils.storeDiff(prefs, "dicomAssociationAcceptor",
                 a.isAssociationAcceptor(),
                 b.isAssociationAcceptor());
-        storeDiffConnRefs(prefs, 
+        PreferencesUtils.storeDiffConnRefs(prefs, 
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
         storeDiff(prefs, "dicomSupportedCharacterSet",
                 a.getSupportedCharacterSets(),
                 b.getSupportedCharacterSets());
-        storeDiff(prefs, "dicomInstalled",
+        PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
 
@@ -831,15 +821,15 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             ext.storeDiffs(a, b, prefs);
     }
 
-    protected void storeDiffs(Preferences prefs,
+    private void storeDiffs(Preferences prefs,
             TransferCapability a, TransferCapability b) {
-        storeDiff(prefs, "cn",
+        PreferencesUtils.storeDiff(prefs, "cn",
                 a.getCommonName(),
                 b.getCommonName());
-        storeDiff(prefs, "dicomSOPClass",
+        PreferencesUtils.storeDiff(prefs, "dicomSOPClass",
                 a.getSopClass(),
                 b.getSopClass());
-        storeDiff(prefs, "dicomTransferRole",
+        PreferencesUtils.storeDiff(prefs, "dicomTransferRole",
                 a.getRole().toString(),
                 b.getRole().toString());
         storeDiff(prefs, "dicomTransferSyntax",
@@ -854,19 +844,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         if (prev != null ? prev.equals(val) : val == null)
             return;
 
-        storeDiff(prefs, "dcmRelationalQueries",
+        PreferencesUtils.storeDiff(prefs, "dcmRelationalQueries",
                 prev != null && prev.contains(QueryOption.RELATIONAL),
                 val != null && val.contains(QueryOption.RELATIONAL),
                 false);
-        storeDiff(prefs, "dcmCombinedDateTimeMatching",
+        PreferencesUtils.storeDiff(prefs, "dcmCombinedDateTimeMatching",
                 prev != null && prev.contains(QueryOption.DATETIME),
                 val != null && val.contains(QueryOption.DATETIME),
                 false);
-        storeDiff(prefs, "dcmFuzzySemanticMatching",
+        PreferencesUtils.storeDiff(prefs, "dcmFuzzySemanticMatching",
                 prev != null && prev.contains(QueryOption.FUZZY),
                 val != null && val.contains(QueryOption.FUZZY),
                 false);
-        storeDiff(prefs, "dcmTimezoneQueryAdjustment",
+        PreferencesUtils.storeDiff(prefs, "dcmTimezoneQueryAdjustment",
                 prev != null && prev.contains(QueryOption.TIMEZONE),
                 val != null && val.contains(QueryOption.TIMEZONE),
                 false);
@@ -877,33 +867,18 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         if (prev != null ? prev.equals(val) : val == null)
             return;
 
-        storeDiff(prefs, "dcmStorageConformance",
+        PreferencesUtils.storeDiff(prefs, "dcmStorageConformance",
                 prev != null ? prev.getLevelOfSupport().ordinal() : -1,
                 val != null ? val.getLevelOfSupport().ordinal() : -1,
                 -1);
-        storeDiff(prefs, "dcmDigitalSignatureSupport",
+        PreferencesUtils.storeDiff(prefs, "dcmDigitalSignatureSupport",
                 prev != null ? prev.getDigitalSignatureSupport().ordinal() : -1,
                 val != null ? val.getDigitalSignatureSupport().ordinal() : -1,
                 -1);
-        storeDiff(prefs, "dcmDataElementCoercion",
+        PreferencesUtils.storeDiff(prefs, "dcmDataElementCoercion",
                 prev != null ? prev.getElementCoercion().ordinal() : -1,
                 val != null ? val.getElementCoercion().ordinal() : -1,
                 -1);
-    }
-
-    public static void storeDiffConnRefs(Preferences prefs,
-            List<Connection> prevConnRefs, List<Connection> prevDevConns,
-            List<Connection> connRefs, List<Connection> devConns) {
-        int prevSize = prevConnRefs.size();
-        int size = connRefs.size();
-        removeKeys(prefs, "dicomNetworkConnectionReference", size, prevSize);
-        for (int i = 0; i < size; i++) {
-            int ref = devConns.indexOf(connRefs.get(i));
-            if (i >= prevSize || ref != prevDevConns.indexOf(prevConnRefs.get(i)))
-                prefs.putInt("dicomNetworkConnectionReference." + (i + 1), ref + 1);
-        }
-        if (prevSize != size && size != 0)
-            prefs.putInt("dicomNetworkConnectionReference.#", size);
     }
 
     private void mergeConnections(Device prevDev, Device device, Preferences deviceNode)
@@ -964,14 +939,14 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private void storeDiffs(Preferences prefs, AttributeCoercion a, AttributeCoercion b) {
-        storeDiff(prefs, "dcmDIMSE", a.getDimse(), b.getDimse());
-        storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
-        storeDiff(prefs, "dicomAETitle", a.getAETitle(), b.getAETitle());
-        storeDiff(prefs, "dicomSOPClass", a.getSopClass(), b.getSopClass());
-        storeDiff(prefs, "labeledURI", a.getURI(), b.getURI());
+        PreferencesUtils.storeDiff(prefs, "dcmDIMSE", a.getDimse(), b.getDimse());
+        PreferencesUtils.storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
+        PreferencesUtils.storeDiff(prefs, "dicomAETitle", a.getAETitle(), b.getAETitle());
+        PreferencesUtils.storeDiff(prefs, "dicomSOPClass", a.getSopClass(), b.getSopClass());
+        PreferencesUtils.storeDiff(prefs, "labeledURI", a.getURI(), b.getURI());
     }
 
-    protected void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
+    private void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
             Preferences aeNode) throws BackingStoreException {
         merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
 
@@ -1011,7 +986,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected void loadChilds(Device device, Preferences deviceNode)
+    private void loadChilds(Device device, Preferences deviceNode)
             throws BackingStoreException, ConfigurationException {
         Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         for (int connIndex : sort(connsNode.childrenNames())) {
@@ -1037,7 +1012,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             ext.loadChilds(device, deviceNode);
     }
 
-    protected void loadChilds(ApplicationEntity ae, Preferences aeNode)
+    private void loadChilds(ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
         for (String tcIndex : tcsNode.childrenNames())
@@ -1063,7 +1038,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    protected static int[] sort(String[] ss) {
+    private static int[] sort(String[] ss) {
         int[] a = new int[ss.length];
         for (int i = 0; i < a.length; i++)
             a[i] = Integer.parseInt(ss[i]);
@@ -1071,27 +1046,27 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return a;
     }
 
-    protected Device newDevice(Preferences deviceNode) {
+    private Device newDevice(Preferences deviceNode) {
         return new Device(deviceNode.name());
     }
 
-    protected Connection newConnection() {
+    private Connection newConnection() {
         return new Connection();
     }
 
-    protected ApplicationEntity newApplicationEntity(Preferences aeNode) {
+    private ApplicationEntity newApplicationEntity(Preferences aeNode) {
         return new ApplicationEntity(aeNode.name());
     }
 
-    protected TransferCapability newTransferCapability() {
+    private TransferCapability newTransferCapability() {
         return new TransferCapability();
     }
 
-    protected void loadFrom(TransferCapability tc, Preferences prefs) {
+    private void loadFrom(TransferCapability tc, Preferences prefs) {
         tc.setCommonName(prefs.get("cn", null));
         tc.setSopClass(prefs.get("dicomSOPClass", null));
         tc.setRole(TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)));
-        tc.setTransferSyntaxes(stringArray(prefs, "dicomTransferSyntax"));
+        tc.setTransferSyntaxes(PreferencesUtils.stringArray(prefs, "dicomTransferSyntax"));
         tc.setQueryOptions(toQueryOptions(prefs));
         tc.setStorageOptions(toStorageOptions(prefs));
     }
@@ -1138,12 +1113,12 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return tc;
     }
 
-    protected void loadFrom(Device device, Preferences prefs)
+    private void loadFrom(Device device, Preferences prefs)
             throws CertificateException, BackingStoreException {
         device.setDescription(prefs.get("dicomDescription", null));
         device.setManufacturer(prefs.get("dicomManufacturer", null));
         device.setManufacturerModelName(prefs.get("dicomManufacturerModelName", null));
-        device.setSoftwareVersions(stringArray(prefs, "dicomSoftwareVersion"));
+        device.setSoftwareVersions(PreferencesUtils.stringArray(prefs, "dicomSoftwareVersion"));
         device.setStationName(prefs.get("dicomStationName", null));
         device.setDeviceSerialNumber(prefs.get("dicomDeviceSerialNumber", null));
         device.setIssuerOfPatientID(
@@ -1162,16 +1137,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 issuerOf(prefs.get("dicomIssuerOfContainerIdentifier", null)));
         device.setIssuerOfSpecimenIdentifier(
                 issuerOf(prefs.get("dicomIssuerOfSpecimenIdentifier", null)));
-        device.setInstitutionNames(stringArray(prefs, "dicomInstitutionName"));
+        device.setInstitutionNames(PreferencesUtils.stringArray(prefs, "dicomInstitutionName"));
         device.setInstitutionCodes(codeArray(prefs, "dicomInstitutionCode"));
-        device.setInstitutionAddresses(stringArray(prefs, "dicomInstitutionAddress"));
+        device.setInstitutionAddresses(PreferencesUtils.stringArray(prefs, "dicomInstitutionAddress"));
         device.setInstitutionalDepartmentNames(
-                stringArray(prefs, "dicomInstitutionalDepartmentName"));
-        device.setPrimaryDeviceTypes(stringArray(prefs, "dicomPrimaryDeviceType"));
-        device.setRelatedDeviceRefs(stringArray(prefs, "dicomRelatedDeviceReference"));
-        for (String ref : stringArray(prefs, "dicomAuthorizedNodeCertificateReference"))
+                PreferencesUtils.stringArray(prefs, "dicomInstitutionalDepartmentName"));
+        device.setPrimaryDeviceTypes(PreferencesUtils.stringArray(prefs, "dicomPrimaryDeviceType"));
+        device.setRelatedDeviceRefs(PreferencesUtils.stringArray(prefs, "dicomRelatedDeviceReference"));
+        for (String ref : PreferencesUtils.stringArray(prefs, "dicomAuthorizedNodeCertificateReference"))
             device.setAuthorizedNodeCertificates(ref, loadCertificates(ref));
-        for (String ref : stringArray(prefs, "dicomThisNodeCertificateReference"))
+        for (String ref : PreferencesUtils.stringArray(prefs, "dicomThisNodeCertificateReference"))
             device.setThisNodeCertificates(ref, loadCertificates(ref));
         device.setVendorData(toVendorData(prefs, "dicomVendorData"));
         device.setInstalled(prefs.getBoolean("dicomInstalled", false));
@@ -1196,16 +1171,16 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
             ext.loadFrom(device, prefs);
     }
 
-    protected void loadFrom(Connection conn, Preferences prefs) {
+    private void loadFrom(Connection conn, Preferences prefs) {
         conn.setCommonName(prefs.get("cn", null));
         conn.setHostname(prefs.get("dicomHostname", null));
         conn.setPort(prefs.getInt("dicomPort", Connection.NOT_LISTENING));
-        conn.setTlsCipherSuites(stringArray(prefs, "dicomTLSCipherSuite"));
-        conn.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+        conn.setTlsCipherSuites(PreferencesUtils.stringArray(prefs, "dicomTLSCipherSuite"));
+        conn.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
 
         conn.setProtocol(Protocol.valueOf(prefs.get("dcmProtocol", "DICOM")));
         conn.setHttpProxy(prefs.get("dcmHTTPProxy", null));
-        conn.setBlacklist(stringArray(prefs, "dcmBlacklistedHostname"));
+        conn.setBlacklist(PreferencesUtils.stringArray(prefs, "dcmBlacklistedHostname"));
         conn.setBacklog(prefs.getInt("dcmTCPBacklog", Connection.DEF_BACKLOG));
         conn.setConnectTimeout(
                 prefs.getInt("dcmTCPConnectTimeout", Connection.NO_TIMEOUT));
@@ -1227,7 +1202,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
-        String[] tlsProtocols = stringArray(prefs, "dcmTLSProtocol");
+        String[] tlsProtocols = PreferencesUtils.stringArray(prefs, "dcmTLSProtocol");
         if (tlsProtocols.length > 0)
             conn.setTlsProtocols(tlsProtocols);
         conn.setSendPDULength(prefs.getInt("dcmSendPDULength",
@@ -1241,28 +1216,20 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setPackPDV(prefs.getBoolean("dcmPackPDV", true));
     }
 
-    public static Boolean booleanValue(String s) {
-        return s != null ? Boolean.valueOf(s) : null;
-    }
-
-    protected static Integer intValue(String s) {
-        return s != null ? Integer.valueOf(s) : null;
-    }
-
-    protected void loadFrom(ApplicationEntity ae, Preferences prefs) {
+    private void loadFrom(ApplicationEntity ae, Preferences prefs) {
         ae.setDescription(prefs.get("dicomDescription", null));
         ae.setVendorData(toVendorData(prefs, "dicomVendorData"));
-        ae.setApplicationClusters(stringArray(prefs, "dicomApplicationCluster"));
-        ae.setPreferredCallingAETitles(stringArray(prefs, "dicomPreferredCallingAETitle"));
-        ae.setPreferredCalledAETitles(stringArray(prefs, "dicomPreferredCalledAETitle"));
+        ae.setApplicationClusters(PreferencesUtils.stringArray(prefs, "dicomApplicationCluster"));
+        ae.setPreferredCallingAETitles(PreferencesUtils.stringArray(prefs, "dicomPreferredCallingAETitle"));
+        ae.setPreferredCalledAETitles(PreferencesUtils.stringArray(prefs, "dicomPreferredCalledAETitle"));
         ae.setAssociationInitiator(prefs.getBoolean("dicomAssociationInitiator", false));
         ae.setAssociationAcceptor(prefs.getBoolean("dicomAssociationAcceptor", false));
-        ae.setSupportedCharacterSets(stringArray(prefs, "dicomSupportedCharacterSet"));
-        ae.setInstalled(booleanValue(prefs.get("dicomInstalled", null)));
+        ae.setSupportedCharacterSets(PreferencesUtils.stringArray(prefs, "dicomSupportedCharacterSet"));
+        ae.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
 
-        storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
         ae.setAcceptedCallingAETitles(
-                stringArray(prefs, "dcmAcceptOnlyPreferredCallingAETitle"));
+                PreferencesUtils.stringArray(prefs, "dcmAcceptOnlyPreferredCallingAETitle"));
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.loadFrom(ae, prefs);
@@ -1274,17 +1241,6 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
        for (int i = 0; i < n; i++)
            bb[i] = prefs.getByteArray(key + '.' + (i+1), null);
        return bb;
-    }
-
-    public static String[] stringArray(Preferences prefs, String key)  {
-        int n = prefs.getInt(key + ".#", 0);
-        if (n == 0)
-            return StringUtils.EMPTY_STRING;
-        
-        String[] ss = new String[n];
-        for (int i = 0; i < n; i++)
-            ss[i] = prefs.get(key + '.' + (i+1), null);
-        return ss;
     }
 
     private static Issuer issuerOf(String s) {
@@ -1302,31 +1258,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         return codes;
     }
 
-    public static void storeNotDef(Preferences prefs, String key, int value, int defVal) {
-        if (value != defVal)
-            prefs.putInt(key, value);
-    }
-
-    public static void storeNotDef(Preferences prefs, String key, boolean val, boolean defVal) {
-        if (val != defVal)
-            prefs.putBoolean(key, val);
-    }
-
-    public static void storeNotNull(Preferences prefs, String key, Object value) {
-        if (value != null)
-            prefs.put(key, value.toString());
-    }
-
-    public static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
-        if (values != null && values.length != 0) {
-            int count = 0;
-            for (T value : values)
-                prefs.put(key + '.' + (++count), value.toString());
-            prefs.putInt(key + ".#", count);
-        }
-    }
-
-    protected static void storeNotEmpty(Preferences prefs, String key, byte[][] values) {
+    private static void storeNotEmpty(Preferences prefs, String key, byte[][] values) {
         if (values != null && values.length != 0) {
             int count = 0;
             for (byte[] value : values)
@@ -1335,51 +1267,19 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public static <T> void storeDiff(Preferences prefs, String key, T prev, T val) {
-        if (val == null) {
-            if (prev != null)
-                prefs.remove(key);
-        } else if (!val.equals(prev))
-            prefs.put(key, val.toString());
-    }
-
-    public static void storeDiff(Preferences prefs, String key,
-            boolean prev, boolean val, boolean defVal) {
-        if (prev != val)
-            if (val == defVal)
-                prefs.remove(key);
-            else
-                prefs.putBoolean(key, val);
-    }
-
-    public static void storeDiff(Preferences prefs, String key, int prev, int val, int defVal) {
-        if (prev != val)
-            if (val == defVal)
-                prefs.remove(key);
-            else
-                prefs.putInt(key, val);
-     }
-
-    protected static <T> void storeDiff(Preferences prefs, String key, T[] prevs, T[] vals) {
+    private static <T> void storeDiff(Preferences prefs, String key, T[] prevs, T[] vals) {
         if (!Arrays.equals(prevs, vals)) {
-            removeKeys(prefs, key, vals.length, prevs.length);
-            storeNotEmpty(prefs, key, vals);
+            PreferencesUtils.removeKeys(prefs, key, vals.length, prevs.length);
+            PreferencesUtils.storeNotEmpty(prefs, key, vals);
         }
     }
 
-    protected static void storeDiff(Preferences prefs, String key,
+    private static void storeDiff(Preferences prefs, String key,
             byte[][] prevs, byte[][] vals) {
         if (!equals(prevs, vals)) {
-            removeKeys(prefs, key, vals.length, prevs.length);
+            PreferencesUtils.removeKeys(prefs, key, vals.length, prevs.length);
             storeNotEmpty(prefs, key, vals);
         }
-    }
-
-    public static void removeKeys(Preferences prefs, String key, int from, int to) {
-        for (int i = from; i < to;) 
-            prefs.remove(key + '.' + (++i));
-        if (from == 0)
-            prefs.remove(key + ".#");
     }
 
     private static boolean equals(byte[][] bb1, byte[][] bb2) {
@@ -1422,7 +1322,7 @@ public class PreferencesDicomConfiguration implements DicomConfiguration {
     public synchronized void removeCertificates(String certRef)
             throws ConfigurationException {
         Preferences prefs = rootPrefs.node(certRef);
-        removeKeys(prefs, USER_CERTIFICATE, 0, 
+        PreferencesUtils.removeKeys(prefs, USER_CERTIFICATE, 0, 
                 prefs.getInt(USER_CERTIFICATE + ".#", 0));
         try {
             prefs.flush();

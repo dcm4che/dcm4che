@@ -1083,10 +1083,9 @@ public class Device implements Serializable {
          }
          for (Connection src : from.conns) {
              Connection conn = connectionWithEqualsRDN(src);
-             if (conn != null)
-                 conn.reconfigure(src);
-             else
-                 src.addCopyTo(this);
+             if (conn == null)
+                 this.addConnection(conn = new Connection());
+             conn.reconfigure(src);
          }
     }
 
@@ -1094,10 +1093,9 @@ public class Device implements Serializable {
          aes.keySet().retainAll(from.aes.keySet());
          for (ApplicationEntity src : from.aes.values()) {
              ApplicationEntity ae = aes.get(src.getAETitle());
-             if (ae != null)
-                 ae.reconfigure(src);
-             else
-                 src.addCopyTo(this);
+             if (ae == null)
+                 addApplicationEntity(ae = new ApplicationEntity(src.getAETitle()));
+             ae.reconfigure(src);
          }
      }
 
@@ -1118,11 +1116,16 @@ public class Device implements Serializable {
             }
         }
         for (DeviceExtension src : from.extensions) {
-            DeviceExtension ext = getDeviceExtension(src.getClass());
-            if (ext != null)
-                ext.reconfigure(src);
-            else
-                src.addTo(this);
+            Class<? extends DeviceExtension> clazz = src.getClass();
+            DeviceExtension ext = getDeviceExtension(clazz);
+            if (ext == null)
+                try {
+                    addDeviceExtension(ext = clazz.newInstance());
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to instantiate " + clazz.getName(), e);
+                }
+            ext.reconfigure(src);
         }
     }
 

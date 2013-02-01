@@ -83,7 +83,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class Connection implements Serializable, Cloneable {
+public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
@@ -1075,16 +1075,6 @@ public class Connection implements Serializable, Cloneable {
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
         setInstalled(from.installed);
-    }
-
-    void addCopyTo(Device device) {
-        try {
-            Connection conn = (Connection) super.clone();
-            conn.device = null;
-            device.addConnection(conn);
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
     }
 
 }

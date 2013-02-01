@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -77,7 +78,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ApplicationEntity implements Serializable, Cloneable {
+public class ApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 3883790997057469573L;
 
@@ -633,6 +634,7 @@ public class ApplicationEntity implements Serializable, Cloneable {
         setApplicationEntityAttributes(src);
         device.reconfigureConnections(conns, src.conns);
         reconfigureTransferCapabilities(src);
+        reconfigureAEExtensions(src);
     }
 
     private void reconfigureTransferCapabilities(ApplicationEntity src) {
@@ -640,6 +642,28 @@ public class ApplicationEntity implements Serializable, Cloneable {
         scuTCs.putAll(src.scuTCs);
         scpTCs.clear();
         scpTCs.putAll(src.scpTCs);
+    }
+
+    private void reconfigureAEExtensions(ApplicationEntity from) {
+        for (Iterator<AEExtension> it = extensions.iterator();
+                it.hasNext();) {
+            AEExtension ext = it.next();
+            if (from.getAEExtension(ext.getClass()) == null) {
+                it.remove();
+            }
+        }
+        for (AEExtension src : from.extensions) {
+            Class<? extends AEExtension> clazz = src.getClass();
+            AEExtension ext = getAEExtension(clazz);
+            if (ext == null)
+                try {
+                    addAEExtension(ext = clazz.newInstance());
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to instantiate " + clazz.getName(), e);
+                }
+            ext.reconfigure(src);
+        }
     }
 
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
@@ -659,17 +683,6 @@ public class ApplicationEntity implements Serializable, Cloneable {
             Collection<String> acceptedCallingAETs) {
         acceptedCallingAETs.clear();
         acceptedCallingAETs.addAll(acceptedCallingAETs);
-    }
-
-    void addCopyTo(Device device) {
-        try {
-            ApplicationEntity ae = (ApplicationEntity) clone();
-            ae.device = null;
-            device.reconfigureConnections(ae.conns, conns);
-            device.addApplicationEntity(ae);
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
     }
 
     public void addAEExtension(AEExtension ext) {

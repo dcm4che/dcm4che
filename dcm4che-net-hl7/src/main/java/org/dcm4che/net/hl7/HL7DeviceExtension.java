@@ -128,7 +128,6 @@ public class HL7DeviceExtension extends DeviceExtension {
 
     @Override
     public void reconfigure(DeviceExtension from)  {
-        super.reconfigure(from);
         reconfigureHL7Applications((HL7DeviceExtension) from);
     }
 
@@ -136,10 +135,9 @@ public class HL7DeviceExtension extends DeviceExtension {
         hl7apps.keySet().retainAll(from.hl7apps.keySet());
         for (HL7Application src : from.hl7apps.values()) {
             HL7Application hl7app = hl7apps.get(src.getApplicationName());
-            if (hl7app != null)
-                hl7app.reconfigure(src);
-            else
-                src.addCopyTo(this);
+            if (hl7app == null)
+                addHL7Application(hl7app = new HL7Application(src.getApplicationName()));
+            hl7app.reconfigure(src);
         }
     }
 }

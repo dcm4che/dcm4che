@@ -65,11 +65,5 @@ public class DeviceExtension implements Serializable {
 
     public void reconfigure(DeviceExtension from) { }
 
-    // invoked by device.reconfigure(from)
-    public void addTo(Device device) {
-        this.device = null;
-        device.addDeviceExtension(this);
-    }
-
     public void remove() {}
 }

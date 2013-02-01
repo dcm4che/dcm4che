@@ -37,28 +37,40 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.net;
 
-import java.io.Serializable;
+import static org.junit.Assert.*;
+
+import java.util.List;
+
+import org.junit.Test;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class AEExtension implements Serializable {
+public class DeviceTest {
 
-    private static final long serialVersionUID = -8287458555186708798L;
-
-    protected ApplicationEntity ae;
-
-    public final ApplicationEntity getApplicationEntity() {
-        return ae;
+    /**
+     * Test method for {@link org.dcm4che.net.Device#reconfigure(org.dcm4che.net.Device)}.
+     */
+    @Test
+    public void testReconfigure() throws Exception {
+        Device d1 = createDevice("test", "AET1");
+        Device d2 = createDevice("test", "AET2");
+        d1.reconfigure(d2);
+        ApplicationEntity ae = d1.getApplicationEntity("AET2");
+        assertNotNull(ae);
+        List<Connection> conns = ae.getConnections();
+        assertEquals(1, conns.size());
     }
 
-    void setApplicationEntity(ApplicationEntity ae) {
-        if (ae != null && this.ae != null)
-            throw new IllegalStateException(
-                    "already owned by AE: " + ae.getAETitle());
-        this.ae = ae;
+    private Device createDevice(String name, String aet) {
+        Device dev = new Device(name);
+        Connection conn = new Connection("dicom", "localhost", 11112);
+        dev.addConnection(conn);
+        ApplicationEntity ae = new ApplicationEntity(aet);
+        dev.addApplicationEntity(ae);
+        ae.addConnection(conn);
+        return dev;
     }
 
-    public void reconfigure(AEExtension from) { }
 }

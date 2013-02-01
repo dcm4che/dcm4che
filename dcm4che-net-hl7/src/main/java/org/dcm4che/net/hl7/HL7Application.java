@@ -44,6 +44,7 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -265,6 +266,29 @@ public class HL7Application implements Serializable {
     void reconfigure(HL7Application src) {
         setHL7ApplicationAttributes(src);
         device.reconfigureConnections(conns, src.conns);
+        reconfigureHL7ApplicationExtensions(src);
+    }
+
+    private void reconfigureHL7ApplicationExtensions(HL7Application from) {
+        for (Iterator<HL7ApplicationExtension> it = extensions.iterator();
+                it.hasNext();) {
+            HL7ApplicationExtension ext = it.next();
+            if (from.getHL7ApplicationExtension(ext.getClass()) == null) {
+                it.remove();
+            }
+        }
+        for (HL7ApplicationExtension src : from.extensions) {
+            Class<? extends HL7ApplicationExtension> clazz = src.getClass();
+            HL7ApplicationExtension ext = getHL7ApplicationExtension(clazz);
+            if (ext == null)
+                try {
+                    addHL7ApplicationExtension(ext = clazz.newInstance());
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to instantiate " + clazz.getName(), e);
+                }
+            ext.reconfigure(src);
+        }
     }
 
     protected void setHL7ApplicationAttributes(HL7Application src) {
@@ -274,16 +298,6 @@ public class HL7Application implements Serializable {
         setInstalled(src.installed);
     }
 
-    void addCopyTo(HL7DeviceExtension hl7Ext) {
-        try {
-            HL7Application hl7app = (HL7Application) clone();
-            hl7app.device = null;
-            hl7Ext.getDevice().reconfigureConnections(hl7app.conns, conns);
-            hl7Ext.addHL7Application(hl7app);
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
-    }
     public void addHL7ApplicationExtension(HL7ApplicationExtension ext) {
         ext.setHL7Application(this);
         extensions.add(ext);

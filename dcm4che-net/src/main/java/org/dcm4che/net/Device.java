@@ -122,7 +122,7 @@ public class Device implements Serializable {
             new LinkedHashMap<String, ApplicationEntity>();
     private final List<DeviceExtension> extensions = new ArrayList<DeviceExtension>();
 
-    private transient AssociationHandler associationHandler;
+    private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;
 
     private transient int assocCount = 0;

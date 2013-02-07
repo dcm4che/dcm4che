@@ -490,7 +490,7 @@ public class Association {
             rspHandlerForMsgId.notifyAll();
         }
         if (ae != null)
-            ae.onClose(this);
+            ae.getDevice().getAssociationHandler().onClose(this);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
@@ -505,24 +505,11 @@ public class Association {
         name = rq.getCallingAET() + delim() + serialNo;
         enterState(State.Sta3);
         try {
-            if ((rq.getProtocolVersion() & 1) == 0)
-                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                        AAssociateRJ.REASON_PROTOCOL_VERSION_NOT_SUPPORTED);
-            if (!rq.getApplicationContext().equals(
-                    UID.DICOMApplicationContextName))
-                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJ.SOURCE_SERVICE_USER,
-                        AAssociateRJ.REASON_APP_CTX_NAME_NOT_SUPPORTED);
             ae = device.getApplicationEntity(rq.getCalledAET());
-            if (ae == null || !ae.getConnections().contains(conn))
-                throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                        AAssociateRJ.SOURCE_SERVICE_USER,
-                        AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-            ac = ae.negotiate(this, rq);
+            ac = device.getAssociationHandler().negotiate(this, rq);
             initPCMap();
             maxOpsInvoked = ac.getMaxOpsPerformed();
-            maxPDULength = ApplicationEntity.minZeroAsMax(
+            maxPDULength = Association.minZeroAsMax(
                     rq.getMaxPDULength(), conn.getSendPDULength());
             write(ac);
         } catch (AAssociateRJ e) {
@@ -541,7 +528,7 @@ public class Association {
         this.ac = ac;
         initPCMap();
         maxOpsInvoked = ac.getMaxOpsInvoked();
-        maxPDULength = ApplicationEntity.minZeroAsMax(
+        maxPDULength = Association.minZeroAsMax(
                 ac.getMaxPDULength(), conn.getSendPDULength());
         enterState(State.Sta6);
         startIdleTimeout();
@@ -1185,6 +1172,10 @@ public class Association {
         addDimseRSPHandler(rspHandler);
         encoder.writeDIMSE(pc, cmd, data);
         startTimeout(rspHandler.getMessageID(), rspTimeout);
+    }
+
+    static int minZeroAsMax(int i1, int i2) {
+        return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
     }
 
 }

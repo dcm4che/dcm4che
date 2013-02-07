@@ -122,6 +122,7 @@ public class Device implements Serializable {
             new LinkedHashMap<String, ApplicationEntity>();
     private final List<DeviceExtension> extensions = new ArrayList<DeviceExtension>();
 
+    private transient AssociationHandler associationHandler;
     private transient DimseRQHandler dimseRQHandler;
 
     private transient int assocCount = 0;
@@ -675,6 +676,16 @@ public class Device implements Serializable {
 
     public final DimseRQHandler getDimseRQHandler() {
         return dimseRQHandler;
+    }
+
+    public final AssociationHandler getAssociationHandler() {
+        return associationHandler;
+    }
+
+    public void setAssociationHandler(AssociationHandler associationHandler) {
+        if (associationHandler == null)
+            throw new NullPointerException();
+        this.associationHandler = associationHandler;
     }
 
     public void bindConnections() throws IOException, GeneralSecurityException {

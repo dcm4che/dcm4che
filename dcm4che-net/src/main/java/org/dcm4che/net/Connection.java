@@ -1030,10 +1030,6 @@ public class Connection implements Serializable {
         return new InetSocketAddress(maskLoopBackAddress(addr()), 0);
     }
 
-    protected void onAccept(Socket s) throws IOException {
-        new Association(null, Connection.this, s);
-    }
-
     private static InetAddress maskLoopBackAddress(InetAddress addr) {
         return addr != null && addr.isLoopbackAddress() ? null : addr;
     }

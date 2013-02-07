@@ -54,13 +54,11 @@ import java.util.List;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.net.pdu.AAbort;
 import org.dcm4che.net.pdu.AAssociateAC;
-import org.dcm4che.net.pdu.AAssociateRJ;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.CommonExtendedNegotiation;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
-import org.dcm4che.net.pdu.UserIdentityAC;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +104,6 @@ public class ApplicationEntity implements Serializable {
     private final List<AEExtension> extensions =
             new ArrayList<AEExtension>();
 
-    private transient UserIdentityNegotiator userIdNegotiator;
     private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity(String aeTitle) {
@@ -252,10 +249,15 @@ public class ApplicationEntity implements Serializable {
                 new String[acceptedCallingAETs.size()]);
     }
 
-    public void setAcceptedCallingAETitles(String... names) {
+    public void setAcceptedCallingAETitles(String... aets) {
         acceptedCallingAETs.clear();
-        for (String name : names)
+        for (String name : aets)
             acceptedCallingAETs.add(name);
+    }
+
+    public boolean isAcceptedCallingAETitle(String aet) {
+        return acceptedCallingAETs.isEmpty()
+                || acceptedCallingAETs.contains(aet);
     }
 
     /**
@@ -432,48 +434,7 @@ public class ApplicationEntity implements Serializable {
         return (role == TransferCapability.Role.SCU ? scuTCs : scpTCs).get(sopClass);
     }
 
-    protected AAssociateAC negotiate(Association as, AAssociateRQ rq)
-            throws IOException {
-        if (!(isInstalled() && acceptor && conns.contains(as.getConnection())))
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJ.SOURCE_SERVICE_USER,
-                    AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
-        if (!(acceptedCallingAETs.isEmpty() || acceptedCallingAETs.contains(rq.getCallingAET())))
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_PERMANENT,
-                    AAssociateRJ.SOURCE_SERVICE_USER,
-                    AAssociateRJ.REASON_CALLING_AET_NOT_RECOGNIZED);
-        UserIdentityAC userIdentity = userIdNegotiator != null
-                ? userIdNegotiator.negotiate(as, rq.getUserIdentityRQ())
-                : null;
-        if (device.isLimitOfOpenAssociationsExceeded())
-            throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
-                    AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
-        AAssociateAC ac = new AAssociateAC();
-        ac.setCalledAET(rq.getCalledAET());
-        ac.setCallingAET(rq.getCallingAET());
-        Connection conn = as.getConnection();
-        ac.setMaxPDULength(conn.getReceivePDULength());
-        ac.setMaxOpsInvoked(minZeroAsMax(rq.getMaxOpsInvoked(),
-                conn.getMaxOpsPerformed()));
-        ac.setMaxOpsPerformed(minZeroAsMax(rq.getMaxOpsPerformed(),
-                conn.getMaxOpsInvoked()));
-        ac.setUserIdentityAC(userIdentity);
-        return negotiate(as, rq, ac);
-    }
-
-    protected AAssociateAC negotiate(Association as, AAssociateRQ rq, AAssociateAC ac)
-            throws IOException {
-        for (PresentationContext rqpc : rq.getPresentationContexts())
-            ac.addPresentationContext(negotiate(rq, ac, rqpc));
-        return ac;
-    }
-
-    static int minZeroAsMax(int i1, int i2) {
-        return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
-    }
-
-    private PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
+    protected PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
            PresentationContext rqpc) {
        String as = rqpc.getAbstractSyntax();
        TransferCapability tc = roleSelection(rq, ac, as);
@@ -603,12 +564,6 @@ public class ApplicationEntity implements Serializable {
         if (rq.getCalledAET() == null)
             rq.setCalledAET(remote.getAETitle());
         return connect(cc.getLocalConnection(), cc.getRemoteConnection(), rq);
-    }
-
-    protected void onClose(Association as) {
-        DimseRQHandler tmp = getDimseRQHandler();
-        if (tmp != null)
-            tmp.onClose(as);
     }
 
     @Override

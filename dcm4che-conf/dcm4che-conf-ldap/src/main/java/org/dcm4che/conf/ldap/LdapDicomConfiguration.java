@@ -202,6 +202,15 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return configurationDN != null || findConfiguration();
     }
 
+    public boolean exists(String dn) throws NamingException {
+        try {
+            ctx.getAttributes(dn);
+            return true;
+        } catch (NameNotFoundException e) {
+            return false;
+        }
+    }
+
     @Override
     public synchronized boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists())
@@ -222,7 +231,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ensureConfigurationExists();
         try {
             createSubcontext(aetDN(aet, aetsRegistryDN),
-                    attrs("dicomUniqueAETitle", "dicomAETitle", aet));
+                    LdapUtils.attrs("dicomUniqueAETitle", "dicomAETitle", aet));
             return true;
         } catch (NameAlreadyBoundException e) {
             return false;
@@ -250,7 +259,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             .getApplicationEntity(aet);
     }
 
-    public Device findDevice(String filter, String childName)
+    public synchronized Device findDevice(String filter, String childName)
             throws ConfigurationException {
         if (!configurationExists())
             throw new ConfigurationNotFoundException();
@@ -301,7 +310,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return list(aetsRegistryDN, "(objectclass=dicomUniqueAETitle)", "dicomAETitle");
     }
 
-    private String[] list(String dn, String filter, String attrID)
+    public synchronized String[] list(String dn, String filter, String attrID)
             throws ConfigurationException {
         ArrayList<String> values = new ArrayList<String>();
         NamingEnumeration<SearchResult> ne = null;
@@ -449,15 +458,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public void createSubcontext(String name, Attributes attrs) throws NamingException {
+    public synchronized void createSubcontext(String name, Attributes attrs)
+            throws NamingException {
         safeClose(ctx.createSubcontext(name, attrs));
     }
 
-    public void destroySubcontext(String dn) throws NamingException {
+    public synchronized void destroySubcontext(String dn) throws NamingException {
         ctx.destroySubcontext(dn);
     }
 
-    public void destroySubcontextWithChilds(String name) throws NamingException {
+    public synchronized void destroySubcontextWithChilds(String name)
+            throws NamingException {
         NamingEnumeration<NameClassPair> list = ctx.list(name);
         try {
             while (list.hasMore())
@@ -474,13 +485,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         this.aetsRegistryDN = CN_UNIQUE_AE_TITLES_REGISTRY + configurationDN;
     }
 
-    private void clearConfigurationDN() {
+    public String getConfigurationDN() {
+        return configurationDN;
+    }
+
+   private void clearConfigurationDN() {
         this.configurationDN = null;
         this.devicesDN = null;
         this.aetsRegistryDN = null;
     }
 
-    private void ensureConfigurationExists() throws ConfigurationException {
+    public void ensureConfigurationExists() throws ConfigurationException {
         if (!configurationExists())
             initConfiguration();
     }
@@ -489,11 +504,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         setConfigurationDN("cn=" + configurationCN + ',' + baseDN);
         try {
             createSubcontext(configurationDN,
-                    attrs(configurationRoot, "cn", configurationCN));
+                    LdapUtils.attrs(configurationRoot, "cn", configurationCN));
             createSubcontext(devicesDN,
-                    attrs("dicomDevicesRoot", "cn", "Devices"));
+                    LdapUtils.attrs("dicomDevicesRoot", "cn", "Devices"));
             createSubcontext(aetsRegistryDN,
-                    attrs("dicomUniqueAETitlesRegistryRoot", 
+                    LdapUtils.attrs("dicomUniqueAETitlesRegistryRoot", 
                             "cn", "Unique AE Titles Registry"));
             LOG.info("Create DICOM Configuration at {}", configurationDN);
         } catch (NamingException e) {
@@ -1538,13 +1553,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             ? LdapUtils.dnOf("cn", cn , aeDN)
             : LdapUtils.dnOf("dicomSOPClass", tc.getSopClass(),
                    "dicomTransferRole", tc.getRole().toString(), aeDN);
-    }
-
-    private static Attributes attrs(String objectclass, String attrID, String attrVal) {
-        Attributes attrs = new BasicAttributes(true); // case-ignore
-        attrs.put("objectclass", objectclass);
-        LdapUtils.storeNotNull(attrs, attrID, attrVal);
-        return attrs;
     }
 
     private static void storeNotEmpty(Attributes attrs, String attrID, byte[]... vals) {

@@ -40,6 +40,7 @@ package org.dcm4che.conf.prefs.hl7;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
@@ -73,6 +74,20 @@ public class PreferencesHL7ConfigurationTest {
     @After
     public void tearDown() throws Exception {
         config.purgeConfiguration();
+    }
+
+    @Test
+    public void testRegisterApplicationName() throws Exception {
+        hl7Ext.unregisterHL7Application("TEST-APP1^DCM4CHE");
+        assertTrue(hl7Ext.registerHL7Application("TEST-APP1^DCM4CHE"));
+        assertFalse(hl7Ext.registerHL7Application("TEST-APP1^DCM4CHE"));
+        assertTrue(
+                Arrays.asList(hl7Ext.listRegisteredHL7ApplicationNames())
+                .contains("TEST-APP1^DCM4CHE"));
+        hl7Ext.unregisterHL7Application("TEST-APP1^DCM4CHE");
+        assertFalse(
+                Arrays.asList(hl7Ext.listRegisteredHL7ApplicationNames())
+                .contains("TEST-APP1^DCM4CHE"));
     }
 
     @Test

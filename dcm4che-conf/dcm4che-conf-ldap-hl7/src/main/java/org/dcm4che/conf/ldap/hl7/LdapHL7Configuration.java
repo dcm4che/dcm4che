@@ -41,6 +41,8 @@ package org.dcm4che.conf.ldap.hl7;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -56,6 +58,7 @@ import org.dcm4che.conf.ldap.LdapUtils;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7DeviceExtension;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -63,6 +66,11 @@ import org.dcm4che.net.hl7.HL7DeviceExtension;
  */
 public class LdapHL7Configuration extends LdapDicomConfigurationExtension
         implements HL7Configuration {
+
+    private static final String CN_UNIQUE_HL7_APPLICATION_NAMES_REGISTRY =
+            "cn=Unique HL7 Application Names Registry,";
+
+    private String appNamesRegistryDN;
 
     private final List<LdapHL7ConfigurationExtension> extensions =
             new ArrayList<LdapHL7ConfigurationExtension>();
@@ -80,7 +88,82 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
     }
 
     @Override
-    public synchronized HL7Application findHL7Application(String name)
+    public boolean registerHL7Application(String name)
+            throws ConfigurationException {
+        ensureAppNamesRegistryExists();
+        try {
+            config.createSubcontext(hl7appDN(name, appNamesRegistryDN),
+                    LdapUtils.attrs("hl7UniqueApplicationName", "hl7ApplicationName", name));
+            return true;
+        } catch (NameAlreadyBoundException e) {
+            return false;
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+       }
+    }
+
+    @Override
+    public void unregisterHL7Application(String name)
+            throws ConfigurationException {
+        if (appNamesRegistryExists())
+            try {
+                config.destroySubcontext(hl7appDN(name, appNamesRegistryDN));
+            } catch (NameNotFoundException e) {
+            } catch (NamingException e) {
+                throw new ConfigurationException(e);
+            }
+    }
+
+    private void ensureAppNamesRegistryExists() throws ConfigurationException {
+        if (appNamesRegistryDN != null)
+            return;
+        
+        config.ensureConfigurationExists();
+        String dn = CN_UNIQUE_HL7_APPLICATION_NAMES_REGISTRY
+                + config.getConfigurationDN();
+        try {
+            if (!config.exists(dn))
+                config.createSubcontext(dn,
+                        LdapUtils.attrs("hl7UniqueApplicationNamesRegistryRoot", 
+                                "cn", "Unique HL7 Application Names Registry"));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+        appNamesRegistryDN = dn;
+    }
+
+    private boolean appNamesRegistryExists() throws ConfigurationException {
+        if (appNamesRegistryDN != null)
+            return true;
+        
+        if (!config.configurationExists())
+            return false;
+        
+        String dn = CN_UNIQUE_HL7_APPLICATION_NAMES_REGISTRY
+                + config.getConfigurationDN();
+        try {
+            if (!config.exists(dn))
+                return false;
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+        
+        appNamesRegistryDN = dn;
+        return true;
+    }
+
+    @Override
+    public String[] listRegisteredHL7ApplicationNames()
+            throws ConfigurationException {
+        if (!appNamesRegistryExists())
+            return StringUtils.EMPTY_STRING;
+
+        return config.list(appNamesRegistryDN, 
+                "(objectclass=hl7UniqueApplicationName)", "hl7ApplicationName");
+    }
+
+    @Override
+    public HL7Application findHL7Application(String name)
             throws ConfigurationException {
         Device device = config.findDevice(
             "(&(objectclass=hl7Application)(hl7ApplicationName=" + name + "))",

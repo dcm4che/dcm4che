@@ -46,6 +46,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
@@ -280,6 +281,13 @@ public class LdapUtils {
         return (o instanceof Boolean)
                 ? toString(((Boolean) o).booleanValue())
                 : o != null ? o.toString() : null;
+    }
+
+    public static Attributes attrs(String objectclass, String attrID, String attrVal) {
+        Attributes attrs = new BasicAttributes(true); // case-ignore
+        attrs.put("objectclass", objectclass);
+        storeNotNull(attrs, attrID, attrVal);
+        return attrs;
     }
 
 }

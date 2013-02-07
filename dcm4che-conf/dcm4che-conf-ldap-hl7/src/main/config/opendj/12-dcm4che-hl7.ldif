@@ -24,6 +24,11 @@ attributeTypes: ( 1.2.40.0.13.1.0.15.0.3.4 NAME 'hl7DefaultCharacterSet'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
+objectClasses: ( 1.2.40.0.13.1.0.15.0.4.3 NAME 'hl7UniqueApplicationNamesRegistryRoot'
+  DESC 'Root of the Unique HL7 Application Name Registry Hierarchy'
+  SUP top STRUCTURAL
+  MUST ( cn ) 
+  MAY ( description ) )
 objectClasses: ( 1.2.40.0.13.1.0.15.0.4.5 NAME 'hl7Application'
   DESC 'HL7 Application information'
   SUP top STRUCTURAL
@@ -35,3 +40,7 @@ objectClasses: ( 1.2.40.0.13.1.0.15.0.4.5 NAME 'hl7Application'
     hl7AcceptedMessageType $
     hl7DefaultCharacterSet $
     dicomInstalled ) )
+objectClasses: ( 1.2.40.0.13.1.0.15.0.4.7 NAME 'hl7UniqueApplicationName'
+  DESC 'A Unique HL7 Application Entity title'
+  SUP top STRUCTURAL
+    MUST ( hl7ApplicationName ) )

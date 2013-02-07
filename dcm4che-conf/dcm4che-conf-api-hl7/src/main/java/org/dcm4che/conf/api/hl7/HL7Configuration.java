@@ -47,5 +47,11 @@ import org.dcm4che.net.hl7.HL7Application;
  */
 public interface HL7Configuration {
 
+    boolean registerHL7Application(String name) throws ConfigurationException;
+
+    void unregisterHL7Application(String name) throws ConfigurationException;
+
     HL7Application findHL7Application(String name) throws ConfigurationException;
+
+    String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
 }

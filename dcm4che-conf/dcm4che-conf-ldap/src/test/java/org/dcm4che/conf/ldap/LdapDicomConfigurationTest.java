@@ -80,7 +80,13 @@ public class LdapDicomConfigurationTest {
         config.unregisterAETitle("TEST-AET1");
         assertTrue(config.registerAETitle("TEST-AET1"));
         assertFalse(config.registerAETitle("TEST-AET1"));
+        assertTrue(
+                Arrays.asList(config.listRegisteredAETitles())
+                .contains("TEST-AET1"));
         config.unregisterAETitle("TEST-AET1");
+        assertFalse(
+                Arrays.asList(config.listRegisteredAETitles())
+                .contains("TEST-AET1"));
     }
 
     @Test

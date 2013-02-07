@@ -111,6 +111,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         this.rootPrefs = rootPrefs;
     }
 
+    public final Preferences getRootPrefs() {
+        return rootPrefs;
+    }
+
     public void addDicomConfigurationExtension(PreferencesDicomConfigurationExtension ext) {
         ext.setDicomConfiguration(this);
         extensions.add(ext);
@@ -127,11 +131,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public boolean configurationExists() throws ConfigurationException {
-        return nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT);
+        return PreferencesUtils.nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT);
     }
 
     public Preferences getDicomConfigurationRoot() throws ConfigurationException {
-        if (!nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT))
+        if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT))
             throw new ConfigurationNotFoundException();
 
         return rootPrefs.node(DICOM_CONFIGURATION_ROOT);
@@ -156,7 +160,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     @Override
     public synchronized boolean registerAETitle(String aet) throws ConfigurationException {
         String pathName = aetRegistryPathNameOf(aet);
-        if (nodeExists(rootPrefs, pathName))
+        if (PreferencesUtils.nodeExists(rootPrefs, pathName))
             return false;
         try {
             rootPrefs.node(pathName).flush();
@@ -166,17 +170,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
-   @Override
-    public synchronized void unregisterAETitle(String aet) throws ConfigurationException {
-        String pathName = aetRegistryPathNameOf(aet);
-        if (nodeExists(rootPrefs, pathName))
-        try {
-            Preferences node = rootPrefs.node(pathName);
-            node.removeNode();
-            node.flush();
-        } catch (BackingStoreException e) {
-            throw new ConfigurationException(e);
-        }
+    @Override
+    public synchronized void unregisterAETitle(String aet)
+            throws ConfigurationException {
+        PreferencesUtils.removeNode(rootPrefs, aetRegistryPathNameOf(aet));
     }
 
     private String aetRegistryPathNameOf(String aet) {
@@ -194,9 +191,9 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         return findDevice("dcmNetworkAE", aet).getApplicationEntity(aet);
     }
 
-    public Device findDevice(String nodeName, String childName)
+    public synchronized Device findDevice(String nodeName, String childName)
             throws ConfigurationException {
-         if (!nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
+         if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             throw new ConfigurationNotFoundException();
         
         try {
@@ -220,7 +217,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     public synchronized Device loadDevice(String pathName) throws ConfigurationException,
             ConfigurationNotFoundException {
-        if (!nodeExists(rootPrefs, pathName))
+        if (!PreferencesUtils.nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
 
         return loadDevice(rootPrefs.node(pathName));
@@ -228,7 +225,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String[] listDeviceNames() throws ConfigurationException {
-        if (!nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
+        if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             return StringUtils.EMPTY_STRING;
 
         try {
@@ -240,7 +237,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String[] listRegisteredAETitles() throws ConfigurationException {
-        if (!nodeExists(rootPrefs, DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT))
+        if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_UNIQUE_AE_TITLES_REGISTRY_ROOT))
             return StringUtils.EMPTY_STRING;
 
         try {
@@ -254,7 +251,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public synchronized void persist(Device device) throws ConfigurationException {
         String deviceName = device.getDeviceName();
         String pathName = deviceRef(deviceName);
-        if (nodeExists(rootPrefs, pathName))
+        if (PreferencesUtils.nodeExists(rootPrefs, pathName))
             throw new ConfigurationAlreadyExistsException(pathName);
 
         Preferences deviceNode = rootPrefs.node(pathName);
@@ -348,7 +345,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     @Override
     public synchronized void merge(Device device) throws ConfigurationException {
         String pathName = deviceRef(device.getDeviceName());
-        if (!nodeExists(rootPrefs, pathName))
+        if (!PreferencesUtils.nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
         
         Preferences devicePrefs = rootPrefs.node(pathName);
@@ -392,22 +389,13 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     @Override
     public synchronized void removeDevice(String name) throws ConfigurationException {
         String pathName = deviceRef(name);
-        if (!nodeExists(rootPrefs, pathName))
+        if (!PreferencesUtils.nodeExists(rootPrefs, pathName))
             throw new ConfigurationNotFoundException();
 
         try {
             Preferences node = rootPrefs.node(pathName);
             node.removeNode();
             node.flush();
-        } catch (BackingStoreException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    private static boolean nodeExists(Preferences prefs, String pathName)
-            throws ConfigurationException {
-        try {
-            return prefs.nodeExists(pathName);
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }

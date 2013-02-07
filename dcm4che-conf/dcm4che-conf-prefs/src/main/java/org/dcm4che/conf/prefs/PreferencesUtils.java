@@ -38,8 +38,10 @@
 package org.dcm4che.conf.prefs;
 
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.Connection;
 import org.dcm4che.util.StringUtils;
 
@@ -143,6 +145,28 @@ public class PreferencesUtils {
                     devConns.indexOf(conn) + 1);
         }
         prefs.putInt("dicomNetworkConnectionReference.#", refCount);
+    }
+
+    public static boolean nodeExists(Preferences prefs, String pathName)
+            throws ConfigurationException {
+        try {
+            return prefs.nodeExists(pathName);
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    public static void removeNode(Preferences prefs, String pathName)
+            throws ConfigurationException {
+        try {
+            if (prefs.nodeExists(pathName)) {
+                Preferences node = prefs.node(pathName);
+                node.removeNode();
+                node.flush();
+            }
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
 }

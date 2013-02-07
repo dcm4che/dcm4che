@@ -39,6 +39,10 @@
 package org.dcm4che.conf.ldap.hl7;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 
 import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.conf.ldap.LdapDicomConfiguration;
@@ -70,6 +74,20 @@ public class LdapHL7ConfigurationTest {
     @After
     public void tearDown() throws Exception {
         config.close();
+    }
+
+    @Test
+    public void testRegisterApplicationName() throws Exception {
+        hl7Ext.unregisterHL7Application("TEST-APP1^DCM4CHE");
+        assertTrue(hl7Ext.registerHL7Application("TEST-APP1^DCM4CHE"));
+        assertFalse(hl7Ext.registerHL7Application("TEST-APP1^DCM4CHE"));
+        assertTrue(
+                Arrays.asList(hl7Ext.listRegisteredHL7ApplicationNames())
+                .contains("TEST-APP1^DCM4CHE"));
+        hl7Ext.unregisterHL7Application("TEST-APP1^DCM4CHE");
+        assertFalse(
+                Arrays.asList(hl7Ext.listRegisteredHL7ApplicationNames())
+                .contains("TEST-APP1^DCM4CHE"));
     }
 
     @Test

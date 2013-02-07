@@ -51,6 +51,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7DeviceExtension;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -59,6 +60,9 @@ import org.dcm4che.net.hl7.HL7DeviceExtension;
 public class PreferencesHL7Configuration 
         extends PreferencesDicomConfigurationExtension
         implements HL7Configuration {
+
+    private static final String HL7_UNIQUE_APPLICATION_NAMES_REGISTRY_ROOT =
+            "dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot";
 
     private final List<PreferencesHL7ConfigurationExtension> extensions =
             new ArrayList<PreferencesHL7ConfigurationExtension>();
@@ -74,8 +78,51 @@ public class PreferencesHL7Configuration
 
         return true;
     }
+
     @Override
-    public synchronized HL7Application findHL7Application(String name)
+    public boolean registerHL7Application(String name)
+            throws ConfigurationException {
+        String pathName = applicationNameRegistryPathNameOf(name);
+        Preferences rootPrefs = config.getRootPrefs();
+        if (PreferencesUtils.nodeExists(rootPrefs , pathName))
+            return false;
+        try {
+            rootPrefs.node(pathName).flush();
+            return true;
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public void unregisterHL7Application(String name)
+            throws ConfigurationException {
+        PreferencesUtils.removeNode(config.getRootPrefs(),
+                applicationNameRegistryPathNameOf(name));
+    }
+
+    private String applicationNameRegistryPathNameOf(String name) {
+        return HL7_UNIQUE_APPLICATION_NAMES_REGISTRY_ROOT + '/' + name;
+    }
+
+    @Override
+    public String[] listRegisteredHL7ApplicationNames()
+            throws ConfigurationException {
+        Preferences rootPrefs = config.getRootPrefs();
+        if (!PreferencesUtils.nodeExists(
+                rootPrefs, HL7_UNIQUE_APPLICATION_NAMES_REGISTRY_ROOT))
+            return StringUtils.EMPTY_STRING;
+
+        try {
+            return rootPrefs.node(HL7_UNIQUE_APPLICATION_NAMES_REGISTRY_ROOT)
+                    .childrenNames();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public HL7Application findHL7Application(String name)
             throws ConfigurationException {
         Device device = config.findDevice("hl7Application", name);
         HL7DeviceExtension hl7Ext = device.getDeviceExtension(HL7DeviceExtension.class);

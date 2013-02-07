@@ -38,11 +38,8 @@
 
 package org.dcm4che.io;
 
-import java.nio.charset.Charset;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
-import javax.net.ssl.SSLContext;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;

@@ -77,6 +77,7 @@ import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.io.SAXTransformer;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.hl7.HL7Application;
 import org.dcm4che.net.hl7.HL7DeviceExtension;
 import org.dcm4che.net.hl7.HL7MessageListener;
@@ -117,6 +118,7 @@ public class HL7Rcv {
     };
 
     public HL7Rcv() throws IOException {
+        conn.setProtocol(Protocol.HL7);
         device.addDeviceExtension(hl7Ext);
         device.addConnection(conn);
         hl7Ext.addHL7Application(hl7App);

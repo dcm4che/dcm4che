@@ -97,6 +97,12 @@ public class EchoSCPServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        doPost(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String uri = req.getRequestURI();
         if (uri.endsWith("/status"))
             resp.getWriter().println(echoSCP.isRunning() ? "STARTED" : "STOPPED");
@@ -129,5 +135,4 @@ public class EchoSCPServlet extends HttpServlet {
         else
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, uri);
     }
-
 }

@@ -38,7 +38,6 @@
 
 package org.dcm4che.sample.servlet;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 import javax.management.ObjectInstance;
@@ -46,11 +45,13 @@ import javax.management.ObjectName;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.dcm4che.conf.api.DicomConfiguration;
 
+/**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
+ */
 @SuppressWarnings("serial")
 public class EchoSCPServlet extends HttpServlet {
 
@@ -69,6 +70,7 @@ public class EchoSCPServlet extends HttpServlet {
                     Thread.currentThread().getContextClassLoader()).newInstance();
             echoSCP = new EchoSCP(dicomConfig,
                     config.getInitParameter("deviceName"));
+            EchoSCPApplication.setEchoSCP(echoSCP);
             echoSCP.start();
             mbean = ManagementFactory.getPlatformMBeanServer()
                     .registerMBean(echoSCP, 
@@ -94,45 +96,4 @@ public class EchoSCPServlet extends HttpServlet {
             dicomConfig.close();
     }
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        doPost(req, resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        String uri = req.getRequestURI();
-        if (uri.endsWith("/status"))
-            resp.getWriter().println(echoSCP.isRunning() ? "STARTED" : "STOPPED");
-        else if (uri.endsWith("/start"))
-            if (echoSCP.isRunning())
-                resp.sendError(HttpServletResponse.SC_CONFLICT, "Already STARTED!");
-            else
-                try {
-                    echoSCP.start();
-                    resp.getWriter().println("STARTED");
-                } catch (Exception e) {
-                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                            e.getMessage());
-                }
-        else if (uri.endsWith("/stop"))
-            if (!echoSCP.isRunning())
-                resp.sendError(HttpServletResponse.SC_CONFLICT, "Not STARTED!");
-            else {
-                echoSCP.stop();
-                resp.getWriter().println("STOPPED");
-            }
-        else if (uri.endsWith("/reload"))
-            try {
-                echoSCP.reloadConfiguration();
-                resp.getWriter().println("RELOAD");
-            } catch (Exception e) {
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        e.getMessage());
-            }
-        else
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, uri);
-    }
 }

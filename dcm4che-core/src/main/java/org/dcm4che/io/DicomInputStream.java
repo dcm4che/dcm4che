@@ -736,7 +736,7 @@ public class DicomInputStream extends FilterInputStream
         byte[] value = new byte[allocLen];
         readFully(value, 0, allocLen);
         while (allocLen < valLen) {
-            int newLength = Math.min(valLen, allocLen <<= 1);
+            int newLength = Math.min(valLen, allocLen << 1);
             value = Arrays.copyOf(value, newLength);
             readFully(value, allocLen, newLength - allocLen);
             allocLen = newLength;

@@ -99,8 +99,9 @@ public class DicomInputStream extends FilterInputStream
         "Deflated DICOM Stream with ZLIB Header";
 
     private static final int ZLIB_HEADER = 0x789c;
-    private static final int ALLOC_INC = 0x4000000; // 64 MiB
+    private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
+    private int allocateLimit = DEF_ALLOCATE_LIMIT;
     private String uri;
     private String tsuid;
     private byte[] preamble;
@@ -158,6 +159,40 @@ public class DicomInputStream extends FilterInputStream
     public DicomInputStream(File file) throws IOException {
         this(new FileInputStream(file));
         uri = file.toURI().toString();
+    }
+
+    /** 
+     * Returns the limit of initial allocated memory for element values.
+     * 
+     * By default, the limit is set to 67108864 (64 MiB).
+     *
+     * @return Limit of initial allocated memory for value or -1 for no limit
+     * @see #setAllocateLimit(int)
+     */
+    public final int getAllocateLimit() {
+        return allocateLimit;
+    }
+
+    /**
+     * Sets the limit of initial allocated memory for element values. If the
+     * value length exceeds the limit, a byte array with the specified size is
+     * allocated. If the array can filled with bytes read from this
+     * <code>DicomInputStream</code>, the byte array is reallocated with
+     * twice the previous length and filled again. That continues until
+     * the twice of the previous length exceeds the actual value length. Then
+     * the byte array is reallocated with actual value length and filled with
+     * the remaining bytes for the value from this <code>DicomInputStream</code>.
+     * 
+     * The rational of the incrementing allocation of byte arrays is to avoid
+     * OutOfMemoryErrors on parsing corrupted DICOM streams.
+     * 
+     * By default, the limit is set to 67108864 (64 MiB).
+     * 
+     * @param allocateLimit limit of initial allocated memory or -1 for no limit
+     * 
+     */
+    public final void setAllocateLimit(int allocateLimit) {
+        this.allocateLimit = allocateLimit;
     }
 
     public final String getURI() {
@@ -692,13 +727,16 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public byte[] readValue() throws IOException {
-        if (length < 0)
+        int valLen = length;
+        if (valLen < 0)
             throw new EOFException(); // assume InputStream length < 2 GiB
-        int allocLen = Math.min(length, ALLOC_INC);
+        int allocLen = allocateLimit >= 0
+                ? Math.min(valLen, allocateLimit)
+                : valLen;
         byte[] value = new byte[allocLen];
         readFully(value, 0, allocLen);
-        while (allocLen < length) {
-            int newLength = Math.min(length, allocLen + ALLOC_INC);
+        while (allocLen < valLen) {
+            int newLength = Math.min(valLen, allocLen <<= 1);
             value = Arrays.copyOf(value, newLength);
             readFully(value, allocLen, newLength - allocLen);
             allocLen = newLength;

@@ -2,33 +2,33 @@
 dn: cn=dcm4che-hl7,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: dcm4che-hl7
-olcAttributeTypes: ( 1.2.40.0.13.1.0.15.0.3.1 NAME 'hl7ApplicationName'
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.301 NAME 'hl7ApplicationName'
   DESC 'HL7 Application and Facility name (Application^Facility)'
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.0.15.0.3.2 NAME 'hl7AcceptedSendingApplication'
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.302 NAME 'hl7AcceptedSendingApplication'
   DESC 'Application^Facility name of accepted Sending Application(s); any if absent'
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
-olcAttributeTypes: ( 1.2.40.0.13.1.0.15.0.3.3 NAME 'hl7AcceptedMessageType'
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.303 NAME 'hl7AcceptedMessageType'
   DESC 'Message Type(s) (MessageType^TriggerEvent) of accepted messages'
   EQUALITY caseExactMatch
   SUBSTR caseExactSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
-olcAttributeTypes: ( 1.2.40.0.13.1.0.15.0.3.4 NAME 'hl7DefaultCharacterSet'
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.304 NAME 'hl7DefaultCharacterSet'
   DESC 'Character Set used to decode received messages if not specified by MSH-18, ASCII if absent'
   EQUALITY caseExactIA5Match
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
-olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.3 NAME 'hl7UniqueApplicationNamesRegistryRoot'
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.303 NAME 'hl7UniqueApplicationNamesRegistryRoot'
   DESC 'Root of the Unique HL7 Application Name Registry Hierarchy'
   SUP top STRUCTURAL
   MUST ( cn ) 
   MAY ( description ) )
-olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.5 NAME 'hl7Application'
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.305 NAME 'hl7Application'
   DESC 'HL7 Application information'
   SUP top STRUCTURAL
   MUST ( 
@@ -39,7 +39,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.5 NAME 'hl7Application'
     hl7AcceptedMessageType $
     hl7DefaultCharacterSet $
     dicomInstalled ) )
-olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.7 NAME 'hl7UniqueApplicationName'
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.307 NAME 'hl7UniqueApplicationName'
   DESC 'A Unique HL7 Application Entity title'
   SUP top STRUCTURAL
     MUST ( hl7ApplicationName ) )

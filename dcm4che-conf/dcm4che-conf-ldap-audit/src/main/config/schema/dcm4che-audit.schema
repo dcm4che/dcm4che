@@ -93,7 +93,7 @@ attributetype ( 1.2.40.0.13.1.15.0.3.116 NAME 'dcmAuditRecordRepositoryDeviceRef
    SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
    SINGLE-VALUE )
 
-objectclass ( 1.2.40.0.13.1.0.15.0.4.101 NAME 'dcmAuditLogger'
+objectclass ( 1.2.40.0.13.1.15.0.4.101 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL
   MUST (
@@ -118,7 +118,7 @@ objectclass ( 1.2.40.0.13.1.0.15.0.4.101 NAME 'dcmAuditLogger'
     dcmAuditMessageSchemaURI $
     dicomInstalled ) )
 
-objectclass ( 1.2.40.0.13.1.0.15.0.4.201 NAME 'dcmAuditRecordRepository'
+objectclass ( 1.2.40.0.13.1.15.0.4.201 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'
   SUP top STRUCTURAL
   MUST ( 

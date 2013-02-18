@@ -79,7 +79,7 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.116 NAME 'dcmAuditRecordRepositoryDevi
    EQUALITY distinguishedNameMatch
    SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
    SINGLE-VALUE )
-olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.101 NAME 'dcmAuditLogger'
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.101 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL
   MUST (
@@ -103,7 +103,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.101 NAME 'dcmAuditLogger'
     dcmAuditMessageFormatXML $
     dcmAuditMessageSchemaURI $
     dicomInstalled ) )
-olcObjectClasses: ( 1.2.40.0.13.1.0.15.0.4.201 NAME 'dcmAuditRecordRepository'
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.201 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'
   SUP top STRUCTURAL
   MUST ( 

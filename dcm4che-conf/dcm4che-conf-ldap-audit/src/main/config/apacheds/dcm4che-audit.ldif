@@ -272,12 +272,12 @@ objectclass: organizationalUnit
 objectclass: top
 ou: objectClasses
 
-dn: m-oid=1.2.40.0.13.1.0.15.0.4.101, ou=objectClasses, cn=dcm4che-audit, ou=sch
+dn: m-oid=1.2.40.0.13.1.15.0.4.101, ou=objectClasses, cn=dcm4che-audit, ou=sch
  ema
 objectclass: metaObjectClass
 objectclass: metaTop
 objectclass: top
-m-oid: 1.2.40.0.13.1.0.15.0.4.101
+m-oid: 1.2.40.0.13.1.15.0.4.101
 m-name: dcmAuditLogger
 m-description: Audit Logger related information
 m-supObjectClass: top
@@ -301,12 +301,12 @@ m-may: dcmAuditMessageFormatXML
 m-may: dcmAuditMessageSchemaURI
 m-may: dicomInstalled
 
-dn: m-oid=1.2.40.0.13.1.0.15.0.4.201, ou=objectClasses, cn=dcm4che-audit, ou=sch
+dn: m-oid=1.2.40.0.13.1.15.0.4.201, ou=objectClasses, cn=dcm4che-audit, ou=sch
  ema
 objectclass: metaObjectClass
 objectclass: metaTop
 objectclass: top
-m-oid: 1.2.40.0.13.1.0.15.0.4.201
+m-oid: 1.2.40.0.13.1.15.0.4.201
 m-name: dcmAuditRecordRepository
 m-description: Audit Record Repository related information
 m-supObjectClass: top

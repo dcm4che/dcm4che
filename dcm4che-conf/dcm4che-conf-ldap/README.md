@@ -6,20 +6,15 @@ Used/Reserved LDAP UID ranges:
 -----------------------------
 
     1.2.840.10008.15.0.3.x     DICOM Application Configuration Data Model Attribute Types  
-    1.2.840.10008.15.0.3.xx    DICOM Application Configuration Data Model Attribute Types  
     1.2.840.10008.15.0.4.x     DICOM Application Configuration Data Model Object Types  
-    1.2.840.10008.15.0.4.xx    DICOM Application Configuration Data Model Object Types  
 
     1.2.40.0.13.1.15.0.3.x     dcm4che Attribute Types  
-    1.2.40.0.13.1.15.0.3.xx    dcm4che Attribute Types  
-    1.2.40.0.13.1.15.0.3.1xx   Audit Logger Attribute Types  
-    1.2.40.0.13.1.15.0.3.2xx   Audit Record Repository Attribute Types  
-    1.2.40.0.13.1.15.0.3.3xx   HL7 Extension Attribute Types  
-    1.2.40.0.13.1.15.0.3.1xxx  Archive Attribute Types  
-
     1.2.40.0.13.1.15.0.4.x     dcm4che Object Types  
-    1.2.40.0.13.1.15.0.4.xx    dcm4che Object Types  
-    1.2.40.0.13.1.15.0.4.1xx   Audit Logger Object Types  
-    1.2.40.0.13.1.15.0.4.2xx   Audit Record Repository Object Types  
-    1.2.40.0.13.1.15.0.4.3xx   HL7 Extension Object Types  
-    1.2.40.0.13.1.15.0.4.1xxx  Archive Object Types  
+    1.2.40.0.13.1.15.1.3.x     Audit Logger Attribute Types  
+    1.2.40.0.13.1.15.1.4.x     Audit Logger Object Types  
+    1.2.40.0.13.1.15.2.3.x     Audit Record Repository Attribute Types  
+    1.2.40.0.13.1.15.2.4.x     Audit Record Repository Object Types  
+    1.2.40.0.13.1.15.3.3.x     HL7 Extension Attribute Types  
+    1.2.40.0.13.1.15.3.4.x     HL7 Extension Object Types  
+    1.2.40.0.13.1.15.10.3.x    Archive Attribute Types  
+    1.2.40.0.13.1.15.10.4.x    Archive Object Types  

@@ -90,4 +90,13 @@ public class AuditRecordRepository extends DeviceExtension {
         return conns;
     }
 
+    @Override
+    public void reconfigure(DeviceExtension from)  {
+        reconfigure((AuditRecordRepository) from);
+    }
+
+    private void reconfigure(AuditRecordRepository from) {
+        setInstalled(from.installed);
+        device.reconfigureConnections(conns, from.conns);
+    }
 }

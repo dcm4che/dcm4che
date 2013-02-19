@@ -418,6 +418,31 @@ public class AuditLogger extends DeviceExtension {
         return conns;
     }
 
+    @Override
+    public void reconfigure(DeviceExtension from)  {
+        reconfigure((AuditLogger) from);
+    }
+
+    private void reconfigure(AuditLogger from) {
+        setFacility(from.facility);
+        setSuccessSeverity(from.successSeverity);
+        setMinorFailureSeverity(from.minorFailureSeverity);
+        setSeriousFailureSeverity(from.seriousFailureSeverity);
+        setMajorFailureSeverity(from.majorFailureSeverity);
+        setApplicationName(from.applicationName);
+        setAuditSourceID(from.auditSourceID);
+        setAuditEnterpriseSiteID(from.auditEnterpriseSiteID);
+        setAuditSourceTypeCodes(from.auditSourceTypeCodes);
+        setMessageID(from.messageID);
+        setEncoding(from.encoding);
+        setSchemaURI(from.schemaURI);
+        setTimestampInUTC(from.timestampInUTC);
+        setIncludeBOM(from.includeBOM);
+        setFormatXML(from.formatXML);
+        setInstalled(from.installed);
+        device.reconfigureConnections(conns, from.conns);
+    }
+
     public Calendar timeStamp() {
         return timestampInUTC 
             ? new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.ENGLISH)

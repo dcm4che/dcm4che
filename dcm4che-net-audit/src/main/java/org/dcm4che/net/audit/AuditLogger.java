@@ -440,6 +440,7 @@ public class AuditLogger extends DeviceExtension {
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
         setInstalled(from.installed);
+        setAuditRecordRepositoryDevice(from.arrDevice);
         device.reconfigureConnections(conns, from.conns);
     }
 

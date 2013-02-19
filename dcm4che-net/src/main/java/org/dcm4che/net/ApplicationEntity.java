@@ -630,8 +630,8 @@ public class ApplicationEntity implements Serializable {
         setAcceptedCallingAETitles(from.getAcceptedCallingAETitles());
         setSupportedCharacterSets(from.supportedCharacterSets);
         setAssociationAcceptor(from.acceptor);
-        setAssociationInitiator(initiator);
-        setInstalled(installed);
+        setAssociationInitiator(from.initiator);
+        setInstalled(from.installed);
     }
 
     public void setAcceptedCallingAETitles(

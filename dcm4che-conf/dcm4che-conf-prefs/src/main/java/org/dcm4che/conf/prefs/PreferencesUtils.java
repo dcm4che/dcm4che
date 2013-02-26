@@ -41,10 +41,6 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.Connection;
 import org.dcm4che.util.StringUtils;

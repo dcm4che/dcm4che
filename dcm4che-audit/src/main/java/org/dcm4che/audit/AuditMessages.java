@@ -543,6 +543,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("110181","DCM","SOP Class UID");
         public static final ParticipantObjectIDTypeCode NodeID = 
                 new ParticipantObjectIDTypeCode("110182","DCM","Node ID");
+        public static final ParticipantObjectIDTypeCode ITI_PatientNumber = 
+            new ParticipantObjectIDTypeCode("2","RFC-3881","Patient Number");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.code = code;

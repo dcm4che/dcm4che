@@ -41,6 +41,10 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.Connection;
 import org.dcm4che.util.StringUtils;
@@ -81,6 +85,19 @@ public class PreferencesUtils {
                 prefs.remove(key);
         } else if (!val.equals(prev))
             prefs.put(key, val.toString());
+    }
+
+    public static <T> void storeDiff(Preferences prefs, String key, T[] prevs, T[] vals) {
+        if (vals.length == 0) {
+            if (prevs.length > 0) {
+                removeKeys(prefs, key, 0, prevs.length);
+            }
+        } else {
+            storeNotEmpty(prefs, key, vals);
+            if (prevs.length > vals.length) {
+                removeKeys(prefs, key, vals.length, prevs.length);
+            }
+        }
     }
 
     public static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
@@ -168,5 +185,4 @@ public class PreferencesUtils {
             throw new ConfigurationException(e);
         }
     }
-
 }

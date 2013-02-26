@@ -70,7 +70,6 @@ public class EchoSCPServlet extends HttpServlet {
                     Thread.currentThread().getContextClassLoader()).newInstance();
             echoSCP = new EchoSCP(dicomConfig,
                     config.getInitParameter("deviceName"));
-            EchoSCPApplication.setEchoSCP(echoSCP);
             echoSCP.start();
             mbean = ManagementFactory.getPlatformMBeanServer()
                     .registerMBean(echoSCP, 

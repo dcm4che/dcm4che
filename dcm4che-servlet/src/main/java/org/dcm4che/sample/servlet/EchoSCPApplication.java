@@ -50,15 +50,9 @@ import javax.ws.rs.core.Application;
 @ApplicationPath("/echoscp")
 public class EchoSCPApplication extends Application {
 
-    private static EchoSCP echoSCP;
-
-    static void setEchoSCP(EchoSCP echoSCP) {
-        EchoSCPApplication.echoSCP = echoSCP;
-    }
-
     @Override
     public Set<Object> getSingletons() {
-        return Collections.singleton((Object) echoSCP);
+        return Collections.singleton((Object) EchoSCP.getInstance());
     }
 
 }

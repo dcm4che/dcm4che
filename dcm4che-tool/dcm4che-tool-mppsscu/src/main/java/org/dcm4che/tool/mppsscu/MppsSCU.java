@@ -553,7 +553,7 @@ public class MppsSCU {
             return false;
         MppsWithIUID mppsWithIUID = map.get(suid);
         if (mppsWithIUID == null)
-            map.put(suid, new MppsWithIUID(ppsuid(null), createMPPS(inst)));
+            map.put(suid, mppsWithIUID = new MppsWithIUID(ppsuid(null), createMPPS(inst)));
         updateMPPS(mppsWithIUID.mpps, inst);
         return true;
     }

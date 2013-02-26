@@ -49,6 +49,12 @@ import org.dcm4che.net.service.DicomServiceRegistry;
  */
 public class EchoSCP extends DeviceService implements EchoSCPMBean {
 
+    private static EchoSCP instance;
+
+    static EchoSCP getInstance() {
+        return instance;
+    }
+
     private final DicomConfiguration dicomConfiguration;
 
     public EchoSCP(DicomConfiguration dicomConfiguration, String deviceName)
@@ -58,11 +64,13 @@ public class EchoSCP extends DeviceService implements EchoSCPMBean {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
         device.setDimseRQHandler(serviceRegistry);
+        EchoSCP.instance = this;
     }
 
     @Override
     public void reload() throws Exception {
         device.reconfigure(dicomConfiguration.findDevice(device.getDeviceName()));
     }
+
 
 }

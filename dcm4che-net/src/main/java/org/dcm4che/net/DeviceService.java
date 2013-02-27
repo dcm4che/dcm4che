@@ -56,6 +56,10 @@ public class DeviceService {
         this.device = device;
     }
 
+    public Device getDevice() {
+        return device;
+    }
+
     public boolean isRunning() {
         return executor != null;
     }

@@ -84,16 +84,16 @@ public class PreferencesUtils {
     }
 
     public static <T> void storeDiff(Preferences prefs, String key, T[] prevs, T[] vals) {
-        if (vals.length == 0) {
-            if (prevs.length > 0) {
-                removeKeys(prefs, key, 0, prevs.length);
-            }
-        } else {
-            storeNotEmpty(prefs, key, vals);
-            if (prevs.length > vals.length) {
-                removeKeys(prefs, key, vals.length, prevs.length);
-            }
-        }
+        for (int i = 0; i < vals.length; i++)
+            if (i >= prevs.length || !vals[i].equals(prevs[i]))
+                prefs.put(key + '.' + (i+1), vals[i].toString());
+        for (int i = vals.length; i < prevs.length; i++)
+            prefs.put(key + '.' + (i+1), vals[i].toString());
+        if (vals.length != prevs.length)
+            if (vals.length == 0)
+                prefs.remove(key + ".#");
+            else
+                prefs.putInt(key + ".#", vals.length);
     }
 
     public static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {

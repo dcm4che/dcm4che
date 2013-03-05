@@ -46,6 +46,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -320,9 +322,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private void storeTransferCapabilities(ApplicationEntity ae,
             Preferences aeNode) {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        int tcIndex = 1;
         for (TransferCapability tc : ae.getTransferCapabilities()) {
-            Preferences tcNode = tcsNode.node("" + tcIndex++);
+            Preferences tcNode = tcsNode.node(Integer.toString(tc.getSopClass().hashCode()));
             storeTo(tc, tcNode);
         }
     }
@@ -936,30 +937,40 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
             Preferences aeNode) throws BackingStoreException {
-        merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
+        merge(new ArrayList<TransferCapability>(prevAE.getTransferCapabilities()), 
+                new ArrayList<TransferCapability>(ae.getTransferCapabilities()), aeNode);
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(prevAE, ae, aeNode);
     }
 
-    private void merge(Collection<TransferCapability> prevs,
-            Collection<TransferCapability> tcs, Preferences aeNode)
+    private void merge(ArrayList<TransferCapability> prevs,
+            ArrayList<TransferCapability> tcs, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        int tcIndex = 1;
+        Collections.sort(prevs, transferCapabilityComparator);
+        Collections.sort(tcs, transferCapabilityComparator);
         Iterator<TransferCapability> prevIter = prevs.iterator();
-        for (TransferCapability tc : tcs) {
-            Preferences tcNode = tcsNode.node("" + tcIndex++);
+        Iterator<TransferCapability> tcsIter = tcs.iterator();
+        while (tcsIter.hasNext()) {
+            TransferCapability tc = tcsIter.next();
+            Preferences tcNode = tcsNode.node(Integer.toString(tc.getSopClass().hashCode()));
             if (prevIter.hasNext())
                 storeDiffs(tcNode, prevIter.next(), tc);
             else
                 storeTo(tc, tcNode);
         }
         while (prevIter.hasNext()) {
-            prevIter.next();
-            tcsNode.node("" + tcIndex++).removeNode();
+            TransferCapability tc = prevIter.next();
+            tcsNode.node(tc.getSopClass()).removeNode();
         }
     }
+
+    private static final Comparator<TransferCapability> transferCapabilityComparator = new Comparator<TransferCapability>() {
+        public int compare(TransferCapability a, TransferCapability b) {
+            return (a.getSopClass().hashCode() - b.getSopClass().hashCode());
+        }
+    };
 
     private Device loadDevice(Preferences deviceNode) throws ConfigurationException {
         try {
@@ -1003,9 +1014,9 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private void loadChilds(ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        for (String tcIndex : tcsNode.childrenNames())
+        for (String sopClassHash : tcsNode.childrenNames())
             ae.addTransferCapability(
-                    loadTransferCapability(tcsNode.node(tcIndex)));
+                    loadTransferCapability(tcsNode.node(sopClassHash)));
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.loadChilds(ae, aeNode);

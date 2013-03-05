@@ -46,9 +46,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -64,19 +63,19 @@ import org.dcm4che.data.Code;
 import org.dcm4che.data.Issuer;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
+import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
-import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
@@ -937,40 +936,40 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
             Preferences aeNode) throws BackingStoreException {
-        merge(new ArrayList<TransferCapability>(prevAE.getTransferCapabilities()), 
-                new ArrayList<TransferCapability>(ae.getTransferCapabilities()), aeNode);
+        merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(prevAE, ae, aeNode);
     }
 
-    private void merge(ArrayList<TransferCapability> prevs,
-            ArrayList<TransferCapability> tcs, Preferences aeNode)
+    private void merge(Collection<TransferCapability> prevs,
+            Collection<TransferCapability> tcs, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        Collections.sort(prevs, transferCapabilityComparator);
-        Collections.sort(tcs, transferCapabilityComparator);
-        Iterator<TransferCapability> prevIter = prevs.iterator();
+        HashMap<Integer, TransferCapability> prevsMap = new HashMap<Integer, TransferCapability>();
+        for (TransferCapability tc : prevs)
+            prevsMap.put(tc.getSopClass().hashCode(), tc);
         Iterator<TransferCapability> tcsIter = tcs.iterator();
         while (tcsIter.hasNext()) {
             TransferCapability tc = tcsIter.next();
-            Preferences tcNode = tcsNode.node(Integer.toString(tc.getSopClass().hashCode()));
-            if (prevIter.hasNext())
-                storeDiffs(tcNode, prevIter.next(), tc);
+            int tcHashCode = tc.getSopClass().hashCode();
+            Preferences tcNode = tcsNode.node(Integer.toString(tcHashCode));
+            if (prevsMap.containsKey(tcHashCode))
+                storeDiffs(tcNode, prevsMap.get(tcHashCode), tc);
             else
                 storeTo(tc, tcNode);
         }
+        HashMap<Integer, TransferCapability> tcsMap = new HashMap<Integer, TransferCapability>();
+        for (TransferCapability tc : tcs)
+            tcsMap.put(tc.getSopClass().hashCode(), tc);
+        Iterator<TransferCapability> prevIter = prevs.iterator();
         while (prevIter.hasNext()) {
             TransferCapability tc = prevIter.next();
-            tcsNode.node(tc.getSopClass()).removeNode();
+            int tcHashCode = tc.getSopClass().hashCode();
+            if (!tcsMap.containsKey(tcHashCode))
+                tcsNode.node(Integer.toString(tcHashCode)).removeNode();
         }
     }
-
-    private static final Comparator<TransferCapability> transferCapabilityComparator = new Comparator<TransferCapability>() {
-        public int compare(TransferCapability a, TransferCapability b) {
-            return (a.getSopClass().hashCode() - b.getSopClass().hashCode());
-        }
-    };
 
     private Device loadDevice(Preferences deviceNode) throws ConfigurationException {
         try {

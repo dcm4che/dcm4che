@@ -101,6 +101,24 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2jpg/src</directory>
+      <includes>
+        <include>bin/dcm2jpg</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2jpg/src</directory>
+      <includes>
+        <include>bin/dcm2jpg.bat</include>
+        <include>etc/dcm2jpg/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2xml/src</directory>
       <includes>
         <include>bin/dcm2xml</include>
@@ -694,12 +712,15 @@
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-emf</include>
         <include>org.dcm4che:dcm4che-hl7</include>
+        <include>org.dcm4che:dcm4che-image</include>
+        <include>org.dcm4che:dcm4che-imageio</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2jpg</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>

@@ -47,8 +47,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -200,12 +198,6 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final void setURI(String uri) {
-        if (uri != null)
-            try {
-                new URI(uri);
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException(e.getMessage());
-            }
         this.uri = uri;
     }
 

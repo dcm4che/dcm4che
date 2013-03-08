@@ -111,6 +111,22 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/image/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-image</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/imageio/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-imageio</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/net/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-net</include>

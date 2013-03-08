@@ -64,11 +64,6 @@ public class BulkDataLocator implements Value {
 
     public BulkDataLocator(String uri, String transferSyntax, long offset,
             int length) {
-        try {
-            new URI(uri);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("uri: " + uri);
-        }
         if (transferSyntax == null)
             throw new NullPointerException("transferSyntax");
         this.uri = uri;

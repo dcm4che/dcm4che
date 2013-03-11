@@ -322,7 +322,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences aeNode) {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
         for (TransferCapability tc : ae.getTransferCapabilities()) {
-            Preferences tcNode = tcsNode.node(Integer.toString(tc.getSopClass().hashCode()));
+            Preferences tcNode = tcsNode.node(Integer.toString((tc.getSopClass() + tc.getRole()).hashCode()));
             storeTo(tc, tcNode);
         }
     }
@@ -948,11 +948,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
         HashMap<Integer, TransferCapability> prevsMap = new HashMap<Integer, TransferCapability>();
         for (TransferCapability tc : prevs)
-            prevsMap.put(tc.getSopClass().hashCode(), tc);
+            prevsMap.put((tc.getSopClass() + tc.getRole()).hashCode(), tc);
         Iterator<TransferCapability> tcsIter = tcs.iterator();
         while (tcsIter.hasNext()) {
             TransferCapability tc = tcsIter.next();
-            int tcHashCode = tc.getSopClass().hashCode();
+            int tcHashCode = (tc.getSopClass() + tc.getRole()).hashCode();
             Preferences tcNode = tcsNode.node(Integer.toString(tcHashCode));
             if (prevsMap.containsKey(tcHashCode))
                 storeDiffs(tcNode, prevsMap.get(tcHashCode), tc);
@@ -961,11 +961,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         }
         HashMap<Integer, TransferCapability> tcsMap = new HashMap<Integer, TransferCapability>();
         for (TransferCapability tc : tcs)
-            tcsMap.put(tc.getSopClass().hashCode(), tc);
+            tcsMap.put((tc.getSopClass() + tc.getRole()).hashCode(), tc);
         Iterator<TransferCapability> prevIter = prevs.iterator();
         while (prevIter.hasNext()) {
             TransferCapability tc = prevIter.next();
-            int tcHashCode = tc.getSopClass().hashCode();
+            int tcHashCode = (tc.getSopClass() + tc.getRole()).hashCode();
             if (!tcsMap.containsKey(tcHashCode))
                 tcsNode.node(Integer.toString(tcHashCode)).removeNode();
         }
@@ -1013,9 +1013,9 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private void loadChilds(ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        for (String sopClassHash : tcsNode.childrenNames())
+        for (String nameHash : tcsNode.childrenNames())
             ae.addTransferCapability(
-                    loadTransferCapability(tcsNode.node(sopClassHash)));
+                    loadTransferCapability(tcsNode.node(nameHash)));
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.loadChilds(ae, aeNode);

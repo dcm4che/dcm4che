@@ -68,7 +68,13 @@ public class SampledComponentSampleModel extends SampleModel {
 
     @Override
     public SampleModel createSubsetSampleModel(int[] bands) {
-        throw new UnsupportedOperationException();
+        if (bands.length != 3 
+                || bands[0] != 0
+                || bands[1] != 1
+                || bands[2] != 2)
+            throw new UnsupportedOperationException();
+
+        return this;
     }
 
     @Override

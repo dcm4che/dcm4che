@@ -39,6 +39,7 @@
 package org.dcm4che.tool.dcm2jpg;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,6 +65,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che.data.Attributes;
+import org.dcm4che.image.PaletteColorModel;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
@@ -295,6 +297,7 @@ public class Dcm2Jpg {
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         try {
             BufferedImage bi = readImage(iis);
+            bi = convert(bi);
             File dir = dest.getParentFile();
             if (dir != null)
                 dir.mkdirs();
@@ -308,6 +311,13 @@ public class Dcm2Jpg {
         } finally {
             SafeClose.close(iis);
         }
+    }
+
+    private BufferedImage convert(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        if (cm instanceof PaletteColorModel)
+            return ((PaletteColorModel) cm).convertToIntDiscrete(bi.getData());
+        return bi;
     }
 
     private BufferedImage readImage(ImageInputStream iis) throws IOException {

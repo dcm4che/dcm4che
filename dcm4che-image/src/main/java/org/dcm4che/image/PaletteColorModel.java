@@ -39,9 +39,16 @@
 package org.dcm4che.image;
 
 import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
@@ -53,22 +60,13 @@ import org.dcm4che.data.Tag;
  */
 public class PaletteColorModel extends ColorModel {
 
-    private static final int RED = 0;
-    private static final int GREEN = 1;
-    private static final int BLUE = 2;
     private static final int[] opaqueBits = {8, 8, 8};
 
-    private final int mask;
-    private final byte[][] rgbs;
-    private final int[] offsets;
-    private final int offset;
-    private final int length;
-    private final int[] rgb;
+    private final LUT lut;
 
     public PaletteColorModel(int bits, int dataType, ColorSpace cs,
             Attributes ds) throws IOException {
         super(bits, opaqueBits, cs, false, false, OPAQUE, dataType);
-        this.mask = (1 << bits) - 1;
         int[] rDesc = lutDescriptor(ds,
                 Tag.RedPaletteColorLookupTableDescriptor);
         int[] gDesc = lutDescriptor(ds,
@@ -84,23 +82,7 @@ public class PaletteColorModel extends ColorModel {
         byte[] b = lutData(ds, bDesc, 
                 Tag.BluePaletteColorLookupTableData,
                 Tag.SegmentedBluePaletteColorLookupTableData);
-        offset = rDesc[0];
-        length = r.length;
-        if (length == g.length && length == b.length 
-                && offset == gDesc[1] && offset == bDesc[1]) {
-            rgb = new int[length];
-            for (int i = 0; i < length; i++)
-                rgb[i] = 0xff000000
-                    | ((r[i] & 0xff) << 16)
-                    | ((g[i] & 0xff) << 8)
-                    | (b[i] & 0xff);
-            offsets = null;
-            rgbs = null;
-        } else {
-            rgb = null;
-            offsets = new int[] { rDesc[1], gDesc[1], bDesc[1] };
-            rgbs = new byte[][] { r, g, b };
-        }
+        lut = LUT.create(bits, r, g, b, rDesc[1], gDesc[1], bDesc[1]);
     }
 
     private int[] lutDescriptor(Attributes ds, int descTag) {
@@ -249,23 +231,17 @@ public class PaletteColorModel extends ColorModel {
 
     @Override
     public int getRed(int pixel) {
-        return rgb != null
-                ? (rgb[index(pixel, offset, length)] >> 16) & 0xff
-                : value(pixel, offsets[RED], rgbs[RED]);
+        return lut.getRed(pixel);
     }
 
     @Override
     public int getGreen(int pixel) {
-        return rgb != null
-                ? (rgb[index(pixel, offset, length)] >> 8) & 0xff
-                : value(pixel, offsets[GREEN], rgbs[GREEN]);
+        return lut.getGreen(pixel);
     }
 
     @Override
     public int getBlue(int pixel) {
-        return rgb != null
-                ? rgb[index(pixel, offset, length)] & 0xff
-                : value(pixel, offsets[BLUE], rgbs[BLUE]);
+        return lut.getBlue(pixel);
     }
 
     @Override
@@ -275,20 +251,158 @@ public class PaletteColorModel extends ColorModel {
 
     @Override
     public int getRGB(int pixel) {
-        return rgb != null 
-                ? rgb[index(pixel, offset, length)]
-                : 0xff000000
-                    | (value(pixel, offsets[RED], rgbs[RED]) << 16)
-                    | (value(pixel, offsets[GREEN], rgbs[GREEN]) << 8)
-                    | (value(pixel, offsets[BLUE], rgbs[BLUE]));
+        return lut.getRGB(pixel);
     }
 
-    private int index(int pixel, int offset, int length) {
-        return Math.min(Math.max(0, (pixel & mask) - offset), length-1);
+    @Override
+    public WritableRaster createCompatibleWritableRaster(int w, int h) {
+        return Raster.createInterleavedRaster(
+                pixel_bits <= 8
+                    ? DataBuffer.TYPE_BYTE
+                    : DataBuffer.TYPE_USHORT,
+                    w, h, 1, null);
     }
 
-    private int value(int pixel, int offset, byte[] lut) {
-        return lut[index(pixel, offset, lut.length)] & 0xff;
+    public BufferedImage convertToIntDiscrete(Raster raster) {
+        if (!isCompatibleRaster(raster))
+            throw new IllegalArgumentException(
+                    "This raster is not compatible with this PaletteColorModel.");
+
+        ColorModel cm = new DirectColorModel(getColorSpace(), 24,
+                0xff0000, 0x00ff00, 0x0000ff, 0, false, DataBuffer.TYPE_INT);
+
+        int w = raster.getWidth();
+        int h = raster.getHeight();
+        WritableRaster discreteRaster = cm.createCompatibleWritableRaster(w, h);
+        int[] discretData = ((DataBufferInt) discreteRaster.getDataBuffer()).getData();
+        DataBuffer data = raster.getDataBuffer();
+        if (data instanceof DataBufferByte) {
+            byte[] pixels = ((DataBufferByte) data).getData();
+            for (int i = 0; i < pixels.length; i++)
+                discretData[i] = getRGB(pixels[i]);
+        } else {
+            short[] pixels = ((DataBufferUShort) data).getData();
+            for (int i = 0; i < pixels.length; i++)
+                discretData[i] = getRGB(pixels[i]);
+        }
+        return new BufferedImage(cm, discreteRaster, false, null);
+    }
+
+    private static abstract class LUT {
+
+        final int mask;
+
+        LUT(int bits) {
+            mask = (1 << bits) - 1;
+        }
+
+        public static LUT create(int bits, byte[] r, byte[] g, byte[] b,
+                int rOffset, int gOffset, int bOffset) {
+            
+            return r.length == g.length && g.length == b.length
+                  && rOffset == gOffset && gOffset == bOffset
+                    ? new Packed(bits, r, g, b, rOffset)
+                    : new PerColor(bits, r, g, b, rOffset, gOffset, bOffset);
+        }
+
+        int index(int pixel, int offset, int length) {
+            return Math.min(Math.max(0, (pixel & mask) - offset), length-1);
+        }
+
+        abstract int getRed(int pixel);
+
+        abstract int getGreen(int pixel);
+
+        abstract int getBlue(int pixel);
+
+        abstract int getRGB(int pixel);
+
+        static class Packed extends LUT {
+
+            final int offset;
+            final int[] rgb;
+            
+            Packed(int bits, byte[] r, byte[] g, byte[] b, int offset) {
+                super(bits);
+                int length = r.length;
+                this.offset = offset;
+                rgb = new int[length];
+                for (int i = 0; i < r.length; i++)
+                    rgb[i] = 0xff000000
+                        | ((r[i] & 0xff) << 16)
+                        | ((g[i] & 0xff) << 8)
+                        | (b[i] & 0xff);
+            }
+
+            @Override
+            public int getRed(int pixel) {
+                return (rgb[index(pixel, offset, rgb.length)] >> 16) & 0xff;
+            }
+
+            @Override
+            public int getGreen(int pixel) {
+                return (rgb[index(pixel, offset, rgb.length)] >> 8) & 0xff;
+            }
+
+            @Override
+            public int getBlue(int pixel) {
+                return rgb[index(pixel, offset, rgb.length)] & 0xff;
+            }
+
+            @Override
+            public int getRGB(int pixel) {
+                return rgb[index(pixel, offset, rgb.length)];
+            }
+        }
+
+        static class PerColor extends LUT {
+ 
+            final byte[] r;
+            final byte[] g;
+            final byte[] b;
+            final int rOffset;
+            final int gOffset;
+            final int bOffset;
+
+            PerColor(int bits, byte[] r, byte[] g, byte[] b, int rOffset,
+                    int gbOffset, int bOffset) {
+                super(bits);
+                this.r = r;
+                this.g = g;
+                this.b = b;
+                this.rOffset = rOffset;
+                this.gOffset = gbOffset;
+                this.bOffset = bOffset;
+            }
+
+            @Override
+            public int getRed(int pixel) {
+                return value(pixel, rOffset, r);
+            }
+
+            @Override
+            public int getGreen(int pixel) {
+                return value(pixel, gOffset, g);
+            }
+
+            @Override
+            public int getBlue(int pixel) {
+                return value(pixel, bOffset, b);
+            }
+
+            @Override
+            public int getRGB(int pixel) {
+                return 0xff000000
+                            | (value(pixel, rOffset, r) << 16)
+                            | (value(pixel, gOffset, g) << 8)
+                            | (value(pixel, bOffset, b));
+            }
+
+            int value(int pixel, int offset, byte[] lut) {
+                return lut[index(pixel, offset, lut.length)] & 0xff;
+            }
+        }
+
     }
 
 }

@@ -230,7 +230,7 @@ public class DicomImageReader extends ImageReader {
             bitsStored = ds.getInt(Tag.BitsStored, bitsAllocated);
             dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE 
                                           : DataBuffer.TYPE_USHORT;
-            pmi = PhotometricInterpretation.valueOf(
+            pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
             if (pixeldata instanceof BulkDataLocator) {
                 iis.setByteOrder(ds.bigEndian() 

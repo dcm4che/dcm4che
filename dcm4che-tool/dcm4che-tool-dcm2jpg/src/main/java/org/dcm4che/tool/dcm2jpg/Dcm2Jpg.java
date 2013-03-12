@@ -274,6 +274,7 @@ public class Dcm2Jpg {
 
     private void mconvert(File src, File dest) {
         if (src.isDirectory()) {
+            dest.mkdir();
             for (File file : src.listFiles())
                 mconvert(file, new File(dest, 
                         file.isFile() ? suffix(file) : file.getName()));
@@ -298,9 +299,6 @@ public class Dcm2Jpg {
         try {
             BufferedImage bi = readImage(iis);
             bi = convert(bi);
-            File dir = dest.getParentFile();
-            if (dir != null)
-                dir.mkdirs();
             dest.delete();
             ImageOutputStream ios = ImageIO.createImageOutputStream(dest);
             try {

@@ -64,6 +64,7 @@ public class TransferCapability implements Serializable {
 
     public enum Role { SCU, SCP }
 
+    private ApplicationEntity ae;
     private String commonName;
     private String sopClass;
     private Role role;
@@ -81,6 +82,15 @@ public class TransferCapability implements Serializable {
         setSopClass(sopClass);
         setRole(role);
         setTransferSyntaxes(transferSyntaxes);
+    }
+
+    public void setApplicationEntity(ApplicationEntity ae) {
+        if (ae != null) {
+            if (this.ae != null)
+                throw new IllegalStateException("already owned by AE " + 
+                        this.ae.getAETitle());
+        }
+        this.ae = ae;
     }
 
     /**
@@ -109,7 +119,18 @@ public class TransferCapability implements Serializable {
     public void setRole(Role role) {
         if (role == null)
             throw new NullPointerException();
+
+        if (this.role == role)
+            return;
+
+        ApplicationEntity ae = this.ae;
+        if (ae != null)
+            ae.removeTransferCapabilityFor(sopClass, this.role);
+
         this.role = role;
+
+        if (ae != null)
+            ae.addTransferCapability(this);
     }
 
     /**
@@ -124,7 +145,18 @@ public class TransferCapability implements Serializable {
     public void setSopClass(String sopClass) {
         if (sopClass.isEmpty())
             throw new IllegalArgumentException("empty sopClass");
+
+        if (sopClass.equals(this.sopClass))
+            return;
+
+        ApplicationEntity ae = this.ae;
+        if (ae != null)
+            ae.removeTransferCapabilityFor(sopClass, this.role);
+
         this.sopClass = sopClass;
+
+        if (ae != null)
+            ae.addTransferCapability(this);
     }
 
     /**

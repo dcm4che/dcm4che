@@ -412,13 +412,21 @@ public class ApplicationEntity implements Serializable {
     }
 
     public TransferCapability addTransferCapability(TransferCapability tc) {
-        return (tc.getRole() == TransferCapability.Role.SCU ? scuTCs : scpTCs)
-                .put(tc.getSopClass(), tc);
+        tc.setApplicationEntity(this);
+        TransferCapability prev = (tc.getRole() == TransferCapability.Role.SCU
+                ? scuTCs : scpTCs).put(tc.getSopClass(), tc);
+        if (prev != null && prev != tc)
+            prev.setApplicationEntity(null);
+        return prev;
     }
 
-    public TransferCapability removeTransferCapability(TransferCapability tc) {
-        return (tc.getRole() == TransferCapability.Role.SCU ? scuTCs : scpTCs)
-                .remove(tc.getSopClass());
+    public TransferCapability removeTransferCapabilityFor(String sopClass,
+            TransferCapability.Role role) {
+        TransferCapability tc = (role == TransferCapability.Role.SCU ? scuTCs : scpTCs)
+                        .remove(sopClass);
+        if (tc != null)
+            tc.setApplicationEntity(null);
+        return tc;
     }
 
     public Collection<TransferCapability> getTransferCapabilities() {
@@ -427,6 +435,11 @@ public class ApplicationEntity implements Serializable {
         tcs.addAll(scpTCs.values());
         tcs.addAll(scuTCs.values());
         return tcs;
+    }
+
+    public Collection<TransferCapability> getTransferCapabilitiesWithRole(
+            TransferCapability.Role role) {
+        return (role == TransferCapability.Role.SCU ? scuTCs : scpTCs).values();
     }
 
     public TransferCapability getTransferCapabilityFor(

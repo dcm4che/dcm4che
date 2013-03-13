@@ -180,6 +180,11 @@ public class PreferencesDicomConfigurationTest {
                 UID.ImplicitVRLittleEndian);
     }
 
+    private static TransferCapability echoSCU() {
+        return new TransferCapability(null, UID.VerificationSOPClass, Role.SCU,
+                UID.ImplicitVRLittleEndian);
+    }
+
     private static final TransferCapability ctSCP() {
         return new TransferCapability(null, UID.CTImageStorage, Role.SCP, 
                 UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian);
@@ -213,15 +218,17 @@ public class PreferencesDicomConfigurationTest {
         ae.getConnections().get(0).setPort(Connection.NOT_LISTENING);
         ae.setAssociationInitiator(true);
         ae.setAssociationAcceptor(false);
-        for (TransferCapability tc : ae.getTransferCapabilities()) {
-            String sopClass = tc.getSopClass();
-            if (sopClass.equals(UID.VerificationSOPClass))
-                tc.setRole(TransferCapability.Role.SCU);
-            else if (sopClass.equals(UID.CTImageStorage))
-                tc.setStorageOptions(STORAGE_OPTIONS);
-            else
-                tc.getQueryOptions().add(QueryOption.DATETIME);
-        }
+        ae.getTransferCapabilityFor(
+                    UID.VerificationSOPClass, TransferCapability.Role.SCP)
+                .setRole(TransferCapability.Role.SCU);
+        ae.addTransferCapability(echoSCU());
+        ae.getTransferCapabilityFor(
+                    UID.CTImageStorage, TransferCapability.Role.SCP)
+                .setStorageOptions(STORAGE_OPTIONS);
+        ae.getTransferCapabilityFor(
+                    UID.StudyRootQueryRetrieveInformationModelFIND,
+                    TransferCapability.Role.SCP)
+                .getQueryOptions().add(QueryOption.DATETIME);
         Connection conn = createConn("host.dcm4che.org", 11114);
         device.addConnection(conn);
         ApplicationEntity ae2 = createAE("TEST-AET2", conn);

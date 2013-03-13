@@ -29,14 +29,15 @@
               </map>
               <node name="dicomTransferCapability">
                 <map />
-                <node name="1">
-                  <map>
-                    <entry key="cn" value="Verification SOP Class SCP" />
-                    <entry key="dicomSOPClass" value="1.2.840.10008.1.1" />
-                    <entry key="dicomTransferRole" value="SCP" />
-                    <entry key="dicomTransferSyntax.#" value="1" />
-                    <entry key="dicomTransferSyntax.1" value="1.2.840.10008.1.2" />
-                  </map>
+                <node name="SCP">
+                  <map />
+                  <node name="1.2.840.10008.1.1">
+                    <map>
+                      <entry key="cn" value="Verification SOP Class SCP" />
+                      <entry key="dicomTransferSyntax.#" value="1" />
+                      <entry key="dicomTransferSyntax.1" value="1.2.840.10008.1.2" />
+                    </map>
+                  </node>
                 </node>
               </node>
             </node>

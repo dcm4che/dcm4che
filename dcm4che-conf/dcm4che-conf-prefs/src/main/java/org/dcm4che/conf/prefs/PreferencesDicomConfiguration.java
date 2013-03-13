@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -61,6 +60,7 @@ import org.dcm4che.conf.api.ConfigurationNotFoundException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.data.Code;
 import org.dcm4che.data.Issuer;
+import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Connection.Protocol;
@@ -69,6 +69,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
+import org.dcm4che.net.TransferCapability.Role;
 import org.dcm4che.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,10 +322,15 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private void storeTransferCapabilities(ApplicationEntity ae,
             Preferences aeNode) {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        for (TransferCapability tc : ae.getTransferCapabilities()) {
-            Preferences tcNode = tcsNode.node(Integer.toString((tc.getSopClass() + tc.getRole()).hashCode()));
-            storeTo(tc, tcNode);
-        }
+        storeTransferCapabilities(ae, TransferCapability.Role.SCP, tcsNode);
+        storeTransferCapabilities(ae, TransferCapability.Role.SCU, tcsNode);
+    }
+
+    private void storeTransferCapabilities(ApplicationEntity ae, Role role,
+            Preferences tcsNode) {
+        Preferences roleNode = tcsNode.node(role.name());
+        for (TransferCapability tc : ae.getTransferCapabilitiesWithRole(role))
+            storeTo(tc, roleNode.node(tc.getSopClass()));
     }
 
     public void store(AttributeCoercions acs, Preferences parentNode) {
@@ -529,8 +535,6 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void storeTo(TransferCapability tc, Preferences prefs) {
         PreferencesUtils.storeNotNull(prefs, "cn", tc.getCommonName());
-        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", tc.getSopClass());
-        PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", tc.getRole().toString());
         PreferencesUtils.storeNotEmpty(prefs, "dicomTransferSyntax", tc.getTransferSyntaxes());
         EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
         if (queryOpts != null) {
@@ -814,12 +818,6 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeDiff(prefs, "cn",
                 a.getCommonName(),
                 b.getCommonName());
-        PreferencesUtils.storeDiff(prefs, "dicomSOPClass",
-                a.getSopClass(),
-                b.getSopClass());
-        PreferencesUtils.storeDiff(prefs, "dicomTransferRole",
-                a.getRole().toString(),
-                b.getRole().toString());
         storeDiff(prefs, "dicomTransferSyntax",
                 a.getTransferSyntaxes(),
                 b.getTransferSyntaxes());
@@ -936,39 +934,37 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private void mergeChilds(ApplicationEntity prevAE, ApplicationEntity ae,
             Preferences aeNode) throws BackingStoreException {
-        merge(prevAE.getTransferCapabilities(), ae.getTransferCapabilities(), aeNode);
+        mergeTransferCapabilities(prevAE, ae, aeNode);
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.mergeChilds(prevAE, ae, aeNode);
     }
 
-    private void merge(Collection<TransferCapability> prevs,
-            Collection<TransferCapability> tcs, Preferences aeNode)
+    private void mergeTransferCapabilities(ApplicationEntity prevAE,
+            ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        HashMap<Integer, TransferCapability> prevsMap = new HashMap<Integer, TransferCapability>();
-        for (TransferCapability tc : prevs)
-            prevsMap.put((tc.getSopClass() + tc.getRole()).hashCode(), tc);
-        Iterator<TransferCapability> tcsIter = tcs.iterator();
-        while (tcsIter.hasNext()) {
-            TransferCapability tc = tcsIter.next();
-            int tcHashCode = (tc.getSopClass() + tc.getRole()).hashCode();
-            Preferences tcNode = tcsNode.node(Integer.toString(tcHashCode));
-            if (prevsMap.containsKey(tcHashCode))
-                storeDiffs(tcNode, prevsMap.get(tcHashCode), tc);
-            else
+        mergeTransferCapabilities(prevAE, ae, tcsNode, TransferCapability.Role.SCU);
+        mergeTransferCapabilities(prevAE, ae, tcsNode, TransferCapability.Role.SCP);
+    }
+
+    private void mergeTransferCapabilities(ApplicationEntity prevAE,
+            ApplicationEntity ae, Preferences tcsNode, Role role)
+                    throws BackingStoreException {
+        Preferences roleNode = tcsNode.node(role.name());
+        for (TransferCapability tc : prevAE.getTransferCapabilitiesWithRole(role))
+            if (ae.getTransferCapabilityFor(tc.getSopClass(), role) == null)
+                roleNode.node(tc.getSopClass()).removeNode();
+        for (TransferCapability tc : ae.getTransferCapabilitiesWithRole(role)) {
+            Preferences tcNode = roleNode.node(tc.getSopClass());
+            TransferCapability prev = 
+                    prevAE.getTransferCapabilityFor(tc.getSopClass(), role);
+            if (prev == null)
                 storeTo(tc, tcNode);
+            else
+                storeDiffs(tcNode, prev, tc);
         }
-        HashMap<Integer, TransferCapability> tcsMap = new HashMap<Integer, TransferCapability>();
-        for (TransferCapability tc : tcs)
-            tcsMap.put((tc.getSopClass() + tc.getRole()).hashCode(), tc);
-        Iterator<TransferCapability> prevIter = prevs.iterator();
-        while (prevIter.hasNext()) {
-            TransferCapability tc = prevIter.next();
-            int tcHashCode = (tc.getSopClass() + tc.getRole()).hashCode();
-            if (!tcsMap.containsKey(tcHashCode))
-                tcsNode.node(Integer.toString(tcHashCode)).removeNode();
-        }
+        
     }
 
     private Device loadDevice(Preferences deviceNode) throws ConfigurationException {
@@ -1013,12 +1009,19 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private void loadChilds(ApplicationEntity ae, Preferences aeNode)
             throws BackingStoreException {
         Preferences tcsNode = aeNode.node("dicomTransferCapability");
-        for (String nameHash : tcsNode.childrenNames())
-            ae.addTransferCapability(
-                    loadTransferCapability(tcsNode.node(nameHash)));
+        loadTransferCapabilities(ae, tcsNode, TransferCapability.Role.SCU);
+        loadTransferCapabilities(ae, tcsNode, TransferCapability.Role.SCP);
 
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.loadChilds(ae, aeNode);
+    }
+
+    private void loadTransferCapabilities(ApplicationEntity ae,
+            Preferences tcsNode, Role role) throws BackingStoreException {
+        Preferences roleNode = tcsNode.node(role.name());
+        for (String cuid : roleNode.childrenNames())
+            ae.addTransferCapability(
+                    loadTransferCapability(roleNode.node(cuid), cuid, role));
     }
 
     public void load(AttributeCoercions acs, Preferences aeNode)
@@ -1056,14 +1059,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         return new ApplicationEntity(aeNode.name());
     }
 
-    private TransferCapability newTransferCapability() {
-        return new TransferCapability();
-    }
-
     private void loadFrom(TransferCapability tc, Preferences prefs) {
         tc.setCommonName(prefs.get("cn", null));
-        tc.setSopClass(prefs.get("dicomSOPClass", null));
-        tc.setRole(TransferCapability.Role.valueOf(prefs.get("dicomTransferRole", null)));
         tc.setTransferSyntaxes(PreferencesUtils.stringArray(prefs, "dicomTransferSyntax"));
         tc.setQueryOptions(toQueryOptions(prefs));
         tc.setStorageOptions(toStorageOptions(prefs));
@@ -1105,8 +1102,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         return opts;
     }
 
-    private TransferCapability loadTransferCapability(Preferences prefs) {
-        TransferCapability tc = newTransferCapability();
+    private TransferCapability loadTransferCapability(Preferences prefs,
+            String cuid, Role role) {
+        TransferCapability tc = new TransferCapability(null, cuid, role,
+                UID.ImplicitVRLittleEndian);
         loadFrom(tc, prefs);
         return tc;
     }

@@ -54,11 +54,26 @@ import org.dcm4che.data.Attributes;
 public enum PhotometricInterpretation {
     MONOCHROME1 {
         @Override
+        public boolean isMonochrome() {
+            return true;
+        }
+
+        @Override
+        public boolean isInvers() {
+            return true;
+        }
+
+        @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
         }
     },
     MONOCHROME2 {
+        @Override
+        public boolean isMonochrome() {
+            return true;
+        }
+
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createMonochromeColorModel(bits, dataType);
@@ -168,6 +183,13 @@ public enum PhotometricInterpretation {
         return w * h * samples * (DataBuffer.getDataTypeSize(dataType) >> 3);
     }
 
+    public boolean isMonochrome() {
+        return false;
+    }
+
+    public boolean isInvers() {
+        return false;
+    }
     public abstract ColorModel createColorModel(int bits, int dataType,
             Attributes ds) throws IOException;
 
@@ -182,5 +204,4 @@ public enum PhotometricInterpretation {
                 : new PixelInterleavedSampleModel(dataType, w, h,
                         samples, w * samples, indicies);
     }
-    
 }

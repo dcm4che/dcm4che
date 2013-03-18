@@ -63,6 +63,7 @@ import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.image.LUT;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che.io.DicomInputStream;
@@ -107,7 +108,7 @@ public class DicomImageReader extends ImageReader {
 
     private PhotometricInterpretation pmi;
 
-    private SampleModel sm;
+    private SampleModel rawSampleModel;
 
     private ImageTypeSpecifier imageType;
 
@@ -153,11 +154,20 @@ public class DicomImageReader extends ImageReader {
 
     private ImageTypeSpecifier imageType() throws IOException {
         ImageTypeSpecifier imageType = this.imageType;
-        if (imageType == null)
-            this.imageType = imageType = new ImageTypeSpecifier(
+        if (imageType == null) {
+            if (dataType == DataBuffer.TYPE_USHORT)
+                imageType = new ImageTypeSpecifier(
+                        pmi.createColorModel(
+                                8, DataBuffer.TYPE_BYTE, metadata.getAttributes()),
+                        pmi.createSampleModel(DataBuffer.TYPE_BYTE, 
+                                width, height, samples, banded));
+            else
+                imageType = new ImageTypeSpecifier(
                     pmi.createColorModel(
                             bitsStored, dataType, metadata.getAttributes()),
-                    sm);
+                    rawSampleModel);
+            this.imageType = imageType;
+        }
         return imageType;
     }
 
@@ -184,7 +194,7 @@ public class DicomImageReader extends ImageReader {
         checkIndex(frameIndex);
 
         iis.seek(pixeldata.offset + frameIndex * frameLength);
-        WritableRaster wr = Raster.createWritableRaster(sm, null);
+        WritableRaster wr = Raster.createWritableRaster(rawSampleModel, null);
         DataBuffer buf = wr.getDataBuffer();
         if (buf instanceof DataBufferByte) {
             byte[][] data = ((DataBufferByte) buf).getBankData();
@@ -201,9 +211,25 @@ public class DicomImageReader extends ImageReader {
     public BufferedImage read(int frameIndex, ImageReadParam param)
             throws IOException {
         WritableRaster raster = (WritableRaster) readRaster(frameIndex, param);
-        ColorModel cm = imageType().getColorModel();
-        BufferedImage bi = new BufferedImage(cm , raster, false, null);
+        ImageTypeSpecifier imageType = imageType();
+        if (pmi.isMonochrome())
+            raster = applyLUTs(raster, imageType, param);
+        BufferedImage bi = new BufferedImage(
+                imageType.getColorModel(), raster, false, null);
         return bi;
+    }
+
+    private WritableRaster applyLUTs(WritableRaster raster,
+            ImageTypeSpecifier imageType, ImageReadParam param) {
+        SampleModel sm = imageType.getSampleModel();
+        WritableRaster destRaster =
+                sm.getDataType() == raster.getSampleModel().getDataType()
+                        ? raster
+                        : Raster.createWritableRaster(sm, null);
+        int outBits = imageType.getColorModel().getComponentSize(0);
+        LUT lut = LUT.createLUT(metadata.getAttributes(), outBits);
+        lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
+        return destRaster;
     }
 
     private void readMetadata() throws IOException {
@@ -236,7 +262,8 @@ public class DicomImageReader extends ImageReader {
                 iis.setByteOrder(ds.bigEndian() 
                         ? ByteOrder.BIG_ENDIAN
                         : ByteOrder.LITTLE_ENDIAN);
-                this.sm = pmi.createSampleModel(dataType, width, height, samples, banded);
+                this.rawSampleModel = pmi.createSampleModel(
+                        dataType, width, height, samples, banded);
                 this.frameLength = pmi.frameLength(dataType, width, height, samples);
                 this.pixeldata = (BulkDataLocator) pixeldata;
             } else {
@@ -254,7 +281,7 @@ public class DicomImageReader extends ImageReader {
         pixeldata = null;
         pixeldataFragments = null;
         pmi = null;
-        sm = null;
+        rawSampleModel = null;
         imageType = null;
     }
 

@@ -246,7 +246,7 @@ public class PaletteColorModel extends ColorModel {
 
     @Override
     public int getAlpha(int pixel) {
-        return 0xff;
+        return lut.getAlpha(pixel);
     }
 
     @Override
@@ -315,6 +315,8 @@ public class PaletteColorModel extends ColorModel {
 
         abstract int getBlue(int pixel);
 
+        abstract int getAlpha(int pixel);
+
         abstract int getRGB(int pixel);
 
         static class Packed extends LUT {
@@ -332,6 +334,11 @@ public class PaletteColorModel extends ColorModel {
                         | ((r[i] & 0xff) << 16)
                         | ((g[i] & 0xff) << 8)
                         | (b[i] & 0xff);
+            }
+
+            @Override
+            public int getAlpha(int pixel) {
+                return (rgb[index(pixel, offset, rgb.length)] >> 24) & 0xff;
             }
 
             @Override
@@ -373,6 +380,11 @@ public class PaletteColorModel extends ColorModel {
                 this.rOffset = rOffset;
                 this.gOffset = gbOffset;
                 this.bOffset = bOffset;
+            }
+
+            @Override
+            public int getAlpha(int pixel) {
+                return 0xff;
             }
 
             @Override

@@ -42,9 +42,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
@@ -76,26 +73,24 @@ public abstract class LUT {
 
     public abstract void lookup(short[] src, short[] dest);
 
-    public static LUT createLUT(Attributes attrs, int outBits) {
-        PixelValue pv = PixelValue.valueOf(attrs);
-        float m = attrs.getFloat(Tag.RescaleSlope, 1.f);
-        float b = attrs.getFloat(Tag.RescaleIntercept, 0.f);
-        float c = attrs.getFloat(Tag.WindowCenter, 0.f);
-        float w = attrs.getFloat(Tag.WindowWidth, 0.f);
+    public static LUT createLUT(LUTParam param, int outBits) {
+        float m = param.getRescaleSlope();
+        float b = param.getRescaleIntercept();
+        float c = param.getWindowCenter();
+        float w = param.getWindowWidth();
         int size, offset;
         if (w != 0) {
             size = Math.max(2,Math.abs(Math.round(w/m)));
             offset = Math.round(c/m-b) - size/2;
         } else {
-            offset = pv.minValue();
-            size = pv.maxValue() - pv.minValue() + 1;
+            offset = param.getSmallestImagePixelValue();
+            size = param.getLargestImagePixelValue()
+                    - param.getSmallestImagePixelValue() + 1;
         }
-        boolean invers = "MONOCHROME1".equals(
-                attrs.getString(Tag.PhotometricInterpretation));
-        if (m < 0)
-            invers = !invers;
         return outBits > 8
-                ? new LUTShort(pv, offset, size, outBits, invers)
-                : new LUTByte(pv, offset, size, outBits, invers);
+                ? new LUTShort(param.getStoredValue(), 
+                        offset, size, outBits, param.isInverse())
+                : new LUTByte(param.getStoredValue(),
+                        offset, size, outBits, param.isInverse());
     }
 }

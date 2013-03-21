@@ -2,17 +2,17 @@ package org.dcm4che.image;
 
 public class LUTByte extends LUT {
 
-    private final PixelValue pv;
+    private final StoredValue pv;
     private final byte[] lut;
     private final int offset;
 
-    LUTByte(PixelValue pv, int offset, byte[] lut) {
+    LUTByte(StoredValue pv, int offset, byte[] lut) {
         this.pv = pv;
         this.lut = lut;
         this.offset = offset;
     }
 
-    LUTByte(PixelValue pv, int offset, int size, int outBits, boolean invers) {
+    LUTByte(StoredValue pv, int offset, int size, int outBits, boolean invers) {
         this(pv, offset, new byte[size]);
         int maxOut = (1<<outBits)-1;
         int maxIndex = size - 1;

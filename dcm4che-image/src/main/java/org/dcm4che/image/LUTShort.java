@@ -2,17 +2,17 @@ package org.dcm4che.image;
 
 public class LUTShort extends LUT {
 
-    private final PixelValue pv;
+    private final StoredValue pv;
     private final short[] lut;
     private final int offset;
 
-    LUTShort(PixelValue pv, int offset, short[] lut) {
+    LUTShort(StoredValue pv, int offset, short[] lut) {
         this.pv = pv;
         this.lut = lut;
         this.offset = offset;
     }
 
-    LUTShort(PixelValue pv, int offset, int size, int outBits, boolean invers) {
+    LUTShort(StoredValue pv, int offset, int size, int outBits, boolean invers) {
        this(pv, offset, new short[size]);
        int maxOut = (1<<outBits)-1;
        int maxIndex = size - 1;

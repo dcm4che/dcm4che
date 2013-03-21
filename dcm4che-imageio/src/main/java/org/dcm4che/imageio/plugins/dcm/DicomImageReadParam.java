@@ -36,76 +36,75 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.image;
+package org.dcm4che.imageio.plugins.dcm;
 
-import org.dcm4che.data.Attributes;
-import org.dcm4che.data.Tag;
+import javax.imageio.ImageReadParam;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class PixelValue {
+public class DicomImageReadParam extends ImageReadParam {
 
-    public abstract int valueOf(int pixel);
-    public abstract int minValue();
-    public abstract int maxValue();
+    private Float windowCenter;
+    private Float windowWidth;
+    private boolean autoWindowing = true;
+    private boolean preferWindow = true;
+    private int windowIndex;
+    private int voiLUTIndex;
 
-    public static class Unsigned extends PixelValue {
-
-        private final int mask;
-
-        public Unsigned(int bitsStored) {
-            this.mask = (1 << bitsStored) - 1;
-        }
-
-        @Override
-        public int valueOf(int pixel) {
-            return pixel & mask;
-        }
-
-        @Override
-        public int minValue() {
-            return 0;
-        }
-
-        @Override
-        public int maxValue() {
-            return mask;
-        }
+    public Float getWindowCenter() {
+        return windowCenter;
     }
 
-    public static class Signed extends PixelValue {
-
-        private final int bitsStored;
-        private final int shift;
-
-        public Signed(int bitsStored) {
-            this.bitsStored = bitsStored;
-            this.shift = 32 - bitsStored;
-        }
-
-        @Override
-        public int valueOf(int pixel) {
-            return pixel << shift >> shift;
-        }
-
-        @Override
-        public int minValue() {
-            return -(1 << (bitsStored-1));
-        }
-
-        @Override
-        public int maxValue() {
-            return (1 << (bitsStored-1)) - 1;
-        }
+    public void setWindowCenter(Float windowCenter) {
+        this.windowCenter = windowCenter;
     }
 
-    public static PixelValue valueOf(Attributes attrs) {
-        int bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
-        int bitsStored = attrs.getInt(Tag.BitsStored, bitsAllocated);
-        return attrs.getInt(Tag.PixelRepresentation, 0) != 0
-                ? new Signed(bitsStored)
-                : new Unsigned(bitsStored);
+    public Float getWindowWidth() {
+        return windowWidth;
     }
+
+    public void setWindowWidth(Float windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public float[] getVOIWindow() {
+        return windowCenter != null && windowWidth != null
+                ? new float[] { windowCenter, windowWidth }
+                : null;
+    }
+
+    public boolean isAutoWindowing() {
+        return autoWindowing;
+    }
+
+    public void setAutoWindowing(boolean autoWindowing) {
+        this.autoWindowing = autoWindowing;
+    }
+
+    public boolean isPreferWindow() {
+        return preferWindow;
+    }
+
+    public void setPreferWindow(boolean preferWindow) {
+        this.preferWindow = preferWindow;
+    }
+
+    public int getWindowIndex() {
+        return windowIndex;
+    }
+
+    public void setWindowIndex(int windowIndex) {
+        this.windowIndex = Math.max(windowIndex, 0);
+    }
+
+    public int getVOILUTIndex() {
+        return voiLUTIndex;
+    }
+
+    public void setVOILUTIndex(int voiLUTIndex) {
+        this.voiLUTIndex = Math.max(voiLUTIndex, 1);
+    }
+
 }

@@ -39,7 +39,6 @@
 package org.dcm4che.imageio.plugins.dcm;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
@@ -64,7 +63,9 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.image.LUT;
+import org.dcm4che.image.LUTParam;
 import org.dcm4che.image.PhotometricInterpretation;
+import org.dcm4che.image.StoredValue;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
@@ -152,6 +153,11 @@ public class DicomImageReader extends ImageReader {
         return Collections.singleton(imageType()).iterator();
     }
 
+    @Override
+    public ImageReadParam getDefaultReadParam() {
+        return new DicomImageReadParam();
+    }
+
     private ImageTypeSpecifier imageType() throws IOException {
         ImageTypeSpecifier imageType = this.imageType;
         if (imageType == null) {
@@ -227,7 +233,28 @@ public class DicomImageReader extends ImageReader {
                         ? raster
                         : Raster.createWritableRaster(sm, null);
         int outBits = imageType.getColorModel().getComponentSize(0);
-        LUT lut = LUT.createLUT(metadata.getAttributes(), outBits);
+        Attributes imgAttrs = metadata.getAttributes();
+        StoredValue sv = StoredValue.valueOf(imgAttrs);
+        LUTParam lutParam = new LUTParam(sv);
+        lutParam.init(imgAttrs);
+        if (param instanceof DicomImageReadParam) {
+            DicomImageReadParam dParam = (DicomImageReadParam) param;
+            if (dParam.getWindowWidth() != 0) {
+                lutParam.setWindowCenter(dParam.getWindowCenter());
+                lutParam.setWindowWidth(dParam.getWindowCenter());
+            } else
+                lutParam.setVOI(imgAttrs,
+                    dParam.getWindowIndex(),
+                    dParam.getVOILUTIndex(),
+                    dParam.isPreferWindow(),
+                    dParam.isAutoWindowing());
+        } else {
+            lutParam.setVOI(imgAttrs, 1, 1, true, true);
+        }
+        if (lutParam.needCalculateSmallestAndLargestPixelValue())
+            lutParam.calculateSmallestAndLargestPixelValue(
+                    raster.getDataBuffer());
+        LUT lut = LUT.createLUT(lutParam, outBits);
         lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
         return destRaster;
     }

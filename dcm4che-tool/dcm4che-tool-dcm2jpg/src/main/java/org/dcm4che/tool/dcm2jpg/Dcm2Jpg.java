@@ -53,6 +53,7 @@ import java.util.ResourceBundle;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -66,6 +67,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.image.PaletteColorModel;
+import org.dcm4che.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
@@ -82,7 +84,7 @@ public class Dcm2Jpg {
     private int frame = 1;
     private float windowCenter;
     private float windowWidth;
-    private boolean autoWindowing;
+    private boolean autoWindowing = true;
     private Attributes prState;
     private short[] pval2gray;
     private final ImageReader imageReader =
@@ -187,14 +189,14 @@ public class Dcm2Jpg {
                 .withType(PatternOptionBuilder.NUMBER_VALUE)
                 .withDescription(rb.getString("windowCenter"))
                 .withLongOpt("windowCenter")
-                .create());
+                .create("c"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("width")
                 .withType(PatternOptionBuilder.NUMBER_VALUE)
                 .withDescription(rb.getString("windowWidth"))
                 .withLongOpt("windowWidth")
-                .create());
+                .create("w"));
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file")
@@ -238,12 +240,12 @@ public class Dcm2Jpg {
             if (cl.hasOption("frame"))
                 main.setFrame(
                         ((Number) cl.getParsedOptionValue("frame")).intValue());
-            if (cl.hasOption("windowCenter"))
+            if (cl.hasOption("c"))
                 main.setWindowCenter(
-                        ((Number) cl.getParsedOptionValue("windowCenter")).floatValue());
-            if (cl.hasOption("windowWidth"))
+                        ((Number) cl.getParsedOptionValue("c")).floatValue());
+            if (cl.hasOption("w"))
                 main.setWindowWidth(
-                        ((Number) cl.getParsedOptionValue("windowWidth")).floatValue());
+                        ((Number) cl.getParsedOptionValue("w")).floatValue());
             main.setAutoWindowing(!cl.hasOption("noauto"));
             main.setPresentationState(
                     loadDicomObject((File) cl.getParsedOptionValue("ps")));
@@ -320,7 +322,16 @@ public class Dcm2Jpg {
 
     private BufferedImage readImage(ImageInputStream iis) throws IOException {
         imageReader.setInput(iis);
-        return imageReader.read(frame-1);
+        return imageReader.read(frame-1, readParam());
+    }
+
+    private ImageReadParam readParam() {
+        DicomImageReadParam param =
+                (DicomImageReadParam) imageReader.getDefaultReadParam();
+        param.setWindowCenter(windowCenter);
+        param.setWindowWidth(windowWidth);
+        param.setAutoWindowing(autoWindowing);
+        return param;
     }
 
     private void writeImage(ImageOutputStream ios, BufferedImage bi)

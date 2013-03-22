@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,70 +35,43 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.imageio.stream;
 
-package org.dcm4che.imageio.plugins.dcm;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import javax.imageio.ImageReadParam;
+import javax.imageio.stream.ImageOutputStreamImpl;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DicomImageReadParam extends ImageReadParam {
+public class OutputStreamAdapter extends ImageOutputStreamImpl {
 
-    private float windowCenter;
-    private float windowWidth;
-    private boolean autoWindowing = true;
-    private boolean preferWindow = true;
-    private int windowIndex;
-    private int voiLUTIndex;
+    private final OutputStream out;
 
-    public float getWindowCenter() {
-        return windowCenter;
+    public OutputStreamAdapter(OutputStream out) {
+        this.out = out;
     }
 
-    public void setWindowCenter(float windowCenter) {
-        this.windowCenter = windowCenter;
+    @Override
+    public void write(int b) throws IOException {
+        out.write(b);
     }
 
-    public float getWindowWidth() {
-        return windowWidth;
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        out.write(b, off, len);
     }
 
-    public void setWindowWidth(float windowWidth) {
-        this.windowWidth = windowWidth;
+    @Override
+    public int read() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
-    public boolean isAutoWindowing() {
-        return autoWindowing;
-    }
-
-    public void setAutoWindowing(boolean autoWindowing) {
-        this.autoWindowing = autoWindowing;
-    }
-
-    public boolean isPreferWindow() {
-        return preferWindow;
-    }
-
-    public void setPreferWindow(boolean preferWindow) {
-        this.preferWindow = preferWindow;
-    }
-
-    public int getWindowIndex() {
-        return windowIndex;
-    }
-
-    public void setWindowIndex(int windowIndex) {
-        this.windowIndex = Math.max(windowIndex, 0);
-    }
-
-    public int getVOILUTIndex() {
-        return voiLUTIndex;
-    }
-
-    public void setVOILUTIndex(int voiLUTIndex) {
-        this.voiLUTIndex = Math.max(voiLUTIndex, 1);
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
 }

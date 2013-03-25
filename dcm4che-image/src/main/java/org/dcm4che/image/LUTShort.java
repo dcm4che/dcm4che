@@ -9,17 +9,18 @@ public class LUTShort extends LUT {
         this.lut = lut;
     }
 
-    LUTShort(StoredValue inBits, int outBits, int offset, int size, boolean invers) {
+    LUTShort(StoredValue inBits, int outBits, int offset, int size) {
        this(inBits, outBits, offset, new short[size]);
        int maxOut = (1<<outBits)-1;
        int maxIndex = size - 1;
        int midIndex = size / 2;
-       if (invers)
-           for (int i = 0; i < size; i++)
-               lut[maxIndex-i] = (short) ((i * maxOut + midIndex) / maxIndex);
-       else
-           for (int i = 0; i < size; i++)
-               lut[i] = (short) ((i * maxOut + midIndex) / maxIndex);
+       for (int i = 0; i < size; i++)
+           lut[i] = (short) ((i * maxOut + midIndex) / maxIndex);
+    }
+
+    @Override
+    public int length() {
+        return lut.length;
     }
 
     @Override
@@ -75,4 +76,12 @@ public class LUTShort extends LUT {
         for (int i = 0; i < lut.length; i++)
             lut[i] = (short) (maxOut - lut[i]); 
      }
+
+    @Override
+    public LUT combine(LUT other) {
+        short[] lut = this.lut;
+        other.lookup(lut, lut);
+        this.outBits = other.outBits;
+        return this;
+    }
 }

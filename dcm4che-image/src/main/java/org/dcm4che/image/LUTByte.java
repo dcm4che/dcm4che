@@ -9,17 +9,18 @@ public class LUTByte extends LUT {
         this.lut = lut;
     }
 
-    LUTByte(StoredValue inBits, int outBits, int offset, int size, boolean invers) {
+    LUTByte(StoredValue inBits, int outBits, int offset, int size) {
         this(inBits, outBits, offset, new byte[size]);
         int maxOut = (1<<outBits)-1;
         int maxIndex = size - 1;
         int midIndex = size / 2;
-        if (invers)
-            for (int i = 0; i < size; i++)
-                lut[maxIndex-i] = (byte) ((i * maxOut + midIndex) / maxIndex);
-        else
-            for (int i = 0; i < size; i++)
-                lut[i] = (byte) ((i * maxOut + midIndex) / maxIndex);
+        for (int i = 0; i < size; i++)
+            lut[i] = (byte) ((i * maxOut + midIndex) / maxIndex);
+    }
+
+    @Override
+    public int length() {
+        return lut.length;
     }
 
     @Override
@@ -81,5 +82,19 @@ public class LUTByte extends LUT {
         for (int i = 0; i < lut.length; i++)
             lut[i] = (byte) (maxOut - lut[i]); 
      }
+
+
+    @Override
+    public LUT combine(LUT other) {
+        byte[] lut = this.lut;
+        if (other.outBits > 8) {
+            short[] ss = new short[lut.length];
+            other.lookup(lut, ss);
+            return new LUTShort(inBits, other.outBits, offset, ss);
+        }
+        other.lookup(lut, lut);
+        this.outBits = other.outBits;
+        return this;
+    }
 
 }

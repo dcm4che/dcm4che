@@ -58,6 +58,8 @@ public abstract class LUT {
         this.offset = offset;
     }
 
+    public abstract int length();
+
     public void lookup(DataBuffer src, DataBuffer dest) {
         if (src instanceof DataBufferByte)
             if (dest instanceof DataBufferByte)
@@ -86,5 +88,7 @@ public abstract class LUT {
     public abstract LUT adjustOutBits(int outBits);
 
     public abstract void inverse();
+
+    public abstract LUT combine(LUT lut);
 
 }

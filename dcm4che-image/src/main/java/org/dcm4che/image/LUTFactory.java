@@ -70,7 +70,8 @@ public class LUTFactory {
     public void init(Attributes attrs) {
         rescaleIntercept = attrs.getFloat(Tag.RescaleIntercept, 0);
         rescaleSlope = attrs.getFloat(Tag.RescaleSlope, 1);
-        modalityLUT = createLUT(attrs.getNestedDataset(Tag.ModalityLUTSequence));
+        modalityLUT = createLUT(storedValue,
+                attrs.getNestedDataset(Tag.ModalityLUTSequence));
         String pShape = attrs.getString(Tag.PresentationLUTShape);
         inverse = (pShape != null 
                 ? "INVERSE".equals(pShape)
@@ -90,7 +91,9 @@ public class LUTFactory {
 
     public void setVOI(Attributes img, int windowIndex, int voiLUTIndex,
             boolean preferWindow) {
-        LUT voiLUT = createLUT(
+        LUT voiLUT = createLUT(modalityLUT != null
+                    ? new StoredValue.Unsigned(modalityLUT.outBits)
+                    : storedValue,
                 img.getNestedDataset(Tag.VOILUTSequence, voiLUTIndex));
         if (preferWindow || voiLUT == null) {
             float[] wcs = img.getFloats(Tag.WindowCenter);
@@ -98,14 +101,14 @@ public class LUTFactory {
             if (wcs != null && windowIndex < wcs.length
                     && wws != null && windowIndex < wws.length) {
                 windowCenter = wcs[windowIndex];
-                windowWidth = wcs[windowIndex];
+                windowWidth = wws[windowIndex];
             } else
                 this.voiLUT = voiLUT;
         } else
             this.voiLUT = voiLUT;
     }
 
-    private LUT createLUT(Attributes attrs) {
+    private LUT createLUT(StoredValue inBits, Attributes attrs) {
         if (attrs == null)
             return null;
 
@@ -147,7 +150,7 @@ public class LUTFactory {
         if (outBits > 8)
             return null;
 
-        return new LUTByte(storedValue, outBits, offset, data);
+        return new LUTByte(inBits, outBits, offset, data);
     }
 
     static byte[] halfLength(byte[] data, int hilo) {
@@ -159,43 +162,53 @@ public class LUTFactory {
     }
 
     public LUT createLUT(int outBits) {
-        if (modalityLUT == null && voiLUT == null && presentationLUT == null)
-            return createLinearLUT(outBits);
-        
-        LUT lut = modalityLUT;
-        if (voiLUT != null) {
-            if (lut == null)
-                lut = voiLUT;
-        }
+        LUT lut = combineModalityVOILUT(presentationLUT != null
+                ? log2(presentationLUT.length())
+                : outBits);
         if (presentationLUT != null) {
-            if (lut == null)
-                lut = presentationLUT;
-        }
-        lut = lut.adjustOutBits(outBits);
-        if (inverse)
+            lut = lut.combine(presentationLUT.adjustOutBits(outBits));
+        } else if (inverse)
             lut.inverse();
         return lut;
     }
 
-    private LUT createLinearLUT(int outBits) {
+    private static int log2(int value) {
+        int i = 0;
+        while ((value>>>i) != 0);
+            ++i;
+        return i-1;
+    }
+
+    private LUT combineModalityVOILUT(int outBits) {
         float m = rescaleSlope;
         float b = rescaleIntercept;
-        float c = windowCenter;
-        float w = windowWidth;
-        int size, offset;
-        if (w != 0) {
-            size = Math.max(2,Math.abs(Math.round(w/m)));
-            offset = Math.round(c/m-b) - size/2;
+        LUT modalityLUT = this.modalityLUT;
+        LUT lut = this.voiLUT;
+        if (lut == null) {
+            float c = windowCenter;
+            float w = windowWidth;
+
+            if (w == 0 && modalityLUT != null)
+                return modalityLUT.adjustOutBits(outBits);
+
+            int size, offset;
+            StoredValue inBits = modalityLUT != null
+                    ? new StoredValue.Unsigned(modalityLUT.outBits)
+                    : storedValue;
+            if (w != 0) {
+                size = Math.max(2,Math.abs(Math.round(w/m)));
+                offset = Math.round(c/m-b) - size/2;
+            } else {
+                offset = inBits.minValue();
+                size = inBits.maxValue() - inBits.minValue() + 1;
+            }
+            lut = outBits > 8
+                    ? new LUTShort(inBits, outBits, offset, size)
+                    : new LUTByte(inBits, outBits, offset, size);
         } else {
-            offset = storedValue.minValue();
-            size = storedValue.maxValue()
-                    - storedValue.minValue() + 1;
+            lut = lut.adjustOutBits(outBits);
         }
-        return outBits > 8
-                ? new LUTShort(storedValue, outBits,
-                        offset, size, inverse)
-                : new LUTByte(storedValue, outBits,
-                        offset, size, inverse);
+        return modalityLUT != null ? modalityLUT.combine(lut) : lut;
     }
 
     public boolean autoWindowing(Attributes img, DataBuffer dataBuffer) {
@@ -223,7 +236,7 @@ public class LUTFactory {
                 }
         }
         windowCenter = (min + max + 1) / 2 * rescaleSlope + rescaleIntercept;
-        windowWidth = (max + 1 - min) * rescaleSlope;
+        windowWidth = Math.abs((max + 1 - min) * rescaleSlope);
         return true;
     }
 }

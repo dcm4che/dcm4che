@@ -49,7 +49,6 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
@@ -65,7 +64,7 @@ public class PaletteColorModel extends ColorModel {
     private final LUT lut;
 
     public PaletteColorModel(int bits, int dataType, ColorSpace cs,
-            Attributes ds) throws IOException {
+            Attributes ds) {
         super(bits, opaqueBits, cs, false, false, OPAQUE, dataType);
         int[] rDesc = lutDescriptor(ds,
                 Tag.RedPaletteColorLookupTableDescriptor);
@@ -104,11 +103,10 @@ public class PaletteColorModel extends ColorModel {
         return desc;
     }
 
-    private byte[] lutData(Attributes ds, int[] desc, int dataTag, int segmTag)
-            throws IOException {
+    private byte[] lutData(Attributes ds, int[] desc, int dataTag, int segmTag) {
         int len = desc[0] == 0 ? 0x10000 : desc[0];
         int bits = desc[2];
-        byte[] data = ds.getBytes(dataTag);
+        byte[] data = ds.getSafeBytes(dataTag);
         if (data == null) {
             int[] segm = ds.getInts(segmTag);
             if (segm == null) {
@@ -123,13 +121,10 @@ public class PaletteColorModel extends ColorModel {
         } else if (bits == 16 || data.length != len) {
             if (data.length != len << 1)
                 lutLengthMismatch(data.length, len);
-            byte[] tmp = new byte[len];
-            int hibyte = ds.bigEndian() ? 0 : 1;
+            int hilo = ds.bigEndian() ? 0 : 1;
             if (bits == 8)
-                hibyte = 1 - hibyte; // padded high bits -> use low bits
-            for (int i = 0; i < len; i++)
-                tmp[i] = data[(i<<1) + hibyte];
-            data = tmp;
+                hilo = 1 - hilo; // padded high bits -> use low bits
+            data = LUTFactory.halfLength(data, hilo);
         }
         return data;
     }

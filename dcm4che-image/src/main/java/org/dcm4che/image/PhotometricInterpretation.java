@@ -43,7 +43,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
-import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
 
@@ -86,22 +85,19 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createPaletteColorModel(bits, dataType, ds);
         }
     },
     RGB {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createRGBColorModel(bits, dataType, ds);
         }
     },
     YBR_FULL {
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRFullColorModel(bits, dataType, ds);
         }
     },
@@ -112,8 +108,7 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
                     YBR.FULL, ColorSubsampling.YBR_XXX_422);
         }
@@ -131,8 +126,7 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
                     YBR.PARTIAL, ColorSubsampling.YBR_XXX_422);
         }
@@ -150,8 +144,7 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public ColorModel createColorModel(int bits, int dataType, Attributes ds)
-                throws IOException {
+        public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createYBRColorModel(bits, dataType, ds,
                     YBR.PARTIAL, ColorSubsampling.YBR_XXX_420);
         }
@@ -191,7 +184,7 @@ public enum PhotometricInterpretation {
         return false;
     }
     public abstract ColorModel createColorModel(int bits, int dataType,
-            Attributes ds) throws IOException;
+            Attributes ds);
 
     public SampleModel createSampleModel(int dataType, int w, int h,
             int samples, boolean banded) {

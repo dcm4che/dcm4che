@@ -44,7 +44,6 @@ import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
-import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
@@ -66,12 +65,12 @@ public class ColorModelFactory {
     }
 
     public static ColorModel createPaletteColorModel(int bits, int dataType,
-            Attributes ds) throws IOException {
+            Attributes ds) {
         return new PaletteColorModel(bits, dataType, createRGBColorSpace(ds), ds);
     }
 
     public static ColorModel createRGBColorModel(int bits, int dataType,
-            Attributes ds) throws IOException {
+            Attributes ds) {
         return new ComponentColorModel(
                 createRGBColorSpace(ds),
                 new int[] { bits, bits, bits },
@@ -83,7 +82,7 @@ public class ColorModelFactory {
 
 
     public static ColorModel createYBRFullColorModel(int bits, int dataType,
-            Attributes ds) throws IOException {
+            Attributes ds) {
         return new ComponentColorModel(
                 new YBRColorSpace(createRGBColorSpace(ds),  YBR.FULL),
                 new int[] { bits, bits, bits },
@@ -94,16 +93,14 @@ public class ColorModelFactory {
     }
 
     public static ColorModel createYBRColorModel(int bits, int dataType,
-            Attributes ds, YBR ybr, ColorSubsampling subsampling)
-                    throws IOException {
+            Attributes ds, YBR ybr, ColorSubsampling subsampling) {
         return new SampledComponentColorModel(
                 new YBRColorSpace(createRGBColorSpace(ds), ybr),
                 subsampling);
     }
 
-    private static ColorSpace createRGBColorSpace(Attributes ds)
-            throws IOException {
-        return createRGBColorSpace(ds.getBytes(Tag.ICCProfile));
+    private static ColorSpace createRGBColorSpace(Attributes ds) {
+        return createRGBColorSpace(ds.getSafeBytes(Tag.ICCProfile));
     }
 
     private static ColorSpace createRGBColorSpace(byte[] iccProfile) {

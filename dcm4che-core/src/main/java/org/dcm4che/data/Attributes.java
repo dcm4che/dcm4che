@@ -540,6 +540,20 @@ public class Attributes implements Serializable {
         }
     }
 
+    public byte[] getSafeBytes(int tag) {
+        return getSafeBytes(null, tag);
+    }
+
+    public byte[] getSafeBytes(String privateCreator, int tag) {
+        try {
+            return getBytes(privateCreator, tag);
+        } catch (IOException e) {
+            LOG.info("Access " + TagUtils.toString(tag)
+                    + " throws i/o exception", e);
+            return null;
+        }
+    }
+
     public String getString(int tag) {
         return getString(null, tag, null, 0, null);
     }

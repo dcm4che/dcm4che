@@ -2,18 +2,15 @@ package org.dcm4che.image;
 
 public class LUTShort extends LUT {
 
-    private final StoredValue pv;
     private final short[] lut;
-    private final int offset;
 
-    LUTShort(StoredValue pv, int offset, short[] lut) {
-        this.pv = pv;
+    LUTShort(StoredValue inBits, int outBits, int offset, short[] lut) {
+        super(inBits, outBits, offset);
         this.lut = lut;
-        this.offset = offset;
     }
 
-    LUTShort(StoredValue pv, int offset, int size, int outBits, boolean invers) {
-       this(pv, offset, new short[size]);
+    LUTShort(StoredValue inBits, int outBits, int offset, int size, boolean invers) {
+       this(inBits, outBits, offset, new short[size]);
        int maxOut = (1<<outBits)-1;
        int maxIndex = size - 1;
        int midIndex = size / 2;
@@ -32,7 +29,7 @@ public class LUTShort extends LUT {
     }
 
     private int index(int pixel) {
-        int index = pv.valueOf(pixel) - offset;
+        int index = inBits.valueOf(pixel) - offset;
         return Math.min(Math.max(0, index), lut.length-1);
     }
 
@@ -54,4 +51,28 @@ public class LUTShort extends LUT {
             dest[i] = lut[index(src[i] & 0xffff)];
     }
 
+    @Override
+    public LUT adjustOutBits(int outBits) {
+        int diff = outBits - this.outBits;
+        if (diff != 0) {
+            short[] lut = this.lut;
+            if (diff < 0) {
+                diff = -diff;
+                for (int i = 0; i < lut.length; i++)
+                    lut[i] = (short) ((lut[i] & 0xffff) >> diff);
+            } else
+                for (int i = 0; i < lut.length; i++)
+                    lut[i] <<= diff;
+            this.outBits = outBits;
+        }
+        return this;
+    }
+
+    @Override
+    public void inverse() {
+        short[] lut = this.lut;
+        int maxOut = (1<<outBits)-1;
+        for (int i = 0; i < lut.length; i++)
+            lut[i] = (short) (maxOut - lut[i]); 
+     }
 }

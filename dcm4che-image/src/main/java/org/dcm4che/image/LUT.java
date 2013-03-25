@@ -48,6 +48,16 @@ import java.awt.image.DataBufferUShort;
  */
 public abstract class LUT {
 
+    protected StoredValue inBits;
+    protected int outBits;
+    protected int offset;
+
+    public LUT(StoredValue inBits, int outBits, int offset) {
+        this.inBits = inBits;
+        this.outBits = outBits;
+        this.offset = offset;
+    }
+
     public void lookup(DataBuffer src, DataBuffer dest) {
         if (src instanceof DataBufferByte)
             if (dest instanceof DataBufferByte)
@@ -73,24 +83,8 @@ public abstract class LUT {
 
     public abstract void lookup(short[] src, short[] dest);
 
-    public static LUT createLUT(LUTParam param, int outBits) {
-        float m = param.getRescaleSlope();
-        float b = param.getRescaleIntercept();
-        float c = param.getWindowCenter();
-        float w = param.getWindowWidth();
-        int size, offset;
-        if (w != 0) {
-            size = Math.max(2,Math.abs(Math.round(w/m)));
-            offset = Math.round(c/m-b) - size/2;
-        } else {
-            offset = param.getSmallestImagePixelValue();
-            size = param.getLargestImagePixelValue()
-                    - param.getSmallestImagePixelValue() + 1;
-        }
-        return outBits > 8
-                ? new LUTShort(param.getStoredValue(), 
-                        offset, size, outBits, param.isInverse())
-                : new LUTByte(param.getStoredValue(),
-                        offset, size, outBits, param.isInverse());
-    }
+    public abstract LUT adjustOutBits(int outBits);
+
+    public abstract void inverse();
+
 }

@@ -63,7 +63,7 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.image.LUT;
-import org.dcm4che.image.LUTParam;
+import org.dcm4che.image.LUTFactory;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.image.StoredValue;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
@@ -235,26 +235,25 @@ public class DicomImageReader extends ImageReader {
         int outBits = imageType.getColorModel().getComponentSize(0);
         Attributes imgAttrs = metadata.getAttributes();
         StoredValue sv = StoredValue.valueOf(imgAttrs);
-        LUTParam lutParam = new LUTParam(sv);
+        LUTFactory lutParam = new LUTFactory(sv);
         lutParam.init(imgAttrs);
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
             if (dParam.getWindowWidth() != 0) {
                 lutParam.setWindowCenter(dParam.getWindowCenter());
-                lutParam.setWindowWidth(dParam.getWindowCenter());
+                lutParam.setWindowWidth(dParam.getWindowWidth());
             } else
                 lutParam.setVOI(imgAttrs,
                     dParam.getWindowIndex(),
                     dParam.getVOILUTIndex(),
-                    dParam.isPreferWindow(),
-                    dParam.isAutoWindowing());
+                    dParam.isPreferWindow());
+            if (dParam.isAutoWindowing())
+                lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
         } else {
-            lutParam.setVOI(imgAttrs, 1, 1, true, true);
+            lutParam.setVOI(imgAttrs, 1, 1, true);
+            lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
         }
-        if (lutParam.needCalculateSmallestAndLargestPixelValue())
-            lutParam.calculateSmallestAndLargestPixelValue(
-                    raster.getDataBuffer());
-        LUT lut = LUT.createLUT(lutParam, outBits);
+        LUT lut = lutParam.createLUT(outBits);
         lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
         return destRaster;
     }

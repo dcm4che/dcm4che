@@ -147,6 +147,8 @@ public class AuditLogger extends DeviceExtension {
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
 
+    private static volatile AuditLogger defaultLogger;
+    
     private Device arrDevice;
     private Facility facility = Facility.authpriv;
     private Severity successSeverity = Severity.notice;
@@ -519,6 +521,14 @@ public class AuditLogger extends DeviceExtension {
 
     private int prival(Severity severity) {
         return (facility.ordinal() << 3) | severity.ordinal();
+    }
+
+    public static AuditLogger getDefaultLogger() {
+        return defaultLogger;
+    }
+
+    public static void setDefaultLogger(AuditLogger defaultLogger) {
+        AuditLogger.defaultLogger = defaultLogger;
     }
 
     private abstract class ActiveConnection extends ByteArrayOutputStream {

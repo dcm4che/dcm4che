@@ -1122,7 +1122,6 @@ public class Device implements Serializable {
                 it.hasNext();) {
             DeviceExtension ext = it.next();
             if (from.getDeviceExtension(ext.getClass()) == null) {
-                ext.remove();
                 it.remove();
             }
         }

@@ -8,5 +8,6 @@
         <module name="org.dcm4che.net-audit" export="true"/>
         <module name="org.dcm4che.conf.ldap" export="true"/>
         <module name="javax.api"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>

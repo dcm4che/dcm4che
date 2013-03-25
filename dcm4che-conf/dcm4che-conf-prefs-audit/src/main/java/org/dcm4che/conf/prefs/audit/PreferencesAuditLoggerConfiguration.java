@@ -49,6 +49,8 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditLogger;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,6 +58,9 @@ import org.dcm4che.util.StringUtils;
  */
 public class PreferencesAuditLoggerConfiguration
         extends PreferencesDicomConfigurationExtension {
+
+    private static final Logger LOG = LoggerFactory.getLogger(
+            PreferencesAuditLoggerConfiguration.class);
 
     @Override
     protected void storeChilds(Device device, Preferences deviceNode) {
@@ -122,11 +127,22 @@ public class PreferencesAuditLoggerConfiguration
                 loggerNode.get("dcmAuditRecordRepositoryDeviceReference", null);
         if (arrDeviceRef == null)
             throw new ConfigurationException("Missing dcmAuditRecordRepositoryDeviceReference");
+
         logger.setAuditRecordRepositoryDevice(
                 arrDeviceRef.equals(config.deviceRef(device.getDeviceName()))
                     ? device
-                    : config.loadDevice(arrDeviceRef));
+                    : loadAuditRecordRepository(arrDeviceRef));
         device.addDeviceExtension(logger);
+    }
+
+    private Device loadAuditRecordRepository(String arrDeviceRef) {
+        try {
+            return config.loadDevice(arrDeviceRef);
+        } catch (ConfigurationException e) {
+            LOG.info("Failed to load Audit Record Repository "
+                    + arrDeviceRef + " referenced by Audit Logger", e);
+            return null;
+        }
     }
 
     private void loadFrom(AuditLogger logger, Preferences prefs) {

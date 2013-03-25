@@ -54,6 +54,8 @@ import org.dcm4che.conf.ldap.LdapUtils;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.audit.AuditLogger;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -62,6 +64,9 @@ import org.dcm4che.util.StringUtils;
 public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtension {
 
     private static final String CN_AUDIT_LOGGER = "cn=Audit Logger,";
+
+    private static final Logger LOG = LoggerFactory.getLogger(
+            LdapAuditLoggerConfiguration.class);
 
     @Override
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
@@ -135,8 +140,18 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 attrs.get("dcmAuditRecordRepositoryDeviceReference"), null);
         logger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
                 ? device
-                : config.loadDevice(arrDeviceDN));
+                : loadAuditRecordRepository(arrDeviceDN));
         device.addDeviceExtension(logger);
+    }
+
+    private Device loadAuditRecordRepository(String arrDeviceRef) {
+        try {
+            return config.loadDevice(arrDeviceRef);
+        } catch (ConfigurationException e) {
+            LOG.info("Failed to load Audit Record Repository "
+                    + arrDeviceRef + " referenced by Audit Logger", e);
+            return null;
+        }
     }
 
     private void loadFrom(AuditLogger logger, Attributes attrs) throws NamingException {

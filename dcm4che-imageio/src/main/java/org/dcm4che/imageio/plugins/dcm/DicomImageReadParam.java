@@ -40,6 +40,8 @@ package org.dcm4che.imageio.plugins.dcm;
 
 import javax.imageio.ImageReadParam;
 
+import org.dcm4che.data.Attributes;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
@@ -52,6 +54,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private boolean preferWindow = true;
     private int windowIndex;
     private int voiLUTIndex;
+    private Attributes presentationState;
 
     public float getWindowCenter() {
         return windowCenter;
@@ -98,7 +101,15 @@ public class DicomImageReadParam extends ImageReadParam {
     }
 
     public void setVOILUTIndex(int voiLUTIndex) {
-        this.voiLUTIndex = Math.max(voiLUTIndex, 1);
+        this.voiLUTIndex = Math.max(voiLUTIndex, 0);
+    }
+
+    public Attributes getPresentationState() {
+        return presentationState;
+    }
+
+    public void setPresentationState(Attributes presentationState) {
+        this.presentationState = presentationState;
     }
 
 }

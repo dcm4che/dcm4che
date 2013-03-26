@@ -67,18 +67,39 @@ public class LUTFactory {
         this.storedValue = storedValue;
     }
 
-    public void init(Attributes attrs) {
+    public void setModalityLUT(Attributes attrs) {
         rescaleIntercept = attrs.getFloat(Tag.RescaleIntercept, 0);
         rescaleSlope = attrs.getFloat(Tag.RescaleSlope, 1);
         modalityLUT = createLUT(storedValue,
                 attrs.getNestedDataset(Tag.ModalityLUTSequence));
-        String pShape = attrs.getString(Tag.PresentationLUTShape);
-        inverse = (pShape != null 
+    }
+
+    public void setPresentationLUT(Attributes attrs) {
+        Attributes pLUT = attrs.getNestedDataset(Tag.PresentationLUTSequence);
+        if (pLUT != null) {
+            int[] desc = pLUT.getInts(Tag.LUTDescriptor);
+            if (desc != null && desc.length == 3) {
+                int len = desc[0] == 0 ? 0x10000 : desc[0];
+                presentationLUT = createLUT(new StoredValue.Unsigned(log2(len)), 
+                        resetOffset(desc), 
+                        pLUT.getSafeBytes(Tag.LUTData), pLUT.bigEndian());
+            }
+        } else {
+            String pShape = attrs.getString(Tag.PresentationLUTShape);
+            inverse = (pShape != null 
                 ? "INVERSE".equals(pShape)
                 : "MONOCHROME1".equals(
                         attrs.getString(Tag.PhotometricInterpretation)));
-        if (rescaleSlope < 0)
-            inverse = !inverse;
+        }
+    }
+
+    private int[] resetOffset(int[] desc) {
+        if (desc[1] == 0)
+            return desc;
+        
+        int[] copy = desc.clone();
+        copy[1] = 0;
+        return copy;
     }
 
     public void setWindowCenter(float windowCenter) {
@@ -91,28 +112,38 @@ public class LUTFactory {
 
     public void setVOI(Attributes img, int windowIndex, int voiLUTIndex,
             boolean preferWindow) {
-        LUT voiLUT = createLUT(modalityLUT != null
-                    ? new StoredValue.Unsigned(modalityLUT.outBits)
-                    : storedValue,
-                img.getNestedDataset(Tag.VOILUTSequence, voiLUTIndex));
-        if (preferWindow || voiLUT == null) {
+        if (img == null)
+            return;
+
+        Attributes vLUT = img.getNestedDataset(Tag.VOILUTSequence, voiLUTIndex);
+        if (preferWindow || vLUT == null) {
             float[] wcs = img.getFloats(Tag.WindowCenter);
             float[] wws = img.getFloats(Tag.WindowWidth);
             if (wcs != null && windowIndex < wcs.length
                     && wws != null && windowIndex < wws.length) {
                 windowCenter = wcs[windowIndex];
                 windowWidth = wws[windowIndex];
-            } else
-                this.voiLUT = voiLUT;
-        } else
-            this.voiLUT = voiLUT;
+                return;
+            }
+        }
+        if (vLUT != null)
+            voiLUT = createLUT(modalityLUT != null
+                          ? new StoredValue.Unsigned(modalityLUT.outBits)
+                          : storedValue,
+                      vLUT);
     }
 
     private LUT createLUT(StoredValue inBits, Attributes attrs) {
         if (attrs == null)
             return null;
 
-        int[] desc = attrs.getInts(Tag.LUTDescriptor);
+        return createLUT(inBits, attrs.getInts(Tag.LUTDescriptor),
+                attrs.getSafeBytes(Tag.LUTData), attrs.bigEndian());
+    }
+
+    private LUT createLUT(StoredValue inBits, int[] desc, byte[] data,
+            boolean bigEndian) {
+
         if (desc == null)
             return null;
 
@@ -122,7 +153,6 @@ public class LUTFactory {
         int len = desc[0] == 0 ? 0x10000 : desc[0];
         int offset = (short) desc[1];
         int outBits = desc[2];
-        byte[] data = attrs.getSafeBytes(Tag.LUTData);
         if (data == null)
             return null;
 
@@ -132,17 +162,17 @@ public class LUTFactory {
                     return null;
 
                 short[] ss = new short[len];
-                if (attrs.bigEndian())
+                if (bigEndian)
                     for (int i = 0; i < ss.length; i++)
                         ss[i] = (short) ByteUtils.bytesToShortBE(data, i << 1);
                 else
                     for (int i = 0; i < ss.length; i++)
                         ss[i] = (short) ByteUtils.bytesToShortLE(data, i << 1);
 
-                return new LUTShort(storedValue, outBits, offset, ss);
+                return new LUTShort(inBits, outBits, offset, ss);
             }
             // padded high bits -> use low bits
-            data = halfLength(data, attrs.bigEndian() ? 1 : 0);
+            data = halfLength(data, bigEndian ? 1 : 0);
         }
         if (data.length != len)
             return null;
@@ -174,7 +204,7 @@ public class LUTFactory {
 
     private static int log2(int value) {
         int i = 0;
-        while ((value>>>i) != 0);
+        while ((value>>>i) != 0)
             ++i;
         return i-1;
     }
@@ -203,9 +233,10 @@ public class LUTFactory {
                 size = inBits.maxValue() - inBits.minValue() + 1;
             }
             lut = outBits > 8
-                    ? new LUTShort(inBits, outBits, offset, size)
-                    : new LUTByte(inBits, outBits, offset, size);
+                    ? new LUTShort(inBits, outBits, offset, size, m < 0)
+                    : new LUTByte(inBits, outBits, offset, size, m < 0);
         } else {
+            //TODO consider m+b
             lut = lut.adjustOutBits(outBits);
         }
         return modalityLUT != null ? modalityLUT.combine(lut) : lut;

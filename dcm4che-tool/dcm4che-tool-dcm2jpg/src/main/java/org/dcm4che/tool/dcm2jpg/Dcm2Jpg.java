@@ -82,11 +82,13 @@ public class Dcm2Jpg {
 
     private String suffix;
     private int frame = 1;
+    private int windowIndex;
+    private int voiLUTIndex;
+    private boolean preferWindow = true;
     private float windowCenter;
     private float windowWidth;
     private boolean autoWindowing = true;
     private Attributes prState;
-    private short[] pval2gray;
     private final ImageReader imageReader =
             ImageIO.getImageReadersByFormatName("DICOM").next();
     private ImageWriter imageWriter;
@@ -132,16 +134,24 @@ public class Dcm2Jpg {
         this.windowWidth = windowWidth;
     }
 
+    public final void setWindowIndex(int windowIndex) {
+        this.windowIndex = windowIndex;
+    }
+
+    public final void setVOILUTIndex(int voiLUTIndex) {
+        this.voiLUTIndex = voiLUTIndex;
+    }
+
+    public final void setPreferWindow(boolean preferWindow) {
+        this.preferWindow = preferWindow;
+    }
+
     public final void setAutoWindowing(boolean autoWindowing) {
         this.autoWindowing = autoWindowing;
     }
 
     public final void setPresentationState(Attributes prState) {
         this.prState = prState;
-    }
-
-    public final void setPval2gray(short[] pval2gray) {
-        this.pval2gray = pval2gray;
     }
 
     @SuppressWarnings("static-access")
@@ -199,18 +209,26 @@ public class Dcm2Jpg {
                 .create("w"));
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("file")
-                .withType(PatternOptionBuilder.EXISTING_FILE_VALUE)
-                .withDescription(rb.getString("ps"))
-                .withLongOpt("ps")
+                .withArgName("number")
+                .withType(PatternOptionBuilder.NUMBER_VALUE)
+                .withDescription(rb.getString("window"))
+                .withLongOpt("window")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("number")
+                .withType(PatternOptionBuilder.NUMBER_VALUE)
+                .withDescription(rb.getString("voilut"))
+                .withLongOpt("voilut")
                 .create());
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("file")
                 .withType(PatternOptionBuilder.EXISTING_FILE_VALUE)
-                .withDescription(rb.getString("pv2gray"))
-                .withLongOpt("pv2gray")
+                .withDescription(rb.getString("ps"))
+                .withLongOpt("ps")
                 .create());
+        opts.addOption(null, "uselut", false, rb.getString("uselut"));
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
         opts.addOption(null, "lsF", false, rb.getString("lsformats"));
@@ -246,11 +264,16 @@ public class Dcm2Jpg {
             if (cl.hasOption("w"))
                 main.setWindowWidth(
                         ((Number) cl.getParsedOptionValue("w")).floatValue());
+            if (cl.hasOption("window"))
+                main.setWindowIndex(
+                        ((Number) cl.getParsedOptionValue("window")).intValue() - 1);
+            if (cl.hasOption("voilut"))
+                main.setVOILUTIndex(
+                        ((Number) cl.getParsedOptionValue("voilut")).intValue() - 1);
+            main.setPreferWindow(!cl.hasOption("uselut"));
             main.setAutoWindowing(!cl.hasOption("noauto"));
             main.setPresentationState(
                     loadDicomObject((File) cl.getParsedOptionValue("ps")));
-            main.setPval2gray(
-                    loadPVal2Gray((File) cl.getParsedOptionValue("pval2gray")));
             @SuppressWarnings("unchecked")
             final List<String> argList = cl.getArgList();
             int argc = argList.size();
@@ -331,6 +354,10 @@ public class Dcm2Jpg {
         param.setWindowCenter(windowCenter);
         param.setWindowWidth(windowWidth);
         param.setAutoWindowing(autoWindowing);
+        param.setWindowIndex(windowIndex);
+        param.setVOILUTIndex(voiLUTIndex);
+        param.setPreferWindow(preferWindow);
+        param.setPresentationState(prState);
         return param;
     }
 
@@ -343,42 +370,6 @@ public class Dcm2Jpg {
 
     private String suffix(File src) {
         return src.getName() + '.' + suffix;
-    }
-
-    @SuppressWarnings("resource")
-    private static short[] loadPVal2Gray(File f) throws IOException {
-        if (f == null)
-            return null;
-        BufferedReader r = new BufferedReader(new InputStreamReader(
-                new FileInputStream(f)));
-        try {
-            short[] pval2gray = new short[256];
-            int n = 0;
-            String line;
-            while ((line = r.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.charAt(0) == '#')
-                    continue;
-                if (n == pval2gray.length) {
-                    if (n != pval2gray.length)
-                        throw new IOException("Number of entries in " + f 
-                                + " > 2^16");
-                    pval2gray = Arrays.copyOf(pval2gray, n<<1);
-                }
-                try {
-                    pval2gray[n++] = (short) Integer.parseInt(line.trim());
-                } catch (NumberFormatException nfe) {
-                    throw new IOException("Invalid entry in " + f + ": " + line);
-                }
-            }
-            if (n != pval2gray.length)
-                throw new IOException("Number of entries in " + f + ": " + n
-                        + " != 2^[8..16]");
-            return pval2gray;
-           
-        } finally {
-            SafeClose.close(r);
-        }
     }
 
     private static Attributes loadDicomObject(File f) throws IOException {

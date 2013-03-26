@@ -60,6 +60,7 @@ import javax.imageio.stream.ImageInputStream;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
+import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.image.LUT;
@@ -219,14 +220,14 @@ public class DicomImageReader extends ImageReader {
         WritableRaster raster = (WritableRaster) readRaster(frameIndex, param);
         ImageTypeSpecifier imageType = imageType();
         if (pmi.isMonochrome())
-            raster = applyLUTs(raster, imageType, param);
+            raster = applyLUTs(raster, imageType, frameIndex, param);
         BufferedImage bi = new BufferedImage(
                 imageType.getColorModel(), raster, false, null);
         return bi;
     }
 
     private WritableRaster applyLUTs(WritableRaster raster,
-            ImageTypeSpecifier imageType, ImageReadParam param) {
+            ImageTypeSpecifier imageType, int frameIndex, ImageReadParam param) {
         SampleModel sm = imageType.getSampleModel();
         WritableRaster destRaster =
                 sm.getDataType() == raster.getSampleModel().getDataType()
@@ -236,26 +237,62 @@ public class DicomImageReader extends ImageReader {
         Attributes imgAttrs = metadata.getAttributes();
         StoredValue sv = StoredValue.valueOf(imgAttrs);
         LUTFactory lutParam = new LUTFactory(sv);
-        lutParam.init(imgAttrs);
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
-            if (dParam.getWindowWidth() != 0) {
-                lutParam.setWindowCenter(dParam.getWindowCenter());
-                lutParam.setWindowWidth(dParam.getWindowWidth());
-            } else
-                lutParam.setVOI(imgAttrs,
-                    dParam.getWindowIndex(),
-                    dParam.getVOILUTIndex(),
-                    dParam.isPreferWindow());
-            if (dParam.isAutoWindowing())
-                lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
+            Attributes psAttrs = dParam.getPresentationState();
+            if (psAttrs != null) {
+                lutParam.setModalityLUT(psAttrs);
+                lutParam.setVOI(
+                        selectVOILUT(psAttrs,
+                                imgAttrs.getString(Tag.SOPInstanceUID),
+                                frameIndex+1),
+                        0, 0, false);
+                lutParam.setPresentationLUT(psAttrs);
+            } else {
+                lutParam.setModalityLUT(imgAttrs);
+                if (dParam.getWindowWidth() != 0) {
+                    lutParam.setWindowCenter(dParam.getWindowCenter());
+                    lutParam.setWindowWidth(dParam.getWindowWidth());
+                } else
+                    lutParam.setVOI(imgAttrs,
+                        dParam.getWindowIndex(),
+                        dParam.getVOILUTIndex(),
+                        dParam.isPreferWindow());
+                if (dParam.isAutoWindowing())
+                    lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
+                lutParam.setPresentationLUT(imgAttrs);
+            }
         } else {
-            lutParam.setVOI(imgAttrs, 1, 1, true);
+            lutParam.setModalityLUT(imgAttrs);
+            lutParam.setVOI(imgAttrs, 0, 0, true);
             lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
+            lutParam.setPresentationLUT(imgAttrs);
         }
         LUT lut = lutParam.createLUT(outBits);
         lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
         return destRaster;
+    }
+
+    private Attributes selectVOILUT(Attributes psAttrs, String iuid, int frame) {
+        Sequence voiLUTs = psAttrs.getSequence(Tag.SoftcopyVOILUTSequence);
+        if (voiLUTs != null)
+            for (Attributes voiLUT : voiLUTs) {
+                Sequence refImgs = voiLUT.getSequence(Tag.ReferencedImageSequence);
+                if (refImgs == null || refImgs.isEmpty())
+                    return voiLUT;
+                for (Attributes refImg : refImgs) {
+                    if (iuid.equals(refImg.getString(Tag.ReferencedSOPInstanceUID))) {
+                        int[] refFrames = refImg.getInts(Tag.ReferencedFrameNumber);
+                        if (refFrames == null)
+                            return voiLUT;
+    
+                        for (int refFrame : refFrames)
+                            if (refFrame == frame)
+                                return voiLUT;
+                    }
+                }
+            }
+        return null;
     }
 
     private void readMetadata() throws IOException {

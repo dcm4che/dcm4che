@@ -9,13 +9,17 @@ public class LUTByte extends LUT {
         this.lut = lut;
     }
 
-    LUTByte(StoredValue inBits, int outBits, int offset, int size) {
+    LUTByte(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
         this(inBits, outBits, offset, new byte[size]);
         int maxOut = (1<<outBits)-1;
         int maxIndex = size - 1;
-        int midIndex = size / 2;
-        for (int i = 0; i < size; i++)
-            lut[i] = (byte) ((i * maxOut + midIndex) / maxIndex);
+        int midIndex = maxIndex / 2;
+        if (flip)
+            for (int i = 0; i < size; i++)
+                lut[maxIndex-i] = (byte) ((i * maxOut + midIndex) / maxIndex);
+        else
+            for (int i = 0; i < size; i++)
+                lut[i] = (byte) ((i * maxOut + midIndex) / maxIndex);
     }
 
     @Override

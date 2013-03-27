@@ -88,7 +88,7 @@ public class PreferencesUtils {
             if (i >= prevs.length || !vals[i].equals(prevs[i]))
                 prefs.put(key + '.' + (i+1), vals[i].toString());
         for (int i = vals.length; i < prevs.length;)
-            prefs.remove(key + '.' + (i++));
+            prefs.remove(key + '.' + (++i));
         if (vals.length != prevs.length)
             if (vals.length == 0)
                 prefs.remove(key + ".#");

@@ -41,6 +41,7 @@ package org.dcm4che.media;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -123,25 +124,24 @@ public class RecordFactory {
             item.remove(Tag.ReferencedSOPClassUIDInFile);
             int[] keys = item.tags();
             if (privuid != null) {
-                privateRecordKeys.put(privuid, keys);
+                if (privateRecordKeys.put(privuid, keys) != null)
+                    throw new IllegalArgumentException(
+                            "Duplicate Private Record UID: " + privuid);
             } else {
-                recordKeys.put(type, keys);
+                if (recordKeys.put(type, keys) != null)
+                    throw new IllegalArgumentException(
+                            "Duplicate Record Type: " + type);
             }
         }
-        checkRecordTypes(recordTypes);
+        EnumSet<RecordType> missingTypes = EnumSet.allOf(RecordType.class);
+        missingTypes.removeAll(recordKeys.keySet());
+        if (!missingTypes.isEmpty())
+            throw new IllegalArgumentException(
+                    "Missing Record Types: " + missingTypes);
         this.recordTypes = recordTypes;
         this.recordKeys = recordKeys;
         this.privateRecordUIDs = privateRecordUIDs;
         this.privateRecordKeys = privateRecordKeys;
-    }
-
-    private void checkRecordTypes(HashMap<String, RecordType> recordTypes) {
-        RecordType[] types = RecordType.values();
-        if (recordTypes.size() < types.length)
-            for (RecordType type : types)
-                if (!recordTypes.containsKey(type))
-                    throw new IllegalArgumentException(
-                            "Missing Record Type: " + type);
     }
 
     private Attributes parseXML(String uri)

@@ -40,11 +40,8 @@ package org.dcm4che.tool.dcm2jpg;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -329,10 +326,10 @@ public class Dcm2Jpg {
             try {
                 writeImage(ios, bi);
             } finally {
-                SafeClose.close(ios);
+                try { ios.close(); } catch (IOException ignore) {}
             }
         } finally {
-            SafeClose.close(iis);
+            try { iis.close(); } catch (IOException ignore) {}
         }
     }
 

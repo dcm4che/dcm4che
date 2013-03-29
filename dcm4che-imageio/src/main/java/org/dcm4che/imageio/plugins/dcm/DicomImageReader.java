@@ -65,6 +65,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.image.LUT;
 import org.dcm4che.image.LUTFactory;
+import org.dcm4che.image.Overlays;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.image.StoredValue;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
@@ -219,11 +220,54 @@ public class DicomImageReader extends ImageReader {
             throws IOException {
         WritableRaster raster = (WritableRaster) readRaster(frameIndex, param);
         ImageTypeSpecifier imageType = imageType();
-        if (pmi.isMonochrome())
+        if (pmi.isMonochrome()) {
+            int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
+            for (int gg0000 : overlayGroupOffsets)
+                Overlays.extractFromPixeldata(metadata.getAttributes(),
+                        gg0000, raster.getDataBuffer());
             raster = applyLUTs(raster, imageType, frameIndex, param);
+            for (int gg0000 : overlayGroupOffsets)
+                applyOverlay(gg0000, raster, imageType, frameIndex, param);
+        }
         BufferedImage bi = new BufferedImage(
                 imageType.getColorModel(), raster, false, null);
         return bi;
+    }
+
+    private void applyOverlay(int gg0000, WritableRaster raster,
+            ImageTypeSpecifier imageType, int frameIndex, ImageReadParam param) {
+        int outBits = imageType.getColorModel().getComponentSize(0);
+        Attributes ovlyAttrs = metadata.getAttributes();
+        int grayscaleValue = 0xffff;
+        if (param instanceof DicomImageReadParam) {
+            DicomImageReadParam dParam = (DicomImageReadParam) param;
+            Attributes psAttrs = dParam.getPresentationState();
+            if (psAttrs != null) {
+                if (psAttrs.containsValue(Tag.OverlayData | gg0000))
+                    ovlyAttrs = psAttrs;
+                grayscaleValue = Overlays.getRecommendedDisplayGrayscaleValue(
+                        psAttrs, gg0000);
+            } else
+                grayscaleValue = dParam.getOverlayGrayscaleValue();
+        }
+        Overlays.applyOverlay(frameIndex, raster, ovlyAttrs, gg0000,
+                grayscaleValue >>> (16-outBits));
+    }
+
+    private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {
+        if (param instanceof DicomImageReadParam) {
+            DicomImageReadParam dParam = (DicomImageReadParam) param;
+            Attributes psAttrs = dParam.getPresentationState();
+            if (psAttrs != null)
+                return Overlays.getGroupOffsets(psAttrs,
+                        Tag.OverlayActivationLayer, 0xffff);
+            else
+                return Overlays.getGroupOffsets(metadata.getAttributes(),
+                        Tag.OverlayRows,
+                        dParam.getOverlayActivationMask());
+        }
+        return Overlays.getGroupOffsets(metadata.getAttributes(),
+                Tag.OverlayRows, 0xffff);
     }
 
     private WritableRaster applyLUTs(WritableRaster raster,
@@ -303,6 +347,8 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException("Input not set");
 
         dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
+        Attributes bulkdata = DicomInputStream.defaultBulkData();
+        dis.setBulkDataAttributes(pixelData());
         dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
@@ -333,6 +379,12 @@ public class DicomImageReader extends ImageReader {
                 this.pixeldataFragments = (Fragments) pixeldata;
             }
         }
+    }
+
+    private Attributes pixelData() {
+        Attributes attrs = new Attributes(1);
+        attrs.setNull(Tag.PixelData, VR.OW);
+        return attrs;
     }
 
     private void resetInternalState() {

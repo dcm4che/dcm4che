@@ -90,6 +90,8 @@ public class Dcm2Jpg {
             ImageIO.getImageReadersByFormatName("DICOM").next();
     private ImageWriter imageWriter;
     private ImageWriteParam imageWriteParam;
+    private int overlayActivationMask = 0xffff;
+    private int overlayGrayscaleValue = 0xffff;
 
     public void initImageWriter(String formatName, String suffix,
             String clazz, String compressionType, Number quality) {
@@ -149,6 +151,14 @@ public class Dcm2Jpg {
 
     public final void setPresentationState(Attributes prState) {
         this.prState = prState;
+    }
+
+    public void setOverlayActivationMask(int overlayActivationMask) {
+        this.overlayActivationMask = overlayActivationMask;
+    }
+
+    public void setOverlayGrayscaleValue(int overlayGrayscaleValue) {
+        this.overlayGrayscaleValue = overlayGrayscaleValue;
     }
 
     @SuppressWarnings("static-access")
@@ -225,6 +235,18 @@ public class Dcm2Jpg {
                 .withDescription(rb.getString("ps"))
                 .withLongOpt("ps")
                 .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("mask")
+                .withDescription(rb.getString("overlays"))
+                .withLongOpt("overlays")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("value")
+                .withDescription(rb.getString("ovlygray"))
+                .withLongOpt("ovlygray")
+                .create());
         opts.addOption(null, "uselut", false, rb.getString("uselut"));
         opts.addOption(null, "noauto", false, rb.getString("noauto"));
         opts.addOption(null, "lsE", false, rb.getString("lsencoders"));
@@ -267,6 +289,12 @@ public class Dcm2Jpg {
             if (cl.hasOption("voilut"))
                 main.setVOILUTIndex(
                         ((Number) cl.getParsedOptionValue("voilut")).intValue() - 1);
+            if (cl.hasOption("overlays"))
+                main.setOverlayActivationMask(
+                        parseHex(cl.getOptionValue("overlays")));
+            if (cl.hasOption("ovlygray"))
+                main.setOverlayGrayscaleValue(
+                        parseHex(cl.getOptionValue("ovlygray")));
             main.setPreferWindow(!cl.hasOption("uselut"));
             main.setAutoWindowing(!cl.hasOption("noauto"));
             main.setPresentationState(
@@ -291,6 +319,14 @@ public class Dcm2Jpg {
             System.err.println("dcm2jpg: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    private static int parseHex(String s) throws ParseException {
+        try {
+            return Integer.parseInt(s, 16);
+        } catch (NumberFormatException e) {
+            throw new ParseException(e.getMessage());
         }
     }
 
@@ -355,6 +391,8 @@ public class Dcm2Jpg {
         param.setVOILUTIndex(voiLUTIndex);
         param.setPreferWindow(preferWindow);
         param.setPresentationState(prState);
+        param.setOverlayActivationMask(overlayActivationMask);
+        param.setOverlayGrayscaleValue(overlayGrayscaleValue);
         return param;
     }
 

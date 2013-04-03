@@ -63,7 +63,7 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
-import org.dcm4che.image.LUT;
+import org.dcm4che.image.LookupTable;
 import org.dcm4che.image.LUTFactory;
 import org.dcm4che.image.Overlays;
 import org.dcm4che.image.PhotometricInterpretation;
@@ -312,7 +312,7 @@ public class DicomImageReader extends ImageReader {
             lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
             lutParam.setPresentationLUT(imgAttrs);
         }
-        LUT lut = lutParam.createLUT(outBits);
+        LookupTable lut = lutParam.createLUT(outBits);
         lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
         return destRaster;
     }

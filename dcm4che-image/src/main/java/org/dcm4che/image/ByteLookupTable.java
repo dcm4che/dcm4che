@@ -1,15 +1,15 @@
 package org.dcm4che.image;
 
-public class LUTByte extends LUT {
+public class ByteLookupTable extends LookupTable {
 
     private final byte[] lut;
 
-    LUTByte(StoredValue inBits, int outBits, int offset, byte[] lut) {
+    ByteLookupTable(StoredValue inBits, int outBits, int offset, byte[] lut) {
         super(inBits, outBits, offset);
         this.lut = lut;
     }
 
-    LUTByte(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
+    ByteLookupTable(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
         this(inBits, outBits, offset, new byte[size]);
         int maxOut = (1<<outBits)-1;
         int maxIndex = size - 1;
@@ -57,7 +57,7 @@ public class LUTByte extends LUT {
     }
 
     @Override
-    public LUT adjustOutBits(int outBits) {
+    public LookupTable adjustOutBits(int outBits) {
         int diff = outBits - this.outBits;
         if (diff != 0) {
             byte[] lut = this.lut;
@@ -65,7 +65,7 @@ public class LUTByte extends LUT {
                 short[] ss = new short[lut.length];
                 for (int i = 0; i < lut.length; i++)
                     ss[i] = (short) ((lut[i] & 0xff) << diff);
-                return new LUTShort(inBits, outBits, offset, ss);
+                return new ShortLookupTable(inBits, outBits, offset, ss);
             }
             if (diff < 0) {
                 diff = -diff;
@@ -89,12 +89,12 @@ public class LUTByte extends LUT {
 
 
     @Override
-    public LUT combine(LUT other) {
+    public LookupTable combine(LookupTable other) {
         byte[] lut = this.lut;
         if (other.outBits > 8) {
             short[] ss = new short[lut.length];
             other.lookup(lut, ss);
-            return new LUTShort(inBits, other.outBits, offset, ss);
+            return new ShortLookupTable(inBits, other.outBits, offset, ss);
         }
         other.lookup(lut, lut);
         this.outBits = other.outBits;

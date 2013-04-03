@@ -46,13 +46,13 @@ import java.awt.image.DataBufferUShort;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public abstract class LUT {
+public abstract class LookupTable {
 
     protected StoredValue inBits;
     protected int outBits;
     protected int offset;
 
-    public LUT(StoredValue inBits, int outBits, int offset) {
+    public LookupTable(StoredValue inBits, int outBits, int offset) {
         this.inBits = inBits;
         this.outBits = outBits;
         this.offset = offset;
@@ -85,10 +85,10 @@ public abstract class LUT {
 
     public abstract void lookup(short[] src, short[] dest);
 
-    public abstract LUT adjustOutBits(int outBits);
+    public abstract LookupTable adjustOutBits(int outBits);
 
     public abstract void inverse();
 
-    public abstract LUT combine(LUT lut);
+    public abstract LookupTable combine(LookupTable lut);
 
 }

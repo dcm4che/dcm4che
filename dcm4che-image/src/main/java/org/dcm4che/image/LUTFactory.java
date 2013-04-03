@@ -55,12 +55,12 @@ public class LUTFactory {
     private final StoredValue storedValue;
     private float rescaleSlope = 1;
     private float rescaleIntercept = 0;
-    private LUT modalityLUT;
+    private LookupTable modalityLUT;
     private float windowCenter;
     private float windowWidth;
     private String voiLUTFunction;
-    private LUT voiLUT;
-    private LUT presentationLUT;
+    private LookupTable voiLUT;
+    private LookupTable presentationLUT;
     private boolean inverse;
 
     public LUTFactory(StoredValue storedValue) {
@@ -133,7 +133,7 @@ public class LUTFactory {
                       vLUT);
     }
 
-    private LUT createLUT(StoredValue inBits, Attributes attrs) {
+    private LookupTable createLUT(StoredValue inBits, Attributes attrs) {
         if (attrs == null)
             return null;
 
@@ -141,7 +141,7 @@ public class LUTFactory {
                 attrs.getSafeBytes(Tag.LUTData), attrs.bigEndian());
     }
 
-    private LUT createLUT(StoredValue inBits, int[] desc, byte[] data,
+    private LookupTable createLUT(StoredValue inBits, int[] desc, byte[] data,
             boolean bigEndian) {
 
         if (desc == null)
@@ -169,7 +169,7 @@ public class LUTFactory {
                     for (int i = 0; i < ss.length; i++)
                         ss[i] = (short) ByteUtils.bytesToShortLE(data, i << 1);
 
-                return new LUTShort(inBits, outBits, offset, ss);
+                return new ShortLookupTable(inBits, outBits, offset, ss);
             }
             // padded high bits -> use low bits
             data = halfLength(data, bigEndian ? 1 : 0);
@@ -180,7 +180,7 @@ public class LUTFactory {
         if (outBits > 8)
             return null;
 
-        return new LUTByte(inBits, outBits, offset, data);
+        return new ByteLookupTable(inBits, outBits, offset, data);
     }
 
     static byte[] halfLength(byte[] data, int hilo) {
@@ -191,8 +191,8 @@ public class LUTFactory {
         return bs;
     }
 
-    public LUT createLUT(int outBits) {
-        LUT lut = combineModalityVOILUT(presentationLUT != null
+    public LookupTable createLUT(int outBits) {
+        LookupTable lut = combineModalityVOILUT(presentationLUT != null
                 ? log2(presentationLUT.length())
                 : outBits);
         if (presentationLUT != null) {
@@ -209,11 +209,11 @@ public class LUTFactory {
         return i-1;
     }
 
-    private LUT combineModalityVOILUT(int outBits) {
+    private LookupTable combineModalityVOILUT(int outBits) {
         float m = rescaleSlope;
         float b = rescaleIntercept;
-        LUT modalityLUT = this.modalityLUT;
-        LUT lut = this.voiLUT;
+        LookupTable modalityLUT = this.modalityLUT;
+        LookupTable lut = this.voiLUT;
         if (lut == null) {
             float c = windowCenter;
             float w = windowWidth;
@@ -233,8 +233,8 @@ public class LUTFactory {
                 size = inBits.maxValue() - inBits.minValue() + 1;
             }
             lut = outBits > 8
-                    ? new LUTShort(inBits, outBits, offset, size, m < 0)
-                    : new LUTByte(inBits, outBits, offset, size, m < 0);
+                    ? new ShortLookupTable(inBits, outBits, offset, size, m < 0)
+                    : new ByteLookupTable(inBits, outBits, offset, size, m < 0);
         } else {
             //TODO consider m+b
             lut = lut.adjustOutBits(outBits);

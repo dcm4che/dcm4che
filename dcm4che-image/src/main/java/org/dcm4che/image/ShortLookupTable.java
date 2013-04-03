@@ -1,15 +1,15 @@
 package org.dcm4che.image;
 
-public class LUTShort extends LUT {
+public class ShortLookupTable extends LookupTable {
 
     private final short[] lut;
 
-    LUTShort(StoredValue inBits, int outBits, int offset, short[] lut) {
+    ShortLookupTable(StoredValue inBits, int outBits, int offset, short[] lut) {
         super(inBits, outBits, offset);
         this.lut = lut;
     }
 
-    LUTShort(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
+    ShortLookupTable(StoredValue inBits, int outBits, int offset, int size, boolean flip) {
        this(inBits, outBits, offset, new short[size]);
        int maxOut = (1<<outBits)-1;
        int maxIndex = size - 1;
@@ -57,7 +57,7 @@ public class LUTShort extends LUT {
     }
 
     @Override
-    public LUT adjustOutBits(int outBits) {
+    public LookupTable adjustOutBits(int outBits) {
         int diff = outBits - this.outBits;
         if (diff != 0) {
             short[] lut = this.lut;
@@ -82,7 +82,7 @@ public class LUTShort extends LUT {
      }
 
     @Override
-    public LUT combine(LUT other) {
+    public LookupTable combine(LookupTable other) {
         short[] lut = this.lut;
         other.lookup(lut, lut);
         this.outBits = other.outBits;

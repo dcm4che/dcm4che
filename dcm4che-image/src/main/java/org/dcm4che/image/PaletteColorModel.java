@@ -124,7 +124,7 @@ public class PaletteColorModel extends ColorModel {
             int hilo = ds.bigEndian() ? 0 : 1;
             if (bits == 8)
                 hilo = 1 - hilo; // padded high bits -> use low bits
-            data = LUTFactory.halfLength(data, hilo);
+            data = LookupTableFactory.halfLength(data, hilo);
         }
         return data;
     }

@@ -50,7 +50,7 @@ import org.dcm4che.util.ByteUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class LUTFactory {
+public class LookupTableFactory {
 
     private final StoredValue storedValue;
     private float rescaleSlope = 1;
@@ -63,7 +63,7 @@ public class LUTFactory {
     private LookupTable presentationLUT;
     private boolean inverse;
 
-    public LUTFactory(StoredValue storedValue) {
+    public LookupTableFactory(StoredValue storedValue) {
         this.storedValue = storedValue;
     }
 

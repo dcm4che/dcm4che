@@ -64,7 +64,7 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.image.LookupTable;
-import org.dcm4che.image.LUTFactory;
+import org.dcm4che.image.LookupTableFactory;
 import org.dcm4che.image.Overlays;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.image.StoredValue;
@@ -280,7 +280,7 @@ public class DicomImageReader extends ImageReader {
         int outBits = imageType.getColorModel().getComponentSize(0);
         Attributes imgAttrs = metadata.getAttributes();
         StoredValue sv = StoredValue.valueOf(imgAttrs);
-        LUTFactory lutParam = new LUTFactory(sv);
+        LookupTableFactory lutParam = new LookupTableFactory(sv);
         if (param instanceof DicomImageReadParam) {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
             Attributes psAttrs = dParam.getPresentationState();

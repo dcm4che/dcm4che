@@ -50,7 +50,7 @@ import javax.xml.bind.Marshaller;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class AuditMessages {
 
@@ -395,25 +395,25 @@ public class AuditMessages {
 
     public static final class MediaType extends org.dcm4che.audit.MediaType {
 
-        public final MediaType USBDiskEmulation =
+        public static final MediaType USBDiskEmulation =
                 new MediaType("110030", "DCM", "USB Disk Emulation");
-        public final MediaType Email =
+        public static final MediaType Email =
                 new MediaType("110031", "DCM", "Email");
-        public final MediaType CD =
+        public static final MediaType CD =
                 new MediaType("110032", "DCM", "CD");
-        public final MediaType DVD =
+        public static final MediaType DVD =
                 new MediaType("110033", "DCM", "DVD");
-        public final MediaType CompactFlash =
+        public static final MediaType CompactFlash =
                 new MediaType("110034", "DCM", "Compact Flash");
-        public final MediaType MultiMediaCard =
+        public static final MediaType MultiMediaCard =
                 new MediaType("110035", "DCM", "Multi-media Card");
-        public final MediaType SecureDigitalCard =
+        public static final MediaType SecureDigitalCard =
                 new MediaType("110036", "DCM", "Secure Digital Card");
-        public final MediaType URI =
+        public static final MediaType URI =
                 new MediaType("110037", "DCM", "URI");
-        public final MediaType Film =
+        public static final MediaType Film =
                 new MediaType("110010", "DCM", "Film");
-        public final MediaType PaperDocument =
+        public static final MediaType PaperDocument =
                 new MediaType("110038", "DCM", "Paper Document");
 
         public MediaType(String code, String codeSystemName,

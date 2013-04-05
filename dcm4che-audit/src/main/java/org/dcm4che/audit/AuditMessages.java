@@ -698,9 +698,6 @@ public class AuditMessages {
         if (aets.length == 0)
             return null;
 
-        if (aets.length == 1)
-            return aets[0];
-
         StringBuilder b = new StringBuilder();
         b.append("AETITLES=").append(aets[0]);
         for (int i = 1; i < aets.length; i++)

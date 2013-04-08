@@ -287,7 +287,7 @@ public class LookupTableFactory {
         int stride = sm.getScanlineStride();
         for (int y = 0; y < h; y++)
             for (int i = y * stride, end = i + w; i < end;) {
-                int val = storedValue.valueOf(data[i]);
+                int val = storedValue.valueOf(data[i++]);
                 if (val < min_max[0]) min_max[0] = val;
                 if (val > min_max[1]) min_max[1] = val;
             }
@@ -300,7 +300,7 @@ public class LookupTableFactory {
         int stride = sm.getScanlineStride();
         for (int y = 0; y < h; y++)
             for (int i = y * stride, end = i + w; i < end;) {
-                int val = storedValue.valueOf(data[i]);
+                int val = storedValue.valueOf(data[i++]);
                 if (val < min_max[0]) min_max[0] = val;
                 if (val > min_max[1]) min_max[1] = val;
             }

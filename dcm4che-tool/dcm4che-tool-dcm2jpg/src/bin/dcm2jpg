@@ -2,6 +2,10 @@
 # -------------------------------------------------------------------------
 # dcm2jpg  Launcher
 # -------------------------------------------------------------------------
+if [ "x$JIIO" != "x" ]; then
+    JIIO_LIB=$JIIO/lib/ext
+    JAVA_OPTS="$JAVA_OPTS -Djava.library.path=$JIIO/lib/amd64"
+fi
 
 MAIN_CLASS=org.dcm4che.tool.dcm2jpg.Dcm2Jpg
 MAIN_JAR=dcm4che-tool-dcm2jpg-3.0.2-SNAPSHOT.jar
@@ -47,6 +51,11 @@ CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
+
+# Setup jai_imageio 
+if [ "x$JIIO_LIB" != "x" ]; then
+    CP=$CP:$JIIO_LIB/jai_imageio.jar:$JIIO_LIB/clibwrapper_jiio.jar
+fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

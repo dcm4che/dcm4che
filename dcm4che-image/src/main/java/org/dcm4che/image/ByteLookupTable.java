@@ -28,9 +28,9 @@ public class ByteLookupTable extends LookupTable {
     }
 
     @Override
-    public void lookup(byte[] src, byte[] dest) {
-        for (int i = 0; i < src.length; i++)
-            dest[i] = lut[index(src[i])];
+    public void lookup(byte[] src, int srcPos, byte[] dest, int destPos, int length) {
+        for (int i = srcPos, endPos = srcPos + length, j = destPos; i < endPos;)
+            dest[j++] = lut[index(src[i++])];
     }
 
     private int index(int pixel) {
@@ -39,21 +39,21 @@ public class ByteLookupTable extends LookupTable {
     }
 
     @Override
-    public void lookup(short[] src, byte[] dest) {
-        for (int i = 0; i < src.length; i++)
-            dest[i] = lut[index(src[i])];
+    public void lookup(short[] src, int srcPos, byte[] dest, int destPos, int length) {
+        for (int i = srcPos, endPos = srcPos + length, j = destPos; i < endPos;)
+            dest[j++] = lut[index(src[i++])];
     }
 
     @Override
-    public void lookup(byte[] src, short[] dest) {
-        for (int i = 0; i < src.length; i++)
-            dest[i] = (short) (lut[index(src[i])] & 0xff);
+    public void lookup(byte[] src, int srcPos, short[] dest, int destPos, int length) {
+        for (int i = srcPos, endPos = srcPos + length, j = destPos; i < endPos;)
+            dest[j++] = (short) (lut[index(src[i++])] & 0xff);
     }
 
     @Override
-    public void lookup(short[] src, short[] dest) {
-        for (int i = 0; i < src.length; i++)
-            dest[i] = (short) (lut[index(src[i])] & 0xff);
+    public void lookup(short[] src, int srcPos, short[] dest, int destPos, int length) {
+        for (int i = srcPos, endPos = srcPos + length, j = destPos; i < endPos;)
+            dest[j++] = (short) (lut[index(src[i++])] & 0xff);
     }
 
     @Override
@@ -93,10 +93,10 @@ public class ByteLookupTable extends LookupTable {
         byte[] lut = this.lut;
         if (other.outBits > 8) {
             short[] ss = new short[lut.length];
-            other.lookup(lut, ss);
+            other.lookup(lut, 0, ss, 0, lut.length);
             return new ShortLookupTable(inBits, other.outBits, offset, ss);
         }
-        other.lookup(lut, lut);
+        other.lookup(lut, 0, lut, 0, lut.length);
         this.outBits = other.outBits;
         return this;
     }

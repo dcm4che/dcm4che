@@ -349,6 +349,7 @@ public class Dcm2Jpg {
             System.out.println(
                     MessageFormat.format(rb.getString("failed"),
                             src, e.getMessage()));
+            e.printStackTrace(System.out);
         }
     }
 

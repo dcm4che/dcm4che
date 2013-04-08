@@ -40,6 +40,7 @@ package org.dcm4che.image;
 
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 
 import org.dcm4che.data.Attributes;
@@ -246,28 +247,49 @@ public class LookupTableFactory {
         if (modalityLUT != null || voiLUT != null || windowWidth != 0)
             return false;
 
-        int min = storedValue.valueOf(
-              img.getInt(Tag.SmallestImagePixelValue, 0));
-        int max = storedValue.valueOf(
-                img.getInt(Tag.LargestImagePixelValue, 0));
-        if (max == 0) {
-            min = Integer.MAX_VALUE;
-            max = Integer.MIN_VALUE;
-            if (dataBuffer instanceof DataBufferByte)
-                for (byte pixel : ((DataBufferByte) dataBuffer).getData()) {
-                    int val = storedValue.valueOf(pixel);
-                    if (val < min) min = val;
-                    if (val > max) max = val;
-                }
-            else
-                for (short pixel : ((DataBufferUShort) dataBuffer).getData()) {
-                    int val = storedValue.valueOf(pixel);
-                    if (val < min) min = val;
-                    if (val > max) max = val;
-                }
+        int[] min_max = {
+            img.getInt(Tag.SmallestImagePixelValue, 0),
+            img.getInt(Tag.LargestImagePixelValue, 0) };
+        if (min_max[1] == 0) {
+            min_max[0] = Integer.MAX_VALUE;
+            min_max[1] = Integer.MIN_VALUE;
+            switch (dataBuffer.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
+                calcMinMax(storedValue, 
+                        ((DataBufferByte) dataBuffer).getData(), min_max);
+                break;
+            case DataBuffer.TYPE_USHORT:
+                calcMinMax(storedValue, 
+                        ((DataBufferUShort) dataBuffer).getData(), min_max);
+                break;
+            case DataBuffer.TYPE_SHORT:
+                calcMinMax(storedValue, 
+                        ((DataBufferShort) dataBuffer).getData(), min_max);
+                break;
+            default:
+                throw new UnsupportedOperationException(
+                        "DataBuffer: "+ dataBuffer.getClass() + " not supported");
+            }
         }
-        windowCenter = (min + max + 1) / 2 * rescaleSlope + rescaleIntercept;
-        windowWidth = Math.abs((max + 1 - min) * rescaleSlope);
+        windowCenter = (min_max[0] + min_max[1] + 1) / 2 * rescaleSlope + rescaleIntercept;
+        windowWidth = Math.abs((min_max[1] + 1 - min_max[0]) * rescaleSlope);
         return true;
     }
+
+    private void calcMinMax(StoredValue storedValue, byte[] data, int[] min_max) {
+        for (byte pixel : data) {
+            int val = storedValue.valueOf(pixel);
+            if (val < min_max[0]) min_max[0] = val;
+            if (val > min_max[1]) min_max[1] = val;
+        }
+    }
+
+    private void calcMinMax(StoredValue storedValue, short[] data, int[] min_max) {
+        for (short pixel : data) {
+            int val = storedValue.valueOf(pixel);
+            if (val < min_max[0]) min_max[0] = val;
+            if (val > min_max[1]) min_max[1] = val;
+        }
+    }
+
 }

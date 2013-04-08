@@ -63,12 +63,16 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.image.ColorModelFactory;
 import org.dcm4che.image.LookupTable;
 import org.dcm4che.image.LookupTableFactory;
 import org.dcm4che.image.Overlays;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.image.StoredValue;
+import org.dcm4che.imageio.codec.ImageReaderFactory;
+import org.dcm4che.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
+import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 
@@ -97,6 +101,8 @@ public class DicomImageReader extends ImageReader {
 
     private Fragments pixeldataFragments;
 
+    private ImageReader decompressor;
+
     private int samples;
 
     private boolean banded;
@@ -112,8 +118,6 @@ public class DicomImageReader extends ImageReader {
     private PhotometricInterpretation pmi;
 
     private SampleModel rawSampleModel;
-
-    private ImageTypeSpecifier imageType;
 
     public DicomImageReader(ImageReaderSpi originatingProvider) {
         super(originatingProvider);
@@ -152,31 +156,26 @@ public class DicomImageReader extends ImageReader {
             throws IOException {
         readMetadata();
         checkIndex(frameIndex);
-        return Collections.singleton(imageType()).iterator();
+        
+        if (decompressor != null && !pmi.isMonochrome()) {
+            seekCompressedFrame(frameIndex);
+            return decompressor.getImageTypes(0);
+        }
+
+        ImageTypeSpecifier imageType = pmi.isMonochrome()
+            ? new ImageTypeSpecifier(
+                  ColorModelFactory.createMonochromeColorModel(8, DataBuffer.TYPE_BYTE),
+                  pmi.createSampleModel(DataBuffer.TYPE_BYTE, width, height, samples, banded))
+            : new ImageTypeSpecifier(
+                  pmi.createColorModel(bitsStored, dataType, metadata.getAttributes()),
+                  rawSampleModel);
+
+        return Collections.singletonList(imageType).iterator();
     }
 
     @Override
     public ImageReadParam getDefaultReadParam() {
         return new DicomImageReadParam();
-    }
-
-    private ImageTypeSpecifier imageType() throws IOException {
-        ImageTypeSpecifier imageType = this.imageType;
-        if (imageType == null) {
-            if (dataType == DataBuffer.TYPE_USHORT)
-                imageType = new ImageTypeSpecifier(
-                        pmi.createColorModel(
-                                8, DataBuffer.TYPE_BYTE, metadata.getAttributes()),
-                        pmi.createSampleModel(DataBuffer.TYPE_BYTE, 
-                                width, height, samples, banded));
-            else
-                imageType = new ImageTypeSpecifier(
-                    pmi.createColorModel(
-                            bitsStored, dataType, metadata.getAttributes()),
-                    rawSampleModel);
-            this.imageType = imageType;
-        }
-        return imageType;
     }
 
     @Override
@@ -201,6 +200,14 @@ public class DicomImageReader extends ImageReader {
         readMetadata();
         checkIndex(frameIndex);
 
+        if (decompressor != null) {
+            seekCompressedFrame(frameIndex);
+            Raster wr = decompressor.canReadRaster()
+                    ? decompressor.readRaster(0, param)
+                    : decompressor.read(0, param).getRaster();
+            rawSampleModel = wr.getSampleModel();
+            return wr;
+        }
         iis.seek(pixeldata.offset + frameIndex * frameLength);
         WritableRaster wr = Raster.createWritableRaster(rawSampleModel, null);
         DataBuffer buf = wr.getDataBuffer();
@@ -215,11 +222,22 @@ public class DicomImageReader extends ImageReader {
         return wr;
     }
 
+    private void seekCompressedFrame(int frameIndex) throws IOException {
+        long[] offsets = new long[pixeldataFragments.size()-(frameIndex+1)];
+        int[] length = new int[offsets.length];
+        for (int i = 0; i < length.length; i++) {
+            BulkDataLocator locator = (BulkDataLocator) pixeldataFragments.get(i+frameIndex+1);
+            offsets[i] = locator.offset;
+            length[i] = locator.length;
+        }
+        decompressor.setInput(new SegmentedInputImageStream(iis, offsets, length));
+    }
+
     @Override
     public BufferedImage read(int frameIndex, ImageReadParam param)
             throws IOException {
         WritableRaster raster = (WritableRaster) readRaster(frameIndex, param);
-        ImageTypeSpecifier imageType = imageType();
+        ImageTypeSpecifier imageType = getImageTypes(frameIndex).next();
         if (pmi.isMonochrome()) {
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
             for (int gg0000 : overlayGroupOffsets)
@@ -313,7 +331,7 @@ public class DicomImageReader extends ImageReader {
             lutParam.setPresentationLUT(imgAttrs);
         }
         LookupTable lut = lutParam.createLUT(outBits);
-        lut.lookup(raster.getDataBuffer(), destRaster.getDataBuffer());
+        lut.lookup(raster, destRaster);
         return destRaster;
     }
 
@@ -347,7 +365,6 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException("Input not set");
 
         dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
-        Attributes bulkdata = DicomInputStream.defaultBulkData();
         dis.setBulkDataAttributes(pixelData());
         dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
@@ -376,6 +393,12 @@ public class DicomImageReader extends ImageReader {
                 this.frameLength = pmi.frameLength(dataType, width, height, samples);
                 this.pixeldata = (BulkDataLocator) pixeldata;
             } else {
+                String tsuid = fmi.getString(Tag.TransferSyntaxUID);
+                ImageReaderParam param =
+                        ImageReaderFactory.getImageReaderParam(tsuid);
+                if (param == null)
+                    throw new IOException("Unsupported Transfer Syntax: " + tsuid);
+                this.decompressor = ImageReaderFactory.getImageReader(param);
                 this.pixeldataFragments = (Fragments) pixeldata;
             }
         }
@@ -395,9 +418,12 @@ public class DicomImageReader extends ImageReader {
         height = 0;
         pixeldata = null;
         pixeldataFragments = null;
+        if (decompressor != null) {
+            decompressor.dispose();
+            decompressor = null;
+        }
         pmi = null;
         rawSampleModel = null;
-        imageType = null;
     }
 
     private void checkIndex(int frameIndex) {

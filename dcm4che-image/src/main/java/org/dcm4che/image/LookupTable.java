@@ -129,8 +129,9 @@ public abstract class LookupTable {
         int w = sm.getWidth();
         int h = sm.getHeight();
         int stride = sm.getScanlineStride();
+        int destStride = destsm.getScanlineStride();
         for (int y = 0; y < h; y++)
-            lookup(src, y * stride, dest, y * w, w);
+            lookup(src, y * stride, dest, y * destStride, w);
     }
 
     private void lookup(ComponentSampleModel sm, byte[] src,
@@ -138,8 +139,9 @@ public abstract class LookupTable {
         int w = sm.getWidth();
         int h = sm.getHeight();
         int stride = sm.getScanlineStride();
+        int destStride = destsm.getScanlineStride();
         for (int y = 0; y < h; y++)
-            lookup(src, y * stride, dest, y * w, w);
+            lookup(src, y * stride, dest, y * destStride, w);
     }
 
     private void lookup(ComponentSampleModel sm, short[] src,
@@ -147,8 +149,9 @@ public abstract class LookupTable {
         int w = sm.getWidth();
         int h = sm.getHeight();
         int stride = sm.getScanlineStride();
+        int destStride = destsm.getScanlineStride();
         for (int y = 0; y < h; y++)
-            lookup(src, y * stride, dest, y * w, w);
+            lookup(src, y * stride, dest, y * destStride, w);
     }
 
     public abstract void lookup(byte[] src, int srcPost,

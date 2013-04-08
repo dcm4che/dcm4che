@@ -251,8 +251,8 @@ public class LookupTableFactory {
 
         int min = img.getInt(Tag.SmallestImagePixelValue, 0);
         int max = img.getInt(Tag.LargestImagePixelValue, 0);
-        int[] min_max;
         if (max == 0) {
+            int[] min_max;
             ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
             DataBuffer dataBuffer = raster.getDataBuffer();
             switch (dataBuffer.getDataType()) {

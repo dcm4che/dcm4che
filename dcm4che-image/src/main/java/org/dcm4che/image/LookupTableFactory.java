@@ -38,10 +38,12 @@
 
 package org.dcm4che.image;
 
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
@@ -243,7 +245,7 @@ public class LookupTableFactory {
         return modalityLUT != null ? modalityLUT.combine(lut) : lut;
     }
 
-    public boolean autoWindowing(Attributes img, DataBuffer dataBuffer) {
+    public boolean autoWindowing(Attributes img, Raster raster) {
         if (modalityLUT != null || voiLUT != null || windowWidth != 0)
             return false;
 
@@ -253,17 +255,19 @@ public class LookupTableFactory {
         if (min_max[1] == 0) {
             min_max[0] = Integer.MAX_VALUE;
             min_max[1] = Integer.MIN_VALUE;
+            ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
+            DataBuffer dataBuffer = raster.getDataBuffer();
             switch (dataBuffer.getDataType()) {
             case DataBuffer.TYPE_BYTE:
-                calcMinMax(storedValue, 
+                calcMinMax(storedValue, sm,
                         ((DataBufferByte) dataBuffer).getData(), min_max);
                 break;
             case DataBuffer.TYPE_USHORT:
-                calcMinMax(storedValue, 
+                calcMinMax(storedValue, sm,
                         ((DataBufferUShort) dataBuffer).getData(), min_max);
                 break;
             case DataBuffer.TYPE_SHORT:
-                calcMinMax(storedValue, 
+                calcMinMax(storedValue, sm,
                         ((DataBufferShort) dataBuffer).getData(), min_max);
                 break;
             default:
@@ -276,20 +280,30 @@ public class LookupTableFactory {
         return true;
     }
 
-    private void calcMinMax(StoredValue storedValue, byte[] data, int[] min_max) {
-        for (byte pixel : data) {
-            int val = storedValue.valueOf(pixel);
-            if (val < min_max[0]) min_max[0] = val;
-            if (val > min_max[1]) min_max[1] = val;
-        }
+    private void calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
+            byte[] data, int[] min_max) {
+        int w = sm.getWidth();
+        int h = sm.getHeight();
+        int stride = sm.getScanlineStride();
+        for (int y = 0; y < h; y++)
+            for (int i = y * stride, end = i + w; i < end;) {
+                int val = storedValue.valueOf(data[i]);
+                if (val < min_max[0]) min_max[0] = val;
+                if (val > min_max[1]) min_max[1] = val;
+            }
     }
 
-    private void calcMinMax(StoredValue storedValue, short[] data, int[] min_max) {
-        for (short pixel : data) {
-            int val = storedValue.valueOf(pixel);
-            if (val < min_max[0]) min_max[0] = val;
-            if (val > min_max[1]) min_max[1] = val;
-        }
+    private void calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
+            short[] data, int[] min_max) {
+        int w = sm.getWidth();
+        int h = sm.getHeight();
+        int stride = sm.getScanlineStride();
+        for (int y = 0; y < h; y++)
+            for (int i = y * stride, end = i + w; i < end;) {
+                int val = storedValue.valueOf(data[i]);
+                if (val < min_max[0]) min_max[0] = val;
+                if (val > min_max[1]) min_max[1] = val;
+            }
     }
 
 }

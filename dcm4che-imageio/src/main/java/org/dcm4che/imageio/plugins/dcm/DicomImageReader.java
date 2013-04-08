@@ -321,13 +321,13 @@ public class DicomImageReader extends ImageReader {
                         dParam.getVOILUTIndex(),
                         dParam.isPreferWindow());
                 if (dParam.isAutoWindowing())
-                    lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
+                    lutParam.autoWindowing(imgAttrs, raster);
                 lutParam.setPresentationLUT(imgAttrs);
             }
         } else {
             lutParam.setModalityLUT(imgAttrs);
             lutParam.setVOI(imgAttrs, 0, 0, true);
-            lutParam.autoWindowing(imgAttrs, raster.getDataBuffer());
+            lutParam.autoWindowing(imgAttrs, raster);
             lutParam.setPresentationLUT(imgAttrs);
         }
         LookupTable lut = lutParam.createLUT(outBits);

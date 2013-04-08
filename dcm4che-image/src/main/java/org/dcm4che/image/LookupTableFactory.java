@@ -249,61 +249,67 @@ public class LookupTableFactory {
         if (modalityLUT != null || voiLUT != null || windowWidth != 0)
             return false;
 
-        int[] min_max = {
-            img.getInt(Tag.SmallestImagePixelValue, 0),
-            img.getInt(Tag.LargestImagePixelValue, 0) };
-        if (min_max[1] == 0) {
-            min_max[0] = Integer.MAX_VALUE;
-            min_max[1] = Integer.MIN_VALUE;
+        int min = img.getInt(Tag.SmallestImagePixelValue, 0);
+        int max = img.getInt(Tag.LargestImagePixelValue, 0);
+        int[] min_max;
+        if (max == 0) {
             ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
             DataBuffer dataBuffer = raster.getDataBuffer();
             switch (dataBuffer.getDataType()) {
             case DataBuffer.TYPE_BYTE:
-                calcMinMax(storedValue, sm,
-                        ((DataBufferByte) dataBuffer).getData(), min_max);
+                min_max = calcMinMax(storedValue, sm,
+                        ((DataBufferByte) dataBuffer).getData());
                 break;
             case DataBuffer.TYPE_USHORT:
-                calcMinMax(storedValue, sm,
-                        ((DataBufferUShort) dataBuffer).getData(), min_max);
+                min_max = calcMinMax(storedValue, sm,
+                        ((DataBufferUShort) dataBuffer).getData());
                 break;
             case DataBuffer.TYPE_SHORT:
-                calcMinMax(storedValue, sm,
-                        ((DataBufferShort) dataBuffer).getData(), min_max);
+                min_max = calcMinMax(storedValue, sm,
+                        ((DataBufferShort) dataBuffer).getData());
                 break;
             default:
                 throw new UnsupportedOperationException(
                         "DataBuffer: "+ dataBuffer.getClass() + " not supported");
             }
+            min = min_max[0];
+            max = min_max[1];
         }
-        windowCenter = (min_max[0] + min_max[1] + 1) / 2 * rescaleSlope + rescaleIntercept;
-        windowWidth = Math.abs((min_max[1] + 1 - min_max[0]) * rescaleSlope);
+        windowCenter = (min + max + 1) / 2 * rescaleSlope + rescaleIntercept;
+        windowWidth = Math.abs((max + 1 - min) * rescaleSlope);
         return true;
     }
 
-    private void calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
-            byte[] data, int[] min_max) {
+    private int[] calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
+            byte[] data) {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
         int w = sm.getWidth();
         int h = sm.getHeight();
         int stride = sm.getScanlineStride();
         for (int y = 0; y < h; y++)
             for (int i = y * stride, end = i + w; i < end;) {
                 int val = storedValue.valueOf(data[i++]);
-                if (val < min_max[0]) min_max[0] = val;
-                if (val > min_max[1]) min_max[1] = val;
+                if (val < min) min = val;
+                if (val > max) max = val;
             }
+        return new int[] { min, max };
     }
 
-    private void calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
-            short[] data, int[] min_max) {
+    private int[] calcMinMax(StoredValue storedValue, ComponentSampleModel sm,
+            short[] data) {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
         int w = sm.getWidth();
         int h = sm.getHeight();
         int stride = sm.getScanlineStride();
         for (int y = 0; y < h; y++)
             for (int i = y * stride, end = i + w; i < end;) {
                 int val = storedValue.valueOf(data[i++]);
-                if (val < min_max[0]) min_max[0] = val;
-                if (val > min_max[1]) min_max[1] = val;
+                if (val < min) min = val;
+                if (val > max) max = val;
             }
+        return new int[] { min, max };
     }
 
 }

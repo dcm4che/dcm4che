@@ -45,6 +45,8 @@ import java.io.Serializable;
  */
 public class Code implements Serializable {
 
+    private static final String NO_CODE_MEANING = "<none>";
+
     private static final long serialVersionUID = 8807594793107889446L;
 
     private String codeValue;
@@ -101,7 +103,7 @@ public class Code implements Serializable {
         this(item.getString(Tag.CodeValue, null),
              item.getString(Tag.CodingSchemeDesignator, null),
              item.getString(Tag.CodingSchemeVersion, null),
-             item.getString(Tag.CodeMeaning, null));
+             item.getString(Tag.CodeMeaning, NO_CODE_MEANING));
     }
 
     protected Code() {} // needed for JPA

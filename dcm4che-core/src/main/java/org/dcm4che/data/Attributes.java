@@ -73,7 +73,6 @@ public class Attributes implements Serializable {
     private static final int INIT_CAPACITY = 16;
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
-
     private transient Attributes parent;
     private transient int[] tags;
     private transient VR[] vrs;
@@ -375,6 +374,9 @@ public class Attributes implements Serializable {
 
     private double[] decodeDSValue(int index) {
         Object value = values[index];
+        if (value == Value.NULL)
+            return ByteUtils.EMPTY_DOUBLES;
+
         if (value instanceof double[])
             return (double[]) value;
 
@@ -400,6 +402,9 @@ public class Attributes implements Serializable {
 
     private int[] decodeISValue(int index) {
         Object value = values[index];
+        if (value == Value.NULL)
+            return ByteUtils.EMPTY_INTS;
+
         if (value instanceof int[])
             return (int[]) value;
 

@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.net.Association;
@@ -230,11 +231,19 @@ public class BasicRetrieveTask implements RetrieveTask {
         aarq.setCallingAET(as.getLocalAET());
         aarq.setCalledAET(rq.getString(Tag.MoveDestination));
         for (InstanceLocator inst : insts) {
-            if (!aarq.containsPresentationContextFor(inst.cuid, inst.tsuid))
+            if (!aarq.containsPresentationContextFor(inst.cuid, inst.tsuid)) {
                 aarq.addPresentationContext(
                         new PresentationContext(
                                 aarq.getNumberOfPresentationContexts() * 2 + 1,
                                 inst.cuid, inst.tsuid));
+                String[] DEFAULT_TS = { UID.ExplicitVRLittleEndian, UID.ImplicitVRLittleEndian };
+                for (String tsuid : DEFAULT_TS)
+                    if (!inst.tsuid.equals(tsuid)
+                            && !aarq.containsPresentationContextFor(inst.cuid, tsuid))
+                        new PresentationContext(
+                                aarq.getNumberOfPresentationContexts() * 2 + 1,
+                                inst.cuid, tsuid);
+            }
         }
         return aarq ;
     }
@@ -251,7 +260,7 @@ public class BasicRetrieveTask implements RetrieveTask {
 
     protected void cstore(Association storeas, InstanceLocator inst)
             throws IOException, InterruptedException {
-        String tsuid = selectTransferSyntaxFor(inst);
+        String tsuid = selectTransferSyntaxFor(storeas, inst);
         DimseRSPHandler rspHandler = new CStoreRSPHandler(as.nextMessageID(), inst.iuid);
 
         if (storeas == as)
@@ -267,7 +276,7 @@ public class BasicRetrieveTask implements RetrieveTask {
         }
     }
 
-    private final class CStoreRSPHandler extends DimseRSPHandler {
+  private final class CStoreRSPHandler extends DimseRSPHandler {
 
         private final String iuid;
 
@@ -305,7 +314,7 @@ public class BasicRetrieveTask implements RetrieveTask {
         }
     }
 
-    protected String selectTransferSyntaxFor(InstanceLocator inst) {
+    protected String selectTransferSyntaxFor(Association storeas, InstanceLocator inst) {
         return inst.tsuid;
     }
 

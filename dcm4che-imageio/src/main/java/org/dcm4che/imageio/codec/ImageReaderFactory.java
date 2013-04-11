@@ -61,12 +61,14 @@ public class ImageReaderFactory {
         public final String formatName;
         public final String className;
         public final String colorPMI;
+        public final int planarConfig;
 
         public ImageReaderParam(String formatName, String className,
-                String colorPMI) {
+                String colorPMI, int planarConfig) {
             this.formatName = formatName;
             this.className = className;
             this.colorPMI = colorPMI;
+            this.planarConfig = planarConfig;
         }
     }
 
@@ -108,7 +110,7 @@ public class ImageReaderFactory {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             map.put((String) entry.getKey(),
-                    new ImageReaderParam(ss[0], ss[1], ss[2]));
+                    new ImageReaderParam(ss[0], ss[1], ss[2], Integer.parseInt(ss[3])));
         }
     }
 
@@ -153,5 +155,4 @@ public class ImageReaderFactory {
         throw new RuntimeException("Image Reader: " +className
                 + " not registered");
     }
-
 }

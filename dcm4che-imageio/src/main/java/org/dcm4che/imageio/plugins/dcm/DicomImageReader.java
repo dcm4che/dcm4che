@@ -158,7 +158,7 @@ public class DicomImageReader extends ImageReader {
         checkIndex(frameIndex);
         
         if (decompressor != null && !pmi.isMonochrome()) {
-            seekCompressedFrame(frameIndex);
+            decompressor.setInput(new SegmentedInputImageStream(iis, pixeldataFragments, frameIndex));
             return decompressor.getImageTypes(0);
         }
 
@@ -201,10 +201,12 @@ public class DicomImageReader extends ImageReader {
         checkIndex(frameIndex);
 
         if (decompressor != null) {
-            seekCompressedFrame(frameIndex);
+            decompressor.setInput(
+                    new SegmentedInputImageStream(
+                            iis, pixeldataFragments, frameIndex));
             Raster wr = decompressor.canReadRaster()
-                    ? decompressor.readRaster(0, param)
-                    : decompressor.read(0, param).getRaster();
+                    ? decompressor.readRaster(0, null)
+                    : decompressor.read(0, null).getRaster();
             rawSampleModel = wr.getSampleModel();
             return wr;
         }
@@ -220,17 +222,6 @@ public class DicomImageReader extends ImageReader {
             iis.readFully(data, 0, data.length);
         }
         return wr;
-    }
-
-    private void seekCompressedFrame(int frameIndex) throws IOException {
-        long[] offsets = new long[pixeldataFragments.size()-(frameIndex+1)];
-        int[] length = new int[offsets.length];
-        for (int i = 0; i < length.length; i++) {
-            BulkDataLocator locator = (BulkDataLocator) pixeldataFragments.get(i+frameIndex+1);
-            offsets[i] = locator.offset;
-            length[i] = locator.length;
-        }
-        decompressor.setInput(new SegmentedInputImageStream(iis, offsets, length));
     }
 
     @Override

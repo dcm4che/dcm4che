@@ -240,9 +240,10 @@ public class BasicRetrieveTask implements RetrieveTask {
                 for (String tsuid : DEFAULT_TS)
                     if (!inst.tsuid.equals(tsuid)
                             && !aarq.containsPresentationContextFor(inst.cuid, tsuid))
-                        new PresentationContext(
-                                aarq.getNumberOfPresentationContexts() * 2 + 1,
-                                inst.cuid, tsuid);
+                        aarq.addPresentationContext(
+                            new PresentationContext(
+                                    aarq.getNumberOfPresentationContexts() * 2 + 1,
+                                    inst.cuid, tsuid));
             }
         }
         return aarq ;

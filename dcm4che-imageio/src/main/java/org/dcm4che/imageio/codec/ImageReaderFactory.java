@@ -60,15 +60,10 @@ public class ImageReaderFactory {
     public static class ImageReaderParam {
         public final String formatName;
         public final String className;
-        public final String colorPMI;
-        public final int planarConfig;
 
-        public ImageReaderParam(String formatName, String className,
-                String colorPMI, int planarConfig) {
+        public ImageReaderParam(String formatName, String className) {
             this.formatName = formatName;
             this.className = className;
-            this.colorPMI = colorPMI;
-            this.planarConfig = planarConfig;
         }
     }
 
@@ -110,7 +105,7 @@ public class ImageReaderFactory {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             map.put((String) entry.getKey(),
-                    new ImageReaderParam(ss[0], ss[1], ss[2], Integer.parseInt(ss[3])));
+                    new ImageReaderParam(ss[0], ss[1]));
         }
     }
 

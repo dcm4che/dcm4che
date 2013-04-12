@@ -40,7 +40,6 @@ package org.dcm4che.image;
 
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.SampleModel;
 
@@ -103,7 +102,7 @@ public enum PhotometricInterpretation {
     },
     YBR_FULL_422 {
         @Override
-        public int frameLength(int dataType, int w, int h, int samples) {
+        public int frameLength(int w, int h, int samples, int bitsAllocated) {
             return ColorSubsampling.YBR_XXX_422.frameLength(w, h);
         }
 
@@ -118,10 +117,15 @@ public enum PhotometricInterpretation {
                 int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
         }
+
+        @Override
+        public boolean changeToRGBonDecompress() {
+            return true;
+        }
     },
     YBR_PARTIAL_422 {
         @Override
-        public int frameLength(int dataType, int w, int h, int samples) {
+        public int frameLength(int w, int h, int samples, int bitsAllocated) {
             return ColorSubsampling.YBR_XXX_422.frameLength(w, h);
         }
 
@@ -136,10 +140,15 @@ public enum PhotometricInterpretation {
                 int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_422);
         }
+
+        @Override
+        public boolean changeToRGBonDecompress() {
+            return true;
+        }
     },
     YBR_PARTIAL_420 {
         @Override
-        public int frameLength(int dataType, int w, int h, int samples) {
+        public int frameLength(int w, int h, int samples, int bitsAllocated) {
             return ColorSubsampling.YBR_XXX_420.frameLength(w, h);
         }
 
@@ -154,11 +163,21 @@ public enum PhotometricInterpretation {
                 int samples, boolean banded) {
             return new SampledComponentSampleModel(w, h, ColorSubsampling.YBR_XXX_420);
         }
+
+        @Override
+        public boolean changeToRGBonDecompress() {
+            return true;
+        }
     },
     YBR_ICT {
         @Override
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean changeToRGBonDecompress() {
+            return true;
         }
     },
     YBR_RCT {
@@ -166,17 +185,26 @@ public enum PhotometricInterpretation {
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean changeToRGBonDecompress() {
+            return true;
+        }
     };
 
     public static PhotometricInterpretation fromString(String s) {
         return s.equals("PALETTE COLOR") ? PALETTE_COLOR : valueOf(s);
     }
 
-    public int frameLength(int dataType, int w, int h, int samples) {
-        return w * h * samples * (DataBuffer.getDataTypeSize(dataType) >> 3);
+    public int frameLength(int w, int h, int samples, int bitsAllocated) {
+        return w * h * samples * (bitsAllocated >> 3);
     }
 
     public boolean isMonochrome() {
+        return false;
+    }
+
+    public boolean changeToRGBonDecompress() {
         return false;
     }
 

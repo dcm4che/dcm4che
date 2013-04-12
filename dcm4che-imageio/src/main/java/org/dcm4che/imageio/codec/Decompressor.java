@@ -63,9 +63,12 @@ import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
+import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -73,20 +76,24 @@ import org.dcm4che.io.DicomOutputStream;
  */
 public class Decompressor implements Value {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Decompressor.class);
+
+    private final PhotometricInterpretation pmi;
     private final Fragments pixeldataFragments;
     private final File file;
     private final ImageReader decompressor;
     private final int length;
     private final int frames;
 
-    private Decompressor(Attributes dataset, Fragments pixeldataFragments,
-            ImageReader decompressor) {
+    private Decompressor(Attributes dataset, PhotometricInterpretation pmi,
+            Fragments pixeldataFragments, ImageReader decompressor) {
         this.frames = dataset.getInt(Tag.NumberOfFrames, 1);
         this.length = dataset.getInt(Tag.Rows, 0)
                     * dataset.getInt(Tag.Columns, 0)
                     * dataset.getInt(Tag.SamplesPerPixel, 0)
                     * (dataset.getInt(Tag.BitsAllocated, 8)>>>3)
                     * frames;
+        this.pmi = pmi;
         this.pixeldataFragments = pixeldataFragments;
         this.decompressor = decompressor;
         
@@ -123,14 +130,15 @@ public class Decompressor implements Value {
         if (param == null)
             throw new IOException("Unsupported Transfer Syntax: " + tsuid);
 
-        int samples = dataset.getInt(Tag.SamplesPerPixel, 1);
-        if (samples > 1) {
-            if (param.colorPMI != null && !param.colorPMI.isEmpty())
-                dataset.setString(Tag.PhotometricInterpretation, VR.CS, param.colorPMI);
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, param.planarConfig);
-        }
+        
+        PhotometricInterpretation pmi = PhotometricInterpretation.fromString(
+                dataset.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
+
+        if (pmi.changeToRGBonDecompress())
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS, "RGB");
+
         dataset.setValue(Tag.PixelData, VR.OW,
-                new Decompressor(dataset, (Fragments) pixeldata,
+                new Decompressor(dataset, pmi, (Fragments) pixeldata,
                         ImageReaderFactory.getImageReader(param)));
         return true;
     }
@@ -169,9 +177,13 @@ public class Decompressor implements Value {
                 decompressor.reset();
                 decompressor.setInput(
                         new SegmentedInputImageStream(iis, pixeldataFragments, i));
-                Raster raster = decompressor.canReadRaster()
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Start decompressing frame #" + (i + 1));
+                Raster raster = !pmi.changeToRGBonDecompress() && decompressor.canReadRaster()
                         ? decompressor.readRaster(0, null)
                         : decompressor.read(0, null).getRaster();
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Finished decompressing frame #" + (i + 1));
                 writeTo(raster, out);
             }
             if ((length & 1) != 0)
@@ -207,10 +219,22 @@ public class Decompressor implements Value {
             throws IOException {
         int h = sm.getHeight();
         int w = sm.getWidth();
-        int stride = ((ComponentSampleModel) sm).getScanlineStride();
+        ComponentSampleModel csm = (ComponentSampleModel) sm;
+        int len = w * csm.getPixelStride();
+        int stride = csm.getScanlineStride();
+        if (csm.getBandOffsets()[0] != 0)
+            bgr2rgb(bankData[0]);
         for (byte[] b : bankData)
             for (int y = 0, off = 0; y < h; ++y, off += stride)
-                out.write(b, off, w);
+                out.write(b, off, len);
+    }
+
+    private void bgr2rgb(byte[] bs) {
+        for (int i = 0, j = 2; j < bs.length; i += 3, j += 3) {
+            byte b = bs[i];
+            bs[i] = bs[j];
+            bs[j] = b;
+        }
     }
 
     private void writeTo(SampleModel sm, short[] data, OutputStream out)

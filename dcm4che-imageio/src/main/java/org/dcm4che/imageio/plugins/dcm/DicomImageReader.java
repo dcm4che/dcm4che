@@ -39,6 +39,7 @@
 package org.dcm4che.imageio.plugins.dcm;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
@@ -75,6 +76,8 @@ import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -82,6 +85,8 @@ import org.dcm4che.io.DicomInputStream.IncludeBulkData;
  *
  */
 public class DicomImageReader extends ImageReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DicomImageReader.class);
 
     private ImageInputStream iis;
 
@@ -157,18 +162,17 @@ public class DicomImageReader extends ImageReader {
         readMetadata();
         checkIndex(frameIndex);
         
-        if (decompressor != null && !pmi.isMonochrome()) {
-            decompressor.setInput(new SegmentedInputImageStream(iis, pixeldataFragments, frameIndex));
-            return decompressor.getImageTypes(0);
-        }
-
-        ImageTypeSpecifier imageType = pmi.isMonochrome()
-            ? new ImageTypeSpecifier(
-                  ColorModelFactory.createMonochromeColorModel(8, DataBuffer.TYPE_BYTE),
-                  pmi.createSampleModel(DataBuffer.TYPE_BYTE, width, height, samples, banded))
-            : new ImageTypeSpecifier(
-                  pmi.createColorModel(bitsStored, dataType, metadata.getAttributes()),
-                  rawSampleModel);
+        ImageTypeSpecifier imageType;
+        if (pmi.isMonochrome())
+            imageType = ImageTypeSpecifier.createGrayscale(8, DataBuffer.TYPE_BYTE, false);
+        else
+            if (decompressor != null) {
+                decompressor.setInput(new SegmentedInputImageStream(iis, pixeldataFragments, 0));
+                return decompressor.getImageTypes(0);
+            } else
+                imageType = new ImageTypeSpecifier(
+                        pmi.createColorModel(bitsStored, dataType, metadata.getAttributes()),
+                        rawSampleModel);
 
         return Collections.singletonList(imageType).iterator();
     }
@@ -204,10 +208,13 @@ public class DicomImageReader extends ImageReader {
             decompressor.setInput(
                     new SegmentedInputImageStream(
                             iis, pixeldataFragments, frameIndex));
-            Raster wr = decompressor.canReadRaster()
+            if (LOG.isDebugEnabled())
+                LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+            Raster wr = !pmi.changeToRGBonDecompress() && decompressor.canReadRaster()
                     ? decompressor.readRaster(0, null)
                     : decompressor.read(0, null).getRaster();
-            rawSampleModel = wr.getSampleModel();
+            if (LOG.isDebugEnabled())
+                LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
             return wr;
         }
         iis.seek(pixeldata.offset + frameIndex * frameLength);
@@ -227,25 +234,44 @@ public class DicomImageReader extends ImageReader {
     @Override
     public BufferedImage read(int frameIndex, ImageReadParam param)
             throws IOException {
-        WritableRaster raster = (WritableRaster) readRaster(frameIndex, param);
-        ImageTypeSpecifier imageType = getImageTypes(frameIndex).next();
+        readMetadata();
+        checkIndex(frameIndex);
+
+        WritableRaster raster;
+        if (decompressor != null) {
+            decompressor.setInput(
+                    new SegmentedInputImageStream(
+                            iis, pixeldataFragments, frameIndex));
+            if (LOG.isDebugEnabled())
+                LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+            BufferedImage bi = decompressor.read(0, null);
+            if (LOG.isDebugEnabled())
+                LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+            if (samples > 1)
+                return bi;
+            
+            raster = bi.getRaster();
+        } else
+            raster = (WritableRaster) readRaster(frameIndex, param);
+
+        ColorModel cm;
         if (pmi.isMonochrome()) {
+            cm = ColorModelFactory.createMonochromeColorModel(
+                    8, DataBuffer.TYPE_BYTE);
+            SampleModel sm = pmi.createSampleModel(
+                    DataBuffer.TYPE_BYTE, width, height, 1, false);
+            raster = applyLUTs(raster, frameIndex, param, sm, 8);
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
             for (int gg0000 : overlayGroupOffsets)
-                Overlays.extractFromPixeldata(metadata.getAttributes(),
-                        gg0000, raster.getDataBuffer());
-            raster = applyLUTs(raster, imageType, frameIndex, param);
-            for (int gg0000 : overlayGroupOffsets)
-                applyOverlay(gg0000, raster, imageType, frameIndex, param);
+                applyOverlay(gg0000, raster, frameIndex, param, 8);
+        } else {
+            cm = pmi.createColorModel(bitsStored, dataType, metadata.getAttributes());
         }
-        BufferedImage bi = new BufferedImage(
-                imageType.getColorModel(), raster, false, null);
-        return bi;
+        return new BufferedImage(cm, raster , false, null);
     }
 
     private void applyOverlay(int gg0000, WritableRaster raster,
-            ImageTypeSpecifier imageType, int frameIndex, ImageReadParam param) {
-        int outBits = imageType.getColorModel().getComponentSize(0);
+            int frameIndex, ImageReadParam param, int outBits) {
         Attributes ovlyAttrs = metadata.getAttributes();
         int grayscaleValue = 0xffff;
         if (param instanceof DicomImageReadParam) {
@@ -280,13 +306,11 @@ public class DicomImageReader extends ImageReader {
     }
 
     private WritableRaster applyLUTs(WritableRaster raster,
-            ImageTypeSpecifier imageType, int frameIndex, ImageReadParam param) {
-        SampleModel sm = imageType.getSampleModel();
-        WritableRaster destRaster =
+            int frameIndex, ImageReadParam param, SampleModel sm, int outBits) {
+         WritableRaster destRaster =
                 sm.getDataType() == raster.getSampleModel().getDataType()
                         ? raster
                         : Raster.createWritableRaster(sm, null);
-        int outBits = imageType.getColorModel().getComponentSize(0);
         Attributes imgAttrs = metadata.getAttributes();
         StoredValue sv = StoredValue.valueOf(imgAttrs);
         LookupTableFactory lutParam = new LookupTableFactory(sv);
@@ -368,7 +392,7 @@ public class DicomImageReader extends ImageReader {
             width = ds.getInt(Tag.Columns, 0);
             height = ds.getInt(Tag.Rows, 0);
             samples = ds.getInt(Tag.SamplesPerPixel, 1);
-            banded = ds.getInt(Tag.PlanarConfiguration, 0) != 0;
+            banded = samples > 1 && ds.getInt(Tag.PlanarConfiguration, 0) != 0;
             bitsAllocated = ds.getInt(Tag.BitsAllocated, 8);
             bitsStored = ds.getInt(Tag.BitsStored, bitsAllocated);
             dataType = bitsAllocated <= 8 ? DataBuffer.TYPE_BYTE 
@@ -381,7 +405,7 @@ public class DicomImageReader extends ImageReader {
                         : ByteOrder.LITTLE_ENDIAN);
                 this.rawSampleModel = pmi.createSampleModel(
                         dataType, width, height, samples, banded);
-                this.frameLength = pmi.frameLength(dataType, width, height, samples);
+                this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
                 this.pixeldata = (BulkDataLocator) pixeldata;
             } else {
                 String tsuid = fmi.getString(Tag.TransferSyntaxUID);

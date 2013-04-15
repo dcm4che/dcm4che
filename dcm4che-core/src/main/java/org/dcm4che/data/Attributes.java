@@ -346,10 +346,11 @@ public class Attributes implements Serializable {
             index = -index-1;
         while (index < size && (tags[index] & 0xffffff00) == group) {
             creatorTag = tags[index];
-            if (vrs[index] == VR.LO && values[index] != Value.NULL
-                    && privateCreator.equals(
-                            VR.LO.toString(decodeStringValue(index), false, 0, null)))
-                return creatorTag;
+            if (vrs[index] == VR.LO) {
+                Object creatorID = decodeStringValue(index);
+                if (privateCreator.equals(creatorID))
+                    return creatorTag;
+            }
             index++;
             creatorTag++;
         }
@@ -365,10 +366,13 @@ public class Attributes implements Serializable {
 
     private Object decodeStringValue(int index) {
         Object value = values[index];
-        if (value instanceof byte[])
-            values[index] = value =
-                vrs[index].toStrings((byte[]) value, bigEndian,
+        if (value instanceof byte[]) {
+            value = vrs[index].toStrings((byte[]) value, bigEndian,
                         getSpecificCharacterSet());
+            if (value instanceof String && ((String) value).isEmpty())
+                value = Value.NULL;
+            values[index] = value;
+        }
         return value;
     }
 
@@ -384,9 +388,14 @@ public class Attributes implements Serializable {
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                         getSpecificCharacterSet());
-        if (value instanceof String)
-            ds = new double[] { StringUtils.parseDS((String) value) };
-        else { // value instanceof String[]
+        if (value instanceof String) {
+            String s = (String) value;
+            if (s.isEmpty()) {
+                values[index] = Value.NULL;
+                return ByteUtils.EMPTY_DOUBLES;
+            }
+            ds = new double[] { StringUtils.parseDS(s) };
+        } else { // value instanceof String[]
             String[] ss = (String[]) value;
             ds = new double[ss.length];
             for (int i = 0; i < ds.length; i++) {
@@ -412,9 +421,14 @@ public class Attributes implements Serializable {
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
                         getSpecificCharacterSet());
-        if (value instanceof String)
-            is = new int[] { StringUtils.parseIS((String) value) };
-        else { // value instanceof String[]
+        if (value instanceof String) {
+            String s = (String) value;
+            if (s.isEmpty()) {
+                values[index] = Value.NULL;
+                return ByteUtils.EMPTY_INTS;
+            }
+            is = new int[] { StringUtils.parseIS(s) };
+        } else { // value instanceof String[]
             String[] ss = (String[]) value;
             is = new int[ss.length];
             for (int i = 0; i < is.length; i++) {
@@ -458,7 +472,10 @@ public class Attributes implements Serializable {
 
     public boolean containsValue(String privateCreator, int tag) {
         int index = indexOf(privateCreator, tag);
-        return index >= 0 && !isEmpty(values[index]);
+        return index >= 0 
+                && !isEmpty(vrs[index].isStringType()
+                        ? decodeStringValue(index)
+                        : values[index]);
     }
 
     public String privateCreatorOf(int tag) {
@@ -470,7 +487,11 @@ public class Attributes implements Serializable {
         if (index < 0 || vrs[index] != VR.LO || values[index] == Value.NULL)
             return null;
         
-        return VR.LO.toString(decodeStringValue(index), false, 0, null);
+        Object value = decodeStringValue(index);
+        if (value == Value.NULL)
+            return null;
+
+        return VR.LO.toString(value, false, 0, null);
     }
 
     public Object getValue(int tag) {
@@ -616,8 +637,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr.isStringType())
+        if (vr.isStringType()) {
             value = decodeStringValue(index);
+            if (value == Value.NULL)
+                return defVal;
+        }
 
         try {
             return vr.toString(value, bigEndian, valueIndex, defVal);
@@ -648,8 +672,11 @@ public class Attributes implements Serializable {
             vr = vrs[index];
         else
             updateVR(index, vr);
-        if (vr.isStringType())
+        if (vr.isStringType()) {
             value = decodeStringValue(index);
+            if (value == Value.NULL)
+                return StringUtils.EMPTY_STRING;
+        }
         try {
             return toStrings(vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
         } catch (UnsupportedOperationException e) {
@@ -971,7 +998,11 @@ public class Attributes implements Serializable {
             return defVal;
         }
         try {
-            return vr.toDate(decodeStringValue(index),
+            value = decodeStringValue(index);
+            if (value == Value.NULL)
+                return defVal;
+
+            return vr.toDate(value,
                     vr != VR.DA ? getTimeZone() : null,
                     valueIndex, false, defVal);
         } catch (IllegalArgumentException e) {
@@ -1006,7 +1037,7 @@ public class Attributes implements Serializable {
         try {
             return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
         } catch (IllegalArgumentException e) {
-            LOG.info("Invalid value of {} TM", TagUtils.toString((int) tag));
+            LOG.info("Invalid value of {} TM", TagUtils.toString(tmTag));
             return defVal;
         }
     }
@@ -1034,12 +1065,17 @@ public class Attributes implements Serializable {
             updateVR(index, vr);
         if (!vr.isTemporalType()) {
             LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
-            return null;
+            return DateUtils.EMPTY_DATES;
         }
         try {
+            value = decodeStringValue(index);
+            if (value == Value.NULL)
+                return DateUtils.EMPTY_DATES;
+
             return vr.toDates(decodeStringValue(index), getTimeZone(), false);
         } catch (IllegalArgumentException e) {
-            return null;
+            LOG.info("Invalid value of {} {}", TagUtils.toString((int) tag), vr);
+            return DateUtils.EMPTY_DATES;
         }
    }
 
@@ -1080,8 +1116,11 @@ public class Attributes implements Serializable {
             LOG.info("Attempt to access {} {} as date", TagUtils.toString(tag), vr);
             return defVal;
         }
-        String[] range = splitRange(
-                vr.toString(decodeStringValue(index), false, 0, null));
+        value = decodeStringValue(index);
+        if (value == Value.NULL)
+            return defVal;
+
+        String[] range = splitRange(vr.toString(value, false, 0, null));
         TimeZone tz = getTimeZone();
         try {
             return new DateRange(
@@ -1561,12 +1600,13 @@ public class Attributes implements Serializable {
             if (TagUtils.isPrivateCreator(tag)) {
                 if (contains(tag))
                     continue; // do not overwrite private creator IDs
-                if (vr == VR.LO && value != Value.NULL
-                        && creatorTagOf(VR.LO.toString(other.decodeStringValue(i), false, 0, null),
-                                tag,
-                                false)
-                           != -1)
-                    continue; // do not add duplicate private creator ID
+
+                if (vr == VR.LO) {
+                    value = other.decodeStringValue(i);
+                    if ((value instanceof String)
+                            && creatorTagOf((String) value, tag, false) != -1)
+                        continue; // do not add duplicate private creator ID
+                }
             }
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
@@ -1588,7 +1628,9 @@ public class Attributes implements Serializable {
                     if (update && equalValues(other, j, i)) {
                         continue;
                     }
-                    Object origValue = values[j];
+                    Object origValue = vrs[j].isStringType()
+                            ? decodeStringValue(j)
+                            : values[j];
                     if (!isEmpty(origValue)) {
                         if (merge) {
                             continue;
@@ -2187,6 +2229,11 @@ public class Attributes implements Serializable {
             return;
         }
         Object value = values[index];
+        VR vr = vrs[index];
+        if (vr.isStringType()) {
+            value = decodeStringValue(index);
+        }
+
         if (isEmpty(value)) {
             if (el.type == IOD.DataElementType.TYPE_1) {
                 result.addMissingAttributeValue(el);
@@ -2222,10 +2269,6 @@ public class Attributes implements Serializable {
             return;
         }
 
-        VR vr = vrs[index];
-        if (vr.isStringType())
-            value = decodeStringValue(index);
-        
         if (el.maxVM > 0 || el.minVM > 1) {
             int vm = vr.vmOf(value);
             if (el.maxVM > 0 && vm > el.maxVM

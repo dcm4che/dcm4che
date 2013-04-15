@@ -42,6 +42,7 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.DateUtils;
 import org.junit.Test;
 
@@ -184,4 +185,20 @@ public class AttributesTest {
         assertArrayEquals(new double[]{ 0.5, 0.5 }, a.getDoubles(Tag.PixelSpacing), 0);
         assertArrayEquals(new float[]{ 0.5f, 0.5f }, a.getFloats(Tag.PixelSpacing), 0);
     }
+
+    @Test
+    public void testTreatWhiteSpacesAsNoValue() {
+        byte[] WHITESPACES = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+        Attributes a = new Attributes();
+        a.setBytes(Tag.AccessionNumber, VR.SH, WHITESPACES);
+        a.setBytes(Tag.StudyDescription, VR.LO, WHITESPACES);
+        a.setBytes(Tag.InstanceNumber, VR.IS, WHITESPACES);
+        a.setBytes(Tag.PixelSpacing, VR.DS, WHITESPACES);
+        assertFalse(a.containsValue(Tag.AccessionNumber));
+        assertNull(a.getString(Tag.StudyDescription));
+        assertEquals(-1, a.getInt(Tag.InstanceNumber, -1));
+        assertArrayEquals(ByteUtils.EMPTY_DOUBLES, a.getDoubles(Tag.PixelSpacing), 0);
+        assertArrayEquals(ByteUtils.EMPTY_FLOATS, a.getFloats(Tag.PixelSpacing), 0);
+   }
+
 }

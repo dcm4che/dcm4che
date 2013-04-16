@@ -891,15 +891,16 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             if (!aets.contains(aet))
                 aesNode.node(aet).removeNode();
         }
+        Collection<String> prevAETs = prevDev.getApplicationAETitles();
         List<Connection> devConns = dev.listConnections();
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
-            ApplicationEntity prevAE = prevDev.getApplicationEntity(aet);
             Preferences aeNode = aesNode.node(aet);
-            if (prevAE == null) {
+            if (!prevAETs.contains(aet)) {
                 storeTo(ae, aeNode, devConns);
                 storeChilds(ae, aeNode);
             } else {
+                ApplicationEntity prevAE = prevDev.getApplicationEntity(aet);
                 storeDiffs(aeNode, prevAE, ae);
                 mergeChilds(prevAE, ae, aeNode);
             }

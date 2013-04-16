@@ -1436,16 +1436,16 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             if (!aets.contains(aet))
                 destroySubcontextWithChilds(aetDN(aet, deviceDN));
         }
+        Collection<String> prevAETs = prevDev.getApplicationAETitles();
         for (ApplicationEntity ae : dev.getApplicationEntities()) {
             String aet = ae.getAETitle();
-            ApplicationEntity prevAE = prevDev.getApplicationEntity(aet);
-            if (prevAE == null) {
+            if (!prevAETs.contains(aet)) {
                 String aeDN = aetDN(ae.getAETitle(), deviceDN);
                 createSubcontext(aeDN,
                         storeTo(ae, deviceDN, new BasicAttributes(true)));
                 storeChilds(aeDN, ae);
             } else
-                merge(prevAE, ae, deviceDN);
+                merge(prevDev.getApplicationEntity(aet), ae, deviceDN);
         }
     }
 

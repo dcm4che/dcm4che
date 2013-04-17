@@ -40,14 +40,19 @@ package org.dcm4che.imageio.codec;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
+import org.dcm4che.net.DeviceExtension;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -55,15 +60,23 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ImageReaderFactory {
+public class ImageReaderFactory extends DeviceExtension {
 
-    public static class ImageReaderParam {
+    private static final long serialVersionUID = -2881173333124498212L;
+
+    public static class ImageReaderParam implements Serializable {
+
+        private static final long serialVersionUID = 6593724836340684578L;
+
         public final String formatName;
         public final String className;
 
         public ImageReaderParam(String formatName, String className) {
             this.formatName = formatName;
-            this.className = className;
+            this.className = 
+                (className == null || className.isEmpty() || className.equals("*"))
+                        ? null
+                        : className;
         }
     }
 
@@ -76,6 +89,10 @@ public class ImageReaderFactory {
             defaultFactory = initDefault();
 
         return defaultFactory;
+    }
+
+    public static void resetDefault() {
+        defaultFactory = null;
     }
 
     public static void setDefault(ImageReaderFactory factory) {
@@ -122,6 +139,10 @@ public class ImageReaderFactory {
         return map.remove(tsuid);
     }
 
+    public Set<Entry<String, ImageReaderParam>> getEntries() {
+        return Collections.unmodifiableMap(map).entrySet();
+    }
+
     public void clear() {
         map.clear();
     }
@@ -138,7 +159,7 @@ public class ImageReaderFactory {
                     + param.formatName + " registered");
 
         String className = param.className;
-        if (className == null || className.isEmpty() || className.equals("*"))
+        if (className == null)
             return iter.next();
 
         do {
@@ -147,7 +168,7 @@ public class ImageReaderFactory {
                 return reader;
         } while (iter.hasNext());
 
-        throw new RuntimeException("Image Reader: " +className
+        throw new RuntimeException("Image Reader: " + className
                 + " not registered");
     }
 }

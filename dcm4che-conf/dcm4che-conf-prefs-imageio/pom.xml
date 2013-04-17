@@ -2,29 +2,22 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.dcm4che</groupId>
-    <artifactId>dcm4che-parent</artifactId>
+    <artifactId>dcm4che-conf</artifactId>
     <version>3.0.2-SNAPSHOT</version>
   </parent>
-  <artifactId>dcm4che-imageio</artifactId>
-  <name>dcm4che-imageio</name>
+  <artifactId>dcm4che-conf-prefs-imageio</artifactId>
+  <name>dcm4che-conf-prefs-imageio</name>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-core</artifactId>
+      <artifactId>dcm4che-conf-prefs</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-net</artifactId>
+      <artifactId>dcm4che-imageio</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-image</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

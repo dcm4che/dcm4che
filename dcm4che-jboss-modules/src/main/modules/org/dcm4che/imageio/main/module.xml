@@ -6,6 +6,7 @@
 
     <dependencies>
         <module name="org.dcm4che.core" export="true"/>
+        <module name="org.dcm4che.net" export="true"/>
         <module name="org.dcm4che.image" export="true"/>
         <module name="com.sun.media.imageio" services="export" export="true"/>
         <module name="javax.api"/>

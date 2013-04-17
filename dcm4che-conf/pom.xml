@@ -14,8 +14,10 @@
     <module>dcm4che-conf-ldap</module>
     <module>dcm4che-conf-ldap-audit</module>
     <module>dcm4che-conf-ldap-hl7</module>
+    <module>dcm4che-conf-ldap-imageio</module>
     <module>dcm4che-conf-prefs</module>
     <module>dcm4che-conf-prefs-audit</module>
     <module>dcm4che-conf-prefs-hl7</module>
+    <module>dcm4che-conf-prefs-imageio</module>
   </modules>
 </project>

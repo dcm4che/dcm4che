@@ -165,10 +165,10 @@ public class Code implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('(').append(codeValue).append(" ,").append(codingSchemeDesignator);
+        sb.append('(').append(codeValue).append(", ").append(codingSchemeDesignator);
         if (codingSchemeVersion != null)
             sb.append(" [").append(codingSchemeVersion).append(']');
-        sb.append(" ,\"").append(codeMeaning).append("\")");
+        sb.append(", \"").append(codeMeaning).append("\")");
         return sb.toString();
     }
 

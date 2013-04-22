@@ -52,7 +52,6 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
-import org.dcm4che.net.DeviceExtension;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -60,7 +59,7 @@ import org.dcm4che.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ImageReaderFactory extends DeviceExtension {
+public class ImageReaderFactory implements Serializable {
 
     private static final long serialVersionUID = -2881173333124498212L;
 
@@ -70,13 +69,16 @@ public class ImageReaderFactory extends DeviceExtension {
 
         public final String formatName;
         public final String className;
+        public final int planarConfiguration;
 
-        public ImageReaderParam(String formatName, String className) {
+        public ImageReaderParam(String formatName, String className,
+                int planarConfiguration) {
             this.formatName = formatName;
             this.className = 
                 (className == null || className.isEmpty() || className.equals("*"))
                         ? null
                         : className;
+            this.planarConfiguration = planarConfiguration;
         }
     }
 
@@ -122,7 +124,7 @@ public class ImageReaderFactory extends DeviceExtension {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             map.put((String) entry.getKey(),
-                    new ImageReaderParam(ss[0], ss[1]));
+                    new ImageReaderParam(ss[0], ss[1], Integer.parseInt(ss[2])));
         }
     }
 

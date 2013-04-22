@@ -143,6 +143,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/imageio-rle/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-imageio-rle</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/net/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-net</include>
@@ -162,6 +170,14 @@
       <outputDirectory>/modules/org/dcm4che/net-hl7/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-net-hl7</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/net-imageio/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-net-imageio</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>

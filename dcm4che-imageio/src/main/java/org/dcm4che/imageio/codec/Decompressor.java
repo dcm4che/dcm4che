@@ -37,6 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.imageio.codec;
 
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -46,6 +50,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +58,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -61,6 +67,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.image.PhotometricInterpretation;
@@ -78,31 +85,20 @@ public class Decompressor implements Value {
 
     private static final Logger LOG = LoggerFactory.getLogger(Decompressor.class);
 
-    private final PhotometricInterpretation pmi;
     private final Fragments pixeldataFragments;
     private final File file;
     private final ImageReader decompressor;
     private final int length;
     private final int frames;
+    private final BufferedImage destination;
 
-    private Decompressor(Attributes dataset, PhotometricInterpretation pmi,
-            Fragments pixeldataFragments, ImageReader decompressor) {
-        this.frames = dataset.getInt(Tag.NumberOfFrames, 1);
-        this.length = dataset.getInt(Tag.Rows, 0)
-                    * dataset.getInt(Tag.Columns, 0)
-                    * dataset.getInt(Tag.SamplesPerPixel, 0)
-                    * (dataset.getInt(Tag.BitsAllocated, 8)>>>3)
-                    * frames;
-        this.pmi = pmi;
-        this.pixeldataFragments = pixeldataFragments;
-        this.decompressor = decompressor;
-        
-        int numFragments = pixeldataFragments.size();
-        if (frames == 1 ? (numFragments < 2)
-                        : (numFragments != frames + 1))
-            throw new IllegalArgumentException(
-                    "Number of Pixel Data Fragments: "
-                    + numFragments + " does not match " + frames);
+    private Decompressor(Attributes dataset, String tsuid,
+            Fragments pixeldataFragments, BufferedImage destination)
+                    throws IOException {
+        ImageReaderFactory.ImageReaderParam param =
+                ImageReaderFactory.getImageReaderParam(tsuid);
+        if (param == null)
+            throw new IOException("Unsupported Transfer Syntax: " + tsuid);
 
         Object o = pixeldataFragments.get(1);
         if (!(o instanceof BulkDataLocator)) {
@@ -115,9 +111,59 @@ public class Decompressor implements Value {
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid URI:" + bdl.uri);
         }
+        
+        int rows = dataset.getInt(Tag.Rows, 0);
+        int cols = dataset.getInt(Tag.Columns, 0);
+        int samples = dataset.getInt(Tag.SamplesPerPixel, 0);
+        int bitsAllocated = dataset.getInt(Tag.BitsAllocated, 8);
+        this.frames = dataset.getInt(Tag.NumberOfFrames, 1);
+        this.length = rows * cols * samples * (bitsAllocated>>>3) * frames;
+        
+        int numFragments = pixeldataFragments.size();
+        if (frames == 1 ? (numFragments < 2)
+                        : (numFragments != frames + 1))
+            throw new IllegalArgumentException(
+                    "Number of Pixel Data Fragments: "
+                    + numFragments + " does not match " + frames);
+
+        this.pixeldataFragments = pixeldataFragments;
+        this.decompressor = ImageReaderFactory.getImageReader(param);
+        this.destination = (destination == null && tsuid.equals(UID.RLELossless))
+                ? createDestination(rows, cols, samples, bitsAllocated)
+                : destination;
+
+        if (samples > 1) {
+            PhotometricInterpretation pmi = PhotometricInterpretation.fromString(
+                    dataset.getString(Tag.PhotometricInterpretation, "RGB"));
+        
+            if (pmi.changeToRGBonDecompress())
+                dataset.setString(Tag.PhotometricInterpretation, VR.CS, "RGB");
+
+            dataset.setInt(Tag.PlanarConfiguration, VR.US,
+                    param.planarConfiguration);
+        }
+
+}
+
+    private BufferedImage createDestination(int rows, int cols, int samples,
+            int bitsAllocated) {
+        int dataType = bitsAllocated > 8 
+                ? DataBuffer.TYPE_USHORT
+                : DataBuffer.TYPE_BYTE;
+        ComponentColorModel cm = new ComponentColorModel(
+                ColorSpace.getInstance(
+                        samples == 1 ? ColorSpace.CS_GRAY : ColorSpace.CS_sRGB ),
+                        false, // hasAlpha
+                        false, // isAlphaPremultiplied,
+                        Transparency.OPAQUE,
+                        dataType);
+        WritableRaster raster = Raster.createBandedRaster(dataType,
+                cols, rows, samples, null);
+        return new BufferedImage(cm, raster, false, null);
     }
 
-    public static boolean decompress(Attributes dataset, String tsuid) throws IOException {
+    public static boolean decompress(Attributes dataset, String tsuid,
+            BufferedImage destination) throws IOException {
         Object pixeldata = dataset.getValue(Tag.PixelData);
         if (pixeldata == null)
             return false;
@@ -125,21 +171,8 @@ public class Decompressor implements Value {
         if (!(pixeldata instanceof Fragments))
             return false;
 
-        ImageReaderFactory.ImageReaderParam param =
-                ImageReaderFactory.getImageReaderParam(tsuid);
-        if (param == null)
-            throw new IOException("Unsupported Transfer Syntax: " + tsuid);
-
-        
-        PhotometricInterpretation pmi = PhotometricInterpretation.fromString(
-                dataset.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
-
-        if (pmi.changeToRGBonDecompress())
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS, "RGB");
-
         dataset.setValue(Tag.PixelData, VR.OW,
-                new Decompressor(dataset, pmi, (Fragments) pixeldata,
-                        ImageReaderFactory.getImageReader(param)));
+                new Decompressor(dataset, tsuid, (Fragments) pixeldata, destination));
         return true;
     }
 
@@ -173,18 +206,19 @@ public class Decompressor implements Value {
     private void writeTo(OutputStream out) throws IOException {
         ImageInputStream iis = new FileImageInputStream(file);
         try {
+            ImageReadParam param = decompressor.getDefaultReadParam();
+            param.setDestination(destination);
             for (int i = 0; i < frames; ++i) {
                 decompressor.reset();
                 decompressor.setInput(
                         new SegmentedInputImageStream(iis, pixeldataFragments, i));
                 if (LOG.isDebugEnabled())
                     LOG.debug("Start decompressing frame #" + (i + 1));
-                Raster raster = !pmi.changeToRGBonDecompress() && decompressor.canReadRaster()
-                        ? decompressor.readRaster(0, null)
-                        : decompressor.read(0, null).getRaster();
+                BufferedImage bi = decompressor.read(0, param);
+                param.setDestination(bi); // reuse bi for next Frame
                 if (LOG.isDebugEnabled())
                     LOG.debug("Finished decompressing frame #" + (i + 1));
-                writeTo(raster, out);
+                writeTo(bi.getRaster(), out);
             }
             if ((length & 1) != 0)
                 out.write(0);

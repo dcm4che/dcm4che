@@ -55,6 +55,7 @@ import org.dcm4che.conf.ldap.LdapUtils;
 import org.dcm4che.imageio.codec.ImageReaderFactory;
 import org.dcm4che.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.imageio.ImageReaderExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -66,9 +67,10 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
 
     @Override
     protected void storeChilds(String deviceDN, Device device) throws NamingException {
-        ImageReaderFactory factory = device.getDeviceExtension(ImageReaderFactory.class);
-        if (factory != null)
-            store(deviceDN, factory);
+        ImageReaderExtension ext =
+                device.getDeviceExtension(ImageReaderExtension.class);
+        if (ext != null)
+            store(deviceDN, ext.getImageReaderFactory());
     }
 
     private String dnOf(String tsuid, String imageReadersDN) {
@@ -90,8 +92,9 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         attrs.put("objectclass", "dcmImageReader");
         attrs.put("dicomTransferSyntax", tsuid);
         attrs.put("dcmIIOFormatName", param.formatName);
-        if (param.className != null)
-            attrs.put("dcmJavaClassName", param.className);
+        LdapUtils.storeNotNull(attrs, "dcmJavaClassName", param.className);
+        LdapUtils.storeInt(attrs, "dcmPlanarConfiguration",
+                param.planarConfiguration);
         return attrs;
     }
 
@@ -115,32 +118,38 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                 factory.put(
                         LdapUtils.stringValue(attrs.get("dicomTransferSyntax"), null),
                         new ImageReaderParam(
-                                LdapUtils.stringValue(attrs.get("dcmIIOFormatName"), null),
-                                LdapUtils.stringValue(attrs.get("dcmJavaClassName"), null)));
+                                LdapUtils.stringValue(
+                                        attrs.get("dcmIIOFormatName"), null),
+                                LdapUtils.stringValue(
+                                        attrs.get("dcmJavaClassName"), null),
+                                LdapUtils.intValue(
+                                        attrs.get("dcmPlanarConfiguration"), 0)));
             }
         } finally {
            LdapUtils.safeClose(ne);
         }
-        device.addDeviceExtension(factory);
+        device.addDeviceExtension(new ImageReaderExtension(factory));
     }
 
     @Override
     protected void mergeChilds(Device prev, Device device, String deviceDN)
             throws NamingException {
-        ImageReaderFactory prevFactory =
-                prev.getDeviceExtension(ImageReaderFactory.class);
-        ImageReaderFactory factory =
-                device.getDeviceExtension(ImageReaderFactory.class);
-        if (factory == null) {
-            if (prevFactory != null)
+        ImageReaderExtension prevExt =
+                prev.getDeviceExtension(ImageReaderExtension.class);
+        ImageReaderExtension ext =
+                device.getDeviceExtension(ImageReaderExtension.class);
+        if (ext == null) {
+            if (prevExt != null)
                 config.destroySubcontextWithChilds(CN_IMAGE_READER_FACTORY + deviceDN);
             return;
         }
-        if (prevFactory == null) {
-            store(deviceDN, factory);
+        if (prevExt == null) {
+            store(deviceDN, ext.getImageReaderFactory());
             return;
         }
         String imageReadersDN = CN_IMAGE_READER_FACTORY + deviceDN;
+        ImageReaderFactory factory = ext.getImageReaderFactory();
+        ImageReaderFactory prevFactory = prevExt.getImageReaderFactory();
         for (Entry<String, ImageReaderParam> entry : prevFactory.getEntries()) {
             String tsuid = entry.getKey();
             if (factory.get(tsuid) == null)
@@ -161,9 +170,13 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
 
     private List<ModificationItem> storeDiffs(ImageReaderParam prevParam,
             ImageReaderParam param, List<ModificationItem> mods) {
-        LdapUtils.storeDiff(mods, "dcmIIOFormatName", prevParam.formatName, param.formatName);
-        LdapUtils.storeDiff(mods, "dcmJavaClassName", prevParam.className, param.className);
-        return mods;
+        LdapUtils.storeDiff(mods, "dcmIIOFormatName",
+                prevParam.formatName, param.formatName);
+        LdapUtils.storeDiff(mods, "dcmJavaClassName",
+                prevParam.className, param.className);
+        LdapUtils.storeDiff(mods, "dcmPlanarConfiguration",
+                prevParam.planarConfiguration, param.planarConfiguration);
+       return mods;
     }
 
 }

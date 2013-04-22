@@ -159,6 +159,10 @@ public class DicomInputStream extends FilterInputStream
         uri = file.toURI().toString();
     }
 
+    public final String getTransferSyntax() {
+        return tsuid;
+    }
+
     /** 
      * Returns the limit of initial allocated memory for element values.
      * 
@@ -816,5 +820,4 @@ public class DicomInputStream extends FilterInputStream
         this.explicitVR = false;
         return true;
     }
-
 }

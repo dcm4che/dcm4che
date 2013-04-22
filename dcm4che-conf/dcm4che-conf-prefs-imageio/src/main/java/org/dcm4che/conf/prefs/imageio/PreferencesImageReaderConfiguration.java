@@ -46,6 +46,7 @@ import org.dcm4che.conf.prefs.PreferencesUtils;
 import org.dcm4che.imageio.codec.ImageReaderFactory;
 import org.dcm4che.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.imageio.ImageReaderExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,10 +57,11 @@ public class PreferencesImageReaderConfiguration
 
     @Override
     protected void storeChilds(Device device, Preferences deviceNode) {
-        ImageReaderFactory factory =
-                device.getDeviceExtension(ImageReaderFactory.class);
-        if (factory != null)
-            storeTo(factory, deviceNode.node("dcmImageReaderFactory"));
+        ImageReaderExtension ext =
+                device.getDeviceExtension(ImageReaderExtension.class);
+        if (ext != null)
+            storeTo(ext.getImageReaderFactory(),
+                    deviceNode.node("dcmImageReaderFactory"));
     }
 
     private void storeTo(ImageReaderFactory factory, Preferences prefs) {
@@ -68,8 +70,9 @@ public class PreferencesImageReaderConfiguration
     }
 
     private void storeTo(ImageReaderParam param, Preferences prefs) {
-        PreferencesUtils.storeNotNull(prefs, "dcmIIOFormatName", param.formatName);
+        prefs.put("dcmIIOFormatName", param.formatName);
         PreferencesUtils.storeNotNull(prefs, "dcmJavaClassName", param.className);
+        prefs.putInt("dcmPlanarConfiguration", param.planarConfiguration);
     }
 
     @Override
@@ -87,26 +90,28 @@ public class PreferencesImageReaderConfiguration
     private ImageReaderParam load(Preferences prefs) {
         return new ImageReaderParam(
                 prefs.get("dcmIIOFormatName", null),
-                prefs.get("dcmJavaClassName", null));
+                prefs.get("dcmJavaClassName", null),
+                prefs.getInt("dcmPlanarConfiguration", 0));
     }
 
     @Override
     protected void mergeChilds(Device prev, Device device, Preferences deviceNode)
             throws BackingStoreException {
-        ImageReaderFactory prevFactory =
-                prev.getDeviceExtension(ImageReaderFactory.class);
-        ImageReaderFactory factory =
-                device.getDeviceExtension(ImageReaderFactory.class);
-        if (factory == null && prevFactory == null)
+        ImageReaderExtension prevExt =
+                prev.getDeviceExtension(ImageReaderExtension.class);
+        ImageReaderExtension ext =
+                device.getDeviceExtension(ImageReaderExtension.class);
+        if (ext == null && prevExt == null)
             return;
         
         Preferences factoryNode = deviceNode.node("dcmImageReaderFactory");
-        if (factory == null)
+        if (ext == null)
             factoryNode.removeNode();
-        else if (prevFactory == null)
-            storeTo(factory, factoryNode);
+        else if (prevExt == null)
+            storeTo(ext.getImageReaderFactory(), factoryNode);
         else
-            storeDiffs(factoryNode, prevFactory, factory);
+            storeDiffs(factoryNode, prevExt.getImageReaderFactory(),
+                    ext.getImageReaderFactory());
     }
 
     private void storeDiffs(Preferences prefs, ImageReaderFactory prevFactory,
@@ -132,6 +137,8 @@ public class PreferencesImageReaderConfiguration
                     prev.formatName, param.formatName);
             PreferencesUtils.storeDiff(prefs, "dcmJavaClassName",
                     prev.className, param.className);
+            PreferencesUtils.storeDiff(prefs, "dcmPlanarConfiguration",
+                    prev.planarConfiguration, param.planarConfiguration);
         } else
             storeTo(param, prefs);
     }

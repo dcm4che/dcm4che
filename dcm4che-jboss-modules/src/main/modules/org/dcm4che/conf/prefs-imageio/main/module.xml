@@ -5,7 +5,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.dcm4che.imageio" export="true"/>
+        <module name="org.dcm4che.net-imageio" export="true"/>
         <module name="org.dcm4che.conf.prefs" export="true"/>
         <module name="javax.api"/>
         <module name="org.slf4j"/>

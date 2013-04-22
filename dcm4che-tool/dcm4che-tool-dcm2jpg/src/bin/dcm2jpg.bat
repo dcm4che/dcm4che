@@ -43,6 +43,7 @@ set JAVA=%JAVA_HOME%\bin\java
 set CP=%DCM4CHE_HOME%\etc\dcm2xml\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.2-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.0.2-SNAPSHOT.jar

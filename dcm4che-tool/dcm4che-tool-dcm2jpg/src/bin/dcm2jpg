@@ -2,10 +2,6 @@
 # -------------------------------------------------------------------------
 # dcm2jpg  Launcher
 # -------------------------------------------------------------------------
-if [ "x$JIIO" != "x" ]; then
-    JIIO_LIB=$JIIO/lib/ext
-    JAVA_OPTS="$JAVA_OPTS -Djava.library.path=$JIIO/lib/amd64"
-fi
 
 MAIN_CLASS=org.dcm4che.tool.dcm2jpg.Dcm2Jpg
 MAIN_JAR=dcm4che-tool-dcm2jpg-3.0.2-SNAPSHOT.jar
@@ -41,7 +37,7 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/etc/dcm2xml/"
+CP="$DCM4CHE_HOME/etc/dcm2jpg/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.0.2-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.0.2-SNAPSHOT.jar"
@@ -49,21 +45,28 @@ CP="$CP:$DCM4CHE_HOME/lib/dcm4che-image-3.0.2-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-3.0.2-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-rle-3.0.2-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.0.2-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jai_imageio-1.2.jar"
+CP="$CP:$DCM4CHE_HOME/lib/clibwrapper_jiio-1.2.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
 
-# Setup jai_imageio 
-if [ "x$JIIO_LIB" != "x" ]; then
-    CP=$CP:$JIIO_LIB/jai_imageio.jar:$JIIO_LIB/clibwrapper_jiio.jar
+# Setup jai-imageio native library path
+if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
+    if [ "x$PLATFORM" = "x" ]; then
+        PLATFORM=linux-`uname -m`
+    fi
+    JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${PLATFORM}
 fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JAVA=`cygpath --path --windows "$JAVA"`
     CP=`cygpath --path --windows "$CP"`
+    JAVA_LIBRARY_PATH=`cygpath --path --windows "$JAVA_LIBRARY_PATH"`
 fi
 
+JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
 # Execute the JVM
 exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

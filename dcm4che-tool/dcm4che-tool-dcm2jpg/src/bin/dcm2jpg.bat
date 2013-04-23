@@ -40,16 +40,23 @@ set JAVA=%JAVA_HOME%\bin\java
 
 :SKIP_SET_JAVA_HOME
 
-set CP=%DCM4CHE_HOME%\etc\dcm2xml\
+set CP=%DCM4CHE_HOME%\etc\dcm2jpg\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.0.2-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.0.2-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2.jar"
+set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2.jar"
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
+
+rem Setup jai-imageio native library path
+if "%JAVA_LIBRARY_PATH%" == "" set JAVA_LIBRARY_PATH=%DCM4CHE_HOME%\lib\win-i686
+
+set JAVA_OPTS=%JAVA_OPTS% "-Djava.library.path=%JAVA_LIBRARY_PATH%"
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

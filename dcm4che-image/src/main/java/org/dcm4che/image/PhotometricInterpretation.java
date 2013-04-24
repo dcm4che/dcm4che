@@ -119,8 +119,8 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public boolean changeToRGBonDecompress() {
-            return true;
+        public PhotometricInterpretation decompress() {
+            return RGB;
         }
     },
     YBR_PARTIAL_422 {
@@ -142,8 +142,8 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public boolean changeToRGBonDecompress() {
-            return true;
+        public PhotometricInterpretation decompress() {
+            return RGB;
         }
     },
     YBR_PARTIAL_420 {
@@ -165,8 +165,8 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public boolean changeToRGBonDecompress() {
-            return true;
+        public PhotometricInterpretation decompress() {
+            return RGB;
         }
     },
     YBR_ICT {
@@ -176,8 +176,8 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public boolean changeToRGBonDecompress() {
-            return true;
+        public PhotometricInterpretation decompress() {
+            return RGB;
         }
     },
     YBR_RCT {
@@ -187,8 +187,8 @@ public enum PhotometricInterpretation {
         }
 
         @Override
-        public boolean changeToRGBonDecompress() {
-            return true;
+        public PhotometricInterpretation decompress() {
+            return RGB;
         }
     };
 
@@ -204,13 +204,14 @@ public enum PhotometricInterpretation {
         return false;
     }
 
-    public boolean changeToRGBonDecompress() {
-        return false;
+    public PhotometricInterpretation decompress() {
+        return this;
     }
 
     public boolean isInvers() {
         return false;
     }
+
     public abstract ColorModel createColorModel(int bits, int dataType,
             Attributes ds);
 

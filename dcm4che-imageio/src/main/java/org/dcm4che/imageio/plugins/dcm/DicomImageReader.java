@@ -232,7 +232,7 @@ public class DicomImageReader extends ImageReader {
 
             if (LOG.isDebugEnabled())
                 LOG.debug("Start decompressing frame #" + (frameIndex + 1));
-            Raster wr = !pmi.changeToRGBonDecompress() && decompressor.canReadRaster()
+            Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
                     ? decompressor.readRaster(0, decompressParam(param))
                     : decompressor.read(0, decompressParam(param)).getRaster();
             if (LOG.isDebugEnabled())

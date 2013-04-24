@@ -136,8 +136,8 @@ public class Decompressor implements Value {
             PhotometricInterpretation pmi = PhotometricInterpretation.fromString(
                     dataset.getString(Tag.PhotometricInterpretation, "RGB"));
         
-            if (pmi.changeToRGBonDecompress())
-                dataset.setString(Tag.PhotometricInterpretation, VR.CS, "RGB");
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
+                    pmi.decompress().toString());
 
             dataset.setInt(Tag.PlanarConfiguration, VR.US,
                     param.planarConfiguration);

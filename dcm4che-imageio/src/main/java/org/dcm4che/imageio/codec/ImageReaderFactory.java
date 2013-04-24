@@ -112,7 +112,7 @@ public class ImageReaderFactory implements Serializable {
                 "org/dcm4che/imageio/codec/ImageReaderFactory.properties");
         try {
             factory.load(name);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(
                     "Failed to load Image Reader Factory configuration from: " + name, e);
         }

@@ -68,5 +68,11 @@ if $cygwin; then
 fi
 
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
+
+if [ -n $IMAGE_READER_FACTORY ]; then
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che.imageio.codec.ImageReaderFactory=$IMAGE_READER_FACTORY"
+fi
+
+JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
 # Execute the JVM
 exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

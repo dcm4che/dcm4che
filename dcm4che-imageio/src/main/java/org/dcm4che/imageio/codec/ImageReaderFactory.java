@@ -41,6 +41,8 @@ package org.dcm4che.imageio.codec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -106,16 +108,32 @@ public class ImageReaderFactory implements Serializable {
 
     private static ImageReaderFactory initDefault() {
         ImageReaderFactory factory = new ImageReaderFactory();
-        InputStream in = ImageReaderFactory.class
-                .getResourceAsStream("ImageReaderFactory.properties");
+        String name = System.getProperty(ImageReaderFactory.class.getName(),
+                "org/dcm4che/imageio/codec/ImageReaderFactory.properties");
         try {
-            factory.load(in);
+            factory.load(name);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(
+                    "Failed to load Image Reader Factory configuration from: " + name, e);
+        }
+        return factory;
+    }
+
+    public void load(String name) throws IOException {
+        InputStream in;
+        try {
+            in = new URL(name).openStream();
+        } catch (MalformedURLException e) {
+            in = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(name);
+            if (in == null)
+                throw new IOException("No such resource: " + name);
+        }
+        try {
+            load(in);
         } finally {
             SafeClose.close(in);
         }
-        return factory ;
     }
 
     public void load(InputStream in) throws IOException {

@@ -646,9 +646,7 @@ public class Association {
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
         int status = cmd.getInt(Tag.Status, 0);
         boolean pending = Status.isPending(status);
-        DimseRSPHandler rspHandler = pending 
-                ? getDimseRSPHandler(msgId)
-                : removeDimseRSPHandler(msgId);
+        DimseRSPHandler rspHandler = getDimseRSPHandler(msgId);
         if (rspHandler == null) {
             Dimse.LOG.info("{}: unexpected message ID in DIMSE RSP:", name);
             Dimse.LOG.info("\n{}", cmd);
@@ -660,6 +658,7 @@ public class Association {
                     ? conn.getRetrieveTimeout()
                     : conn.getResponseTimeout());
         else {
+            removeDimseRSPHandler(msgId);
             if (rspHandlerForMsgId.isEmpty() && performing == 0)
                 startIdleOrReleaseTimeout();
         }

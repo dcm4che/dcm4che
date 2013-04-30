@@ -265,15 +265,12 @@ public class LdapHL7Configuration extends LdapDicomConfigurationExtension
 
         for (HL7Application hl7app : hl7Ext.getHL7Applications()) {
             String appName = hl7app.getApplicationName();
-            HL7Application prevHL7App = prevHL7Ext != null
-                    ? prevHL7Ext.getHL7Application(appName)
-                    : null;
-            if (prevHL7App == null) {
+            if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
                 String appDN = hl7appDN(hl7app.getApplicationName(), deviceDN);
                 config.createSubcontext(appDN,
                         storeTo(hl7app, deviceDN, new BasicAttributes(true)));
             } else
-                merge(prevHL7App, hl7app, deviceDN);
+                merge(prevHL7Ext.getHL7Application(appName), hl7app, deviceDN);
         }
     }
 

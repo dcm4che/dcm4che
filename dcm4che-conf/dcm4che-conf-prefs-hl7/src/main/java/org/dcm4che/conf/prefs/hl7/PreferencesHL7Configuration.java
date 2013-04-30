@@ -218,12 +218,11 @@ public class PreferencesHL7Configuration
         List<Connection> devConns = device.listConnections();
         for (HL7Application app : hl7Ext.getHL7Applications()) {
             String appName = app.getApplicationName();
-            HL7Application prevApp = prevHL7Ext.getHL7Application(appName);
             Preferences appNode = appsNode.node(appName);
-            if (prevApp == null) {
+            if (prevHL7Ext == null || !prevHL7Ext.containsHL7Application(appName)) {
                 storeTo(app, appNode, devConns);
             } else {
-                storeDiffs(appNode, prevApp, app);
+                storeDiffs(appNode, prevHL7Ext.getHL7Application(appName), app);
             }
         }
     }

@@ -71,17 +71,16 @@ public class ImageReaderFactory implements Serializable {
 
         public final String formatName;
         public final String className;
-        public final int planarConfiguration;
 
-        public ImageReaderParam(String formatName, String className,
-                int planarConfiguration) {
+        public ImageReaderParam(String formatName, String className) {
             this.formatName = formatName;
-            this.className = 
-                (className == null || className.isEmpty() || className.equals("*"))
-                        ? null
-                        : className;
-            this.planarConfiguration = planarConfiguration;
+            this.className = nullify(className);
         }
+
+    }
+
+    private static String nullify(String s) {
+        return s == null || s.isEmpty() || s.equals("*") ? null : s;
     }
 
     private static ImageReaderFactory defaultFactory;
@@ -120,15 +119,16 @@ public class ImageReaderFactory implements Serializable {
     }
 
     public void load(String name) throws IOException {
-        InputStream in;
+        URL url;
         try {
-            in = new URL(name).openStream();
+            url = new URL(name);
         } catch (MalformedURLException e) {
-            in = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(name);
-            if (in == null)
+            url = Thread.currentThread().getContextClassLoader()
+                    .getResource(name);
+            if (url == null)
                 throw new IOException("No such resource: " + name);
         }
+        InputStream in = url.openStream();
         try {
             load(in);
         } finally {
@@ -142,7 +142,7 @@ public class ImageReaderFactory implements Serializable {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             map.put((String) entry.getKey(),
-                    new ImageReaderParam(ss[0], ss[1], Integer.parseInt(ss[2])));
+                    new ImageReaderParam(ss[0], ss[1]));
         }
     }
 

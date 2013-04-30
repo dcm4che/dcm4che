@@ -72,7 +72,6 @@ public class PreferencesImageReaderConfiguration
     private void storeTo(ImageReaderParam param, Preferences prefs) {
         prefs.put("dcmIIOFormatName", param.formatName);
         PreferencesUtils.storeNotNull(prefs, "dcmJavaClassName", param.className);
-        prefs.putInt("dcmPlanarConfiguration", param.planarConfiguration);
     }
 
     @Override
@@ -90,8 +89,7 @@ public class PreferencesImageReaderConfiguration
     private ImageReaderParam load(Preferences prefs) {
         return new ImageReaderParam(
                 prefs.get("dcmIIOFormatName", null),
-                prefs.get("dcmJavaClassName", null),
-                prefs.getInt("dcmPlanarConfiguration", 0));
+                prefs.get("dcmJavaClassName", null));
     }
 
     @Override
@@ -137,8 +135,6 @@ public class PreferencesImageReaderConfiguration
                     prev.formatName, param.formatName);
             PreferencesUtils.storeDiff(prefs, "dcmJavaClassName",
                     prev.className, param.className);
-            PreferencesUtils.storeDiff(prefs, "dcmPlanarConfiguration",
-                    prev.planarConfiguration, param.planarConfiguration);
         } else
             storeTo(param, prefs);
     }

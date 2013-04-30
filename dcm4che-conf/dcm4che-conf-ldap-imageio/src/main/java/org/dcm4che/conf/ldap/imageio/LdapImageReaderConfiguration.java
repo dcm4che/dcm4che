@@ -93,8 +93,6 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
         attrs.put("dicomTransferSyntax", tsuid);
         attrs.put("dcmIIOFormatName", param.formatName);
         LdapUtils.storeNotNull(attrs, "dcmJavaClassName", param.className);
-        LdapUtils.storeInt(attrs, "dcmPlanarConfiguration",
-                param.planarConfiguration);
         return attrs;
     }
 
@@ -121,9 +119,7 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                                 LdapUtils.stringValue(
                                         attrs.get("dcmIIOFormatName"), null),
                                 LdapUtils.stringValue(
-                                        attrs.get("dcmJavaClassName"), null),
-                                LdapUtils.intValue(
-                                        attrs.get("dcmPlanarConfiguration"), 0)));
+                                        attrs.get("dcmJavaClassName"), null)));
             }
         } finally {
            LdapUtils.safeClose(ne);
@@ -174,8 +170,6 @@ public class LdapImageReaderConfiguration extends LdapDicomConfigurationExtensio
                 prevParam.formatName, param.formatName);
         LdapUtils.storeDiff(mods, "dcmJavaClassName",
                 prevParam.className, param.className);
-        LdapUtils.storeDiff(mods, "dcmPlanarConfiguration",
-                prevParam.planarConfiguration, param.planarConfiguration);
        return mods;
     }
 

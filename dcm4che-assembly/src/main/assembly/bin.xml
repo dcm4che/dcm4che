@@ -101,6 +101,23 @@
       <lineEnding>dos</lineEnding>
     </fileSet>
     <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2dcm/src</directory>
+      <includes>
+        <include>bin/dcm2dcm</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-dcm2dcm/src</directory>
+      <includes>
+        <include>bin/dcm2dcm.bat</include>
+        <include>etc/dcm2dcm/log4j.properties</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>    <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-dcm2jpg/src</directory>
       <includes>
         <include>bin/dcm2jpg</include>
@@ -723,6 +740,7 @@
         <include>org.dcm4che:dcm4che-soundex</include>
         <include>org.dcm4che.tool:dcm4che-tool-common</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdump</include>
+        <include>org.dcm4che.tool:dcm4che-tool-dcm2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2jpg</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>

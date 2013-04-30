@@ -1,10 +1,10 @@
 #!/bin/sh
 # -------------------------------------------------------------------------
-# dcm2jpg  Launcher
+# dcm2dcm  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcm2jpg.Dcm2Jpg
-MAIN_JAR=dcm4che-tool-dcm2jpg-3.0.2-SNAPSHOT.jar
+MAIN_CLASS=org.dcm4che.tool.dcm2dcm.Dcm2Dcm
+MAIN_JAR=dcm4che-tool-dcm2dcm-3.0.2-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -37,7 +37,7 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/etc/dcm2jpg/"
+CP="$DCM4CHE_HOME/etc/dcm2dcm/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.0.2-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.0.2-SNAPSHOT.jar"
@@ -71,6 +71,10 @@ JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
 
 if [ -n "$IMAGE_READER_FACTORY" ]; then
     JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che.imageio.codec.ImageReaderFactory=$IMAGE_READER_FACTORY"
+fi
+
+if [ -n "$IMAGE_WRITER_FACTORY" ]; then
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
 fi
 
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"

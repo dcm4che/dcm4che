@@ -122,6 +122,11 @@ public enum PhotometricInterpretation {
         public PhotometricInterpretation decompress() {
             return RGB;
         }
+
+        @Override
+        public boolean isSubSambled() {
+            return true;
+        }
     },
     YBR_PARTIAL_422 {
         @Override
@@ -145,6 +150,11 @@ public enum PhotometricInterpretation {
         public PhotometricInterpretation decompress() {
             return RGB;
         }
+
+        @Override
+        public boolean isSubSambled() {
+            return true;
+        }
     },
     YBR_PARTIAL_420 {
         @Override
@@ -167,6 +177,11 @@ public enum PhotometricInterpretation {
         @Override
         public PhotometricInterpretation decompress() {
             return RGB;
+        }
+
+        @Override
+        public boolean isSubSambled() {
+            return true;
         }
     },
     YBR_ICT {
@@ -209,6 +224,10 @@ public enum PhotometricInterpretation {
     }
 
     public boolean isInvers() {
+        return false;
+    }
+
+    public boolean isSubSambled() {
         return false;
     }
 

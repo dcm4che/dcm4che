@@ -131,22 +131,22 @@ public class ImageWriterFactory implements Serializable {
         try {
             Class<? extends ImageWriteParam> clazz = param.getClass();
             if (value instanceof String) {
-                clazz.getDeclaredMethod(setterName, String.class)
+                clazz.getMethod(setterName, String.class)
                     .invoke(param, value);
             } else if (value instanceof Boolean) {
-                clazz.getDeclaredMethod(setterName, boolean.class)
+                clazz.getMethod(setterName, boolean.class)
                     .invoke(param, value);
             } else if (value instanceof Number) {
                 try {
-                    clazz.getDeclaredMethod(setterName, double.class)
+                    clazz.getMethod(setterName, double.class)
                         .invoke(param, ((Number) value).doubleValue());
                 } catch (NoSuchMethodException e) {
                     try {
-                        clazz.getDeclaredMethod(setterName, float.class)
+                        clazz.getMethod(setterName, float.class)
                             .invoke(param, ((Number) value).floatValue());
                     } catch (NoSuchMethodException e2) {
                         try {
-                            clazz.getDeclaredMethod(setterName, int.class)
+                            clazz.getMethod(setterName, int.class)
                                 .invoke(param, ((Number) value).intValue());
                         } catch (NoSuchMethodException e3) {
                             throw e;

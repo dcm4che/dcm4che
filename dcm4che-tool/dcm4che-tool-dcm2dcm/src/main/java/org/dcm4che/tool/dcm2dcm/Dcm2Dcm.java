@@ -117,12 +117,34 @@ public class Dcm2Dcm {
         Options opts = new Options();
         CLIUtils.addCommonOptions(opts);
         CLIUtils.addEncodingOptions(opts);
-        opts.addOption(OptionBuilder
+        OptionGroup tsGroup = new OptionGroup();
+        tsGroup.addOption(OptionBuilder
                 .withLongOpt("transfer-syntax")
                 .hasArg()
                 .withArgName("uid")
                 .withDescription(rb.getString("transfer-syntax"))
                 .create("t"));
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("jply")
+                .withDescription(rb.getString("jpll"))
+                .create());
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("jpll")
+                .withDescription(rb.getString("jpll"))
+                .create());
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("jlsl")
+                .withDescription(rb.getString("jlsl"))
+                .create());
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("j2kr")
+                .withDescription(rb.getString("j2kr"))
+                .create());
+        tsGroup.addOption(OptionBuilder
+                .withLongOpt("j2ki")
+                .withDescription(rb.getString("j2ki"))
+                .create());
+        opts.addOptionGroup(tsGroup);
         OptionGroup fmiGroup = new OptionGroup();
         fmiGroup.addOption(OptionBuilder
                 .withLongOpt("no-fmi")
@@ -161,12 +183,12 @@ public class Dcm2Dcm {
             Dcm2Dcm main = new Dcm2Dcm();
             main.setEncodingOptions(CLIUtils.encodingOptionsOf(cl));
             if (cl.hasOption("F")) {
-                if (cl.hasOption("t"))
+                if (transferSyntaxOf(cl, null) != null)
                     throw new ParseException(rb.getString("transfer-syntax-no-fmi"));
                 main.setTransferSyntax(UID.ImplicitVRLittleEndian);
                 main.setWithoutFileMetaInformation(true);
             } else {
-                main.setTransferSyntax(cl.getOptionValue("t", UID.ExplicitVRLittleEndian));
+                main.setTransferSyntax(transferSyntaxOf(cl, UID.ExplicitVRLittleEndian));
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
 
@@ -206,7 +228,19 @@ public class Dcm2Dcm {
         }
     }
 
-     private void mtranscode(File src, File dest) {
+     private static String transferSyntaxOf(CommandLine cl, String def) {
+        return cl.hasOption("ivrle") ? UID.ImplicitVRLittleEndian
+                : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndian
+                : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
+                : cl.hasOption("jply") ? UID.JPEGBaseline1
+                : cl.hasOption("jpll") ? UID.JPEGLossless
+                : cl.hasOption("jlsl") ? UID.JPEGLSLossless
+                : cl.hasOption("j2kr") ? UID.JPEG2000LosslessOnly
+                : cl.hasOption("j2ki") ? UID.JPEG2000
+                : cl.getOptionValue("t", def);
+    }
+
+    private void mtranscode(File src, File dest) {
          if (src.isDirectory()) {
              dest.mkdir();
              for (File file : src.listFiles())
@@ -243,9 +277,11 @@ public class Dcm2Dcm {
         Compressor compressor = null;
         DicomOutputStream dos = null;
         try {
+            String tsuid = this.tsuid;
             if (pixeldata != null) {
                 if (ImageWriterFactory.getDefault().get(tsuid) != null) {
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
+                    tsuid = compressor.adjustJPEGTransferSyntax(tsuid);
                     compressor.compress(tsuid, params);
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());

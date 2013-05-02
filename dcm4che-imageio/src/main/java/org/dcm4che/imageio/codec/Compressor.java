@@ -60,6 +60,7 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
+import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.imageio.codec.ImageWriterFactory.ImageWriterParam;
@@ -101,6 +102,14 @@ public class Compressor extends Decompressor implements Closeable {
                         + " instead " + length + " bytes");
         }
 
+    }
+
+    public String adjustJPEGTransferSyntax(String tsuid) {
+        return bitsStored > 8
+            ? tsuid.equals(UID.JPEGBaseline1)
+                    ? UID.JPEGExtended24 : tsuid
+            : tsuid.equals(UID.JPEGExtended24)
+                    ? UID.JPEGBaseline1 : tsuid;
     }
 
     public boolean compress(String tsuid, Map<String,Object> params)

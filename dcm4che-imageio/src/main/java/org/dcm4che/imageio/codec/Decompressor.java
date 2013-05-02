@@ -99,6 +99,7 @@ public class Decompressor {
     protected int samples;
     protected PhotometricInterpretation pmi;
     protected int bitsAllocated;
+    protected int bitsStored;
     protected boolean banded;
     protected boolean signed;
     protected int frames;
@@ -126,6 +127,7 @@ public class Decompressor {
         this.pmi = PhotometricInterpretation.fromString(
                 dataset.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
         this.bitsAllocated = dataset.getInt(Tag.BitsAllocated, 8);
+        this.bitsStored = dataset.getInt(Tag.BitsStored, bitsAllocated);
         this.banded = dataset.getInt(Tag.PlanarConfiguration, 0) != 0;
         this.signed = dataset.getInt(Tag.PixelRepresentation, 0) != 0;
         this.frames = dataset.getInt(Tag.NumberOfFrames, 1);
@@ -226,13 +228,22 @@ public class Decompressor {
         int dataType = bitsAllocated > 8 
                 ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
                 : DataBuffer.TYPE_BYTE;
-        ComponentColorModel cm = new ComponentColorModel(
-                ColorSpace.getInstance(
-                        samples == 1 ? ColorSpace.CS_GRAY : ColorSpace.CS_sRGB ),
+        ComponentColorModel cm = samples == 1
+                    ? new ComponentColorModel(
+                        ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                        new int[] { bitsStored },
+                        false, // hasAlpha
+                        false, // isAlphaPremultiplied,
+                        Transparency.OPAQUE,
+                        dataType)
+                    :  new ComponentColorModel(
+                        ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                        new int[] { bitsStored, bitsStored, bitsStored },
                         false, // hasAlpha
                         false, // isAlphaPremultiplied,
                         Transparency.OPAQUE,
                         dataType);
+
         SampleModel sm = banded
                 ? new BandedSampleModel(dataType, cols, rows, samples)
                 : new PixelInterleavedSampleModel(dataType, cols, rows,

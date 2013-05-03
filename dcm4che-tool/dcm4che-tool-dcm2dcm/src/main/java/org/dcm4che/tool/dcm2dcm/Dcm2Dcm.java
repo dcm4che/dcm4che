@@ -59,7 +59,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.imageio.codec.Compressor;
 import org.dcm4che.imageio.codec.Decompressor;
-import org.dcm4che.imageio.codec.ImageWriterFactory;
+import org.dcm4che.imageio.codec.TransferSyntaxType;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
@@ -76,6 +76,7 @@ public class Dcm2Dcm {
         ResourceBundle.getBundle("org.dcm4che.tool.dcm2dcm.messages");
 
     private String tsuid;
+    private TransferSyntaxType tstype;
     private boolean retainfmi;
     private boolean nofmi;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
@@ -83,6 +84,11 @@ public class Dcm2Dcm {
 
     public final void setTransferSyntax(String uid) {
         this.tsuid = uid;
+        this.tstype = TransferSyntaxType.forUID(uid);
+        if (tstype == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported Transfer Syntax: " + tsuid);
+        }
     }
 
     public final void setRetainFileMetaInformation(boolean retainfmi) {
@@ -168,7 +174,7 @@ public class Dcm2Dcm {
                 .withDescription(rb.getString("encoding-rate"))
                 .create("Q"));
         opts.addOption(OptionBuilder
-                .hasArg()
+                .hasArgs()
                 .withArgName("name=value")
                 .withValueSeparator()
                 .withDescription(rb.getString("compression-param"))
@@ -279,9 +285,10 @@ public class Dcm2Dcm {
         try {
             String tsuid = this.tsuid;
             if (pixeldata != null) {
-                if (ImageWriterFactory.getDefault().get(tsuid) != null) {
+                if (tstype.isPixeldataEncapsulated()) {
+                    tsuid = adjustTransferSyntax(tsuid,
+                            dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    tsuid = compressor.adjustJPEGTransferSyntax(tsuid);
                     compressor.compress(tsuid, params);
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
@@ -300,5 +307,20 @@ public class Dcm2Dcm {
             SafeClose.close(dos);
         }
      }
+
+    private String adjustTransferSyntax(String tsuid, int bitsStored) {
+        switch (tstype) {
+        case JPEG_BASELINE:
+            if (bitsStored > 8)
+                return UID.JPEGExtended24;
+            break;
+        case JPEG_EXTENDED:
+            if (bitsStored <= 8)
+                return UID.JPEGBaseline1;
+            break;
+        default:
+        }
+        return tsuid;
+    }
 
 }

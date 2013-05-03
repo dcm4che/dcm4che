@@ -69,7 +69,6 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.image.PhotometricInterpretation;
@@ -90,7 +89,7 @@ public class Decompressor {
 
     protected final Attributes dataset;
     protected final String tsuid;
-    protected final boolean rle;
+    protected final TransferSyntaxType tstype;
     protected Fragments pixeldataFragments;
     protected File file;
     protected BufferedImage destination;
@@ -115,11 +114,13 @@ public class Decompressor {
 
         this.dataset = dataset;
         this.tsuid = tsuid;
-        this.rle = tsuid.equals(UID.RLELossless);
+        this.tstype = TransferSyntaxType.forUID(tsuid);
         Object pixeldata = dataset.getValue(Tag.PixelData);
         if (pixeldata == null)
             return;
 
+        if (tstype == null)
+            throw new IllegalArgumentException("Unknown Transfer Syntax: " + tsuid);
         this.file = fileOf(pixeldata);
         this.rows = dataset.getInt(Tag.Rows, 0);
         this.cols = dataset.getInt(Tag.Columns, 0);
@@ -135,6 +136,9 @@ public class Decompressor {
         this.length = frameLength * frames;
         
         if (pixeldata instanceof Fragments) {
+            if (!tstype.isPixeldataEncapsulated())
+                throw new IllegalArgumentException("Encapusulated Pixel Data"
+                        + "with Transfer Syntax: " + tsuid);
             this.pixeldataFragments = (Fragments) pixeldata;
 
             int numFragments = pixeldataFragments.size();
@@ -167,7 +171,7 @@ public class Decompressor {
         if (decompressor == null)
             return false;
  
-        adjustDestination();
+        adjustDestination(bitsStored, signed);
         adjustAttributes();
         dataset.setValue(Tag.PixelData, VR.OW, new Value() {
 
@@ -207,16 +211,17 @@ public class Decompressor {
             dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
                     pmi.decompress().toString());
 
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, rle ? 1 : 0);
+            dataset.setInt(Tag.PlanarConfiguration, VR.US,
+                    tstype.getPlanarConfiguration());
         }
     }
 
-    protected void adjustDestination() {
+    protected void adjustDestination(int bitsStored, boolean signed) {
         if (destination == null) {
             if (decompressor == null)
-                destination = createBufferedImage(banded);
-            else if (rle)
-                destination = createBufferedImage(true);
+                destination = createBufferedImage(bitsStored, banded, signed);
+            else if (tstype == TransferSyntaxType.RLE)
+                destination = createBufferedImage(bitsStored, true, signed);
         }
     }
 
@@ -224,7 +229,8 @@ public class Decompressor {
         return new Decompressor(dataset, tsuid).decompress();
     }
 
-    private BufferedImage createBufferedImage(boolean banded) {
+    private BufferedImage createBufferedImage(int bitsStored,
+            boolean banded, boolean signed) {
         int dataType = bitsAllocated > 8 
                 ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
                 : DataBuffer.TYPE_BYTE;

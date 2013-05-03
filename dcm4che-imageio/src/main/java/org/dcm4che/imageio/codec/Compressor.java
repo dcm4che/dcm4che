@@ -47,6 +47,7 @@ import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteOrder;
 import java.util.Map;
 
 import javax.imageio.IIOImage;
@@ -104,14 +105,6 @@ public class Compressor extends Decompressor implements Closeable {
 
     }
 
-    public String adjustJPEGTransferSyntax(String tsuid) {
-        return bitsStored > 8
-            ? tsuid.equals(UID.JPEGBaseline1)
-                    ? UID.JPEGExtended24 : tsuid
-            : tsuid.equals(UID.JPEGExtended24)
-                    ? UID.JPEGBaseline1 : tsuid;
-    }
-
     public boolean compress(String tsuid, Map<String,Object> params)
             throws IOException {
 
@@ -134,13 +127,31 @@ public class Compressor extends Decompressor implements Closeable {
         if (params != null)
             ImageWriterFactory.initImageWriteParam(compressParam, params);
 
-        adjustDestination();
-        adjustAttributes();
-        Fragments compressedPixeldata = new Fragments(VR.OB, false, frames + 1);
+        TransferSyntaxType tstype = TransferSyntaxType.forUID(tsuid);
+        adjustDestination(Math.min(bitsStored, tstype.getMaxBitsStored()),
+                signed && tstype.canEncodeSigned());
+        adjustAttributes(tstype.getPlanarConfiguration());
+        Fragments compressedPixeldata = 
+                dataset.newFragments(Tag.PixelData, VR.OB, frames + 1);
         compressedPixeldata.add(Value.NULL);
         for (int i = 0; i < frames; i++)
             compressedPixeldata.add(new CompressedFrame(i));
+        
         return true;
+    }
+
+    private void adjustAttributes(int planarConfiguration) {
+        if (samples > 1) {
+            if (compressorParam.photometricInterpretation != null)
+                dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
+                        compressorParam.photometricInterpretation);
+            else if (decompressor != null) 
+                dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
+                        pmi.decompress().toString());
+ 
+            dataset.setInt(Tag.PlanarConfiguration, VR.US,
+                    planarConfiguration);
+        }
     }
 
     public void close() {
@@ -157,16 +168,6 @@ public class Compressor extends Decompressor implements Closeable {
             compressor.dispose();
 
         compressor = null;
-    }
-
-    @Override
-    protected void adjustAttributes() {
-        super.adjustAttributes();
-        if (compressorParam != null && samples > 1
-                && compressorParam.photometricInterpretation != null) {
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                    compressorParam.photometricInterpretation);
-        }
     }
 
     private class CompressedFrame implements Value {
@@ -270,6 +271,9 @@ public class Compressor extends Decompressor implements Closeable {
         if (decompressor != null)
             return decompressFrame(iis, frameIndex);
 
+        iis.setByteOrder(UID.ExplicitVRBigEndian.equals(pixeldata.transferSyntax) 
+                ? ByteOrder.BIG_ENDIAN
+                : ByteOrder.LITTLE_ENDIAN);
         iis.seek(pixeldata.offset + frameLength * frameIndex);
         DataBuffer db = destination.getRaster().getDataBuffer();
         switch (db.getDataType()) {

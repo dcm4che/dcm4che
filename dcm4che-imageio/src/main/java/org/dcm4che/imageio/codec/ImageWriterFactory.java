@@ -93,6 +93,13 @@ public class ImageWriterFactory implements Serializable {
              }
         }
 
+        public String[] imageWriteParams() {
+            String[] params = new String[keys.length];
+            for (int i = 0; i < params.length; i++)
+                params[i] = keys[i] + '=' + values[i];
+            return params;
+        }
+
         private Object toValue(String s) {
             try {
                 return Double.valueOf(s);

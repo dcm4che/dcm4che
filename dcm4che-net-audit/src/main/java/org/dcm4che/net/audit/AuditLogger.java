@@ -158,7 +158,7 @@ public class AuditLogger extends DeviceExtension {
     private String applicationName;
     private String auditSourceID;
     private String auditEnterpriseSiteID;
-    private String[] auditSourceTypeCodes;
+    private String[] auditSourceTypeCodes = {};
     private String messageID = MESSAGE_ID;
     private String encoding = "UTF-8";
     private String schemaURI = AuditMessages.SCHEMA_URI;

@@ -211,7 +211,7 @@ public class PreferencesHL7Configuration
         Preferences appsNode = deviceNode.node("hl7Application");
         if (prevHL7Ext != null)
             for (String appName : prevHL7Ext.getHL7ApplicationNames()) {
-                if (!prevHL7Ext.containsHL7Application(appName))
+                if (!hl7Ext.containsHL7Application(appName))
                     appsNode.node(appName).removeNode();
             }
 

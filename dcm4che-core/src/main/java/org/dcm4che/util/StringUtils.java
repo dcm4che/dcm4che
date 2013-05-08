@@ -269,7 +269,7 @@ public class StringUtils {
         int j = -1;
         do {
             sb.append(s.substring(j+1, i));
-            if ((j = s.indexOf('}')) == -1) {
+            if ((j = s.indexOf('}', i+2)) == -1) {
                 j = i-1;
                 break;
             }

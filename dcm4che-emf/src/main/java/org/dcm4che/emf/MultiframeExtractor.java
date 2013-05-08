@@ -307,9 +307,11 @@ public class MultiframeExtractor {
 
     private void addFunctionGroups(Attributes dest, Attributes fgs) {
         dest.addSelected(fgs, Tag.ReferencedImageSequence);
+        Attributes fg;
         for (int sqTag : fgs.tags())
-            if (sqTag != Tag.ReferencedImageSequence)
-                dest.addAll(fgs.getNestedDataset(sqTag));
+            if (sqTag != Tag.ReferencedImageSequence
+                    && (fg = fgs.getNestedDataset(sqTag)) != null)
+                dest.addAll(fg);
     }
 
     private void addPixelData(Attributes dest, Attributes src, int frame) {

@@ -54,7 +54,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     private static final long serialVersionUID = 7062970085409148066L;
 
     private final Attributes parent;
-    private int length;
+    private int length = -1;
 
     Sequence(Attributes parent, int initialCapacity) {
         super(initialCapacity);
@@ -156,9 +156,15 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
-    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
-        return isEmpty() ? encOpts.undefEmptySequenceLength ? -1 : 0
-                         : encOpts.undefSequenceLength ? -1 : length;
+    public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
+        if (isEmpty())
+            return encOpts.undefEmptySequenceLength ? -1 : 0;
+
+        if (length == -1
+                && (!encOpts.undefSequenceLength || !encOpts.undefItemLength))
+            calcLength(encOpts, explicitVR, vr);
+
+        return encOpts.undefSequenceLength ? -1 : length;
     }
 
     @Override

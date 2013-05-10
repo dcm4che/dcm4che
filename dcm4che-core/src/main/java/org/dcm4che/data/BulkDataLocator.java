@@ -95,11 +95,11 @@ public class BulkDataLocator implements Value {
 
     @Override
     public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
-        return getEncodedLength(encOpts, vr);
+        return getEncodedLength(encOpts, explicitVR, vr);
     }
 
     @Override
-    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
+    public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
         return (length + 1) & ~1;
     }
 

@@ -69,8 +69,4 @@ public class DicomEncodingOptions {
         this.undefEmptyItemLength = undefEmptyItemLength;
     }
 
-    public final boolean needCalcLength() {
-        return groupLength || !undefSequenceLength || !undefItemLength;
-    }
-
 }

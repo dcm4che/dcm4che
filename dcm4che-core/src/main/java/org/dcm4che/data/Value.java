@@ -54,7 +54,7 @@ public interface Value {
         }
 
         @Override
-        public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
+        public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
             return vr == VR.SQ && encOpts.undefEmptySequenceLength ? -1 : 0;
         }
 
@@ -86,6 +86,6 @@ public interface Value {
 
     int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr);
 
-    int getEncodedLength(DicomEncodingOptions encOpts, VR vr);
+    int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr);
 
 }

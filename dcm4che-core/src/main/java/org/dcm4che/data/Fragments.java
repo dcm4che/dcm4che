@@ -121,7 +121,7 @@ public class Fragments extends ArrayList<Object> implements Value {
     }
 
     @Override
-    public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
+    public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
         return -1;
     }
 

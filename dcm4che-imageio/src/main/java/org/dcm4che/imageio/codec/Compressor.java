@@ -196,11 +196,11 @@ public class Compressor extends Decompressor implements Closeable {
 
         @Override
         public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
-            return getEncodedLength(encOpts, vr);
+            return getEncodedLength(encOpts, explicitVR, vr);
         }
 
         @Override
-        public int getEncodedLength(DicomEncodingOptions encOpts, VR vr) {
+        public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
             try {
                 compress();
             } catch (IOException e) {

@@ -54,6 +54,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -71,10 +72,15 @@ public class ImageReaderFactory implements Serializable {
 
         public final String formatName;
         public final String className;
+        public final PatchJPEGLS patchJPEGLS;
 
-        public ImageReaderParam(String formatName, String className) {
+        public ImageReaderParam(String formatName, String className,
+                String patchJPEGLS) {
             this.formatName = formatName;
             this.className = nullify(className);
+            this.patchJPEGLS = patchJPEGLS != null && !patchJPEGLS.isEmpty()
+                    ? PatchJPEGLS.valueOf(patchJPEGLS)
+                    : null;
         }
 
     }
@@ -142,7 +148,7 @@ public class ImageReaderFactory implements Serializable {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
             map.put((String) entry.getKey(),
-                    new ImageReaderParam(ss[0], ss[1]));
+                    new ImageReaderParam(ss[0], ss[1], ss[2]));
         }
     }
 

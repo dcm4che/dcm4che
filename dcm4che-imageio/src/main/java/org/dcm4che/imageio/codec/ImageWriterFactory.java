@@ -57,6 +57,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -74,15 +75,17 @@ public class ImageWriterFactory implements Serializable {
 
         public final String formatName;
         public final String className;
-        public final String photometricInterpretation;
+        public final PatchJPEGLS patchJPEGLS;
         public final String[] keys;
         public final Object[] values;
 
         public ImageWriterParam(String formatName, String className,
-                String photometricInterpretation, String[] params) {
+                String patchJPEGLS, String[] params) {
             this.formatName = formatName;
             this.className = nullify(className);
-            this.photometricInterpretation = nullify(photometricInterpretation);
+            this.patchJPEGLS = patchJPEGLS != null && !patchJPEGLS.isEmpty()
+                    ? PatchJPEGLS.valueOf(patchJPEGLS)
+                    : null;
             this.keys = new String[params.length];
             this.values = new Object[params.length];
             for (int i = 0; i < params.length; i++) {
@@ -173,6 +176,8 @@ public class ImageWriterFactory implements Serializable {
     }
 
     private static ImageWriterFactory defaultFactory;
+
+    private PatchJPEGLS patchJPEGLS;
     private final HashMap<String, ImageWriterParam> map = 
             new HashMap<String, ImageWriterParam>();
 
@@ -234,6 +239,14 @@ public class ImageWriterFactory implements Serializable {
                     new ImageWriterParam(ss[0], ss[1], ss[2],
                             StringUtils.split(ss[3], ';')));
         }
+    }
+
+    public final PatchJPEGLS getPatchJPEGLS() {
+        return patchJPEGLS;
+    }
+
+    public final void setPatchJPEGLS(PatchJPEGLS patchJPEGLS) {
+        this.patchJPEGLS = patchJPEGLS;
     }
 
     public ImageWriterParam get(String tsuid) {

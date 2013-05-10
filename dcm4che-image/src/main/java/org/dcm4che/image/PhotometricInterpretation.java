@@ -93,6 +93,18 @@ public enum PhotometricInterpretation {
         public ColorModel createColorModel(int bits, int dataType, Attributes ds) {
             return ColorModelFactory.createRGBColorModel(bits, dataType, ds);
         }
+        @Override
+        public PhotometricInterpretation compress(String tsuid) {
+            if (tsuid.length() == 22 && tsuid.startsWith("1.2.840.10008.1.2.4."))
+                if (tsuid.endsWith("50") || tsuid.endsWith("51"))
+                    return YBR_FULL_422;
+                else if (tsuid.endsWith("90") || tsuid.endsWith("92"))
+                    return YBR_RCT;
+                else if (tsuid.endsWith("91") || tsuid.endsWith("93"))
+                    return YBR_ICT;
+
+            return this;
+        }
     },
     YBR_FULL {
         @Override
@@ -220,6 +232,10 @@ public enum PhotometricInterpretation {
     }
 
     public PhotometricInterpretation decompress() {
+        return this;
+    }
+
+    public PhotometricInterpretation compress(String tsuid) {
         return this;
     }
 

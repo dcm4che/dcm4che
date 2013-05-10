@@ -13,8 +13,8 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.2 NAME 'dcmJavaClassName'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
-olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.3 NAME 'dcmPhotometricInterpretation'
-  DESC 'DICOM Photometric Interpretation'
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.3 NAME 'dcmPatchJPEGLS'
+  DESC 'Patch JPEG-LS: "JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
@@ -33,7 +33,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
     dicomTransferSyntax $ 
     dcmIIOFormatName )
   MAY (
-    dcmJavaClassName ) )
+    dcmJavaClassName $
+    dcmPatchJPEGLS ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
   DESC 'Image Reader Factory related information'
   SUP top STRUCTURAL
@@ -46,5 +47,5 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
     dcmIIOFormatName )
   MAY (
     dcmJavaClassName $
-    dcmPhotometricInterpretation $
+    dcmPatchJPEGLS $
     dcmImageWriteParam ) )

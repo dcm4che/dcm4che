@@ -64,7 +64,8 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
-import org.dcm4che.imageio.codec.ImageWriterFactory.ImageWriterParam;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 import org.slf4j.Logger;
@@ -80,8 +81,8 @@ public class Compressor extends Decompressor implements Closeable {
 
     private BulkDataLocator pixeldata;
     private ImageWriter compressor;
+    private PatchJPEGLS patchJPEGLS;
     private ImageWriteParam compressParam;
-    private ImageWriterParam compressorParam;
     private ImageInputStream iis;
     private IOException ex;
 
@@ -121,7 +122,7 @@ public class Compressor extends Decompressor implements Closeable {
                     "Unsupported Transfer Syntax: " + tsuid);
 
         this.compressor = ImageWriterFactory.getImageWriter(param);
-        this.compressorParam = param;
+        this.patchJPEGLS = param.patchJPEGLS;
         this.compressParam = compressor.getDefaultWriteParam();
         param.initImageWriteParam(compressParam);
         if (params != null)
@@ -130,7 +131,7 @@ public class Compressor extends Decompressor implements Closeable {
         TransferSyntaxType tstype = TransferSyntaxType.forUID(tsuid);
         adjustDestination(Math.min(bitsStored, tstype.getMaxBitsStored()),
                 signed && tstype.canEncodeSigned());
-        adjustAttributes(tstype.getPlanarConfiguration());
+        adjustAttributes(tsuid, tstype.getPlanarConfiguration());
         Fragments compressedPixeldata = 
                 dataset.newFragments(Tag.PixelData, VR.OB, frames + 1);
         compressedPixeldata.add(Value.NULL);
@@ -140,17 +141,13 @@ public class Compressor extends Decompressor implements Closeable {
         return true;
     }
 
-    private void adjustAttributes(int planarConfiguration) {
+    private void adjustAttributes(String tsuid, int planarConfiguration) {
         if (samples > 1) {
-            if (compressorParam.photometricInterpretation != null)
-                dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                        compressorParam.photometricInterpretation);
-            else if (decompressor != null) 
-                dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                        pmi.decompress().toString());
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
+                    (decompressor != null ? pmi.decompress() : pmi)
+                            .compress(tsuid).toString());
  
-            dataset.setInt(Tag.PlanarConfiguration, VR.US,
-                    planarConfiguration);
+            dataset.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
         }
     }
 
@@ -222,6 +219,7 @@ public class Compressor extends Decompressor implements Closeable {
             } finally {
                 try { cache.close(); } catch (IOException ignore) {}
                 cache = null;
+                LOG.debug("Flushed frame #{} from memory", frameIndex + 1);
             }
         }
 
@@ -235,7 +233,9 @@ public class Compressor extends Decompressor implements Closeable {
             try {
                 BufferedImage bi = Compressor.this.readFrame(frameIndex);
                 cache = new MemoryCacheImageOutputStream(cacheout);
-                compressor.setOutput(cache);
+                compressor.setOutput(patchJPEGLS != null
+                        ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
+                        : cache);
                 long start = System.currentTimeMillis();
                 compressor.write(null, new IIOImage(bi, null, null), compressParam);
                 long end = System.currentTimeMillis();

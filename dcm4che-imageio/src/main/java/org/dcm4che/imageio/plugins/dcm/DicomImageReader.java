@@ -57,6 +57,7 @@ import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkDataLocator;
@@ -72,6 +73,8 @@ import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.image.StoredValue;
 import org.dcm4che.imageio.codec.ImageReaderFactory;
 import org.dcm4che.imageio.codec.ImageReaderFactory.ImageReaderParam;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomInputStream;
@@ -107,6 +110,8 @@ public class DicomImageReader extends ImageReader {
     private Fragments pixeldataFragments;
 
     private ImageReader decompressor;
+
+    private PatchJPEGLS patchJpegLS;
 
     private int samples;
 
@@ -167,8 +172,7 @@ public class DicomImageReader extends ImageReader {
         if (isRLELossless())
             createImageType(bitsStored, dataType, true);
         
-        decompressor.setInput(
-                new SegmentedInputImageStream(iis, pixeldataFragments, 0));
+        decompressor.setInput(iisOfFrame(0));
         return decompressor.getRawImageType(0);
     }
 
@@ -190,8 +194,7 @@ public class DicomImageReader extends ImageReader {
         else if (isRLELossless())
             imageType = createImageType(bitsStored, dataType, true);
         else {
-            decompressor.setInput(
-                    new SegmentedInputImageStream(iis, pixeldataFragments, 0));
+            decompressor.setInput(iisOfFrame(0));
             return decompressor.getImageTypes(0);
         }
 
@@ -226,9 +229,7 @@ public class DicomImageReader extends ImageReader {
         checkIndex(frameIndex);
 
         if (decompressor != null) {
-            decompressor.setInput(
-                    new SegmentedInputImageStream(
-                            iis, pixeldataFragments, frameIndex));
+            decompressor.setInput(iisOfFrame(frameIndex));
 
             if (LOG.isDebugEnabled())
                 LOG.debug("Start decompressing frame #" + (frameIndex + 1));
@@ -273,9 +274,7 @@ public class DicomImageReader extends ImageReader {
 
         WritableRaster raster;
         if (decompressor != null) {
-            decompressor.setInput(
-                    new SegmentedInputImageStream(
-                            iis, pixeldataFragments, frameIndex));
+            decompressor.setInput(iisOfFrame(frameIndex));
             if (LOG.isDebugEnabled())
                 LOG.debug("Start decompressing frame #" + (frameIndex + 1));
             BufferedImage bi = decompressor.read(0, decompressParam(param));
@@ -300,6 +299,16 @@ public class DicomImageReader extends ImageReader {
             cm = createColorModel(bitsStored, dataType);
         }
         return new BufferedImage(cm, raster , false, null);
+    }
+
+    @SuppressWarnings("resource")
+    private ImageInputStreamImpl iisOfFrame(int frameIndex)
+            throws IOException {
+        SegmentedInputImageStream siis = new SegmentedInputImageStream(
+                iis, pixeldataFragments, frameIndex);
+        return patchJpegLS != null
+                ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
+                : siis;
     }
 
     private void applyOverlay(int gg0000, WritableRaster raster,
@@ -444,6 +453,7 @@ public class DicomImageReader extends ImageReader {
                 if (param == null)
                     throw new IOException("Unsupported Transfer Syntax: " + tsuid);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
+                this.patchJpegLS = param.patchJPEGLS;
                 this.pixeldataFragments = (Fragments) pixeldata;
             }
         }
@@ -481,6 +491,7 @@ public class DicomImageReader extends ImageReader {
             decompressor.dispose();
             decompressor = null;
         }
+        patchJpegLS = null;
         pmi = null;
     }
 

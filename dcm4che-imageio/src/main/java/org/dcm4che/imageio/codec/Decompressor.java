@@ -72,7 +72,8 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.image.PhotometricInterpretation;
-import org.dcm4che.imageio.codec.ImageReaderFactory.ImageReaderParam;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
@@ -106,7 +107,7 @@ public class Decompressor {
     protected int length;
     protected ImageReader decompressor;
     protected ImageReadParam readParam;
-    protected ImageReaderParam decompressorParam;
+    protected PatchJPEGLS patchJpegLS;
 
     public Decompressor(Attributes dataset, String tsuid) {
         if (tsuid == null)
@@ -156,7 +157,7 @@ public class Decompressor {
 
             this.decompressor = ImageReaderFactory.getImageReader(param);
             this.readParam = decompressor.getDefaultReadParam();
-            this.decompressorParam = param;
+            this.patchJpegLS = param.patchJPEGLS;
         }
     }
 
@@ -293,11 +294,14 @@ public class Decompressor {
         }
     }
 
+    @SuppressWarnings("resource")
     protected BufferedImage decompressFrame(ImageInputStream iis, int index)
             throws IOException {
-        SegmentedInputImageStream compressedFrame =
+        SegmentedInputImageStream siis =
                 new SegmentedInputImageStream(iis, pixeldataFragments, index);
-        decompressor.setInput(compressedFrame);
+        decompressor.setInput(patchJpegLS != null
+                ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
+                : siis);
         readParam.setDestination(destination);
         long start = System.currentTimeMillis();
         destination = decompressor.read(0, readParam);
@@ -305,7 +309,7 @@ public class Decompressor {
         if (LOG.isDebugEnabled())
             LOG.debug("Decompressed frame #{} 1:{} in {} ms", 
                     new Object[] {index + 1,
-                    (float) sizeOf(destination) / compressedFrame.getStreamPosition(),
+                    (float) sizeOf(destination) / siis.getStreamPosition(),
                     end - start });
         return destination;
     }

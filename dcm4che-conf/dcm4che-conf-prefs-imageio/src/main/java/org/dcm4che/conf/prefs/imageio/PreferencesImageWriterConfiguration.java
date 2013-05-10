@@ -72,8 +72,7 @@ public class PreferencesImageWriterConfiguration
     private void storeTo(ImageWriterParam param, Preferences prefs) {
         prefs.put("dcmIIOFormatName", param.formatName);
         PreferencesUtils.storeNotNull(prefs, "dcmJavaClassName", param.className);
-        PreferencesUtils.storeNotNull(prefs, "dcmPhotometricInterpretation",
-                param.photometricInterpretation);
+        PreferencesUtils.storeNotNull(prefs, "dcmPatchJPEGLS", param.patchJPEGLS);
         PreferencesUtils.storeNotEmpty(prefs, "dcmImageWriteParam",
                 param.imageWriteParams());
     }
@@ -94,7 +93,7 @@ public class PreferencesImageWriterConfiguration
         return new ImageWriterParam(
                 prefs.get("dcmIIOFormatName", null),
                 prefs.get("dcmJavaClassName", null),
-                prefs.get("dcmPhotometricInterpretation", null),
+                prefs.get("dcmPatchJPEGLS", null),
                 PreferencesUtils.stringArray(prefs, "dcmImageWriteParam"));
     }
 
@@ -141,8 +140,8 @@ public class PreferencesImageWriterConfiguration
                     prev.formatName, param.formatName);
             PreferencesUtils.storeDiff(prefs, "dcmJavaClassName",
                     prev.className, param.className);
-            PreferencesUtils.storeDiff(prefs, "dcmPhotometricInterpretation",
-                    prev.photometricInterpretation, param.photometricInterpretation);
+            PreferencesUtils.storeDiff(prefs, "dcmPatchJPEGLS",
+                    prev.patchJPEGLS, param.patchJPEGLS);
             PreferencesUtils.storeDiff(prefs, "dcmImageWriteParam",
                     prev.imageWriteParams(), param.imageWriteParams());
         } else

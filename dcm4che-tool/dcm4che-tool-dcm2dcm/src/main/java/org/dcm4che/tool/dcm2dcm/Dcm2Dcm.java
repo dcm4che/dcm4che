@@ -131,16 +131,16 @@ public class Dcm2Dcm {
                 .withDescription(rb.getString("transfer-syntax"))
                 .create("t"));
         tsGroup.addOption(OptionBuilder
-                .withLongOpt("jply")
-                .withDescription(rb.getString("jpll"))
+                .withLongOpt("jpeg")
+                .withDescription(rb.getString("jpeg"))
                 .create());
         tsGroup.addOption(OptionBuilder
                 .withLongOpt("jpll")
                 .withDescription(rb.getString("jpll"))
                 .create());
         tsGroup.addOption(OptionBuilder
-                .withLongOpt("jlsl")
-                .withDescription(rb.getString("jlsl"))
+                .withLongOpt("jpls")
+                .withDescription(rb.getString("jpls"))
                 .create());
         tsGroup.addOption(OptionBuilder
                 .withLongOpt("j2kr")
@@ -238,9 +238,9 @@ public class Dcm2Dcm {
         return cl.hasOption("ivrle") ? UID.ImplicitVRLittleEndian
                 : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndian
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
-                : cl.hasOption("jply") ? UID.JPEGBaseline1
+                : cl.hasOption("jpeg") ? UID.JPEGBaseline1
                 : cl.hasOption("jpll") ? UID.JPEGLossless
-                : cl.hasOption("jlsl") ? UID.JPEGLSLossless
+                : cl.hasOption("jpls") ? UID.JPEGLSLossless
                 : cl.hasOption("j2kr") ? UID.JPEG2000LosslessOnly
                 : cl.hasOption("j2ki") ? UID.JPEG2000
                 : cl.getOptionValue("t", def);

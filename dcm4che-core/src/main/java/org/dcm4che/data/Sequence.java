@@ -160,11 +160,13 @@ public class Sequence extends ArrayList<Attributes> implements Value {
         if (isEmpty())
             return encOpts.undefEmptySequenceLength ? -1 : 0;
 
-        if (length == -1
-                && (!encOpts.undefSequenceLength || !encOpts.undefItemLength))
+        if (encOpts.undefSequenceLength)
+            return -1;
+
+        if (length == -1)
             calcLength(encOpts, explicitVR, vr);
 
-        return encOpts.undefSequenceLength ? -1 : length;
+        return length;
     }
 
     @Override

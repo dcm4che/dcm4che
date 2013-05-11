@@ -1954,13 +1954,26 @@ public class Attributes implements Serializable {
 
      public void writeItemTo(DicomOutputStream out) throws IOException {
          DicomEncodingOptions encOpts = out.getEncodingOptions();
-         int len = isEmpty() ? encOpts.undefEmptyItemLength ? -1 : 0
-                 : encOpts.undefItemLength ? -1 : length;
+         int len = getEncodedItemLength(encOpts, out.isExplicitVR());
          out.writeHeader(Tag.Item, null, len);
          writeTo(out);
          if (len == -1)
              out.writeHeader(Tag.ItemDelimitationItem, null, 0);
      }
+
+    private int getEncodedItemLength(DicomEncodingOptions encOpts,
+            boolean explicitVR) {
+        if (isEmpty())
+            return encOpts.undefEmptyItemLength ? -1 : 0;
+
+        if (encOpts.undefItemLength)
+            return -1;
+
+        if (length == -1)
+            calcLength(encOpts, explicitVR);
+
+        return length;
+    }
 
     private void writeTo(DicomOutputStream out, SpecificCharacterSet cs,
             int start, int end, int groupLengthIndex) throws IOException {

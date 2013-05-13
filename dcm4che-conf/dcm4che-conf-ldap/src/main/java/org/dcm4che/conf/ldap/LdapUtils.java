@@ -273,7 +273,7 @@ public class LdapUtils {
         throw new NameNotFoundException(connDN);
     }
 
-    private static String toString(boolean val) {
+    public static String toString(boolean val) {
         return val ? "TRUE" : "FALSE";
     }
 

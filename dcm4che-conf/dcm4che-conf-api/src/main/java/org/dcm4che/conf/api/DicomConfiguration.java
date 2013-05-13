@@ -40,9 +40,11 @@ package org.dcm4che.conf.api;
 
 import java.io.Closeable;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceInfo;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,6 +63,8 @@ public interface DicomConfiguration extends Closeable {
     ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException;
 
     Device findDevice(String name) throws ConfigurationException;
+
+    Collection<DeviceInfo> findDevices(DeviceInfo keys) throws ConfigurationException;
 
     String[] listDeviceNames() throws ConfigurationException;
 

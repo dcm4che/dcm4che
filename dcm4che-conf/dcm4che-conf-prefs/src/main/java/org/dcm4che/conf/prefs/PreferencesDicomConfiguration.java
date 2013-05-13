@@ -46,6 +46,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Connection.Protocol;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceInfo;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
@@ -193,7 +195,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         return findDevice("dcmNetworkAE", aet).getApplicationEntity(aet);
     }
 
-    public synchronized Device findDevice(String nodeName, String childName)
+    public synchronized Device findDevice(String nodeName, String aet)
             throws ConfigurationException {
          if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
             throw new ConfigurationNotFoundException();
@@ -203,18 +205,112 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             for (String deviceName : devicePrefs.childrenNames()) {
                 Preferences deviceNode = devicePrefs.node(deviceName);
                 for (String aet2 : deviceNode.node(nodeName).childrenNames())
-                    if (childName.equals(aet2))
+                    if (aet.equals(aet2))
                         return loadDevice(deviceNode);
             }
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }
-        throw new ConfigurationNotFoundException(childName);
+        throw new ConfigurationNotFoundException(aet);
     }
 
     @Override
     public synchronized Device findDevice(String name) throws ConfigurationException {
         return loadDevice(deviceRef(name));
+    }
+
+
+    @Override
+    public Collection<DeviceInfo> findDevices(DeviceInfo keys)
+            throws ConfigurationException {
+        if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
+            return Collections.emptyList();
+
+        ArrayList<DeviceInfo> results = new ArrayList<DeviceInfo>();
+        try {
+            Preferences devicePrefs = rootPrefs.node(DICOM_DEVICES_ROOT);
+            for (String deviceName : devicePrefs.childrenNames()) {
+                Preferences deviceNode = devicePrefs.node(deviceName);
+                DeviceInfo deviceInfo = new DeviceInfo();
+                deviceInfo.setDeviceName(deviceName);
+                loadFrom(deviceInfo, deviceNode);
+                if (match(deviceInfo, keys))
+                    results.add(deviceInfo);
+            }
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+        results.trimToSize();
+        return results ;
+    }
+
+    private boolean match(DeviceInfo deviceInfo, DeviceInfo keys) {
+        if (keys == null)
+            return true;
+
+        return StringUtils.matches(
+                deviceInfo.getDeviceName(),
+                keys.getDeviceName(),
+                true, true)
+            && StringUtils.matches(
+                deviceInfo.getDescription(),
+                keys.getDescription(),
+                true, true)
+            && StringUtils.matches(
+                deviceInfo.getManufacturer(),
+                keys.getManufacturer(),
+                true, true)
+            && StringUtils.matches(
+                deviceInfo.getManufacturerModelName(),
+                keys.getManufacturerModelName(),
+                true, true)
+            && matches(
+                deviceInfo.getSoftwareVersions(),
+                keys.getSoftwareVersions())
+            && StringUtils.matches(
+                deviceInfo.getStationName(),
+                keys.getStationName(),
+                true, true)
+            && matches(
+                deviceInfo.getInstitutionNames(),
+                keys.getInstitutionNames())
+            && matches(
+                deviceInfo.getInstitutionalDepartmentNames(),
+                keys.getInstitutionalDepartmentNames())
+            && matches(
+                deviceInfo.getPrimaryDeviceTypes(),
+                keys.getPrimaryDeviceTypes())
+            && (keys.getInstalled() == null
+             || keys.getInstalled().equals(deviceInfo.getInstalled()));
+    }
+
+    private boolean matches(String[] values, String[] keys) {
+        if (keys.length == 0)
+            return true;
+
+        for (String key : keys)
+            for (String value : values)
+                if (StringUtils.matches(value, key, true, true))
+                    return true;
+
+        return false;
+    }
+
+    private void loadFrom(DeviceInfo deviceInfo, Preferences prefs) {
+        deviceInfo.setDescription(prefs.get("dicomDescription", null));
+        deviceInfo.setManufacturer(prefs.get("dicomManufacturer", null));
+        deviceInfo.setManufacturerModelName(
+                prefs.get("dicomManufacturerModelName", null));
+        deviceInfo.setSoftwareVersions(
+                PreferencesUtils.stringArray(prefs, "dicomSoftwareVersion"));
+        deviceInfo.setStationName(prefs.get("dicomStationName", null));
+        deviceInfo.setInstitutionNames(
+                PreferencesUtils.stringArray(prefs, "dicomInstitutionName"));
+        deviceInfo.setInstitutionalDepartmentNames(
+                PreferencesUtils.stringArray(prefs, "dicomInstitutionalDepartmentName"));
+        deviceInfo.setPrimaryDeviceTypes(
+                PreferencesUtils.stringArray(prefs, "dicomPrimaryDeviceType"));
+        deviceInfo.setInstalled(prefs.getBoolean("dicomInstalled", false));
     }
 
     public synchronized Device loadDevice(String pathName) throws ConfigurationException,

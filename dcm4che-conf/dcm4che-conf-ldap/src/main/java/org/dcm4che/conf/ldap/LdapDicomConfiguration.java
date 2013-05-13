@@ -46,6 +46,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -77,6 +78,7 @@ import org.dcm4che.data.Issuer;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceInfo;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
@@ -295,6 +297,110 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
+    public synchronized Collection<DeviceInfo> findDevices(DeviceInfo keys)
+            throws ConfigurationException {
+        if (!configurationExists())
+            return Collections.emptyList();
+
+        ArrayList<DeviceInfo> results = new ArrayList<DeviceInfo>();
+        NamingEnumeration<SearchResult> ne = null;
+        try {
+            ne = search(devicesDN, toFilter(keys), "dicomDeviceName",
+                "dicomDescription",
+                "dicomManufacturer",
+                "dicomManufacturerModelName",
+                "dicomSoftwareVersion",
+                "dicomStationName",
+                "dicomInstitutionName",
+                "dicomInstitutionDepartmentName",
+                "dicomPrimaryDeviceType",
+                "dicomInstalled");
+            while (ne.hasMore()) {
+                DeviceInfo deviceInfo = new DeviceInfo();
+                loadFrom(deviceInfo, ne.next().getAttributes());
+                results.add(deviceInfo);
+            }
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        } finally {
+           LdapUtils.safeClose(ne);
+        }
+        results.trimToSize();
+        return results;
+    }
+
+    private String toFilter(DeviceInfo keys) {
+        if (keys == null)
+            return "(objectclass=dicomDevice)";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("(&(objectclass=dicomDevice)");
+        appendFilter("dicomDeviceName", keys.getDeviceName(), sb);
+        appendFilter("dicomDescription", keys.getDescription(), sb);
+        appendFilter("dicomManufacturer", keys.getManufacturer(), sb);
+        appendFilter("dicomManufacturerModelName", keys.getManufacturerModelName(), sb);
+        appendFilter("dicomSoftwareVersion", keys.getSoftwareVersions(), sb);
+        appendFilter("dicomStationName", keys.getStationName(), sb);
+        appendFilter("dicomInstitutionName", keys.getInstitutionNames(), sb);
+        appendFilter("dicomInstitutionDepartmentName", keys.getInstitutionalDepartmentNames(), sb);
+        appendFilter("dicomPrimaryDeviceType", keys.getPrimaryDeviceTypes(), sb);
+        appendFilter("dicomInstalled", keys.getInstalled(), sb);
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private void appendFilter(String attrid, Boolean value, StringBuilder sb) {
+        if (value != null)
+            appendFilter(attrid, LdapUtils.toString(value), sb);
+    }
+
+    private void appendFilter(String attrid, String value, StringBuilder sb) {
+        if (value == null)
+            return;
+
+        sb.append('(').append(attrid).append('=').append(value).append(')');
+    }
+
+    private void appendFilter(String attrid, String[] values, StringBuilder sb) {
+        if (values.length == 0)
+            return;
+
+        if (values.length == 1) {
+            appendFilter(attrid, values[0], sb);
+            return;
+        }
+
+        sb.append("(|");
+        for (String value : values)
+            appendFilter(attrid, value, sb);
+        sb.append(")");
+    }
+
+    private void loadFrom(DeviceInfo deviceInfo, Attributes attrs)
+            throws NamingException {
+        deviceInfo.setDeviceName(
+                LdapUtils.stringValue(attrs.get("dicomDeviceName"), null));
+        deviceInfo.setDescription(
+                LdapUtils.stringValue(attrs.get("dicomDescription"), null));
+        deviceInfo.setManufacturer(
+                LdapUtils.stringValue(attrs.get("dicomManufacturer"), null));
+        deviceInfo.setManufacturerModelName(
+                LdapUtils.stringValue(attrs.get("dicomManufacturerModelName"), null));
+        deviceInfo.setSoftwareVersions(
+                LdapUtils.stringArray(attrs.get("dicomSoftwareVersion")));
+        deviceInfo.setStationName(
+                LdapUtils.stringValue(attrs.get("dicomStationName"), null));
+        deviceInfo.setInstitutionNames(
+                LdapUtils.stringArray(attrs.get("dicomInstitutionName")));
+        deviceInfo.setInstitutionalDepartmentNames(
+                LdapUtils.stringArray(attrs.get("dicomInstitutionDepartmentName")));
+        deviceInfo.setPrimaryDeviceTypes(
+                LdapUtils.stringArray(attrs.get("dicomPrimaryDeviceType")));
+        deviceInfo.setInstalled(
+                LdapUtils.booleanValue(attrs.get("dicomInstalled"), true));
+    }
+
+    @Override
     public synchronized String[] listDeviceNames() throws ConfigurationException {
         if (!configurationExists())
             return StringUtils.EMPTY_STRING;
@@ -315,8 +421,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         ArrayList<String> values = new ArrayList<String>();
         NamingEnumeration<SearchResult> ne = null;
         try {
-            ne = search(dn, filter,
-                    new String[]{ attrID });
+            ne = search(dn, filter, attrID );
             while (ne.hasMore()) {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
@@ -950,11 +1055,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     public NamingEnumeration<SearchResult> search(String dn, String filter)
             throws NamingException {
-        return search(dn, filter, null);
+        return  search(dn, filter, (String[]) null);
     }
 
-    private NamingEnumeration<SearchResult> search(String dn, String filter, String[] attrs)
-            throws NamingException {
+    private NamingEnumeration<SearchResult> search(String dn, String filter,
+            String... attrs) throws NamingException {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
         ctls.setReturningObjFlag(false);
@@ -1013,7 +1118,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void loadApplicationEntities(Device device, String deviceDN)
             throws NamingException {
-        NamingEnumeration<SearchResult> ne = search(deviceDN, "(objectclass=dicomNetworkAE)");
+        NamingEnumeration<SearchResult> ne =
+                search(deviceDN, "(objectclass=dicomNetworkAE)");
         try {
             while (ne.hasMore()) {
                 device.addApplicationEntity(
@@ -1061,7 +1167,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private void loadTransferCapabilities(ApplicationEntity ae, String aeDN)
             throws NamingException {
-        NamingEnumeration<SearchResult> ne = search(aeDN, "(objectclass=dicomTransferCapability)");
+        NamingEnumeration<SearchResult> ne =
+                search(aeDN, "(objectclass=dicomTransferCapability)");
         try {
             while (ne.hasMore())
                 ae.addTransferCapability(loadTransferCapability(ne.next()));
@@ -1604,7 +1711,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     public void load(AttributeCoercions acs, String dn) throws NamingException {
-        NamingEnumeration<SearchResult> ne = search(dn, "(objectclass=dcmAttributeCoercion)");
+        NamingEnumeration<SearchResult> ne =
+                search(dn, "(objectclass=dcmAttributeCoercion)");
         try {
             while (ne.hasMore()) {
                 SearchResult sr = ne.next();

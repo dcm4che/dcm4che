@@ -202,12 +202,13 @@ public class StringUtils {
         return new String(ch);
     }
 
-    public static boolean matches(String s, String key, boolean ignoreCase) {
-        if (s == null || s.length() == 0)
+    public static boolean matches(String s, String key,
+            boolean matchNullOrEmpty, boolean ignoreCase) {
+        if (key == null || key.isEmpty())
             return true;
 
-        if (key == null || key.length() == 0)
-            return true;
+        if (s == null || s.isEmpty())
+            return matchNullOrEmpty;
 
         return containsWildCard(key) 
                 ? compilePattern(key, ignoreCase).matcher(s).matches()

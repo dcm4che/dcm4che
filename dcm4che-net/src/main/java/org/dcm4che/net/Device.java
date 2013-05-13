@@ -135,8 +135,7 @@ public class Device implements Serializable {
     private transient volatile TrustManager tm;
 
     public Device(String name) {
-        checkNotEmpty("Device Name", name);
-        this.deviceName = name;
+        setDeviceName(name);
     }
 
     private void checkNotEmpty(String name, String val) {
@@ -151,6 +150,16 @@ public class Device implements Serializable {
      */
     public final String getDeviceName() {
         return deviceName;
+    }
+
+    /**
+     * Set the name of this device.
+     * 
+     * @param name A String containing the device name.
+     */
+    public final void setDeviceName(String name) {
+        checkNotEmpty("Device Name", name);
+        this.deviceName = name;
     }
 
     /**

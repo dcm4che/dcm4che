@@ -49,6 +49,7 @@ import org.dcm4che.data.UID;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceInfo;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.StorageOptions;
 import org.dcm4che.net.TransferCapability;
@@ -115,11 +116,18 @@ public class LdapDicomConfigurationTest {
         assertNotNull(findSCP);
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, findSCP.getTransferSyntaxes());
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
+        assertEquals(1, config.findDevices(deviceInfo("Test-Device-1")).size());
         try {
             config.persist(createDevice("Test-Device-1", "TEST-AET1"));
             fail("ConfigurationAlreadyExistsException expected");
         } catch (ConfigurationAlreadyExistsException e) {}
         config.removeDevice("Test-Device-1");
+    }
+
+    private DeviceInfo deviceInfo(String deviceName) {
+        DeviceInfo keys =  new DeviceInfo();
+        keys.setDeviceName(deviceName);
+        return keys;
     }
 
     private static String[] sort(String[] a) {

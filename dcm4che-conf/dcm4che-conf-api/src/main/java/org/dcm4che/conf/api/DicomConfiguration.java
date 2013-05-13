@@ -64,6 +64,16 @@ public interface DicomConfiguration extends Closeable {
 
     Device findDevice(String name) throws ConfigurationException;
 
+    /**
+     * Query for Devices with specified attributes.
+     * 
+     * @param keys
+     *            Device attributes which shall match or <code>null</code> to
+     *            get information for all configured Devices
+     * @return list of <code>DeviceInfo</code> objects for configured Devices
+     *         with matching attributes
+     * @throws ConfigurationException
+     */
     Collection<DeviceInfo> findDevices(DeviceInfo keys) throws ConfigurationException;
 
     String[] listDeviceNames() throws ConfigurationException;

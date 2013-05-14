@@ -42,6 +42,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
@@ -64,6 +65,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
+import org.dcm4che.image.Overlays;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che.io.DicomEncodingOptions;
@@ -85,6 +87,7 @@ public class Compressor extends Decompressor implements Closeable {
     private ImageWriteParam compressParam;
     private ImageInputStream iis;
     private IOException ex;
+    private int[] embeddedOverlays;
 
     public Compressor(Attributes dataset, String tsuid) {
         super(dataset, tsuid);
@@ -103,7 +106,7 @@ public class Compressor extends Decompressor implements Closeable {
                         "Pixel data too short: " + this.pixeldata.length
                         + " instead " + length + " bytes");
         }
-
+        embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
     }
 
     public boolean compress(String tsuid, Map<String,Object> params)
@@ -135,9 +138,16 @@ public class Compressor extends Decompressor implements Closeable {
         Fragments compressedPixeldata = 
                 dataset.newFragments(Tag.PixelData, VR.OB, frames + 1);
         compressedPixeldata.add(Value.NULL);
-        for (int i = 0; i < frames; i++)
-            compressedPixeldata.add(new CompressedFrame(i));
-        
+        for (int i = 0; i < frames; i++) {
+            CompressedFrame frame = new CompressedFrame(i);
+            if (embeddedOverlays.length != 0)
+                frame.compress();
+            compressedPixeldata.add(frame);
+        }
+        for (int gg0000 : embeddedOverlays) {
+            dataset.setInt(Tag.OverlayBitsAllocated | gg0000, VR.US, 1);
+            dataset.setInt(Tag.OverlayBitPosition | gg0000, VR.US, 0);
+        }
         return true;
     }
 
@@ -173,7 +183,7 @@ public class Compressor extends Decompressor implements Closeable {
         private CacheOutputStream cacheout = new CacheOutputStream();
         private MemoryCacheImageOutputStream cache;
 
-        public CompressedFrame(int frameIndex) {
+        public CompressedFrame(int frameIndex) throws IOException {
             this.frameIndex = frameIndex;
         }
 
@@ -232,6 +242,7 @@ public class Compressor extends Decompressor implements Closeable {
 
             try {
                 BufferedImage bi = Compressor.this.readFrame(frameIndex);
+                Compressor.this.extractEmbeddedOverlays(frameIndex, bi.getRaster());
                 cache = new MemoryCacheImageOutputStream(cacheout);
                 compressor.setOutput(patchJPEGLS != null
                         ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
@@ -292,6 +303,25 @@ public class Compressor extends Decompressor implements Closeable {
                     "Unsupported Datatype: " + db.getDataType());
         }
         return destination;
+    }
+
+    private void extractEmbeddedOverlays(int frameIndex, WritableRaster raster) {
+        for (int gg0000 : embeddedOverlays) {
+            int ovlyRow = dataset.getInt(Tag.OverlayRows | gg0000, 0);
+            int ovlyColumns = dataset.getInt(Tag.OverlayColumns | gg0000, 0);
+            int ovlyBitPosition = dataset.getInt(Tag.OverlayBitPosition | gg0000, 0);
+            int mask = 1 << ovlyBitPosition;
+            int ovlyLength = ovlyRow * ovlyColumns;
+            byte[] ovlyData = dataset.getSafeBytes(Tag.OverlayData | gg0000);
+            if (ovlyData == null) {
+                ovlyData = new byte[(((ovlyLength*frames+7)>>>3)+1)&(~1)];
+                dataset.setBytes(Tag.OverlayData | gg0000, VR.OB, ovlyData);
+            }
+            Overlays.extractFromPixeldata(raster, mask, ovlyData,
+                    ovlyLength * frameIndex, ovlyLength);
+            LOG.debug("Extracted embedded overlay #{} from bit #{} of frame #{}",
+                    new Object[]{(gg0000 >>> 17) + 1, ovlyBitPosition, frameIndex + 1});
+        }
     }
 
     private void readFully(short[] data) throws IOException {

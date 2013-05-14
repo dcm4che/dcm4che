@@ -58,8 +58,8 @@ import org.dcm4che.util.TagUtils;
  */
 public class Overlays {
 
-    public static int[] getActiveOverlayGroupOffsets(Attributes attrs) {
-        return getOverlayGroupOffsets(attrs, Tag.OverlayActivationLayer, -1);
+    public static int[] getActiveOverlayGroupOffsets(Attributes psattrs) {
+        return getOverlayGroupOffsets(psattrs, Tag.OverlayActivationLayer, -1);
     }
 
     public static int[] getActiveOverlayGroupOffsets(Attributes attrs,
@@ -80,7 +80,18 @@ public class Overlays {
         return Arrays.copyOf(result, len);
     }
 
-    public static void extractFromPixeldata(Raster raster, int mask, 
+    public static int[] getEmbeddedOverlayGroupOffsets(Attributes attrs) {
+        int len = 0;
+        int[] result = new int[16];
+        for (int i = 0; i < result.length; i++) {
+            int gg0000 = i << 17;
+            if (attrs.getInt(Tag.OverlayBitsAllocated | gg0000, 1) != 1)
+                result[len++] = gg0000;
+        }
+        return Arrays.copyOf(result, len);
+    }
+
+   public static void extractFromPixeldata(Raster raster, int mask, 
             byte[] ovlyData, int off, int length) {
         ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
         int rows = raster.getHeight();

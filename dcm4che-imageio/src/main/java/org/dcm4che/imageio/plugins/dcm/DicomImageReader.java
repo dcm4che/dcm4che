@@ -289,16 +289,40 @@ public class DicomImageReader extends ImageReader {
 
         ColorModel cm;
         if (pmi.isMonochrome()) {
+            int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
+            byte[][] overlayData = new byte[overlayGroupOffsets.length][];
+            for (int i = 0; i < overlayGroupOffsets.length; i++) {
+                overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
+            }
             cm = createColorModel(8, DataBuffer.TYPE_BYTE);
             SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
             raster = applyLUTs(raster, frameIndex, param, sm, 8);
-            int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
-            for (int gg0000 : overlayGroupOffsets)
-                applyOverlay(gg0000, raster, frameIndex, param, 8);
+            for (int i = 0; i < overlayGroupOffsets.length; i++) {
+                applyOverlay(overlayGroupOffsets[i], 
+                        raster, frameIndex, param, 8, overlayData[i]);
+            }
         } else {
             cm = createColorModel(bitsStored, dataType);
         }
         return new BufferedImage(cm, raster , false, null);
+    }
+
+    private byte[] extractOverlay(int gg0000, WritableRaster raster) {
+        Attributes attrs = metadata.getAttributes();
+
+        if (attrs.getInt(Tag.OverlayBitsAllocated | gg0000, 1) == 1)
+            return null;
+
+        int ovlyRows = attrs.getInt(Tag.OverlayRows | gg0000, 0);
+        int ovlyColumns = attrs.getInt(Tag.OverlayColumns | gg0000, 0);
+        int bitPosition = attrs.getInt(Tag.OverlayBitPosition | gg0000, 0);
+
+        int mask = 1<<bitPosition;
+        int length = ovlyRows * ovlyColumns;
+
+        byte[] ovlyData = new byte[(((length+7)>>>3)+1)&(~1)] ;
+        Overlays.extractFromPixeldata(raster, mask, ovlyData, 0, length);
+        return ovlyData;
     }
 
     @SuppressWarnings("resource")
@@ -312,7 +336,7 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void applyOverlay(int gg0000, WritableRaster raster,
-            int frameIndex, ImageReadParam param, int outBits) {
+            int frameIndex, ImageReadParam param, int outBits, byte[] ovlyData) {
         Attributes ovlyAttrs = metadata.getAttributes();
         int grayscaleValue = 0xffff;
         if (param instanceof DicomImageReadParam) {
@@ -326,8 +350,8 @@ public class DicomImageReader extends ImageReader {
             } else
                 grayscaleValue = dParam.getOverlayGrayscaleValue();
         }
-        Overlays.applyOverlay(frameIndex, raster, ovlyAttrs, gg0000,
-                grayscaleValue >>> (16-outBits));
+        Overlays.applyOverlay(ovlyData != null ? 0 : frameIndex, raster,
+                ovlyAttrs, gg0000, grayscaleValue >>> (16-outBits), ovlyData);
     }
 
     private int[] getActiveOverlayGroupOffsets(ImageReadParam param) {
@@ -335,15 +359,15 @@ public class DicomImageReader extends ImageReader {
             DicomImageReadParam dParam = (DicomImageReadParam) param;
             Attributes psAttrs = dParam.getPresentationState();
             if (psAttrs != null)
-                return Overlays.getGroupOffsets(psAttrs,
-                        Tag.OverlayActivationLayer, 0xffff);
+                return Overlays.getActiveOverlayGroupOffsets(psAttrs);
             else
-                return Overlays.getGroupOffsets(metadata.getAttributes(),
-                        Tag.OverlayRows,
+                return Overlays.getActiveOverlayGroupOffsets(
+                        metadata.getAttributes(),
                         dParam.getOverlayActivationMask());
         }
-        return Overlays.getGroupOffsets(metadata.getAttributes(),
-                Tag.OverlayRows, 0xffff);
+        return Overlays.getActiveOverlayGroupOffsets(
+                metadata.getAttributes(),
+                0xffff);
     }
 
     private WritableRaster applyLUTs(WritableRaster raster,

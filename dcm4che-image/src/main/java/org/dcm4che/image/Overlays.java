@@ -38,16 +38,18 @@
 
 package org.dcm4che.image;
 
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
 
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.VR;
 import org.dcm4che.util.TagUtils;
 
 /**
@@ -56,7 +58,16 @@ import org.dcm4che.util.TagUtils;
  */
 public class Overlays {
 
-    public static int[] getGroupOffsets(Attributes attrs, int tag,
+    public static int[] getActiveOverlayGroupOffsets(Attributes attrs) {
+        return getOverlayGroupOffsets(attrs, Tag.OverlayActivationLayer, -1);
+    }
+
+    public static int[] getActiveOverlayGroupOffsets(Attributes attrs,
+            int activationMask) {
+        return getOverlayGroupOffsets(attrs, Tag.OverlayRows, activationMask);
+    }
+
+    public static int[] getOverlayGroupOffsets(Attributes attrs, int tag,
             int activationMask) {
         int len = 0;
         int[] result = new int[16];
@@ -69,83 +80,57 @@ public class Overlays {
         return Arrays.copyOf(result, len);
     }
 
-    public static byte[] extractFromPixeldata(int rows, int columns,
-            int frames, int bitPosition, DataBuffer dataBuffer) {
-        int frameLength = dataBuffer.getSize() / frames;
-        int ovlyLength = rows * columns;
-        int length = (((ovlyLength * frames + 7)>>>3)+1)&(~1);
-        byte[] overlayData = new byte[length];
-        int mask = 1 << bitPosition;
-        if (dataBuffer instanceof DataBufferByte) {
-            byte[] pixeldata = ((DataBufferByte) dataBuffer).getData();
-            for (int f = 0, i = 0; f < frames; ++f)
-                for (int j = f * frameLength, end = (f+1) * frameLength;
-                        j < end; ++j, ++i)
-                    if ((pixeldata[j] & mask) != 0)
-                        overlayData[i>>>3] |= 1<<(i&7);
-        } else {
-            short[] pixeldata = ((DataBufferUShort) dataBuffer).getData();
-            for (int f = 0, i = 0; f < frames; ++f)
-                for (int j = f * frameLength, end = (f+1) * frameLength;
-                        j < end; ++j, ++i)
-                    if ((pixeldata[j] & mask) != 0)
-                        overlayData[i>>>3] |= 1<<(i&7);
+    public static void extractFromPixeldata(Raster raster, int mask, 
+            byte[] ovlyData, int off, int length) {
+        ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
+        int rows = raster.getHeight();
+        int columns = raster.getWidth();
+        int stride = sm.getScanlineStride();
+        DataBuffer db = raster.getDataBuffer();
+        switch (db.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            extractFromPixeldata(((DataBufferByte) db).getData(),
+                    rows, columns, stride, mask,
+                    ovlyData, off, length);
+            break;
+        case DataBuffer.TYPE_USHORT:
+            extractFromPixeldata(((DataBufferUShort) db).getData(),
+                    rows, columns, stride, mask,
+                    ovlyData, off, length);
+            break;
+        case DataBuffer.TYPE_SHORT:
+            extractFromPixeldata(((DataBufferShort) db).getData(),
+                    rows, columns, stride, mask,
+                    ovlyData, off, length);
+            break;
+        default:
+            throw new UnsupportedOperationException(
+                    "Unsupported DataBuffer type: " + db.getDataType());
         }
-        return overlayData ;
     }
 
-    public static boolean extractFromPixeldata(Attributes attrs, int gg0000,
-            DataBuffer dataBuffer) {
-        if (!attrs.containsValue(Tag.OverlayRows | gg0000)
-                || !isEmbedded(attrs, gg0000))
-            return false;
-
-        attrs.setBytes(Tag.OverlayData | gg0000, VR.OB,  extractFromPixeldata(
-                attrs.getInt(Tag.OverlayRows | gg0000, 0),
-                attrs.getInt(Tag.OverlayColumns | gg0000, 0),
-                attrs.getInt(Tag.NumberOfFrames, 1),
-                attrs.getInt(Tag.OverlayBitPosition | gg0000, 0),
-                dataBuffer));
-        attrs.setInt(Tag.OverlayBitsAllocated | gg0000, VR.US, 1);
-        attrs.setInt(Tag.OverlayBitPosition | gg0000, VR.US, 0);
-        return true;
+    private static void extractFromPixeldata(byte[] pixeldata,
+            int rows, int columns, int stride, int mask,
+            byte[] ovlyData, int off, int length) {
+        for (int y = 0, i = off, imax = off + length;
+                y < columns && i < imax; y++) {
+            for (int j = y * stride, jmax = j + rows; j < jmax && i < imax; j++, i++) {
+                if ((pixeldata[j] & mask) != 0)
+                    ovlyData[i >>> 3] |= 1 << (i & 7);
+            }
+        }
     }
 
-    public static boolean isEmbedded(Attributes attrs, int gg0000) {
-        if (attrs.containsValue(Tag.OverlayData | gg0000))
-            return false;
-
-        int tagOverlayBitsAllocated = Tag.OverlayBitsAllocated | gg0000;
-        int tagNumberOfFramesInOverlay = Tag.NumberOfFramesInOverlay | gg0000;
-        int tagImageFrameOrigin = Tag.ImageFrameOrigin | gg0000;
-
-        int frames = attrs.getInt(Tag.NumberOfFrames, 1);
-        int bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
-        int bitsAllocatedInOverlay = attrs.getInt(tagOverlayBitsAllocated, -1);
-        int framesInOverlay = attrs.getInt(tagNumberOfFramesInOverlay, 1);
-        int imageFrameOrigin = attrs.getInt(tagImageFrameOrigin, 1);
-
-        if (bitsAllocatedInOverlay != bitsAllocated)
-            throw new IllegalArgumentException(
-                    TagUtils.toString(tagOverlayBitsAllocated)
-                    + " Overlay Bits Allocated [" + bitsAllocatedInOverlay 
-                    + "] != (0028,0100) Bits Allocated [" + bitsAllocated
-                    + "]");
-
-        if (framesInOverlay != frames)
-            throw new IllegalArgumentException(
-                    TagUtils.toString(tagNumberOfFramesInOverlay)
-                    + " Number of Frames in Overlay ["
-                    + framesInOverlay + "] != (0028,0008) Number of Frames ["
-                    + frames + "]");
-
-        if (imageFrameOrigin != 1)
-            throw new IllegalArgumentException(
-                    TagUtils.toString(tagImageFrameOrigin)
-                    + " Image Frame Origin [ "
-                    + imageFrameOrigin + "] != 1");
-
-        return true;
+    private static void extractFromPixeldata(short[] pixeldata,
+            int rows, int columns, int stride, int mask,
+            byte[] ovlyData, int off, int length) {
+        for (int y = 0, i = off, imax = off + length;
+                y < columns && i < imax; y++) {
+            for (int j = y * stride, jmax = j + rows; j < jmax && i < imax; j++, i++) {
+                if ((pixeldata[j] & mask) != 0)
+                    ovlyData[i >>> 3] |= 1 << (i & 7);
+            }
+        }
     }
 
     public static int getRecommendedDisplayGrayscaleValue(Attributes psAttrs,
@@ -170,7 +155,7 @@ public class Overlays {
     }
 
     public static void applyOverlay(int frameIndex, WritableRaster raster,
-            Attributes attrs, int gg0000, int pixelValue) {
+            Attributes attrs, int gg0000, int pixelValue, byte[] ovlyData) {
 
         int imageFrameOrigin = attrs.getInt(Tag.ImageFrameOrigin | gg0000, 1);
         int framesInOverlay = attrs.getInt(Tag.NumberOfFramesInOverlay | gg0000, 1);
@@ -186,9 +171,10 @@ public class Overlays {
         int ovlyRows = attrs.getInt(tagOverlayRows, -1);
         int ovlyColumns = attrs.getInt(tagOverlayColumns, -1);
         int[] ovlyOrigin = attrs.getInts(tagOverlayOrigin);
-        byte[] overlayData = attrs.getSafeBytes(tagOverlayData);
+        if (ovlyData == null)
+            ovlyData = attrs.getSafeBytes(tagOverlayData);
 
-        if (overlayData == null)
+        if (ovlyData == null)
             throw new IllegalArgumentException("Missing "
                     + TagUtils.toString(tagOverlayData)
                     + " Overlay Data");
@@ -216,9 +202,9 @@ public class Overlays {
         int ovlyOff = ovlyLen * ovlyFrameIndex;
         for (int i = ovlyOff >>> 3,
                end = (ovlyOff + ovlyLen + 7) >>> 3; i < end; i++) {
-            int overlayBits = overlayData[i] & 0xff;
-            for (int j = 0; (overlayBits>>>j) != 0; j++) {
-                if ((overlayBits & (1<<j)) == 0)
+            int ovlyBits = ovlyData[i] & 0xff;
+            for (int j = 0; (ovlyBits>>>j) != 0; j++) {
+                if ((ovlyBits & (1<<j)) == 0)
                     continue;
 
                 int ovlyIndex = ((i<<3) + j) - ovlyOff;

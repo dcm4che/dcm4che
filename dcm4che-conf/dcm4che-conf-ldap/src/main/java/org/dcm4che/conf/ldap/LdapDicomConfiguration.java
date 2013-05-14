@@ -46,7 +46,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -297,10 +296,10 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     @Override
-    public synchronized Collection<DeviceInfo> findDevices(DeviceInfo keys)
+    public synchronized DeviceInfo[] listDeviceInfos(DeviceInfo keys)
             throws ConfigurationException {
         if (!configurationExists())
-            return Collections.emptyList();
+            return new DeviceInfo[0];
 
         ArrayList<DeviceInfo> results = new ArrayList<DeviceInfo>();
         NamingEnumeration<SearchResult> ne = null;
@@ -325,8 +324,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         } finally {
            LdapUtils.safeClose(ne);
         }
-        results.trimToSize();
-        return results;
+        return results.toArray(new DeviceInfo[results.size()]);
     }
 
     private String toFilter(DeviceInfo keys) {

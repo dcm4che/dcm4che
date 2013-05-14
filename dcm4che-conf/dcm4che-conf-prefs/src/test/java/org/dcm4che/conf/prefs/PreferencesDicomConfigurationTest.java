@@ -118,7 +118,7 @@ public class PreferencesDicomConfigurationTest {
         assertNotNull(findSCP);
         assertArrayEquals(new String[] { UID.ImplicitVRLittleEndian }, findSCP.getTransferSyntaxes());
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
-        assertEquals(1, config.findDevices(deviceInfo("Test-Device-1")).size());
+        assertEquals(1, config.listDeviceInfos(deviceInfo("Test-Device-1")).length);
         try {
             config.persist(createDevice("Test-Device-1", "TEST-AET1"));
             fail("ConfigurationAlreadyExistsException expected");

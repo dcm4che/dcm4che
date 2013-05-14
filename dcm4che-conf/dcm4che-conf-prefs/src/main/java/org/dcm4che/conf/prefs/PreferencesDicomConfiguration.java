@@ -46,7 +46,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -221,10 +220,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
 
     @Override
-    public Collection<DeviceInfo> findDevices(DeviceInfo keys)
+    public DeviceInfo[] listDeviceInfos(DeviceInfo keys)
             throws ConfigurationException {
         if (!PreferencesUtils.nodeExists(rootPrefs, DICOM_DEVICES_ROOT))
-            return Collections.emptyList();
+            return new DeviceInfo[0];
 
         ArrayList<DeviceInfo> results = new ArrayList<DeviceInfo>();
         try {
@@ -240,8 +239,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         } catch (BackingStoreException e) {
             throw new ConfigurationException(e);
         }
-        results.trimToSize();
-        return results ;
+        return results.toArray(new DeviceInfo[results.size()]) ;
     }
 
     private boolean match(DeviceInfo deviceInfo, DeviceInfo keys) {

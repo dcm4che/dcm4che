@@ -40,7 +40,6 @@ package org.dcm4che.conf.api;
 
 import java.io.Closeable;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Device;
@@ -70,11 +69,11 @@ public interface DicomConfiguration extends Closeable {
      * @param keys
      *            Device attributes which shall match or <code>null</code> to
      *            get information for all configured Devices
-     * @return list of <code>DeviceInfo</code> objects for configured Devices
+     * @return array of <code>DeviceInfo</code> objects for configured Devices
      *         with matching attributes
      * @throws ConfigurationException
      */
-    Collection<DeviceInfo> findDevices(DeviceInfo keys) throws ConfigurationException;
+    DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
 
     String[] listDeviceNames() throws ConfigurationException;
 

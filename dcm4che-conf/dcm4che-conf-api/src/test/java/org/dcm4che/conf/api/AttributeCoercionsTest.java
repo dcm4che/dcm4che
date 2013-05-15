@@ -26,15 +26,15 @@ public class AttributeCoercionsTest {
         acs.add(ctFromAET1);
         acs.add(anyFromAET2);
         acs.add(mrFromAny);
-        assertSame(ctFromAET1, acs.findMatching(
+        assertSame(ctFromAET1, acs.findAttributeCoercion(
                 UID.CTImageStorage, C_STORE_RQ, SCP, "AET1"));
-        assertSame(anyFromAET2, acs.findMatching(
+        assertSame(anyFromAET2, acs.findAttributeCoercion(
                 UID.CTImageStorage, C_STORE_RQ, SCP, "AET2"));
-        assertSame(mrFromAny, acs.findMatching(
+        assertSame(mrFromAny, acs.findAttributeCoercion(
                 UID.MRImageStorage, C_STORE_RQ, SCP, "AET1"));
-        assertSame(anyFromAET2, acs.findMatching(
+        assertSame(anyFromAET2, acs.findAttributeCoercion(
                 UID.MRImageStorage, C_STORE_RQ, SCP, "AET2"));
-        assertSame(any, acs.findMatching(
+        assertSame(any, acs.findAttributeCoercion(
                 UID.CTImageStorage, C_STORE_RQ, SCP, "AET3"));
     }
 

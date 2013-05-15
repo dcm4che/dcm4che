@@ -430,7 +430,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public void store(AttributeCoercions acs, Preferences parentNode) {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
         int acIndex = 1;
-        for (AttributeCoercion ac : acs.getAll())
+        for (AttributeCoercion ac : acs)
             storeTo(ac, acsNode.node("" + acIndex ++));
     }
 
@@ -1005,8 +1005,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             Preferences parentNode) throws BackingStoreException {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
         int acIndex = 1;
-        Iterator<AttributeCoercion> prevIter = prevs.getAll().iterator();
-        for (AttributeCoercion ac : acs.getAll()) {
+        Iterator<AttributeCoercion> prevIter = prevs.iterator();
+        for (AttributeCoercion ac : acs) {
             Preferences acNode = acsNode.node("" + acIndex++);
             if (prevIter.hasNext())
                 storeDiffs(acNode, prevIter.next(), ac);

@@ -40,8 +40,8 @@ package org.dcm4che.conf.api;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.Iterator;
 
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability.Role;
@@ -50,26 +50,19 @@ import org.dcm4che.net.TransferCapability.Role;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class AttributeCoercions implements Serializable {
+public class AttributeCoercions
+        implements Iterable<AttributeCoercion>, Serializable {
     
     private static final long serialVersionUID = -1960600890844978686L;
 
     private final ArrayList<AttributeCoercion> list =
             new ArrayList<AttributeCoercion>();
-    private final int[] insertIndex = new int[4];
 
     public void add(AttributeCoercion ac) {
-        if (ac == null)
-            throw new NullPointerException();
-
-        int i = 3;
-        if (ac.getAETitle() == null)
-            i--;
-        if (ac.getSopClass() == null)
-            i -= 2;
-        list.add(insertIndex[i]++, ac);
-        while (--i >= 0)
-            insertIndex[i]++;
+        int index = Collections.binarySearch(list, ac);
+        if (index < 0)
+            index = -(index+1);
+        list.add(index, ac);
     }
 
     public void add(AttributeCoercions acs) {
@@ -78,28 +71,20 @@ public class AttributeCoercions implements Serializable {
     }
 
     public boolean remove(AttributeCoercion ac) {
-        if (ac == null)
-            throw new NullPointerException();
-
-        int index = list.indexOf(ac);
-        if (index < 0)
-            return false;
-        list.remove(index);
-        int i = -1;
-        while (++i < 4 && insertIndex[i] > index)
-            insertIndex[i]--;
-        return true;
+        return list.remove(ac);
     }
 
     public void clear() {
         list.clear();
-        Arrays.fill(insertIndex, 0);
     }
 
     public AttributeCoercion findEquals(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac2 : list)
-            if (ac2.equals(sopClass, dimse, role, aeTitle))
+            if (ac2.getDimse() == dimse
+            && ac2.getRole() == role
+            && equals(ac2.getSopClass(), sopClass)
+            && equals(ac2.getAETitle(), aeTitle))
                 return ac2;
         return null;
     }
@@ -107,12 +92,24 @@ public class AttributeCoercions implements Serializable {
     public AttributeCoercion findMatching(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac : list)
-            if (ac.matches(sopClass, dimse, role, aeTitle))
+            if (ac.getDimse() == dimse
+            && ac.getRole() == role
+            && matches(ac.getSopClass(), sopClass)
+            && matches(ac.getAETitle(), aeTitle))
                 return ac;
         return null;
     }
 
-    public List<AttributeCoercion> getAll() {
-        return list;
+    private static boolean equals(Object o1, Object o2) {
+        return o1 == o2 || o1 != null && o1.equals(o2);
+    }
+
+    private static boolean matches(Object o1, Object o2) {
+        return o1 == null || o2 == null || o1.equals(o2);
+    }
+
+    @Override
+    public Iterator<AttributeCoercion> iterator() {
+        return list.iterator();
     }
 }

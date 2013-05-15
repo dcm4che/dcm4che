@@ -1682,7 +1682,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     public void store(AttributeCoercions coercions, String parentDN)
             throws NamingException {
-            for (AttributeCoercion ac : coercions.getAll())
+            for (AttributeCoercion ac : coercions)
                 createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
         }
 
@@ -1730,11 +1730,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     public void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
             throws NamingException {
-        for (AttributeCoercion prev : prevs.getAll())
+        for (AttributeCoercion prev : prevs)
             if (acs.findEquals(prev.getSopClass(), prev.getDimse(),
                     prev.getRole(), prev.getAETitle()) == null)
                 destroySubcontext(dnOf(prev, parentDN));
-        for (AttributeCoercion ac : acs.getAll()) {
+        for (AttributeCoercion ac : acs) {
             String dn = dnOf(ac, parentDN);
             AttributeCoercion prev = prevs.findEquals(
                     ac.getSopClass(), ac.getDimse(),

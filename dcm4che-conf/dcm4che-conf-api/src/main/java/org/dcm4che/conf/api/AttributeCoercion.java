@@ -48,7 +48,8 @@ import org.dcm4che.util.UIDUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class AttributeCoercion implements Serializable {
+public class AttributeCoercion
+    implements Serializable, Comparable<AttributeCoercion> {
 
     private static final long serialVersionUID = 7799241531490684097L;
 
@@ -57,13 +58,22 @@ public class AttributeCoercion implements Serializable {
     private final Role role;
     private final String aeTitle;
     private final String uri;
+    private final int weight;
 
-    public AttributeCoercion(String sopClass, Dimse dimse, Role role, String aeTitle, String uri) {
+    public AttributeCoercion(String sopClass, Dimse dimse, Role role,
+            String aeTitle, String uri) {
         this.sopClass = sopClass;
         this.dimse = dimse;
         this.role = role;
         this.aeTitle = aeTitle;
         this.uri = uri;
+        this.weight = (aeTitle != null ? 2 : 0)
+                   + (sopClass != null ? 1 : 0);
+    }
+
+    @Override
+    public int compareTo(AttributeCoercion o) {
+        return o.weight - weight;
     }
 
     public final String getSopClass() {
@@ -86,28 +96,6 @@ public class AttributeCoercion implements Serializable {
         return uri;
     }
 
-    public boolean matches(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        return this.dimse == dimse
-                && this.role == role
-                && matches(this.sopClass, sopClass)
-                && matches(this.aeTitle, aeTitle);
-    }
-
-    public boolean equals(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        return this.dimse == dimse
-            && this.role == role
-            && equals(this.sopClass, sopClass)
-            && equals(this.aeTitle, aeTitle);
-    }
-
-    private static boolean equals(Object o1, Object o2) {
-        return o1 == o2 || o1 != null && o1.equals(o2);
-    }
-
-    private static boolean matches(Object o1, Object o2) {
-        return o1 == null || o2 == null || o1.equals(o2);
-    }
-
     @Override
     public String toString() {
         return promptTo(new StringBuilder(64), "").toString();
@@ -126,4 +114,5 @@ public class AttributeCoercion implements Serializable {
         StringUtils.appendLine(sb, indent2, "uri: ", uri);
         return sb.append(indent).append(']');
     }
+
 }

@@ -435,10 +435,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private static void storeTo(AttributeCoercion ac, Preferences prefs) {
-        PreferencesUtils.storeNotNull(prefs, "dcmDIMSE", ac.getDimse());
+        PreferencesUtils.storeNotNull(prefs, "dcmDIMSE", ac.getDIMSE());
         PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", ac.getRole());
         PreferencesUtils.storeNotNull(prefs, "dicomAETitle", ac.getAETitle());
-        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", ac.getSopClass());
+        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", ac.getSOPClass());
         PreferencesUtils.storeNotNull(prefs, "labeledURI", ac.getURI());
     }
 
@@ -1020,10 +1020,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private void storeDiffs(Preferences prefs, AttributeCoercion a, AttributeCoercion b) {
-        PreferencesUtils.storeDiff(prefs, "dcmDIMSE", a.getDimse(), b.getDimse());
+        PreferencesUtils.storeDiff(prefs, "dcmDIMSE", a.getDIMSE(), b.getDIMSE());
         PreferencesUtils.storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
         PreferencesUtils.storeDiff(prefs, "dicomAETitle", a.getAETitle(), b.getAETitle());
-        PreferencesUtils.storeDiff(prefs, "dicomSOPClass", a.getSopClass(), b.getSopClass());
+        PreferencesUtils.storeDiff(prefs, "dicomSOPClass", a.getSOPClass(), b.getSOPClass());
         PreferencesUtils.storeDiff(prefs, "labeledURI", a.getURI(), b.getURI());
     }
 

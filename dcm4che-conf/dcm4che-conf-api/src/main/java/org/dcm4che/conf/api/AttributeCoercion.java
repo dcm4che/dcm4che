@@ -76,6 +76,22 @@ public class AttributeCoercion
         return o.weight - weight;
     }
 
+    public final String getSOPClass() {
+        return sopClass;
+    }
+
+    public final Dimse getDIMSE() {
+        return dimse;
+    }
+
+    public final Role getRole() {
+        return role;
+    }
+
+    public final String getAETitle() {
+        return aeTitle;
+    }
+
     public final String getURI() {
         return uri;
     }

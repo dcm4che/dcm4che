@@ -1688,22 +1688,22 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     private static String dnOf(AttributeCoercion ac, String parentDN) {
         StringBuilder sb = new StringBuilder();
-        sb.append("dcmDIMSE=").append(ac.getDimse());
+        sb.append("dcmDIMSE=").append(ac.getDIMSE());
         sb.append("+dicomTransferRole=").append(ac.getRole());
         if (ac.getAETitle() != null)
             sb.append("+dicomAETitle=").append(ac.getAETitle());
-        if (ac.getSopClass() != null)
-            sb.append("+dicomSOPClass=").append(ac.getSopClass());
+        if (ac.getSOPClass() != null)
+            sb.append("+dicomSOPClass=").append(ac.getSOPClass());
         sb.append(',').append(parentDN);
         return sb.toString();
     }
 
     private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
         attrs.put("objectclass", "dcmAttributeCoercion");
-        LdapUtils.storeNotNull(attrs, "dcmDIMSE", ac.getDimse());
+        LdapUtils.storeNotNull(attrs, "dcmDIMSE", ac.getDIMSE());
         LdapUtils.storeNotNull(attrs, "dicomTransferRole", ac.getRole());
         LdapUtils.storeNotNull(attrs, "dicomAETitle", ac.getAETitle());
-        LdapUtils.storeNotNull(attrs, "dicomSOPClass", ac.getSopClass());
+        LdapUtils.storeNotNull(attrs, "dicomSOPClass", ac.getSOPClass());
         LdapUtils.storeNotNull(attrs, "labeledURI", ac.getURI());
         return attrs;
     }
@@ -1731,13 +1731,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
             throws NamingException {
         for (AttributeCoercion prev : prevs)
-            if (acs.findEquals(prev.getSopClass(), prev.getDimse(),
+            if (acs.findEquals(prev.getSOPClass(), prev.getDIMSE(),
                     prev.getRole(), prev.getAETitle()) == null)
                 destroySubcontext(dnOf(prev, parentDN));
         for (AttributeCoercion ac : acs) {
             String dn = dnOf(ac, parentDN);
             AttributeCoercion prev = prevs.findEquals(
-                    ac.getSopClass(), ac.getDimse(),
+                    ac.getSOPClass(), ac.getDIMSE(),
                     ac.getRole(), ac.getAETitle());
             if (prev == null)
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));

@@ -80,32 +80,18 @@ public class AttributeCoercions
 
     public AttributeCoercion findEquals(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
-        for (AttributeCoercion ac2 : list)
-            if (ac2.getDimse() == dimse
-            && ac2.getRole() == role
-            && equals(ac2.getSopClass(), sopClass)
-            && equals(ac2.getAETitle(), aeTitle))
-                return ac2;
+        for (AttributeCoercion ac : list)
+            if (ac.equals(sopClass, dimse, role, aeTitle))
+                return ac;
         return null;
     }
 
     public AttributeCoercion findMatching(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac : list)
-            if (ac.getDimse() == dimse
-            && ac.getRole() == role
-            && matches(ac.getSopClass(), sopClass)
-            && matches(ac.getAETitle(), aeTitle))
+            if (ac.matches(sopClass, dimse, role, aeTitle))
                 return ac;
         return null;
-    }
-
-    private static boolean equals(Object o1, Object o2) {
-        return o1 == o2 || o1 != null && o1.equals(o2);
-    }
-
-    private static boolean matches(Object o1, Object o2) {
-        return o1 == null || o2 == null || o1.equals(o2);
     }
 
     @Override

@@ -96,11 +96,11 @@ public class AttributeCoercion
         return uri;
     }
 
-    boolean equals(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        return this.dimse == dimse
-                && this.role == role
-                && equals(this.aeTitle, aeTitle)
-                && equals(this.sopClass, sopClass);
+    boolean equalsIgnoreURI(AttributeCoercion o) {
+        return this.dimse == o.dimse
+                && this.role == o.role
+                && equals(this.aeTitle, o.aeTitle)
+                && equals(this.sopClass, o.sopClass);
     }
 
     private static boolean equals(Object o1, Object o2) {

@@ -51,71 +51,50 @@ import org.dcm4che.util.UIDUtils;
 public class AttributeCoercion
     implements Serializable, Comparable<AttributeCoercion> {
 
+
     private static final long serialVersionUID = 7799241531490684097L;
 
-    private final String sopClass;
-    private final Dimse dimse;
-    private final Role role;
-    private final String aeTitle;
+    private final Condition condition;
     private final String uri;
-    private final int weight;
 
     public AttributeCoercion(String sopClass, Dimse dimse, Role role,
             String aeTitle, String uri) {
-        this.sopClass = sopClass;
-        this.dimse = dimse;
-        this.role = role;
-        this.aeTitle = aeTitle;
+        this.condition = new Condition(sopClass, dimse, role, aeTitle);
         this.uri = uri;
-        this.weight = (aeTitle != null ? 2 : 0)
-                   + (sopClass != null ? 1 : 0);
-    }
-
-    @Override
-    public int compareTo(AttributeCoercion o) {
-        return o.weight - weight;
     }
 
     public final String getSOPClass() {
-        return sopClass;
+        return condition.sopClass;
     }
 
     public final Dimse getDIMSE() {
-        return dimse;
+        return condition.dimse;
     }
 
     public final Role getRole() {
-        return role;
+        return condition.role;
     }
 
     public final String getAETitle() {
-        return aeTitle;
+        return condition.aeTitle;
     }
 
     public final String getURI() {
         return uri;
     }
 
-    boolean equalsIgnoreURI(AttributeCoercion o) {
-        return this.dimse == o.dimse
-                && this.role == o.role
-                && equals(this.aeTitle, o.aeTitle)
-                && equals(this.sopClass, o.sopClass);
+    public boolean matchesCondition(String sopClass, Dimse dimse, Role role,
+            String aeTitle) {
+        return condition.matches(sopClass, dimse, role, aeTitle);
     }
 
-    private static boolean equals(Object o1, Object o2) {
-        return o1 == o2 || o1 != null && o1.equals(o2);
+    public boolean equalsCondition(AttributeCoercion o) {
+        return condition.equals(o.condition);
     }
 
-    boolean matches(String sopClass, Dimse dimse, Role role, String aeTitle) {
-        return this.dimse == dimse
-                && this.role == role
-                && matches(this.aeTitle, aeTitle)
-                && matches(this.sopClass, sopClass);
-    }
-
-    private static boolean matches(Object o1, Object o2) {
-        return o1 == null || o2 == null || o1.equals(o2);
+    @Override
+    public int compareTo(AttributeCoercion o) {
+        return condition.compareTo(o.condition);
     }
 
     @Override
@@ -125,16 +104,72 @@ public class AttributeCoercion
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
-        StringUtils.appendLine(sb, indent, "AttributeCoercion[dimse: ", dimse);
-        StringUtils.appendLine(sb, indent2, "role: ", role);
-        if (sopClass != null) {
+        StringUtils.appendLine(sb, indent, "AttributeCoercion[dimse: ", condition.dimse);
+        StringUtils.appendLine(sb, indent2, "role: ", condition.role);
+        if (condition.sopClass != null) {
             sb.append(indent2).append("cuid: ");
-            UIDUtils.promptTo(sopClass, sb).append(StringUtils.LINE_SEPARATOR);
+            UIDUtils.promptTo(condition.sopClass, sb).append(StringUtils.LINE_SEPARATOR);
         }
-        if (aeTitle != null)
-            StringUtils.appendLine(sb, indent2, "aet: ", aeTitle);
+        if (condition.aeTitle != null)
+            StringUtils.appendLine(sb, indent2, "aet: ", condition.aeTitle);
         StringUtils.appendLine(sb, indent2, "uri: ", uri);
         return sb.append(indent).append(']');
+    }
+
+    private static class Condition
+            implements Serializable, Comparable<Condition> {
+
+        private static final long serialVersionUID = -8993828886666689060L;
+
+        final String sopClass;
+        final Dimse dimse;
+        final Role role;
+        final String aeTitle;
+        final int weight;
+
+        public Condition(String sopClass, Dimse dimse, Role role, String aeTitle) {
+            this.sopClass = sopClass;
+            this.dimse = dimse;
+            this.role = role;
+            this.aeTitle = aeTitle;
+            this.weight = (aeTitle != null ? 2 : 0)
+                    + (sopClass != null ? 1 : 0);
+        }
+
+        @Override
+        public int compareTo(Condition o) {
+            return o.weight - weight;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Condition))
+                return false;
+            
+            Condition other = (Condition) o;
+            return this.dimse == other.dimse
+                    && this.role == other.role
+                    && equals(this.aeTitle, other.aeTitle)
+                    && equals(this.sopClass, other.sopClass);
+           
+        }
+
+        private static boolean equals(Object o1, Object o2) {
+            return o1 == o2 || o1 != null && o1.equals(o2);
+        }
+
+        public boolean matches(String sopClass, Dimse dimse, Role role,
+                String aeTitle) {
+            return this.dimse == dimse
+                    && this.role == role
+                    && matches(this.aeTitle, aeTitle)
+                    && matches(this.sopClass, sopClass);
+        }
+
+        private static boolean matches(Object o1, Object o2) {
+            return o1 == null || o2 == null || o1.equals(o2);
+        }
+
     }
 
 }

@@ -1731,11 +1731,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
             throws NamingException {
         for (AttributeCoercion prev : prevs)
-            if (acs.findEquals(prev) == null)
+            if (acs.findEqualsCondition(prev) == null)
                 destroySubcontext(dnOf(prev, parentDN));
         for (AttributeCoercion ac : acs) {
             String dn = dnOf(ac, parentDN);
-            AttributeCoercion prev = prevs.findEquals(ac);
+            AttributeCoercion prev = prevs.findEqualsCondition(ac);
             if (prev == null)
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
             else

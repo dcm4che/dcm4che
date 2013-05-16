@@ -78,18 +78,17 @@ public class AttributeCoercions
         list.clear();
     }
 
-    public AttributeCoercion findEquals(String sopClass, Dimse dimse,
-            Role role, String aeTitle) {
+    public AttributeCoercion findEqualsCondition(AttributeCoercion o) {
         for (AttributeCoercion ac : list)
-            if (ac.equals(sopClass, dimse, role, aeTitle))
+            if (ac.equalsCondition(o))
                 return ac;
         return null;
     }
 
-    public AttributeCoercion findMatching(String sopClass, Dimse dimse,
+    public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac : list)
-            if (ac.matches(sopClass, dimse, role, aeTitle))
+            if (ac.matchesCondition(sopClass, dimse, role, aeTitle))
                 return ac;
         return null;
     }

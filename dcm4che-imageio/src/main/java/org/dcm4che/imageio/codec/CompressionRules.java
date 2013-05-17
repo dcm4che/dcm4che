@@ -58,6 +58,9 @@ public class CompressionRules
             new ArrayList<CompressionRule>();
 
     public void add(CompressionRule rule) {
+        if (findByCommonName(rule.getCommonName()) != null)
+            throw new IllegalStateException("CompressionRule with cn: '"
+                    + rule.getCommonName() + "' already exists");
         int index = Collections.binarySearch(list, rule);
         if (index < 0)
             index = -(index+1);

@@ -43,6 +43,7 @@ import java.util.prefs.Preferences;
 
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.net.Connection;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -96,11 +97,33 @@ public class PreferencesUtils {
                 prefs.putInt(key + ".#", vals.length);
     }
 
+    public static <T> void storeDiff(Preferences prefs, String key, int[] prevs, int[] vals) {
+        for (int i = 0; i < vals.length; i++)
+            if (i >= prevs.length || vals[i] != prevs[i])
+                prefs.putInt(key + '.' + (i+1), vals[i]);
+        for (int i = vals.length; i < prevs.length;)
+            prefs.remove(key + '.' + (++i));
+        if (vals.length != prevs.length)
+            if (vals.length == 0)
+                prefs.remove(key + ".#");
+            else
+                prefs.putInt(key + ".#", vals.length);
+    }
+
     public static <T> void storeNotEmpty(Preferences prefs, String key, T[] values) {
         if (values != null && values.length != 0) {
             int count = 0;
             for (T value : values)
                 prefs.put(key + '.' + (++count), value.toString());
+            prefs.putInt(key + ".#", count);
+        }
+    }
+
+    public static void storeNotEmpty(Preferences prefs, String key, int[] values) {
+        if (values != null && values.length != 0) {
+            int count = 0;
+            for (int value : values)
+                prefs.putInt(key + '.' + (++count), value);
             prefs.putInt(key + ".#", count);
         }
     }
@@ -129,6 +152,17 @@ public class PreferencesUtils {
         for (int i = 0; i < n; i++)
             ss[i] = prefs.get(key + '.' + (i+1), null);
         return ss;
+    }
+
+    public static int[] intArray(Preferences prefs, String key)  {
+        int n = prefs.getInt(key + ".#", 0);
+        if (n == 0)
+            return ByteUtils.EMPTY_INTS;
+        
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++)
+            a[i] = prefs.getInt(key + '.' + (i+1), 0);
+        return a;
     }
 
     public static Boolean booleanValue(String s) {

@@ -138,8 +138,9 @@ public class Overlays {
         for (int y = 0, i = off, imax = off + length;
                 y < columns && i < imax; y++) {
             for (int j = y * stride, jmax = j + rows; j < jmax && i < imax; j++, i++) {
-                if ((pixeldata[j] & mask) != 0)
+                if ((pixeldata[j] & mask) != 0) {
                     ovlyData[i >>> 3] |= 1 << (i & 7);
+                }
             }
         }
     }

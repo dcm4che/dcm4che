@@ -14,13 +14,31 @@ public class AttributeCoercionsTest {
     @Test
     public void testFindMatching() {
         AttributeCoercion ctFromAET1 = new AttributeCoercion(
-                UID.CTImageStorage, C_STORE_RQ, SCP, "AET1", URI);
+                "Coerce CT from AET1",
+                new String[]{UID.CTImageStorage}, 
+                C_STORE_RQ, SCP,
+                new String[]{"AET1"},
+                URI);
         AttributeCoercion anyFromAET2 = new AttributeCoercion(
-                null, C_STORE_RQ, SCP, "AET2", URI);
+                "Coerce any from AET2",
+                null, 
+                C_STORE_RQ,
+                SCP,
+                new String[]{"AET2"},
+                URI);
         AttributeCoercion mrFromAny = new AttributeCoercion(
-                UID.MRImageStorage, C_STORE_RQ, SCP, null, URI);
+                "Coerce MR from any",
+                new String[]{UID.MRImageStorage},
+                C_STORE_RQ, SCP,
+                null,
+                URI);
         AttributeCoercion any = new AttributeCoercion(
-                null, C_STORE_RQ, SCP, null, URI);
+                "Coerce any from any",
+                null,
+                C_STORE_RQ,
+                SCP,
+                null,
+                URI);
         AttributeCoercions acs = new AttributeCoercions();
         acs.add(any);
         acs.add(ctFromAET1);

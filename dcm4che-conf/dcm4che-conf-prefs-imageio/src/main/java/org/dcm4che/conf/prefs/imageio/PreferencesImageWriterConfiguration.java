@@ -74,7 +74,7 @@ public class PreferencesImageWriterConfiguration
         PreferencesUtils.storeNotNull(prefs, "dcmJavaClassName", param.className);
         PreferencesUtils.storeNotNull(prefs, "dcmPatchJPEGLS", param.patchJPEGLS);
         PreferencesUtils.storeNotEmpty(prefs, "dcmImageWriteParam",
-                param.imageWriteParams());
+                param.getImageWriteParams());
     }
 
     @Override
@@ -143,7 +143,7 @@ public class PreferencesImageWriterConfiguration
             PreferencesUtils.storeDiff(prefs, "dcmPatchJPEGLS",
                     prev.patchJPEGLS, param.patchJPEGLS);
             PreferencesUtils.storeDiff(prefs, "dcmImageWriteParam",
-                    prev.imageWriteParams(), param.imageWriteParams());
+                    prev.getImageWriteParams(), param.getImageWriteParams());
         } else
             storeTo(param, prefs);
     }

@@ -44,7 +44,7 @@ objectclass ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
   SUP top STRUCTURAL
   MUST ( cn ) )
 
-objectclass ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
+objectclass ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
   MUST ( 
@@ -54,4 +54,18 @@ objectclass ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
     dcmJavaClassName $
     dcmPatchJPEGLS $
     dcmImageWriteParam ) )
-    
+
+objectclass ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
+  DESC 'Compression rule'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn $ 
+    dcmPhotometricInterpretation $ 
+    dcmBitsStored $ 
+    dicomTransferSyntax )
+  MAY (
+    dcmPixelRepresentation $
+    dcmAETitle $
+    dcmSOPClass $
+    dcmBodyPartExamined $
+    dcmImageWriteParam ) )

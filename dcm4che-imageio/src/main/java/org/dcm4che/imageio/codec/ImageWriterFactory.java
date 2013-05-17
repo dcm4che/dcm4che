@@ -41,23 +41,21 @@ package org.dcm4che.imageio.codec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che.util.Property;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 
@@ -76,103 +74,32 @@ public class ImageWriterFactory implements Serializable {
         public final String formatName;
         public final String className;
         public final PatchJPEGLS patchJPEGLS;
-        public final String[] keys;
-        public final Object[] values;
+        public final Property[] imageWriteParams;
 
         public ImageWriterParam(String formatName, String className,
-                String patchJPEGLS, String[] params) {
+                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams) {
             this.formatName = formatName;
             this.className = nullify(className);
-            this.patchJPEGLS = patchJPEGLS != null && !patchJPEGLS.isEmpty()
-                    ? PatchJPEGLS.valueOf(patchJPEGLS)
-                    : null;
-            this.keys = new String[params.length];
-            this.values = new Object[params.length];
-            for (int i = 0; i < params.length; i++) {
-                String param = params[i];
-                int endKey = param.indexOf('=');
-                keys[i] = param.substring(0, endKey);
-                values[i] = toValue(param.substring(endKey+1));
-             }
+            this.patchJPEGLS = patchJPEGLS;
+            this.imageWriteParams = imageWriteParams;
         }
 
-        public String[] imageWriteParams() {
-            String[] params = new String[keys.length];
-            for (int i = 0; i < params.length; i++)
-                params[i] = keys[i] + '=' + values[i];
-            return params;
+        public ImageWriterParam(String formatName, String className,
+                String patchJPEGLS, String[] imageWriteParams) {
+            this(formatName, className, 
+                    patchJPEGLS != null && !patchJPEGLS.isEmpty()
+                            ? PatchJPEGLS.valueOf(patchJPEGLS)
+                            : null,
+                    Property.valueOf(imageWriteParams));
         }
 
-        private Object toValue(String s) {
-            try {
-                return Double.valueOf(s);
-            } catch (NumberFormatException e) {
-                return s.equalsIgnoreCase("true") ? Boolean.TRUE :
-                      s.equalsIgnoreCase("false") ? Boolean.FALSE
-                                                  : s;
-            }
-        }
-
-        public void initImageWriteParam(ImageWriteParam param) {
-            if (keys.length > 0)
-                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            for (int i = 0; i < keys.length; i++)
-                setParam(param, keys[i], values[i]); 
+        public Property[] getImageWriteParams() {
+            return imageWriteParams;
         }
      }
 
     private static String nullify(String s) {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;
-    }
-
-    public static void initImageWriteParam(ImageWriteParam param,
-            Map<String, Object> properties) {
-        if (!properties.isEmpty())
-            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        for (Entry<String, Object> entry : properties.entrySet())
-            setParam(param, entry.getKey(), entry.getValue());
-    }
-
-    private static void setParam(ImageWriteParam param,
-            String propertyName, Object value) {
-        String setterName = "set" 
-                + propertyName.substring(0,1).toUpperCase(Locale.ENGLISH)
-                + propertyName.substring(1);
-        try {
-            Class<? extends ImageWriteParam> clazz = param.getClass();
-            if (value instanceof String) {
-                clazz.getMethod(setterName, String.class)
-                    .invoke(param, value);
-            } else if (value instanceof Boolean) {
-                clazz.getMethod(setterName, boolean.class)
-                    .invoke(param, value);
-            } else if (value instanceof Number) {
-                try {
-                    clazz.getMethod(setterName, double.class)
-                        .invoke(param, ((Number) value).doubleValue());
-                } catch (NoSuchMethodException e) {
-                    try {
-                        clazz.getMethod(setterName, float.class)
-                            .invoke(param, ((Number) value).floatValue());
-                    } catch (NoSuchMethodException e2) {
-                        try {
-                            clazz.getMethod(setterName, int.class)
-                                .invoke(param, ((Number) value).intValue());
-                        } catch (NoSuchMethodException e3) {
-                            throw e;
-                        }
-                   }
-                }
-            } else {
-                throw new IllegalArgumentException("value: " + value.getClass());
-            }
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(e.getMessage());
-        }
     }
 
     private static ImageWriterFactory defaultFactory;
@@ -235,7 +162,7 @@ public class ImageWriterFactory implements Serializable {
         props.load(in);
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
-            map.put((String) entry.getKey(),
+             map.put((String) entry.getKey(),
                     new ImageWriterParam(ss[0], ss[1], ss[2],
                             StringUtils.split(ss[3], ';')));
         }

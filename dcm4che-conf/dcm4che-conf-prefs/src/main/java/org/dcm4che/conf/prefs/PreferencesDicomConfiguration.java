@@ -435,10 +435,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private static void storeTo(AttributeCoercion ac, Preferences prefs) {
+        PreferencesUtils.storeNotNull(prefs, "cn", ac.getCommonName());
         PreferencesUtils.storeNotNull(prefs, "dcmDIMSE", ac.getDIMSE());
         PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", ac.getRole());
-        PreferencesUtils.storeNotNull(prefs, "dicomAETitle", ac.getAETitle());
-        PreferencesUtils.storeNotNull(prefs, "dicomSOPClass", ac.getSOPClass());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAETitle", ac.getAETitles());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmSOPClass", ac.getSOPClasses());
         PreferencesUtils.storeNotNull(prefs, "labeledURI", ac.getURI());
     }
 
@@ -1020,10 +1021,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private void storeDiffs(Preferences prefs, AttributeCoercion a, AttributeCoercion b) {
+        PreferencesUtils.storeDiff(prefs, "cn", a.getCommonName(), b.getCommonName());
         PreferencesUtils.storeDiff(prefs, "dcmDIMSE", a.getDIMSE(), b.getDIMSE());
         PreferencesUtils.storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
-        PreferencesUtils.storeDiff(prefs, "dicomAETitle", a.getAETitle(), b.getAETitle());
-        PreferencesUtils.storeDiff(prefs, "dicomSOPClass", a.getSOPClass(), b.getSOPClass());
+        PreferencesUtils.storeDiff(prefs, "dcmAETitle", a.getAETitles(), b.getAETitles());
+        PreferencesUtils.storeDiff(prefs, "dcmSOPClass", a.getSOPClasses(), b.getSOPClasses());
         PreferencesUtils.storeDiff(prefs, "labeledURI", a.getURI(), b.getURI());
     }
 
@@ -1125,11 +1127,12 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         for (String acIndex : acsNode.childrenNames()) {
             Preferences acNode = acsNode.node(acIndex);
             acs.add(new AttributeCoercion(
-                    acNode.get("dicomSOPClass", null),
+                    acNode.get("cn", null),
+                    PreferencesUtils.stringArray(acNode, "dcmSOPClass"),
                     Dimse.valueOf(acNode.get("dcmDIMSE", null)),
                     TransferCapability.Role.valueOf(
                             acNode.get("dicomTransferRole", null)),
-                    acNode.get("dicomAETitle", null),
+                    PreferencesUtils.stringArray(acNode, "dcmAETitle"),
                     acNode.get("labeledURI", null)));
         }
     }

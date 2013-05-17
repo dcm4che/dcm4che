@@ -39,6 +39,7 @@
 package org.dcm4che.conf.api;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.TransferCapability.Role;
@@ -54,17 +55,32 @@ public class AttributeCoercion
 
     private static final long serialVersionUID = 7799241531490684097L;
 
+    private final String commonName;
     private final Condition condition;
     private final String uri;
 
-    public AttributeCoercion(String sopClass, Dimse dimse, Role role,
-            String aeTitle, String uri) {
-        this.condition = new Condition(sopClass, dimse, role, aeTitle);
+    public AttributeCoercion(String commonName, String[] sopClasses,
+            Dimse dimse, Role role, String[] aeTitles, String uri) {
+        if (commonName == null)
+            throw new NullPointerException("commonName");
+        if (commonName.isEmpty())
+            throw new IllegalArgumentException("commonName cannot be empty");
+
+        this.commonName = commonName;
+        this.condition = new Condition(
+                StringUtils.maskNull(sopClasses),
+                dimse,
+                role,
+                StringUtils.maskNull(aeTitles));
         this.uri = uri;
     }
 
-    public final String getSOPClass() {
-        return condition.sopClass;
+    public final String getCommonName() {
+        return commonName;
+    }
+
+    public final String[] getSOPClasses() {
+        return condition.sopClasses;
     }
 
     public final Dimse getDIMSE() {
@@ -75,8 +91,8 @@ public class AttributeCoercion
         return condition.role;
     }
 
-    public final String getAETitle() {
-        return condition.aeTitle;
+    public final String[] getAETitles() {
+        return condition.aeTitles;
     }
 
     public final String getURI() {
@@ -86,10 +102,6 @@ public class AttributeCoercion
     public boolean matchesCondition(String sopClass, Dimse dimse, Role role,
             String aeTitle) {
         return condition.matches(sopClass, dimse, role, aeTitle);
-    }
-
-    public boolean equalsCondition(AttributeCoercion o) {
-        return condition.equals(o.condition);
     }
 
     @Override
@@ -104,16 +116,40 @@ public class AttributeCoercion
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
-        StringUtils.appendLine(sb, indent, "AttributeCoercion[dimse: ", condition.dimse);
+        StringUtils.appendLine(sb, indent, 
+                "AttributeCoercion[cn: ", commonName);
+        StringUtils.appendLine(sb, indent2, "dimse: ", condition.dimse);
         StringUtils.appendLine(sb, indent2, "role: ", condition.role);
-        if (condition.sopClass != null) {
-            sb.append(indent2).append("cuid: ");
-            UIDUtils.promptTo(condition.sopClass, sb).append(StringUtils.LINE_SEPARATOR);
-        }
-        if (condition.aeTitle != null)
-            StringUtils.appendLine(sb, indent2, "aet: ", condition.aeTitle);
+        promptCUIDsTo(sb, indent2, condition.sopClasses);
+        promptAETsTo(sb, indent2, condition.aeTitles);
+        StringUtils.appendLine(sb, indent2, "cuids: ",
+                Arrays.toString(condition.sopClasses));
+        StringUtils.appendLine(sb, indent2, "aets: ",
+                Arrays.toString(condition.aeTitles));
         StringUtils.appendLine(sb, indent2, "uri: ", uri);
         return sb.append(indent).append(']');
+    }
+
+    private static void promptCUIDsTo(StringBuilder sb, String indent,
+            String[] cuids) {
+        if (cuids.length == 0)
+            return;
+        sb.append(indent).append("cuids: ");
+        for (String cuid : cuids)
+            UIDUtils.promptTo(cuid, sb).append(',');
+        sb.setLength(sb.length()-1);
+        sb.append(StringUtils.LINE_SEPARATOR);
+    }
+
+    private static void promptAETsTo(StringBuilder sb, String indent,
+            String[] aets) {
+        if (aets.length == 0)
+            return;
+        sb.append(indent).append("aets: ");
+        for (String aet : aets)
+            sb.append(aet).append(',');
+        sb.setLength(sb.length()-1);
+        sb.append(StringUtils.LINE_SEPARATOR);
     }
 
     private static class Condition
@@ -121,19 +157,25 @@ public class AttributeCoercion
 
         private static final long serialVersionUID = -8993828886666689060L;
 
-        final String sopClass;
+        final String[] sopClasses;
         final Dimse dimse;
         final Role role;
-        final String aeTitle;
+        final String[] aeTitles;
         final int weight;
 
-        public Condition(String sopClass, Dimse dimse, Role role, String aeTitle) {
-            this.sopClass = sopClass;
+        public Condition(String[] sopClasses, Dimse dimse, Role role,
+                String[] aeTitles) {
+            if (dimse == null)
+                throw new NullPointerException("dimse");
+            if (role == null)
+                throw new NullPointerException("role");
+
+            this.sopClasses = sopClasses;
             this.dimse = dimse;
             this.role = role;
-            this.aeTitle = aeTitle;
-            this.weight = (aeTitle != null ? 2 : 0)
-                    + (sopClass != null ? 1 : 0);
+            this.aeTitles = aeTitles;
+            this.weight = (aeTitles.length != 0 ? 2 : 0)
+                      + (sopClasses.length != 0 ? 1 : 0);
         }
 
         @Override
@@ -141,33 +183,23 @@ public class AttributeCoercion
             return o.weight - weight;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Condition))
-                return false;
-            
-            Condition other = (Condition) o;
-            return this.dimse == other.dimse
-                    && this.role == other.role
-                    && equals(this.aeTitle, other.aeTitle)
-                    && equals(this.sopClass, other.sopClass);
-           
-        }
-
-        private static boolean equals(Object o1, Object o2) {
-            return o1 == o2 || o1 != null && o1.equals(o2);
-        }
-
         public boolean matches(String sopClass, Dimse dimse, Role role,
                 String aeTitle) {
             return this.dimse == dimse
                     && this.role == role
-                    && matches(this.aeTitle, aeTitle)
-                    && matches(this.sopClass, sopClass);
+                    && isEmptyOrContains(this.aeTitles, aeTitle)
+                    && isEmptyOrContains(this.sopClasses, sopClass);
         }
 
-        private static boolean matches(Object o1, Object o2) {
-            return o1 == null || o2 == null || o1.equals(o2);
+        private static boolean isEmptyOrContains(Object[] a, Object o) {
+            if (o == null || a.length == 0)
+                return true;
+
+            for (int i = 0; i < a.length; i++)
+                if (o.equals(a[i]))
+                    return true;
+
+            return false;
         }
 
     }

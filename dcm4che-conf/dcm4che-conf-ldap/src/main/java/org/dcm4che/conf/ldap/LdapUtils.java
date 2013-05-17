@@ -52,6 +52,7 @@ import javax.naming.directory.ModificationItem;
 
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
+import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
 
 /**
@@ -106,6 +107,18 @@ public class LdapUtils {
         Attribute attr = new BasicAttribute(attrID);
         for (T val : vals)
             attr.add(val.toString());
+        return attr;
+    }
+
+    public static void storeNotEmpty(Attributes attrs, String attrID, int... vals) {
+        if (vals != null && vals.length > 0)
+            attrs.put(LdapUtils.attr(attrID, vals));
+    }
+
+    public static Attribute attr(String attrID, int... vals) {
+        Attribute attr = new BasicAttribute(attrID);
+        for (int val : vals)
+            attr.add("" + val);
         return attr;
     }
 
@@ -264,7 +277,18 @@ public class LdapUtils {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
     }
 
-    public static Connection findConnection(String connDN, String deviceDN, Device device)
+    public static int[] intArray(Attribute attr) throws NamingException {
+        if (attr == null)
+            return ByteUtils.EMPTY_INTS;
+    
+        int[] a = new int[attr.size()];
+        for (int i = 0; i < a.length; i++)
+            a[i] = Integer.parseInt((String) attr.get(i));
+    
+        return a;
+    }
+
+   public static Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {
         for (Connection conn : device.listConnections())
             if (dnOf(conn, deviceDN).equalsIgnoreCase(connDN))

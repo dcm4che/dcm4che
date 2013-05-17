@@ -258,6 +258,37 @@ attributetype ( 1.2.40.0.13.1.15.0.3.51 NAME 'dcmProtocol'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
   SINGLE-VALUE )
 
+attributetype ( 1.2.40.0.13.1.15.0.3.52 NAME 'dcmAETitle'
+   DESC 'Application Entity (AE) title'
+   EQUALITY caseExactIA5Match
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.53 NAME 'dcmSOPClass'
+   DESC 'A SOP Class UID'
+   EQUALITY  objectIdentifierMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.54 NAME 'dcmPhotometricInterpretation'
+  DESC 'DICOM attribute Photometric Interpretation (0028,0004)'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.55 NAME 'dcmBitsStored'
+  DESC 'DICOM attribute Bits Stored (0028,0101)'
+  EQUALITY  integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.56 NAME 'dcmPixelRepresentation'
+  DESC 'DICOM attribute Pixel Representation (0028,0103)'
+  EQUALITY  integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.57 NAME 'dcmBodyPartExamined'
+  DESC 'DICOM attribute Body Part Examined (0018,0015)'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
 objectclass ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
@@ -323,9 +354,10 @@ objectclass ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
   DESC 'Attribute Coercion of received/sent DIMSE'
   SUP top STRUCTURAL
   MUST (
+    cn $
     dcmDIMSE $
     dicomTransferRole $
     labeledURI )
   MAY (
-    dicomAETitle $
-    dicomSOPClass ) )
+    dcmAETitle $
+    dcmSOPClass ) )

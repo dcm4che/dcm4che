@@ -36,44 +36,40 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.conf.api;
+package org.dcm4che.imageio.codec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.dcm4che.net.Dimse;
-import org.dcm4che.net.TransferCapability.Role;
+import org.dcm4che.image.PhotometricInterpretation;
 
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class AttributeCoercions
-        implements Iterable<AttributeCoercion>, Serializable {
+public class CompressionRules
+        implements Iterable<CompressionRule>, Serializable {
     
-    private static final long serialVersionUID = -1960600890844978686L;
+    private static final long serialVersionUID = 5027417735779753342L;
 
-    private final ArrayList<AttributeCoercion> list =
-            new ArrayList<AttributeCoercion>();
+    private final ArrayList<CompressionRule> list =
+            new ArrayList<CompressionRule>();
 
-    public void add(AttributeCoercion ac) {
-        if (findByCommonName(ac.getCommonName()) != null)
-            throw new IllegalStateException("AttributeCoercion with cn: '"
-                    + ac.getCommonName() + "' already exists");
-        int index = Collections.binarySearch(list, ac);
+    public void add(CompressionRule rule) {
+        int index = Collections.binarySearch(list, rule);
         if (index < 0)
             index = -(index+1);
-        list.add(index, ac);
+        list.add(index, rule);
     }
 
-    public void add(AttributeCoercions acs) {
-         for (AttributeCoercion ac : acs.list)
-             add(ac);
+    public void add(CompressionRules rules) {
+         for (CompressionRule rule : rules)
+             add(rule);
     }
 
-    public boolean remove(AttributeCoercion ac) {
+    public boolean remove(CompressionRule ac) {
         return list.remove(ac);
     }
 
@@ -81,23 +77,25 @@ public class AttributeCoercions
         list.clear();
     }
 
-    public AttributeCoercion findByCommonName(String commonName) {
-        for (AttributeCoercion ac : list)
-            if (commonName.equals(ac.getCommonName()))
-                return ac;
+    public CompressionRule findByCommonName(String commonName) {
+        for (CompressionRule rule : list)
+            if (commonName.equals(rule.getCommonName()))
+                return rule;
         return null;
     }
 
-    public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
-            Role role, String aeTitle) {
-        for (AttributeCoercion ac : list)
-            if (ac.matchesCondition(sopClass, dimse, role, aeTitle))
+    public CompressionRule findCompressionRule(PhotometricInterpretation pmi,
+            int bitsStored, int pixelRepresentation, String aeTitle, 
+            String sopClass, String bodyPart) {
+        for (CompressionRule ac : list)
+            if (ac.matchesCondition(pmi, bitsStored, pixelRepresentation,
+                    aeTitle, sopClass, bodyPart))
                 return ac;
         return null;
     }
 
     @Override
-    public Iterator<AttributeCoercion> iterator() {
+    public Iterator<CompressionRule> iterator() {
         return list.iterator();
     }
 }

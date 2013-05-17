@@ -42,14 +42,12 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
-import java.util.Map;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageWriteParam;
@@ -70,6 +68,7 @@ import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +108,7 @@ public class Compressor extends Decompressor implements Closeable {
         embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
     }
 
-    public boolean compress(String tsuid, Map<String,Object> params)
+    public boolean compress(String tsuid, Property... params)
             throws IOException {
 
         if (tsuid == null)
@@ -126,10 +125,15 @@ public class Compressor extends Decompressor implements Closeable {
 
         this.compressor = ImageWriterFactory.getImageWriter(param);
         this.patchJPEGLS = param.patchJPEGLS;
+
         this.compressParam = compressor.getDefaultWriteParam();
-        param.initImageWriteParam(compressParam);
-        if (params != null)
-            ImageWriterFactory.initImageWriteParam(compressParam, params);
+        Property[] imageWriteParams = param.getImageWriteParams();
+        if (imageWriteParams.length != 0 || params.length != 0)
+            compressParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        for (Property property : imageWriteParams)
+            property.setAt(compressParam);
+        for (Property property : params)
+            property.setAt(compressParam);
 
         TransferSyntaxType tstype = TransferSyntaxType.forUID(tsuid);
         adjustDestination(Math.min(bitsStored, tstype.getMaxBitsStored()),
@@ -242,7 +246,9 @@ public class Compressor extends Decompressor implements Closeable {
 
             try {
                 BufferedImage bi = Compressor.this.readFrame(frameIndex);
-                Compressor.this.extractEmbeddedOverlays(frameIndex, bi.getRaster());
+                Compressor.this.extractEmbeddedOverlays(frameIndex, bi);
+                if (bitsStored < bitsAllocated)
+                    Compressor.this.nullifyUnusedBits(bitsStored, bi);
                 cache = new MemoryCacheImageOutputStream(cacheout);
                 compressor.setOutput(patchJPEGLS != null
                         ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
@@ -305,7 +311,25 @@ public class Compressor extends Decompressor implements Closeable {
         return destination;
     }
 
-    private void extractEmbeddedOverlays(int frameIndex, WritableRaster raster) {
+    private void nullifyUnusedBits(int bitsStored, BufferedImage bi) {
+        DataBuffer db = bi.getRaster().getDataBuffer();
+        switch (db.getDataType()) {
+        case DataBuffer.TYPE_USHORT:
+            nullifyUnusedBits(bitsStored, ((DataBufferUShort) db).getData());
+            break;
+        case DataBuffer.TYPE_SHORT:
+            nullifyUnusedBits(bitsStored, ((DataBufferShort) db).getData());
+            break;
+        }
+    }
+
+    private void nullifyUnusedBits(int bitsStored, short[] data) {
+        int mask = (1<<bitsStored)-1;
+        for (int i = 0; i < data.length; i++)
+            data[i] &= mask;
+    }
+
+    private void extractEmbeddedOverlays(int frameIndex, BufferedImage bi) {
         for (int gg0000 : embeddedOverlays) {
             int ovlyRow = dataset.getInt(Tag.OverlayRows | gg0000, 0);
             int ovlyColumns = dataset.getInt(Tag.OverlayColumns | gg0000, 0);
@@ -317,7 +341,7 @@ public class Compressor extends Decompressor implements Closeable {
                 ovlyData = new byte[(((ovlyLength*frames+7)>>>3)+1)&(~1)];
                 dataset.setBytes(Tag.OverlayData | gg0000, VR.OB, ovlyData);
             }
-            Overlays.extractFromPixeldata(raster, mask, ovlyData,
+            Overlays.extractFromPixeldata(bi.getRaster(), mask, ovlyData,
                     ovlyLength * frameIndex, ovlyLength);
             LOG.debug("Extracted embedded overlay #{} from bit #{} of frame #{}",
                     new Object[]{(gg0000 >>> 17) + 1, ovlyBitPosition, frameIndex + 1});

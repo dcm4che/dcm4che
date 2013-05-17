@@ -1683,27 +1683,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public void store(AttributeCoercions coercions, String parentDN)
             throws NamingException {
             for (AttributeCoercion ac : coercions)
-                createSubcontext(dnOf(ac, parentDN), storeTo(ac, new BasicAttributes(true)));
+                createSubcontext(
+                        LdapUtils.dnOf("cn", ac.getCommonName(), parentDN),
+                        storeTo(ac, new BasicAttributes(true)));
         }
-
-    private static String dnOf(AttributeCoercion ac, String parentDN) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("dcmDIMSE=").append(ac.getDIMSE());
-        sb.append("+dicomTransferRole=").append(ac.getRole());
-        if (ac.getAETitle() != null)
-            sb.append("+dicomAETitle=").append(ac.getAETitle());
-        if (ac.getSOPClass() != null)
-            sb.append("+dicomSOPClass=").append(ac.getSOPClass());
-        sb.append(',').append(parentDN);
-        return sb.toString();
-    }
 
     private static Attributes storeTo(AttributeCoercion ac, BasicAttributes attrs) {
         attrs.put("objectclass", "dcmAttributeCoercion");
+        attrs.put("cn", ac.getCommonName());
         LdapUtils.storeNotNull(attrs, "dcmDIMSE", ac.getDIMSE());
         LdapUtils.storeNotNull(attrs, "dicomTransferRole", ac.getRole());
-        LdapUtils.storeNotNull(attrs, "dicomAETitle", ac.getAETitle());
-        LdapUtils.storeNotNull(attrs, "dicomSOPClass", ac.getSOPClass());
+        LdapUtils.storeNotEmpty(attrs, "dcmAETitle", ac.getAETitles());
+        LdapUtils.storeNotEmpty(attrs, "dcmSOPClass", ac.getSOPClasses());
         LdapUtils.storeNotNull(attrs, "labeledURI", ac.getURI());
         return attrs;
     }
@@ -1716,11 +1707,12 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 SearchResult sr = ne.next();
                 Attributes attrs = sr.getAttributes();
                 acs.add(new AttributeCoercion(
-                        LdapUtils.stringValue(attrs.get("dicomSOPClass"), null),
+                        LdapUtils.stringValue(attrs.get("cn"), null),
+                        LdapUtils.stringArray(attrs.get("dcmSOPClass")),
                         Dimse.valueOf(LdapUtils.stringValue(attrs.get("dcmDIMSE"), null)),
                         TransferCapability.Role.valueOf(
                                 LdapUtils.stringValue(attrs.get("dicomTransferRole"), null)),
-                        LdapUtils.stringValue(attrs.get("dicomAETitle"), null),
+                        LdapUtils.stringArray(attrs.get("dcmAETitle")),
                         LdapUtils.stringValue(attrs.get("labeledURI"), null)));
             }
         } finally {
@@ -1728,23 +1720,37 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public void merge(AttributeCoercions prevs, AttributeCoercions acs, String parentDN)
-            throws NamingException {
-        for (AttributeCoercion prev : prevs)
-            if (acs.findEqualsCondition(prev) == null)
-                destroySubcontext(dnOf(prev, parentDN));
+    public void merge(AttributeCoercions prevs, AttributeCoercions acs, 
+            String parentDN) throws NamingException {
+        for (AttributeCoercion prev : prevs) {
+            String cn = prev.getCommonName();
+            if (acs.findByCommonName(cn) == null)
+                destroySubcontext(LdapUtils.dnOf("cn", cn, parentDN));
+        }
         for (AttributeCoercion ac : acs) {
-            String dn = dnOf(ac, parentDN);
-            AttributeCoercion prev = prevs.findEqualsCondition(ac);
+            String cn = ac.getCommonName();
+            String dn = LdapUtils.dnOf("cn", cn, parentDN);
+            AttributeCoercion prev = prevs.findByCommonName(cn);
             if (prev == null)
                 createSubcontext(dn, storeTo(ac, new BasicAttributes(true)));
             else
-                modifyAttributes(dn, storeDiffs(prev, ac, new ArrayList<ModificationItem>()));
+                modifyAttributes(dn, storeDiffs(prev, ac, 
+                        new ArrayList<ModificationItem>()));
         }
     }
 
     private List<ModificationItem> storeDiffs(AttributeCoercion prev,
             AttributeCoercion ac, ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(mods, "dcmDIMSE", prev.getDIMSE(), ac.getDIMSE());
+        LdapUtils.storeDiff(mods, "dicomTransferRole", 
+                prev.getRole(),
+                ac.getRole());
+        LdapUtils.storeDiff(mods, "dcmAETitle", 
+                prev.getAETitles(),
+                ac.getAETitles());
+        LdapUtils.storeDiff(mods, "dcmSOPClass",
+                prev.getSOPClasses(),
+                ac.getSOPClasses());
         LdapUtils.storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
         return mods;
     }

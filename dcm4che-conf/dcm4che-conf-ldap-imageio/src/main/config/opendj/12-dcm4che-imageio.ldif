@@ -50,3 +50,17 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
     dcmJavaClassName $
     dcmPatchJPEGLS $
     dcmImageWriteParam ) )
+objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
+  DESC 'Compression rule'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn $ 
+    dcmPhotometricInterpretation $ 
+    dcmBitsStored $ 
+    dicomTransferSyntax )
+  MAY (
+    dcmPixelRepresentation $
+    dcmAETitle $
+    dcmSOPClass $
+    dcmBodyPartExamined $
+    dcmImageWriteParam ) )

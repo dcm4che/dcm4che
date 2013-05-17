@@ -41,9 +41,8 @@ package org.dcm4che.tool.dcm2dcm;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
@@ -65,6 +64,7 @@ import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.tool.common.CLIUtils;
+import org.dcm4che.util.Property;
 import org.dcm4che.util.SafeClose;
 
 /**
@@ -80,7 +80,7 @@ public class Dcm2Dcm {
     private boolean retainfmi;
     private boolean nofmi;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
-    private Map<String,Object> params = new HashMap<String,Object>();
+    private final List<Property> params = new ArrayList<Property>();
 
     public final void setTransferSyntax(String uid) {
         this.tsuid = uid;
@@ -104,7 +104,7 @@ public class Dcm2Dcm {
     }
 
     public void addCompressionParam(String name, Object value) {
-        params.put(name, value);
+        params.add(new Property(name, value));
     }
 
     private static Object toValue(String s) {
@@ -289,7 +289,8 @@ public class Dcm2Dcm {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
                     compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    compressor.compress(tsuid, params);
+                    compressor.compress(tsuid,
+                            params.toArray(new Property[params.size()]));
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
             }

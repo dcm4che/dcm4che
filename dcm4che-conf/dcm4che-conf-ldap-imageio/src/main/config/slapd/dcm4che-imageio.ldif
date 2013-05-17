@@ -39,7 +39,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
   DESC 'Image Reader Factory related information'
   SUP top STRUCTURAL
   MUST ( cn ) )
-olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   DESC 'Image Reader related information'
   SUP top STRUCTURAL
   MUST ( 
@@ -48,4 +48,18 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmImageWriter'
   MAY (
     dcmJavaClassName $
     dcmPatchJPEGLS $
+    dcmImageWriteParam ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
+  DESC 'Compression rule'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn $ 
+    dcmPhotometricInterpretation $ 
+    dcmBitsStored $ 
+    dicomTransferSyntax )
+  MAY (
+    dcmPixelRepresentation $
+    dcmAETitle $
+    dcmSOPClass $
+    dcmBodyPartExamined $
     dcmImageWriteParam ) )

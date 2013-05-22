@@ -82,6 +82,8 @@ import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.DicomFiles;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.UIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -91,6 +93,8 @@ public class StgCmtSCU {
 
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.stgcmtscu.messages");
+    
+    private static final Logger LOG = LoggerFactory.getLogger(StgCmtSCU.class);
 
     private final ApplicationEntity ae;
     private final Connection remote;
@@ -194,7 +198,7 @@ public class StgCmtSCU {
             List<String> argList = cl.getArgList();
             boolean echo = argList.isEmpty();
             if (!echo) {
-                DicomService.LOG.info(rb.getString("scanning"));
+                LOG.info(rb.getString("scanning"));
                 DicomFiles.scan(argList, new DicomFiles.Callback() {
                     
                     @Override
@@ -440,7 +444,7 @@ public class StgCmtSCU {
         String tuid = eventInfo.getString(Tag.TransactionUID);
         File file = new File(storageDir, tuid );
         DicomOutputStream out = null;
-        DicomService.LOG.info("{}: M-WRITE {}", as, file);
+        LOG.info("{}: M-WRITE {}", as, file);
         try {
             out = new DicomOutputStream(file);
             out.writeDataset(
@@ -448,7 +452,7 @@ public class StgCmtSCU {
                             UID.ExplicitVRLittleEndian),
                     eventInfo);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to store Storage Commitment Result:", e);
+            LOG.warn(as + ": Failed to store Storage Commitment Result:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(out);

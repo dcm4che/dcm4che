@@ -65,12 +65,13 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicMPPSSCP;
-import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -81,6 +82,8 @@ public class MppsSCP {
    private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.mppsscp.messages");
 
+   private static final Logger LOG = LoggerFactory.getLogger(MppsSCP.class);
+
    private final Device device = new Device("mppsscp");
    private final ApplicationEntity ae = new ApplicationEntity("*");
    private final Connection conn = new Connection();
@@ -89,6 +92,7 @@ public class MppsSCP {
    private IOD mppsNSetIOD;
 
    private final BasicMPPSSCP mppsSCP = new BasicMPPSSCP() {
+       
        @Override
        protected Attributes create(Association as, Attributes rq,
                Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
@@ -265,7 +269,7 @@ public class MppsSCP {
             throw new DicomServiceException(Status.DuplicateSOPinstance).
                 setUID(Tag.AffectedSOPInstanceUID, iuid);
         DicomOutputStream out = null;
-        DicomService.LOG.info("{}: M-WRITE {}", as, file);
+        LOG.info("{}: M-WRITE {}", as, file);
         try {
             out = new DicomOutputStream(file);
             out.writeDataset(
@@ -273,7 +277,7 @@ public class MppsSCP {
                             UID.ExplicitVRLittleEndian),
                     rqAttrs);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to store MPPS:", e);
+            LOG.warn(as + ": Failed to store MPPS:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(out);
@@ -296,14 +300,14 @@ public class MppsSCP {
         if (!file.exists())
             throw new DicomServiceException(Status.NoSuchObjectInstance).
                 setUID(Tag.AffectedSOPInstanceUID, iuid);
-        DicomService.LOG.info("{}: M-UPDATE {}", as, file);
+        LOG.info("{}: M-UPDATE {}", as, file);
         Attributes data;
         DicomInputStream in = null;
         try {
             in = new DicomInputStream(file);
             data = in.readDataset(-1, -1);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to read MPPS:", e);
+            LOG.warn(as + ": Failed to read MPPS:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(in);
@@ -319,7 +323,7 @@ public class MppsSCP {
                     Attributes.createFileMetaInformation(iuid, cuid, UID.ExplicitVRLittleEndian),
                     data);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to update MPPS:", e);
+            LOG.warn(as + ": Failed to update MPPS:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(out);

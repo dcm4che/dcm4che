@@ -50,7 +50,6 @@ import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.pdu.RoleSelection;
-import org.dcm4che.net.service.DicomService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,7 +76,7 @@ class SendStgCmtResult implements Runnable {
                 neventReport(as);
                 return;
             } catch (Exception e) {
-                DicomService.LOG.info(
+                DcmQRSCP.LOG.info(
                         "Failed to return Storage Commitment Result in same Association:", e);
             }
         }
@@ -87,7 +86,7 @@ class SendStgCmtResult implements Runnable {
             neventReport(diffAssoc);
             diffAssoc.release();
         } catch (Exception e) {
-            DicomService.LOG.error(
+            DcmQRSCP.LOG.error(
                     "Failed to return Storage Commitment Result in new Association:", e);
         }
     }

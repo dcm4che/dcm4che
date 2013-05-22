@@ -41,7 +41,6 @@ package org.dcm4che.tool.dcmqrscp;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -65,6 +64,9 @@ import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che.media.DicomDirReader;
 import org.dcm4che.media.DicomDirWriter;
 import org.dcm4che.media.RecordFactory;
@@ -77,6 +79,7 @@ import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.IncompatibleConnectionException;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.QueryOption;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
@@ -98,15 +101,20 @@ import org.dcm4che.net.service.RetrieveTask;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.tool.common.FilesetInfo;
 import org.dcm4che.util.AttributesFormat;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
 import org.dcm4che.util.TagUtils;
 import org.dcm4che.util.UIDUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DcmQRSCP {
+
+    static final Logger LOG = LoggerFactory.getLogger(DcmQRSCP.class);
 
     private static final String[] PATIENT_ROOT_LEVELS = {
         "PATIENT", "STUDY", "SERIES", "IMAGE" };
@@ -141,37 +149,32 @@ public class DcmQRSCP {
         }
 
         @Override
-        protected File getSpoolFile(Association as, Attributes fmi) {
-            return new File(storageDir, fmi.getString(Tag.MediaStorageSOPInstanceUID));
-        }
-
-        @Override
-        protected File getFinalFile(Association as, Attributes fmi, Attributes attrs,
-                File spoolFile) {
-            File dst = new File(storageDir, filePathFormat.format(attrs));
-            while (dst.exists())
-                dst = new File(dst.getParentFile(),
-                        TagUtils.toHexString(new Random().nextInt()));
-            return dst;
-        }
-
-        @Override
-        protected void process(Association as, Attributes fmi, Attributes attrs,
-                File file, MessageDigest digest, Attributes rsp)
-                throws DicomServiceException {
-             try {
+        protected void store(Association as, PresentationContext pc,
+                Attributes rq, PDVInputStream data, Attributes rsp)
+                throws IOException {
+            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            String tsuid = pc.getTransferSyntax();
+            File file = new File(storageDir, iuid);
+            try {
+                Attributes fmi = as.createFileMetaInformation(iuid, cuid, tsuid);
+                storeTo(as, fmi, data, file);
+                Attributes attrs = parse(file);
+                File dest = getDestinationFile(attrs);
+                renameTo(as, file, dest);
+                file = dest;
                 if (addDicomDirRecords(as, attrs, fmi, file)) {
                     LOG.info("{}: M-UPDATE {}", as, dicomDir);
                 } else {
                     LOG.info("{}: ignore received object", as);
-                    delete(as, file);
+                    deleteFile(as, file);
                 }
-            } catch (IOException e) {
-                LOG.warn(as + ": Failed to M-UPDATE " + dicomDir, e);
-                throw new DicomServiceException(Status.OutOfResources, e);
+                
+            } catch (Exception e) {
+                deleteFile(as, file);
+                throw new DicomServiceException(Status.ProcessingFailure, e);
             }
         }
-
     };
 
     private final class StgCmtSCPImpl extends DicomService {
@@ -347,6 +350,53 @@ public class DcmQRSCP {
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
         device.setDimseRQHandler(createServiceRegistry());
+    }
+
+    private void storeTo(Association as, Attributes fmi, 
+            PDVInputStream data, File file) throws IOException  {
+        LOG.info("{}: M-WRITE {}", as, file);
+        file.getParentFile().mkdirs();
+        DicomOutputStream out = new DicomOutputStream(file);
+        try {
+            out.writeFileMetaInformation(fmi);
+            data.copyTo(out);
+        } finally {
+            SafeClose.close(out);
+        }
+    }
+
+    private File getDestinationFile(Attributes attrs) {
+        File file = new File(storageDir, filePathFormat.format(attrs));
+        while (file.exists())
+            file = new File(file.getParentFile(),
+                    TagUtils.toHexString(new Random().nextInt()));
+        return file;
+    }
+
+    private static void renameTo(Association as, File from, File dest)
+            throws IOException {
+        LOG.info("{}: M-RENAME {}", new Object[]{ as, from, dest });
+        dest.getParentFile().mkdirs();
+        if (!from.renameTo(dest))
+            throw new IOException("Failed to rename " + from + " to " + dest);
+    }
+
+    private static Attributes parse(File file) throws IOException {
+        DicomInputStream in = new DicomInputStream(file);
+        try {
+            in.setIncludeBulkData(IncludeBulkData.NO);
+            return in.readDataset(-1, Tag.PixelData);
+        } finally {
+            SafeClose.close(in);
+        }
+    }
+
+
+    private static void deleteFile(Association as, File file) {
+        if (file.delete())
+            LOG.info("{}: M-DELETE {}", as, file);
+        else
+            LOG.warn("{}: M-DELETE {} failed!", as, file);
     }
 
     private DicomServiceRegistry createServiceRegistry() {
@@ -837,7 +887,7 @@ public class DcmQRSCP {
                 patRec = ddr.findNextPatientRecord(patRec);
             }
         } catch (IOException e) {
-            DicomService.LOG.info("Failed to M-READ " + dicomDir, e);
+            LOG.info("Failed to M-READ " + dicomDir, e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         }
         for (Map.Entry<String, String> entry : map.entrySet()) {

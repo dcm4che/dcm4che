@@ -38,7 +38,6 @@
 
 package org.dcm4che.net.service;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
@@ -48,16 +47,12 @@ import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.PresentationContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class DicomService implements DimseRQHandler {
-
-    public static final Logger LOG = LoggerFactory.getLogger(DicomService.class);
 
     private final String[] sopClasses;
 
@@ -93,27 +88,6 @@ public class DicomService implements DimseRQHandler {
     public void onDimseRQ(Association as, PresentationContext pc,
             Dimse dimse, Attributes cmd, Attributes data) throws IOException {
         throw new DicomServiceException(Status.UnrecognizedOperation);
-    }
-
-    protected boolean delete(Association as, File file) {
-        boolean b;
-        if (b = file.delete())
-            LOG.info("{}: M-DELETE {}", as, file);
-        else
-            LOG.warn("{}: Failed to M-DELETE {}", as, file);
-        return b;
-    }
-
-
-    protected boolean rename(Association as, File src, File dest) {
-        boolean b;
-        if (b = src.renameTo(dest))
-            LOG.info("{}: M-RENAME {} to {}",
-                    new Object[] { as, src, dest });
-        else
-            LOG.warn("{}: Failed to M-RENAME {} to {}",
-                    new Object[] { as, src, dest });
-        return b;
     }
 
 }

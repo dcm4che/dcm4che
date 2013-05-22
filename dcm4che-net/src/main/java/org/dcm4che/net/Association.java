@@ -700,6 +700,24 @@ public class Association {
         encoder.writeDIMSE(pc, cmd, null);
     }
 
+    public boolean tryWriteDimseRSP(PresentationContext pc, Attributes cmd) {
+        return tryWriteDimseRSP(pc, cmd, null);
+    }
+
+    public boolean tryWriteDimseRSP(PresentationContext pc, Attributes cmd, 
+            Attributes data) {
+        try {
+            writeDimseRSP(pc, cmd, data);
+            return true;
+        } catch (IOException e) {
+            LOG.warn("{} << {} failed: {}", new Object[] {
+                        this,
+                        Dimse.valueOf(cmd.getInt(Tag.CommandField, 0)),
+                        e.getMessage() });
+            return false;
+        }
+    }
+
     public void writeDimseRSP(PresentationContext pc, Attributes cmd)
             throws IOException {
         writeDimseRSP(pc, cmd, null);
@@ -1178,5 +1196,21 @@ public class Association {
         return i1 == 0 ? i2 : i2 == 0 ? i1 : Math.min(i1, i2);
     }
 
+    public Attributes createFileMetaInformation(String iuid, String cuid,
+            String tsuid) {
+        Attributes fmi = new Attributes(7);
+        fmi.setBytes(Tag.FileMetaInformationVersion, VR.OB, new byte[] { 0, 1 });
+        fmi.setString(Tag.MediaStorageSOPClassUID, VR.UI, cuid);
+        fmi.setString(Tag.MediaStorageSOPInstanceUID, VR.UI, iuid);
+        fmi.setString(Tag.TransferSyntaxUID, VR.UI, tsuid);
+        fmi.setString(Tag.ImplementationClassUID, VR.UI,
+                getRemoteImplClassUID());
+        String versionName = getRemoteImplVersionName();
+        if (versionName != null)
+            fmi.setString(Tag.ImplementationVersionName, VR.SH, versionName);
+        fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH,
+                getRemoteAET());
+        return fmi;
+    }
 }
 

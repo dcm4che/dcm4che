@@ -43,7 +43,6 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Status;
@@ -68,11 +67,8 @@ public class BasicCEchoSCP extends DicomService {
             Dimse dimse, Attributes cmd, Attributes data) throws IOException {
         if (dimse != Dimse.C_ECHO_RQ)
             throw new DicomServiceException(Status.UnrecognizedOperation);
-        try {
-            as.writeDimseRSP(pc, Commands.mkEchoRSP(cmd, Status.Success), null);
-        } catch (AssociationStateException e) {
-            LOG.warn("{} << C-ECHO-RSP failed: {}", as, e.getMessage());
-        }
+
+        as.tryWriteDimseRSP(pc, Commands.mkEchoRSP(cmd, Status.Success));
     }
 
 }

@@ -53,11 +53,15 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
+import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.PresentationContext;
 import org.dcm4che.net.service.BasicCEchoSCP;
@@ -66,13 +70,18 @@ import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.AttributesFormat;
+import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class StoreSCP {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StoreSCP.class);
 
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.storescp.messages");
@@ -87,35 +96,30 @@ public class StoreSCP {
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
-        protected void store(Association as, PresentationContext pc, Attributes rq,
-                PDVInputStream data, Attributes rsp)
+        protected void store(Association as, PresentationContext pc,
+                Attributes rq, PDVInputStream data, Attributes rsp)
                 throws IOException {
             rsp.setInt(Tag.Status, VR.US, status);
-            if (storageDir != null)
-                super.store(as, pc, rq, data, rsp);
+            if (storageDir == null)
+                return;
+
+            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            String tsuid = pc.getTransferSyntax();
+            File file = new File(storageDir, iuid + PART_EXT);
+            try {
+                storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
+                        data, file);
+                renameTo(as, file, new File(storageDir,
+                        filePathFormat == null
+                            ? iuid
+                            : filePathFormat.format(parse(file))));
+            } catch (Exception e) {
+                deleteFile(as, file);
+                throw new DicomServiceException(Status.ProcessingFailure, e);
+            }
         }
 
-        @Override
-        protected File getSpoolFile(Association as, Attributes fmi)
-                throws DicomServiceException {
-            return new File(storageDir,
-                    fmi.getString(Tag.MediaStorageSOPInstanceUID) + PART_EXT);
-        }
-
-        @Override
-        protected Attributes parse(Association as, File file)
-                throws DicomServiceException {
-            return (filePathFormat != null) ? super.parse(as, file) : null;
-        }
-
-        @Override
-        protected File getFinalFile(Association as, Attributes fmi,
-                Attributes attrs, File spoolFile) {
-            return new File(storageDir,
-                    (filePathFormat != null)
-                        ? filePathFormat.format(attrs)
-                        : fmi.getString(Tag.MediaStorageSOPInstanceUID));
-        }
     };
 
     public StoreSCP() throws IOException {
@@ -124,6 +128,44 @@ public class StoreSCP {
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
+    }
+
+    private void storeTo(Association as, Attributes fmi, 
+            PDVInputStream data, File file) throws IOException  {
+        LOG.info("{}: M-WRITE {}", as, file);
+        file.getParentFile().mkdirs();
+        DicomOutputStream out = new DicomOutputStream(file);
+        try {
+            out.writeFileMetaInformation(fmi);
+            data.copyTo(out);
+        } finally {
+            SafeClose.close(out);
+        }
+    }
+
+    private static void renameTo(Association as, File from, File dest)
+            throws IOException {
+        LOG.info("{}: M-RENAME {}", new Object[]{ as, from, dest });
+        dest.getParentFile().mkdirs();
+        if (!from.renameTo(dest))
+            throw new IOException("Failed to rename " + from + " to " + dest);
+    }
+
+    private static Attributes parse(File file) throws IOException {
+        DicomInputStream in = new DicomInputStream(file);
+        try {
+            in.setIncludeBulkData(IncludeBulkData.NO);
+            return in.readDataset(-1, Tag.PixelData);
+        } finally {
+            SafeClose.close(in);
+        }
+    }
+
+    private static void deleteFile(Association as, File file) {
+        if (file.delete())
+            LOG.info("{}: M-DELETE {}", as, file);
+        else
+            LOG.warn("{}: M-DELETE {} failed!", as, file);
     }
 
     private DicomServiceRegistry createServiceRegistry() {

@@ -61,6 +61,7 @@ import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.io.DicomInputStream;
+import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.Connection;
@@ -68,6 +69,7 @@ import org.dcm4che.net.Device;
 import org.dcm4che.net.DimseRSPHandler;
 import org.dcm4che.net.IncompatibleConnectionException;
 import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.Status;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
@@ -78,12 +80,16 @@ import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class GetSCU {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(GetSCU.class); 
 
     private static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
@@ -130,15 +136,22 @@ public class GetSCU {
         protected void store(Association as, PresentationContext pc, Attributes rq,
                 PDVInputStream data, Attributes rsp)
                 throws IOException {
-            if (storageDir != null)
-                super.store(as, pc, rq, data, rsp);
+            if (storageDir == null)
+                return;
+
+            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            String cuid = rq.getString(Tag.AffectedSOPClassUID);
+            String tsuid = pc.getTransferSyntax();
+            File file = new File(storageDir, iuid );
+            try {
+                storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
+                        data, file);
+            } catch (Exception e) {
+                throw new DicomServiceException(Status.ProcessingFailure, e);
+            }
+
         }
 
-        @Override
-        protected File getSpoolFile(Association as, Attributes fmi)
-                throws DicomServiceException {
-            return new File(storageDir, fmi.getString(Tag.MediaStorageSOPInstanceUID));
-        }
 
     };
 
@@ -147,6 +160,19 @@ public class GetSCU {
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
         device.setDimseRQHandler(createServiceRegistry());
+    }
+
+    private void storeTo(Association as, Attributes fmi, 
+            PDVInputStream data, File file) throws IOException  {
+        LOG.info("{}: M-WRITE {}", as, file);
+        file.getParentFile().mkdirs();
+        DicomOutputStream out = new DicomOutputStream(file);
+        try {
+            out.writeFileMetaInformation(fmi);
+            data.copyTo(out);
+        } finally {
+            SafeClose.close(out);
+        }
     }
 
     private DicomServiceRegistry createServiceRegistry() {

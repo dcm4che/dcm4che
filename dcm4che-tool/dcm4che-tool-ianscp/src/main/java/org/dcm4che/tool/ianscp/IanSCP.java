@@ -56,7 +56,6 @@ import org.dcm4che.data.UID;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.net.ApplicationEntity;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.Device;
@@ -71,12 +70,16 @@ import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.tool.common.CLIUtils;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class IanSCP extends Device {
+
+   private static final Logger LOG = LoggerFactory.getLogger(IanSCP.class);
 
    private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che.tool.ianscp.messages");
@@ -95,13 +98,9 @@ public class IanSCP extends Device {
                     throws IOException {
                 if (dimse != Dimse.N_CREATE_RQ)
                     throw new DicomServiceException(Status.UnrecognizedOperation);
-                try {
-                    Attributes rsp = Commands.mkNCreateRSP(cmd, status);
-                    Attributes rspAttrs = IanSCP.this.create(as, cmd, data);
-                    as.writeDimseRSP(pc, rsp, rspAttrs);
-                } catch (AssociationStateException e) {
-                    LOG.warn("{} << N-CREATE-RSP failed: {}", as, e.getMessage());
-                }
+                Attributes rsp = Commands.mkNCreateRSP(cmd, status);
+                Attributes rspAttrs = IanSCP.this.create(as, cmd, data);
+                as.tryWriteDimseRSP(pc, rsp, rspAttrs);
             }
    };
 
@@ -239,7 +238,7 @@ public class IanSCP extends Device {
             throw new DicomServiceException(Status.DuplicateSOPinstance).
                 setUID(Tag.AffectedSOPInstanceUID, iuid);
         DicomOutputStream out = null;
-        DicomService.LOG.info("{}: M-WRITE {}", as, file);
+        LOG.info("{}: M-WRITE {}", as, file);
         try {
             out = new DicomOutputStream(file);
             out.writeDataset(
@@ -247,7 +246,7 @@ public class IanSCP extends Device {
                             UID.ExplicitVRLittleEndian),
                     rqAttrs);
         } catch (IOException e) {
-            DicomService.LOG.warn(as + ": Failed to store Instance Available Notification:", e);
+            LOG.warn(as + ": Failed to store Instance Available Notification:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
         } finally {
             SafeClose.close(out);

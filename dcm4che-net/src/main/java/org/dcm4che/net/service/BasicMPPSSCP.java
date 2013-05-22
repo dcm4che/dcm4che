@@ -43,7 +43,6 @@ import java.io.IOException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Commands;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
@@ -78,11 +77,7 @@ public class BasicMPPSSCP extends DicomService {
             Attributes rq, Attributes rqAttrs) throws IOException {
         Attributes rsp = Commands.mkNCreateRSP(rq, Status.Success);
         Attributes rspAttrs = create(as, rq, rqAttrs, rsp);
-        try {
-            as.writeDimseRSP(pc, rsp, rspAttrs);
-        } catch (AssociationStateException e) {
-            LOG.warn("{} << N-CREATE-RSP failed: {}", as, e.getMessage());
-        }
+        as.tryWriteDimseRSP(pc, rsp, rspAttrs);
     }
 
     protected Attributes create(Association as, Attributes rq,
@@ -94,11 +89,7 @@ public class BasicMPPSSCP extends DicomService {
             Attributes rq, Attributes rqAttrs) throws IOException {
         Attributes rsp = Commands.mkNSetRSP(rq, Status.Success);
         Attributes rspAttrs = set(as, rq, rqAttrs, rsp);
-        try {
-            as.writeDimseRSP(pc, rsp, rspAttrs);
-        } catch (AssociationStateException e) {
-            LOG.warn("{} << N-SET-RSP failed: {}", as, e.getMessage());
-        }
+        as.tryWriteDimseRSP(pc, rsp, rspAttrs);
     }
 
     protected Attributes set(Association as, Attributes rq, Attributes rqAttrs,

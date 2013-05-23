@@ -94,4 +94,6 @@ public interface DicomConfiguration extends Closeable {
     X509Certificate[] findCertificates(String dn) throws ConfigurationException;
 
     void close();
+
+    void sync() throws ConfigurationException;
 }

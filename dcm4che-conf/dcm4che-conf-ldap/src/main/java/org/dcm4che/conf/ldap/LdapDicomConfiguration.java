@@ -1754,4 +1754,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
         return mods;
     }
+
+    @Override
+    public void sync() throws ConfigurationException {
+        // NOOP
+    }
 }

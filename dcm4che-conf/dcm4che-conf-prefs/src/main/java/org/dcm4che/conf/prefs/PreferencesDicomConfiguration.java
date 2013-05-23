@@ -1462,4 +1462,13 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         // NOOP
     }
 
+    @Override
+    public void sync() throws ConfigurationException {
+        try {
+            rootPrefs.sync();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
 }

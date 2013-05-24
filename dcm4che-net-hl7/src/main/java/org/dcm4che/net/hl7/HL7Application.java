@@ -43,10 +43,12 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Segment;
@@ -74,8 +76,8 @@ public class HL7Application implements Serializable {
     private final LinkedHashSet<String> acceptedMessageTypes =
             new LinkedHashSet<String>();
     private final List<Connection> conns = new ArrayList<Connection>(1);
-    private final List<HL7ApplicationExtension> extensions =
-            new ArrayList<HL7ApplicationExtension>();
+    private final Map<Class<? extends HL7ApplicationExtension>,HL7ApplicationExtension> extensions =
+            new HashMap<Class<? extends HL7ApplicationExtension>,HL7ApplicationExtension>();
     private transient HL7MessageListener hl7MessageListener;
 
     public HL7Application(String name) {
@@ -270,16 +272,14 @@ public class HL7Application implements Serializable {
     }
 
     private void reconfigureHL7ApplicationExtensions(HL7Application from) {
-        for (Iterator<HL7ApplicationExtension> it = extensions.iterator();
-                it.hasNext();) {
-            HL7ApplicationExtension ext = it.next();
-            if (from.getHL7ApplicationExtension(ext.getClass()) == null) {
+        for (Iterator<Class<? extends HL7ApplicationExtension>> it =
+                extensions.keySet().iterator(); it.hasNext();) {
+            if (!from.extensions.containsKey(it.next()))
                 it.remove();
-            }
         }
-        for (HL7ApplicationExtension src : from.extensions) {
+        for (HL7ApplicationExtension src : from.extensions.values()) {
             Class<? extends HL7ApplicationExtension> clazz = src.getClass();
-            HL7ApplicationExtension ext = getHL7ApplicationExtension(clazz);
+            HL7ApplicationExtension ext = extensions.get(clazz);
             if (ext == null)
                 try {
                     addHL7ApplicationExtension(ext = clazz.newInstance());
@@ -299,28 +299,29 @@ public class HL7Application implements Serializable {
     }
 
     public void addHL7ApplicationExtension(HL7ApplicationExtension ext) {
+        Class<? extends HL7ApplicationExtension> clazz = ext.getClass();
+        if (extensions.containsKey(clazz))
+            throw new IllegalStateException(
+                    "already contains AE Extension:" + clazz);
+
         ext.setHL7Application(this);
-        extensions.add(ext);
+        extensions.put(clazz, ext);
     }
 
     public boolean removeHL7ApplicationExtension(HL7ApplicationExtension ext) {
-        if (!extensions.remove(ext))
+        if (extensions.remove(ext.getClass()) == null)
             return false;
 
         ext.setHL7Application(null);
         return true;
     }
 
-    public List<HL7ApplicationExtension> listHL7ApplicationExtensions() {
-        return Collections.unmodifiableList(extensions);
+    public Collection<HL7ApplicationExtension> listHL7ApplicationExtensions() {
+        return extensions.values();
     }
 
     @SuppressWarnings("unchecked")
     public <T extends HL7ApplicationExtension> T getHL7ApplicationExtension(Class<T> clazz) {
-        for (HL7ApplicationExtension ext : extensions)
-            if (clazz.isAssignableFrom(ext.getClass()))
-                return (T) ext;
-
-        return null;
+        return (T) extensions.get(clazz);
     }
 }

@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -120,7 +121,8 @@ public class Device implements Serializable {
     private final List<Connection> conns = new ArrayList<Connection>();
     private final LinkedHashMap<String, ApplicationEntity> aes = 
             new LinkedHashMap<String, ApplicationEntity>();
-    private final List<DeviceExtension> extensions = new ArrayList<DeviceExtension>();
+    private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
+            new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;
@@ -753,7 +755,7 @@ public class Device implements Serializable {
                 throw new IllegalStateException(conn + " used by AE: " + 
                         ae.getAETitle());
 
-        for (DeviceExtension ext : extensions)
+        for (DeviceExtension ext : extensions.values())
             ext.verifyNotUsed(conn);
 
         if (!conns.remove(conn))
@@ -794,12 +796,17 @@ public class Device implements Serializable {
     }
 
     public void addDeviceExtension(DeviceExtension ext) {
+        Class<? extends DeviceExtension> clazz = ext.getClass();
+        if (extensions.containsKey(clazz))
+            throw new IllegalStateException(
+                    "already contains Device Extension:" + clazz);
+
         ext.setDevice(this);
-        extensions.add(ext);
+        extensions.put(clazz, ext);
     }
 
     public boolean removeDeviceExtension(DeviceExtension ext) {
-        if (!extensions.remove(ext))
+        if (extensions.remove(ext.getClass()) == null)
             return false;
 
         ext.setDevice(null);
@@ -1127,16 +1134,14 @@ public class Device implements Serializable {
     }
 
     private void reconfigureDeviceExtensions(Device from) {
-        for (Iterator<DeviceExtension> it = extensions.iterator();
-                it.hasNext();) {
-            DeviceExtension ext = it.next();
-            if (from.getDeviceExtension(ext.getClass()) == null) {
+        for (Iterator<Class<? extends DeviceExtension>> it =
+                extensions.keySet().iterator(); it.hasNext();) {
+            if (!from.extensions.containsKey(it.next()))
                 it.remove();
-            }
         }
-        for (DeviceExtension src : from.extensions) {
+        for (DeviceExtension src : from.extensions.values()) {
             Class<? extends DeviceExtension> clazz = src.getClass();
-            DeviceExtension ext = getDeviceExtension(clazz);
+            DeviceExtension ext = extensions.get(clazz);
             if (ext == null)
                 try {
                     addDeviceExtension(ext = clazz.newInstance());
@@ -1148,16 +1153,13 @@ public class Device implements Serializable {
         }
     }
 
-    public List<DeviceExtension> listDeviceExtensions() {
-        return Collections.unmodifiableList(extensions);
+    public Collection<DeviceExtension> listDeviceExtensions() {
+        return extensions.values();
     }
 
     @SuppressWarnings("unchecked")
     public <T extends DeviceExtension> T getDeviceExtension(Class<T> clazz) {
-        for (DeviceExtension ext : extensions)
-            if (clazz.isAssignableFrom(ext.getClass()))
-                return (T) ext;
-        return null;
+        return (T) extensions.get(clazz);
     }
 
 }

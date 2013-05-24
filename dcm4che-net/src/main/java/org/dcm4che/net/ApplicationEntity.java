@@ -44,7 +44,6 @@ import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,8 +100,8 @@ public class ApplicationEntity implements Serializable {
             new HashMap<String, TransferCapability>();
     private final HashMap<String, TransferCapability> scpTCs =
             new HashMap<String, TransferCapability>();
-    private final List<AEExtension> extensions =
-            new ArrayList<AEExtension>();
+    private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
+            new HashMap<Class<? extends AEExtension>,AEExtension>();
 
     private transient DimseRQHandler dimseRQHandler;
 
@@ -613,16 +612,14 @@ public class ApplicationEntity implements Serializable {
     }
 
     private void reconfigureAEExtensions(ApplicationEntity from) {
-        for (Iterator<AEExtension> it = extensions.iterator();
-                it.hasNext();) {
-            AEExtension ext = it.next();
-            if (from.getAEExtension(ext.getClass()) == null) {
+        for (Iterator<Class<? extends AEExtension>> it =
+                extensions.keySet().iterator(); it.hasNext();) {
+            if (!from.extensions.containsKey(it.next()))
                 it.remove();
-            }
         }
-        for (AEExtension src : from.extensions) {
+        for (AEExtension src : from.extensions.values()) {
             Class<? extends AEExtension> clazz = src.getClass();
-            AEExtension ext = getAEExtension(clazz);
+            AEExtension ext = extensions.get(clazz);
             if (ext == null)
                 try {
                     addAEExtension(ext = clazz.newInstance());
@@ -654,27 +651,29 @@ public class ApplicationEntity implements Serializable {
     }
 
     public void addAEExtension(AEExtension ext) {
+        Class<? extends AEExtension> clazz = ext.getClass();
+        if (extensions.containsKey(clazz))
+            throw new IllegalStateException(
+                    "already contains AE Extension:" + clazz);
+
         ext.setApplicationEntity(this);
-        extensions.add(ext);
+        extensions.put(clazz, ext);
     }
 
     public boolean removeAEExtension(AEExtension ext) {
-        if (!extensions.remove(ext))
+        if (extensions.remove(ext.getClass()) == null)
             return false;
 
         ext.setApplicationEntity(null);
         return true;
     }
 
-    public List<AEExtension> listAEExtensions() {
-        return Collections.unmodifiableList(extensions);
+    public Collection<AEExtension> listAEExtensions() {
+        return extensions.values();
     }
 
     @SuppressWarnings("unchecked")
     public <T extends AEExtension> T getAEExtension(Class<T> clazz) {
-        for (AEExtension ext : extensions)
-            if (clazz.isAssignableFrom(ext.getClass()))
-                return (T) ext;
-        return null;
+        return (T) extensions.get(clazz);
     }
 }

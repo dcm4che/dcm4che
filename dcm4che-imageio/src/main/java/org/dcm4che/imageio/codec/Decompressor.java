@@ -93,7 +93,6 @@ public class Decompressor {
     protected final TransferSyntaxType tstype;
     protected Fragments pixeldataFragments;
     protected File file;
-    protected BufferedImage destination;
     protected int rows;
     protected int cols;
     protected int samples;
@@ -105,6 +104,7 @@ public class Decompressor {
     protected int frames;
     protected int frameLength;
     protected int length;
+    protected BufferedImage bi;
     protected ImageReader decompressor;
     protected ImageReadParam readParam;
     protected PatchJPEGLS patchJpegLS;
@@ -156,6 +156,7 @@ public class Decompressor {
                         "Unsupported Transfer Syntax: " + tsuid);
 
             this.decompressor = ImageReaderFactory.getImageReader(param);
+            LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJpegLS = param.patchJPEGLS;
         }
@@ -172,8 +173,9 @@ public class Decompressor {
         if (decompressor == null)
             return false;
  
-        adjustDestination(bitsStored, signed);
-        adjustAttributes();
+        if (tstype == TransferSyntaxType.RLE)
+            bi = createBufferedImage(bitsStored, true, signed);
+
         dataset.setValue(Tag.PixelData, VR.OW, new Value() {
 
             @Override
@@ -203,34 +205,21 @@ public class Decompressor {
                 return (length + 1) & ~1;
             }
         });
-
-        return true;
-    }
-
-    protected void adjustAttributes() {
-        if (decompressor != null && samples > 1) {
+        if (samples > 1) {
             dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
                     pmi.decompress().toString());
 
             dataset.setInt(Tag.PlanarConfiguration, VR.US,
                     tstype.getPlanarConfiguration());
         }
-    }
-
-    protected void adjustDestination(int bitsStored, boolean signed) {
-        if (destination == null) {
-            if (decompressor == null)
-                destination = createBufferedImage(bitsStored, banded, signed);
-            else if (tstype == TransferSyntaxType.RLE)
-                destination = createBufferedImage(bitsStored, true, signed);
-        }
+        return true;
     }
 
     public static boolean decompress(Attributes dataset, String tsuid) {
         return new Decompressor(dataset, tsuid).decompress();
     }
 
-    private BufferedImage createBufferedImage(int bitsStored,
+    protected BufferedImage createBufferedImage(int bitsStored,
             boolean banded, boolean signed) {
         int dataType = bitsAllocated > 8 
                 ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
@@ -302,16 +291,16 @@ public class Decompressor {
         decompressor.setInput(patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
                 : siis);
-        readParam.setDestination(destination);
+        readParam.setDestination(bi);
         long start = System.currentTimeMillis();
-        destination = decompressor.read(0, readParam);
+        bi = decompressor.read(0, readParam);
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Decompressed frame #{} 1:{} in {} ms", 
                     new Object[] {index + 1,
-                    (float) sizeOf(destination) / siis.getStreamPosition(),
+                    (float) sizeOf(bi) / siis.getStreamPosition(),
                     end - start });
-        return destination;
+        return bi;
     }
 
     static int sizeOf(BufferedImage bi) {

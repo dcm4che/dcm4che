@@ -50,8 +50,8 @@ public class Property implements Serializable {
 
     private static final long serialVersionUID = 6618989493749845502L;
 
-    private String name;
-    private Object value;
+    private final String name;
+    private final Object value;
 
     public Property(String name, Object value) {
         if (name == null)
@@ -72,6 +72,14 @@ public class Property implements Serializable {
         int endParamName = s.indexOf('=');
         name = s.substring(0, endParamName);
         value = valueOf(s.substring(endParamName+1));
+    }
+
+    public final String getName() {
+        return name;
+    }
+
+    public final Object getValue() {
+        return value;
     }
 
     private static Object valueOf(String s) {

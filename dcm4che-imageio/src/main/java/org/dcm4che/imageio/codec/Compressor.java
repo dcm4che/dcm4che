@@ -38,10 +38,12 @@
 package org.dcm4che.imageio.codec;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
@@ -50,6 +52,8 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 
 import javax.imageio.IIOImage;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
@@ -82,14 +86,20 @@ public class Compressor extends Decompressor implements Closeable {
 
     private BulkDataLocator pixeldata;
     private ImageWriter compressor;
+    private ImageReader verifier;
     private PatchJPEGLS patchJPEGLS;
     private ImageWriteParam compressParam;
     private ImageInputStream iis;
     private IOException ex;
     private int[] embeddedOverlays;
+    private int maxPixelValueError = -1;
+    private int verifyBlockSize = 1;
+    private BufferedImage bi2;
 
-    public Compressor(Attributes dataset, String tsuid) {
-        super(dataset, tsuid);
+    private ImageReadParam verifyParam;
+
+    public Compressor(Attributes dataset, String from) {
+        super(dataset, from);
 
         Object pixeldata = dataset.getValue(Tag.PixelData);
         if (pixeldata == null)
@@ -124,21 +134,43 @@ public class Compressor extends Decompressor implements Closeable {
                     "Unsupported Transfer Syntax: " + tsuid);
 
         this.compressor = ImageWriterFactory.getImageWriter(param);
+        LOG.debug("Compressor: {}", compressor.getClass().getName());
         this.patchJPEGLS = param.patchJPEGLS;
 
         this.compressParam = compressor.getDefaultWriteParam();
-        Property[] imageWriteParams = param.getImageWriteParams();
-        if (imageWriteParams.length != 0 || params.length != 0)
-            compressParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        for (Property property : imageWriteParams)
-            property.setAt(compressParam);
-        for (Property property : params)
-            property.setAt(compressParam);
+        int count = 0;
+        for (Property property : cat(param.getImageWriteParams(), params)) {
+            String name = property.getName();
+            if (name.equals("maxPixelValueError"))
+                this.maxPixelValueError = ((Number) property.getValue()).intValue();
+            else if (name.equals("verifyBlockSize"))
+                this.verifyBlockSize = ((Number) property.getValue()).intValue();
+            else {
+                if (count++ == 0)
+                    compressParam.setCompressionMode(
+                            ImageWriteParam.MODE_EXPLICIT);
+                property.setAt(compressParam);
+            }
+        }
+
+        if (maxPixelValueError >= 0) {
+            ImageReaderFactory.ImageReaderParam readerParam =
+                    ImageReaderFactory.getImageReaderParam(tsuid);
+            if (readerParam == null)
+                throw new UnsupportedOperationException(
+                        "Unsupported Transfer Syntax: " + tsuid);
+
+            this.verifier = ImageReaderFactory.getImageReader(readerParam);
+            this.verifyParam = verifier.getDefaultReadParam();
+            LOG.debug("Verifier: {}", verifier.getClass().getName());
+        }
 
         TransferSyntaxType tstype = TransferSyntaxType.forUID(tsuid);
-        adjustDestination(Math.min(bitsStored, tstype.getMaxBitsStored()),
-                signed && tstype.canEncodeSigned());
-        adjustAttributes(tsuid, tstype.getPlanarConfiguration());
+        if (decompressor == null || super.tstype == TransferSyntaxType.RLE)
+            bi = createBufferedImage(
+                    Math.min(bitsStored, tstype.getMaxBitsStored()),
+                    super.tstype == TransferSyntaxType.RLE || banded,
+                    signed && tstype.canEncodeSigned());
         Fragments compressedPixeldata = 
                 dataset.newFragments(Tag.PixelData, VR.OB, frames + 1);
         compressedPixeldata.add(Value.NULL);
@@ -148,6 +180,13 @@ public class Compressor extends Decompressor implements Closeable {
                 frame.compress();
             compressedPixeldata.add(frame);
         }
+        if (samples > 1) {
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
+                    (decompressor != null ? pmi.decompress() : pmi)
+                            .compress(tsuid).toString());
+            dataset.setInt(Tag.PlanarConfiguration, VR.US, 
+                    tstype.getPlanarConfiguration());
+        }
         for (int gg0000 : embeddedOverlays) {
             dataset.setInt(Tag.OverlayBitsAllocated | gg0000, VR.US, 1);
             dataset.setInt(Tag.OverlayBitPosition | gg0000, VR.US, 0);
@@ -155,14 +194,15 @@ public class Compressor extends Decompressor implements Closeable {
         return true;
     }
 
-    private void adjustAttributes(String tsuid, int planarConfiguration) {
-        if (samples > 1) {
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS, 
-                    (decompressor != null ? pmi.decompress() : pmi)
-                            .compress(tsuid).toString());
- 
-            dataset.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
-        }
+    private Property[] cat(Property[] a, Property[] b) {
+        if (a.length == 0)
+            return b;
+        if (b.length == 0)
+            return a;
+        Property[] c = new Property[a.length + b.length];
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
+        return c;
     }
 
     public void close() {
@@ -178,7 +218,11 @@ public class Compressor extends Decompressor implements Closeable {
         if (compressor != null)
             compressor.dispose();
 
+        if (verifier != null)
+            verifier.dispose();
+
         compressor = null;
+        verifier = null;
     }
 
     private class CompressedFrame implements Value {
@@ -227,7 +271,7 @@ public class Compressor extends Decompressor implements Closeable {
             compress();
             try {
                 cacheout.set(out);
-                cache.flush();
+                cache.flushBefore(cache.length());
                 if ((cache.length() & 1) != 0)
                     out.write(0);
             } finally {
@@ -249,7 +293,14 @@ public class Compressor extends Decompressor implements Closeable {
                 Compressor.this.extractEmbeddedOverlays(frameIndex, bi);
                 if (bitsStored < bitsAllocated)
                     Compressor.this.nullifyUnusedBits(bitsStored, bi);
-                cache = new MemoryCacheImageOutputStream(cacheout);
+                cache = new MemoryCacheImageOutputStream(cacheout) {
+
+                    @Override
+                    public void flush() throws IOException {
+                        // defer flush to writeTo()
+                        LOG.debug("Ignore invoke of MemoryCacheImageOutputStream.flush()");
+                    }
+                };
                 compressor.setOutput(patchJPEGLS != null
                         ? new PatchJPEGLSImageOutputStream(cache, patchJPEGLS)
                         : cache);
@@ -261,6 +312,7 @@ public class Compressor extends Decompressor implements Closeable {
                             new Object[] {frameIndex + 1,
                             (float) sizeOf(bi) / cache.length(),
                             end - start });
+                Compressor.this.verify(cache, frameIndex);
             } catch (IOException ex) {
                 cache = null;
                 Compressor.this.ex = ex;
@@ -292,7 +344,7 @@ public class Compressor extends Decompressor implements Closeable {
                 ? ByteOrder.BIG_ENDIAN
                 : ByteOrder.LITTLE_ENDIAN);
         iis.seek(pixeldata.offset + frameLength * frameIndex);
-        DataBuffer db = destination.getRaster().getDataBuffer();
+        DataBuffer db = bi.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
             for (byte[] bs : ((DataBufferByte) db).getBankData())
@@ -308,7 +360,112 @@ public class Compressor extends Decompressor implements Closeable {
             throw new UnsupportedOperationException(
                     "Unsupported Datatype: " + db.getDataType());
         }
-        return destination;
+        return bi;
+    }
+
+    private void verify(MemoryCacheImageOutputStream cache, int index)
+            throws IOException {
+        if (verifier == null)
+            return;
+
+        cache.seek(0);
+        verifier.setInput(cache);
+        verifyParam.setDestination(bi2);
+        long start = System.currentTimeMillis();
+        bi2 = verifier.read(0, verifyParam);
+        int maxDiff = maxDiff(bi.getRaster(), bi2.getRaster());
+        long end = System.currentTimeMillis();
+        if (LOG.isDebugEnabled())
+            LOG.debug("Verified compressed frame #{} in {} ms - max pixel value error: {}",
+                    new Object[] { index + 1, end - start, maxDiff });
+        if (maxDiff > maxPixelValueError)
+            throw new CompressionVerificationException(maxDiff);
+
+    }
+
+    private int maxDiff(WritableRaster raster, WritableRaster raster2) {
+        ComponentSampleModel csm = 
+                (ComponentSampleModel) raster.getSampleModel();
+        ComponentSampleModel csm2 = 
+                (ComponentSampleModel) raster2.getSampleModel();
+        DataBuffer db = raster.getDataBuffer();
+        DataBuffer db2 = raster2.getDataBuffer();
+        int blockSize = verifyBlockSize;
+        if (blockSize > 1) {
+            int w = csm.getWidth();
+            int h = csm.getHeight();
+            int maxY = (h / blockSize - 1) * blockSize;
+            int maxX = (w / blockSize - 1) * blockSize;
+            int[] samples = new int[blockSize * blockSize];
+            int diff, maxDiff = 0;
+            for (int b = 0; b < csm.getNumBands(); b++)
+                for (int y = 0; y < maxY; y += blockSize) {
+                    for (int x = 0; x < maxX; x += blockSize) {
+                        if (maxDiff < (diff = Math.abs(
+                                sum(csm.getSamples(
+                                    x, y, blockSize, blockSize, b, samples, db))
+                              - sum(csm2.getSamples(
+                                    x, y, blockSize, blockSize, b, samples, db2)))))
+                            maxDiff = diff;
+                    }
+                }
+            return maxDiff / samples.length;
+        }
+        switch (db.getDataType()) {
+        case DataBuffer.TYPE_BYTE:
+            return maxDiff(csm, ((DataBufferByte) db).getBankData(),
+                    csm2, ((DataBufferByte) db2).getBankData());
+        case DataBuffer.TYPE_USHORT:
+            return maxDiff(csm, ((DataBufferUShort) db).getData(),
+                  csm2, ((DataBufferUShort) db2).getData());
+        case DataBuffer.TYPE_SHORT:
+            return maxDiff(csm, ((DataBufferShort) db).getData(),
+                  csm2, ((DataBufferShort) db2).getData());
+        default:
+            throw new UnsupportedOperationException(
+                    "Unsupported Datatype: " + db.getDataType());
+        }
+    }
+
+    private int sum(int[] samples) {
+        int sum = 0;
+        for (int sample : samples)
+            sum += sample;
+        return sum;
+    }
+
+    private int maxDiff(ComponentSampleModel csm, short[] data,
+                        ComponentSampleModel csm2, short[] data2) {
+        int w = csm.getWidth() * csm.getPixelStride();
+        int h = csm.getHeight();
+        int sls = csm.getScanlineStride();
+        int sls2 = csm2.getScanlineStride();
+        int diff, maxDiff = 0;
+        for (int y = 0; y < h; y++) {
+            for (int j = w, i = y * sls, i2 = y * sls2; j-- > 0; i++, i2++) {
+                if (maxDiff < (diff = Math.abs(data[i] - data2[i2])))
+                    maxDiff = diff;
+            }
+        }
+        return maxDiff;
+    }
+
+    private int maxDiff(ComponentSampleModel csm, byte[][] data,
+                       ComponentSampleModel csm2, byte[][] data2) {
+        int w = csm.getWidth() * csm.getPixelStride();
+        int h = csm.getHeight();
+        int sls = csm.getScanlineStride();
+        int sls2 = csm2.getScanlineStride();
+        int diff, maxDiff = 0;
+        for (int b = 0; b < data.length; b++) {
+            for (int y = 0; y < h; y++) {
+                for (int j = w, i = y * sls, i2 = y * sls2; j-- > 0; i++, i2++) {
+                    if (maxDiff < (diff = Math.abs(data[b][i] - data2[b][i2])))
+                        maxDiff = diff;
+                }
+            }
+        }
+        return maxDiff;
     }
 
     private void nullifyUnusedBits(int bitsStored, BufferedImage bi) {

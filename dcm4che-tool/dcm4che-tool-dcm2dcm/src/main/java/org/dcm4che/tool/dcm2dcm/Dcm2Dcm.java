@@ -163,6 +163,20 @@ public class Dcm2Dcm {
         opts.addOptionGroup(fmiGroup);
         opts.addOption(OptionBuilder
                 .hasArg()
+                .withArgName("max-error")
+                .withType(PatternOptionBuilder.NUMBER_VALUE)
+                .withDescription(rb.getString("verify"))
+                .withLongOpt("verify")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("size")
+                .withType(PatternOptionBuilder.NUMBER_VALUE)
+                .withDescription(rb.getString("verify-block"))
+                .withLongOpt("verify-block")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
                 .withArgName("quality")
                 .withType(PatternOptionBuilder.NUMBER_VALUE)
                 .withDescription(rb.getString("quality"))
@@ -197,6 +211,14 @@ public class Dcm2Dcm {
                 main.setTransferSyntax(transferSyntaxOf(cl, UID.ExplicitVRLittleEndian));
                 main.setRetainFileMetaInformation(cl.hasOption("f"));
             }
+
+            if (cl.hasOption("verify"))
+                main.addCompressionParam("maxPixelValueError",
+                        cl.getParsedOptionValue("verify"));
+
+            if (cl.hasOption("verify-block"))
+                main.addCompressionParam("verifyBlockSize",
+                        cl.getParsedOptionValue("verify-block"));
 
             if (cl.hasOption("q"))
                 main.addCompressionParam("compressionQuality",
@@ -234,7 +256,7 @@ public class Dcm2Dcm {
         }
     }
 
-     private static String transferSyntaxOf(CommandLine cl, String def) {
+    private static String transferSyntaxOf(CommandLine cl, String def) {
         return cl.hasOption("ivrle") ? UID.ImplicitVRLittleEndian
                 : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndian
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian

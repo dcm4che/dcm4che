@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che.tool.storescu.StoreSCU
-MAIN_JAR=dcm4che-tool-storescu-3.0.2-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-storescu-3.2.0.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -39,9 +39,9 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/storescu/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.0.2-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.0.2-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.0.2-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.2.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.2.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.2.0.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"

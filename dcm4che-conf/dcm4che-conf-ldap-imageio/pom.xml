@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-conf</artifactId>
-    <version>3.0.2-SNAPSHOT</version>
+    <version>3.2.0</version>
   </parent>
   <artifactId>dcm4che-conf-ldap-imageio</artifactId>
   <name>dcm4che-conf-ldap-imageio</name>

@@ -275,14 +275,14 @@ public class SAXWriter implements DicomInputHandler {
             throws IOException {
         int len = dis.length();
         if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkDataFragment()) {
+                && dis.isBulkDataFragment(frags)) {
             dis.skipFully(len);
         } else try {
             frags.add(ByteUtils.EMPTY_BYTES); // increment size
             if (len > 0) {
                 startElement("DataFragment", "number", frags.size());
                 if (dis.getIncludeBulkData() == IncludeBulkData.LOCATOR
-                        && dis.isBulkDataFragment()) {
+                        && dis.isBulkDataFragment(frags)) {
                     writeBulkDataLocator(dis.createBulkDataLocator());
                 } else {
                     byte[] b = dis.readValue();

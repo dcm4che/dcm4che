@@ -77,6 +77,7 @@ import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che.imageio.stream.ImageInputStreamAdapter;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
+import org.dcm4che.io.BulkDataDescriptor;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomInputStream.IncludeBulkData;
 import org.slf4j.Logger;
@@ -445,8 +446,8 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException("Input not set");
 
         dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
-        dis.setBulkDataAttributes(pixelData());
         dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
+        dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
         Attributes ds = dis.readDataset(-1, -1);
@@ -495,12 +496,6 @@ public class DicomImageReader extends ImageReader {
 
     private ColorModel createColorModel(int bits, int dataType) {
         return pmi.createColorModel(bits, dataType, metadata.getAttributes());
-    }
-
-    private Attributes pixelData() {
-        Attributes attrs = new Attributes(1);
-        attrs.setNull(Tag.PixelData, VR.OW);
-        return attrs;
     }
 
     private void resetInternalState() {

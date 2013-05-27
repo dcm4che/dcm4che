@@ -58,6 +58,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
+import org.dcm4che.io.BulkDataDescriptor;
 import org.dcm4che.io.ContentHandlerAdapter;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
@@ -333,7 +334,8 @@ public class Xml2Dcm {
 
     public void parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
-        dis.setBulkDataAttributes(blkAttrs);
+        if (blkAttrs != null)
+            dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
         dis.setBulkDataDirectory(blkDirectory);
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);

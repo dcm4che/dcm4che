@@ -152,5 +152,13 @@ public class TagUtils {
         return (tag & 0xffff0000) == 0x00020000;
     }
 
+    public static int normalizeRepeatingGroup(int tag) {
+        int gg000000 = tag & 0xffe00000;
+        return (gg000000 == 0x50000000
+             || gg000000 == 0x60000000)
+                    ? tag & 0xffe0ffff
+                    : tag;
+    }
+
 }
 

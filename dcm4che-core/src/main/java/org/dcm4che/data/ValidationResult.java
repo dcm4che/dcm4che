@@ -274,7 +274,7 @@ public class ValidationResult {
             Object value = attrs.getValue(tag, vr);
             vr.vr.prompt(value,
                     attrs.bigEndian(), 
-                    attrs.getSpecificCharacterSet(), 200, sb);
+                    attrs.getSpecificCharacterSet(vr.vr), 200, sb);
             sb.append("]\n");
             if (iav.itemValidationResults != null) {
                 Sequence seq = attrs.getSequence(tag);

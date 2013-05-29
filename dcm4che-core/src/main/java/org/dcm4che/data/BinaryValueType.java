@@ -251,6 +251,11 @@ enum BinaryValueType implements ValueType {
     }
 
     @Override
+    public boolean useSpecificCharacterSet() {
+        return false;
+    }
+
+    @Override
     public boolean isTemporalType() {
         return false;
     }

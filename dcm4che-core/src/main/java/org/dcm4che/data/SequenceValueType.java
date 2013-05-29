@@ -56,6 +56,11 @@ enum SequenceValueType implements ValueType {
     }
 
     @Override
+    public boolean useSpecificCharacterSet() {
+        return false;
+    }
+
+    @Override
     public boolean isIntValue() {
         return false;
     }

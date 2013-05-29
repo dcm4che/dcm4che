@@ -86,7 +86,10 @@ public class Attributes implements Serializable {
 
     private final boolean bigEndian;
     private long itemPosition = -1;
+    private boolean containsSpecificCharacterSet;
+    private boolean containsTimezoneOffsetFromUTC;
     private HashMap<String, Object> properties;
+    private TimeZone defaultTimeZone;
 
     public Attributes() {
         this(false, INIT_CAPACITY);
@@ -179,6 +182,10 @@ public class Attributes implements Serializable {
             if (this.parent != null)
                 throw new IllegalArgumentException(
                     "Item already contained by Sequence");
+            if (!containsSpecificCharacterSet)
+                cs = null;
+            if (!containsTimezoneOffsetFromUTC)
+                tz = null;
         }
         this.parent = parent;
         return this;
@@ -248,16 +255,16 @@ public class Attributes implements Serializable {
         }
     }
 
-    public void decodeStringValues() {
+    private void decodeStringValuesUsingSpecificCharacterSet() {
         Object value;
         VR vr;
         SpecificCharacterSet cs = getSpecificCharacterSet();
-        for (int i = 0; i < values.length; i++) {
+        for (int i = 0; i < size; i++) {
             value = values[i];
             if (value instanceof Sequence) {
                 for (Attributes item : (Sequence) value)
-                    item.decodeStringValues();
-            } else if ((vr = vrs[i]).isStringType())
+                    item.decodeStringValuesUsingSpecificCharacterSet();
+            } else if ((vr = vrs[i]).useSpecificCharacterSet())
                 if (value instanceof byte[])
                     values[i] =
                         vr.toStrings((byte[]) value, bigEndian, cs);
@@ -368,12 +375,18 @@ public class Attributes implements Serializable {
         Object value = values[index];
         if (value instanceof byte[]) {
             value = vrs[index].toStrings((byte[]) value, bigEndian,
-                        getSpecificCharacterSet());
+                    getSpecificCharacterSet(vrs[index]));
             if (value instanceof String && ((String) value).isEmpty())
                 value = Value.NULL;
             values[index] = value;
         }
         return value;
+    }
+
+    public SpecificCharacterSet getSpecificCharacterSet(VR vr) {
+        return vr.useSpecificCharacterSet()
+                ? getSpecificCharacterSet()
+                : SpecificCharacterSet.DEFAULT;
     }
 
     private double[] decodeDSValue(int index) {
@@ -387,7 +400,7 @@ public class Attributes implements Serializable {
         double[] ds;
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
-                        getSpecificCharacterSet());
+                    SpecificCharacterSet.DEFAULT);
         if (value instanceof String) {
             String s = (String) value;
             if (s.isEmpty()) {
@@ -420,7 +433,7 @@ public class Attributes implements Serializable {
         int[] is;
         if (value instanceof byte[])
             value = vrs[index].toStrings((byte[]) value, bigEndian,
-                        getSpecificCharacterSet());
+                    SpecificCharacterSet.DEFAULT);
         if (value instanceof String) {
             String s = (String) value;
             if (s.isEmpty()) {
@@ -559,7 +572,7 @@ public class Attributes implements Serializable {
             if (value instanceof Value)
                 return ((Value) value).toBytes(vr, bigEndian);
             
-            return vr.toBytes(value, getSpecificCharacterSet());
+            return vr.toBytes(value, getSpecificCharacterSet(vr));
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as bytes", TagUtils.toString(tag), vr);
             return null;
@@ -678,7 +691,8 @@ public class Attributes implements Serializable {
                 return StringUtils.EMPTY_STRING;
         }
         try {
-            return toStrings(vr.toStrings(value, bigEndian, getSpecificCharacterSet()));
+            return toStrings(vr.toStrings(value, bigEndian,
+                    getSpecificCharacterSet(vr)));
         } catch (UnsupportedOperationException e) {
             LOG.info("Attempt to access {} {} as string", TagUtils.toString(tag), vr);
             return null;
@@ -1037,7 +1051,9 @@ public class Attributes implements Serializable {
         try {
             return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
         } catch (IllegalArgumentException e) {
-            LOG.info("Invalid value of {} TM", TagUtils.toString(tmTag));
+            LOG.info("Invalid value of {} DA or {} TM",
+                    TagUtils.toString(daTag),
+                    TagUtils.toString(tmTag));
             return defVal;
         }
     }
@@ -1072,12 +1088,41 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return DateUtils.EMPTY_DATES;
 
-            return vr.toDates(decodeStringValue(index), getTimeZone(), false);
+            return vr.toDates(value, getTimeZone(), false);
         } catch (IllegalArgumentException e) {
-            LOG.info("Invalid value of {} {}", TagUtils.toString((int) tag), vr);
+            LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return DateUtils.EMPTY_DATES;
         }
-   }
+    }
+
+    public Date[] getDates(String privateCreator, long tag) {
+        int daTag = (int) (tag >>> 32);
+        int tmTag = (int) tag;
+
+        String[] tm = getStrings(privateCreator, tmTag);
+        if (tm == null || tm.length == 0)
+            return getDates(daTag);
+
+        String[] da = getStrings(privateCreator, daTag);
+        if (da == null || da.length == 0)
+            return DateUtils.EMPTY_DATES;
+        
+        Date[] dates = new Date[da.length];
+        int i = 0;
+        try {
+            TimeZone tz = getTimeZone();
+            while (i < tm.length)
+                dates[i++] = VR.DT.toDate(da[i] + tm[i], tz, 0, false, null);
+            while (i < da.length)
+                dates[i++] = VR.DA.toDate(da[i], tz, 0, false, null);
+        } catch (IllegalArgumentException e) {
+            LOG.info("Invalid value of {} DA or {} TM",
+                    TagUtils.toString(daTag),
+                    TagUtils.toString(tmTag));
+            dates = Arrays.copyOf(dates, i);
+        }
+        return dates;
+    }
 
     public DateRange getDateRange(int tag) {
         return getDateRange(null, tag, null, null);
@@ -1120,18 +1165,24 @@ public class Attributes implements Serializable {
         if (value == Value.NULL)
             return defVal;
 
-        String[] range = splitRange(vr.toString(value, false, 0, null));
-        TimeZone tz = getTimeZone();
         try {
-            return new DateRange(
-                    range[0] == null ? null
-                            : vr.toDate(range[0], tz, 0, false, null),
-                    range[1] == null ? null
-                            : vr.toDate(range[1], tz, 0, true, null));
+            return toDateRange((value instanceof String)
+                    ? (String) value : ((String[]) value)[0], vr);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;
         }
+    }
+
+    private DateRange toDateRange(String s, VR vr) {
+        String[] range = splitRange(s);
+        TimeZone tz = getTimeZone();
+        Date start = range[0] == null ? null
+                : vr.toDate(range[0], tz, 0, false, null);
+        Date end = range[1] == null ? null
+                : range[1] == range[0] ? start
+                : vr.toDate(range[1], tz, 0, true, null);
+        return new DateRange(start, end);
     }
 
     private static String[] splitRange(String s) {
@@ -1172,70 +1223,224 @@ public class Attributes implements Serializable {
         if (da == null)
             return defVal;
 
-        String[] darange = splitRange(VR.DA.toString(da, false, 0, null));
-        String[] tmrange = splitRange(VR.TM.toString(tm, false, 0, null));
         try {
-            return new DateRange(
-                    darange[0] == null ? null
-                            : VR.DT.toDate(tmrange[0] == null
-                                    ? darange[0]
-                                    : darange[0] + tmrange[0],
-                                    tz, 0, false, null),
-                    darange[1] == null ? null
-                            : VR.DT.toDate(tmrange[1] == null
-                                    ? darange[1]
-                                    : darange[1] + tmrange[1],
-                                    tz, 0, true, null));
+            return toDateRange(da, tm);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} TM", TagUtils.toString((int) tag));
             return defVal;
         }
     }
 
-    public SpecificCharacterSet getSpecificCharacterSet() {
-         return cs != null 
-                 ? cs
-                 : parent != null 
-                         ? parent.getSpecificCharacterSet()
-                         : SpecificCharacterSet.DEFAULT;
-     }
+    private DateRange toDateRange(String da, String tm) {
+        String[] darange = splitRange(da);
+        String[] tmrange = splitRange(tm);
+        return new DateRange(
+                darange[0] == null ? null
+                        : VR.DT.toDate(tmrange[0] == null
+                                ? darange[0]
+                                : darange[0] + tmrange[0],
+                                tz, 0, false, null),
+                darange[1] == null ? null
+                        : VR.DT.toDate(tmrange[1] == null
+                                ? darange[1]
+                                : darange[1] + tmrange[1],
+                                tz, 0, true, null));
+    }
 
-    private void initcs() {
-        String[] codes = getStrings(Tag.SpecificCharacterSet);
-        if (codes != null)
-            cs = SpecificCharacterSet.valueOf(codes);
+    /**
+     * Set Specific Character Set (0008,0005) to specified code(s) and
+     * re-encode contained LO, LT, PN, SH, ST, UT attributes
+     * accordingly.
+     * 
+     * @param codes new value(s) of Specific Character Set (0008,0005) 
+     */
+    public void setSpecificCharacterSet(String... codes) {
+        decodeStringValuesUsingSpecificCharacterSet();
+        setString(Tag.SpecificCharacterSet, VR.CS, codes);
+    }
+
+    public SpecificCharacterSet getSpecificCharacterSet() {
+        if (cs != null)
+            return cs;
+
+        if (containsSpecificCharacterSet)
+            cs = SpecificCharacterSet.valueOf(
+                    getStrings(null, Tag.SpecificCharacterSet, VR.CS));
+        else if (parent != null)
+            return parent.getSpecificCharacterSet();
+        else
+            cs = SpecificCharacterSet.DEFAULT;
+
+        return cs;
+    }
+
+    public void setDefaultTimeZone(TimeZone tz) {
+        defaultTimeZone = tz;
+    }
+
+    public TimeZone getDefaultTimeZone() {
+        if (defaultTimeZone != null)
+            return defaultTimeZone;
+
+        if (parent != null)
+            return parent.getDefaultTimeZone();
+
+        return TimeZone.getDefault();
     }
 
     public TimeZone getTimeZone() {
-        return tz != null
-                ? tz 
-                : parent != null
-                        ? parent.getTimeZone()
-                        : (tz = TimeZone.getDefault());
+        if (tz != null)
+            return tz;
+
+        if (containsTimezoneOffsetFromUTC) {
+            String s = getString(Tag.TimezoneOffsetFromUTC);
+            if (s != null)
+                try {
+                    tz = DateUtils.timeZone(s);
+                } catch (IllegalArgumentException e) {
+                    LOG.info(e.getMessage());
+                }
+        } else if (parent != null)
+            return parent.getTimeZone();
+        else
+            tz = getDefaultTimeZone();
+
+        return tz;
+     }
+
+    /**
+     * Set Timezone Offset From UTC (0008,0201) to specified value and
+     * adjust contained DA, DT and TM attributs accordingly
+     * 
+     * @param utcOffset offset from UTC as (+|-)HHMM 
+     */
+    public void setTimezoneOffsetFromUTC(String utcOffset) {
+        TimeZone tz = DateUtils.timeZone(utcOffset);
+        updateTimezone(getTimeZone(), tz);
+        setString(Tag.TimezoneOffsetFromUTC, VR.SH, utcOffset);
     }
 
-    private void inittz() {
-        String s = getString(Tag.TimezoneOffsetFromUTC, null);
-        if (s != null) {
-            try {
-                tz = DateUtils.timeZone(s);
-            } catch (IllegalArgumentException e) {
-                LOG.info(e.getMessage());
+    private void updateTimezone(TimeZone from, TimeZone to) {
+        for (int i = 0; i < size; i++) {
+            Object val = values[i];
+            if (val instanceof Sequence) {
+                Sequence new_name = (Sequence) val;
+                for (Attributes item : new_name) {
+                    item.updateTimezone(item.getTimeZone(), to);
+                    item.remove(Tag.TimezoneOffsetFromUTC);
+                }
+            } else if (vrs[i] == VR.TM || vrs[i] == VR.DT)
+                updateTimezone(from, to, i);
+        }
+    }
+
+    private void updateTimezone(TimeZone from, TimeZone to, int tmIndex) {
+        Object tm = decodeStringValue(tmIndex);
+        if (tm == Value.NULL)
+            return;
+
+        int tmTag = tags[tmIndex];
+        if (vrs[tmIndex] == VR.DT) {
+            if (tm instanceof String[]) {
+                String[] tms = (String[]) tm;
+                for (int i = 0; i < tms.length; i++) {
+                    tms[i] = updateTimeZoneDT(from, to, tms[i]);
+                }
+            } else
+                values[tmIndex] = updateTimeZoneDT(from, to, (String) tm);
+        } else {
+            int daTag = TagUtils.daTagOf(tmTag);
+            int daIndex = daTag != 0 ? indexOf(daTag) : -1;
+            Object da = daIndex >= 0 ? decodeStringValue(daIndex) : Value.NULL;
+
+            if (tm instanceof String[]) {
+                String[] tms = (String[]) tm;
+                if (da instanceof String[]) {
+                    String[] das = (String[]) da;
+                    for (int i = 0; i < tms.length; i++) {
+                        if (i < das.length) {
+                            String[] tmda = updateTimeZoneDATM(
+                                    from, to, das[i], tms[i]);
+                            das[i] = tmda[0];
+                            tms[i] = tmda[1];
+                        } else {
+                            tms[i] = updateTimeZoneTM(from, to, tms[i]);
+                        }
+                    }
+                } else {
+                    if (da == Value.NULL) {
+                        tms[0] = updateTimeZoneTM(from, to, tms[0]);
+                    } else {
+                        String[] tmda = updateTimeZoneDATM(
+                                from, to, (String) da, tms[0]);
+                        values[daIndex] = tmda[0];
+                        tms[0] = tmda[1];
+                    }
+                    for (int i = 1; i < tms.length; i++) {
+                        tms[i] = updateTimeZoneTM(from, to, tms[i]);
+                    }
+                }
+            } else {
+                if (da instanceof String[]) {
+                    String[] das = (String[]) da;
+                    String[] tmda = updateTimeZoneDATM(
+                           from, to, das[0], (String) tm);
+                    das[0] = tmda[0];
+                    values[tmIndex] = tmda[1];
+                } else {
+                    if (da == Value.NULL) {
+                        values[tmIndex] = updateTimeZoneTM(
+                                from, to, (String) tm);
+                    } else {
+                        String[] tmda = updateTimeZoneDATM(
+                                from, to, (String) da, (String) tm);
+                        values[daIndex] = tmda[0];
+                        values[tmIndex] = tmda[1];
+                    }
+                }
             }
         }
     }
 
-     public void setTimeZone(TimeZone tz) {
-         String s = DateUtils.format(tz);
-         setString(Tag.TimezoneOffsetFromUTC, VR.SH, s);
-         this.tz = tz;
-     }
+    private String updateTimeZoneDT(TimeZone from, TimeZone to, String dt) {
+        int dtlen = dt.length();
+        if (dtlen > 8) {
+            char ch = dt.charAt(dtlen-5);
+            if (ch == '+' || ch == '-')
+                return dt;
+        }
+        try {
+            Date date = DateUtils.parseDT(from, dt, false);
+            dt = DateUtils.formatDT(to, date).substring(0, dtlen);
+        } catch (IllegalArgumentException e) {}
+        return dt;
+    }
 
-     public String getPrivateCreator(int tag) {
+    private String updateTimeZoneTM(TimeZone from, TimeZone to, String tm) {
+        try {
+            Date date = DateUtils.parseTM(from, tm, false);
+            tm = DateUtils.formatTM(to, date).substring(0, tm.length());
+        } catch (IllegalArgumentException e) {}
+        return tm;
+    }
+
+    private String[] updateTimeZoneDATM(TimeZone from, TimeZone to, 
+            String da, String tm) {
+        String[] datm = { da, tm };
+        try {
+            Date date = DateUtils.parseDT(from, da+tm, false);
+            String dt = DateUtils.formatDT(to, date);
+            datm[0] = dt.substring(0, 8);
+            datm[1] = dt.substring(8, 8 + tm.length());
+        } catch (IllegalArgumentException e) {}
+        return datm;
+    }
+
+    public String getPrivateCreator(int tag) {
          return TagUtils.isPrivateTag(tag)
                  ? getString(TagUtils.creatorTagOf(tag), null)
                  : null;
-     }
+    }
 
     public Object remove(int tag) {
         return remove(null, tag);
@@ -1259,8 +1464,10 @@ public class Attributes implements Serializable {
         values[--size] = null;
 
         if (tag == Tag.SpecificCharacterSet) {
+            containsSpecificCharacterSet = false;
             cs = null;
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
+            containsTimezoneOffsetFromUTC = false;
             tz = null;
         }
 
@@ -1348,15 +1555,17 @@ public class Attributes implements Serializable {
     }
 
     public Object setDateRange(String privateCreator, int tag, VR vr, DateRange range) {
-        TimeZone tz = getTimeZone();
+        return set(privateCreator, tag, vr, toString(range, vr, getTimeZone()));
+    }
+
+    private static String toString(DateRange range, VR vr, TimeZone tz) {
         String start = range.getStartDate() != null
                 ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz)
                 : "";
         String end = range.getEndDate() != null
                 ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz)
                 : "";
-        return set(privateCreator, tag, vr,
-                start.equals(end) ? start : (start + '-' + end));
+        return start.equals(end) ? start : (start + '-' + end);
     }
 
     public void setDateRange(long tag, DateRange dr) {
@@ -1440,9 +1649,11 @@ public class Attributes implements Serializable {
         Object oldValue = set(tag, vr, value);
 
         if (tag == Tag.SpecificCharacterSet) {
-            initcs();
+            containsSpecificCharacterSet = true;
+            cs = null;
         } else if (tag == Tag.TimezoneOffsetFromUTC) {
-            inittz();
+            containsTimezoneOffsetFromUTC = value != Value.NULL;
+            tz = null;
         }
 
         return oldValue;
@@ -1864,7 +2075,7 @@ public class Attributes implements Serializable {
     private StringBuilder appendAttribute(String privateCreator, int tag, VR vr, Object value,
             int maxLength, StringBuilder sb, String prefix) {
         sb.append(prefix).append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
-        if (vr.prompt(value, bigEndian, getSpecificCharacterSet(),
+        if (vr.prompt(value, bigEndian, getSpecificCharacterSet(vr),
                 maxLength - sb.length() - 1, sb)) {
             sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)

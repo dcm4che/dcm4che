@@ -157,6 +157,10 @@ public enum VR {
         return valueType.isStringValue();
     }
 
+    public boolean useSpecificCharacterSet() {
+        return valueType.useSpecificCharacterSet();
+    }
+
     public boolean isIntType() {
         return valueType.isIntValue();
     }

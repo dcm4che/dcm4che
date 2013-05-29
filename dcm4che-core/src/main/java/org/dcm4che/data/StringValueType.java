@@ -53,11 +53,21 @@ enum StringValueType implements ValueType {
     STRING("\\", null){
 
         @Override
+        public boolean useSpecificCharacterSet() {
+            return true;
+        }
+
+        @Override
         protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
             return cs;
         }
     },
     TEXT("\n\f\r", null) {
+
+        @Override
+        public boolean useSpecificCharacterSet() {
+            return true;
+        }
 
         @Override
         protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
@@ -73,6 +83,11 @@ enum StringValueType implements ValueType {
     DT("\\", TemporalType.DT),
     TM("\\", TemporalType.TM),
     PN("^=\\", null){
+
+        @Override
+        public boolean useSpecificCharacterSet() {
+            return true;
+        }
 
         @Override
         protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
@@ -305,10 +320,14 @@ enum StringValueType implements ValueType {
         return b;
     }
 
+    @Override
+    public boolean useSpecificCharacterSet() {
+        return false;
+    }
+
     protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
         return SpecificCharacterSet.DEFAULT;
     }
-
 
     @Override
     public byte[] toBytes(Object val, SpecificCharacterSet cs) {

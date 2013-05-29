@@ -235,7 +235,7 @@ public class SAXWriter implements DicomInputHandler {
                         attrs.setBytes(tag, vr, b);
                     if (dis.bigEndian())
                         vr.toggleEndian(b, false);
-                    vr.toXML(b, false, attrs.getSpecificCharacterSet(), this);
+                    vr.toXML(b, false, attrs.getSpecificCharacterSet(vr), this);
                 }
             }
             endElement("DicomAttribute");

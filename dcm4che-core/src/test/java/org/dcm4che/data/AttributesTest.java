@@ -201,4 +201,29 @@ public class AttributesTest {
         assertArrayEquals(ByteUtils.EMPTY_FLOATS, a.getFloats(Tag.PixelSpacing), 0);
    }
 
+    @Test
+    public void testSetSpecificCharacterSet() throws Exception {
+        String NAME = "\u00c4neas^R\u00fcdiger";
+        Attributes a = new Attributes();
+        a.setSpecificCharacterSet("ISO_IR 100");
+        a.setBytes(Tag.PatientName, VR.PN, NAME.getBytes("ISO-8859-1"));
+        a.setSpecificCharacterSet("ISO_IR 192");
+        assertArrayEquals(NAME.getBytes("UTF-8"), a.getBytes(Tag.PatientName));
+    }
+
+    @Test
+    public void testSetTimezoneOffsetFromUTC() throws Exception {
+        Attributes a = new Attributes();
+        a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
+        a.setDate(Tag.StudyDateAndTime, new Date(0));
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("000000.000", a.getString(Tag.StudyTime));
+        a.setTimezoneOffsetFromUTC("+0100");
+        assertEquals("19700101", a.getString(Tag.StudyDate));
+        assertEquals("010000.000", a.getString(Tag.StudyTime));
+        a.setTimezoneOffsetFromUTC("-0100");
+        assertEquals("19691231", a.getString(Tag.StudyDate));
+        assertEquals("230000.000", a.getString(Tag.StudyTime));
+    }
+
 }

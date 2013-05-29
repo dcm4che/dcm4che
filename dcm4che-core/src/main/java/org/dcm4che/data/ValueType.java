@@ -51,6 +51,8 @@ interface ValueType {
 
     boolean isStringValue();
 
+    boolean useSpecificCharacterSet();
+
     boolean isIntValue();
 
     boolean isTemporalType();

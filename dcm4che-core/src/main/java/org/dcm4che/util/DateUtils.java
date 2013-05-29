@@ -50,16 +50,7 @@ public class DateUtils {
 
     public static final Date[] EMPTY_DATES = {};
 
-    private static CachedTimeZone cachedTimeZone;
-
-    private static final class CachedTimeZone {
-        final String offset;
-        final TimeZone zone;
-        CachedTimeZone(String offset, TimeZone zone) {
-            this.offset = offset;
-            this.zone = zone;
-        }
-    }
+    private static TimeZone cachedTimeZone;
 
     private static Calendar cal(TimeZone tz) {
         Calendar cal = (tz != null)
@@ -147,12 +138,6 @@ public class DateUtils {
         appendXX(min / 60, sb);
         appendXX(min % 60, sb);
         return sb;
-    }
-
-
-    public static String format(TimeZone tz) {
-        int offset = tz.getOffset(System.currentTimeMillis());
-        return appendZZZZZ(offset, new StringBuilder(5)).toString();
     }
 
     private static StringBuilder formatDT(Calendar cal, StringBuilder toAppendTo,
@@ -281,10 +266,18 @@ public class DateUtils {
     }
 
     private static TimeZone safeTimeZone(String s) {
-        CachedTimeZone tmp = cachedTimeZone;
-        if (tmp != null && s.endsWith(tmp.offset))
-            return tmp.zone;
+        String tzid = tzid(s);
+        if (tzid == null)
+            return null;
 
+        TimeZone tz = cachedTimeZone;
+        if (tz == null || !tz.getID().equals(tzid))
+            cachedTimeZone = tz = TimeZone.getTimeZone(tzid);
+
+        return tz;
+    }
+
+    private static String tzid(String s) {
         int length = s.length();
         if (length > 4) {
             char[] tzid = { 'G', 'M', 'T', 0, 0, 0, ':', 0, 0 };
@@ -295,9 +288,7 @@ public class DateUtils {
                     && Character.isDigit(tzid[5])
                     && Character.isDigit(tzid[7])
                     && Character.isDigit(tzid[8])) {
-                TimeZone zone = TimeZone.getTimeZone(new String(tzid));
-                cachedTimeZone = new CachedTimeZone(s.substring(length-5), zone);
-                return zone;
+                return new String(tzid);
             }
         }
         return null;

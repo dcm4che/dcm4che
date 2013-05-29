@@ -463,7 +463,7 @@ public class SpecificCharacterSet {
         }
     }
 
-    public static SpecificCharacterSet valueOf(String[] codes) {
+    public static SpecificCharacterSet valueOf(String... codes) {
         if (codes == null || codes.length == 0)
             return DEFAULT;
 

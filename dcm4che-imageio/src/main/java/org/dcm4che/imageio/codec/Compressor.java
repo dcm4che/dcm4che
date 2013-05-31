@@ -228,6 +228,7 @@ public class Compressor extends Decompressor implements Closeable {
     private class CompressedFrame implements Value {
 
         private int frameIndex;
+        private int streamLength;
         private CacheOutputStream cacheout = new CacheOutputStream();
         private MemoryCacheImageOutputStream cache;
 
@@ -264,7 +265,7 @@ public class Compressor extends Decompressor implements Closeable {
             } catch (IOException e) {
                 return -1;
             }
-            return (((int) cache.length()) + 1) & ~1;
+            return (streamLength + 1) & ~1;
         }
         
         private void writeTo(OutputStream out) throws IOException {
@@ -272,9 +273,9 @@ public class Compressor extends Decompressor implements Closeable {
             try {
                 cacheout.set(out);
                 long start = System.currentTimeMillis();
-                long length = cache.length();
-                cache.flushBefore(length);
-                if ((length & 1) != 0)
+                cache.seek(streamLength);
+                cache.flushBefore(streamLength);
+                if ((streamLength & 1) != 0)
                     out.write(0);
                 long end = System.currentTimeMillis();
                 LOG.debug("Flushed frame #{} from memory in {} ms",
@@ -311,10 +312,11 @@ public class Compressor extends Decompressor implements Closeable {
                 long start = System.currentTimeMillis();
                 compressor.write(null, new IIOImage(bi, null, null), compressParam);
                 long end = System.currentTimeMillis();
+                streamLength = (int) cache.getStreamPosition();
                 if (LOG.isDebugEnabled())
                     LOG.debug("Compressed frame #{} {}:1 in {} ms", 
                             new Object[] {frameIndex + 1,
-                            (float) sizeOf(bi) / cache.length(),
+                            (float) sizeOf(bi) / streamLength,
                             end - start });
                 Compressor.this.verify(cache, frameIndex);
             } catch (IOException ex) {

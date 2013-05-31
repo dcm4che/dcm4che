@@ -93,7 +93,7 @@ public class Compressor extends Decompressor implements Closeable {
     private IOException ex;
     private int[] embeddedOverlays;
     private int maxPixelValueError = -1;
-    private int verifyBlockSize = 1;
+    private int avgPixelValueBlockSize = 1;
     private BufferedImage bi2;
 
     private ImageReadParam verifyParam;
@@ -143,8 +143,8 @@ public class Compressor extends Decompressor implements Closeable {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
                 this.maxPixelValueError = ((Number) property.getValue()).intValue();
-            else if (name.equals("verifyBlockSize"))
-                this.verifyBlockSize = ((Number) property.getValue()).intValue();
+            else if (name.equals("avgPixelValueBlockSize"))
+                this.avgPixelValueBlockSize = ((Number) property.getValue()).intValue();
             else {
                 if (count++ == 0)
                     compressParam.setCompressionMode(
@@ -271,13 +271,17 @@ public class Compressor extends Decompressor implements Closeable {
             compress();
             try {
                 cacheout.set(out);
-                cache.flushBefore(cache.length());
-                if ((cache.length() & 1) != 0)
+                long start = System.currentTimeMillis();
+                long length = cache.length();
+                cache.flushBefore(length);
+                if ((length & 1) != 0)
                     out.write(0);
+                long end = System.currentTimeMillis();
+                LOG.debug("Flushed frame #{} from memory in {} ms",
+                        frameIndex + 1, end - start);
             } finally {
                 try { cache.close(); } catch (IOException ignore) {}
                 cache = null;
-                LOG.debug("Flushed frame #{} from memory", frameIndex + 1);
             }
         }
 
@@ -390,7 +394,7 @@ public class Compressor extends Decompressor implements Closeable {
                 (ComponentSampleModel) raster2.getSampleModel();
         DataBuffer db = raster.getDataBuffer();
         DataBuffer db2 = raster2.getDataBuffer();
-        int blockSize = verifyBlockSize;
+        int blockSize = avgPixelValueBlockSize;
         if (blockSize > 1) {
             int w = csm.getWidth();
             int h = csm.getHeight();

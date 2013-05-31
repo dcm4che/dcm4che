@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
 import org.dcm4che.image.PhotometricInterpretation;
 
 
@@ -87,8 +89,23 @@ public class CompressionRules
         return null;
     }
 
-    public CompressionRule findCompressionRule(PhotometricInterpretation pmi,
-            int bitsStored, int pixelRepresentation, String aeTitle, 
+    public CompressionRule findCompressionRule(String aeTitle, Attributes attrs) {
+        try {
+            return findCompressionRule(aeTitle,
+                    PhotometricInterpretation.fromString(
+                            attrs.getString(Tag.PhotometricInterpretation)),
+                    attrs.getInt(Tag.BitsStored, 0),
+                    attrs.getInt(Tag.PixelRepresentation, 0),
+                    attrs.getString(Tag.SOPClassUID),
+                    attrs.getString(Tag.BodyPartExamined));
+        } catch (IllegalArgumentException ignore) {
+            return null;
+        }
+    }
+
+    public CompressionRule findCompressionRule(String aeTitle,
+            PhotometricInterpretation pmi,
+            int bitsStored, int pixelRepresentation, 
             String sopClass, String bodyPart) {
         for (CompressionRule ac : list)
             if (ac.matchesCondition(pmi, bitsStored, pixelRepresentation,

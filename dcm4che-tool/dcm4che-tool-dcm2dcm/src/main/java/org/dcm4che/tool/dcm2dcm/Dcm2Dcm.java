@@ -217,7 +217,7 @@ public class Dcm2Dcm {
                         cl.getParsedOptionValue("verify"));
 
             if (cl.hasOption("verify-block"))
-                main.addCompressionParam("verifyBlockSize",
+                main.addCompressionParam("avgPixelValueBlockSize",
                         cl.getParsedOptionValue("verify-block"));
 
             if (cl.hasOption("q"))

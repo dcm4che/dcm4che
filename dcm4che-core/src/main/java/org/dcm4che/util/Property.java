@@ -93,6 +93,25 @@ public class Property implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return 31 * name.hashCode() + value.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        Property other = (Property) obj;
+        return name.equals(other.name) 
+           && value.equals(other.value);
+    }
+
+    @Override
     public String toString() {
         return name + '=' + value;
     }

@@ -420,7 +420,7 @@ public class Compressor extends Decompressor implements Closeable {
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
             return maxDiff(csm, ((DataBufferByte) db).getBankData(),
-                    csm2, ((DataBufferByte) db2).getBankData());
+                  csm2, ((DataBufferByte) db2).getBankData());
         case DataBuffer.TYPE_USHORT:
             return maxDiff(csm, ((DataBufferUShort) db).getData(),
                   csm2, ((DataBufferUShort) db2).getData());
@@ -444,11 +444,11 @@ public class Compressor extends Decompressor implements Closeable {
                         ComponentSampleModel csm2, short[] data2) {
         int w = csm.getWidth() * csm.getPixelStride();
         int h = csm.getHeight();
-        int sls = csm.getScanlineStride();
-        int sls2 = csm2.getScanlineStride();
+        int stride = csm.getScanlineStride();
+        int stride2 = csm2.getScanlineStride();
         int diff, maxDiff = 0;
         for (int y = 0; y < h; y++) {
-            for (int j = w, i = y * sls, i2 = y * sls2; j-- > 0; i++, i2++) {
+            for (int j = w, i = y * stride, i2 = y * stride2; j-- > 0; i++, i2++) {
                 if (maxDiff < (diff = Math.abs(data[i] - data2[i2])))
                     maxDiff = diff;
             }
@@ -456,17 +456,29 @@ public class Compressor extends Decompressor implements Closeable {
         return maxDiff;
     }
 
-    private int maxDiff(ComponentSampleModel csm, byte[][] data,
-                       ComponentSampleModel csm2, byte[][] data2) {
-        int w = csm.getWidth() * csm.getPixelStride();
+    private int maxDiff(ComponentSampleModel csm, byte[][] banks,
+                        ComponentSampleModel csm2, byte[][] banks2) {
+        int w = csm.getWidth();
         int h = csm.getHeight();
-        int sls = csm.getScanlineStride();
-        int sls2 = csm2.getScanlineStride();
+        int bands = csm.getNumBands();
+        int stride = csm.getScanlineStride();
+        int pixelStride = csm.getPixelStride();
+        int[] bankIndices = csm.getBankIndices();
+        int[] bandOffsets = csm.getBandOffsets();
+        int stride2 = csm2.getScanlineStride();
+        int pixelStride2 = csm2.getPixelStride();
+        int[] bankIndices2 = csm2.getBankIndices();
+        int[] bandOffsets2 = csm2.getBandOffsets();
         int diff, maxDiff = 0;
-        for (int b = 0; b < data.length; b++) {
+        for (int b = 0; b < bands; b++) {
+            byte[] bank = banks[bankIndices[b]];
+            byte[] bank2 = banks2[bankIndices2[b]];
+            int off = bandOffsets[b];
+            int off2 = bandOffsets2[b];
             for (int y = 0; y < h; y++) {
-                for (int j = w, i = y * sls, i2 = y * sls2; j-- > 0; i++, i2++) {
-                    if (maxDiff < (diff = Math.abs(data[b][i] - data2[b][i2])))
+                for (int x = w, i = y * stride + off, i2 = y * stride2 + off2;
+                        x-- > 0; i += pixelStride, i2 += pixelStride2) {
+                    if (maxDiff < (diff = Math.abs(bank[i] - bank2[i2])))
                         maxDiff = diff;
                 }
             }

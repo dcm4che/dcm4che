@@ -243,6 +243,124 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.57 NAME 'dcmBodyPartExamined'
   DESC 'DICOM attribute Body Part Examined (0018,0015)'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
+  DESC 'RFC 3881 Audit Source ID; device name if absent'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.2 NAME 'dcmAuditEnterpriseSiteID'
+  DESC 'RFC 3881 Audit Enterprise Site ID; value "dicomInstitutionName" is replaced by the institution name of the DICOM device'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.3 NAME 'dcmAuditSourceTypeCode'
+  DESC 'RFC 3881 Audit Source Type Code; value "dicomPrimaryDeviceType" is replaced by the primary type(s) of the DICOM device'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15)
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.4 NAME 'dcmAuditFacility'
+  DESC 'RFC 5424 Syslog Facility value of audit message: 0-23; 10 (authpriv) if absent'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE)
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.5 NAME 'dcmAuditSuccessSeverity'
+  DESC 'RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 0 (Success); 5 (notice) if absent.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.6 NAME 'dcmAuditMinorFailureSeverity'
+  DESC 'RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 4 (Minor failure); 4 (warning) if absent.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.7 NAME 'dcmAuditSeriousFailureSeverity'
+  DESC 'RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 8 (Serious failure); 3 (err) if absent.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.8 NAME 'dcmAuditMajorFailureSeverity'
+  DESC 'RFC 5424 Syslog Severity of audit message with Event Outcome Indicator 12 (Major failure); 2 (crit) if absent.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.9 NAME 'dcmAuditApplicationName'
+  DESC 'RFC 5424 Syslog APP-NAME of audit message; Audit Source ID if absent'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.10 NAME 'dcmAuditMessageID'
+  DESC 'RFC 5424 Syslog MSGID of audit message; DICOM+RFC3881 if absent'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.11 NAME 'dcmAuditMessageEncoding'
+  DESC 'Character encoding of RFC 5424 Syslog MSG part of audit message; UTF-8 if absent'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE)
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.12 NAME 'dcmAuditMessageBOM'
+  DESC 'Enable/disable Unicode BOM prefix of RFC 5424 Syslog MSG part of audit message; include BOM if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.13 NAME 'dcmAuditTimestampInUTC'
+  DESC 'Specify if RFC 5424 Syslog TIMESTAMP and the Event Date/Time of the audit message are specified in Coordinated Universal Time or in Local Time; use Local Time zone if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.14 NAME 'dcmAuditMessageFormatXML'
+  DESC 'Specify whether or not the XML audit message is formatted with linefeeds and indentation; disabled if absent'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.15 NAME 'dcmAuditMessageSchemaURI'
+  DESC 'URI of DICOM Audit Message Schema referenced in audit message'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.16 NAME 'dcmAuditRecordRepositoryDeviceReference'
+   DESC 'The DN of a dicomDeviceObject which provides the Audit Record Repository to which audit messages are sent'
+   EQUALITY distinguishedNameMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.1 NAME 'hl7ApplicationName'
+  DESC 'HL7 Application and Facility name (Application^Facility)'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.2 NAME 'hl7AcceptedSendingApplication'
+  DESC 'Application^Facility name of accepted Sending Application(s); any if absent'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.3 NAME 'hl7AcceptedMessageType'
+  DESC 'Message Type(s) (MessageType^TriggerEvent) of accepted messages'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.4 NAME 'hl7DefaultCharacterSet'
+  DESC 'Character Set used to decode received messages if not specified by MSH-18, ASCII if absent'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.1 NAME 'dcmIIOFormatName'
+  DESC 'Image IO Reader or Writer Format Name'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.2 NAME 'dcmJavaClassName'
+  DESC 'Fully qualified Java class or interface name'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.3 NAME 'dcmPatchJPEGLS'
+  DESC 'Patch JPEG-LS: "JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.4.3.4 NAME 'dcmImageWriteParam'
+  DESC 'Image Write parameter'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
@@ -311,3 +429,96 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
   MAY (
     dcmAETitle $
     dcmSOPClass ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
+  DESC 'Audit Logger related information'
+  SUP top STRUCTURAL
+  MUST (
+    cn $ 
+    dicomNetworkConnectionReference $
+    dcmAuditRecordRepositoryDeviceReference )
+  MAY (
+    dcmAuditSourceID $
+    dcmAuditEnterpriseSiteID $
+    dcmAuditSourceTypeCode $
+    dcmAuditFacility $
+    dcmAuditSuccessSeverity $
+    dcmAuditMinorFailureSeverity $
+    dcmAuditSeriousFailureSeverity $
+    dcmAuditMajorFailureSeverity $
+    dcmAuditApplicationName $
+    dcmAuditMessageID $
+    dcmAuditMessageEncoding $
+    dcmAuditMessageBOM $
+    dcmAuditTimestampInUTC $
+    dcmAuditMessageFormatXML $
+    dcmAuditMessageSchemaURI $
+    dicomInstalled ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
+  DESC 'Audit Record Repository related information'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn $ 
+    dicomNetworkConnectionReference )
+  MAY (
+    dicomInstalled ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.3 NAME 'hl7UniqueApplicationNamesRegistryRoot'
+  DESC 'Root of the Unique HL7 Application Name Registry Hierarchy'
+  SUP top STRUCTURAL
+  MUST ( cn ) 
+  MAY ( description ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
+  DESC 'HL7 Application information'
+  SUP top STRUCTURAL
+  MUST ( 
+    hl7ApplicationName $
+    dicomNetworkConnectionReference )
+  MAY (
+    hl7AcceptedSendingApplication $
+    hl7AcceptedMessageType $
+    hl7DefaultCharacterSet $
+    dicomInstalled ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.7 NAME 'hl7UniqueApplicationName'
+  DESC 'A Unique HL7 Application Entity title'
+  SUP top STRUCTURAL
+    MUST ( hl7ApplicationName ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.1 NAME 'dcmImageReaderFactory'
+  DESC 'Image Reader Factory related information'
+  SUP top STRUCTURAL
+  MUST ( cn ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.2 NAME 'dcmImageReader'
+  DESC 'Image Reader related information'
+  SUP top STRUCTURAL
+  MUST ( 
+    dicomTransferSyntax $ 
+    dcmIIOFormatName )
+  MAY (
+    dcmJavaClassName $
+    dcmPatchJPEGLS ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.3 NAME 'dcmImageWriterFactory'
+  DESC 'Image Reader Factory related information'
+  SUP top STRUCTURAL
+  MUST ( cn ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
+  DESC 'Image Reader related information'
+  SUP top STRUCTURAL
+  MUST ( 
+    dicomTransferSyntax $ 
+    dcmIIOFormatName )
+  MAY (
+    dcmJavaClassName $
+    dcmPatchJPEGLS $
+    dcmImageWriteParam ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
+  DESC 'Compression rule'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn $ 
+    dcmPhotometricInterpretation $ 
+    dcmBitsStored $ 
+    dicomTransferSyntax )
+  MAY (
+    dcmPixelRepresentation $
+    dcmAETitle $
+    dcmSOPClass $
+    dcmBodyPartExamined $
+    dcmImageWriteParam ) )

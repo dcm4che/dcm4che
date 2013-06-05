@@ -13,15 +13,6 @@ specified in [DICOM 2011, Part 15][1], Annex H.
 
 [1]: ftp://medical.nema.org/medical/dicom/2011/11_15pu.pdf
 
-There are still gaps compared to the functionality of dcm4che-2.x:
-
-- no compression/decompression
-- no IIO Image Reader/Writer implementation for DICOM images
-- no DICOM Image rendering support
-- no DICOM Hanging Protocol support
-
-In long term, 3.x will provide the functionality of 2.x.
-
 Build
 -----
 After installation of [Maven 3](http://maven.apache.org):
@@ -33,27 +24,39 @@ Modules
 - dcm4che-audit
 - dcm4che-conf
   - dcm4che-conf-api
+  - dcm4che-conf-api-hl7
   - dcm4che-conf-ldap
   - dcm4che-conf-ldap-audit
   - dcm4che-conf-ldap-hl7
+  - dcm4che-conf-ldap-imageio
   - dcm4che-conf-prefs
   - dcm4che-conf-prefs-audit
   - dcm4che-conf-prefs-hl7
+  - dcm4che-conf-prefs-imageio
 - dcm4che-core
+- dcm4che-emf
+- dcm4che-hl7
+- dcm4che-image
+- dcm4che-imageio
+- dcm4che-imageio-rle
 - dcm4che-net
 - dcm4che-net-audit
 - dcm4che-net-hl7
+- dcm4che-net-imageio
 - dcm4che-soundex
 - dcm4che-jboss-modules
 - dcm4che-servlet
 
 Utilities
 ---------
+- [dcm2dcm][]: Transcode DICOM file according the specified Transfer Syntax
+- [dcm2jpg][]: Convert DICOM image to JPEG or other image formats
 - [dcm2xml][]: Convert DICOM file in XML presentation
-- [dcmdump][]: Dump DICOM file in textual form
 - [dcmdir][]: Dump, create or update DICOMDIR file
+- [dcmdump][]: Dump DICOM file in textual form
 - [dcmqrscp][]: Simple DICOM archive
-- [emf2sf][]: Convert DICOM Enhanced Multi-frame image to corresponding legacy DICOM Single-frame images
+- [dcmvalidate][]: Validate DICOM object according a specified Information Object Definition
+- [emf2sf][]: Convert DICOM Enhanced Multi-frame image to legacy DICOM Single-frame images
 - [findscu][]: Invoke DICOM C-FIND Query Request
 - [getscu][]: Invoke DICOM C-GET Retrieve Request
 - [hl72xml][]: Convert HL7 v2.x message in XML presentation
@@ -74,10 +77,13 @@ Utilities
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
 - [xml2prefs][]: Import Java Preferences
 
+[dcm2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2dcm/README.md
+[dcm2jpg]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2jpg/README.md
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
-[dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
+[dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
 [dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
+[dcmvalidate]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmvalidate/README.md
 [emf2sf]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-emf2sf/README.md
 [findscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-findscu/README.md
 [getscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-getscu/README.md

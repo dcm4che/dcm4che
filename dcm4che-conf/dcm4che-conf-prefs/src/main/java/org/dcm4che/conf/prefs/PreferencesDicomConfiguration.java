@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -429,13 +428,11 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     public void store(AttributeCoercions acs, Preferences parentNode) {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
-        int acIndex = 1;
         for (AttributeCoercion ac : acs)
-            storeTo(ac, acsNode.node("" + acIndex ++));
+            storeTo(ac, acsNode.node(ac.getCommonName()));
     }
 
     private static void storeTo(AttributeCoercion ac, Preferences prefs) {
-        PreferencesUtils.storeNotNull(prefs, "cn", ac.getCommonName());
         PreferencesUtils.storeNotNull(prefs, "dcmDIMSE", ac.getDIMSE());
         PreferencesUtils.storeNotNull(prefs, "dicomTransferRole", ac.getRole());
         PreferencesUtils.storeNotEmpty(prefs, "dcmAETitle", ac.getAETitles());
@@ -1005,23 +1002,23 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public void merge(AttributeCoercions prevs, AttributeCoercions acs,
             Preferences parentNode) throws BackingStoreException {
         Preferences acsNode = parentNode.node("dcmAttributeCoercion");
-        int acIndex = 1;
-        Iterator<AttributeCoercion> prevIter = prevs.iterator();
-        for (AttributeCoercion ac : acs) {
-            Preferences acNode = acsNode.node("" + acIndex++);
-            if (prevIter.hasNext())
-                storeDiffs(acNode, prevIter.next(), ac);
-            else
-                storeTo(ac, acNode);
+        for (AttributeCoercion prev : prevs) {
+            String cn = prev.getCommonName();
+            if (acs.findByCommonName(prev.getCommonName()) == null)
+                acsNode.node(cn).removeNode();
         }
-        while (prevIter.hasNext()) {
-            prevIter.next();
-            acsNode.node("" + acIndex++).removeNode();
+        for (AttributeCoercion ac : acs) {
+            String cn = ac.getCommonName();
+            Preferences acNode = acsNode.node(cn);
+            AttributeCoercion prev = prevs.findByCommonName(cn);
+            if (prev == null)
+                storeTo(ac, acNode);
+            else
+                storeDiffs(acNode, prev, ac);
         }
     }
 
     private void storeDiffs(Preferences prefs, AttributeCoercion a, AttributeCoercion b) {
-        PreferencesUtils.storeDiff(prefs, "cn", a.getCommonName(), b.getCommonName());
         PreferencesUtils.storeDiff(prefs, "dcmDIMSE", a.getDIMSE(), b.getDIMSE());
         PreferencesUtils.storeDiff(prefs, "dicomTransferRole", a.getRole(), b.getRole());
         PreferencesUtils.storeDiff(prefs, "dcmAETitle", a.getAETitles(), b.getAETitles());
@@ -1124,10 +1121,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public void load(AttributeCoercions acs, Preferences aeNode)
             throws BackingStoreException {
         Preferences acsNode = aeNode.node("dcmAttributeCoercion");
-        for (String acIndex : acsNode.childrenNames()) {
-            Preferences acNode = acsNode.node(acIndex);
+        for (String cn : acsNode.childrenNames()) {
+            Preferences acNode = acsNode.node(cn);
             acs.add(new AttributeCoercion(
-                    acNode.get("cn", null),
+                    cn,
                     PreferencesUtils.stringArray(acNode, "dcmSOPClass"),
                     Dimse.valueOf(acNode.get("dcmDIMSE", null)),
                     TransferCapability.Role.valueOf(

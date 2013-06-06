@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che.tool.hl7rcv.HL7Rcv
-set MAIN_JAR=dcm4che-tool-hl7rcv-3.2.0.jar
+set MAIN_JAR=dcm4che-tool-hl7rcv-3.2.1.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -42,11 +42,11 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\hl7rcv\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.2.0.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-hl7-3.2.0.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.2.0.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-hl7-3.2.0.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.2.0.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.2.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-hl7-3.2.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.2.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-hl7-3.2.1.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.2.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar

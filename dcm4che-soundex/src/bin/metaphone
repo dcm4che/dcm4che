@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che.soundex.Metaphone
-MAIN_JAR=dcm4che-soundex-3.2.0.jar
+MAIN_JAR=dcm4che-soundex-3.2.1.jar
 
 DIRNAME="`dirname "$0"`"
 

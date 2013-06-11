@@ -267,12 +267,19 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 b.getConnections(),
                 deviceDN);
         LdapUtils.storeDiff(mods, "dcmAuditRecordRepositoryDeviceReference",
-                config.deviceRef(a.getAuditRecordRepositoryDeviceName()),
-                config.deviceRef(b.getAuditRecordRepositoryDeviceName()));
+                arrDeviceRef(a),
+                arrDeviceRef(b));
         LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
         return mods;
+    }
+
+    private String arrDeviceRef(AuditLogger a) {
+        Device arrDevice = a.getAuditRecordRepositoryDevice();
+        return arrDevice != null
+                ? config.deviceRef(arrDevice.getDeviceName())
+                : null;
     }
 
 }

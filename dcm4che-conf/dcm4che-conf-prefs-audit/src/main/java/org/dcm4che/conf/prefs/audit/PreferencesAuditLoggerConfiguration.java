@@ -255,10 +255,17 @@ public class PreferencesAuditLoggerConfiguration
                 a.getConnections(), a.getDevice().listConnections(), 
                 b.getConnections(), b.getDevice().listConnections());
         PreferencesUtils.storeDiff(prefs, "dcmAuditRecordRepositoryDeviceReference",
-                config.deviceRef(a.getAuditRecordRepositoryDeviceName()),
-                config.deviceRef(b.getAuditRecordRepositoryDeviceName()));
+                arrDeviceRef(a),
+                arrDeviceRef(b));
         PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+    }
+
+    private String arrDeviceRef(AuditLogger a) {
+        Device arrDevice = a.getAuditRecordRepositoryDevice();
+        return arrDevice != null
+                ? config.deviceRef(arrDevice.getDeviceName())
+                : null;
     }
 }

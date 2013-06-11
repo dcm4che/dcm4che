@@ -301,7 +301,7 @@ public class LdapUtils {
         return val ? "TRUE" : "FALSE";
     }
 
-    private static String toString(Object o) {
+    public static String toString(Object o) {
         return (o instanceof Boolean)
                 ? toString(((Boolean) o).booleanValue())
                 : o != null ? o.toString() : null;

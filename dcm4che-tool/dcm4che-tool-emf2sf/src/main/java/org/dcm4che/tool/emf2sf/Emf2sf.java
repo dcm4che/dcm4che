@@ -151,7 +151,7 @@ public class Emf2sf {
         Attributes src;
         DicomInputStream dis = new DicomInputStream(file);
         try {
-            dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
+            dis.setIncludeBulkData(IncludeBulkData.URI);
             src = dis.readDataset(-1, -1);
         } finally {
             SafeClose.close(dis);

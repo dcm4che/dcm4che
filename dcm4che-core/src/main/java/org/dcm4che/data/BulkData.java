@@ -38,12 +38,14 @@
 
 package org.dcm4che.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.StringTokenizer;
 
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
@@ -53,7 +55,7 @@ import org.dcm4che.util.StreamUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-public class BulkDataLocator implements Value {
+public class BulkData implements Value {
 
     public static final int MAGIC_LEN = 0xfbfb;
 
@@ -62,7 +64,7 @@ public class BulkDataLocator implements Value {
     public final long offset;
     public final int length;
 
-    public BulkDataLocator(String uri, String transferSyntax, long offset,
+    public BulkData(String uri, String transferSyntax, long offset,
             int length) {
         if (transferSyntax == null)
             throw new NullPointerException("transferSyntax");
@@ -79,10 +81,44 @@ public class BulkDataLocator implements Value {
 
     @Override
     public String toString() {
-        return "BulkDataLocator[uri=" +  uri 
+        return "BulkData[uri=" +  uri 
                 + ", tsuid=" + transferSyntax
-                + ", pos=" + offset
-                + ", len=" + length + "]";
+                + ", offset=" + offset
+                + ", length=" + length + "]";
+    }
+
+    public String toURI() {
+        return uri + "?transferSyntax=" + transferSyntax
+                   + ",offset=" + offset
+                   + ",length=" + length;
+    }
+
+    public static BulkData fromURI(String s) {
+        String transferSyntax = UID.ImplicitVRLittleEndian;
+        int offset = 0;
+        int length = -1;
+        StringTokenizer stk = new StringTokenizer(s, "?=, '\"");
+        String uri = stk.nextToken();
+        while (stk.hasMoreTokens()) {
+            String tk = stk.nextToken();
+            if (tk.equals("transferSyntax"))
+                transferSyntax = stk.nextToken();
+            else if (tk.equals("offset"))
+                offset = Integer.parseInt(stk.nextToken());
+            else if (tk.equals("length"))
+                length = Integer.parseInt(stk.nextToken());
+        }
+        return new BulkData(uri, transferSyntax, offset, length);
+    }
+
+    public File getFile() {
+        try {
+            return new File(new URI(uri));
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("uri: " + uri);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("uri: " + uri);
+        }
     }
 
     public InputStream openStream() throws IOException {
@@ -156,6 +192,6 @@ public class BulkDataLocator implements Value {
         long off = ois.readLong();
         String uri = ois.readUTF();
         String tsuid = ois.readUTF();
-        return new BulkDataLocator(uri, tsuid, off, len);
+        return new BulkData(uri, tsuid, off, len);
     }
 }

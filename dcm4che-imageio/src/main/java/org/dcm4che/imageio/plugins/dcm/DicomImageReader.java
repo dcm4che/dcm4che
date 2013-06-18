@@ -60,7 +60,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
@@ -104,7 +104,7 @@ public class DicomImageReader extends ImageReader {
 
     private DicomInputStream dis;
 
-    private BulkDataLocator pixeldata;
+    private BulkData pixeldata;
 
     private final VR.Holder pixeldataVR = new VR.Holder();
 
@@ -446,7 +446,7 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException("Input not set");
 
         dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
-        dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
+        dis.setIncludeBulkData(IncludeBulkData.URI);
         dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
@@ -465,12 +465,12 @@ public class DicomImageReader extends ImageReader {
                                           : DataBuffer.TYPE_USHORT;
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
-            if (pixeldata instanceof BulkDataLocator) {
+            if (pixeldata instanceof BulkData) {
                 iis.setByteOrder(ds.bigEndian() 
                         ? ByteOrder.BIG_ENDIAN
                         : ByteOrder.LITTLE_ENDIAN);
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
-                this.pixeldata = (BulkDataLocator) pixeldata;
+                this.pixeldata = (BulkData) pixeldata;
             } else {
                 String tsuid = dis.getTransferSyntax();
                 ImageReaderParam param =

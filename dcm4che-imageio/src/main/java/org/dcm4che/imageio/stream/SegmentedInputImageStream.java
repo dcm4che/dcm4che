@@ -43,7 +43,7 @@ import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 
 /**
@@ -57,16 +57,15 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
     private final int[] segmentLengths;
     private int curSegment;
     private long curSegmentEnd;
-    
 
     public SegmentedInputImageStream(ImageInputStream stream,
             Fragments pixeldataFragments, int frameIndex) throws IOException {
         long[] offsets = new long[pixeldataFragments.size()-(frameIndex+1)];
         int[] length = new int[offsets.length];
         for (int i = 0; i < length.length; i++) {
-            BulkDataLocator locator = (BulkDataLocator) pixeldataFragments.get(i+frameIndex+1);
-            offsets[i] = locator.offset;
-            length[i] = locator.length;
+            BulkData bulkData = (BulkData) pixeldataFragments.get(i+frameIndex+1);
+            offsets[i] = bulkData.offset;
+            length[i] = bulkData.length;
         }
         this.stream = stream;
         this.segmentPositionsList = offsets;

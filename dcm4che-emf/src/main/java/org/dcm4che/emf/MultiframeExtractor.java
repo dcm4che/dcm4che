@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Sequence;
 import org.dcm4che.data.Tag;
@@ -320,9 +320,9 @@ public class MultiframeExtractor {
         if (pixelData instanceof byte[]) {
             dest.setBytes(Tag.PixelData, vr.vr, extractPixelData(
                     (byte[]) pixelData, frame, calcFrameLength(src)));
-        } else if (pixelData instanceof BulkDataLocator) {
+        } else if (pixelData instanceof BulkData) {
             dest.setValue(Tag.PixelData, vr.vr, extractPixelData(
-                    (BulkDataLocator) pixelData, frame, calcFrameLength(src)));
+                    (BulkData) pixelData, frame, calcFrameLength(src)));
         } else {
             Fragments destFrags = dest.newFragments(Tag.PixelData, vr.vr, 2);
             destFrags.add(null);
@@ -330,9 +330,9 @@ public class MultiframeExtractor {
         }
     }
 
-    private BulkDataLocator extractPixelData(BulkDataLocator src, int frame,
+    private BulkData extractPixelData(BulkData src, int frame,
             int length) {
-        return new BulkDataLocator(src.uri, src.transferSyntax,
+        return new BulkData(src.uri, src.transferSyntax,
                 src.offset + frame * length, length);
     }
 

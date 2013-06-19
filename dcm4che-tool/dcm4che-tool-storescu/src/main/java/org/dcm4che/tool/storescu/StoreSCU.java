@@ -441,7 +441,7 @@ public class StoreSCU {
         } else {
             DicomInputStream in = new DicomInputStream(f);
             try {
-                in.setIncludeBulkData(IncludeBulkData.LOCATOR);
+                in.setIncludeBulkData(IncludeBulkData.URI);
                 Attributes data = in.readDataset(-1, -1);
                 if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
                     iuid = data.getString(Tag.SOPInstanceUID);

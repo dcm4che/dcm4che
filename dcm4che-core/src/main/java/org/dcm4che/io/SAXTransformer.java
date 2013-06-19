@@ -38,6 +38,7 @@
 
 package org.dcm4che.io;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -61,6 +62,13 @@ public abstract class SAXTransformer {
             throws TransformerConfigurationException {
         TransformerHandler th = factory.newTransformerHandler(templates);
         th.setResult(new SAXResult(new ContentHandlerAdapter(result)));
+        return new SAXWriter(th);
+    }
+
+    public static SAXWriter getSAXWriter(Result result)
+            throws TransformerConfigurationException {
+        TransformerHandler th = factory.newTransformerHandler();
+        th.setResult(result);
         return new SAXWriter(th);
     }
 

@@ -98,7 +98,7 @@ enum StringValueType implements ValueType {
         protected void toXML(int i, String s, SAXWriter saxWriter)
                 throws SAXException {
             if (s != null)
-                saxWriter.writePersonName(i, new PersonName(s));
+                saxWriter.writePersonName(i, new PersonName(s, true));
         }
     },
     DS("\\", null) {

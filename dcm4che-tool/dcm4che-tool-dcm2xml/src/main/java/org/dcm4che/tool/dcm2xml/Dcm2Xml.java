@@ -78,7 +78,7 @@ public class Dcm2Xml {
     private boolean indent = false;
     private boolean includeKeyword = true;
     private boolean includeNamespaceDeclaration = false;
-    private IncludeBulkData includeBulkData = IncludeBulkData.LOCATOR;
+    private IncludeBulkData includeBulkData = IncludeBulkData.URI;
     private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;

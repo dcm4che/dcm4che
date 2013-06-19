@@ -295,7 +295,7 @@ public class Dcm2Dcm {
         Attributes dataset;
         DicomInputStream dis = new DicomInputStream(src);
         try {
-            dis.setIncludeBulkData(IncludeBulkData.LOCATOR);
+            dis.setIncludeBulkData(IncludeBulkData.URI);
             fmi = dis.readFileMetaInformation();
             dataset = dis.readDataset(-1, -1);
         } finally {

@@ -55,7 +55,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.ItemPointer;
@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
 public class DicomInputStream extends FilterInputStream
     implements DicomInputHandler {
 
-    public enum IncludeBulkData { NO, YES, LOCATOR }
+    public enum IncludeBulkData { NO, YES, URI }
 
     private static final Logger LOG = 
         LoggerFactory.getLogger(DicomInputStream.class);
@@ -496,12 +496,12 @@ public class DicomInputStream extends FilterInputStream
             readSequence(length, attrs, tag);
         } else if (length == -1) {
             readFragments(attrs, tag, vr);
-        } else if (length == BulkDataLocator.MAGIC_LEN
+        } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
-            attrs.setValue(tag, vr, BulkDataLocator.deserializeFrom(
+            attrs.setValue(tag, vr, BulkData.deserializeFrom(
                     (ObjectInputStream) super.in));
-        } else if (includeBulkData == IncludeBulkData.LOCATOR && isBulkData(attrs)) {
-            attrs.setValue(tag, vr, createBulkDataLocator());
+        } else if (includeBulkData == IncludeBulkData.URI && isBulkData(attrs)) {
+            attrs.setValue(tag, vr, createBulkData());
         } else {
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
@@ -513,10 +513,10 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    public BulkDataLocator createBulkDataLocator() throws IOException {
-            BulkDataLocator locator;
+    public BulkData createBulkData() throws IOException {
+            BulkData locator;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
-            locator = new BulkDataLocator(uri, tsuid, pos, length);
+            locator = new BulkData(uri, tsuid, pos, length);
             skipFully(length);
         } else {
             if (blkOut == null) {
@@ -537,7 +537,7 @@ public class DicomInputStream extends FilterInputStream
                     blkOut = null;
                 }
             }
-            locator = new BulkDataLocator(blkURI,
+            locator = new BulkData(blkURI,
                     (super.in instanceof InflaterInputStream)
                             ? UID.ExplicitVRLittleEndian
                             : tsuid,
@@ -584,11 +584,11 @@ public class DicomInputStream extends FilterInputStream
             skipFully(length);
         } else if (length == 0) {
             frags.add(ByteUtils.EMPTY_BYTES);
-        } else if (length == BulkDataLocator.MAGIC_LEN
+        } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
-            frags.add(BulkDataLocator.deserializeFrom((ObjectInputStream) super.in));
-        } else if (includeBulkData == IncludeBulkData.LOCATOR && isBulkDataFragment(frags)) {
-            frags.add(createBulkDataLocator());
+            frags.add(BulkData.deserializeFrom((ObjectInputStream) super.in));
+        } else if (includeBulkData == IncludeBulkData.URI && isBulkDataFragment(frags)) {
+            frags.add(createBulkData());
         } else {
             byte[] b = readValue();
             if (bigEndian != frags.bigEndian())

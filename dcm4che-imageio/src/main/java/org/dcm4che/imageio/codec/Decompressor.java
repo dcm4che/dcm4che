@@ -66,7 +66,7 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.VR;
@@ -122,7 +122,6 @@ public class Decompressor {
 
         if (tstype == null)
             throw new IllegalArgumentException("Unknown Transfer Syntax: " + tsuid);
-        this.file = fileOf(pixeldata);
         this.rows = dataset.getInt(Tag.Rows, 0);
         this.cols = dataset.getInt(Tag.Columns, 0);
         this.samples = dataset.getInt(Tag.SamplesPerPixel, 0);
@@ -149,6 +148,7 @@ public class Decompressor {
                         "Number of Pixel Data Fragments: "
                         + numFragments + " does not match " + frames);
 
+            this.file = ((BulkData) pixeldataFragments.get(1)).getFile();
             ImageReaderFactory.ImageReaderParam param =
                     ImageReaderFactory.getImageReaderParam(tsuid);
             if (param == null)
@@ -255,32 +255,27 @@ public class Decompressor {
         return offsets;
     }
 
-    static File fileOf(Object o) {
-        if (o instanceof Fragments)
-            return fileOf(((Fragments) o).get(1));
-
-        try {
-            return new File(new URI(((BulkDataLocator) o).uri));
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Unsupported Pixel Data : "
-                    + o.getClass());
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid URI: "
-                    + ((BulkDataLocator) o).uri);
-        }
-    }
-
-    private void writeTo(OutputStream out) throws IOException {
-        ImageInputStream iis = new FileImageInputStream(file);
+    public void writeTo(OutputStream out) throws IOException {
+        ImageInputStream iis = createImageInputStream();
         try {
             for (int i = 0; i < frames; ++i)
-                writeTo(decompressFrame(iis, i).getRaster(), out);
+                writeFrameTo(iis, i, out);
             if ((length & 1) != 0)
                 out.write(0);
         } finally {
             try { iis.close(); } catch (IOException ignore) {}
             decompressor.dispose();
         }
+    }
+
+    public FileImageInputStream createImageInputStream()
+            throws IOException {
+        return new FileImageInputStream(file);
+    }
+
+    public void writeFrameTo(ImageInputStream iis, int frameIndex,
+            OutputStream out) throws IOException {
+        writeTo(decompressFrame(iis, frameIndex).getRaster(), out);
     }
 
     @SuppressWarnings("resource")

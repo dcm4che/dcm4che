@@ -61,7 +61,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
@@ -84,7 +84,7 @@ public class Compressor extends Decompressor implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Compressor.class);
 
-    private BulkDataLocator pixeldata;
+    private BulkData pixeldata;
     private ImageWriter compressor;
     private ImageReader verifier;
     private PatchJPEGLS patchJPEGLS;
@@ -105,8 +105,8 @@ public class Compressor extends Decompressor implements Closeable {
         if (pixeldata == null)
             return;
 
-        if (pixeldata instanceof BulkDataLocator) {
-            this.pixeldata = (BulkDataLocator) pixeldata;
+        if (pixeldata instanceof BulkData) {
+            this.pixeldata = (BulkData) pixeldata;
             if (pmi.isSubSambled())
                 throw new UnsupportedOperationException(
                         "Unsupported Photometric Interpretation: " + pmi);

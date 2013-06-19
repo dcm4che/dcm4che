@@ -49,7 +49,7 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.SpecificCharacterSet;
 import org.dcm4che.data.Tag;
 import org.dcm4che.data.UID;
@@ -196,10 +196,10 @@ public class DicomOutputStream extends FilterOutputStream {
     }
 
     public void writeAttribute(int tag, VR vr, Value val) throws IOException {
-        if (val instanceof BulkDataLocator
+        if (val instanceof BulkData
                 && super.out instanceof ObjectOutputStream) {
-            writeHeader(tag, vr, BulkDataLocator.MAGIC_LEN);
-            ((BulkDataLocator) val).serializeTo((ObjectOutputStream) super.out);
+            writeHeader(tag, vr, BulkData.MAGIC_LEN);
+            ((BulkData) val).serializeTo((ObjectOutputStream) super.out);
         } else {
             int length = val.getEncodedLength(encOpts, explicitVR, vr);
             writeHeader(tag, vr, length);

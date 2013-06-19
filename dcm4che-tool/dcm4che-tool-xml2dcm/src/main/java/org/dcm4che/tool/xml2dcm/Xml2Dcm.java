@@ -74,7 +74,7 @@ public class Xml2Dcm {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.xml2dcm.messages");
 
-    private IncludeBulkData includeBulkData = IncludeBulkData.LOCATOR;
+    private IncludeBulkData includeBulkData = IncludeBulkData.URI;
     private boolean catBlkFiles = false;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;

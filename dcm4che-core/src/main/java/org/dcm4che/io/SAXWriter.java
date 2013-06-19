@@ -41,7 +41,7 @@ package org.dcm4che.io;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.BulkDataLocator;
+import org.dcm4che.data.BulkData;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.PersonName;
@@ -189,8 +189,8 @@ public class SAXWriter implements DicomInputHandler {
                 if (frag instanceof Value && ((Value) frag).isEmpty())
                     continue;
                 startElement("DataFragment", "number", number);
-                if (frag instanceof BulkDataLocator)
-                    writeBulkDataLocator((BulkDataLocator) frag);
+                if (frag instanceof BulkData)
+                    writeBulkData((BulkData) frag);
                 else {
                     byte[] b = (byte[]) frag;
                     if (bigEndian)
@@ -199,8 +199,8 @@ public class SAXWriter implements DicomInputHandler {
                 }
                 endElement("DataFragment");
             }
-        } else if (value instanceof BulkDataLocator) {
-            writeBulkDataLocator((BulkDataLocator) value);
+        } else if (value instanceof BulkData) {
+            writeBulkData((BulkData) value);
         }
     }
 
@@ -225,9 +225,9 @@ public class SAXWriter implements DicomInputHandler {
             if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
             } else if (len > 0) {
-                if (dis.getIncludeBulkData() ==  IncludeBulkData.LOCATOR
+                if (dis.getIncludeBulkData() ==  IncludeBulkData.URI
                         && dis.isBulkData(attrs)) {
-                    writeBulkDataLocator(dis.createBulkDataLocator());
+                    writeBulkData(dis.createBulkData());
                 } else {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
@@ -281,9 +281,9 @@ public class SAXWriter implements DicomInputHandler {
             frags.add(ByteUtils.EMPTY_BYTES); // increment size
             if (len > 0) {
                 startElement("DataFragment", "number", frags.size());
-                if (dis.getIncludeBulkData() == IncludeBulkData.LOCATOR
+                if (dis.getIncludeBulkData() == IncludeBulkData.URI
                         && dis.isBulkDataFragment(frags)) {
-                    writeBulkDataLocator(dis.createBulkDataLocator());
+                    writeBulkData(dis.createBulkData());
                 } else {
                     byte[] b = dis.readValue();
                     if (dis.bigEndian())
@@ -314,14 +314,10 @@ public class SAXWriter implements DicomInputHandler {
         endElement("Value");
     }
 
-    private void writeBulkDataLocator(BulkDataLocator bdl)
+    private void writeBulkData(BulkData bulkData)
             throws SAXException {
-        startElement("BulkDataLocator"); 
-        writeElement("Length", Integer.toString(bdl.length));
-        writeElement("Offset", Long.toString(bdl.offset));
-        writeElement("TransferSyntax", bdl.transferSyntax);
-        writeElement("URI", bdl.uri);
-        endElement("BulkDataLocator");
+        startElement("BulkData", "URI", bulkData.toURI()); 
+        endElement("BulkData");
     }
 
     private void writeElement(String qname, String s) throws SAXException {

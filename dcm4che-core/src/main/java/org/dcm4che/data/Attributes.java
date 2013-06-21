@@ -1016,9 +1016,7 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return defVal;
 
-            return vr.toDate(value,
-                    vr != VR.DA ? getTimeZone() : null,
-                    valueIndex, false, defVal);
+            return vr.toDate(value, getTimeZone(), valueIndex, false, defVal);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;
@@ -1535,8 +1533,7 @@ public class Attributes implements Serializable {
     }
 
     public Object setDate(String privateCreator, int tag, VR vr, Date... ds) {
-        return set(privateCreator, tag, vr, 
-                vr.toValue(ds, vr != VR.DA ? getTimeZone() : null));
+        return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone()));
     }
 
     public void setDate(long tag, Date dt) {

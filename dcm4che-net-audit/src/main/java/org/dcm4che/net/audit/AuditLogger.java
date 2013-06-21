@@ -72,7 +72,7 @@ import org.dcm4che.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class AuditLogger extends DeviceExtension {
 
@@ -166,6 +166,7 @@ public class AuditLogger extends DeviceExtension {
     private boolean includeBOM = true;
     private boolean formatXML;
     private Boolean installed;
+    private Boolean includeInstanceUID = false;
 
     private final List<Connection> conns = new ArrayList<Connection>(1);
 
@@ -394,6 +395,14 @@ public class AuditLogger extends DeviceExtension {
                 && device != null && !device.isInstalled())
             throw new IllegalStateException("owning device not installed");
         this.installed = installed;
+    }
+
+    public Boolean isIncludeInstanceUID() {
+        return includeInstanceUID;
+    }
+
+    public void setIncludeInstanceUID(Boolean includeInstanceUID) {
+        this.includeInstanceUID = includeInstanceUID;
     }
 
     public void addConnection(Connection conn) {

@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class PreferencesAuditLoggerConfiguration
         extends PreferencesDicomConfigurationExtension {
@@ -105,6 +105,8 @@ public class PreferencesAuditLoggerConfiguration
                 logger.getDevice().listConnections());
         PreferencesUtils.storeNotNull(prefs, "dcmAuditRecordRepositoryDeviceReference",
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditIncludeInstanceUID", 
+                logger.isIncludeInstanceUID(), false);
         PreferencesUtils.storeNotNull(prefs, "dicomInstalled", logger.getInstalled());
     }
 
@@ -175,6 +177,8 @@ public class PreferencesAuditLoggerConfiguration
                 prefs.getBoolean("dcmAuditMessageFormatXML", false));
         logger.setTimestampInUTC(
                 prefs.getBoolean("dcmAuditTimestampInUTC", false));
+        logger.setIncludeInstanceUID(
+                prefs.getBoolean("dcmAuditIncludeInstanceUID", false));
         logger.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
     }
 
@@ -257,6 +261,10 @@ public class PreferencesAuditLoggerConfiguration
         PreferencesUtils.storeDiff(prefs, "dcmAuditRecordRepositoryDeviceReference",
                 arrDeviceRef(a),
                 arrDeviceRef(b));
+        PreferencesUtils.storeDiff(prefs, "dcmAuditIncludeInstanceUID", 
+                a.isIncludeInstanceUID(), 
+                b.isIncludeInstanceUID(),
+                false);
         PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());

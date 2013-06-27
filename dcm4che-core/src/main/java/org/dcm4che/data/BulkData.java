@@ -89,15 +89,15 @@ public class BulkData implements Value {
 
     public String toURI() {
         return uri + "?transferSyntax=" + transferSyntax
-                   + ",offset=" + offset
-                   + ",length=" + length;
+                   + "&offset=" + offset
+                   + "&length=" + length;
     }
 
     public static BulkData fromURI(String s) {
         String transferSyntax = UID.ImplicitVRLittleEndian;
         int offset = 0;
         int length = -1;
-        StringTokenizer stk = new StringTokenizer(s, "?=, '\"");
+        StringTokenizer stk = new StringTokenizer(s, "?=& '\"");
         String uri = stk.nextToken();
         while (stk.hasMoreTokens()) {
             String tk = stk.nextToken();

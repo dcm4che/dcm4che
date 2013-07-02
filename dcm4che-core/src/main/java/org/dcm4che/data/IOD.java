@@ -704,8 +704,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
     public static IOD load(String uri) throws IOException {
         if (uri.startsWith("resource:")) {
             try {
-                uri = Thread.currentThread().getContextClassLoader()
-                        .getResource(uri.substring(9)).toString();
+                uri = StringUtils.getResource(uri.substring(9), IOD.class);
             } catch (NullPointerException npe) {
                 throw new FileNotFoundException(uri);
             }

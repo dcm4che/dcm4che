@@ -288,4 +288,33 @@ public class StringUtils {
         URL url = tcl.getResource(name);
         return url != null ? url.toString() : null;
     }
+    
+    public static String getResource(String resource, Object source) {
+        Class<?> c = source == null ? null : source.getClass();
+        return getResource(resource, c);
+    }
+
+    public static String getResource(String resource, Class<?> c) {
+        URL url = getResourceURL(resource, c);
+        return url != null ? url.toString() : null;
+    }
+
+    public static URL getResourceURL(String resource, Object source) {
+        Class<?> c = source == null ? null : source.getClass();
+        return getResourceURL(resource, c);
+    }
+
+    public static URL getResourceURL(String resource, Class<?> c) {
+        if (c != null) {
+            ClassLoader classLoader = c.getClassLoader();
+            if (classLoader != null) {
+                return classLoader.getResource(resource);
+            }
+        }
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader != null) {
+            return classLoader.getResource(resource);
+        }
+        return ClassLoader.getSystemResource(resource);
+    }
 }

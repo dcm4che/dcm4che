@@ -540,10 +540,10 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
         private DataElementType typeOf(String s) throws SAXException {
+            if (s == null)
+                throw new SAXException("missing type attribute");
             try {
                 return DataElementType.valueOf("TYPE_" + s);
-            } catch (NullPointerException e) {
-                throw new SAXException("missing type attribute");
             } catch (IllegalArgumentException e) {
                 throw new SAXException("unrecognized type=\"" + s + '"');
             }

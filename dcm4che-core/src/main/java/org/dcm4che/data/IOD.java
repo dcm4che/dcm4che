@@ -117,8 +117,15 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return this;
         }
 
-        public DataElement setItemIOD(IOD iod) {
-            this.values = iod;
+        public DataElement addItemIOD(IOD iod) {
+            if (this.values == null) {
+                this.values = new IOD[] { iod };
+            } else {
+                IOD[] iods = (IOD[]) this.values;
+                iods = Arrays.copyOf(iods, iods.length);
+                iods[iods.length - 1] = iod;
+                this.values = iods;
+            }
             return this;
         }
 
@@ -342,6 +349,25 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
     }
 
+    private DataElementType type;
+    private Condition condition;
+
+    public void setType(DataElementType type) {
+        this.type = type;
+    }
+
+    public DataElementType getType() {
+        return type;
+    }
+
+    public void setCondition(Condition condition) {
+        this.condition = condition;
+    }
+
+    public Condition getCondition() {
+        return condition;
+    }
+
     public void parse(String uri) throws IOException {
         try {
             SAXParserFactory f = SAXParserFactory.newInstance();
@@ -356,9 +382,10 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
     private static class SAXHandler extends DefaultHandler {
 
-        private DataElement el;
         private StringBuilder sb = new StringBuilder();
         private boolean processCharacters;
+        private boolean elementConditions;
+        private boolean itemConditions;
         private String idref;
         private List<String> values = new ArrayList<String>();
         private LinkedList<IOD> iodStack = new LinkedList<IOD>();
@@ -392,7 +419,9 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 if (qName.equals("If"))
                     startIf(atts.getValue("id"), atts.getValue("idref"));
                 else if (qName.equals("Item"))
-                    startItem(atts.getValue("id"), atts.getValue("idref"));
+                    startItem(atts.getValue("id"),
+                            atts.getValue("idref"),
+                            atts.getValue("type"));
                 break;
             case 'M':
                 if (qName.equals("MemberOf"))
@@ -534,9 +563,11 @@ public class IOD extends ArrayList<IOD.DataElement> {
                             + vm + '"');
                 }
             }
-            el = new DataElement(tag, vr, type, minVM, maxVM,
+            DataElement el = new DataElement(tag, vr, type, minVM, maxVM,
                     valueNumberOf(valueNumberStr, 0));
             iod.add(el);
+            elementConditions = true;
+            itemConditions = false;
         }
 
         private DataElementType typeOf(String s) throws SAXException {
@@ -600,15 +631,22 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
 
+        private DataElement getLastDataElement() {
+            IOD iod = iodStack.getLast();
+            return iod.get(iod.size()-1);
+        }
+
         private void endDataElement() {
             if (values.isEmpty())
                 return;
 
+            DataElement el = getLastDataElement();
             if (el.vr.isIntType())
                 el.setValues(parseInts(values));
             else
                 el.setValues(values.toArray(new String[values.size()]));
             values.clear();
+            elementConditions = false;
         }
 
         private int[] parseInts(List<String> list) {
@@ -627,30 +665,38 @@ public class IOD extends ArrayList<IOD.DataElement> {
             values.add(sb.toString());
         }
 
-        private void startItem(String id, String idref) throws SAXException {
+        private void startItem(String id, String idref, String type) throws SAXException {
             IOD iod;
             if (idref != null) {
+                if (type != null)
+                    throw new SAXException("<Item> with idref must not specify type");
+                    
                 iod = id2iod.get(idref);
                 if (iod == null)
                     throw new SAXException(
                             "could not resolve <Item idref:\"" + idref + "\"/>");
             } else { 
                 iod = new IOD();
+                if (type != null)
+                    iod.setType(typeOf(type));
             }
-            el.setItemIOD(iod);
+            getLastDataElement().addItemIOD(iod);
             iodStack.add(iod);
             if (id != null)
                 id2iod.put(id, iod);
 
             this.idref = idref;
+            itemConditions = true;
+            elementConditions = false;
         }
 
         private void endItem() {
             iodStack.removeLast().trimToSize();
+            itemConditions = false;
         }
 
         private void startIf(String id, String idref) throws SAXException {
-            if (el == null || !conditionStack.isEmpty())
+            if (!conditionStack.isEmpty())
                 throw new SAXException("unexpected <If>");
 
             Condition cond;
@@ -670,11 +716,10 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
        private void startCondition(String name, Condition cond)
                throws SAXException {
-            try {
-                conditionStack.add(cond);
-            } catch (Exception e) {
-                throw new SAXException("unexpected <" + name + '>');
-            }
+            if (!(elementConditions || itemConditions))
+               throw new SAXException("unexpected <" + name + '>');
+
+            conditionStack.add(cond);
         }
 
         private void endCondition(String name) throws SAXException {
@@ -694,9 +739,14 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 values.clear();
             }
 
-            if (conditionStack.isEmpty())
-                el.setCondition(cond.trim());
-            else
+            if (conditionStack.isEmpty()) {
+                if (elementConditions)
+                    getLastDataElement().setCondition(cond.trim());
+                else 
+                    iodStack.getLast().setCondition(cond.trim());
+                elementConditions = false;
+                itemConditions = false;
+            } else
                 conditionStack.getLast().addChild(cond.trim());
         }
     }

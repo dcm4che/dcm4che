@@ -56,6 +56,7 @@ public class ValidationResult {
         VM,
         Value,
         MultipleItems,
+        MissingItem,
         Item
     }
 

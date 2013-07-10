@@ -129,6 +129,18 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return this;
         }
 
+        public DataElement addCode(Code code) {
+            if (this.values == null) {
+                this.values = new Code[] { code };
+            } else {
+                Code[] codes = (Code[]) this.values;
+                codes = Arrays.copyOf(codes, codes.length);
+                codes[codes.length - 1] = code;
+                this.values = codes;
+            }
+            return this;
+        }
+
         public Object getValues() {
             return values;
         }
@@ -156,22 +168,34 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             if (valueNumber != 0)
                 sb.append("\" valueNumber=\"").append(valueNumber);
-            if (values instanceof String[] || values instanceof int[]) {
+            if (values instanceof String[]
+                    || values instanceof int[]
+                    || values instanceof Code[]) {
                 sb.append("\">").append(StringUtils.LINE_SEPARATOR);
                 if (values instanceof String[])
                     for (String val : (String[]) values)
-                        sb.append("  <Value>").append(val).append("/Value")
-                          .append(StringUtils.LINE_SEPARATOR);
-                else 
+                        sb.append("  <Value>").append(val).append("</Value>")
+                        .append(StringUtils.LINE_SEPARATOR);
+                else if (values instanceof int[])
                     for (int val : (int[]) values)
-                        sb.append("  <Value>").append(val).append("/Value")
-                          .append(StringUtils.LINE_SEPARATOR);
+                        sb.append("  <Value>").append(val).append("</Value>")
+                        .append(StringUtils.LINE_SEPARATOR);
+                else 
+                    for (Code val : (Code[]) values) {
+                        sb.append("  <Code codeValue=\"").append(val.getCodeValue())
+                          .append("\" codingSchemeDesignator=\"").append(val.getCodingSchemeDesignator());
+                        if (val.getCodingSchemeVersion() != null)
+                          sb.append("\" codingSchemeVersion=\"").append(val.getCodingSchemeVersion());
+                        sb.append("\" codeMeaning=\"").append(val.getCodeMeaning())
+                          .append("\" />").append(StringUtils.LINE_SEPARATOR);
+                     };
                 sb.append("</DataElement>");
             } else {
                 sb.append("\"/>");
             }
             return sb.toString();
         }
+
    }
 
 
@@ -310,6 +334,18 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return this;
         }
 
+        public MemberOf addCode(Code code) {
+            if (this.values == null) {
+                this.values = new Code[] { code };
+            } else {
+                Code[] codes = (Code[]) this.values;
+                codes = Arrays.copyOf(codes, codes.length);
+                codes[codes.length - 1] = code;
+                this.values = codes;
+            }
+            return this;
+        }
+
         public boolean match(Attributes attrs) {
             if (values == null)
                 throw new IllegalStateException("values not initialized");
@@ -320,6 +356,9 @@ public class IOD extends ArrayList<IOD.DataElement> {
             if (values instanceof int[])
                 return not ? !match(item, ((int[]) values))
                            : match(item, ((int[]) values));
+            else if (values instanceof Code[])
+                return not ? !match(item, ((Code[]) values))
+                           : match(item, ((Code[]) values));
             else
                 return not ? !match(item, ((String[]) values))
                            : match(item, ((String[]) values));
@@ -333,6 +372,21 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 if (s.equals(val))
                     return !not;
             }
+            return not;
+        }
+
+        private boolean match(Attributes item, Code[] codes) {
+            Sequence seq = item.getSequence(tag);
+            if (seq != null)
+                for (Attributes codeItem : seq) {
+                    try {
+                        Code val = new Code(codeItem);
+                        for (Code code : codes) {
+                            if (code.equals(val))
+                                return !not;
+                        }
+                    } catch (NullPointerException npe) {}
+                }
             return not;
         }
 
@@ -405,6 +459,13 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 if (qName.equals("And"))
                     startCondition(qName, new And());
                 break;
+            case 'C':
+                if (qName.equals("Code"))
+                    startCode(
+                            atts.getValue("codeValue"),
+                            atts.getValue("codingSchemeDesignator"),
+                            atts.getValue("codingSchemeVersion"),
+                            atts.getValue("codeMeaning"));
             case 'D':
                 if (qName.equals("DataElement"))
                     startDataElement(
@@ -472,6 +533,31 @@ public class IOD extends ArrayList<IOD.DataElement> {
                     matchNotPresentOf(atts.getValue("matchNotPresent")),
                     lastIndex > 0 ? Arrays.copyOf(tagPath, lastIndex)
                                   : ByteUtils.EMPTY_INTS);
+        }
+
+        private void startCode(String codeValue, 
+                String codingSchemeDesignator,
+                String codingSchemeVersion,
+                String codeMeaning) throws SAXException {
+            if (codeValue == null)
+                throw new SAXException("missing codeValue attribute");
+            if (codingSchemeDesignator == null)
+                throw new SAXException("missing codingSchemeDesignator attribute");
+            if (codeMeaning == null)
+                throw new SAXException("missing codeMeaning attribute");
+            Code code = new Code(codeValue, codingSchemeDesignator, 
+                    codingSchemeVersion, codeMeaning);
+            if (conditionStack.isEmpty()) {
+                DataElement el = getLastDataElement();
+                if (el.vr != VR.SQ)
+                    throw new SAXException("unexpected <Code> element");
+                 el.addCode(code);
+            } else {
+                Condition cond = conditionStack.getLast();
+                if (!(cond instanceof MemberOf) || ((MemberOf) cond).vr != VR.SQ)
+                    throw new SAXException("unexpected <Code> element");
+                ((MemberOf) cond).addCode(code);
+            }
         }
 
         @Override

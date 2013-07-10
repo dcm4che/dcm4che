@@ -2486,7 +2486,17 @@ public class Attributes implements Serializable {
                         ValidationResult.Invalid.MultipleItems);
                 return;
             }
-            if (validVals instanceof IOD[]) {
+            if (validVals instanceof Code[]) {
+                boolean invalidItem = false;
+                for (int i = 0; i < seqSize; i++) {
+                    invalidItem = invalidItem 
+                            || !isValidValue(seq.get(i), (Code[]) validVals);
+                }
+                if (invalidItem) {
+                    result.addInvalidAttributeValue(el, 
+                            ValidationResult.Invalid.Value);
+                }
+            } else if (validVals instanceof IOD[]) {
                 IOD[] itemIODs = (IOD[]) validVals;
                 int[] matchingItems = new int[itemIODs.length];
                 boolean invalidItem = false;
@@ -2566,6 +2576,10 @@ public class Attributes implements Serializable {
         }
     }
 
+    private boolean isValidValue(Attributes item, Code[] validVals) {
+         return isOneOf(new Code(item), validVals);
+    }
+
     private boolean isValidValue(String[] val, int valueNumber, String[] validVals) {
         if (valueNumber != 0)
             return val.length < valueNumber || isOneOf(val[valueNumber-1], validVals);
@@ -2576,10 +2590,10 @@ public class Attributes implements Serializable {
         return true;
     }
 
-    private boolean isOneOf(String val, String[] ss) {
+    private <T> boolean isOneOf(Object val, T[] ss) {
         if (ss == null)
             return true;
-        for (String s : ss)
+        for (T s : ss)
             if (val.equals(s))
                 return true;
         return false;

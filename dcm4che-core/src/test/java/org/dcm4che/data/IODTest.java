@@ -59,6 +59,22 @@ public class IODTest {
         assertTrue(result.isValid());
     }
 
+    @Test
+    public void testValidateCode() throws Exception {
+        IOD iod = IOD.load("resource:code-iod.xml");
+        Attributes attrs = new Attributes(2);
+        attrs.newSequence(Tag.ConceptNameCodeSequence, 1).add(
+                new Code("CV-9991", "99DCM4CHE", null, "CM-9991").toItem());
+        Attributes contentNode = new Attributes(2);
+        contentNode.newSequence(Tag.ConceptNameCodeSequence, 1).add(
+                new Code("CV-9992", "99DCM4CHE", null, "CM-9992").toItem());
+        contentNode.newSequence(Tag.ConceptCodeSequence, 1).add(
+                new Code("CV-9993", "99DCM4CHE", null, "CM-9993").toItem());
+        attrs.newSequence(Tag.ContentSequence, 1).add(contentNode);
+        ValidationResult result = attrs.validate(iod);
+        assertTrue(result.isValid());
+    }
+
     private static Attributes readDataset(String name)
             throws Exception {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();

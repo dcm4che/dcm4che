@@ -50,6 +50,7 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.dcm4che.data.IOD.DataElement;
+import org.dcm4che.data.IOD.DataElementType;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomInputStream;
 import org.dcm4che.io.DicomOutputStream;
@@ -66,6 +67,10 @@ import org.xml.sax.SAXException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Attributes implements Serializable {
+
+    public interface Visitor {
+        void visit(Attributes attrs, int tag, VR vr, Object value);
+    }
 
     private static final Logger LOG = 
             LoggerFactory.getLogger(Attributes.class);
@@ -2201,6 +2206,12 @@ public class Attributes implements Serializable {
         }
     }
 
+    public void accept(Visitor visitor) {
+        for (int i = 0; i < size; i++) {
+            visitor.visit(this, tags[i], vrs[i], values[i]);
+        }
+    }
+
     public void writeGroupTo(DicomOutputStream out, int groupLengthTag)
             throws IOException {
         if (isEmpty())
@@ -2475,16 +2486,49 @@ public class Attributes implements Serializable {
                         ValidationResult.Invalid.MultipleItems);
                 return;
             }
-            if (validVals instanceof IOD) {
+            if (validVals instanceof IOD[]) {
+                IOD[] itemIODs = (IOD[]) validVals;
+                int[] matchingItems = new int[itemIODs.length];
                 boolean invalidItem = false;
                 ValidationResult[] itemValidationResults = new ValidationResult[seqSize];
-                for (int i = 0; i < itemValidationResults.length; i++) {
-                    itemValidationResults[i] = seq.get(i).validate((IOD) validVals);
-                    invalidItem = invalidItem || !itemValidationResults[i].isValid();
+                for (int i = 0; i < seqSize; i++) {
+                    ValidationResult itemValidationResult = new ValidationResult();
+                    HashMap<String,Boolean> resolvedItemConditions =
+                            new HashMap<String,Boolean>();
+                    Attributes item = seq.get(i);
+                    for (int j = 0; j < itemIODs.length; j++) {
+                        IOD itemIOD = itemIODs[j];
+                        IOD.Condition itemCondition = itemIOD.getCondition();
+                        if (itemCondition != null) {
+                            String id = itemCondition.id();
+                            Boolean match = id != null ? resolvedItemConditions.get(id) : null;
+                            if (match == null) {
+                                match = itemCondition.match(item);
+                                if (id != null)
+                                    resolvedItemConditions.put(id, match);
+                            }
+                            if (!match)
+                                continue;
+                        }
+                        matchingItems[j]++;
+                        for (IOD.DataElement itemEl : itemIOD) {
+                            item.validate(itemEl, itemValidationResult, resolvedItemConditions);
+                        }
+                    }
+                    invalidItem = invalidItem || !itemValidationResult.isValid();
+                    itemValidationResults[i] = itemValidationResult;
                 }
                 if (invalidItem) {
                     result.addInvalidAttributeValue(el, 
                             ValidationResult.Invalid.Item, itemValidationResults);
+                } else {
+                    for (int j = 0; j < itemIODs.length; j++)
+                        if (itemIODs[j].getType() == DataElementType.TYPE_1
+                                && matchingItems[j] == 0) {
+                            result.addInvalidAttributeValue(el, 
+                                    ValidationResult.Invalid.MissingItem);
+                            break;
+                        }
                 }
             }
             return;

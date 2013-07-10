@@ -77,55 +77,37 @@
         type="1" vm="1">
         <If idref="ReferenceSOPInstance" />
       </DataElement>
-      <DataElement keyword="PatientName" tag="00100010" vr="PN" type="2" vm="1">
-        <If id="PatientRecord">
-          <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
-            <Value>PATIENT</Value>
-          </MemberOf>
-        </If>
-      </DataElement>
-      <DataElement keyword="PatientID" tag="00100020" vr="LO" type="1" vm="1">
-        <If idref="PatientRecord"/>
-      </DataElement>
-      <DataElement keyword="StudyDate" tag="00080020" vr="DA" type="1" vm="1">
-        <If id="StudyRecord">
-          <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
-            <Value>STUDY</Value>
-          </MemberOf>
-        </If>
-      </DataElement>
-      <DataElement keyword="StudyTime" tag="00080030" vr="TM" type="1" vm="1">
-        <If idref="StudyRecord"/>
-      </DataElement>
-      <DataElement keyword="StudyInstanceUID" tag="0020000D" vr="UI" type="1" vm="1">
-        <If idref="StudyRecord"/>
-      </DataElement>
-      <DataElement keyword="StudyID" tag="00200010" vr="SH" type="1" vm="1">
-        <If idref="StudyRecord"/>
-      </DataElement>
-      <DataElement keyword="AccessionNumber" tag="00080050" vr="SH" type="2" vm="1">
-        <If idref="StudyRecord"/>
-      </DataElement>
-      <DataElement keyword="Modality" tag="00080060" vr="CS" type="1" vm="1">
-        <If id="SeriesRecord">
-          <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
-            <Value>SERIES</Value>
-          </MemberOf>
-        </If>
-      </DataElement>
-      <DataElement keyword="SeriesInstanceUID" tag="0020000E" vr="UI" type="1" vm="1">
-        <If idref="SeriesRecord"/>
-      </DataElement>
-      <DataElement keyword="SeriesNumber" tag="00200011" vr="IS" type="1" vm="1">
-        <If idref="SeriesRecord"/>
-      </DataElement>
-      <DataElement keyword="InstanceNumber" tag="00200013" vr="IS" type="1" vm="1">
-        <If id="ImageRecord">
-          <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
-            <Value>IMAGE</Value>
-          </MemberOf>
-        </If>
-      </DataElement>
+    </Item>
+    <Item>
+      <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
+        <Value>PATIENT</Value>
+      </MemberOf>
+      <DataElement keyword="PatientName" tag="00100010" vr="PN" type="2" vm="1"/>
+      <DataElement keyword="PatientID" tag="00100020" vr="LO" type="1" vm="1"/>
+    </Item>
+    <Item>
+      <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
+        <Value>STUDY</Value>
+      </MemberOf>
+      <DataElement keyword="StudyDate" tag="00080020" vr="DA" type="1" vm="1"/>
+      <DataElement keyword="StudyTime" tag="00080030" vr="TM" type="1" vm="1"/>
+      <DataElement keyword="StudyInstanceUID" tag="0020000D" vr="UI" type="1" vm="1"/>
+      <DataElement keyword="StudyID" tag="00200010" vr="SH" type="1" vm="1"/>
+      <DataElement keyword="AccessionNumber" tag="00080050" vr="SH" type="2" vm="1"/>
+    </Item>
+    <Item>
+      <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
+        <Value>SERIES</Value>
+      </MemberOf>
+      <DataElement keyword="Modality" tag="00080060" vr="CS" type="1" vm="1"/>
+      <DataElement keyword="SeriesInstanceUID" tag="0020000E" vr="UI" type="1" vm="1"/>
+      <DataElement keyword="SeriesNumber" tag="00200011" vr="IS" type="1" vm="1"/>
+    </Item>
+    <Item>
+      <MemberOf keyword="DirectoryRecordType" tag="00041430" vr="CS" valueNumber="1">
+        <Value>IMAGE</Value>
+      </MemberOf>
+      <DataElement keyword="InstanceNumber" tag="00200013" vr="IS" type="1" vm="1"/>
     </Item>
   </DataElement>
 </IOD>

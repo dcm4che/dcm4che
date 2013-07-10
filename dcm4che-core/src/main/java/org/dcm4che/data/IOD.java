@@ -108,11 +108,22 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
         public DataElement setValues(String... values) {
+            if (vr == VR.SQ)
+                throw new IllegalStateException("vr=SQ");
             this.values = values;
             return this;
         }
 
         public DataElement setValues(int... values) {
+            if (!vr.isIntType())
+                throw new IllegalStateException("vr=" + vr);
+            this.values = values;
+            return this;
+        }
+
+        public DataElement setValues(Code... values) {
+            if (vr != VR.SQ)
+                throw new IllegalStateException("vr=" + vr);
             this.values = values;
             return this;
         }
@@ -125,18 +136,6 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 iods = Arrays.copyOf(iods, iods.length);
                 iods[iods.length - 1] = iod;
                 this.values = iods;
-            }
-            return this;
-        }
-
-        public DataElement addCode(Code code) {
-            if (this.values == null) {
-                this.values = new Code[] { code };
-            } else {
-                Code[] codes = (Code[]) this.values;
-                codes = Arrays.copyOf(codes, codes.length);
-                codes[codes.length - 1] = code;
-                this.values = codes;
             }
             return this;
         }
@@ -324,25 +323,24 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return vr;
         }
 
-        public MemberOf setValues(String[] values) {
+        public MemberOf setValues(String... values) {
+            if (vr == VR.SQ)
+                throw new IllegalStateException("vr=SQ");
             this.values = values;
             return this;
         }
 
-        public MemberOf setValues(int[] values) {
+        public MemberOf setValues(int... values) {
+            if (!vr.isIntType())
+                throw new IllegalStateException("vr=" + vr);
             this.values = values;
             return this;
         }
 
-        public MemberOf addCode(Code code) {
-            if (this.values == null) {
-                this.values = new Code[] { code };
-            } else {
-                Code[] codes = (Code[]) this.values;
-                codes = Arrays.copyOf(codes, codes.length);
-                codes[codes.length - 1] = code;
-                this.values = codes;
-            }
+        public MemberOf setValues(Code... values) {
+            if (vr != VR.SQ)
+                throw new IllegalStateException("vr=" + vr);
+            this.values = values;
             return this;
         }
 
@@ -442,6 +440,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
         private boolean itemConditions;
         private String idref;
         private List<String> values = new ArrayList<String>();
+        private List<Code> codes = new ArrayList<Code>();
         private LinkedList<IOD> iodStack = new LinkedList<IOD>();
         private LinkedList<Condition> conditionStack = new LinkedList<Condition>();
         private Map<String, IOD> id2iod = new HashMap<String, IOD>();
@@ -545,19 +544,8 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 throw new SAXException("missing codingSchemeDesignator attribute");
             if (codeMeaning == null)
                 throw new SAXException("missing codeMeaning attribute");
-            Code code = new Code(codeValue, codingSchemeDesignator, 
-                    codingSchemeVersion, codeMeaning);
-            if (conditionStack.isEmpty()) {
-                DataElement el = getLastDataElement();
-                if (el.vr != VR.SQ)
-                    throw new SAXException("unexpected <Code> element");
-                 el.addCode(code);
-            } else {
-                Condition cond = conditionStack.getLast();
-                if (!(cond instanceof MemberOf) || ((MemberOf) cond).vr != VR.SQ)
-                    throw new SAXException("unexpected <Code> element");
-                ((MemberOf) cond).addCode(code);
-            }
+            codes.add(new Code(codeValue, codingSchemeDesignator, 
+                    codingSchemeVersion, codeMeaning));
         }
 
         @Override
@@ -722,16 +710,27 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return iod.get(iod.size()-1);
         }
 
-        private void endDataElement() {
-            if (values.isEmpty())
-                return;
-
+        private void endDataElement() throws SAXException {
             DataElement el = getLastDataElement();
-            if (el.vr.isIntType())
-                el.setValues(parseInts(values));
-            else
-                el.setValues(values.toArray(new String[values.size()]));
-            values.clear();
+            if (!values.isEmpty()) {
+                try {
+                    if (el.vr.isIntType())
+                        el.setValues(parseInts(values));
+                    else
+                        el.setValues(values.toArray(new String[values.size()]));
+                } catch (IllegalStateException e) {
+                    throw new SAXException("unexpected <Value>");
+                }
+                values.clear();
+            }
+            if (!codes.isEmpty()) {
+                try {
+                    el.setValues(codes.toArray(new Code[codes.size()]));
+                } catch (IllegalStateException e) {
+                    throw new SAXException("unexpected <Code>");
+                }
+                codes.clear();
+            }
             elementConditions = false;
         }
 
@@ -814,15 +813,27 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 throw new SAXException('<' + name + "> must not be empty");
 
             if (!values.isEmpty()) {
-                if (!(cond instanceof MemberOf))
-                    throw new SAXException('<' + name + "> cannot contains <Value>");
-                
-                MemberOf memberOf = (MemberOf) cond;
-                if (memberOf.vr.isIntType())
-                    memberOf.setValues(parseInts(values));
-                else
-                    memberOf.setValues(values.toArray(new String[values.size()]));
+                try {
+                    MemberOf memberOf = (MemberOf) cond;
+                    if (memberOf.vr.isIntType())
+                        memberOf.setValues(parseInts(values));
+                    else
+                        memberOf.setValues(values.toArray(new String[values.size()]));
+                } catch (Exception e) {
+                    throw new SAXException("unexpected <Value> contained by <"
+                            + name + ">");
+                }
                 values.clear();
+            }
+
+            if (!codes.isEmpty()) {
+                try {
+                    ((MemberOf) cond).setValues(codes.toArray(new Code[codes.size()]));
+                } catch (Exception e) {
+                    throw new SAXException("unexpected <Code> contained by <"
+                            + name + ">");
+                }
+                codes.clear();
             }
 
             if (conditionStack.isEmpty()) {

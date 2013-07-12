@@ -90,15 +90,16 @@
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
     <module>dcm4che-imageio-rle</module>
+    <module>dcm4che-mime</module>
     <module>dcm4che-net</module>
     <module>dcm4che-net-audit</module>
     <module>dcm4che-net-hl7</module>
+    <module>dcm4che-net-imageio</module>
     <module>dcm4che-soundex</module>
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-servlet</module>
-    <module>dcm4che-net-imageio</module>
   </modules>
   <distributionManagement>
     <repository>

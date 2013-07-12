@@ -133,7 +133,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 this.values = new IOD[] { iod };
             } else {
                 IOD[] iods = (IOD[]) this.values;
-                iods = Arrays.copyOf(iods, iods.length);
+                iods = Arrays.copyOf(iods, iods.length+1);
                 iods[iods.length - 1] = iod;
                 this.values = iods;
             }

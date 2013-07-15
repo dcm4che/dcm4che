@@ -1323,6 +1323,29 @@ public class Attributes implements Serializable {
         setString(Tag.TimezoneOffsetFromUTC, VR.SH, utcOffset);
     }
 
+    /**
+     * Set the Default Time Zone to specified value and adjust contained DA, 
+     * DT and TM attributs accordingly. If the Time Zone does not use Daylight
+     * Saving Time, attribute Timezone Offset From UTC (0008,0201) will be also
+     * set accordingly. If the Time zone uses Daylight Saving Time, a previous
+     * existing attribute Timezone Offset From UTC (0008,0201) will be removed.
+     * 
+     * @param tz Time Zone
+     *
+     * @see #setDefaultTimeZone(TimeZone)
+     * @see #setTimezoneOffsetFromUTC(String)
+     */
+    public void setTimezone(TimeZone tz) {
+        updateTimezone(getTimeZone(), tz);
+        if (tz.useDaylightTime()) {
+            remove(Tag.TimezoneOffsetFromUTC);
+            setDefaultTimeZone(tz);
+        } else {
+            setString(Tag.TimezoneOffsetFromUTC, VR.SH,
+                    DateUtils.formatTimezoneOffsetFromUTC(tz));
+        }
+    }
+
     private void updateTimezone(TimeZone from, TimeZone to) {
         for (int i = 0; i < size; i++) {
             Object val = values[i];

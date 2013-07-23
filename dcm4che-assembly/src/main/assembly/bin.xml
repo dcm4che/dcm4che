@@ -734,6 +734,7 @@
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
+        <include>org.dcm4che:dcm4che-mime</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>

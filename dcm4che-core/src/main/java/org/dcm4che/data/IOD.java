@@ -108,11 +108,22 @@ public class IOD extends ArrayList<IOD.DataElement> {
         }
 
         public DataElement setValues(String... values) {
+            if (vr == VR.SQ)
+                throw new IllegalStateException("vr=SQ");
             this.values = values;
             return this;
         }
 
         public DataElement setValues(int... values) {
+            if (!vr.isIntType())
+                throw new IllegalStateException("vr=" + vr);
+            this.values = values;
+            return this;
+        }
+
+        public DataElement setValues(Code... values) {
+            if (vr != VR.SQ)
+                throw new IllegalStateException("vr=" + vr);
             this.values = values;
             return this;
         }
@@ -122,7 +133,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 this.values = new IOD[] { iod };
             } else {
                 IOD[] iods = (IOD[]) this.values;
-                iods = Arrays.copyOf(iods, iods.length);
+                iods = Arrays.copyOf(iods, iods.length+1);
                 iods[iods.length - 1] = iod;
                 this.values = iods;
             }
@@ -156,22 +167,34 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             if (valueNumber != 0)
                 sb.append("\" valueNumber=\"").append(valueNumber);
-            if (values instanceof String[] || values instanceof int[]) {
+            if (values instanceof String[]
+                    || values instanceof int[]
+                    || values instanceof Code[]) {
                 sb.append("\">").append(StringUtils.LINE_SEPARATOR);
                 if (values instanceof String[])
                     for (String val : (String[]) values)
-                        sb.append("  <Value>").append(val).append("/Value")
-                          .append(StringUtils.LINE_SEPARATOR);
-                else 
+                        sb.append("  <Value>").append(val).append("</Value>")
+                        .append(StringUtils.LINE_SEPARATOR);
+                else if (values instanceof int[])
                     for (int val : (int[]) values)
-                        sb.append("  <Value>").append(val).append("/Value")
-                          .append(StringUtils.LINE_SEPARATOR);
+                        sb.append("  <Value>").append(val).append("</Value>")
+                        .append(StringUtils.LINE_SEPARATOR);
+                else 
+                    for (Code val : (Code[]) values) {
+                        sb.append("  <Code codeValue=\"").append(val.getCodeValue())
+                          .append("\" codingSchemeDesignator=\"").append(val.getCodingSchemeDesignator());
+                        if (val.getCodingSchemeVersion() != null)
+                          sb.append("\" codingSchemeVersion=\"").append(val.getCodingSchemeVersion());
+                        sb.append("\" codeMeaning=\"").append(val.getCodeMeaning())
+                          .append("\" />").append(StringUtils.LINE_SEPARATOR);
+                     };
                 sb.append("</DataElement>");
             } else {
                 sb.append("\"/>");
             }
             return sb.toString();
         }
+
    }
 
 
@@ -300,12 +323,23 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return vr;
         }
 
-        public MemberOf setValues(String[] values) {
+        public MemberOf setValues(String... values) {
+            if (vr == VR.SQ)
+                throw new IllegalStateException("vr=SQ");
             this.values = values;
             return this;
         }
 
-        public MemberOf setValues(int[] values) {
+        public MemberOf setValues(int... values) {
+            if (!vr.isIntType())
+                throw new IllegalStateException("vr=" + vr);
+            this.values = values;
+            return this;
+        }
+
+        public MemberOf setValues(Code... values) {
+            if (vr != VR.SQ)
+                throw new IllegalStateException("vr=" + vr);
             this.values = values;
             return this;
         }
@@ -320,6 +354,9 @@ public class IOD extends ArrayList<IOD.DataElement> {
             if (values instanceof int[])
                 return not ? !match(item, ((int[]) values))
                            : match(item, ((int[]) values));
+            else if (values instanceof Code[])
+                return not ? !match(item, ((Code[]) values))
+                           : match(item, ((Code[]) values));
             else
                 return not ? !match(item, ((String[]) values))
                            : match(item, ((String[]) values));
@@ -333,6 +370,21 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 if (s.equals(val))
                     return !not;
             }
+            return not;
+        }
+
+        private boolean match(Attributes item, Code[] codes) {
+            Sequence seq = item.getSequence(tag);
+            if (seq != null)
+                for (Attributes codeItem : seq) {
+                    try {
+                        Code val = new Code(codeItem);
+                        for (Code code : codes) {
+                            if (code.equals(val))
+                                return !not;
+                        }
+                    } catch (NullPointerException npe) {}
+                }
             return not;
         }
 
@@ -388,6 +440,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
         private boolean itemConditions;
         private String idref;
         private List<String> values = new ArrayList<String>();
+        private List<Code> codes = new ArrayList<Code>();
         private LinkedList<IOD> iodStack = new LinkedList<IOD>();
         private LinkedList<Condition> conditionStack = new LinkedList<Condition>();
         private Map<String, IOD> id2iod = new HashMap<String, IOD>();
@@ -405,6 +458,13 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 if (qName.equals("And"))
                     startCondition(qName, new And());
                 break;
+            case 'C':
+                if (qName.equals("Code"))
+                    startCode(
+                            atts.getValue("codeValue"),
+                            atts.getValue("codingSchemeDesignator"),
+                            atts.getValue("codingSchemeVersion"),
+                            atts.getValue("codeMeaning"));
             case 'D':
                 if (qName.equals("DataElement"))
                     startDataElement(
@@ -472,6 +532,20 @@ public class IOD extends ArrayList<IOD.DataElement> {
                     matchNotPresentOf(atts.getValue("matchNotPresent")),
                     lastIndex > 0 ? Arrays.copyOf(tagPath, lastIndex)
                                   : ByteUtils.EMPTY_INTS);
+        }
+
+        private void startCode(String codeValue, 
+                String codingSchemeDesignator,
+                String codingSchemeVersion,
+                String codeMeaning) throws SAXException {
+            if (codeValue == null)
+                throw new SAXException("missing codeValue attribute");
+            if (codingSchemeDesignator == null)
+                throw new SAXException("missing codingSchemeDesignator attribute");
+            if (codeMeaning == null)
+                throw new SAXException("missing codeMeaning attribute");
+            codes.add(new Code(codeValue, codingSchemeDesignator, 
+                    codingSchemeVersion, codeMeaning));
         }
 
         @Override
@@ -636,16 +710,27 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return iod.get(iod.size()-1);
         }
 
-        private void endDataElement() {
-            if (values.isEmpty())
-                return;
-
+        private void endDataElement() throws SAXException {
             DataElement el = getLastDataElement();
-            if (el.vr.isIntType())
-                el.setValues(parseInts(values));
-            else
-                el.setValues(values.toArray(new String[values.size()]));
-            values.clear();
+            if (!values.isEmpty()) {
+                try {
+                    if (el.vr.isIntType())
+                        el.setValues(parseInts(values));
+                    else
+                        el.setValues(values.toArray(new String[values.size()]));
+                } catch (IllegalStateException e) {
+                    throw new SAXException("unexpected <Value>");
+                }
+                values.clear();
+            }
+            if (!codes.isEmpty()) {
+                try {
+                    el.setValues(codes.toArray(new Code[codes.size()]));
+                } catch (IllegalStateException e) {
+                    throw new SAXException("unexpected <Code>");
+                }
+                codes.clear();
+            }
             elementConditions = false;
         }
 
@@ -728,15 +813,27 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 throw new SAXException('<' + name + "> must not be empty");
 
             if (!values.isEmpty()) {
-                if (!(cond instanceof MemberOf))
-                    throw new SAXException('<' + name + "> cannot contains <Value>");
-                
-                MemberOf memberOf = (MemberOf) cond;
-                if (memberOf.vr.isIntType())
-                    memberOf.setValues(parseInts(values));
-                else
-                    memberOf.setValues(values.toArray(new String[values.size()]));
+                try {
+                    MemberOf memberOf = (MemberOf) cond;
+                    if (memberOf.vr.isIntType())
+                        memberOf.setValues(parseInts(values));
+                    else
+                        memberOf.setValues(values.toArray(new String[values.size()]));
+                } catch (Exception e) {
+                    throw new SAXException("unexpected <Value> contained by <"
+                            + name + ">");
+                }
                 values.clear();
+            }
+
+            if (!codes.isEmpty()) {
+                try {
+                    ((MemberOf) cond).setValues(codes.toArray(new Code[codes.size()]));
+                } catch (Exception e) {
+                    throw new SAXException("unexpected <Code> contained by <"
+                            + name + ">");
+                }
+                codes.clear();
             }
 
             if (conditionStack.isEmpty()) {

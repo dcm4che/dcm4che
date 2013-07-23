@@ -140,6 +140,11 @@ public class DateUtils {
         return sb;
     }
 
+
+    public static String formatTimezoneOffsetFromUTC(TimeZone tz) {
+        return appendZZZZZ(tz.getRawOffset(), new StringBuilder(5)).toString();
+    }
+
     private static StringBuilder formatDT(Calendar cal, StringBuilder toAppendTo,
             int lastField) {
         appendXXXX(cal.get(Calendar.YEAR), toAppendTo);

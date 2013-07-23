@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IOD xml-space="preserved">
+  <DataElement keyword="ConceptNameCodeSeqeunce" tag="0040A043" vr="SQ" type="1" items="1">
+    <Code codeValue="CV-9991" codingSchemeDesignator="99DCM4CHE" codeMeaning="CM-9991" />
+  </DataElement>
+  <DataElement keyword="ContentSequence" tag="0040A730" vr="SQ" type="1" items="n">
+    <Item type="1">
+      <MemberOf keyword="ConceptNameCodeSequence" tag="0040A043" vr="SQ">
+        <Code codeValue="CV-9992" codingSchemeDesignator="99DCM4CHE" codeMeaning="CM-9992" />
+      </MemberOf>
+      <DataElement keyword="ConceptCodeSequence" tag="0040A168" vr="SQ" type="1" items="1">
+        <Code codeValue="CV-9993" codingSchemeDesignator="99DCM4CHE" codeMeaning="CM-9993" />
+      </DataElement>
+    </Item>
+  </DataElement>
+</IOD>

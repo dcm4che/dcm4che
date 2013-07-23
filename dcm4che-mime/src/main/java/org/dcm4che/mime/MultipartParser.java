@@ -35,55 +35,46 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.mime;
 
-package org.dcm4che.data;
-
-
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-
-import org.dcm4che.io.DicomInputStream;
-import org.junit.Test;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public class IODTest {
+public class MultipartParser {
 
-    @Test
-    public void testValidateDICOMDIR() throws Exception {
-        IOD iod = IOD.load("resource:dicomdir-iod.xml");
-        Attributes attrs = readDataset("DICOMDIR");
-        ValidationResult result = attrs.validate(iod);
-        assertTrue(result.isValid());
+    public interface Handler {
+        void bodyPart(int partNumber, MultipartInputStream in) throws IOException;
+    };
+
+    private final String boundary;
+
+    public MultipartParser(String boundary) {
+        this.boundary = boundary;
     }
 
-    @Test
-    public void testValidateCode() throws Exception {
-        IOD iod = IOD.load("resource:code-iod.xml");
-        Attributes attrs = new Attributes(2);
-        attrs.newSequence(Tag.ConceptNameCodeSequence, 1).add(
-                new Code("CV-9991", "99DCM4CHE", null, "CM-9991").toItem());
-        Attributes contentNode = new Attributes(2);
-        contentNode.newSequence(Tag.ConceptNameCodeSequence, 1).add(
-                new Code("CV-9992", "99DCM4CHE", null, "CM-9992").toItem());
-        contentNode.newSequence(Tag.ConceptCodeSequence, 1).add(
-                new Code("CV-9993", "99DCM4CHE", null, "CM-9993").toItem());
-        attrs.newSequence(Tag.ContentSequence, 1).add(contentNode);
-        ValidationResult result = attrs.validate(iod);
-        assertTrue(result.isValid());
-    }
+    @SuppressWarnings("resource")
+    public void parse(InputStream in, Handler handler) throws IOException {
+        new MultipartInputStream(in, "--" + boundary).skipAll(); // skip preamble
+        for (int i=1;;i++) {
+            int ch1 = in.read();
+            int ch2 = in.read();
+            if ((ch1 | ch2) < 0)
+                throw new EOFException();
 
-    private static Attributes readDataset(String name)
-            throws Exception {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        DicomInputStream in = new DicomInputStream(
-                new File(cl.getResource(name).toURI()));
-        try {
-            return in.readDataset(-1, -1);
-        } finally {
-            in.close();
+            if (ch1 == '-' && ch2 == '-')
+                break;
+
+            if (ch1 != '\r' || ch2 != '\n')
+                throw new IOException("missing CR/LF after boundary");
+
+            MultipartInputStream mis = new MultipartInputStream(in, "\r\n--" + boundary);
+            handler.bodyPart(i, mis);
+            mis.skipAll();
         }
     }
 }

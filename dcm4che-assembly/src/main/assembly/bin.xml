@@ -151,6 +151,7 @@
         <include>etc/dcm2xml/log4j.properties</include>
         <include>etc/dcm2xml/srdump.xsl</include>
         <include>etc/dcm2xml/json.xsl</include>
+        <include>etc/dcm2xml/json_compact.xsl</include>
       </includes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>

@@ -316,7 +316,7 @@ public class SAXWriter implements DicomInputHandler {
 
     private void writeBulkData(BulkData bulkData)
             throws SAXException {
-        startElement("BulkData", "URI", bulkData.toURI()); 
+        startElement("BulkData", "uri", bulkData.toURI()); 
         endElement("BulkData");
     }
 

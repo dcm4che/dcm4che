@@ -95,6 +95,12 @@ public class MultipartInputStream extends FilterInputStream {
             rpos += remaining();
     }
 
+    public boolean isZIP() throws IOException {
+        return !isBoundary() 
+                && buffer[rpos] == 'P'
+                && buffer[rpos+1] == 'K';
+    }
+
     private boolean isBoundary() throws IOException {
         if (boundarySeen)
             return true;

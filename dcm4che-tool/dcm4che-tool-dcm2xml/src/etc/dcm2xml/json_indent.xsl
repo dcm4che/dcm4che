@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="text"/>
-    <xsl:variable name="indent" select="'  '"/>
     <xsl:template match="/NativeDicomModel">
         <xsl:text>{</xsl:text>
         <xsl:apply-templates select="DicomAttribute">
             <xsl:with-param name="br">
-                <xsl:text>&#xA;</xsl:text>
-                <xsl:value-of select="$indent"/>
+                <xsl:text>&#xA; </xsl:text>
             </xsl:with-param>
         </xsl:apply-templates>
         <xsl:text>&#xA;}&#xA;</xsl:text>
@@ -15,7 +13,7 @@
 
     <xsl:template match="DicomAttribute">
         <xsl:param name="br"/>
-        <xsl:variable name="br2" select="concat($br,$indent)"/>
+        <xsl:variable name="br2" select="concat($br,' ')"/>
         <xsl:variable name="br3" select="concat(',',$br2)"/>
         <xsl:if test="position()>1">,</xsl:if>
         <xsl:value-of select="$br"/>
@@ -56,9 +54,7 @@
         <xsl:variable name="array" select="last()>1"/>
         <xsl:variable name="br2">
             <xsl:value-of select="$br"/>
-            <xsl:if test="$array">
-                <xsl:value-of select="$indent"/>
-            </xsl:if>
+            <xsl:if test="$array"> </xsl:if>
         </xsl:variable>
         <xsl:text>,</xsl:text>
         <xsl:choose>
@@ -79,7 +75,7 @@
             <xsl:when test="../@vr='SQ' or ../@vr='PN'">
                 <xsl:text>{</xsl:text>
                 <xsl:apply-templates select="*">
-                    <xsl:with-param name="br" select="concat($br2,$indent)"/>
+                    <xsl:with-param name="br" select="concat($br2,' ')"/>
                 </xsl:apply-templates>
                 <xsl:value-of select="$br2"/>
                 <xsl:text>}</xsl:text>
@@ -102,7 +98,7 @@
         <xsl:value-of select="name()"/>
         <xsl:text>" : {</xsl:text>
         <xsl:apply-templates select="*">
-            <xsl:with-param name="br" select="concat($br,$indent)"/>
+            <xsl:with-param name="br" select="concat($br,' ')"/>
         </xsl:apply-templates>
         <xsl:value-of select="$br"/>
         <xsl:text>}</xsl:text>
@@ -125,7 +121,7 @@
         <xsl:value-of select="$br"/>
         <xsl:text>"BulkData" : {</xsl:text>
         <xsl:apply-templates select="@*">
-            <xsl:with-param name="br" select="concat($br,$indent)"/>
+            <xsl:with-param name="br" select="concat($br,' ')"/>
          </xsl:apply-templates>
         <xsl:value-of select="$br"/>
         <xsl:text>}</xsl:text>

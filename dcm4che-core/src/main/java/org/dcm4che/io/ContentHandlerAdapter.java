@@ -102,7 +102,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
             break;
         case 'B':
             if (qName.equals("BulkData"))
-                bulkData(atts.getValue("uri"));
+                bulkData(atts.getValue("uuid"), atts.getValue("uri"));
             break;
         case 'D':
             if (qName.equals("DicomAttribute"))
@@ -169,8 +169,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
         }
    }
 
-    private void bulkData(String uri) {
-        bulkData = new BulkData(uri, items.getLast().bigEndian());
+    private void bulkData(String uuid, String uri) {
+        bulkData = new BulkData(uuid, uri, items.getLast().bigEndian());
     }
 
     private void startBase64() {

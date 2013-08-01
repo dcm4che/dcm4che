@@ -53,6 +53,7 @@ import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StreamUtils;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -62,26 +63,37 @@ public class BulkData implements Value {
     public static final int MAGIC_LEN = 0xfbfb;
 
     public final String uri;
+    public final String uuid;
     private final int uriPathEnd;
     public final boolean bigEndian;
     public final long offset;
     public final int length;
 
-    public BulkData(String uri, boolean bigEndian) {
+    public BulkData(String uuid, String uri, boolean bigEndian) {
         Object[] parsed = { uri, 0, -1 };
-        try {
-            parsed = new MessageFormat(
-                    "{0}?offset={1,number}&length={2,number}")
-                .parse(uri);
-        } catch (ParseException e) { }
+        int uriPathEnd = 0;
+        if (uri != null) {
+            if (uuid != null)
+                throw new IllegalArgumentException("uuid and uri are mutually exclusive");
+            try {
+                parsed = new MessageFormat(
+                        "{0}?offset={1,number}&length={2,number}")
+                    .parse(uri);
+            } catch (ParseException e) { }
+            uriPathEnd = ((String) parsed[0]).length();
+        } else if (uuid == null) {
+            throw new IllegalArgumentException("uuid or uri must be not null");
+        }
+        this.uuid = uuid;
         this.uri = uri;
-        uriPathEnd = ((String) parsed[0]).length();
+        this.uriPathEnd = uriPathEnd;
         this.offset = ((Number) parsed[1]).longValue();
         this.length = ((Number) parsed[2]).intValue();
         this.bigEndian = bigEndian;
     }
 
     public BulkData(String uri, long offset, int length, boolean bigEndian) {
+        this.uuid = null;
         this.uriPathEnd = uri.length();
         this.uri = uri + "?offset=" + offset + "&length=" + length;
         this.offset = offset;
@@ -96,7 +108,8 @@ public class BulkData implements Value {
 
     @Override
     public String toString() {
-        return "BulkData[uri=" +  uri 
+        return "BulkData[uuid=" + uuid
+                + ", uri=" +  uri 
                 + ", bigEndian=" + bigEndian
                 + "]";
     }
@@ -112,10 +125,16 @@ public class BulkData implements Value {
     }
 
     public String uriWithoutOffsetAndLength() {
+        if (uri == null)
+            throw new IllegalStateException("uri: null");
+
         return uri.substring(0, uriPathEnd);
     }
 
     public InputStream openStream() throws IOException {
+        if (uri == null)
+            throw new IllegalStateException("uri: null");
+
         return new URL(uri).openStream();
     }
 
@@ -174,14 +193,16 @@ public class BulkData implements Value {
     }
 
     public void serializeTo(ObjectOutputStream oos) throws IOException {
-        oos.writeUTF(uri);
+        oos.writeUTF(StringUtils.maskNull(uuid, ""));
+        oos.writeUTF(StringUtils.maskNull(uri, ""));
         oos.writeBoolean(bigEndian);
     }
 
     public static Value deserializeFrom(ObjectInputStream ois)
             throws IOException {
         return new BulkData(
-                ois.readUTF(),
-                ois.readBoolean());
+            StringUtils.maskEmpty(ois.readUTF(), null),
+            StringUtils.maskEmpty(ois.readUTF(), null),
+            ois.readBoolean());
     }
 }

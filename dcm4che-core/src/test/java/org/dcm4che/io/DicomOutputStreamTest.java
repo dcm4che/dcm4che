@@ -166,8 +166,8 @@ public class DicomOutputStreamTest {
                 .add(requestAttributes());
         ds.setString(Tag.SOPClassUID, VR.UI, "1.2.3.4");
         ds.setString(Tag.SOPInstanceUID, VR.UI, "4.3.2.1");
-        BulkData bdl = new BulkData(uri("OT-PAL-8-face"), 
-                        UID.ImplicitVRLittleEndian, 1654, 307200);
+        BulkData bdl = new BulkData(
+                uri("OT-PAL-8-face"), 1654, 307200, false);
         ds.setValue(Tag.PixelData, VR.OW, bdl);
         Fragments frags = ds.newFragments("DicomOutputStreamTest", 0x99990010, VR.OB, 3);
         frags.add(null);

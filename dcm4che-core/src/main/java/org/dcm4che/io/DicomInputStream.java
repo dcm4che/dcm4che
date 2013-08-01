@@ -514,9 +514,9 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public BulkData createBulkData() throws IOException {
-            BulkData locator;
+            BulkData bulkData;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
-            locator = new BulkData(uri, tsuid, pos, length);
+            bulkData = new BulkData(uri, pos, length, bigEndian);
             skipFully(length);
         } else {
             if (blkOut == null) {
@@ -537,14 +537,10 @@ public class DicomInputStream extends FilterInputStream
                     blkOut = null;
                 }
             }
-            locator = new BulkData(blkURI,
-                    (super.in instanceof InflaterInputStream)
-                            ? UID.ExplicitVRLittleEndian
-                            : tsuid,
-                     blkOutPos, length);
+            bulkData = new BulkData(blkURI, blkOutPos, length, bigEndian);
             blkOutPos += length;
         }
-        return locator;
+        return bulkData;
     }
 
     public boolean isBulkData(Attributes attrs) {

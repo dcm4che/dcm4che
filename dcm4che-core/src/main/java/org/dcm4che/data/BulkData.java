@@ -45,7 +45,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.StringTokenizer;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.text.ParseException;
 
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
@@ -60,18 +62,31 @@ public class BulkData implements Value {
     public static final int MAGIC_LEN = 0xfbfb;
 
     public final String uri;
-    public final String transferSyntax;
+    private final int uriPathEnd;
+    public final boolean bigEndian;
     public final long offset;
     public final int length;
 
-    public BulkData(String uri, String transferSyntax, long offset,
-            int length) {
-        if (transferSyntax == null)
-            throw new NullPointerException("transferSyntax");
+    public BulkData(String uri, boolean bigEndian) {
+        Object[] parsed = { uri, 0, -1 };
+        try {
+            parsed = new MessageFormat(
+                    "{0}?offset={1,number}&length={2,number}")
+                .parse(uri);
+        } catch (ParseException e) { }
         this.uri = uri;
-        this.transferSyntax = transferSyntax;
+        uriPathEnd = ((String) parsed[0]).length();
+        this.offset = ((Number) parsed[1]).longValue();
+        this.length = ((Number) parsed[2]).intValue();
+        this.bigEndian = bigEndian;
+    }
+
+    public BulkData(String uri, long offset, int length, boolean bigEndian) {
+        this.uriPathEnd = uri.length();
+        this.uri = uri + "?offset=" + offset + "&length=" + length;
         this.offset = offset;
         this.length = length;
+        this.bigEndian = bigEndian;
     }
 
     @Override
@@ -82,38 +97,13 @@ public class BulkData implements Value {
     @Override
     public String toString() {
         return "BulkData[uri=" +  uri 
-                + ", tsuid=" + transferSyntax
-                + ", offset=" + offset
-                + ", length=" + length + "]";
-    }
-
-    public String toURI() {
-        return uri + "?transferSyntax=" + transferSyntax
-                   + "&offset=" + offset
-                   + "&length=" + length;
-    }
-
-    public static BulkData fromURI(String s) {
-        String transferSyntax = UID.ImplicitVRLittleEndian;
-        int offset = 0;
-        int length = -1;
-        StringTokenizer stk = new StringTokenizer(s, "?=& '\"");
-        String uri = stk.nextToken();
-        while (stk.hasMoreTokens()) {
-            String tk = stk.nextToken();
-            if (tk.equals("transferSyntax"))
-                transferSyntax = stk.nextToken();
-            else if (tk.equals("offset"))
-                offset = Integer.parseInt(stk.nextToken());
-            else if (tk.equals("length"))
-                length = Integer.parseInt(stk.nextToken());
-        }
-        return new BulkData(uri, transferSyntax, offset, length);
+                + ", bigEndian=" + bigEndian
+                + "]";
     }
 
     public File getFile() {
         try {
-            return new File(new URI(uri));
+            return new File(new URI(uriWithoutOffsetAndLength()));
         } catch (URISyntaxException e) {
             throw new IllegalStateException("uri: " + uri);
         } catch (IllegalArgumentException e) {
@@ -121,37 +111,42 @@ public class BulkData implements Value {
         }
     }
 
+    public String uriWithoutOffsetAndLength() {
+        return uri.substring(0, uriPathEnd);
+    }
+
     public InputStream openStream() throws IOException {
-        try {
-            return new URI(uri).toURL().openStream();
-        } catch (URISyntaxException e) {
-            throw new AssertionError(e);
-        }
+        return new URL(uri).openStream();
     }
 
     @Override
     public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
-        return getEncodedLength(encOpts, explicitVR, vr);
-    }
-
-    @Override
-    public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
+        if (length == -1)
+            throw new UnsupportedOperationException();
+ 
         return (length + 1) & ~1;
     }
 
     @Override
+    public int getEncodedLength(DicomEncodingOptions encOpts, boolean explicitVR, VR vr) {
+        return (length == -1) ? -1 : ((length + 1) & ~1);
+    }
+
+    @Override
     public byte[] toBytes(VR vr, boolean bigEndian) throws IOException {
+        if (length == -1)
+            throw new UnsupportedOperationException();
+
         if (length == 0)
             return ByteUtils.EMPTY_BYTES;
 
         InputStream in = openStream();
         try {
-            StreamUtils.skipFully(in, offset);
+            if (uri.startsWith("file:") && offset > 0)
+                StreamUtils.skipFully(in, offset);
             byte[] b = new byte[length];
             StreamUtils.readFully(in, b, 0, b.length);
-            if (transferSyntax.equals(UID.ExplicitVRBigEndian) 
-                    ? !bigEndian
-                    : bigEndian) {
+            if (this.bigEndian != bigEndian) {
                 vr.toggleEndian(b, false);
             }
             return b;
@@ -165,10 +160,9 @@ public class BulkData implements Value {
     public void writeTo(DicomOutputStream out, VR vr) throws IOException {
         InputStream in = openStream();
         try {
-            StreamUtils.skipFully(in, offset);
-            if (transferSyntax.equals(UID.ExplicitVRBigEndian)
-                    ? !out.isBigEndian()
-                    : out.isBigEndian())
+            if (uri.startsWith("file:") && offset > 0)
+                StreamUtils.skipFully(in, offset);
+            if (this.bigEndian != out.isBigEndian())
                 StreamUtils.copy(in, out, length, vr.numEndianBytes());
             else
                 StreamUtils.copy(in, out, length);
@@ -180,18 +174,14 @@ public class BulkData implements Value {
     }
 
     public void serializeTo(ObjectOutputStream oos) throws IOException {
-        oos.writeInt(length);
-        oos.writeLong(offset);
         oos.writeUTF(uri);
-        oos.writeUTF(transferSyntax);
+        oos.writeBoolean(bigEndian);
     }
 
     public static Value deserializeFrom(ObjectInputStream ois)
             throws IOException {
-        int len = ois.readInt();
-        long off = ois.readLong();
-        String uri = ois.readUTF();
-        String tsuid = ois.readUTF();
-        return new BulkData(uri, tsuid, off, len);
+        return new BulkData(
+                ois.readUTF(),
+                ois.readBoolean());
     }
 }

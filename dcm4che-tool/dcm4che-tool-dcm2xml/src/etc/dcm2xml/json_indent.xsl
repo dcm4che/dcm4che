@@ -20,7 +20,7 @@
         <xsl:text>"</xsl:text>
         <xsl:choose>
             <xsl:when test="@keyword"><xsl:value-of select="@keyword"/></xsl:when>
-            <xsl:otherwise><xsl:value-of select="@tag"/></xsl:otherwise>
+            <xsl:otherwise>private-<xsl:value-of select="position()"/></xsl:otherwise>
         </xsl:choose>
         <xsl:text>" : {</xsl:text>
         <xsl:apply-templates select="@tag">

@@ -39,6 +39,7 @@
 package org.dcm4che.data;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -138,7 +139,7 @@ public class BulkData implements Value {
         if (!uri.startsWith("file:"))
             return new URL(uri).openStream();
 
-        InputStream in = new URL(uriWithoutOffsetAndLength()).openStream();
+        InputStream in = new FileInputStream(getFile());
         StreamUtils.skipFully(in, offset);
         return in;
 

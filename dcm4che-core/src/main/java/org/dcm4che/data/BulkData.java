@@ -134,8 +134,14 @@ public class BulkData implements Value {
     public InputStream openStream() throws IOException {
         if (uri == null)
             throw new IllegalStateException("uri: null");
+ 
+        if (!uri.startsWith("file:"))
+            return new URL(uri).openStream();
 
-        return new URL(uri).openStream();
+        InputStream in = new URL(uriWithoutOffsetAndLength()).openStream();
+        StreamUtils.skipFully(in, offset);
+        return in;
+
     }
 
     @Override
@@ -161,8 +167,6 @@ public class BulkData implements Value {
 
         InputStream in = openStream();
         try {
-            if (uri.startsWith("file:") && offset > 0)
-                StreamUtils.skipFully(in, offset);
             byte[] b = new byte[length];
             StreamUtils.readFully(in, b, 0, b.length);
             if (this.bigEndian != bigEndian) {
@@ -179,8 +183,6 @@ public class BulkData implements Value {
     public void writeTo(DicomOutputStream out, VR vr) throws IOException {
         InputStream in = openStream();
         try {
-            if (uri.startsWith("file:") && offset > 0)
-                StreamUtils.skipFully(in, offset);
             if (this.bigEndian != out.isBigEndian())
                 StreamUtils.copy(in, out, length, vr.numEndianBytes());
             else

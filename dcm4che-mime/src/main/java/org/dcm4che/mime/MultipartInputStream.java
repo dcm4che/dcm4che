@@ -41,7 +41,9 @@ import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -143,8 +145,8 @@ public class MultipartInputStream extends FilterInputStream {
         return buffer.length - rpos;
     }
 
-    public Map<String, String> readHeaderParams() throws IOException {
-        Map<String, String> map = new TreeMap<String, String>(
+    public Map<String, List<String>> readHeaderParams() throws IOException {
+        Map<String, List<String>> map = new TreeMap<String, List<String>>(
                 new Comparator<String>() {
                     @Override
                     public int compare(String o1, String o2) {
@@ -160,7 +162,11 @@ public class MultipartInputStream extends FilterInputStream {
                 value =  unquote(name.substring(endName+1)).trim();
                 name = name.substring(0, endName);
             }
-            map.put(name.toLowerCase(), value);
+            List<String> list = map.get(name);
+            if (list == null) {
+                map.put(name.toLowerCase(), list = new ArrayList<String>(1));
+            }
+            list.add(value);
         }
         return map;
     }

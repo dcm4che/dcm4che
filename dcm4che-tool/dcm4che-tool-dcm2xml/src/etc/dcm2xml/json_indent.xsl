@@ -113,11 +113,64 @@
             <xsl:when test="../@vr='DS' or ../@vr='FL' or ../@vr='FD' or ../@vr='IS' or ../@vr='SL' or ../@vr='SS' or ./@vr='UL' or ../@vr='US'">
                 <xsl:value-of select="number(text())"/>
             </xsl:when>
-            <xsl:otherwise>"<xsl:value-of select="text()"/>"</xsl:otherwise>
+            <xsl:otherwise>
+                <xsl:text>"</xsl:text>
+                <xsl:call-template name="escape">
+                    <xsl:with-param name="text" select="text()"/>
+                </xsl:call-template>
+                <xsl:text>"</xsl:text>
+            </xsl:otherwise>
         </xsl:choose>
         <xsl:if test="position()=last()">
             <xsl:value-of select="concat($br,']')"/>
         </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="escape">
+        <xsl:param name="text"/>
+        <xsl:call-template name="replaceAll">
+            <xsl:with-param name="text">
+                <xsl:call-template name="replaceAll">
+                    <xsl:with-param name="text">
+                        <xsl:call-template name="replaceAll">
+                            <xsl:with-param name="text">
+                                <xsl:call-template name="replaceAll">
+                                    <xsl:with-param name="text" select="$text"/>
+                                    <xsl:with-param name="replace">\</xsl:with-param>
+                                    <xsl:with-param name="by">\\</xsl:with-param>
+                                </xsl:call-template>
+                            </xsl:with-param>
+                            <xsl:with-param name="replace">"</xsl:with-param>
+                            <xsl:with-param name="by">\"</xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:with-param>
+                    <xsl:with-param name="replace" select="'&#xA;'"/>
+                    <xsl:with-param name="by" select="'\n'"/>
+                </xsl:call-template>
+            </xsl:with-param>
+            <xsl:with-param name="replace" select="'&#xD;'"/>
+            <xsl:with-param name="by" select="'\r'"/>
+         </xsl:call-template>
+     </xsl:template>
+
+    <xsl:template name="replaceAll">
+        <xsl:param name="text"/>
+        <xsl:param name="replace"/>
+        <xsl:param name="by"/>
+        <xsl:choose>
+            <xsl:when test="contains($text,$replace)">
+                <xsl:value-of select="substring-before($text,$replace)" />
+                <xsl:value-of select="$by" />
+                <xsl:call-template name="replaceAll">
+                    <xsl:with-param name="text" select="substring-after($text,$replace)" />
+                    <xsl:with-param name="replace" select="$replace" />
+                    <xsl:with-param name="by" select="$by" />
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text" />
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="PersonName">

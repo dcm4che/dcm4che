@@ -555,9 +555,9 @@ enum StringValueType implements ValueType {
 
     @Override
     public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
-        if (xmlbase64)
-            throw new IllegalArgumentException("xmlbase64=true");
+            SAXWriter saxWriter, boolean inlineBinary) throws SAXException {
+        if (inlineBinary)
+            throw new IllegalArgumentException("inlineBinary=true");
         Object o = toStrings(val, bigEndian, cs);
         if (o instanceof String[]) {
             String[] ss = (String[]) o;

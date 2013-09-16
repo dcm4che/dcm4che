@@ -195,7 +195,7 @@ public class SAXWriter implements DicomInputHandler {
                     byte[] b = (byte[]) frag;
                     if (bigEndian)
                         frags.vr().toggleEndian(b, true);
-                    writeValueBase64(b);
+                    writeInlineBinary(b);
                 }
                 endElement("DataFragment");
             }
@@ -288,7 +288,7 @@ public class SAXWriter implements DicomInputHandler {
                     byte[] b = dis.readValue();
                     if (dis.bigEndian())
                         frags.vr().toggleEndian(b, false);
-                    writeValueBase64(b);
+                    writeInlineBinary(b);
                 }
                 endElement("DataFragment");
             }
@@ -302,8 +302,8 @@ public class SAXWriter implements DicomInputHandler {
         writeElement("Value", s);
     }
 
-    public void writeValueBase64(byte[] b) throws SAXException {
-        startElement("Value", "number", "1");
+    public void writeInlineBinary(byte[] b) throws SAXException {
+        startElement("InlineBinary");
         char[] buf = buffer;
         for (int off = 0; off < b.length;) {
             int len = Math.min(b.length - off, BASE64_CHUNK_LENGTH);
@@ -311,7 +311,7 @@ public class SAXWriter implements DicomInputHandler {
             ch.characters(buf, 0, (len * 4 / 3 + 3) & ~3);
             off += len;
         }
-        endElement("Value");
+        endElement("InlineBinary");
     }
 
     private void writeBulkData(BulkData bulkData)

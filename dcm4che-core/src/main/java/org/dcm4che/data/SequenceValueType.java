@@ -185,7 +185,7 @@ enum SequenceValueType implements ValueType {
 
     @Override
     public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
+            SAXWriter saxWriter, boolean inlineBinary) throws SAXException {
         throw new UnsupportedOperationException();
     }
 

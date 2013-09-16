@@ -84,15 +84,15 @@ public enum VR {
     protected final int headerLength;
     protected final int paddingByte;
     protected final ValueType valueType;
-    protected final boolean xmlbase64;
+    protected final boolean inlineBinary;
 
     VR(int code, int headerLength, int paddingByte, ValueType valueType,
-            boolean xmlbase64) {
+            boolean inlineBinary) {
         this.code = code;
         this.headerLength = headerLength;
         this.paddingByte = paddingByte;
         this.valueType = valueType;
-        this.xmlbase64 = xmlbase64;
+        this.inlineBinary = inlineBinary;
     }
 
     private static final VR[] VALUE_OF = new VR[0x5554 - 0x4145 + 1];
@@ -165,8 +165,8 @@ public enum VR {
         return valueType.isIntValue();
     }
 
-    public boolean isXMLBase64() {
-        return xmlbase64;
+    public boolean isInlineBinary() {
+        return inlineBinary;
     }
 
     public int numEndianBytes() {
@@ -259,7 +259,7 @@ public enum VR {
 
     public void toXML(Object val, boolean bigEndian,
             SpecificCharacterSet cs, SAXWriter saxWriter) throws SAXException {
-        valueType.toXML(val, bigEndian, cs, saxWriter, xmlbase64);
+        valueType.toXML(val, bigEndian, cs, saxWriter, inlineBinary);
     }
 
     public int vmOf(Object val) {

@@ -79,7 +79,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private BulkData bulkData;
     private Fragments dataFragments;
     private boolean processCharacters;
-    private boolean base64;
+    private boolean inlineBinary;
 
     public ContentHandlerAdapter(Attributes attrs) {
         if (attrs == null)
@@ -124,6 +124,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case 'I':
             if (qName.equals("Item"))
                 startItem(Integer.parseInt(atts.getValue("number")));
+            else if (qName.equals("InlineBinary"))
+                startInlineBinary();
             else if (qName.equals("Ideographic"))
                 startPNGroup(PersonName.Group.Ideographic);
             break;
@@ -160,10 +162,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case 'V':
             if (qName.equals("Value")) {
                 startValue(Integer.parseInt(atts.getValue("number")));
-                if (this.vr.isXMLBase64())
-                    startBase64();
-                else
-                    startText();
+                startText();
             }
             break;
         }
@@ -173,15 +172,15 @@ public class ContentHandlerAdapter extends DefaultHandler {
         bulkData = new BulkData(uuid, uri, items.getLast().bigEndian());
     }
 
-    private void startBase64() {
+    private void startInlineBinary() {
         processCharacters = true;
-        base64 = true;
+        inlineBinary = true;
         bout.reset();
     }
 
     private void startText() {
         processCharacters = true;
-        base64 = false;
+        inlineBinary = false;
         sb.setLength(0);
     }
 
@@ -230,7 +229,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     public void characters(char[] ch, int offset, int len)
             throws SAXException {
         if (processCharacters)
-            if (base64)
+            if (inlineBinary)
                 try {
                     if (carryLen != 0) {
                         int copy = 4 - carryLen;
@@ -331,7 +330,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
         if (bulkData != null) {
             attrs.setValue(privateCreator, tag, vr, bulkData);
             bulkData = null;
-        } else if (base64) {
+        } else if (inlineBinary) {
             attrs.setBytes(privateCreator, tag, vr, getBytes());
         } else {
             attrs.setString(privateCreator, tag, vr, getStrings());
@@ -349,8 +348,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private void endValue() {
-        if (!base64)
-            values.add(getString());
+        values.add(getString());
     }
 
     private void endPNComponent(PersonName.Component pnComp) {

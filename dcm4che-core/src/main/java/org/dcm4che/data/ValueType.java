@@ -103,7 +103,7 @@ interface ValueType {
             int maxChars, StringBuilder sb);
 
     void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException;
+            SAXWriter saxWriter, boolean inlineBinary) throws SAXException;
 
     int vmOf(Object val);
 }

@@ -173,6 +173,15 @@
         </xsl:choose>
     </xsl:template>
 
+    <xsl:template match="InlineBinary">
+        <xsl:param name="br"/>
+        <xsl:text>,</xsl:text>
+        <xsl:value-of select="$br"/>
+        <xsl:text>"InlineBinary" : "</xsl:text>
+        <xsl:value-of select="text()"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
+
     <xsl:template match="PersonName">
         <xsl:param name="br"/>
         <xsl:variable name="br2" select="concat($br,' ')"/>

@@ -149,6 +149,12 @@
         </xsl:choose>
     </xsl:template>
 
+    <xsl:template match="InlineBinary">
+        <xsl:text>",InlineBinary":"</xsl:text>
+        <xsl:value-of select="text()"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
+
     <xsl:template match="PersonName">
         <xsl:text>,</xsl:text>
         <xsl:if test="position()=1">"PersonName":[{</xsl:if>
@@ -203,8 +209,7 @@
     </xsl:template>
 
     <xsl:template match="BulkData">
-        <xsl:text>,</xsl:text>
-        <xsl:text>"BulkDataURI":"</xsl:text>
+        <xsl:text>",BulkDataURI":"</xsl:text>
         <xsl:value-of select="@uri"/>
         <xsl:text>"</xsl:text>
     </xsl:template>

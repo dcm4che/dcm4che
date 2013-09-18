@@ -51,9 +51,9 @@
     <url>http://dcm4che.org/jira</url>
   </issueManagement>
   <scm>
-    <connection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</connection>
-    <developerConnection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</developerConnection>
-    <url>https://github.com/gunterze/dcm4che</url>
+    <connection>scm:git:git://github.com/dcm4che/dcm4che.git</connection>
+    <developerConnection>scm:git:git@github.com:dcm4che/dcm4che.git</developerConnection>
+    <url>http://github.com/dcm4che/dcm4che</url>
   </scm>
   <organization>
     <name>dcm4che.org</name>

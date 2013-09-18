@@ -216,13 +216,17 @@ public class HL7Segment implements Serializable {
             String charsetName) {
         int off = pos.getIndex();
         int end = off;
-        while (end < size && b[end] != '\r')
+        while (end < size && b[end] != '\r' && b[end] != '\n')
             end++;
+
         int len = end - off;
         if (len == 0)
             return null;
 
-        pos.setIndex(end+1);
+        if (++end < size && (b[end] == '\r' || b[end] == '\n'))
+            end++;
+
+        pos.setIndex(end);
         try {
             return charsetName != null 
                     ? new String(b, off, len, charsetName)

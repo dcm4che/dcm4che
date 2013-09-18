@@ -81,9 +81,10 @@ interface ValueType {
     double[] toDoubles(Object val, boolean bigEndian);
 
     Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
-            Date defVal);
+            Date defVal, DatePrecision precision);
 
-    Date[] toDate(Object val, TimeZone tz, boolean ceil);
+    Date[] toDate(Object val, TimeZone tz, boolean ceil,
+            DatePrecisions precisions);
 
     Object toValue(byte[] b);
 
@@ -97,7 +98,7 @@ interface ValueType {
 
     Object toValue(double[] ds, boolean bigEndian);
 
-    Object toValue(Date[] ds, TimeZone tz);
+    Object toValue(Date[] ds, TimeZone tz, DatePrecision precision);
 
     boolean prompt(Object val, boolean bigEndian, SpecificCharacterSet cs,
             int maxChars, StringBuilder sb);

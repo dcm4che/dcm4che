@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,58 +39,27 @@
 package org.dcm4che.data;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-
-import org.dcm4che.util.DateUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum TemporalType {
-    DA {
-        @Override
-        public Date parse(TimeZone tz, String s, boolean ceil,
-                DatePrecision precision) {
-            precision.lastField = Calendar.DAY_OF_MONTH;
-            return DateUtils.parseDA(tz, s, ceil);
-        }
+public class DatePrecision {
 
-        @Override
-        public String format(TimeZone tz, Date date,
-                DatePrecision precision) {
-            return DateUtils.formatDA(tz, date);
-        }
-    }, DT {
-        @Override
-        public Date parse(TimeZone tz, String s, boolean ceil,
-                DatePrecision precision) {
-            return DateUtils.parseDT(tz, s, ceil, precision);
-        }
+    public DatePrecision() {
+        this(Calendar.MILLISECOND, false);
+    }
 
-        @Override
-        public String format(TimeZone tz, Date date,
-                DatePrecision precision) {
-            return DateUtils.formatDT(tz, date, precision);
-        }
-    }, TM {
-        @Override
-        public Date parse(TimeZone tz, String s, boolean ceil,
-                DatePrecision precision) {
-            return DateUtils.parseTM(tz, s, ceil, precision);
-        }
+    public DatePrecision(int lastField) {
+        this(lastField, false);
+    }
 
-        @Override
-        public String format(TimeZone tz, Date date,
-                DatePrecision precision) {
-            return DateUtils.formatTM(tz, date, precision);
-        }
-    };
+    public DatePrecision(int lastField, boolean includeTimezone) {
+        this.lastField = lastField;
+        this.includeTimezone = includeTimezone;
+    }
 
-    public abstract Date parse(TimeZone tz, String val, boolean ceil,
-            DatePrecision precision);
+    public int lastField;
+    public boolean includeTimezone;
 
-    public abstract String format(TimeZone tz, Date date,
-            DatePrecision precision);
 }

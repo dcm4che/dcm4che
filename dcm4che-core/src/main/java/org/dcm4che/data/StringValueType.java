@@ -417,38 +417,44 @@ enum StringValueType implements ValueType {
 
     @Override
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
-            Date defVal) {
+            Date defVal, DatePrecision precision) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
             return valueIndex == 0
-                ? temporalType.parse(tz, (String) val, ceil)
+                ? temporalType.parse(tz, (String) val, ceil, precision)
                 : defVal;
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             return (valueIndex < ss.length && ss[valueIndex] != null)
-                ? temporalType.parse(tz, ss[valueIndex], ceil)
+                ? temporalType.parse(tz, ss[valueIndex], ceil, precision)
                 : defVal;
         }
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Date[] toDate(Object val, TimeZone tz, boolean ceil) {
+    public Date[] toDate(Object val, TimeZone tz, boolean ceil,
+            DatePrecisions precisions) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
         if (val instanceof String) {
-            return new Date[] { temporalType.parse(tz, (String) val, ceil) };
+            precisions.precisions = new DatePrecision[1];
+            return new Date[] { temporalType.parse(tz, (String) val, ceil,
+                    precisions.precisions[0] = new DatePrecision()) };
         }
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
             Date[] is = new Date[ss.length];
+            precisions.precisions = new DatePrecision[ss.length];
             for (int i = 0; i < is.length; i++) {
-                if (ss[i] != null)
-                    is[i] = temporalType.parse(tz, ss[i], ceil);
+                if (ss[i] != null) {
+                    is[i] = temporalType.parse(tz, ss[i], ceil, 
+                            precisions.precisions[i] = new DatePrecision());
+                }
             }
             return is;
         }
@@ -495,7 +501,7 @@ enum StringValueType implements ValueType {
     } 
 
     @Override
-    public Object toValue(Date[] ds, TimeZone tz) {
+    public Object toValue(Date[] ds, TimeZone tz, DatePrecision precision) {
         if (temporalType == null)
             throw new UnsupportedOperationException();
 
@@ -503,11 +509,11 @@ enum StringValueType implements ValueType {
             return Value.NULL;
 
         if (ds.length == 1)
-            return temporalType.format(tz, ds[0]);
+            return temporalType.format(tz, ds[0], precision);
 
         String[] ss = new String[ds.length];
         for (int i = 0; i < ss.length; i++) {
-            ss[i] = temporalType.format(tz, ds[i]);
+            ss[i] = temporalType.format(tz, ds[i], precision);
         }
         return ss;
     }

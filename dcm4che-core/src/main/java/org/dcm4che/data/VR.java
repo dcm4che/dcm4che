@@ -216,12 +216,13 @@ public enum VR {
     }
 
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
-            Date defVal) {
-        return valueType.toDate(val, tz, valueIndex, ceil, defVal);
+            Date defVal, DatePrecision precision) {
+        return valueType.toDate(val, tz, valueIndex, ceil, defVal, precision);
     }
 
-    public Date[] toDates(Object val, TimeZone tz, boolean ceil) {
-        return valueType.toDate(val, tz, ceil);
+    public Date[] toDates(Object val, TimeZone tz, boolean ceil,
+            DatePrecisions precisions) {
+        return valueType.toDate(val, tz, ceil, precisions);
     }
 
     Object toValue(byte[] b) {
@@ -248,8 +249,8 @@ public enum VR {
         return valueType.toValue(ds, bigEndian);
     }
 
-    public Object toValue(Date[] ds, TimeZone tz) {
-        return valueType.toValue(ds, tz);
+    public Object toValue(Date[] ds, TimeZone tz, DatePrecision precision) {
+        return valueType.toValue(ds, tz, precision);
     }
 
     public boolean prompt(Object val, boolean bigEndian,

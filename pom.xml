@@ -100,6 +100,7 @@
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-servlet</module>
+    <module>dcm4che-osgi</module>
   </modules>
   <distributionManagement>
     <repository>

@@ -3,7 +3,7 @@
   <parent>
     <artifactId>dcm4che-conf</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.2.1</version>
+    <version>3.3.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-conf-prefs-hl7</artifactId>

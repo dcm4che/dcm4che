@@ -5,6 +5,10 @@ import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomServiceRegistry;
 
+/**
+ * @author Umberto Cappellini <umberto.cappellini@agfa.com>
+ *
+ */
 public class EchoService extends BasicCEchoSCP implements DimseRQHandler
 {
 	private DeviceServiceInterface deviceService;

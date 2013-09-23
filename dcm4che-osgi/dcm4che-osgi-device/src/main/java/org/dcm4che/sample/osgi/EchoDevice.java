@@ -15,6 +15,10 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+/**
+ * @author Umberto Cappellini <umberto.cappellini@agfa.com>
+ *
+ */
 public class EchoDevice extends DeviceService implements DeviceServiceInterface {
 
 	private final static String DICOM_DEVICE_NAME="echoscp";

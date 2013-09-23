@@ -2,7 +2,7 @@
 	xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
 	<!-- this is the service this bundle is exposing (the Device Service) -->
-	<service id="echoDevice" interface="org.dcm4che.sample.osgi.DeviceServiceInterface" ref="echoDeviceImpl"/>
+	<service id="echoDevice" interface="org.dcm4che.net.DeviceServiceInterface" ref="echoDeviceImpl"/>
 	
 	<!-- this is the java class implementing the Echo Device Service -->	
 	<bean class="org.dcm4che.sample.osgi.EchoDevice" 

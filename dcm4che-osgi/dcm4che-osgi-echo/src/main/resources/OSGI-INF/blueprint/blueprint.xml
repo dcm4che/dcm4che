@@ -9,6 +9,6 @@
 		<property name="deviceService" ref="deviceService"/>
 	</bean>
 	
-	<reference id="deviceService" interface="org.dcm4che.sample.osgi.DeviceServiceInterface"/>
+	<reference id="deviceService" interface="org.dcm4che.net.DeviceServiceInterface"/>
 	
 </blueprint>

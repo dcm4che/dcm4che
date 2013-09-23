@@ -9,6 +9,7 @@ import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che.net.DeviceService;
+import org.dcm4che.net.DeviceServiceInterface;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;

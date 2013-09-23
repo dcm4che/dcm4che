@@ -1,6 +1,5 @@
-package org.dcm4che.sample.osgi;
+package org.dcm4che.net;
 
-import org.dcm4che.net.Device;
 
 public interface DeviceServiceInterface {
 

@@ -14,7 +14,6 @@
 		<url>http://dcm4che.org/jira</url>
 	</issueManagement>
 	<modules>
-		<module>dcm4che-osgi-dicomservice</module>
 		<module>dcm4che-osgi-echo</module>
 		<module>dcm4che-osgi-config</module>
 		<module>dcm4che-osgi-device</module>

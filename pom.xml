@@ -61,6 +61,7 @@
   </organization>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.bundle.version>3.3.0</project.bundle.version>
   </properties>
   <build>
     <extensions>

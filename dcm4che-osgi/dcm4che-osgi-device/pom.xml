@@ -27,7 +27,7 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
-                        <Bundle-Version>3.3.0</Bundle-Version>
+                        <Bundle-Version>${project.bundle.version}</Bundle-Version>
                     </instructions>
                 </configuration>
             </plugin>

@@ -11,6 +11,9 @@
     <artifactId>dcm4che-osgi</artifactId>
     <packaging>pom</packaging>
     <description>dcm4che OSGi bundles</description>
+    <properties>
+        <bundle.version>slapd</bundle.version>
+    </properties>    
     <issueManagement>
         <system>JIRA</system>
         <url>http://dcm4che.org/jira</url>

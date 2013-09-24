@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * Blueprint Container.
  * 
  * This bundle will be injected in every Dicom Service bundles, 
- * which will use it to register themselfes in the device.
+ * which will use it to register themselves in the device.
  * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 

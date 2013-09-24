@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Factory used by the Blueprint Container to construct the Configuration
  * bean (in this example, is the LDAP configuration). The factory receives as
- * argument the URL of the LDAP properties (see blueprint.xml).
+ * argument the Hashtable contianing the ldap properties (see blueprint.xml).
  * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
@@ -61,26 +61,13 @@ public class LdapConfigurationFactory {
     
     private static final Logger LOG = LoggerFactory.getLogger(LdapConfigurationFactory.class);
     
-    public static DicomConfiguration createConfig(String ldapProperties)
+    public static DicomConfiguration createConfig(Properties ldapProperties)
             throws ConfigurationException {
 
-        try {
-
-            URL ldapURL = new URL(ldapProperties);
-            Properties props = new Properties();
-            props.load(ldapURL.openStream());
-
-            DicomConfiguration ldapConfig = new LdapDicomConfiguration(props);
+            DicomConfiguration ldapConfig = new LdapDicomConfiguration(ldapProperties);
+            
+            LOG.info("Dicom configuration loaded");
 
             return ldapConfig;
-
-        } catch (MalformedURLException e) {
-            LOG.error("LDAP properties URL not valid", e);
-            throw new ConfigurationException(e);
-        } catch (IOException e) {
-            LOG.error("Cannot load LDAP properties", e);
-            throw new ConfigurationException(e);
-        }
     }
-
 }

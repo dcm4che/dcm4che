@@ -11,10 +11,15 @@
     <artifactId>dcm4che-osgi-config</artifactId>
     <packaging>bundle</packaging>
     <description>Sample Dicom Configuration</description>
-    <build>
+    <properties>
+        <skipTests>true</skipTests>
+        <ldap>slapd</ldap>
+    </properties>
+    <build>    
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <filtering>true</filtering> 
             </resource>
         </resources>
         <plugins>
@@ -25,6 +30,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <_include>src/main/filters/${ldap}.properties</_include>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-Version>3.3.0</Bundle-Version>

@@ -34,11 +34,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.dcm4che</groupId>
-			<artifactId>dcm4che-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.dcm4che</groupId>
 			<artifactId>dcm4che-net</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -57,12 +52,6 @@
 			<groupId>org.dcm4che</groupId>
 			<artifactId>dcm4che-conf-ldap</artifactId>
 			<version>3.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.aries.jndi</groupId>
-			<artifactId>org.apache.aries.jndi</artifactId>
-			<version>1.0.0</version>
-			<type>bundle</type>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>

@@ -80,7 +80,7 @@
       <id>ldap</id>
       <activation><property><name>ldap</name></property></activation>
       <properties>
-        <config-class>org.dcm4che.conf.ldap.ExtendedLdapDicomConfiguration</config-class>
+        <config-class>org.dcm4che.conf.ldap.LdapDicomConfiguration</config-class>
       </properties>
       <build>
         <filters>

@@ -19,5 +19,6 @@
     <module>dcm4che-osgi-echo</module>
     <module>dcm4che-osgi-config</module>
     <module>dcm4che-osgi-device</module>
+    <module>dcm4che-osgi-rest</module>
   </modules>
 </project>

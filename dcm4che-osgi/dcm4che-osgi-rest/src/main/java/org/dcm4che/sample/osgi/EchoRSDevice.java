@@ -91,7 +91,20 @@ public class EchoRSDevice extends DeviceService implements DeviceServiceInterfac
         LOG.info("EchoRSDevice:stopping Echo Dicom Device..:");
         getDeviceService().stop();
     }
-
+    
+    /**
+     * check if service is running
+     * 
+     * @see org.dcm4che.net.DeviceService#start()
+     */
+    @GET
+    @Path("running")
+    public boolean isRunning()
+    {
+        boolean running = getDeviceService().isRunning();
+        LOG.info("EchoRSDevice:is running..:"+running);
+        return running;
+    }
     
     private DeviceServiceInterface getDeviceService() {
         if (context == null) {

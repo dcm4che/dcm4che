@@ -110,7 +110,7 @@
         </xsl:if>
         <xsl:value-of select="concat($br,' ')"/>
         <xsl:choose>
-            <xsl:when test="../@vr='DS' or ../@vr='FL' or ../@vr='FD' or ../@vr='IS' or ../@vr='SL' or ../@vr='SS' or ./@vr='UL' or ../@vr='US'">
+            <xsl:when test="../@vr='DS' or ../@vr='FL' or ../@vr='FD' or ../@vr='IS' or ../@vr='SL' or ../@vr='SS' or ../@vr='UL' or ../@vr='US'">
                 <xsl:value-of select="number(text())"/>
             </xsl:when>
             <xsl:otherwise>

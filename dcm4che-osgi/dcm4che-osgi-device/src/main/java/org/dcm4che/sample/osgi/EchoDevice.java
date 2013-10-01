@@ -61,7 +61,7 @@ public class EchoDevice extends DeviceService implements DeviceServiceInterface 
 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceService.class);
     
-    private final static String DICOM_DEVICE_NAME = "echoscp";
+    private String deviceName;
 
     private DicomConfiguration dicomConfig;
 
@@ -73,6 +73,10 @@ public class EchoDevice extends DeviceService implements DeviceServiceInterface 
 
     public void setDicomConfig(DicomConfiguration dicomConfig) {
         this.dicomConfig = dicomConfig;
+    }
+    
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     /**
@@ -86,7 +90,7 @@ public class EchoDevice extends DeviceService implements DeviceServiceInterface 
 
         try {
 
-            init(dicomConfig.findDevice(DICOM_DEVICE_NAME));
+            init(dicomConfig.findDevice(deviceName));
 
             DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
             this.device.setDimseRQHandler(serviceRegistry);

@@ -44,6 +44,7 @@ import java.util.TimeZone;
 import org.dcm4che.io.SAXWriter;
 import org.dcm4che.util.ByteUtils;
 import org.dcm4che.util.StringUtils;
+import org.dcm4che.util.TagUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -142,8 +143,18 @@ enum BinaryValueType implements ValueType {
         }
 
         @Override
+        protected String toString(byte[] b, int off, boolean bigEndian) {
+            return TagUtils.toHexString(toInt(b, off, bigEndian));
+        }
+
+        @Override
         protected int toInt(byte[] b, int off, boolean bigEndian) {
             return ByteUtils.bytesToTag(b, off, bigEndian);
+        }
+
+        @Override
+        protected byte[] toBytes(String s, byte[] b, int off, boolean bigEndian) {
+            return toBytes(Integer.parseInt(s, 16), b, off, bigEndian);
         }
 
         @Override

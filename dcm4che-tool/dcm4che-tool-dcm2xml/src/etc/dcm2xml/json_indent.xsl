@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="text"/>
 
@@ -169,28 +169,40 @@
         <xsl:param name="text"/>
         <xsl:call-template name="replaceAll">
             <xsl:with-param name="text">
-                <xsl:call-template name="replaceAll">
-                    <xsl:with-param name="text">
-                        <xsl:call-template name="replaceAll">
-                            <xsl:with-param name="text">
-                                <xsl:call-template name="replaceAll">
-                                    <xsl:with-param name="text" select="$text"/>
-                                    <xsl:with-param name="replace">\</xsl:with-param>
-                                    <xsl:with-param name="by">\\</xsl:with-param>
-                                </xsl:call-template>
-                            </xsl:with-param>
-                            <xsl:with-param name="replace">"</xsl:with-param>
-                            <xsl:with-param name="by">\"</xsl:with-param>
-                        </xsl:call-template>
-                    </xsl:with-param>
-                    <xsl:with-param name="replace" select="'&#xA;'"/>
-                    <xsl:with-param name="by" select="'\n'"/>
-                </xsl:call-template>
+            <xsl:call-template name="replaceAll">
+                <xsl:with-param name="text">
+                    <xsl:call-template name="replaceAll">
+                        <xsl:with-param name="text">
+                            <xsl:call-template name="replaceAll">
+                                <xsl:with-param name="text">
+                                    <xsl:call-template name="replaceAll">
+                                        <xsl:with-param name="text">
+                                            <xsl:call-template name="replaceAll">
+                                                <xsl:with-param name="text" select="$text"/>
+                                                <xsl:with-param name="replace">\</xsl:with-param>
+                                                <xsl:with-param name="by">\\</xsl:with-param>
+                                            </xsl:call-template>
+                                        </xsl:with-param>
+                                        <xsl:with-param name="replace">"</xsl:with-param>
+                                        <xsl:with-param name="by">\"</xsl:with-param>
+                                    </xsl:call-template>
+                                </xsl:with-param>
+                                <xsl:with-param name="replace" select="'&#xA;'"/>
+                                <xsl:with-param name="by" select="'\n'"/>
+                            </xsl:call-template>
+                        </xsl:with-param>
+                        <xsl:with-param name="replace" select="'&#xC;'"/>
+                        <xsl:with-param name="by" select="'\f'"/>
+                    </xsl:call-template>
+                </xsl:with-param>
+                <xsl:with-param name="replace" select="'&#xD;'"/>
+                <xsl:with-param name="by" select="'\r'"/>
+             </xsl:call-template>
             </xsl:with-param>
-            <xsl:with-param name="replace" select="'&#xD;'"/>
-            <xsl:with-param name="by" select="'\r'"/>
-         </xsl:call-template>
-     </xsl:template>
+            <xsl:with-param name="replace" select="'&#x1B;'"/>
+            <xsl:with-param name="by" select="'\u001B'"/>
+        </xsl:call-template>
+    </xsl:template>
 
     <xsl:template name="replaceAll">
         <xsl:param name="text"/>

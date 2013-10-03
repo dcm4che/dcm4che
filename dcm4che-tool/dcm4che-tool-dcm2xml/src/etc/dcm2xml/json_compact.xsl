@@ -15,23 +15,33 @@
         <xsl:if test="position()>1">,</xsl:if>
         <xsl:text>"</xsl:text>
         <xsl:choose>
-            <xsl:when test="@keyword"><xsl:value-of select="@keyword"/></xsl:when>
+            <xsl:when test="@privateCreator">
+                <xsl:variable name="preceding" select="preceding-sibling::*[1]"/>  
+                <xsl:variable name="gggg" select="substring(@tag,1,4)"/>
+                <xsl:variable name="tag">
+                    <xsl:call-template name="unifyPrivateTag">
+                        <xsl:with-param name="gggg" select="$gggg"/>
+                        <xsl:with-param name="xx" select="10"/>
+                        <xsl:with-param name="ee" select="substring(@tag,7,2)"/>
+                        <xsl:with-param name="creator" select="@privateCreator"/>
+                        <xsl:with-param name="preceding" select="$preceding"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                <xsl:if test="substring($preceding/@tag,1,4)!=$gggg or $preceding/@privateCreator!=@privateCreator">
+                    <xsl:value-of select="concat($gggg,'00',substring($tag,5,2))"/>
+                    <xsl:text>":{"vr":"LO","Value":["</xsl:text>
+                    <xsl:value-of select="@privateCreator"/>
+                    <xsl:text>"]},"</xsl:text>
+                </xsl:if>
+                <xsl:value-of select="$tag"/>
+           </xsl:when>
             <xsl:otherwise>
-                <xsl:call-template name="unifyPrivateTag">
-                    <xsl:with-param name="gggg" select="substring(@tag,1,4)"/>
-                    <xsl:with-param name="xx" select="10"/>
-                    <xsl:with-param name="ee" select="substring(@tag,7,2)"/>
-                    <xsl:with-param name="creator" select="@privateCreator"/>
-                    <xsl:with-param name="preceding" select="preceding-sibling::*[1]"/>
-                </xsl:call-template>
+                <xsl:value-of select="@tag"/>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>":{</xsl:text>
-        <xsl:apply-templates select="@tag"/>
-        <xsl:text>,</xsl:text>
-        <xsl:apply-templates select="@privateCreator"/>
-        <xsl:if test="@privateCreator">,</xsl:if>
-        <xsl:apply-templates select="@vr"/>
+        <xsl:text>":{"vr":"</xsl:text>
+        <xsl:value-of select="@vr"/>
+        <xsl:text>"</xsl:text>
         <xsl:apply-templates select="*"/>
         <xsl:text>}</xsl:text>
     </xsl:template>
@@ -76,20 +86,14 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="@tag|@privateCreator|@vr">
-        <xsl:text>"</xsl:text>
-        <xsl:value-of select="name()"/>
-        <xsl:text>":"</xsl:text>
-        <xsl:value-of select="."/>
-        <xsl:text>"</xsl:text>
-    </xsl:template>
-
     <xsl:template match="Value">
         <xsl:text>,</xsl:text>
         <xsl:if test="position()=1">"Value":[</xsl:if>
         <xsl:choose>
             <xsl:when test="../@vr='DS' or ../@vr='FL' or ../@vr='FD' or ../@vr='IS' or ../@vr='SL' or ../@vr='SS' or ../@vr='UL' or ../@vr='US'">
-                <xsl:value-of select="number(text())"/>
+                <xsl:call-template name="number">
+                    <xsl:with-param name="text" select="text()"/>
+                </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
                 <xsl:text>"</xsl:text>
@@ -100,6 +104,38 @@
             </xsl:otherwise>
         </xsl:choose>
         <xsl:if test="position()=last()">]</xsl:if>
+    </xsl:template>
+
+    <xsl:template name="number">
+        <xsl:param name="text"/>
+        <xsl:variable name="ch1" select="substring($text,1,1)"/>
+        <xsl:if test="$ch1='-'">-</xsl:if>
+        <xsl:call-template name="skipLeadingZeros">
+            <xsl:with-param name="text">
+                <xsl:choose>
+                    <xsl:when test="$ch1='-' or $ch1='+'">
+                        <xsl:value-of select="substring($text,2)"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="$text"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:with-param>
+        </xsl:call-template>
+    </xsl:template>
+
+    <xsl:template name="skipLeadingZeros">
+        <xsl:param name="text"/>
+        <xsl:choose>
+            <xsl:when test="substring($text,1,1)='0' and string-length($text)>1 and substring($text,2,1)!='.'">
+                <xsl:call-template name="skipLeadingZeros">
+                    <xsl:with-param name="text" select="substring($text,2)"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template name="escape">
@@ -150,14 +186,14 @@
     </xsl:template>
 
     <xsl:template match="InlineBinary">
-        <xsl:text>",InlineBinary":"</xsl:text>
+        <xsl:text>,"InlineBinary":"</xsl:text>
         <xsl:value-of select="text()"/>
         <xsl:text>"</xsl:text>
     </xsl:template>
 
     <xsl:template match="PersonName">
         <xsl:text>,</xsl:text>
-        <xsl:if test="position()=1">"PersonName":[{</xsl:if>
+        <xsl:if test="position()=1">"Value":[{</xsl:if>
         <xsl:apply-templates select="*"/>
         <xsl:text>}</xsl:text>
         <xsl:if test="position()=last()">]</xsl:if>
@@ -201,7 +237,7 @@
 
     <xsl:template match="Item">
         <xsl:text>,</xsl:text>
-        <xsl:if test="position()=1">"Sequence":[</xsl:if>
+        <xsl:if test="position()=1">"Value":[</xsl:if>
         <xsl:text>{</xsl:text>
         <xsl:apply-templates select="*"/>
         <xsl:text>}</xsl:text>

@@ -131,6 +131,16 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getDicomConfigurationExtension(Class<T> clazz) {
+        for (PreferencesDicomConfigurationExtension ext : extensions) {
+            if (clazz.isInstance(ext.getClass()))
+                return (T) ext;
+        }
+        return null;
+    }
+
     @Override
     public boolean configurationExists() throws ConfigurationException {
         return PreferencesUtils.nodeExists(rootPrefs, DICOM_CONFIGURATION_ROOT);

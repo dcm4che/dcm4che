@@ -21,3 +21,4 @@
 /subsystem=osgi/capability=org.dcm4che.net-hl7:add()
 /subsystem=osgi/capability=org.dcm4che.net-imageio:add()
 /subsystem=osgi/capability=org.dcm4che.soundex:add()
+

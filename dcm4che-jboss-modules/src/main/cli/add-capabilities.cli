@@ -12,6 +12,7 @@
 /subsystem=osgi/capability=org.dcm4che.core:add()
 /subsystem=osgi/capability=org.dcm4che.emf:add()
 /subsystem=osgi/capability=org.dcm4che.hl7:add()
+/subsystem=osgi/capability=org.dcm4che.image:add()
 /subsystem=osgi/capability=org.dcm4che.imageio:add()
 /subsystem=osgi/capability=org.dcm4che.imageio-rle:add()
 /subsystem=osgi/capability=org.dcm4che.mime:add()

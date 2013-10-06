@@ -33,6 +33,8 @@
      -X,--blk-spec <xml-file>        specify bulkdata attributes explicitly by
                                      XML presentation in <xml-file>
      -x,--xsl <xsl-file>             apply specified XSLT stylesheet
+        --xml11                      set version in XML declaration to 1.1;
+                                     1.0 by default
         --xmlns                      include
                                      xmlns='http://dicom.nema.org/PS3.19/model
                                      s/NativeDICOM' attribute in root element

@@ -38,6 +38,7 @@
 
 package org.dcm4che.data;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -50,37 +51,46 @@ import org.dcm4che.util.DateUtils;
 enum TemporalType {
     DA {
         @Override
-        public Date parse(TimeZone tz, String s, boolean ceil) {
+        public Date parse(TimeZone tz, String s, boolean ceil,
+                DatePrecision precision) {
+            precision.lastField = Calendar.DAY_OF_MONTH;
             return DateUtils.parseDA(tz, s, ceil);
         }
 
         @Override
-        public String format(TimeZone tz, Date date) {
+        public String format(TimeZone tz, Date date,
+                DatePrecision precision) {
             return DateUtils.formatDA(tz, date);
         }
     }, DT {
         @Override
-        public Date parse(TimeZone tz, String s, boolean ceil) {
-            return DateUtils.parseDT(tz, s, ceil);
+        public Date parse(TimeZone tz, String s, boolean ceil,
+                DatePrecision precision) {
+            return DateUtils.parseDT(tz, s, ceil, precision);
         }
 
         @Override
-        public String format(TimeZone tz, Date date) {
-            return DateUtils.formatDT(tz, date);
+        public String format(TimeZone tz, Date date,
+                DatePrecision precision) {
+            return DateUtils.formatDT(tz, date, precision);
         }
     }, TM {
         @Override
-        public Date parse(TimeZone tz, String s, boolean ceil) {
-            return DateUtils.parseTM(tz, s, ceil);
+        public Date parse(TimeZone tz, String s, boolean ceil,
+                DatePrecision precision) {
+            return DateUtils.parseTM(tz, s, ceil, precision);
         }
 
         @Override
-        public String format(TimeZone tz, Date date) {
-            return DateUtils.formatTM(tz, date);
+        public String format(TimeZone tz, Date date,
+                DatePrecision precision) {
+            return DateUtils.formatTM(tz, date, precision);
         }
     };
 
-    public abstract Date parse(TimeZone tz, String val, boolean ceil);
+    public abstract Date parse(TimeZone tz, String val, boolean ceil,
+            DatePrecision precision);
 
-    public abstract String format(TimeZone tz, Date date);
+    public abstract String format(TimeZone tz, Date date,
+            DatePrecision precision);
 }

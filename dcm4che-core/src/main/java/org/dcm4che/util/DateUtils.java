@@ -43,6 +43,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import org.dcm4che.data.DatePrecision;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
@@ -83,15 +85,16 @@ public class DateUtils {
     }
 
     public static String formatTM(TimeZone tz, Date date) {
-        return formatTM(tz, date, Calendar.MILLISECOND);
+        return formatTM(tz, date, new DatePrecision());
     }
 
-    public static String formatTM(TimeZone tz, Date date, int lastField) {
-        return formatTM(cal(tz, date), new StringBuilder(10), lastField).toString();
+    public static String formatTM(TimeZone tz, Date date, DatePrecision precision) {
+        return formatTM(cal(tz, date), new StringBuilder(10),
+                precision.lastField).toString();
     }
 
-    private static StringBuilder formatTM(Calendar cal, StringBuilder toAppendTo,
-            int lastField) {
+    private static StringBuilder formatTM(Calendar cal, 
+            StringBuilder toAppendTo, int lastField) {
         appendXX(cal.get(Calendar.HOUR_OF_DAY), toAppendTo);
         if (lastField > Calendar.HOUR_OF_DAY) {
             appendXX(cal.get(Calendar.MINUTE), toAppendTo);
@@ -107,20 +110,18 @@ public class DateUtils {
     }
 
     public static String formatDT(TimeZone tz, Date date) {
-        return formatDT(tz, date, Calendar.MILLISECOND, false);
+        return formatDT(tz, date, new DatePrecision());
     }
 
-    public static String formatDT(TimeZone tz, Date date, int lastField,
-            boolean timeZone) {
-        return formatDT(tz, date, new StringBuilder(23), lastField, timeZone)
-                .toString();
+    public static String formatDT(TimeZone tz, Date date, DatePrecision precision) {
+        return formatDT(tz, date, new StringBuilder(23), precision).toString();
     }
 
     public static StringBuilder formatDT(TimeZone tz, Date date,
-            StringBuilder toAppendTo, int lastField, boolean timeZone) {
+            StringBuilder toAppendTo, DatePrecision precision) {
         Calendar cal = cal(tz, date);
-        formatDT(cal, toAppendTo, lastField);
-        if (timeZone) {
+        formatDT(cal, toAppendTo, precision.lastField);
+        if (precision.includeTimezone) {
             int offset = cal.get(Calendar.ZONE_OFFSET)
                     + cal.get(Calendar.DST_OFFSET);
             appendZZZZZ(offset, toAppendTo);
@@ -209,21 +210,24 @@ public class DateUtils {
         return cal.getTime();
     }
 
-    public static Date parseTM(TimeZone tz, String s) {
-        return parseTM(tz, s, false);
+    public static Date parseTM(TimeZone tz, String s, DatePrecision precision) {
+        return parseTM(tz, s, false, precision);
     }
 
-    public static Date parseTM(TimeZone tz, String s, boolean ceil) {
-        return parseTM(cal(tz), s, ceil);
+    public static Date parseTM(TimeZone tz, String s, boolean ceil,
+            DatePrecision precision) {
+        return parseTM(cal(tz), s, ceil, precision);
     }
 
-    private static Date parseTM(Calendar cal, String s, boolean ceil) {
+    private static Date parseTM(Calendar cal, String s, boolean ceil,
+            DatePrecision precision) {
         int length = s.length();
         int pos = 0;
         if (pos + 2 > length)
             throw new IllegalArgumentException(s);
+
         try {
-            cal.set(Calendar.HOUR_OF_DAY,
+            cal.set(precision.lastField = Calendar.HOUR_OF_DAY,
                     Integer.parseInt(s.substring(pos, pos + 2)));
             pos += 2;
             if (pos < length) {
@@ -231,7 +235,8 @@ public class DateUtils {
                     pos++;
                 if (pos + 2 > length)
                     throw new IllegalArgumentException(s);
-                cal.set(Calendar.MINUTE,
+
+                cal.set(precision.lastField = Calendar.MINUTE,
                         Integer.parseInt(s.substring(pos, pos + 2)));
                 pos += 2;
                 if (pos < length) {
@@ -239,28 +244,29 @@ public class DateUtils {
                         pos++;
                     if (pos + 2 > length)
                         throw new IllegalArgumentException(s);
-                    cal.set(Calendar.SECOND,
+                    cal.set(precision.lastField = Calendar.SECOND,
                             Integer.parseInt(s.substring(pos, pos + 2)));
                     pos += 2;
                     if (pos < length) {
                         float f = Float.parseFloat(s.substring(pos));
                         if (f >= 1 || f < 0)
                             throw new IllegalArgumentException(s);
-                        cal.set(Calendar.MILLISECOND, (int) (f * 1000));
-                    } else if (ceil)
-                        ceil(cal, Calendar.SECOND);
-                } else if (ceil)
-                    ceil(cal, Calendar.MINUTE);
-            } else if (ceil)
-                ceil(cal, Calendar.HOUR_OF_DAY);
+                        cal.set(precision.lastField = Calendar.MILLISECOND, 
+                                (int) (f * 1000));
+                        return cal.getTime();
+                    }
+                }
+            }
+            if (ceil)
+                ceil(cal, precision.lastField);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(s);
         }
         return cal.getTime();
     }
 
-    public static Date parseDT(TimeZone tz, String s) {
-        return parseDT(tz, s, false);
+    public static Date parseDT(TimeZone tz, String s, DatePrecision precision) {
+        return parseDT(tz, s, false, precision);
     }
 
     public static TimeZone timeZone(String s) {
@@ -299,10 +305,11 @@ public class DateUtils {
         return null;
     }
 
-    public static Date parseDT(TimeZone tz, String s, boolean ceil) {
+    public static Date parseDT(TimeZone tz, String s, boolean ceil,
+            DatePrecision precision) {
         int length = s.length();
         TimeZone tz1 = safeTimeZone(s);
-        if (tz1 != null) {
+        if (precision.includeTimezone = tz1 != null) {
             length -= 5;
             tz = tz1;
         }
@@ -311,35 +318,35 @@ public class DateUtils {
             int pos = 0;
             if (pos + 4 > length)
                 throw new IllegalArgumentException(s);
-            cal.set(Calendar.YEAR, Integer.parseInt(s.substring(pos, pos + 4)));
+            cal.set(precision.lastField = Calendar.YEAR,
+                    Integer.parseInt(s.substring(pos, pos + 4)));
             pos += 4;
             if (pos < length) {
                 if (!Character.isDigit(s.charAt(pos)))
                     pos++;
                 if (pos + 2 > length)
                     throw new IllegalArgumentException(s);
-                cal.set(Calendar.MONTH, Integer.parseInt(s.substring(pos,
-                        pos + 2)) - 1);
+                cal.set(precision.lastField = Calendar.MONTH,
+                        Integer.parseInt(s.substring(pos,  pos + 2)) - 1);
                 pos += 2;
                 if (pos < length) {
                     if (!Character.isDigit(s.charAt(pos)))
                         pos++;
                     if (pos + 2 > length)
                         throw new IllegalArgumentException(s);
-                    cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(s
-                            .substring(pos, pos + 2)));
+                    cal.set(precision.lastField = Calendar.DAY_OF_MONTH,
+                            Integer.parseInt(s.substring(pos, pos + 2)));
                     pos += 2;
                     if (pos < length)
-                        return parseTM(cal, s.substring(pos, length), ceil);
-                    else if (ceil)
-                        ceil(cal, Calendar.DAY_OF_MONTH);
-                } else if (ceil)
-                    ceil(cal, Calendar.MONTH);
-            } else if (ceil)
-                ceil(cal, Calendar.YEAR);
+                        return parseTM(cal, s.substring(pos, length), ceil,
+                                precision);
+                }
+            }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(s);
         }
+        if (ceil)
+            ceil(cal, precision.lastField);
         return cal.getTime();
     }
 

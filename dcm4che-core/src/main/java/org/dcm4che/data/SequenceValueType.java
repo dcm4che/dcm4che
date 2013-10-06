@@ -132,12 +132,13 @@ enum SequenceValueType implements ValueType {
 
     @Override
     public Date toDate(Object val, TimeZone tz, int valueIndex, boolean ceil,
-            Date defVal) {
+            Date defVal, DatePrecision precision) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Date[] toDate(Object val, TimeZone tz, boolean ceil) {
+    public Date[] toDate(Object val, TimeZone tz, boolean ceil,
+            DatePrecisions precisions) {
         throw new UnsupportedOperationException();
     }
 
@@ -172,7 +173,7 @@ enum SequenceValueType implements ValueType {
     } 
 
     @Override
-    public Object toValue(Date[] ds, TimeZone tz) {
+    public Object toValue(Date[] ds, TimeZone tz, DatePrecision precision) {
         throw new UnsupportedOperationException();
     }
 
@@ -185,7 +186,7 @@ enum SequenceValueType implements ValueType {
 
     @Override
     public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean xmlbase64) throws SAXException {
+            SAXWriter saxWriter, boolean inlineBinary) throws SAXException {
         throw new UnsupportedOperationException();
     }
 

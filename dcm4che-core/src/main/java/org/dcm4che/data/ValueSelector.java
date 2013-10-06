@@ -39,6 +39,7 @@
 package org.dcm4che.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import org.dcm4che.util.TagUtils;
 
@@ -49,36 +50,27 @@ public class ValueSelector implements Serializable {
 
     private static final long serialVersionUID = 8346808223314626639L;
 
-    private final int tag;
-    private final String privateCreator;
-    private final VR vr;
-    private final int index;
-    private final ItemPointer[] itemPointers;
+    private static final ItemPointer[] NO_ITEMPOINTERS = {};
+    private static final int MIN_ITEM_POINTER_STR_LEN = 43;
+
+    public final int tag;
+    public final String privateCreator;
+    public final VR vr;
+    public final int valueIndex;
+    public final ItemPointer[] itemPointers;
 
     public ValueSelector(int tag, String privateCreator, VR vr, int index,
             ItemPointer... itemPointers) {
         this.tag = tag;
         this.privateCreator = privateCreator;
         this.vr = vr;
-        this.index = index;
+        this.valueIndex = index;
         this.itemPointers = itemPointers.clone();
     }
 
     public String selectStringValue(Attributes attrs, String defVal) {
         Attributes item = attrs.getNestedDataset(itemPointers);
-        return item != null ? item.getString(privateCreator, tag, vr, index, defVal) : defVal;
-    }
-
-    public final int tag() {
-        return tag;
-    }
-
-    public final String privateCreator() {
-        return privateCreator;
-    }
-
-    public final int index() {
-        return index;
+        return item != null ? item.getString(privateCreator, tag, vr, valueIndex, defVal) : defVal;
     }
 
     @Override
@@ -86,9 +78,9 @@ public class ValueSelector implements Serializable {
         StringBuilder sb = new StringBuilder(32);
         for (ItemPointer ip : itemPointers)
             appendTo(ip.sequenceTag, ip.privateCreator, ip.itemIndex,
-                    "\"]/Item[number=\"", "\"]/", sb);
-        appendTo(tag, privateCreator, index,
-                "\"]/Value[number=\"", "\"]", sb);
+                    "\"]/Item[@number=\"", "\"]/", sb);
+        appendTo(tag, privateCreator, valueIndex,
+                "\"]/Value[@number=\"", "\"]", sb);
         return sb.toString();
     }
 
@@ -103,8 +95,63 @@ public class ValueSelector implements Serializable {
     }
 
     public static ValueSelector valueOf(String s) {
-        //TODO
-        return null;
+        int fromIndex = s.lastIndexOf("DicomAttribute");
+        try {
+            return new ValueSelector(
+                    selectTag(s, fromIndex),
+                    selectPrivateCreator(s, fromIndex),
+                    selectVR(s, fromIndex),
+                    selectNumber(s, fromIndex) - 1,
+                    itemPointersOf(s, fromIndex));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(s);
+        }
+    }
+
+    private static int selectTag(String s, int fromIndex) {
+        String tagStr = select("@tag=", s, fromIndex);
+        return Integer.parseInt(tagStr, 16);
+    }
+
+    private static String selectPrivateCreator(String s, int fromIndex) {
+        return select("@privateCreator=", s, fromIndex);
+    }
+
+    private static int selectNumber(String s, int fromIndex) {
+        String no = select("@number=", s, fromIndex);
+        return Integer.parseInt(no);
+    }
+
+    private static VR selectVR(String s, int fromIndex) {
+        String vrStr = select("@vr=", s, fromIndex);
+        return vrStr != null ? VR.valueOf(vrStr) : null;
+    }
+
+    private static ItemPointer[] itemPointersOf(String s, int endIndex) {
+        if (endIndex == 0)
+            return NO_ITEMPOINTERS;
+
+        ArrayList<ItemPointer> list = new ArrayList<ItemPointer>();
+        int fromIndex = 0;
+        while (fromIndex < endIndex) {
+            list.add(new ItemPointer(
+                    selectTag(s, fromIndex),
+                    selectPrivateCreator(s, fromIndex),
+                    selectNumber(s, fromIndex) - 1));
+            fromIndex = s.indexOf("DicomAttribute",
+                    fromIndex + MIN_ITEM_POINTER_STR_LEN);
+        }
+        return list.toArray(new ItemPointer[list.size()]);
+    }
+
+    private static String select(String key, String s, int fromIndex) {
+        int pos = s.indexOf(key, fromIndex);
+        if (pos < 0)
+            return null;
+        
+        int quotePos = pos + key.length();
+        int beginIndex = quotePos + 1;
+        return s.substring(beginIndex, s.indexOf(s.charAt(quotePos), beginIndex));
     }
 
 }

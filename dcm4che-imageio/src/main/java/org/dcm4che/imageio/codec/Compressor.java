@@ -64,7 +64,6 @@ import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
 import org.dcm4che.data.Tag;
-import org.dcm4che.data.UID;
 import org.dcm4che.data.VR;
 import org.dcm4che.data.Value;
 import org.dcm4che.image.Overlays;
@@ -346,7 +345,7 @@ public class Compressor extends Decompressor implements Closeable {
         if (decompressor != null)
             return decompressFrame(iis, frameIndex);
 
-        iis.setByteOrder(UID.ExplicitVRBigEndian.equals(pixeldata.transferSyntax) 
+        iis.setByteOrder(pixeldata.bigEndian
                 ? ByteOrder.BIG_ENDIAN
                 : ByteOrder.LITTLE_ENDIAN);
         iis.seek(pixeldata.offset + frameLength * frameIndex);

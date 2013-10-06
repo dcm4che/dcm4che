@@ -69,6 +69,7 @@ public class VRTest {
             { 0, 0, 0, 0, 0, 0, 0, 1, -1, -1, -1, -2 };
 
     private static final int[] TAGS = { Tag.PatientID, Tag.StudyID };
+    private static final String[] TAGS_AS_STRINGS = { "00100020", "00200010" };
     private static final byte[] TAGS_AS_AT =
             { 0x10, 0x00, 0x20, 0x00, 0x20, 0x00, 0x10, 0x00 };
     private static final byte[] TAGS_AS_AT_BE =
@@ -210,6 +211,7 @@ public class VRTest {
     @Test
     public void testToValue() {
         assertArrayEquals(TAGS_AS_AT, (byte[]) VR.AT.toValue(TAGS, false));
+        assertArrayEquals(TAGS_AS_AT, (byte[]) VR.AT.toValue(TAGS_AS_STRINGS, false));
         assertArrayEquals(INTS_AS_OB, (byte[]) VR.OB.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SS, (byte[]) VR.OW.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SL, (byte[]) VR.SL.toValue(INTS, false));
@@ -244,6 +246,8 @@ public class VRTest {
                 (String[]) VR.IS.toStrings(INTS_AS_IS, false, CS));
         assertArrayEquals(INTS_AS_STRINGS,
                 (String[]) VR.IS.toStrings(INTS, false, CS));
+        assertArrayEquals(TAGS_AS_STRINGS,
+                (String[]) VR.AT.toStrings(TAGS_AS_AT, false, CS));
         assertArrayEquals(FLOATS_AS_STRINGS,
                 (String[]) VR.DS.toStrings(FLOATS_AS_DS, false, CS));
         assertArrayEquals(FLOATS_AS_STRINGS,

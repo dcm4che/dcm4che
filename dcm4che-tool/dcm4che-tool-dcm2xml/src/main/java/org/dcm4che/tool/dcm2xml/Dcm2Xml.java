@@ -46,6 +46,7 @@ import java.util.ResourceBundle;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -71,6 +72,9 @@ import org.dcm4che.tool.common.CLIUtils;
  */
 public class Dcm2Xml {
 
+    private static final String XML_1_0 = "1.0";
+    private static final String XML_1_1 = "1.1";
+
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che.tool.dcm2xml.messages");
 
@@ -84,6 +88,7 @@ public class Dcm2Xml {
     private String blkFileSuffix;
     private File blkDirectory;
     private Attributes blkAttrs;
+    private String xmlVersion = XML_1_0;
 
     public final void setXSLT(File xsltFile) {
         this.xsltFile = xsltFile;
@@ -125,6 +130,10 @@ public class Dcm2Xml {
         this.blkAttrs = blkAttrs;
     }
 
+    public final void setXMLVersion(String xmlVersion) {
+        this.xmlVersion = xmlVersion;
+    }
+
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
@@ -139,6 +148,7 @@ public class Dcm2Xml {
         opts.addOption("I", "indent", false, rb.getString("indent"));
         opts.addOption("K", "no-keyword", false, rb.getString("no-keyword"));
         opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
+        opts.addOption(null, "xml11", false, rb.getString("xml11"));
         addBulkdataOptions(opts);
 
         return CLIUtils.parseComandLine(args, opts, rb, Dcm2Xml.class);
@@ -193,8 +203,9 @@ public class Dcm2Xml {
                 main.setXSLT(new File(cl.getOptionValue("x")));
             main.setIndent(cl.hasOption("I"));
             main.setIncludeKeyword(!cl.hasOption("K"));
-            main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns"));
-           configureBulkdata(main, cl);
+            main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns")); if (cl.hasOption("xml11"))
+                main.setXMLVersion(XML_1_1);
+            configureBulkdata(main, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
                 main.parse(new DicomInputStream(System.in));
@@ -273,8 +284,9 @@ public class Dcm2Xml {
         dis.setBulkDataFileSuffix(blkFileSuffix);
         dis.setConcatenateBulkDataFiles(catBlkFiles);
         TransformerHandler th = getTransformerHandler();
-        th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
-                indent ? "yes" : "no");
+        Transformer t = th.getTransformer();
+        t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
+        t.setOutputProperty(OutputKeys.VERSION, xmlVersion);
         th.setResult(new StreamResult(System.out));
         SAXWriter saxWriter = new SAXWriter(th);
         saxWriter.setIncludeKeyword(includeKeyword);

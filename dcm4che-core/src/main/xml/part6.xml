@@ -2128,6 +2128,26 @@
          </row>
          <row>
             <entry>
+               <para>(0008,1190)</para>
+            </entry>
+            <entry>
+               <para>Retrieve URL</para>
+            </entry>
+            <entry>
+               <para>RetrieveURL</para>
+            </entry>
+            <entry>
+               <para>UT</para>
+            </entry>
+            <entry>
+               <para>1</para>
+            </entry>
+            <entry>
+               <para/>
+            </entry>
+         </row>
+         <row>
+            <entry>
                <para>(0008,1195)</para>
             </entry>
             <entry>
@@ -2138,6 +2158,26 @@
             </entry>
             <entry>
                <para>UI</para>
+            </entry>
+            <entry>
+               <para>1</para>
+            </entry>
+            <entry>
+               <para/>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>(0008,1196)</para>
+            </entry>
+            <entry>
+               <para>Warning Reason</para>
+            </entry>
+            <entry>
+               <para>WarningReason</para>
+            </entry>
+            <entry>
+               <para>US</para>
             </entry>
             <entry>
                <para>1</para>

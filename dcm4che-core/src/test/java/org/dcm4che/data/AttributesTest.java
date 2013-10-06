@@ -60,7 +60,7 @@ public class AttributesTest {
         Attributes a = new Attributes();
         a.setString(Tag.StudyDate, VR.DA, "20110404");
         a.setString(Tag.StudyTime, VR.TM, "15");
-        Date d = a.getDate(Tag.StudyDateAndTime, null);
+        Date d = a.getDate(Tag.StudyDateAndTime);
         assertEquals("20110404150000.000", DateUtils.formatDT(null, d));
     }
 
@@ -100,7 +100,7 @@ public class AttributesTest {
     public void testSetDateLongDate() {
         Attributes a = new Attributes();
         a.setDate(Tag.StudyDateAndTime,
-                DateUtils.parseDT(null, "20110404150000.000"));
+                DateUtils.parseDT(null, "20110404150000.000", new DatePrecision()));
         assertEquals("20110404", a.getString(Tag.StudyDate, null));
         assertEquals("150000.000", a.getString(Tag.StudyTime, null));
     }
@@ -123,7 +123,7 @@ public class AttributesTest {
     @Test
     public void testSetDateRangeLongDateRange() {
         Attributes a = new Attributes();
-        Date lower = DateUtils.parseDT(null, "2011040415");
+        Date lower = DateUtils.parseDT(null, "2011040415", new DatePrecision());
         a.setDateRange(Tag.StudyDateAndTime, new DateRange(lower, null));
         assertEquals("20110404-", a.getString(Tag.StudyDate, null));
         assertEquals("150000.000-", a.getString(Tag.StudyTime, null));

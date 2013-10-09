@@ -193,6 +193,17 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getDicomConfigurationExtension(Class<T> clazz) {
+        for (LdapDicomConfigurationExtension ext : extensions) {
+            if (clazz.isInstance(ext.getClass()))
+                return (T) ext;
+        }
+        return null;
+    }
+
     @Override
     public synchronized void close() {
         safeClose(ctx);

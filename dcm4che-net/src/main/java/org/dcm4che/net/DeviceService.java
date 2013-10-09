@@ -46,7 +46,8 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService {
+public class DeviceService implements DeviceServiceInterface
+{
 
     protected Device device;
     protected ExecutorService executor;

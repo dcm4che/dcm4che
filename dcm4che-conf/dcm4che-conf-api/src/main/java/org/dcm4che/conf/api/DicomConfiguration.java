@@ -96,4 +96,6 @@ public interface DicomConfiguration extends Closeable {
     void close();
 
     void sync() throws ConfigurationException;
+
+    <T> T getDicomConfigurationExtension(Class<T> clazz);
 }

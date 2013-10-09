@@ -157,6 +157,8 @@ public class Decompressor {
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJpegLS = param.patchJPEGLS;
+        } else {
+            this.file = ((BulkData) pixeldata).getFile();
         }
     }
 

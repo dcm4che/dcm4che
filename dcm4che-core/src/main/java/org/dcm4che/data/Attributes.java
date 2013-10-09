@@ -956,50 +956,108 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(int tag) {
-        return getDate(null, tag, null, 0, null);
+        return getDate(null, tag, null, 0, null, new DatePrecision());
+    }
+
+    public Date getDate(int tag, DatePrecision precision) {
+        return getDate(null, tag, null, 0, null, precision);
     }
 
     public Date getDate(int tag, Date defVal) {
-        return getDate(null, tag, null, 0, defVal);
+        return getDate(null, tag, null, 0, defVal, new DatePrecision());
+    }
+
+    public Date getDate(int tag, Date defVal, DatePrecision precision) {
+        return getDate(null, tag, null, 0, defVal, precision);
     }
 
     public Date getDate(int tag, int valueIndex) {
-        return getDate(null, tag, null, valueIndex, null);
+        return getDate(null, tag, null, valueIndex, null, new DatePrecision());
+    }
+
+    public Date getDate(int tag, int valueIndex, DatePrecision precision) {
+        return getDate(null, tag, null, valueIndex, null, precision);
     }
 
     public Date getDate(int tag, int valueIndex, Date defVal) {
-        return getDate(null, tag, null, valueIndex, defVal);
+        return getDate(null, tag, null, valueIndex, defVal, new DatePrecision());
+    }
+
+    public Date getDate(int tag, int valueIndex, Date defVal,
+            DatePrecision precision) {
+        return getDate(null, tag, null, valueIndex, defVal, precision);
     }
 
     public Date getDate(String privateCreator, int tag) {
-        return getDate(privateCreator, tag, null, 0, null);
+        return getDate(privateCreator, tag, null, 0, null, new DatePrecision());
     }
 
-    public Date getDate(String privateCreator, int tag, Date defVal) {
-        return getDate(privateCreator, tag, null, 0, defVal);
+    public Date getDate(String privateCreator, int tag, DatePrecision precision) {
+        return getDate(privateCreator, tag, null, 0, null, precision);
+    }
+
+    public Date getDate(String privateCreator, int tag, Date defVal,
+            DatePrecision precision) {
+        return getDate(privateCreator, tag, null, 0, defVal, precision);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr) {
-        return getDate(privateCreator, tag, vr, 0, null);
+        return getDate(privateCreator, tag, vr, 0, null, new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr,
+            DatePrecision precision) {
+        return getDate(privateCreator, tag, vr, 0, null, precision);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, Date defVal) {
-        return getDate(privateCreator, tag, vr, 0, defVal);
+        return getDate(privateCreator, tag, vr, 0, defVal, new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr, Date defVal,
+            DatePrecision precision) {
+        return getDate(privateCreator, tag, vr, 0, defVal, precision);
     }
 
     public Date getDate(String privateCreator, int tag, int valueIndex) {
-        return getDate(privateCreator, tag, null, valueIndex, null);
+        return getDate(privateCreator, tag, null, valueIndex, null,
+                new DatePrecision());
     }
 
-    public Date getDate(String privateCreator, int tag, int valueIndex, Date defVal) {
-        return getDate(privateCreator, tag, null, valueIndex, defVal);
+    public Date getDate(String privateCreator, int tag, int valueIndex,
+            DatePrecision precision) {
+        return getDate(privateCreator, tag, null, valueIndex, null, precision);
+    }
+
+    public Date getDate(String privateCreator, int tag, int valueIndex,
+            Date defVal) {
+        return getDate(privateCreator, tag, null, valueIndex, defVal,
+                new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, int tag, int valueIndex,
+            Date defVal, DatePrecision precision) {
+        return getDate(privateCreator, tag, null, valueIndex, defVal, precision);
     }
 
     public Date getDate(String privateCreator, int tag, VR vr, int valueIndex) {
-        return getDate(privateCreator, tag, vr, valueIndex, null);
+        return getDate(privateCreator, tag, vr, valueIndex, null,
+                new DatePrecision());
     }
 
-    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex, Date defVal) {
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
+            DatePrecision precision) {
+        return getDate(privateCreator, tag, vr, valueIndex, null, precision);
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
+            Date defVal) {
+        return getDate(privateCreator, tag, vr, valueIndex, defVal,
+                new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, int tag, VR vr, int valueIndex,
+            Date defVal, DatePrecision precision) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
             return defVal;
@@ -1021,7 +1079,7 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return defVal;
 
-            return vr.toDate(value, getTimeZone(), valueIndex, false, defVal);
+            return vr.toDate(value, getTimeZone(), valueIndex, false, defVal, precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return defVal;
@@ -1029,30 +1087,48 @@ public class Attributes implements Serializable {
     }
 
     public Date getDate(long tag) {
-        return getDate(null, tag, null);
+        return getDate(null, tag, null, new DatePrecision());
+    }
+
+    public Date getDate(long tag, DatePrecision precision) {
+        return getDate(null, tag, null, precision);
     }
 
     public Date getDate(long tag, Date defVal) {
-        return getDate(null, tag, defVal);
+        return getDate(null, tag, defVal, new DatePrecision());
+    }
+
+    public Date getDate(long tag, Date defVal, DatePrecision precision) {
+        return getDate(null, tag, defVal, precision);
     }
 
     public Date getDate(String privateCreator, long tag) {
-        return getDate(privateCreator, tag, null);
+        return getDate(privateCreator, tag, null, new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, long tag, DatePrecision precision) {
+        return getDate(privateCreator, tag, null, precision);
     }
 
     public Date getDate(String privateCreator, long tag, Date defVal) {
+        return getDate(privateCreator, tag, defVal, new DatePrecision());
+    }
+
+    public Date getDate(String privateCreator, long tag, Date defVal,
+            DatePrecision precision) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
         String tm = getString(privateCreator, tmTag, VR.TM, null);
         if (tm == null)
-            return getDate(daTag, defVal);
+            return getDate(daTag, defVal, precision);
 
         String da = getString(privateCreator, daTag, VR.DA, null);
         if (da == null)
             return defVal;
         try {
-            return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null);
+            return VR.DT.toDate(da + tm, getTimeZone(), 0, false, null,
+                    precision);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} DA or {} TM",
                     TagUtils.toString(daTag),
@@ -1062,14 +1138,28 @@ public class Attributes implements Serializable {
     }
 
     public Date[] getDates(int tag) {
-        return getDates(null, tag, null);
+        return getDates(null, tag, null, new DatePrecisions());
+    }
+
+    public Date[] getDates(int tag, DatePrecisions precisions) {
+        return getDates(null, tag, null, precisions);
     }
 
     public Date[] getDates(String privateCreator, int tag) {
-        return getDates(privateCreator, tag, null);
+        return getDates(privateCreator, tag, null, new DatePrecisions());
+    }
+
+    public Date[] getDates(String privateCreator, int tag,
+            DatePrecisions precisions) {
+        return getDates(privateCreator, tag, null, precisions);
     }
 
     public Date[] getDates(String privateCreator, int tag, VR vr) {
+        return getDates(privateCreator, tag, vr, new DatePrecisions());
+    }
+
+    public Date[] getDates(String privateCreator, int tag, VR vr,
+            DatePrecisions precisions) {
         int index = indexOf(privateCreator, tag);
         if (index < 0)
             return null;
@@ -1091,33 +1181,49 @@ public class Attributes implements Serializable {
             if (value == Value.NULL)
                 return DateUtils.EMPTY_DATES;
 
-            return vr.toDates(value, getTimeZone(), false);
+            return vr.toDates(value, getTimeZone(), false, precisions);
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} {}", TagUtils.toString(tag), vr);
             return DateUtils.EMPTY_DATES;
         }
     }
 
+    public Date[] getDates(long tag) {
+        return getDates(null, tag, new DatePrecisions());
+    }
+
+    public Date[] getDates(long tag, DatePrecisions precisions) {
+        return getDates(null, tag, precisions);
+    }
+
     public Date[] getDates(String privateCreator, long tag) {
+        return getDates(privateCreator, tag, new DatePrecisions());
+    }
+
+    public Date[] getDates(String privateCreator, long tag,
+            DatePrecisions precisions) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
 
         String[] tm = getStrings(privateCreator, tmTag);
         if (tm == null || tm.length == 0)
-            return getDates(daTag);
+            return getDates(daTag, precisions);
 
         String[] da = getStrings(privateCreator, daTag);
         if (da == null || da.length == 0)
             return DateUtils.EMPTY_DATES;
         
         Date[] dates = new Date[da.length];
+        precisions.precisions = new DatePrecision[da.length];
         int i = 0;
         try {
             TimeZone tz = getTimeZone();
             while (i < tm.length)
-                dates[i++] = VR.DT.toDate(da[i] + tm[i], tz, 0, false, null);
+                dates[i++] = VR.DT.toDate(da[i] + tm[i], tz, 0, false, null,
+                        precisions.precisions[i] = new DatePrecision());
             while (i < da.length)
-                dates[i++] = VR.DA.toDate(da[i], tz, 0, false, null);
+                dates[i++] = VR.DA.toDate(da[i], tz, 0, false, null,
+                        precisions.precisions[i] = new DatePrecision());
         } catch (IllegalArgumentException e) {
             LOG.info("Invalid value of {} DA or {} TM",
                     TagUtils.toString(daTag),
@@ -1180,11 +1286,11 @@ public class Attributes implements Serializable {
     private DateRange toDateRange(String s, VR vr) {
         String[] range = splitRange(s);
         TimeZone tz = getTimeZone();
+        DatePrecision precision = new DatePrecision();
         Date start = range[0] == null ? null
-                : vr.toDate(range[0], tz, 0, false, null);
+                : vr.toDate(range[0], tz, 0, false, null, precision);
         Date end = range[1] == null ? null
-                : range[1] == range[0] ? start
-                : vr.toDate(range[1], tz, 0, true, null);
+                : vr.toDate(range[1], tz, 0, true, null, precision);
         return new DateRange(start, end);
     }
 
@@ -1237,17 +1343,18 @@ public class Attributes implements Serializable {
     private DateRange toDateRange(String da, String tm) {
         String[] darange = splitRange(da);
         String[] tmrange = splitRange(tm);
+        DatePrecision precision = new DatePrecision();
         return new DateRange(
                 darange[0] == null ? null
                         : VR.DT.toDate(tmrange[0] == null
                                 ? darange[0]
                                 : darange[0] + tmrange[0],
-                                tz, 0, false, null),
+                                tz, 0, false, null, precision ),
                 darange[1] == null ? null
                         : VR.DT.toDate(tmrange[1] == null
                                 ? darange[1]
                                 : darange[1] + tmrange[1],
-                                tz, 0, true, null));
+                                tz, 0, true, null, precision));
     }
 
     /**
@@ -1385,10 +1492,10 @@ public class Attributes implements Serializable {
                     String[] das = (String[]) da;
                     for (int i = 0; i < tms.length; i++) {
                         if (i < das.length) {
-                            String[] tmda = updateTimeZoneDATM(
-                                    from, to, das[i], tms[i]);
-                            das[i] = tmda[0];
-                            tms[i] = tmda[1];
+                            String dt = updateTimeZoneDT(
+                                    from, to, das[i] + tms[i]);
+                            das[i] = dt.substring(0,8);
+                            tms[i] = dt.substring(8);
                         } else {
                             tms[i] = updateTimeZoneTM(from, to, tms[i]);
                         }
@@ -1397,10 +1504,10 @@ public class Attributes implements Serializable {
                     if (da == Value.NULL) {
                         tms[0] = updateTimeZoneTM(from, to, tms[0]);
                     } else {
-                        String[] tmda = updateTimeZoneDATM(
-                                from, to, (String) da, tms[0]);
-                        values[daIndex] = tmda[0];
-                        tms[0] = tmda[1];
+                        String dt = updateTimeZoneDT(
+                                from, to, (String) da + tms[0]);
+                        values[daIndex] = dt.substring(0,8);
+                        tms[0] = dt.substring(8);
                     }
                     for (int i = 1; i < tms.length; i++) {
                         tms[i] = updateTimeZoneTM(from, to, tms[i]);
@@ -1409,19 +1516,19 @@ public class Attributes implements Serializable {
             } else {
                 if (da instanceof String[]) {
                     String[] das = (String[]) da;
-                    String[] tmda = updateTimeZoneDATM(
-                           from, to, das[0], (String) tm);
-                    das[0] = tmda[0];
-                    values[tmIndex] = tmda[1];
+                    String dt = updateTimeZoneDT(
+                           from, to, das[0] + (String) tm);
+                    das[0] = dt.substring(0,8);
+                    values[tmIndex] = dt.substring(8);
                 } else {
                     if (da == Value.NULL) {
                         values[tmIndex] = updateTimeZoneTM(
                                 from, to, (String) tm);
                     } else {
-                        String[] tmda = updateTimeZoneDATM(
-                                from, to, (String) da, (String) tm);
-                        values[daIndex] = tmda[0];
-                        values[tmIndex] = tmda[1];
+                        String dt = updateTimeZoneDT(
+                                from, to, (String) da + (String) tm);
+                        values[daIndex] = dt.substring(0,8);
+                        values[tmIndex] = dt.substring(8);
                     }
                 }
             }
@@ -1436,30 +1543,20 @@ public class Attributes implements Serializable {
                 return dt;
         }
         try {
-            Date date = DateUtils.parseDT(from, dt, false);
-            dt = DateUtils.formatDT(to, date).substring(0, dtlen);
+            DatePrecision precision = new DatePrecision();
+            Date date = DateUtils.parseDT(from, dt, false, precision);
+            dt = DateUtils.formatDT(to, date, precision);
         } catch (IllegalArgumentException e) {}
         return dt;
     }
 
     private String updateTimeZoneTM(TimeZone from, TimeZone to, String tm) {
         try {
-            Date date = DateUtils.parseTM(from, tm, false);
-            tm = DateUtils.formatTM(to, date).substring(0, tm.length());
+            DatePrecision precision = new DatePrecision();
+            Date date = DateUtils.parseTM(from, tm, false, precision);
+            tm = DateUtils.formatTM(to, date, precision);
         } catch (IllegalArgumentException e) {}
         return tm;
-    }
-
-    private String[] updateTimeZoneDATM(TimeZone from, TimeZone to, 
-            String da, String tm) {
-        String[] datm = { da, tm };
-        try {
-            Date date = DateUtils.parseDT(from, da+tm, false);
-            String dt = DateUtils.formatDT(to, date);
-            datm[0] = dt.substring(0, 8);
-            datm[1] = dt.substring(8, 8 + tm.length());
-        } catch (IllegalArgumentException e) {}
-        return datm;
     }
 
     public String getPrivateCreator(int tag) {
@@ -1560,19 +1657,38 @@ public class Attributes implements Serializable {
         return setDate(null, tag, vr, ds);
     }
 
-    public Object setDate(String privateCreator, int tag, VR vr, Date... ds) {
-        return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone()));
+    public Object setDate(int tag, VR vr, DatePrecision precision, Date... ds) {
+        return setDate(null, tag, vr, precision, ds);
+    }
+
+    public Object setDate(String privateCreator, int tag, VR vr,
+            Date... ds) {
+        return setDate(privateCreator, tag, vr, new DatePrecision(), ds);
+    }
+
+    public Object setDate(String privateCreator, int tag, VR vr,
+            DatePrecision precision, Date... ds) {
+        return set(privateCreator, tag, vr, vr.toValue(ds, getTimeZone(), precision));
     }
 
     public void setDate(long tag, Date dt) {
         setDate(null, tag, dt);
     }
 
+    public void setDate(long tag, DatePrecision precision, Date dt) {
+        setDate(null, tag, precision, dt);
+    }
+
     public void setDate(String privateCreator, long tag, Date dt) {
+        setDate(privateCreator, tag, new DatePrecision(), dt);
+    }
+
+    public void setDate(String privateCreator, long tag,
+            DatePrecision precision, Date dt) {
         int daTag = (int) (tag >>> 32);
         int tmTag = (int) tag;
-        setDate(privateCreator, daTag, VR.DA, dt);
-        setDate(privateCreator, tmTag, VR.TM, dt);
+        setDate(privateCreator, daTag, VR.DA, precision, dt);
+        setDate(privateCreator, tmTag, VR.TM, precision, dt);
     }
 
     public Object setDateRange(int tag, VR vr, DateRange range) {
@@ -1584,11 +1700,14 @@ public class Attributes implements Serializable {
     }
 
     private static String toString(DateRange range, VR vr, TimeZone tz) {
+        DatePrecision precision = new DatePrecision();
         String start = range.getStartDate() != null
-                ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz)
+                ? (String) vr.toValue(new Date[]{range.getStartDate()}, tz,
+                        precision)
                 : "";
         String end = range.getEndDate() != null
-                ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz)
+                ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz,
+                        precision)
                 : "";
         return start.equals(end) ? start : (start + '-' + end);
     }

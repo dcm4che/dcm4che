@@ -65,6 +65,13 @@ public abstract class SAXTransformer {
         return new SAXWriter(th);
     }
 
+    public static SAXWriter getSAXWriter(Templates templates, Result result)
+            throws TransformerConfigurationException {
+        TransformerHandler th = factory.newTransformerHandler(templates);
+        th.setResult(result);
+        return new SAXWriter(th);
+    }
+
     public static SAXWriter getSAXWriter(Result result)
             throws TransformerConfigurationException {
         TransformerHandler th = factory.newTransformerHandler();

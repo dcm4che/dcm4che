@@ -44,16 +44,16 @@
   <artifactId>dcm4che-parent</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>3.2.1</version>
+  <version>3.3.0-SNAPSHOT</version>
   <description>dcm4che DICOM toolkit and utilities</description>
   <issueManagement>
     <system>JIRA</system>
     <url>http://dcm4che.org/jira</url>
   </issueManagement>
   <scm>
-    <connection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</connection>
-    <developerConnection>scm:git:https://gunterze@github.com/gunterze/dcm4che.git</developerConnection>
-    <url>https://github.com/gunterze/dcm4che</url>
+    <connection>scm:git:git://github.com/dcm4che/dcm4che.git</connection>
+    <developerConnection>scm:git:git@github.com:dcm4che/dcm4che.git</developerConnection>
+    <url>http://github.com/dcm4che/dcm4che</url>
   </scm>
   <organization>
     <name>dcm4che.org</name>
@@ -73,13 +73,21 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.4.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <modules>
     <module>dcm4che-audit</module>
@@ -100,6 +108,7 @@
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-servlet</module>
+    <module>dcm4che-osgi</module>
   </modules>
   <distributionManagement>
     <repository>

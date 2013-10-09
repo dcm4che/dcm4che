@@ -155,6 +155,10 @@ public class ImageReaderFactory implements Serializable {
         return map.get(tsuid);
     }
 
+    public boolean contains(String tsuid) {
+        return map.containsKey(tsuid);
+    }
+
     public ImageReaderParam put(String tsuid,
             ImageReaderParam param) {
         return map.put(tsuid, param);
@@ -174,6 +178,10 @@ public class ImageReaderFactory implements Serializable {
 
     public static ImageReaderParam getImageReaderParam(String tsuid) {
         return getDefault().get(tsuid);
+    }
+
+    public static boolean canDecompress(String tsuid) {
+        return getDefault().contains(tsuid);
     }
 
     public static ImageReader getImageReader(ImageReaderParam param) {

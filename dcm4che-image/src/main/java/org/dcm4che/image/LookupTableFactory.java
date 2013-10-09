@@ -61,7 +61,7 @@ public class LookupTableFactory {
     private LookupTable modalityLUT;
     private float windowCenter;
     private float windowWidth;
-    private String voiLUTFunction;
+    private String voiLUTFunction; // not yet implemented
     private LookupTable voiLUT;
     private LookupTable presentationLUT;
     private boolean inverse;
@@ -122,10 +122,13 @@ public class LookupTableFactory {
         if (preferWindow || vLUT == null) {
             float[] wcs = img.getFloats(Tag.WindowCenter);
             float[] wws = img.getFloats(Tag.WindowWidth);
-            if (wcs != null && windowIndex < wcs.length
-                    && wws != null && windowIndex < wws.length) {
-                windowCenter = wcs[windowIndex];
-                windowWidth = wws[windowIndex];
+            if (wcs != null && wcs.length != 0
+                    && wws != null && wws.length != 0) {
+                int index = windowIndex < Math.min(wcs.length, wws.length)
+                        ? windowIndex
+                        : 0;
+                windowCenter = wcs[index];
+                windowWidth = wws[index];
                 return;
             }
         }

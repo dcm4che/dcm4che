@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.dcm4che.data.DatePrecision;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,7 +45,8 @@ public class DateUtilsTest {
     @Test
     public void testFormatDTwithTZ() {
         assertEquals("19700101020000.000+0200",
-                DateUtils.formatDT(tz, new Date(0), Calendar.MILLISECOND, true));
+                DateUtils.formatDT(tz, new Date(0),
+                        new DatePrecision(Calendar.MILLISECOND, true)));
     }
 
     @Test
@@ -67,38 +69,53 @@ public class DateUtilsTest {
 
     @Test
     public void testParseTM() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(0,
-                DateUtils.parseTM(tz, "020000.000").getTime());
+                DateUtils.parseTM(tz, "020000.000", precision).getTime());
+        assertEquals(Calendar.MILLISECOND, precision.lastField);
     }
 
     @Test
     public void testParseTMacrnema() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(0,
-                DateUtils.parseTM(tz, "02:00:00").getTime());
+                DateUtils.parseTM(tz, "02:00:00", precision).getTime());
+        assertEquals(Calendar.SECOND, precision.lastField);
     }
 
     @Test
     public void testParseTMceil() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(MINUTE - 1,
-                DateUtils.parseTM(tz, "0200", true).getTime());
+                DateUtils.parseTM(tz, "0200", true, precision).getTime());
+        assertEquals(Calendar.MINUTE, precision.lastField);
     }
 
     @Test
     public void testParseDT() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(0,
-                DateUtils.parseDT(tz, "19700101020000.000").getTime());
+                DateUtils.parseDT(tz, "19700101020000.000", precision).getTime());
+        assertEquals(Calendar.MILLISECOND, precision.lastField);
+        assertFalse(precision.includeTimezone);
     }
 
     @Test
     public void testParseWithTZ() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(2 * HOUR,
-                DateUtils.parseDT(tz, "19700101020000.000+0000").getTime());
+                DateUtils.parseDT(tz, "19700101020000.000+0000", precision).getTime());
+        assertEquals(Calendar.MILLISECOND, precision.lastField);
+        assertTrue(precision.includeTimezone);
     }
 
     @Test
     public void testParseDTceil() {
+        DatePrecision precision = new DatePrecision();
         assertEquals(YEAR - 2 * HOUR - 1,
-                DateUtils.parseDT(tz, "1970", true).getTime());
+                DateUtils.parseDT(tz, "1970", true, precision).getTime());
+        assertEquals(Calendar.YEAR, precision.lastField);
+        assertFalse(precision.includeTimezone);
     }
 
 }

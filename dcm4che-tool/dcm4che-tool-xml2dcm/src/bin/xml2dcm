@@ -41,9 +41,9 @@ CP="$DCM4CHE_HOME/etc/xml2dcm/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.0-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.0-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
-CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
-CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"
 CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
 
 # For Cygwin, switch paths to Windows format before running java

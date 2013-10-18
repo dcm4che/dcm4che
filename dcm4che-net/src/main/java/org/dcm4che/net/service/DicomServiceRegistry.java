@@ -77,7 +77,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
         try {
             lookupService(as, dimse, cmd).onDimseRQ(as, pc, dimse, cmd, data);
         } catch (DicomServiceException e) {
-            Association.LOG.info("{}: processing {} fails:",
+            Association.LOG.info("{}: processing {} failed:",
                     as,
                     dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
                     e);

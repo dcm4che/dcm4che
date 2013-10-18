@@ -215,38 +215,20 @@
         <xsl:if test="position()>1">,</xsl:if>
         <xsl:text>"</xsl:text>
         <xsl:value-of select="name()"/>
+        <xsl:text>":{</xsl:text>
+        <xsl:apply-templates select="*"/>
+        <xsl:text>}</xsl:text>
+    </xsl:template>
+
+    <xsl:template match="FamilyName|GivenName|MiddleName|NamePrefix|NameSuffix">
+        <xsl:if test="position()>1">,</xsl:if>
+        <xsl:text>"</xsl:text>
+        <xsl:value-of select="name()"/>
         <xsl:text>":"</xsl:text>
-        <xsl:call-template name="makePN">
-            <xsl:with-param name="familyName" select="FamilyName"/>
-            <xsl:with-param name="givenName" select="GivenName"/>
-            <xsl:with-param name="middleName" select="MiddleName"/>
-            <xsl:with-param name="namePrefix" select="NamePrefix"/>
-            <xsl:with-param name="nameSuffix" select="NameSuffix"/>
-        </xsl:call-template>
+        <xsl:value-of select="text()"/>
         <xsl:text>"</xsl:text>
     </xsl:template>
-
-    <xsl:template name="makePN">
-        <xsl:param name="familyName"/>
-        <xsl:param name="givenName"/>
-        <xsl:param name="middleName"/>
-        <xsl:param name="namePrefix"/>
-        <xsl:param name="nameSuffix"/>
-        <xsl:value-of select="$familyName"/>
-        <xsl:if test="$givenName or $middleName or $namePrefix or $nameSuffix">
-            <xsl:value-of select="concat('^',$givenName)"/>
-            <xsl:if test="$middleName or $namePrefix or $nameSuffix">
-                <xsl:value-of select="concat('^',$middleName)"/>
-                <xsl:if test="$namePrefix or $nameSuffix">
-                    <xsl:value-of select="concat('^',$namePrefix)"/>
-                    <xsl:if test="$nameSuffix">
-                        <xsl:value-of select="concat('^',$nameSuffix)"/>
-                    </xsl:if>
-                </xsl:if>
-            </xsl:if>
-        </xsl:if>
-    </xsl:template>
-
+    
     <xsl:template match="Item">
         <xsl:text>,</xsl:text>
         <xsl:if test="position()=1">"Value":[</xsl:if>
@@ -255,11 +237,11 @@
         <xsl:text>}</xsl:text>
         <xsl:if test="position()=last()">]</xsl:if>
     </xsl:template>
-
+    
     <xsl:template match="BulkData">
-        <xsl:text>",BulkDataURI":"</xsl:text>
+        <xsl:text>,"BulkDataURI":"</xsl:text>
         <xsl:value-of select="@uri"/>
         <xsl:text>"</xsl:text>
     </xsl:template>
-
+    
 </xsl:stylesheet>

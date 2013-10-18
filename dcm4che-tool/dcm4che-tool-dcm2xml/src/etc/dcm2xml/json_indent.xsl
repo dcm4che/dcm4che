@@ -255,31 +255,41 @@
 
     <xsl:template match="Alphabetic|Ideographic|Phonetic">
         <xsl:param name="br"/>
-        <xsl:variable name="br2" select="concat($br,' ')"/>
-        <xsl:if test="position()>1">,</xsl:if>
-        <xsl:value-of select="$br"/>
-        <xsl:text>"</xsl:text>
-        <xsl:value-of select="name()"/>
-        <xsl:text>" : </xsl:text>
-        <xsl:value-of select="$br2"/>
-        <xsl:text>{</xsl:text>
-        <xsl:apply-templates select="*">
-            <xsl:with-param name="br" select="concat($br2,' ')"/>
-        </xsl:apply-templates>
-        <xsl:value-of select="$br2"/>
-        <xsl:text>}</xsl:text>
-    </xsl:template>
-
-    <xsl:template match="FamilyName|GivenName|MiddleName|NamePrefix|NameSuffix">
-        <xsl:param name="br"/>
         <xsl:if test="position()>1">,</xsl:if>
         <xsl:value-of select="$br"/>
         <xsl:text>"</xsl:text>
         <xsl:value-of select="name()"/>
         <xsl:text>" : "</xsl:text>
-        <xsl:value-of select="text()"/>
+        <xsl:call-template name="makePN">
+            <xsl:with-param name="familyName" select="FamilyName"/>
+            <xsl:with-param name="givenName" select="GivenName"/>
+            <xsl:with-param name="middleName" select="MiddleName"/>
+            <xsl:with-param name="namePrefix" select="NamePrefix"/>
+            <xsl:with-param name="nameSuffix" select="NameSuffix"/>
+        </xsl:call-template>
         <xsl:text>"</xsl:text>
-     </xsl:template>
+    </xsl:template>
+
+    <xsl:template name="makePN">
+        <xsl:param name="familyName"/>
+        <xsl:param name="givenName"/>
+        <xsl:param name="middleName"/>
+        <xsl:param name="namePrefix"/>
+        <xsl:param name="nameSuffix"/>
+        <xsl:value-of select="$familyName"/>
+        <xsl:if test="$givenName or $middleName or $namePrefix or $nameSuffix">
+            <xsl:value-of select="concat('^',$givenName)"/>
+            <xsl:if test="$middleName or $namePrefix or $nameSuffix">
+                <xsl:value-of select="concat('^',$middleName)"/>
+                <xsl:if test="$namePrefix or $nameSuffix">
+                    <xsl:value-of select="concat('^',$namePrefix)"/>
+                    <xsl:if test="$nameSuffix">
+                        <xsl:value-of select="concat('^',$nameSuffix)"/>
+                    </xsl:if>
+                </xsl:if>
+            </xsl:if>
+        </xsl:if>
+    </xsl:template>
 
     <xsl:template match="Item">
         <xsl:param name="br"/>

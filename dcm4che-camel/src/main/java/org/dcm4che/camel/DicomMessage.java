@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,73 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.camel;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.apache.camel.impl.DefaultMessage;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.data.Tag;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDVInputStream;
+
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService implements DeviceServiceInterface
-{
+public class DicomMessage extends DefaultMessage {
 
-    protected Device device;
-    protected ExecutorService executor;
-    protected ScheduledExecutorService scheduledExecutor;
+    private Attributes cmd;
 
-    protected void init(Device device) {
-        setDevice(device);
+    public DicomMessage(Dimse dimse, Attributes cmd) {
+        this(dimse, cmd, (Object) null);
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
+    public DicomMessage(Dimse dimse, Attributes cmd, Attributes data) {
+        this(dimse, cmd, (Object) data);
     }
 
-    public Device getDevice() {
-        return device;
+    public DicomMessage(Dimse dimse, Attributes cmd, PDVInputStream data) {
+        this(dimse, cmd, (Object) data);
     }
 
-    public boolean isRunning() {
-        return executor != null;
+    private DicomMessage(Dimse dimse, Attributes cmd, Object data) {
+        this.cmd = cmd;
+        setMessageId(cmd.getString(Tag.MessageID));
+        setHeader("dimse", dimse);
+        setHeader("sopclass", cmd.getString(dimse.tagOfSOPClassUID()));
+        setHeader("sopinstance", cmd.getString(dimse.tagOfSOPInstanceUID()));
+        setBody(data);
     }
 
-    public void start() throws Exception {
-        if (device == null)
-            throw new IllegalStateException("Not initialized");
-        if (executor != null)
-            throw new IllegalStateException("Already started");
-        executor = executerService();
-        scheduledExecutor = scheduledExecuterService();
-        try {
-            device.setExecutor(executor);
-            device.setScheduledExecutor(scheduledExecutor);
-            device.bindConnections();
-        } catch (Exception e) {
-            stop();
-            throw e;
-        }
+    public Attributes getCommand() {
+        return cmd;
     }
 
-    public void stop() {
-        if (device != null)
-            device.unbindConnections();
-        if (scheduledExecutor != null)
-            scheduledExecutor.shutdown();
-        if (executor != null)
-            executor.shutdown();
-        executor = null;
-        scheduledExecutor = null;
-    }
-
-    protected ExecutorService executerService() {
-        return Executors.newCachedThreadPool();
-    }
-
-    protected ScheduledExecutorService scheduledExecuterService() {
-        return Executors.newSingleThreadScheduledExecutor();
-    }
 
 }

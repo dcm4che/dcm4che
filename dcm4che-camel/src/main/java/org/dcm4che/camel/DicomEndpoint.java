@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,73 +36,71 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.camel;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.apache.camel.Consumer;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.Processor;
+import org.apache.camel.Producer;
+import org.apache.camel.impl.DefaultEndpoint;
+import org.dcm4che.data.Attributes;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService implements DeviceServiceInterface
-{
+public class DicomEndpoint extends DefaultEndpoint {
 
-    protected Device device;
-    protected ExecutorService executor;
-    protected ScheduledExecutorService scheduledExecutor;
+    private String[] sopClasses;
 
-    protected void init(Device device) {
-        setDevice(device);
+    public DicomEndpoint(String endpointUri, DicomDeviceComponent component) {
+        super(endpointUri, component);
+        setExchangePattern(ExchangePattern.InOut);
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
+    @Override
+    public DicomDeviceComponent getComponent() {
+        return (DicomDeviceComponent) super.getComponent();
     }
 
-    public Device getDevice() {
-        return device;
+    public String[] getSopClasses() {
+        return sopClasses;
     }
 
-    public boolean isRunning() {
-        return executor != null;
+    public void setSopClasses(String[] sopClasses) {
+        this.sopClasses = sopClasses;
     }
 
-    public void start() throws Exception {
-        if (device == null)
-            throw new IllegalStateException("Not initialized");
-        if (executor != null)
-            throw new IllegalStateException("Already started");
-        executor = executerService();
-        scheduledExecutor = scheduledExecuterService();
-        try {
-            device.setExecutor(executor);
-            device.setScheduledExecutor(scheduledExecutor);
-            device.bindConnections();
-        } catch (Exception e) {
-            stop();
-            throw e;
-        }
+    public void setSopClasses(String sopClasses) {
+        this.sopClasses = StringUtils.split(sopClasses, ',');
     }
 
-    public void stop() {
-        if (device != null)
-            device.unbindConnections();
-        if (scheduledExecutor != null)
-            scheduledExecutor.shutdown();
-        if (executor != null)
-            executor.shutdown();
-        executor = null;
-        scheduledExecutor = null;
+    @Override
+    public Producer createProducer() throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    protected ExecutorService executerService() {
-        return Executors.newCachedThreadPool();
+    @Override
+    public Consumer createConsumer(Processor processor) throws Exception {
+        return new DicomConsumer(this, processor);
     }
 
-    protected ScheduledExecutorService scheduledExecuterService() {
-        return Executors.newSingleThreadScheduledExecutor();
+    @Override
+    public boolean isSingleton() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public Exchange createExchange(Dimse dimse, Attributes cmd,
+            PDVInputStream data) {
+        Exchange exchange = super.createExchange();
+        exchange.setIn(new DicomMessage(dimse, cmd, data));
+        return exchange;
     }
 
 }

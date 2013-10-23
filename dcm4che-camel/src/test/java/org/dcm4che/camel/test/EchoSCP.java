@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,73 +36,53 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.camel.test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import org.dcm4che.camel.DicomDeviceComponent;
+import org.dcm4che.camel.DicomMessage;
+import org.dcm4che.conf.ldap.LdapDicomConfiguration;
+import org.dcm4che.net.Commands;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.Status;
+import org.dcm4che.net.service.DicomServiceException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService implements DeviceServiceInterface
-{
+public class EchoSCP implements Processor {
 
-    protected Device device;
-    protected ExecutorService executor;
-    protected ScheduledExecutorService scheduledExecutor;
+    public static void main(String[] args) throws Exception {
+        LdapDicomConfiguration dicomConf = new LdapDicomConfiguration();
+        Device device = dicomConf.findDevice(args[0]);
+        Main main = new Main();
+        main.bind("dicomDevice", new DicomDeviceComponent(device));
+        main.addRouteBuilder(new RouteBuilder(){
 
-    protected void init(Device device) {
-        setDevice(device);
+            @Override
+            public void configure() throws Exception {
+                from("dicomDevice:dicom?sopClasses=1.2.840.10008.1.1").bean(EchoSCP.class);
+            }});
+        main.enableHangupSupport();
+        System.out.println("Starting Camel. Use ctrl + c to terminate the JVM.\n");
+        main.run();
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
-    }
-
-    public Device getDevice() {
-        return device;
-    }
-
-    public boolean isRunning() {
-        return executor != null;
-    }
-
-    public void start() throws Exception {
-        if (device == null)
-            throw new IllegalStateException("Not initialized");
-        if (executor != null)
-            throw new IllegalStateException("Already started");
-        executor = executerService();
-        scheduledExecutor = scheduledExecuterService();
-        try {
-            device.setExecutor(executor);
-            device.setScheduledExecutor(scheduledExecutor);
-            device.bindConnections();
-        } catch (Exception e) {
-            stop();
-            throw e;
-        }
-    }
-
-    public void stop() {
-        if (device != null)
-            device.unbindConnections();
-        if (scheduledExecutor != null)
-            scheduledExecutor.shutdown();
-        if (executor != null)
-            executor.shutdown();
-        executor = null;
-        scheduledExecutor = null;
-    }
-
-    protected ExecutorService executerService() {
-        return Executors.newCachedThreadPool();
-    }
-
-    protected ScheduledExecutorService scheduledExecuterService() {
-        return Executors.newSingleThreadScheduledExecutor();
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        DicomMessage in = exchange.getIn(DicomMessage.class);
+        Dimse dimse = in.getHeader("dimse", Dimse.class);
+        if (dimse != Dimse.C_ECHO_RQ)
+            throw new DicomServiceException(Status.UnrecognizedOperation);
+        DicomMessage out = new DicomMessage(
+                Dimse.C_ECHO_RSP,
+                Commands.mkEchoRSP(in.getCommand(), Status.Success));
+        exchange.setOut(out);
     }
 
 }

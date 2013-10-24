@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<features>
+        <feature name="dcm4che">
+	<!--install all the DCM4CHE base bundles -->
+        <bundle>mvn:org.dcm4che/dcm4che-audit/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-api/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-api-hl7/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-ldap/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-ldap-audit/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-ldap-hl7/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-ldap-imageio/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-prefs/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-prefs-audit/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-prefs-hl7/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-conf-prefs-imageio/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-core/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-emf/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-hl7/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-image/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-imageio/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-imageio-rle/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-mime/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-net/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-net-audit/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-net-hl7/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-net-imageio/${project.version}</bundle>
+        <bundle>mvn:org.dcm4che/dcm4che-soundex/${project.version}</bundle>
+       </feature>
+</features>

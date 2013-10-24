@@ -47,13 +47,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageWriterSpi;
 
+import org.dcm4che.imageio.codec.ImageWriterFactory.ImageWriterIterator;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.util.SafeClose;
 import org.dcm4che.util.StringUtils;
@@ -186,8 +191,12 @@ public class ImageReaderFactory implements Serializable {
     }
 
     public static ImageReader getImageReader(ImageReaderParam param) {
-        Iterator<ImageReader> iter =
-                ImageIO.getImageReadersByFormatName(param.formatName);
+
+        //ImageReaderSpi are laoded through the java ServiceLoader,
+        //istead of imageio ServiceRegistry
+        Iterator<ImageReader> iter = 
+                new ImageReaderIterator(ServiceLoader.load(ImageReaderSpi.class).iterator());
+        
         if (!iter.hasNext())
             throw new RuntimeException("No Image Reader for format: "
                     + param.formatName + " registered");
@@ -197,12 +206,42 @@ public class ImageReaderFactory implements Serializable {
             return iter.next();
 
         do {
-            ImageReader reader = iter.next();
+            ImageReader reader = iter.next();           
             if (reader.getClass().getName().equals(className))
                 return reader;
         } while (iter.hasNext());
 
         throw new RuntimeException("Image Reader: " + className
                 + " not registered");
+    }
+    
+    static class ImageReaderIterator implements Iterator<ImageReader> {
+        // Contains ImageReaderSpis
+        public Iterator iter;
+
+        public ImageReaderIterator(Iterator iter) {
+            this.iter = iter;
+        }
+
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        public ImageReader next() {
+            ImageReaderSpi spi = null;
+            try {
+                spi = (ImageReaderSpi)iter.next();
+                return spi.createReaderInstance();
+            } catch (IOException e) {
+                // Deregister the spi in this case, but only as
+                // an ImageReaderSpi
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

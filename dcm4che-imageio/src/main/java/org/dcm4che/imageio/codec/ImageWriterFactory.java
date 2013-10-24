@@ -47,12 +47,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.util.Property;
@@ -202,8 +205,12 @@ public class ImageWriterFactory implements Serializable {
     }
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
-        Iterator<ImageWriter> iter =
-                ImageIO.getImageWritersByFormatName(param.formatName);
+        
+        //ImageWriterSpi are laoded through the java ServiceLoader,
+        //istead of imageio ServiceRegistry
+        Iterator<ImageWriter> iter = 
+              new ImageWriterIterator(ServiceLoader.load(ImageWriterSpi.class).iterator());
+        
         if (!iter.hasNext())
             throw new RuntimeException("No Image Writer for format: "
                     + param.formatName + " registered");
@@ -213,12 +220,41 @@ public class ImageWriterFactory implements Serializable {
             return iter.next();
 
         do {
-            ImageWriter reader = iter.next();
-            if (reader.getClass().getName().equals(className))
-                return reader;
+            ImageWriter writer = iter.next();
+            if (writer.getClass().getName().equals(className))
+                return writer;
         } while (iter.hasNext());
 
         throw new RuntimeException("Image Writer: " + className
                 + " not registered");
     }
+    
+    static class ImageWriterIterator implements Iterator<ImageWriter> {
+        // Contains ImageWriterSpis
+        public Iterator iter;
+
+        public ImageWriterIterator(Iterator iter) {
+            this.iter = iter;
+        }
+
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        public ImageWriter next() {
+            ImageWriterSpi spi = null;
+            try {
+                spi = (ImageWriterSpi)iter.next();
+                return spi.createWriterInstance();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
 }

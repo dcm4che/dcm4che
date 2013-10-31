@@ -23,6 +23,7 @@
                  weaving process where for the duration of the specified call 
                  the TCCL will be set to the matching provider bundle(s) -->
             <SPI-Consumer>*</SPI-Consumer>
+            <SPI-Provider>javax.imageio.spi.ImageReaderSpi</SPI-Provider>
           </instructions>
         </configuration>
       </plugin>

@@ -96,7 +96,7 @@ public class Issuer implements Serializable {
 
     protected Issuer() {} // needed for JPA
 
-    public static Issuer issuerOfPatientID(Attributes attrs) {
+    public static Issuer fromIssuerOfPatientID(Attributes attrs) {
         String issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID);
         Attributes qualifiers = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
         if (issuerOfPatientID == null && (qualifiers == null || qualifiers.isEmpty()))

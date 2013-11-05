@@ -19,11 +19,8 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <!-- SPI-Consumer tag is used by Aries Spi-Fly to opt in the bundle
-                 weaving process where for the duration of the specified call 
-                 the TCCL will be set to the matching provider bundle(s) -->
-            <SPI-Consumer>*</SPI-Consumer>
-            <SPI-Provider>javax.imageio.spi.ImageReaderSpi</SPI-Provider>
+             <Require-Capability>osgi.extender;filter:="(osgi.extender=osgi.serviceloader.registrar)",osgi.extender;filter:="(osgi.extender=osgi.serviceloader.processor)",osgi.serviceloader;filter:="(osgi.serviceloader=*)";cardinality:=multiple</Require-Capability>
+             <Provide-Capability>osgi.serviceloader;osgi.serviceloader=javax.imageio.spi.ImageReaderSpi</Provide-Capability>
           </instructions>
         </configuration>
       </plugin>

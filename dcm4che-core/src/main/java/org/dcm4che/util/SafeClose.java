@@ -42,6 +42,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 
+import javax.imageio.stream.ImageInputStream;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
@@ -56,6 +58,11 @@ public class SafeClose {
     public static void close(Socket sock) {
         if (sock != null)
             try { sock.close(); } catch (IOException ignore) {}
+    }
+    
+    public static void close(ImageInputStream iis) {
+        if (iis != null)
+            try { iis.close(); } catch (IOException ignore) {}
     }
 
 }

@@ -57,12 +57,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
+import org.codecCentral.imageio.generic.SegmentedDataInfo;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
@@ -72,6 +75,7 @@ import org.dcm4che.data.Value;
 import org.dcm4che.image.PhotometricInterpretation;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
+import org.dcm4che.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che.io.DicomEncodingOptions;
 import org.dcm4che.io.DicomOutputStream;
@@ -275,22 +279,43 @@ public class Decompressor {
 
     public void writeFrameTo(ImageInputStream iis, int frameIndex,
             OutputStream out) throws IOException {
-        writeTo(decompressFrame(iis, frameIndex).getRaster(), out);
+        writeTo(decompressFrame(iis, frameIndex, file.getAbsolutePath()).getRaster(), out);
     }
 
     @SuppressWarnings("resource")
-    protected BufferedImage decompressFrame(ImageInputStream iis, int index)
+    protected BufferedImage decompressFrame(ImageInputStream iis, int index, String fileName)
             throws IOException {
-        SegmentedInputImageStream siis =
-                new SegmentedInputImageStream(iis, pixeldataFragments, index);
-        decompressor.setInput(patchJpegLS != null
-                ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
-                : siis);
+    	
+    	 SegmentedInputImageStream siis = null;
+    	if (patchJpegLS == null)
+    	{
+    		SegmentedInputImageStream segmentedStream = 
+    				new SegmentedInputImageStream(null, pixeldataFragments, index);
+    		SegmentedDataInfo info = new SegmentedDataInfo(fileName,
+										    				segmentedStream.getSegmentPositionsList(),
+										    				segmentedStream.getSegmentLengths());
+        	//try to set an array of strings
+        	try
+        	{
+        		decompressor.setInput(info);
+        	}
+        	catch(IllegalArgumentException ex)
+        	{
+                siis = new SegmentedInputImageStream(iis, pixeldataFragments, index);
+                decompressor.setInput(siis);        		
+        	}        		
+    	}
+    	else
+    	{
+    		 siis = new SegmentedInputImageStream(iis, pixeldataFragments, index);
+    		 decompressor.setInput(new PatchJPEGLSImageInputStream(siis, patchJpegLS) );
+    	}
+
         readParam.setDestination(bi);
         long start = System.currentTimeMillis();
         bi = decompressor.read(0, readParam);
         long end = System.currentTimeMillis();
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled() && siis != null)
             LOG.debug("Decompressed frame #{} 1:{} in {} ms", 
                     new Object[] {index + 1,
                     (float) sizeOf(bi) / siis.getStreamPosition(),

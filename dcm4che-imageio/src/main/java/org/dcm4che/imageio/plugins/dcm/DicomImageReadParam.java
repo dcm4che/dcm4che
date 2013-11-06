@@ -38,6 +38,8 @@
 
 package org.dcm4che.imageio.plugins.dcm;
 
+import java.io.File;
+
 import javax.imageio.ImageReadParam;
 
 import org.dcm4che.data.Attributes;
@@ -57,6 +59,7 @@ public class DicomImageReadParam extends ImageReadParam {
     private int overlayActivationMask = 0xf;
     private int overlayGrayscaleValue = 0xffff;
     private Attributes presentationState;
+    private File sourceFile;
 
     public float getWindowCenter() {
         return windowCenter;
@@ -129,5 +132,13 @@ public class DicomImageReadParam extends ImageReadParam {
     public void setOverlayGrayscaleValue(int overlayGrayscaleValue) {
         this.overlayGrayscaleValue = overlayGrayscaleValue;
     }
+
+	public File getSourceFile() {
+		return sourceFile;
+	}
+
+	public void setSourceFile(File sourceFile) {
+		this.sourceFile = sourceFile;
+	}
 
 }

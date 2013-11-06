@@ -356,17 +356,20 @@ public class Dcm2Jpg {
     public void convert(File src, File dest) throws IOException {
         ImageInputStream iis = ImageIO.createImageInputStream(src);
         try {
-            BufferedImage bi = readImage(iis);
+        	imageReader.setInput(iis);
+        	DicomImageReadParam params = readParam();
+        	params.setSourceFile(src);
+            BufferedImage bi = imageReader.read(frame-1, params);
             bi = convert(bi);
             dest.delete();
             ImageOutputStream ios = ImageIO.createImageOutputStream(dest);
             try {
                 writeImage(ios, bi);
             } finally {
-                try { ios.close(); } catch (IOException ignore) {}
+            	 SafeClose.close(ios);
             }
         } finally {
-            try { iis.close(); } catch (IOException ignore) {}
+            SafeClose.close(iis);
         }
     }
 
@@ -377,12 +380,7 @@ public class Dcm2Jpg {
         return bi;
     }
 
-    private BufferedImage readImage(ImageInputStream iis) throws IOException {
-        imageReader.setInput(iis);
-        return imageReader.read(frame-1, readParam());
-    }
-
-    private ImageReadParam readParam() {
+    private DicomImageReadParam readParam() {
         DicomImageReadParam param =
                 (DicomImageReadParam) imageReader.getDefaultReadParam();
         param.setWindowCenter(windowCenter);

@@ -339,11 +339,14 @@ public class Compressor extends Decompressor implements Closeable {
     }
 
     public BufferedImage readFrame(int frameIndex) throws IOException {
+    	if (file == null)
+    		return null;
+    	
         if (iis == null)
             iis = new FileImageInputStream(file);
 
         if (decompressor != null)
-            return decompressFrame(iis, frameIndex);
+            return decompressFrame(iis, frameIndex, file.getAbsolutePath());
 
         iis.setByteOrder(pixeldata.bigEndian
                 ? ByteOrder.BIG_ENDIAN

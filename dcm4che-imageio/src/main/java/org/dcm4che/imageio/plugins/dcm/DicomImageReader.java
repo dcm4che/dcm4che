@@ -48,8 +48,10 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -59,6 +61,7 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
+import org.codecCentral.imageio.generic.SegmentedDataInfo;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.BulkData;
 import org.dcm4che.data.Fragments;
@@ -275,7 +278,28 @@ public class DicomImageReader extends ImageReader {
 
         WritableRaster raster;
         if (decompressor != null) {
-            decompressor.setInput(iisOfFrame(frameIndex));
+        	if (patchJpegLS == null)
+        	{
+        		SegmentedInputImageStream segmentedStream = 
+        				new SegmentedInputImageStream(null, pixeldataFragments, frameIndex);
+        		DicomImageReadParam dicomParams = (DicomImageReadParam)param;
+        		SegmentedDataInfo info = new SegmentedDataInfo(dicomParams.getSourceFile().getAbsolutePath(),
+										        				segmentedStream.getSegmentPositionsList(),
+										        				segmentedStream.getSegmentLengths());
+            	//try to set an array of strings
+            	try
+            	{
+            		decompressor.setInput(info);
+            	}
+            	catch(IllegalArgumentException ex)
+            	{
+                    decompressor.setInput(iisOfFrame(frameIndex));        		
+            	}        		
+        	}
+        	else
+        	{
+        		 decompressor.setInput(iisOfFrame(frameIndex));      
+        	}
             if (LOG.isDebugEnabled())
                 LOG.debug("Start decompressing frame #" + (frameIndex + 1));
             BufferedImage bi = decompressor.read(0, decompressParam(param));

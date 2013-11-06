@@ -2,6 +2,9 @@
 <module xmlns="urn:jboss:module:1.1" name="org.dcm4che.imageio">
     <resources>
         <resource-root path="dcm4che-imageio-${version}.jar"/>
+        <resource-root path="imageio-openjpeg-0.0.1-SNAPSHOT.jar"/>
+         <resource-root path="imageio-charls-0.0.1-SNAPSHOT.jar"/>
+         <resource-root path="imageio-generic-0.0.1-SNAPSHOT.jar"/>
     </resources>
 
     <dependencies>

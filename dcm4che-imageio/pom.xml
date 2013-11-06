@@ -39,5 +39,20 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.openJpeg</groupId>
+      <artifactId>imageio-openjpeg</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+     <dependency>
+      <groupId>com.codecCentral</groupId>
+      <artifactId>imageio-charls</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+      <dependency>
+      	<groupId>org.codecCentral</groupId>
+      	<artifactId>imageio-generic</artifactId>
+      	<version>0.0.1-SNAPSHOT</version>
+      </dependency>
   </dependencies>
 </project>

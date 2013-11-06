@@ -288,4 +288,14 @@ public class StringUtils {
         URL url = tcl.getResource(name);
         return url != null ? url.toString() : null;
     }
+
+    public static boolean isUpperCase(String s) {
+        int len = s.length();
+        for (int i = 0; i < len; i++) {
+            char ch = s.charAt(i);
+            if (Character.toUpperCase(ch) != ch)
+                return false;
+        }
+        return len != 0;
+    }
 }

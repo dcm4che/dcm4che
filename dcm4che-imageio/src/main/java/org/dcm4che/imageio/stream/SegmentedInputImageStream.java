@@ -81,6 +81,20 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         this.segmentLengths = segmentLengths.clone();
         seek(0);
     }
+    
+    public long[] getSegmentPositionsList()
+    {
+    	return segmentPositionsList.clone();
+    }
+    public long[] getSegmentLengths()
+    {
+    	long[] lengths = new long[segmentLengths.length];
+    	for(int i = 0; i < segmentLengths.length; ++i)
+    	{
+    		lengths[i] = segmentLengths[i];
+    	}
+    	return lengths;
+    }
 
     private int offsetOf(int segment) {
         int pos = 0;
@@ -91,6 +105,8 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
 
     @Override
     public void seek(long pos) throws IOException {
+    	if (stream == null)
+    		return;
         super.seek(pos);
         for (int i = 0, off = 0; i < segmentLengths.length; i++) {
             int end = off + segmentLengths[i];
@@ -105,6 +121,15 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         curSegment = -1;
     }
 
+    @Override
+    public long length() {
+    	long len = 0;
+    	 for (int i = 0, off = 0; i < segmentLengths.length; i++) {
+    		 len += segmentLengths[i];
+    	 }
+    	 return len;
+    }
+    
     @Override
     public int read() throws IOException {
         if (!prepareRead())

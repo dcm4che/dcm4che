@@ -73,6 +73,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -111,6 +112,7 @@
     <module>dcm4che-osgi</module>
     <module>dcm4che-camel</module>
     <module>dcm4che-karaf</module>
+    <module>dcm4che-cdi</module>
   </modules>
   <distributionManagement>
     <repository>

@@ -36,63 +36,48 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.cdi.device.impl;
+package org.dcm4che.sample.cdi.rs;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 
-import org.dcm4che.conf.api.DicomConfiguration;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.DeviceService;
-import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.sample.cdi.device.EchoDeviceService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@ApplicationScoped
-public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
-
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+@RequestScoped
+@Path("")
+public class EchoDeviceServiceRS {
 
     @Inject
-    private DicomConfiguration conf;
+    private EchoDeviceService service;
 
-    @Override
-    public DicomServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
+    @GET
+    @Path("running")
+    public String isRunning() {
+        return String.valueOf(service.isRunning());
     }
 
-    private String deviceName() {
-        return System.getProperty("dcm4che-cdi.deviceName", "echoscp");
+    @GET
+    @Path("start")
+    public void start() throws Exception {
+        service.start();
     }
 
-    @PostConstruct
-    public void init() {
-        try {
-            Device device = conf.findDevice(deviceName());
-            init(device);
-            device.setDimseRQHandler(serviceRegistry);
-            start();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    @GET
+    @Path("stop")
+    public void stop() {
+        service.stop();
     }
 
-    @PreDestroy
-    public void destroy() {
-        if (isRunning())
-            stop();
-    }
-
-    @Override
+    @GET
+    @Path("reload")
     public void reload() throws Exception {
-        device.reconfigure(conf.findDevice(device.getDeviceName()));
-        device.rebindConnections();
+        service.reload();
     }
 
 }

@@ -36,63 +36,27 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.cdi.device.impl;
+package org.dcm4che.sample.cdi.conf.ldap;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import javax.enterprise.inject.Disposes;
+import javax.enterprise.inject.Produces;
 
+import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.DicomConfiguration;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.DeviceService;
-import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.sample.cdi.device.EchoDeviceService;
+import org.dcm4che.conf.ldap.LdapDicomConfiguration;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@ApplicationScoped
-public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
+public class LdapConfigurationFactory {
 
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-
-    @Inject
-    private DicomConfiguration conf;
-
-    @Override
-    public DicomServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
+    @Produces
+    public DicomConfiguration dicomConfiguration() throws ConfigurationException {
+            return new LdapDicomConfiguration();
     }
 
-    private String deviceName() {
-        return System.getProperty("dcm4che-cdi.deviceName", "echoscp");
+    public void dispose(@Disposes DicomConfiguration conf) {
+        conf.close();
     }
-
-    @PostConstruct
-    public void init() {
-        try {
-            Device device = conf.findDevice(deviceName());
-            init(device);
-            device.setDimseRQHandler(serviceRegistry);
-            start();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @PreDestroy
-    public void destroy() {
-        if (isRunning())
-            stop();
-    }
-
-    @Override
-    public void reload() throws Exception {
-        device.reconfigure(conf.findDevice(device.getDeviceName()));
-        device.rebindConnections();
-    }
-
 }

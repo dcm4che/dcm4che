@@ -20,7 +20,7 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-cdi-conf-prefs</artifactId>
+      <artifactId>dcm4che-cdi-rest</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -35,6 +35,36 @@
       </exclusions>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>prefs</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.dcm4che</groupId>
+          <artifactId>dcm4che-cdi-conf-prefs</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>ldap</id>
+      <activation>
+        <property>
+          <name>ldap</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.dcm4che</groupId>
+          <artifactId>dcm4che-cdi-conf-ldap</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
   <build>
     <plugins>
       <plugin>

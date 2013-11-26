@@ -38,6 +38,7 @@
 
 package org.dcm4che.sample.cdi.conf.prefs;
 
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 
 import org.dcm4che.conf.api.DicomConfiguration;
@@ -50,6 +51,11 @@ import org.dcm4che.conf.prefs.PreferencesDicomConfiguration;
 public class PreferencesConfigurationFactory {
 
     @Produces
-    private DicomConfiguration dicomConfiguration =
-            new PreferencesDicomConfiguration();
+    public DicomConfiguration dicomConfiguration() {
+            return new PreferencesDicomConfiguration();
+    }
+
+    public void dispose(@Disposes DicomConfiguration conf) {
+        conf.close();
+    }
 }

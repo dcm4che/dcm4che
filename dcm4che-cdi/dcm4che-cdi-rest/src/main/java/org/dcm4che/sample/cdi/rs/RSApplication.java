@@ -36,63 +36,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.cdi.device.impl;
+package org.dcm4che.sample.cdi.rs;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.dcm4che.conf.api.DicomConfiguration;
-import org.dcm4che.net.Device;
-import org.dcm4che.net.DeviceService;
-import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.sample.cdi.device.EchoDeviceService;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@ApplicationScoped
-public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
-
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-
-    @Inject
-    private DicomConfiguration conf;
-
-    @Override
-    public DicomServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
-    }
-
-    private String deviceName() {
-        return System.getProperty("dcm4che-cdi.deviceName", "echoscp");
-    }
-
-    @PostConstruct
-    public void init() {
-        try {
-            Device device = conf.findDevice(deviceName());
-            init(device);
-            device.setDimseRQHandler(serviceRegistry);
-            start();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @PreDestroy
-    public void destroy() {
-        if (isRunning())
-            stop();
-    }
-
-    @Override
-    public void reload() throws Exception {
-        device.reconfigure(conf.findDevice(device.getDeviceName()));
-        device.rebindConnections();
-    }
+@ApplicationPath("/")
+public class RSApplication extends Application {
 
 }

@@ -47,4 +47,12 @@ import org.dcm4che.net.service.DicomServiceRegistry;
 public interface EchoDeviceService {
 
     DicomServiceRegistry getServiceRegistry();
+
+    void start() throws Exception;
+
+    void stop();
+
+    boolean isRunning();
+
+    void reload() throws Exception;
 }

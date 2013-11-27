@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metatype:MetaData
+  xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.osgi.org/xmlns/metadata/v1.1.0 
+    http://www.osgi.org/xmlns/metatype/v1.1.0/metatype.xsd">
+
+  <OCD
+    description="dcm4che LDAP configuration"
+    name="dcm4che LDAP configuration"
+    id="org.dcm4chee.archive.conf.ldap">
+
+    <AD
+      id=".transient.serial.id"
+      type="String"
+      default="0"
+      name=".transient.serial.id"
+      description="Set to 0" />
+
+    <AD
+      id="ldap-url"
+      type="String"
+      default="${ldap-url-default}"
+      name="ldap-url"
+      description="URL to connect the LDAP directory server" />
+
+    <AD
+      id="user-dn"
+      type="String"
+      default="${user-dn-default}"
+      name="user-dn"
+      description="identity of the principal to be authenticated." />
+      
+    <AD
+      id="password"
+      type="String"
+      default="${password-default}"
+      name="password"
+      description="user's password" />      
+  </OCD>
+
+  <Designate pid="org.dcm4chee.archive.conf.ldap">
+      <Object  ocdref="org.dcm4chee.archive.conf.ldap"/>
+  </Designate>
+
+</metatype:MetaData>

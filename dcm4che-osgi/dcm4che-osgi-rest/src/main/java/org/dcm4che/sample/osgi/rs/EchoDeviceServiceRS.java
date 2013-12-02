@@ -36,77 +36,85 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.osgi;
+package org.dcm4che.sample.osgi.rs;
 
-import org.dcm4che.conf.api.DicomConfiguration;
+import javax.annotation.Resource;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+
 import org.dcm4che.net.DeviceService;
-import org.dcm4che.net.DeviceServiceInterface;
-import org.dcm4che.net.service.DicomServiceRegistry;
+import org.dcm4che.sample.osgi.device.EchoDeviceService;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Bundle implementing and starting a generic Dicom Device.
- * Start method is defined in blueprint.xml, and invoked by the
- * Blueprint Container.
- * 
- * This bundle will be injected in every Dicom Service bundles, 
- * which will use it to register themselves in the device.
+ * RESTful Service implementing a Dicom device.
  * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
  */
-public class EchoDevice extends DeviceService implements DeviceServiceInterface {
+@Path("")
+public class EchoDeviceServiceRS {
 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceService.class);
-    
-    private String deviceName;
-
-    private DicomConfiguration dicomConfig;
-
-    public BundleContext bcontext;
-
-    public void setBcontext(BundleContext bcontext) {
-        this.bcontext = bcontext;
-    }
-
-    public void setDicomConfig(DicomConfiguration dicomConfig) {
-        this.dicomConfig = dicomConfig;
-    }
-    
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
-
-    /**
-     * start of the service
-     * 
-     * @see org.dcm4che.net.DeviceService#start()
-     */
-    public void start() throws Exception{
         
-        LOG.info("starting Echo Dicom Device..");
+    @Resource
+    private BundleContext context;
 
-        try {
-
-            init(dicomConfig.findDevice(deviceName));
-
-            DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-            this.device.setDimseRQHandler(serviceRegistry);
-
-            LOG.info("started:" + this.device);
-
-            super.start();
-        } catch (Exception e) {
-            LOG.error("Error starting device", e);
-            throw e;
-        }
+    @GET
+    @Path("running")
+    public String isRunning() {
+        return String.valueOf(service().isRunning());
     }
 
+    @GET
+    @Path("start")
+    public void start() throws Exception {
+        service().start();
+    }
+
+    @GET
+    @Path("stop")
     public void stop() {
-        super.stop();
-        LOG.info("Dicom Device stopped.");
+        service().stop();
+    }
+
+    @GET
+    @Path("reload")
+    public void reload() throws Exception {
+        service().reload();
+    }
+
+    private EchoDeviceService service() {
+        return lookup(EchoDeviceService.class);
+    }
+
+    private <T> T lookup(Class<T> clazz) {
+        if (context == null) {
+            LOG.warn("BundleContext not injected");
+            context = getBundleContextFromClass(clazz);
+        }
+        ServiceReference<T> sref = context.getServiceReference(clazz);
+        return context.getService(sref);
+    }
+
+    private <T> BundleContext getBundleContextFromClass(Class<T> clazz) {
+        BundleReference bref = (BundleReference) clazz.getClassLoader();
+        Bundle bundle = bref.getBundle();
+        if (bundle.getState() != Bundle.ACTIVE) {
+            try {
+                bundle.start();
+            } catch (BundleException ex) 
+            {
+                LOG.error("Cannot start bundle", ex);
+            }
+        }
+        return bundle.getBundleContext();
     }
 
 }

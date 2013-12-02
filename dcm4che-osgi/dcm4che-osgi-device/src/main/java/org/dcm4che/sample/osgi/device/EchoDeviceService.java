@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,29 +36,23 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.osgi.echo;
+package org.dcm4che.sample.osgi.device;
 
-import org.dcm4che.net.DeviceServiceInterface;
-import org.dcm4che.net.DimseRQHandler;
-import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomServiceRegistry;
 
 /**
- * Bundle implementing a simple Dicom Echo service. The service registers
- * himself in the injected Dicom Device (see blueprint.xml)
- * 
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * 
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public class EchoService extends BasicCEchoSCP implements DimseRQHandler {
+public interface EchoDeviceService {
 
-    private DeviceServiceInterface deviceService;
+    DicomServiceRegistry getServiceRegistry();
 
-    public void setDeviceService(DeviceServiceInterface deviceService) {
+    void start() throws Exception;
 
-        this.deviceService = deviceService;
+    void stop();
 
-        ((DicomServiceRegistry) deviceService.getDevice().getDimseRQHandler())
-                .addDicomService(this);
-    }
+    boolean isRunning();
+
+    void reload() throws Exception;
 }

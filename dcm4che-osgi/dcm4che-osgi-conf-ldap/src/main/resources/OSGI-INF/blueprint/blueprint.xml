@@ -4,36 +4,15 @@
   xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
 
   <!-- the service this bundle is exposing (the Device Service) -->
-  <service
-    id="dicomConfiguration"
+  <service id="dicomConfiguration"
     interface="org.dcm4che.conf.api.DicomConfiguration"
     ref="ldapConf" />
 
-  <!-- osgi blueprint property placeholder -->
-  <cm:property-placeholder
-    persistent-id="org.dcm4chee.archive.conf.ldap"
-    update-strategy="reload"> <!-- after a change of the property, the blueprint context is reloaded to 
-      reflect the changes -->
-    <cm:default-properties>
-      <cm:property
-        name="ldap-url"
-        value="${ldap-url-default}" />
-      <cm:property
-        name="user-dn"
-        value="${user-dn-default}" />
-      <cm:property
-        name="password"
-        value="${password-default}" />
-    </cm:default-properties>
-  </cm:property-placeholder>
-
   <!-- factory returning an implementation of the Echo Device Service -->
   <!-- NOTE: specific ldap properties are defined in filters under src/main/filters -->
-  <bean
-    class="org.dcm4che.sample.osgi.LdapConfigurationFactory"
-    id="ldapConf"
-    activation="eager"
-    factory-method="createConfig">
+  <bean id="ldapConf"
+    class="org.dcm4che.conf.ldap.LdapDicomConfiguration"
+    activation="eager">
     <argument>
       <props>
         <prop key="java.naming.factory.initial">com.sun.jndi.ldap.LdapCtxFactory</prop>

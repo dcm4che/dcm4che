@@ -2,24 +2,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
 
-    <!-- this is the service this bundle is exposing (the Echo Dicom Service) -->
-    <service
-        id="echoService"
-        interface="org.dcm4che.net.DimseRQHandler"
-        ref="echoServiceImpl" />
-
     <!-- this is the java class implementing the Echo Dicom Service -->
-    <bean
-        class="org.dcm4che.sample.osgi.echo.EchoService"
-        id="echoServiceImpl"
+    <bean id="echoServiceImpl"
+        class="org.dcm4che.sample.osgi.echo.impl.CEchoSCPImpl"
+        init-method="init"
+        destroy-method="destroy"
         activation="eager">
-        <property
-            name="deviceService"
-            ref="deviceService" />
+        <property name="echoDeviceService" ref="echoDeviceService" />
     </bean>
 
-    <reference
-        id="deviceService"
-        interface="org.dcm4che.net.DeviceServiceInterface" />
+    <reference id="echoDeviceService"
+        interface="org.dcm4che.sample.osgi.device.EchoDeviceService" />
 
 </blueprint>

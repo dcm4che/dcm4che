@@ -4,44 +4,22 @@
   xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
 
   <!-- this is the service this bundle is exposing (the Device Service) -->
-  <service
-    id="echoDevice"
-    interface="org.dcm4che.net.DeviceServiceInterface"
+  <service id="echoDevice"
+    interface="org.dcm4che.sample.osgi.device.EchoDeviceService"
     ref="echoDeviceImpl" />
 
-  <!-- osgi blueprint property placeholder -->
-  <cm:property-placeholder
-    id="placeholder"
-    persistent-id="org.dcm4che.osgi.sample.device"
-    update-strategy="reload">
-    <cm:default-properties>
-      <cm:property
-        name="device-name"
-        value="echoscp" />
-    </cm:default-properties>
-  </cm:property-placeholder>
-
   <!-- this is the java class implementing the Echo Device Service -->
-  <bean
-    class="org.dcm4che.sample.osgi.EchoDevice"
-    id="echoDeviceImpl"
-    activation="eager"
-    init-method="start"
-    destroy-method="stop">
-    <property
-      name="bcontext"
-      ref="blueprintBundleContext" />
-    <property
-      name="dicomConfig"
-      ref="dicomConfig" />
-    <property
-      name="deviceName"
-      value="${device-name}" />
+  <bean id="echoDeviceImpl"
+    class="org.dcm4che.sample.osgi.device.impl.EchoDeviceServiceImpl"
+    init-method="init"
+    destroy-method="destroy"
+    activation="eager">
+    <property name="dicomConfiguration" ref="dicomConfig" />
+    <property name="deviceName" value="echoscp" />
   </bean>
 
   <!-- this is the configuration bundle, which get injected in the DicomDevice -->
-  <reference
-    id="dicomConfig"
+  <reference id="dicomConfig"
     interface="org.dcm4che.conf.api.DicomConfiguration" />
 
 </blueprint>

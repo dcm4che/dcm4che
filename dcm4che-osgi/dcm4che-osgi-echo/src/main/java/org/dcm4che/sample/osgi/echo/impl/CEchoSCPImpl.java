@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,38 +36,33 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.osgi;
+package org.dcm4che.sample.osgi.echo.impl;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
-
-import org.dcm4che.conf.api.ConfigurationException;
-import org.dcm4che.conf.api.DicomConfiguration;
-import org.dcm4che.conf.ldap.LdapDicomConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomServiceRegistry;
+import org.dcm4che.sample.osgi.device.EchoDeviceService;
 
 /**
- * Factory used by the Blueprint Container to construct the Configuration
- * bean (in this example, is the LDAP configuration). The factory receives as
- * argument the Hashtable contianing the ldap properties (see blueprint.xml).
- * 
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * 
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public class LdapConfigurationFactory {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(LdapConfigurationFactory.class);
-    
-    public static DicomConfiguration createConfig(Properties ldapProperties)
-            throws ConfigurationException {
+public class CEchoSCPImpl extends BasicCEchoSCP {
 
-            DicomConfiguration ldapConfig = new LdapDicomConfiguration(ldapProperties);
-            
-            LOG.info("Dicom configuration loaded");
+    private DicomServiceRegistry serviceRegistry;
 
-            return ldapConfig;
+    public void setEchoDeviceService(EchoDeviceService echoDeviceService) {
+        this.serviceRegistry = echoDeviceService.getServiceRegistry();
+    }
+
+    public void init() {
+        DicomServiceRegistry tmp = serviceRegistry;
+        if (tmp != null)
+            tmp.addDicomService(this);
+    }
+
+    public void destroy() {
+        DicomServiceRegistry tmp = serviceRegistry;
+        if (tmp != null)
+            tmp.removeDicomService(this);
     }
 }

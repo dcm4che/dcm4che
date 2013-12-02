@@ -36,33 +36,66 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.sample.osgi;
+package org.dcm4che.sample.osgi.device.impl;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import org.dcm4che.conf.api.DicomConfiguration;
+import org.dcm4che.net.Device;
+import org.dcm4che.net.DeviceService;
+import org.dcm4che.net.service.DicomServiceRegistry;
+import org.dcm4che.sample.osgi.device.EchoDeviceService;
 
 /**
+ * Bundle implementing and starting a generic Dicom Device.
+ * Start method is defined in blueprint.xml, and invoked by the
+ * Blueprint Container.
+ * 
+ * This bundle will be injected in every Dicom Service bundles, 
+ * which will use it to register themselves in the device.
+ * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- *
+ * 
  */
-public class WabActivator implements BundleActivator {
+public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
 
-    /* (non-Javadoc)
-     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-     */
-    @Override
-    public void start(BundleContext context) throws Exception {
-        // TODO Auto-generated method stub
-        System.out.println("start activator");
+    private String deviceName;
+    private DicomConfiguration dicomConfiguration;
+    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
-    /* (non-Javadoc)
-     * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-     */
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        // TODO Auto-generated method stub
-        System.out.println("stop activator");
+    public void setDicomConfiguration(DicomConfiguration dicomConfiguration) {
+        this.dicomConfiguration = dicomConfiguration;
     }
+
+    @Override
+    public DicomServiceRegistry getServiceRegistry() {
+        return serviceRegistry;
+    }
+
+    public void init() {
+        try {
+            Device device = dicomConfiguration.findDevice(deviceName);
+            init(device);
+            device.setDimseRQHandler(serviceRegistry);
+            start();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void destroy() {
+        if (isRunning())
+            stop();
+    }
+
+    @Override
+    public void reload() throws Exception {
+        device.reconfigure(dicomConfiguration.findDevice(device.getDeviceName()));
+        device.rebindConnections();
+    }
+
 
 }

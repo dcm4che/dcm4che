@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.dcm4che</groupId>
-        <artifactId>dcm4che-osgi</artifactId>
+        <artifactId>dcm4che-osgi-parent</artifactId>
         <version>3.3.0-SNAPSHOT</version>
     </parent>
-    <artifactId>dcm4che-osgi-config</artifactId>
+    <artifactId>dcm4che-osgi-conf-ldap</artifactId>
     <packaging>bundle</packaging>
     <description>Sample Dicom Configuration</description>
     <properties>
@@ -34,11 +34,6 @@
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-conf-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.dcm4che</groupId>
             <artifactId>dcm4che-conf-ldap</artifactId>

@@ -38,7 +38,6 @@
 
 package org.dcm4che.sample.cdi.rs;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -49,7 +48,6 @@ import org.dcm4che.sample.cdi.device.EchoDeviceService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@RequestScoped
 @Path("")
 public class EchoDeviceServiceRS {
 

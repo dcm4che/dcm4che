@@ -56,24 +56,22 @@ import org.dcm4che.sample.cdi.device.EchoDeviceService;
 @ApplicationScoped
 public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
 
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-
     @Inject
     private DicomConfiguration conf;
+
+    private String deviceName = System.getProperty("dcm4che-cdi.deviceName", "echoscp");
+
+    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
     @Override
     public DicomServiceRegistry getServiceRegistry() {
         return serviceRegistry;
     }
 
-    private String deviceName() {
-        return System.getProperty("dcm4che-cdi.deviceName", "echoscp");
-    }
-
     @PostConstruct
     public void init() {
         try {
-            Device device = conf.findDevice(deviceName());
+            Device device = conf.findDevice(deviceName);
             init(device);
             device.setDimseRQHandler(serviceRegistry);
             start();

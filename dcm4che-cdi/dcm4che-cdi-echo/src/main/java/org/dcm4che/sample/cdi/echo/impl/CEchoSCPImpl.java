@@ -38,33 +38,38 @@
 
 package org.dcm4che.sample.cdi.echo.impl;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Destroyed;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 
+import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.sample.cdi.device.EchoDeviceService;
-import org.dcm4che.sample.cdi.ext.Eager;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@Eager
+@ApplicationScoped
+@Typed(DimseRQHandler.class)
 public class CEchoSCPImpl extends BasicCEchoSCP {
 
     @Inject
     private EchoDeviceService service;
 
-    @PostConstruct
-    public void init() {
+    public void init(@Observes @Initialized(ApplicationScoped.class) Object o) {
+        DicomServiceRegistry serviceRegistry = service.getServiceRegistry();
         System.out.println("CEchoSCPImpl.init() invoked");
-        service.getServiceRegistry().addDicomService(this);
+        serviceRegistry.addDicomService(this);
     }
 
-    @PreDestroy
-    public void destroy() {
+    public void destroy(@Observes @Destroyed(ApplicationScoped.class) Object o) {
+        DicomServiceRegistry serviceRegistry = service.getServiceRegistry();
         System.out.println("CEchoSCPImpl.destroy() invoked");
-        service.getServiceRegistry().removeDicomService(this);
+        serviceRegistry.removeDicomService(this);
     }
 }

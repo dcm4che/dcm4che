@@ -26,15 +26,21 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <modules>
     <module>dcm4che-cdi-conf-prefs</module>
     <module>dcm4che-cdi-conf-ldap</module>
-    <module>dcm4che-cdi-ext</module>
     <module>dcm4che-cdi-device</module>
     <module>dcm4che-cdi-echo</module>
     <module>dcm4che-cdi-war</module>
     <module>dcm4che-cdi-rest</module>
+    <module>dcm4che-cdi-store</module>
   </modules>
 </project>

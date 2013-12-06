@@ -41,11 +41,16 @@ package org.dcm4che.sample.cdi.device.impl;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.Device;
 import org.dcm4che.net.DeviceService;
+import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.sample.cdi.device.EchoDeviceService;
 
@@ -53,8 +58,11 @@ import org.dcm4che.sample.cdi.device.EchoDeviceService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@ApplicationScoped
+@Singleton
 public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
+
+    @Inject
+    private Instance<DicomService> services;
 
     @Inject
     private DicomConfiguration conf;
@@ -63,9 +71,8 @@ public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceSe
 
     private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
-    @Override
-    public DicomServiceRegistry getServiceRegistry() {
-        return serviceRegistry;
+    // force eager initialisation (only works if EAR contains WAR)
+    void startup(@Observes @Initialized(ApplicationScoped.class) Object o) {
     }
 
     @PostConstruct
@@ -73,6 +80,9 @@ public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceSe
         try {
             Device device = conf.findDevice(deviceName);
             init(device);
+            for (DicomService service : services) {
+                serviceRegistry.addDicomService(service);
+            }
             device.setDimseRQHandler(serviceRegistry);
             start();
         } catch (Exception e) {
@@ -85,6 +95,10 @@ public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceSe
     public void destroy() {
         if (isRunning())
             stop();
+
+        for (DicomService service : services) {
+            serviceRegistry.removeDicomService(service);
+        }
     }
 
     @Override

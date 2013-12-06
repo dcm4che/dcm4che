@@ -38,15 +38,11 @@
 
 package org.dcm4che.sample.cdi.device;
 
-import org.dcm4che.net.service.DicomServiceRegistry;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public interface EchoDeviceService {
-
-    DicomServiceRegistry getServiceRegistry();
 
     void start() throws Exception;
 

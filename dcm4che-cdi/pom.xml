@@ -41,6 +41,6 @@
     <module>dcm4che-cdi-echo</module>
     <module>dcm4che-cdi-war</module>
     <module>dcm4che-cdi-rest</module>
-    <module>dcm4che-cdi-store</module>
+    <module>dcm4che-cdi-ear</module>
   </modules>
 </project>

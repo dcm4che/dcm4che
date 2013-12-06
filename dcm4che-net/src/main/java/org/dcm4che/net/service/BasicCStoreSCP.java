@@ -54,7 +54,10 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class BasicCStoreSCP extends DicomService {
 
-    
+    public BasicCStoreSCP() {
+        super("*");
+    }
+
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
     }

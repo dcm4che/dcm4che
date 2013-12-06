@@ -38,38 +38,15 @@
 
 package org.dcm4che.sample.cdi.echo.impl;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Destroyed;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Typed;
-import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.service.BasicCEchoSCP;
-import org.dcm4che.net.service.DicomServiceRegistry;
-import org.dcm4che.sample.cdi.device.EchoDeviceService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@ApplicationScoped
-@Typed(DimseRQHandler.class)
+@Singleton
 public class CEchoSCPImpl extends BasicCEchoSCP {
 
-    @Inject
-    private EchoDeviceService service;
-
-    public void init(@Observes @Initialized(ApplicationScoped.class) Object o) {
-        DicomServiceRegistry serviceRegistry = service.getServiceRegistry();
-        System.out.println("CEchoSCPImpl.init() invoked");
-        serviceRegistry.addDicomService(this);
-    }
-
-    public void destroy(@Observes @Destroyed(ApplicationScoped.class) Object o) {
-        DicomServiceRegistry serviceRegistry = service.getServiceRegistry();
-        System.out.println("CEchoSCPImpl.destroy() invoked");
-        serviceRegistry.removeDicomService(this);
-    }
 }

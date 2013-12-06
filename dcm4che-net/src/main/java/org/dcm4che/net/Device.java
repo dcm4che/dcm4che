@@ -1162,4 +1162,12 @@ public class Device implements Serializable {
         return (T) extensions.get(clazz);
     }
 
+    public <T extends DeviceExtension> T getDeviceExtensionNotNull(Class<T> clazz) {
+        T devExt = getDeviceExtension(clazz);
+        if (devExt == null)
+            throw new IllegalStateException("No " + clazz.getName()
+                    + " configured for Device: " + deviceName);
+        return devExt;
+    }
+
 }

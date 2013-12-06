@@ -40,6 +40,7 @@ package org.dcm4che.sample.cdi.conf.ldap;
 
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 
 import org.dcm4che.conf.api.ConfigurationException;
 import org.dcm4che.conf.api.DicomConfiguration;
@@ -51,7 +52,7 @@ import org.dcm4che.conf.ldap.LdapDicomConfiguration;
  */
 public class LdapConfigurationFactory {
 
-    @Produces
+    @Produces @Singleton
     public DicomConfiguration dicomConfiguration() throws ConfigurationException {
             return new LdapDicomConfiguration();
     }

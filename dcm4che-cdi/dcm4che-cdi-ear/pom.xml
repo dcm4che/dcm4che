@@ -5,12 +5,17 @@
     <artifactId>dcm4che-cdi-parent</artifactId>
     <version>3.3.0-SNAPSHOT</version>
   </parent>
-  <artifactId>dcm4che-cdi-war</artifactId>
-  <packaging>war</packaging>
+  <artifactId>dcm4che-cdi-ear</artifactId>
+  <packaging>ear</packaging>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-cdi-rest</artifactId>
+      <artifactId>dcm4che-cdi-device</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-cdi-echo</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -19,32 +24,13 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- 
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-cdi-echo</artifactId>
+      <artifactId>dcm4che-cdi-war</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dcm4che</groupId>
-          <artifactId>dcm4che-net</artifactId>
-        </exclusion>
-      </exclusions>
+      <type>war</type>
     </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-cdi-store</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dcm4che</groupId>
-          <artifactId>dcm4che-net</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    -->
   </dependencies>
-  <!--
   <profiles>
     <profile>
       <id>prefs</id>
@@ -78,18 +64,19 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.1.1</version>
+        <artifactId>maven-ear-plugin</artifactId>
+        <version>2.9</version>
         <configuration>
-          <archive>
-            <manifestEntries>
-              <Dependencies>org.dcm4che.conf.prefs,org.dcm4che.conf.ldap</Dependencies>
-            </manifestEntries>
-          </archive>
-          <packagingExcludes>**/slf4j*.jar,**/log4j*.jar</packagingExcludes>
+          <defaultLibBundleDir>lib</defaultLibBundleDir>
+          <modules>
+            <webModule>
+              <groupId>org.dcm4che</groupId>
+              <artifactId>dcm4che-cdi-war</artifactId>
+              <contextRoot>echoscp</contextRoot>
+            </webModule>
+          </modules>
         </configuration>
       </plugin>
     </plugins>
   </build>
-  -->
 </project>

@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -41,66 +41,51 @@ package org.dcm4che.net.service;
 import java.io.IOException;
 
 import org.dcm4che.data.Attributes;
-import org.dcm4che.data.UID;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.Commands;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.Status;
+import org.dcm4che.net.PDVInputStream;
 import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicMPPSSCP extends AbstractDicomService {
+public abstract class AbstractDicomService implements DicomService {
 
-    public BasicMPPSSCP() {
-        super(UID.ModalityPerformedProcedureStepSOPClass);
+    private final String[] sopClasses;
+
+    protected AbstractDicomService(String... sopClasses) {
+        this.sopClasses = sopClasses.clone();
     }
 
     @Override
-    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
-            Attributes rq, Attributes rqAttrs) throws IOException {
-        switch (dimse) {
-        case N_CREATE_RQ:
-            onNCreateRQ(as, pc, rq, rqAttrs);
-            break;
-        case N_SET_RQ:
-            onNSetRQ(as, pc, rq, rqAttrs);
-            break;
-        default:
-            throw new DicomServiceException(Status.UnrecognizedOperation);
-        }
+    public final String[] getSOPClasses() {
+        return sopClasses;
     }
 
-    protected void onNCreateRQ(Association as, PresentationContext pc,
-            Attributes rq, Attributes rqAttrs) throws IOException {
-        Attributes rsp = Commands.mkNCreateRSP(rq, Status.Success);
-        Attributes rspAttrs = create(as, rq, rqAttrs, rsp);
-        as.tryWriteDimseRSP(pc, rsp, rspAttrs);
+    @Override
+    public void onClose(Association as) {
+        // NOOP
     }
 
-    protected Attributes create(Association as, Attributes rq,
-            Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
-        return null;
+    @Override
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, PDVInputStream data) throws IOException {
+        onDimseRQ(as, pc, dimse, cmd, readDataset(pc, data));
     }
 
-    protected void onNSetRQ(Association as, PresentationContext pc,
-            Attributes rq, Attributes rqAttrs) throws IOException {
-        Attributes rsp = Commands.mkNSetRSP(rq, Status.Success);
-        Attributes rspAttrs = set(as, rq, rqAttrs, rsp);
-        as.tryWriteDimseRSP(pc, rsp, rspAttrs);
+    private Attributes readDataset(PresentationContext pc, PDVInputStream data)
+            throws IOException {
+        if (data == null)
+            return null;
+
+        Attributes dataset = data.readDataset(pc.getTransferSyntax());
+        Dimse.LOG.debug("Dataset:\n{}", dataset);
+        return dataset;
     }
 
-    protected Attributes set(Association as, Attributes rq, Attributes rqAttrs,
-            Attributes rsp) throws DicomServiceException {
-        return null;
-    }
+    protected abstract void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, Attributes data) throws IOException;
 
-    public static void mayNoLongerBeUpdated() throws DicomServiceException {
-        throw new DicomServiceException(Status.ProcessingFailure,
-                "Performed Procedure Step Object may no longer be updated")
-            .setErrorID(0xA710);
-    }
 
 }

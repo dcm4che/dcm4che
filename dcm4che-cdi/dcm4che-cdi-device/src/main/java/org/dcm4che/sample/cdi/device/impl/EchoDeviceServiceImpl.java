@@ -45,7 +45,6 @@ import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.net.Device;
@@ -58,7 +57,7 @@ import org.dcm4che.sample.cdi.device.EchoDeviceService;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@Singleton
+@ApplicationScoped
 public class EchoDeviceServiceImpl extends DeviceService implements EchoDeviceService {
 
     @Inject

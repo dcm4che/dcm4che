@@ -38,15 +38,18 @@
 
 package org.dcm4che.sample.cdi.echo.impl;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Typed;
 
 import org.dcm4che.net.service.BasicCEchoSCP;
+import org.dcm4che.net.service.DicomService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@Singleton
+@ApplicationScoped
+@Typed(DicomService.class)
 public class CEchoSCPImpl extends BasicCEchoSCP {
 
 }

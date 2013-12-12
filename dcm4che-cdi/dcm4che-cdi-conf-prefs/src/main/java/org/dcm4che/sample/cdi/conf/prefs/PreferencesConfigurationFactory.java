@@ -38,9 +38,9 @@
 
 package org.dcm4che.sample.cdi.conf.prefs;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.dcm4che.conf.api.DicomConfiguration;
 import org.dcm4che.conf.prefs.PreferencesDicomConfiguration;
@@ -51,7 +51,7 @@ import org.dcm4che.conf.prefs.PreferencesDicomConfiguration;
  */
 public class PreferencesConfigurationFactory {
 
-    @Produces @Singleton
+    @Produces @ApplicationScoped
     public DicomConfiguration dicomConfiguration() {
             return new PreferencesDicomConfiguration();
     }

@@ -48,7 +48,7 @@ import org.dcm4che.net.hl7.HL7Application;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class HL7ApplicationCache
-        extends ConfigurationCache<HL7Configuration,HL7Application> {
+        extends ConfigurationCache<HL7Configuration,HL7Application> implements IHL7ApplicationCache {
 
     public HL7ApplicationCache(HL7Configuration conf) {
         super(conf);

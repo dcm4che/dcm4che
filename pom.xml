@@ -113,6 +113,7 @@
     <module>dcm4che-camel</module>
     <module>dcm4che-karaf</module>
     <module>dcm4che-cdi</module>
+    <module>dcm4che-ws-rs</module>
   </modules>
   <distributionManagement>
     <repository>

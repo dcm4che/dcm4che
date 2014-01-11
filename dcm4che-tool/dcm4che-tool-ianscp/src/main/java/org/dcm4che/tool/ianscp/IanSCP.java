@@ -63,6 +63,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractDicomService;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
@@ -90,7 +91,7 @@ public class IanSCP extends Device {
    private int status;
 
    private final DicomService ianSCP =
-           new DicomService(UID.InstanceAvailabilityNotificationSOPClass) {
+           new AbstractDicomService(UID.InstanceAvailabilityNotificationSOPClass) {
 
             @Override
             public void onDimseRQ(Association as, PresentationContext pc,

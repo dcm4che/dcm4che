@@ -8,7 +8,7 @@
     <artifactId>dcm4che-parent</artifactId>
     <version>3.3.0-SNAPSHOT</version>
   </parent>
-  <artifactId>dcm4che-osgi</artifactId>
+  <artifactId>dcm4che-osgi-parent</artifactId>
   <packaging>pom</packaging>
   <description>Sample C-ECHO SCP OSGi bundles</description>
   <issueManagement>
@@ -17,8 +17,9 @@
   </issueManagement>
   <modules>
     <module>dcm4che-osgi-echo</module>
-    <module>dcm4che-osgi-config</module>
+    <module>dcm4che-osgi-conf-ldap</module>
     <module>dcm4che-osgi-device</module>
     <module>dcm4che-osgi-rest</module>
+    <module>dcm4che-osgi-conf-prefs</module>
   </modules>
 </project>

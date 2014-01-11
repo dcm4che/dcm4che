@@ -74,6 +74,7 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.AAssociateRQ;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractDicomService;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
@@ -110,7 +111,7 @@ public class StgCmtSCU {
 
     private final HashSet<String> outstandingResults = new HashSet<String>(2);
     private final DicomService stgcmtResultHandler =
-            new DicomService(UID.StorageCommitmentPushModelSOPClass) {
+            new AbstractDicomService(UID.StorageCommitmentPushModelSOPClass) {
 
              @Override
              public void onDimseRQ(Association as, PresentationContext pc,

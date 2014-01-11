@@ -47,12 +47,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che.util.Property;
@@ -61,7 +64,7 @@ import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * 
  */
 public class ImageWriterFactory implements Serializable {
 
@@ -86,17 +89,16 @@ public class ImageWriterFactory implements Serializable {
 
         public ImageWriterParam(String formatName, String className,
                 String patchJPEGLS, String[] imageWriteParams) {
-            this(formatName, className, 
-                    patchJPEGLS != null && !patchJPEGLS.isEmpty()
-                            ? PatchJPEGLS.valueOf(patchJPEGLS)
-                            : null,
-                    Property.valueOf(imageWriteParams));
+            this(formatName, className, patchJPEGLS != null
+                    && !patchJPEGLS.isEmpty() ? PatchJPEGLS
+                    .valueOf(patchJPEGLS) : null, Property
+                    .valueOf(imageWriteParams));
         }
 
         public Property[] getImageWriteParams() {
             return imageWriteParams;
         }
-     }
+    }
 
     private static String nullify(String s) {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;
@@ -105,8 +107,7 @@ public class ImageWriterFactory implements Serializable {
     private static ImageWriterFactory defaultFactory;
 
     private PatchJPEGLS patchJPEGLS;
-    private final HashMap<String, ImageWriterParam> map = 
-            new HashMap<String, ImageWriterParam>();
+    private final HashMap<String, ImageWriterParam> map = new HashMap<String, ImageWriterParam>();
 
     public static ImageWriterFactory getDefault() {
         if (defaultFactory == null)
@@ -134,7 +135,8 @@ public class ImageWriterFactory implements Serializable {
             factory.load(name);
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Failed to load Image Writer Factory configuration from: " + name, e);
+                    "Failed to load Image Writer Factory configuration from: "
+                            + name, e);
         }
         return factory;
     }
@@ -161,9 +163,8 @@ public class ImageWriterFactory implements Serializable {
         props.load(in);
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             String[] ss = StringUtils.split((String) entry.getValue(), ':');
-             map.put((String) entry.getKey(),
-                    new ImageWriterParam(ss[0], ss[1], ss[2],
-                            StringUtils.split(ss[3], ';')));
+            map.put((String) entry.getKey(), new ImageWriterParam(ss[0], ss[1],
+                    ss[2], StringUtils.split(ss[3], ';')));
         }
     }
 
@@ -179,8 +180,7 @@ public class ImageWriterFactory implements Serializable {
         return map.get(tsuid);
     }
 
-    public ImageWriterParam put(String tsuid,
-            ImageWriterParam param) {
+    public ImageWriterParam put(String tsuid, ImageWriterParam param) {
         return map.put(tsuid, param);
     }
 
@@ -201,23 +201,56 @@ public class ImageWriterFactory implements Serializable {
     }
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
-        Iterator<ImageWriter> iter =
-                ImageIO.getImageWritersByFormatName(param.formatName);
-        if (!iter.hasNext())
+
+        // ImageWriterSpi are laoded through the java ServiceLoader,
+        // istead of imageio ServiceRegistry
+        Iterator<ImageWriterSpi> iter = ServiceLoader
+                .load(ImageWriterSpi.class).iterator();
+
+        try {
+
+            if (iter != null && iter.hasNext()) {
+
+                String className = param.className;
+                if (className == null)
+                    return iter.next().createWriterInstance();
+
+                do {
+                    ImageWriterSpi writerspi = iter.next();
+                    if (supportsFormat(writerspi.getFormatNames(),
+                            param.formatName)) {
+
+                        ImageWriter writer = writerspi.createWriterInstance();
+
+                        if (writer.getClass().getName().equals(className))
+                            return writer;
+                    }
+                } while (iter.hasNext());
+            }
+
             throw new RuntimeException("No Image Writer for format: "
                     + param.formatName + " registered");
 
-        String className = param.className;
-        if (className == null)
-            return iter.next();
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Error instantiating Writer for format: "
+                            + param.formatName);
+        }
+    }
 
-        do {
-            ImageWriter reader = iter.next();
-            if (reader.getClass().getName().equals(className))
-                return reader;
-        } while (iter.hasNext());
+    private static boolean supportsFormat(String[] supportedFormats,
+            String format) {
+        boolean supported = false;
 
-        throw new RuntimeException("Image Writer: " + className
-                + " not registered");
+        if (format != null && supportedFormats != null) {
+            
+            for (int i = 0; i < supportedFormats.length; i++)
+                if (supportedFormats[i] != null
+                        && supportedFormats[i].trim().equalsIgnoreCase(
+                                format.trim()))
+                    supported = true;
+        }
+        
+        return supported;
     }
 }

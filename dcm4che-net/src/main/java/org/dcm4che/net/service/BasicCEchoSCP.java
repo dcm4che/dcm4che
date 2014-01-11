@@ -52,7 +52,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCEchoSCP extends DicomService {
+public class BasicCEchoSCP extends AbstractDicomService {
 
     public BasicCEchoSCP() {
         super(UID.VerificationSOPClass);

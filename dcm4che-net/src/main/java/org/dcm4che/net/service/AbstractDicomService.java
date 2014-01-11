@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,73 +36,56 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net;
+package org.dcm4che.net.service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.io.IOException;
+
+import org.dcm4che.data.Attributes;
+import org.dcm4che.net.Association;
+import org.dcm4che.net.Dimse;
+import org.dcm4che.net.PDVInputStream;
+import org.dcm4che.net.pdu.PresentationContext;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class DeviceService implements DeviceServiceInterface
-{
+public abstract class AbstractDicomService implements DicomService {
 
-    protected Device device;
-    protected ExecutorService executor;
-    protected ScheduledExecutorService scheduledExecutor;
+    private final String[] sopClasses;
 
-    protected void init(Device device) {
-        setDevice(device);
+    protected AbstractDicomService(String... sopClasses) {
+        this.sopClasses = sopClasses.clone();
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
+    @Override
+    public final String[] getSOPClasses() {
+        return sopClasses;
     }
 
-    public Device getDevice() {
-        return device;
+    @Override
+    public void onClose(Association as) {
+        // NOOP
     }
 
-    public boolean isRunning() {
-        return executor != null;
+    @Override
+    public void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, PDVInputStream data) throws IOException {
+        onDimseRQ(as, pc, dimse, cmd, readDataset(pc, data));
     }
 
-    public void start() throws Exception {
-        if (device == null)
-            throw new IllegalStateException("Not initialized");
-        if (executor != null)
-            throw new IllegalStateException("Already started");
-        executor = executerService();
-        scheduledExecutor = scheduledExecuterService();
-        try {
-            device.setExecutor(executor);
-            device.setScheduledExecutor(scheduledExecutor);
-            device.bindConnections();
-        } catch (Exception e) {
-            stop();
-            throw e;
-        }
+    private Attributes readDataset(PresentationContext pc, PDVInputStream data)
+            throws IOException {
+        if (data == null)
+            return null;
+
+        Attributes dataset = data.readDataset(pc.getTransferSyntax());
+        Dimse.LOG.debug("Dataset:\n{}", dataset);
+        return dataset;
     }
 
-    public void stop() {
-        if (device != null)
-            device.unbindConnections();
-        if (scheduledExecutor != null)
-            scheduledExecutor.shutdown();
-        if (executor != null)
-            executor.shutdown();
-        executor = null;
-        scheduledExecutor = null;
-    }
+    protected abstract void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, Attributes data) throws IOException;
 
-    protected ExecutorService executerService() {
-        return Executors.newCachedThreadPool();
-    }
-
-    protected ScheduledExecutorService scheduledExecuterService() {
-        return Executors.newSingleThreadScheduledExecutor();
-    }
 
 }

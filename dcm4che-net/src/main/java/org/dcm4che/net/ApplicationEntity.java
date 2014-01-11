@@ -676,4 +676,12 @@ public class ApplicationEntity implements Serializable {
     public <T extends AEExtension> T getAEExtension(Class<T> clazz) {
         return (T) extensions.get(clazz);
     }
+
+    public <T extends AEExtension> T getAEExtensionNotNull(Class<T> clazz) {
+        T aeExt = getAEExtension(clazz);
+        if (aeExt == null)
+            throw new IllegalStateException("No " + clazz.getName()
+                    + " configured for AE: " + aet);
+        return aeExt;
+    }
 }

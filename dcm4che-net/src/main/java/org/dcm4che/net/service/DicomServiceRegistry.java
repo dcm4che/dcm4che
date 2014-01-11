@@ -44,7 +44,6 @@ import java.util.HashMap;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.Tag;
 import org.dcm4che.net.Association;
-import org.dcm4che.net.AssociationStateException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseRQHandler;
 import org.dcm4che.net.PDVInputStream;
@@ -58,16 +57,25 @@ import org.dcm4che.net.pdu.PresentationContext;
  */
 public class DicomServiceRegistry implements DimseRQHandler {
 
-    private final HashMap<String, DicomService> services =
-            new HashMap<String, DicomService>();
+    private final HashMap<String, DimseRQHandler> services =
+            new HashMap<String, DimseRQHandler>();
 
-    public synchronized void addDicomService(DicomService service) {
-        for (String uid : service.getSOPClasses())
+    public void addDicomService(DicomService service) {
+        addDimseRQHandler(service, service.getSOPClasses());
+    }
+
+    public synchronized void addDimseRQHandler(DimseRQHandler service,
+            String... sopClasses) {
+        for (String uid : sopClasses)
             services.put(uid, service);
     }
 
-    public synchronized void removeDicomService(DicomService service) {
-        for (String uid : service.getSOPClasses())
+    public void removeDicomService(DicomService service) {
+        removeDimseRQHandler(service.getSOPClasses());
+    }
+
+    public synchronized void removeDimseRQHandler(String... sopClasses) {
+        for (String uid : sopClasses)
             services.remove(uid);
     }
 
@@ -77,23 +85,22 @@ public class DicomServiceRegistry implements DimseRQHandler {
         try {
             lookupService(as, dimse, cmd).onDimseRQ(as, pc, dimse, cmd, data);
         } catch (DicomServiceException e) {
+            Association.LOG.info("{}: processing {} failed:",
+                    as,
+                    dimse.toString(cmd, pc.getPCID(), pc.getTransferSyntax()),
+                    e);
             Attributes rsp = e.mkRSP(dimse.commandFieldOfRSP(), cmd.getInt(Tag.MessageID, 0));
-            try {
-                as.writeDimseRSP(pc, rsp, e.getDataset());
-            } catch (AssociationStateException ase) {
-                Association.LOG.warn("{} << DIMSE-RSP failed: {}",
-                        as, ase.getMessage());
-            }
+            as.tryWriteDimseRSP(pc, rsp, e.getDataset());
         }
     }
 
-    private DicomService lookupService(Association as, Dimse dimse, Attributes cmd)
+    private DimseRQHandler lookupService(Association as, Dimse dimse, Attributes cmd)
             throws DicomServiceException {
         String cuid = cmd.getString(dimse.tagOfSOPClassUID());
         if (cuid == null)
             throw new DicomServiceException(Status.MistypedArgument);
 
-        DicomService service = services.get(cuid);
+        DimseRQHandler service = services.get(cuid);
         if (service != null)
             return service;
 
@@ -122,7 +129,7 @@ public class DicomServiceRegistry implements DimseRQHandler {
 
     @Override
     public void onClose(Association as) {
-        for (DicomService service : services.values())
+        for (DimseRQHandler service : services.values())
             service.onClose(as);
     }
 

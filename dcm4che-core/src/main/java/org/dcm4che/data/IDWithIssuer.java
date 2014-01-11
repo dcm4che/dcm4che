@@ -36,40 +36,80 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.service;
+package org.dcm4che.data;
 
-import java.io.IOException;
-import java.util.Collections;
-
-import org.dcm4che.data.Attributes;
-import org.dcm4che.net.Association;
-import org.dcm4che.net.Dimse;
-import org.dcm4che.net.Status;
-import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.util.StringUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
-public class BasicCMoveSCP extends AbstractDicomService {
+public class IDWithIssuer {
 
-    public BasicCMoveSCP(String... sopClasses) {
-        super(sopClasses);
+    public static final IDWithIssuer[] EMPTY = {};
+
+    private final String id;
+    private Issuer issuer;
+
+    public IDWithIssuer(String id, Issuer issuer) {
+        this.id = id;
+        this.setIssuer(issuer);
+    }
+
+    public IDWithIssuer(String id, String issuer) {
+        this.id = id;
+        this.setIssuer(issuer != null ? new Issuer(issuer, '&') : null);
+    }
+
+    public IDWithIssuer(String cx) {
+        String[] ss = StringUtils.split(cx, '^');
+        this.id = ss[0];
+        this.setIssuer(ss.length > 3 ? new Issuer(ss[3], '&') : null);
+    }
+
+    public final String getID() {
+        return id;
+    }
+
+    public final Issuer getIssuer() {
+        return issuer;
+    }
+
+    public final void setIssuer(Issuer issuer) {
+        this.issuer = issuer;
     }
 
     @Override
-    public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
-            Attributes rq, Attributes keys) throws IOException {
-        if (dimse != Dimse.C_MOVE_RQ)
-            throw new DicomServiceException(Status.UnrecognizedOperation);
-
-        RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
-        as.getApplicationEntity().getDevice().execute(retrieveTask);
+    public String toString() {
+        return getIssuer() == null ? id : id + "^^^" + getIssuer().toString('&');
     }
 
-    protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
-            Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(BasicRetrieveTask.Service.C_MOVE,
-                as, pc, rq, Collections.<InstanceLocator>emptyList());
+    public Attributes toPatientIDWithIssuer(Attributes attrs) {
+        if (attrs == null)
+            attrs = new Attributes(3);
+
+        attrs.setString(Tag.PatientID, VR.LO, id);
+        if (getIssuer() == null)
+            return attrs;
+
+        return getIssuer().toIssuerOfPatientID(attrs);
     }
+
+    public static IDWithIssuer valueOf(Attributes attrs, int idTag,
+            int issuerSeqTag) {
+        String id = attrs.getString(idTag);
+        if (id == null)
+            return null;
+
+        return new IDWithIssuer(id,
+                Issuer.valueOf(attrs.getNestedDataset(issuerSeqTag)));
+    }
+
+    public static IDWithIssuer fromPatientIDWithIssuer(Attributes attrs) {
+        String id = attrs.getString(Tag.PatientID);
+        if (id == null)
+            return null;
+
+        return new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
+    }
+
 }

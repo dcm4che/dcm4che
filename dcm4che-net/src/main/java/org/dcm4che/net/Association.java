@@ -164,6 +164,15 @@ public class Association {
         return properties != null ? properties.get(key) : null;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(Class<T> clazz) {
+        return (T) getProperty(clazz.getName());
+    }
+
+    public void setProperty(Object value) {
+        setProperty(value.getClass().getName(), value);
+    }
+
     public boolean containsProperty(String key) {
         return properties != null && properties.containsKey(key);
     }

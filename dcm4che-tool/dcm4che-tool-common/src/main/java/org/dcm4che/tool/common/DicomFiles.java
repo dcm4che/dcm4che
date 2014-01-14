@@ -102,12 +102,10 @@ public abstract class DicomFiles {
                 Attributes fmi = in.readFileMetaInformation();
                 long dsPos = in.getPosition();
                 Attributes ds = in.readDataset(-1, Tag.PixelData);
-                if (fmi == null)
-                    fmi = ds.createFileMetaInformation(!in.explicitVR() 
-                                ? UID.ImplicitVRLittleEndian
-                                : in.bigEndian()
-                                        ? UID.ExplicitVRBigEndian
-                                        : UID.ExplicitVRLittleEndian);
+                if (fmi == null || !fmi.containsValue(Tag.TransactionUID)
+                        || !fmi.containsValue(Tag.MediaStorageSOPClassUID)
+                        || !fmi.containsValue(Tag.MediaStorageSOPInstanceUID))
+                    fmi = ds.createFileMetaInformation(in.getTransferSyntax());
                 boolean b = scb.dicomFile(f, fmi, dsPos, ds);
                 System.out.print(b ? '.' : 'I');
             } catch (Exception e) {

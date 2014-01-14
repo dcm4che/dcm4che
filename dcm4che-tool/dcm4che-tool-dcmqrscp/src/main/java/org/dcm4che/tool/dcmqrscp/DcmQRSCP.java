@@ -85,13 +85,13 @@ import org.dcm4che.net.Status;
 import org.dcm4che.net.TransferCapability;
 import org.dcm4che.net.pdu.ExtendedNegotiation;
 import org.dcm4che.net.pdu.PresentationContext;
+import org.dcm4che.net.service.AbstractDicomService;
 import org.dcm4che.net.service.BasicCEchoSCP;
 import org.dcm4che.net.service.BasicCFindSCP;
 import org.dcm4che.net.service.BasicCGetSCP;
 import org.dcm4che.net.service.BasicCMoveSCP;
 import org.dcm4che.net.service.BasicCStoreSCP;
 import org.dcm4che.net.service.BasicRetrieveTask;
-import org.dcm4che.net.service.DicomService;
 import org.dcm4che.net.service.DicomServiceException;
 import org.dcm4che.net.service.DicomServiceRegistry;
 import org.dcm4che.net.service.InstanceLocator;
@@ -177,7 +177,7 @@ public class DcmQRSCP {
         }
     };
 
-    private final class StgCmtSCPImpl extends DicomService {
+    private final class StgCmtSCPImpl extends AbstractDicomService {
 
         public StgCmtSCPImpl() {
             super(UID.StorageCommitmentPushModelSOPClass);

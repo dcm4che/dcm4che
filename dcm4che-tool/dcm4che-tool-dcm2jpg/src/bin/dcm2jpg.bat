@@ -49,9 +49,9 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.3.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.3.0-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar"
 set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar"
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.5.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
 
 rem Setup jai-imageio native library path

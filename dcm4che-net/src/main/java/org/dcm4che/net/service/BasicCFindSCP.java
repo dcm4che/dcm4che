@@ -50,7 +50,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCFindSCP extends DicomService {
+public class BasicCFindSCP extends AbstractDicomService {
 
     public BasicCFindSCP(String... sopClasses) {
         super(sopClasses);

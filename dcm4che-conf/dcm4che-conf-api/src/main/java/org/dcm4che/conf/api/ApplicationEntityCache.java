@@ -44,7 +44,7 @@ import org.dcm4che.net.ApplicationEntity;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class ApplicationEntityCache
-        extends ConfigurationCache<DicomConfiguration,ApplicationEntity> {
+        extends ConfigurationCache<DicomConfiguration,ApplicationEntity> implements IApplicationEntityCache {
 
     public ApplicationEntityCache(DicomConfiguration conf) {
         super(conf);
@@ -56,12 +56,12 @@ public class ApplicationEntityCache
         return conf.findApplicationEntity(key);
     }
 
-    public ApplicationEntity findApplicationEntity(String remoteAET)
+    public ApplicationEntity findApplicationEntity(String aet)
             throws ConfigurationException {
-        ApplicationEntity ae = get(remoteAET);
+        ApplicationEntity ae = get(aet);
         if (ae == null)
             throw new ConfigurationNotFoundException(
-                    "Unknown AE: " + remoteAET);
+                    "Unknown AE: " + aet);
         return ae;
     }
 }

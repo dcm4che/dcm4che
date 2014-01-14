@@ -376,7 +376,7 @@ public class FindSCU {
     private static void configureOutput(FindSCU main, CommandLine cl) {
         if (cl.hasOption("out-dir"))
             main.setOutputDirectory(new File(cl.getOptionValue("out-dir")));
-        main.setOutputFileFormat(cl.getOptionValue("out-file", "000.dcm"));
+        main.setOutputFileFormat(cl.getOptionValue("out-file", "000'.dcm'"));
         main.setConcatenateOutputFiles(cl.hasOption("out-cat"));
         main.setXML(cl.hasOption("X"));
         if (cl.hasOption("x")) {

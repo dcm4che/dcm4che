@@ -54,6 +54,10 @@ public class DeviceService implements DeviceServiceInterface
     protected ScheduledExecutorService scheduledExecutor;
 
     protected void init(Device device) {
+        setDevice(device);
+    }
+
+    public void setDevice(Device device) {
         this.device = device;
     }
 

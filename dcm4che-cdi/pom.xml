@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-parent</artifactId>
+    <version>3.3.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>dcm4che-cdi-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>dcm4che-cdi-parent</name>
+  <description>Sample C-ECHO SCP deployable in CDI container</description>
+  <dependencyManagement>
+    <dependencies>
+      <!-- Define the version of JBoss' Java EE 6 APIs we want to use -->
+      <!-- JBoss distributes a complete set of Java EE 6 APIs including a 
+        Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or a 
+        collection) of artifacts. We use this here so that we always get the correct 
+        versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
+        this as the JBoss stack of the Java EE 6 APIs). You can actually use this 
+        stack with any version of JBoss AS that implements Java EE 6, not just JBoss 
+        AS 7! -->
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-6.0</artifactId>
+        <version>3.0.1.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.enterprise</groupId>
+        <artifactId>cdi-api</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <modules>
+    <module>dcm4che-cdi-conf-prefs</module>
+    <module>dcm4che-cdi-conf-ldap</module>
+    <module>dcm4che-cdi-device</module>
+    <module>dcm4che-cdi-echo</module>
+    <module>dcm4che-cdi-war</module>
+    <module>dcm4che-cdi-rest</module>
+    <module>dcm4che-cdi-ear</module>
+  </modules>
+</project>

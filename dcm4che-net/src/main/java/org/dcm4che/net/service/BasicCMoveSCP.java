@@ -51,7 +51,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCMoveSCP extends DicomService {
+public class BasicCMoveSCP extends AbstractDicomService {
 
     public BasicCMoveSCP(String... sopClasses) {
         super(sopClasses);

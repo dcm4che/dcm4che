@@ -1,0 +1,14 @@
+<blueprint
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+  xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
+
+  <!-- the service this bundle is exposing (the Device Service) -->
+  <service id="dicomConfiguration"
+    interface="org.dcm4che.conf.api.DicomConfiguration"
+    ref="prefConf" />
+
+  <bean id="prefConf"
+    class="org.dcm4che.conf.prefs.PreferencesDicomConfiguration"
+    activation="eager"/>
+</blueprint>

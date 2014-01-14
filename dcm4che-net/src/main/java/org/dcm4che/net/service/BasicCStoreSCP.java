@@ -52,9 +52,12 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCStoreSCP extends DicomService {
+public class BasicCStoreSCP extends AbstractDicomService {
 
-    
+    public BasicCStoreSCP() {
+        super("*");
+    }
+
     public BasicCStoreSCP(String... sopClasses) {
         super(sopClasses);
     }
@@ -73,6 +76,12 @@ public class BasicCStoreSCP extends DicomService {
     protected void store(Association as, PresentationContext pc, Attributes rq,
             PDVInputStream data, Attributes rsp) throws IOException {
         //NOOP
+    }
+
+    @Override
+    protected void onDimseRQ(Association as, PresentationContext pc,
+            Dimse dimse, Attributes cmd, Attributes data) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
 }

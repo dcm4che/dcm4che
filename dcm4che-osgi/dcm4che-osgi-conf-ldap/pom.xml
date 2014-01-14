@@ -1,0 +1,43 @@
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.dcm4che</groupId>
+        <artifactId>dcm4che-osgi-parent</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>dcm4che-osgi-conf-ldap</artifactId>
+    <packaging>bundle</packaging>
+    <description>Sample Dicom Configuration</description>
+    <properties>
+        <skipTests>true</skipTests>
+        <ldap>slapd</ldap>
+    </properties>
+    <build>    
+        <filters>
+            <filter>src/main/filters/${ldap}.properties</filter>
+        </filters>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering> 
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.dcm4che</groupId>
+            <artifactId>dcm4che-conf-ldap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

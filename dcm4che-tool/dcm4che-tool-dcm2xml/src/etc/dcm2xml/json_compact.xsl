@@ -257,7 +257,7 @@
     </xsl:template>
 
     <xsl:template match="BulkData">
-        <xsl:text>",BulkDataURI":"</xsl:text>
+        <xsl:text>,"BulkDataURI":"</xsl:text>
         <xsl:value-of select="@uri"/>
         <xsl:text>"</xsl:text>
     </xsl:template>

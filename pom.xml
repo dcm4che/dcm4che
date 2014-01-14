@@ -73,6 +73,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -109,6 +110,10 @@
     <module>dcm4che-jboss-modules</module>
     <module>dcm4che-servlet</module>
     <module>dcm4che-osgi</module>
+    <module>dcm4che-camel</module>
+    <module>dcm4che-karaf</module>
+    <module>dcm4che-cdi</module>
+    <module>dcm4che-ws-rs</module>
   </modules>
   <distributionManagement>
     <repository>
@@ -128,4 +133,25 @@
       <url>http://repository.jboss.org/nexus/content/groups/public</url>
     </repository>
   </repositories>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.5</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>

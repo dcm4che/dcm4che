@@ -51,7 +51,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicCGetSCP extends DicomService {
+public class BasicCGetSCP extends AbstractDicomService {
 
     public BasicCGetSCP(String... sopClasses) {
         super(sopClasses);

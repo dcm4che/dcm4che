@@ -52,7 +52,7 @@ import org.dcm4che.net.pdu.PresentationContext;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicMPPSSCP extends DicomService {
+public class BasicMPPSSCP extends AbstractDicomService {
 
     public BasicMPPSSCP() {
         super(UID.ModalityPerformedProcedureStepSOPClass);

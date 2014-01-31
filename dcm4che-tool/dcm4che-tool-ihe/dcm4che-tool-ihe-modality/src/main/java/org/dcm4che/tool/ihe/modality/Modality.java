@@ -136,6 +136,8 @@ public class Modality {
             String tmpSuffix = null;
             File tmpDir = null;
             configureTmpFile(storescu, tmpPrefix, tmpSuffix, tmpDir, cl);
+            String mppsiuid = UIDUtils.createUID();
+            mppsscu.setPPSUID(mppsiuid);
             if(cl.hasOption("kos-title")) {
                 List<String> fname = Arrays.asList(mkkos(cl));
                 scanFiles(fname, tmpPrefix, tmpSuffix, tmpDir, mppsscu, storescu, stgcmtscu);
@@ -145,8 +147,6 @@ public class Modality {
                 mppsscu.setUIDSuffix(cl.getOptionValue("uid-suffix"));
                 scanFiles(cl.getArgList(), tmpPrefix, tmpSuffix, tmpDir, mppsscu, storescu, stgcmtscu);
             }
-            String mppsiuid = UIDUtils.createUID();
-            mppsscu.setPPSUID(mppsiuid);
             ExecutorService executorService =
                     Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService =

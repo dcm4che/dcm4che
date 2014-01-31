@@ -1831,15 +1831,19 @@ public class Attributes implements Serializable {
 
 
     public boolean addAll(Attributes other) {
-        return add(other, null, null, 0, 0, false, false, null);
+        return add(other, null, null, 0, 0, false, false, false, null);
     }
 
     public boolean merge(Attributes other) {
-        return add(other, null, null, 0, 0, true, false, null);
+        return add(other, null, null, 0, 0, true, false, false, null);
+    }
+
+    public boolean testMerge(Attributes other) {
+        return add(other, null, null, 0, 0, true, false, true, null);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, false, false, null);
+        return add(other, selection.tags, null, 0, selection.size, false, false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -1885,7 +1889,7 @@ public class Attributes implements Serializable {
      */
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, selection, null, fromIndex, toIndex, false, false, null);
+        return add(other, selection, null, fromIndex, toIndex, false, false, false, null);
     }
 
     /**
@@ -1899,11 +1903,23 @@ public class Attributes implements Serializable {
      * @return <tt>true</tt> if one ore more attributes were added
      */
     public boolean mergeSelected(Attributes other, int... selection) {
-        return add(other, selection, null, 0, selection.length, true, false, null);
+        return add(other, selection, null, 0, selection.length, true, false, false, null);
+    }
+
+    /**
+     * Tests if {@link #mergeSelected} would modify attributes, without actually
+     * modifying this attributes
+     * 
+     * @param other the other Attributes object
+     * @param selection sorted tag values
+     * @return <tt>true</tt> if one ore more attributes would have been added
+     */
+    public boolean testMergeSelected(Attributes other, int... selection) {
+        return add(other, selection, null, 0, selection.length, true, false, true, null);
     }
 
     public boolean addNotSelected(Attributes other, Attributes selection) {
-        return add(other, null, selection.tags, 0, selection.size, false, false, null);
+        return add(other, null, selection.tags, 0, selection.size, false, false, false, null);
     }
 
     /**
@@ -1932,12 +1948,12 @@ public class Attributes implements Serializable {
      */
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, null, selection, fromIndex, toIndex, false, false, null);
+        return add(other, null, selection, fromIndex, toIndex, false, false, false, null);
     }
 
     private boolean add(Attributes other, int[] include, int[] exclude,
             int fromIndex, int toIndex, boolean merge, boolean update,
-            Attributes modified) {
+            boolean simulate, Attributes modified) {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
@@ -2003,21 +2019,27 @@ public class Attributes implements Serializable {
                     }
                 }
             }
-            if (value instanceof Sequence) {
-                set(privateCreator, tag, (Sequence) value);
-            } else if (value instanceof Fragments) {
-                set(privateCreator, tag, (Fragments) value);
-            } else {
-                set(privateCreator, tag, vr,
-                        toggleEndian(vr, value, toggleEndian));
+            if (!simulate) {
+                if (value instanceof Sequence) {
+                    set(privateCreator, tag, (Sequence) value);
+                } else if (value instanceof Fragments) {
+                    set(privateCreator, tag, (Fragments) value);
+                } else {
+                    set(privateCreator, tag, vr,
+                            toggleEndian(vr, value, toggleEndian));
+                }
             }
             numAdd++;
-        }
+       }
         return numAdd != 0;
     }
 
     public boolean update(Attributes newAttrs, Attributes modified) {
-        return add(newAttrs, null, null, 0, 0, false, true, modified);
+        return add(newAttrs, null, null, 0, 0, false, true, false, modified);
+    }
+
+    public boolean testUpdate(Attributes newAttrs, Attributes modified) {
+        return add(newAttrs, null, null, 0, 0, false, true, true, modified);
     }
 
     /**
@@ -2034,9 +2056,27 @@ public class Attributes implements Serializable {
      * @return <tt>true</tt> if one ore more attribute were added or
      *          overwritten with a different value
      */
-    public boolean updateSelected(Attributes newAttrs, Attributes modified,
+    public boolean updateSelected(Attributes newAttrs,
+            Attributes modified, int... selection) {
+        return add(newAttrs, selection, null, 0, selection.length, false, true,
+                false, modified);
+    }
+
+    /**
+     * Tests if {@link #updateSelected} would modify attributes, without actually
+     * modifying this attributes
+     * 
+     * @param newAttrs the other Attributes object
+     * @param modified Attributes object to collect overwritten non-empty
+     *          attributes with original values or <tt>null</tt>
+     * @param includes sorted tag values
+     * @return <tt>true</tt> if one ore more attribute would be added or
+     *          overwritten with a different value
+     */
+    public boolean testUpdateSelected(Attributes newAttrs, Attributes modified,
             int... selection) {
-        return add(newAttrs, selection, null, 0, selection.length, false, true, modified);
+        return add(newAttrs, selection, null, 0, selection.length, false, true,
+                true, modified);
     }
 
     private static Object toggleEndian(VR vr, Object value, boolean toggleEndian) {

@@ -129,6 +129,7 @@ public class Connection implements Serializable {
     private int maxOpsInvoked = SYNCHRONOUS_MODE;
     private boolean packPDV = true;
     private boolean tcpNoDelay = true;
+    private boolean keepAlive = false;
     private boolean tlsNeedClientAuth = true;
     private String[] tlsCipherSuites = {};
     private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
@@ -593,6 +594,27 @@ public class Connection implements Serializable {
     }
 
     /**
+     * Determine if this network connection is using SO_KEEPALIVE as part
+     * of its network communication.
+     * 
+     * @return boolean True if SO_KEEPALIVE is used.
+     */
+    public final boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    /**
+     * Set whether or not this network connection should use SO_KEEPALIVE
+     * as part of its network communication.
+     * 
+     * @param keepAlive
+     *            boolean True if SO_KEEPALIVE should be used.
+     */
+    public final void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    /**
      * True if the Network Connection is installed on the network. If not
      * present, information about the installed status of the Network Connection
      * is inherited from the device.
@@ -684,6 +706,9 @@ public class Connection implements Serializable {
         }
         if (s.getTcpNoDelay() != tcpNoDelay) {
             s.setTcpNoDelay(tcpNoDelay);
+        }
+        if (s.getKeepAlive() != keepAlive) {
+            s.setKeepAlive(keepAlive);
         }
     }
 
@@ -1066,6 +1091,7 @@ public class Connection implements Serializable {
         setMaxOpsPerformed(from.maxOpsInvoked);
         setPackPDV(from.packPDV);
         setTcpNoDelay(from.tcpNoDelay);
+        setKeepAlive(from.keepAlive);
         setTlsNeedClientAuth(from.tlsNeedClientAuth);
         setTlsCipherSuites(from.tlsCipherSuites);
         setTlsProtocols(from.tlsProtocols);

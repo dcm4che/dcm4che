@@ -46,13 +46,14 @@ import org.dcm4che.hl7.HL7Exception;
 import org.dcm4che.hl7.HL7Segment;
 import org.dcm4che.net.Connection;
 import org.dcm4che.net.hl7.HL7Application;
+import org.dcm4che.net.hl7.DefaultHL7MessageListener;
 import org.dcm4che.net.hl7.HL7MessageListener;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class HL7ServiceRegistry extends HL7MessageListener {
+public class HL7ServiceRegistry extends DefaultHL7MessageListener {
 
     private final ArrayList<HL7Service> services = new ArrayList<HL7Service>();
     private final HashMap<String,HL7MessageListener> listeners =

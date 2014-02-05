@@ -36,15 +36,25 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.net.hl7.service;
+package org.dcm4che.net.hl7;
 
-import org.dcm4che.net.hl7.HL7MessageListener;
+import java.net.Socket;
+
+import org.dcm4che.hl7.HL7Exception;
+import org.dcm4che.hl7.HL7Message;
+import org.dcm4che.hl7.HL7Segment;
+import org.dcm4che.net.Connection;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface HL7Service extends HL7MessageListener {
+public class DefaultHL7MessageListener implements HL7MessageListener {
 
-    String[] getMessageTypes();
+    @Override
+    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s,
+            HL7Segment msh, byte[] msg, int off, int len, int mshlen)
+                    throws HL7Exception {
+        return HL7Message.makeACK(msh, HL7Exception.AA, null).getBytes(null);
+    }
 }

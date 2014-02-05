@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011-2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,13 +38,23 @@
 
 package org.dcm4che.net.hl7.service;
 
-import org.dcm4che.net.hl7.HL7MessageListener;
+import org.dcm4che.net.hl7.DefaultHL7MessageListener;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface HL7Service extends HL7MessageListener {
+public class DefaultHL7Service extends DefaultHL7MessageListener
+    implements HL7Service {
 
-    String[] getMessageTypes();
+    private final String[] messageTypes;
+
+    public DefaultHL7Service(String... messageTypes) {
+        this.messageTypes = messageTypes;
+    }
+
+    @Override
+    public String[] getMessageTypes() {
+        return messageTypes;
+    }
 }

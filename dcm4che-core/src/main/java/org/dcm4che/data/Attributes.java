@@ -68,8 +68,13 @@ import org.xml.sax.SAXException;
  */
 public class Attributes implements Serializable {
 
+    /**
+     * @see {@link #accept}
+     */
     public interface Visitor {
-        void visit(Attributes attrs, int tag, VR vr, Object value);
+        /**
+         */
+        boolean visit(Attributes attrs, int tag, VR vr, Object value);
     }
 
     private static final Logger LOG = 
@@ -2388,10 +2393,27 @@ public class Attributes implements Serializable {
         }
     }
 
-    public void accept(Visitor visitor) {
+    /**
+     * Invokes {@link Visitor.visit} for each attribute in this instance. The
+     * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
+     * 
+     * @param visitor
+     * @param visitNestedDatasets controls if <code>visitor.visit()</code>
+     *  is also invoked for attributes in nested datasets
+     * @return <code>true</code> if the operation was not aborted.
+     */
+    public boolean accept(Visitor visitor, boolean visitNestedDatasets) {
         for (int i = 0; i < size; i++) {
-            visitor.visit(this, tags[i], vrs[i], values[i]);
+            if (!visitor.visit(this, tags[i], vrs[i], values[i]))
+                return false;
+            if (visitNestedDatasets && (values[i] instanceof Sequence)) {
+                for (Attributes item : (Sequence) values[i]) {
+                    if (!item.accept(visitor, true))
+                        return false;
+                }
+            }
         }
+        return true;
     }
 
     public void writeGroupTo(DicomOutputStream out, int groupLengthTag)

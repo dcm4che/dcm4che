@@ -68,12 +68,7 @@ import org.xml.sax.SAXException;
  */
 public class Attributes implements Serializable {
 
-    /**
-     * @see {@link #accept}
-     */
     public interface Visitor {
-        /**
-         */
         boolean visit(Attributes attrs, int tag, VR vr, Object value);
     }
 

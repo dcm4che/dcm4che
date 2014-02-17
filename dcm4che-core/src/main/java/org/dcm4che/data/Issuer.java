@@ -191,11 +191,16 @@ public class Issuer implements Serializable {
     }
 
     public String toString(char delim) {
-        return universalEntityID == null
-            ? localNamespaceEntityID
-            : (localNamespaceEntityID == null ? "" : localNamespaceEntityID) + delim
-                        + universalEntityID  + delim
-                        + universalEntityIDType;
+        if (universalEntityID == null)
+            return localNamespaceEntityID;
+        StringBuilder sb = new StringBuilder();
+        if (localNamespaceEntityID != null)
+            sb.append(localNamespaceEntityID);
+        sb.append(delim);
+        sb.append(universalEntityID);
+        sb.append(delim);
+        sb.append(universalEntityIDType);
+        return sb.toString();
     }
 
     public Attributes toItem() {

@@ -157,9 +157,12 @@ public class Modality {
             try {
                 boolean sendMpps = cl.hasOption("mpps");
                 boolean sendLateMpps = cl.hasOption("mpps-late");
-                if (sendMpps || sendLateMpps)
+                if (sendMpps || sendLateMpps) {
                     sendMpps(mppsscu, sendMpps);
-                addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
+                    addReferencedPerformedProcedureStepSequence(mppsiuid, storescu);
+                } else {
+                    nullifyReferencedPerformedProcedureStepSequence(storescu);
+                }
                 sendObjects(storescu);
                 if (sendLateMpps)
                     sendMppsNSet(mppsscu);
@@ -201,13 +204,18 @@ public class Modality {
     }
 
     private static void addReferencedPerformedProcedureStepSequence(String mppsiuid,
-            StoreSCU storescu) throws IOException {
+            StoreSCU storescu) {
         Attributes attrs = storescu.getAttributes();
         Sequence seq = attrs.newSequence(Tag.ReferencedPerformedProcedureStepSequence, 1);
         Attributes item = new Attributes(2);
         item.setString(Tag.ReferencedSOPClassUID, VR.UI, UID.ModalityPerformedProcedureStepSOPClass);
         item.setString(Tag.ReferencedSOPInstanceUID, VR.UI, mppsiuid);
         seq.add(item);
+    }
+
+    private static void nullifyReferencedPerformedProcedureStepSequence(StoreSCU storescu) {
+        Attributes attrs = storescu.getAttributes();
+        attrs.setNull(Tag.ReferencedPerformedProcedureStepSequence, VR.SQ);
     }
 
     @SuppressWarnings("unchecked")

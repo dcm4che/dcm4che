@@ -3,7 +3,7 @@
 # ianscu  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.ianscu.IanSCU
+MAIN_CLASS=org.dcm4che3.tool.ianscu.IanSCU
 MAIN_JAR=dcm4che-tool-ianscu-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

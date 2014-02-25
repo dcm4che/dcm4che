@@ -5,10 +5,10 @@
 
   <!-- the service this bundle is exposing (the Device Service) -->
   <service id="dicomConfiguration"
-    interface="org.dcm4che.conf.api.DicomConfiguration"
+    interface="org.dcm4che3.conf.api.DicomConfiguration"
     ref="prefConf" />
 
   <bean id="prefConf"
-    class="org.dcm4che.conf.prefs.PreferencesDicomConfiguration"
+    class="org.dcm4che3.conf.prefs.PreferencesDicomConfiguration"
     activation="eager"/>
 </blueprint>

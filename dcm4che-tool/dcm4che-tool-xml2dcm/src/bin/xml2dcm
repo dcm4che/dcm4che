@@ -3,7 +3,7 @@
 # xml2dcm  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.xml2dcm.Xml2Dcm
+MAIN_CLASS=org.dcm4che3.tool.xml2dcm.Xml2Dcm
 MAIN_JAR=dcm4che-tool-xml2dcm-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

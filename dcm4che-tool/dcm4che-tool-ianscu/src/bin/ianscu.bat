@@ -6,7 +6,7 @@ rem -------------------------------------------------------------------------
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che.tool.ianscu.IanSCU
+set MAIN_CLASS=org.dcm4che3.tool.ianscu.IanSCU
 set MAIN_JAR=dcm4che-tool-ianscu-3.3.0-SNAPSHOT.jar
 
 set DIRNAME=.\

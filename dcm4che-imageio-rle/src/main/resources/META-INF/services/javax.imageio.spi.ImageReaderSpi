@@ -1,1 +1,1 @@
-org.dcm4che.imageio.plugins.rle.RLEImageReaderSpi
+org.dcm4che3.imageio.plugins.rle.RLEImageReaderSpi

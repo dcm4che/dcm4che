@@ -3,7 +3,7 @@
 # dcm2dcm  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcm2dcm.Dcm2Dcm
+MAIN_CLASS=org.dcm4che3.tool.dcm2dcm.Dcm2Dcm
 MAIN_JAR=dcm4che-tool-dcm2dcm-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

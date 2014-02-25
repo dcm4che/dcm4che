@@ -79,7 +79,7 @@
           </execution>
         </executions>
         <configuration>
-          <packageName>org.dcm4che.audit</packageName>
+          <packageName>org.dcm4che3.audit</packageName>
           <bindingFiles>bindings.xml</bindingFiles>
         </configuration>
       </plugin>

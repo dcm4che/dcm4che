@@ -5,12 +5,12 @@
 
   <!-- this is the service this bundle is exposing (the Device Service) -->
   <service id="echoDevice"
-    interface="org.dcm4che.sample.osgi.device.EchoDeviceService"
+    interface="org.dcm4che3.sample.osgi.device.EchoDeviceService"
     ref="echoDeviceImpl" />
 
   <!-- this is the java class implementing the Echo Device Service -->
   <bean id="echoDeviceImpl"
-    class="org.dcm4che.sample.osgi.device.impl.EchoDeviceServiceImpl"
+    class="org.dcm4che3.sample.osgi.device.impl.EchoDeviceServiceImpl"
     init-method="init"
     destroy-method="destroy"
     activation="eager">
@@ -20,6 +20,6 @@
 
   <!-- this is the configuration bundle, which get injected in the DicomDevice -->
   <reference id="dicomConfig"
-    interface="org.dcm4che.conf.api.DicomConfiguration" />
+    interface="org.dcm4che3.conf.api.DicomConfiguration" />
 
 </blueprint>

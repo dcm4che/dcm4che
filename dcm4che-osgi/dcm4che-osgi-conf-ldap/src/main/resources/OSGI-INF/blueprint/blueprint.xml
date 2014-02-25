@@ -5,13 +5,13 @@
 
   <!-- the service this bundle is exposing (the Device Service) -->
   <service id="dicomConfiguration"
-    interface="org.dcm4che.conf.api.DicomConfiguration"
+    interface="org.dcm4che3.conf.api.DicomConfiguration"
     ref="ldapConf" />
 
   <!-- factory returning an implementation of the Echo Device Service -->
   <!-- NOTE: specific ldap properties are defined in filters under src/main/filters -->
   <bean id="ldapConf"
-    class="org.dcm4che.conf.ldap.LdapDicomConfiguration"
+    class="org.dcm4che3.conf.ldap.LdapDicomConfiguration"
     activation="eager">
     <argument>
       <props>

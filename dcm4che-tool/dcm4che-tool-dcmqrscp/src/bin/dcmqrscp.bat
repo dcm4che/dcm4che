@@ -6,7 +6,7 @@ rem -------------------------------------------------------------------------
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che.tool.dcmqrscp.DcmQRSCP
+set MAIN_CLASS=org.dcm4che3.tool.dcmqrscp.DcmQRSCP
 set MAIN_JAR=dcm4che-tool-dcmqrscp-3.3.0-SNAPSHOT.jar
 
 set DIRNAME=.\

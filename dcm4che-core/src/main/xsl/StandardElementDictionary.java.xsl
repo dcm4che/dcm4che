@@ -81,7 +81,7 @@
  * This file is generated from Part 6 and 7 of the Standard Text Edition 2011.
  */
  
-package org.dcm4che.data;
+package org.dcm4che3.data;
 
 /**
  * @author Gunter Zeilinger &lt;gunterze@gmail.com&gt;

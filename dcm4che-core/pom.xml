@@ -119,7 +119,7 @@
                 <include>elements.xml</include>
               </includes>
               <stylesheet>src/main/xsl/Keyword.java.xsl</stylesheet>
-              <outputDir>target/generated-java/org/dcm4che/data</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -133,7 +133,7 @@
                 <include>elements.xml</include>
               </includes>
               <stylesheet>src/main/xsl/Tag.java.xsl</stylesheet>
-              <outputDir>target/generated-java/org/dcm4che/data</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -147,7 +147,7 @@
                 <include>elements.xml</include>
               </includes>
               <stylesheet>src/main/xsl/StandardElementDictionary.java.xsl</stylesheet>
-              <outputDir>target/generated-java/org/dcm4che/data</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -161,7 +161,7 @@
                 <include>uids.xml</include>
               </includes>
               <stylesheet>src/main/xsl/UIDNames.properties.xsl</stylesheet>
-              <outputDir>target/generated-resources/org/dcm4che/data</outputDir>
+              <outputDir>target/generated-resources/org/dcm4che3/data</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -175,7 +175,7 @@
                 <include>uids.xml</include>
               </includes>
               <stylesheet>src/main/xsl/UID.java.xsl</stylesheet>
-              <outputDir>target/generated-java/org/dcm4che/data</outputDir>
+              <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">

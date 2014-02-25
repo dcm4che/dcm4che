@@ -3,7 +3,7 @@
 # ianscp  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.ianscp.IanSCP
+MAIN_CLASS=org.dcm4che3.tool.ianscp.IanSCP
 MAIN_JAR=dcm4che-tool-ianscp-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

@@ -3,7 +3,7 @@
 # hl72xml  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.hl72xml.HL72Xml
+MAIN_CLASS=org.dcm4che3.tool.hl72xml.HL72Xml
 MAIN_JAR=dcm4che-tool-hl72xml-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

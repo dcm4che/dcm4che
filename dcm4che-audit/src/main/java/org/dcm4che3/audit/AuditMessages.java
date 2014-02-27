@@ -89,6 +89,22 @@ public class AuditMessages {
         return IP4.matcher(s).matches() || IP6.matcher(s).matches();
     }
 
+    /**
+     * Enumerated Value: C = (create) if the receiver did not hold 
+     * copies of the instances transferred 
+     * 
+     * R = (read) if the receiver already holds copies of the SOP 
+     * Instances transferred, and has determined that no changes are 
+     * needed to the copies held. 
+     * 
+     * U = (update) if the receiver is altering its held copies 
+     * to reconcile differences between the held copies and the received copies. 
+     * 
+     * If the Audit Source is either not the receiver, or otherwise does not 
+     * know whether or not the instances previously were held by the receiving 
+     * node, then use “R” = (Read). 
+     *
+     */
     public static final class EventActionCode {
         public static final String Create = "C";
         public static final String Read = "R";

@@ -463,10 +463,14 @@ public class AuditLogger extends DeviceExtension {
 
     public void write(Calendar timeStamp, AuditMessage message)
             throws IncompatibleConnectionException, GeneralSecurityException {
-        connection().send(timeStamp, message);
+        getActiveConnection().send(timeStamp, message);
+    }
+    
+    public Connection getRemoteActiveConnection()  throws IncompatibleConnectionException {
+        return getActiveConnection().remoteConn;
     }
 
-    private ActiveConnection connection()
+    private ActiveConnection getActiveConnection()
             throws IncompatibleConnectionException {
         ActiveConnection activeConnection = this.activeConnection;
         if (activeConnection != null)

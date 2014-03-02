@@ -3,7 +3,7 @@
 # modality  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.ihe.modality.Modality
+MAIN_CLASS=org.dcm4che3.tool.ihe.modality.Modality
 MAIN_JAR=dcm4che-tool-ihe-modality-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

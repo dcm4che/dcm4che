@@ -3,7 +3,7 @@
 # dcm2jpg  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcm2jpg.Dcm2Jpg
+MAIN_CLASS=org.dcm4che3.tool.dcm2jpg.Dcm2Jpg
 MAIN_JAR=dcm4che-tool-dcm2jpg-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

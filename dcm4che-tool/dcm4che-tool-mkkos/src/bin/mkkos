@@ -3,7 +3,7 @@
 # mkkos  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.mkkos.MkKOS
+MAIN_CLASS=org.dcm4che3.tool.mkkos.MkKOS
 MAIN_JAR=dcm4che-tool-mkkos-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

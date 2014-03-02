@@ -4,7 +4,7 @@
 
     <!-- this is the java class implementing the Echo Dicom Service -->
     <bean id="echoServiceImpl"
-        class="org.dcm4che.sample.osgi.echo.impl.CEchoSCPImpl"
+        class="org.dcm4che3.sample.osgi.echo.impl.CEchoSCPImpl"
         init-method="init"
         destroy-method="destroy"
         activation="eager">
@@ -12,6 +12,6 @@
     </bean>
 
     <reference id="echoDeviceService"
-        interface="org.dcm4che.sample.osgi.device.EchoDeviceService" />
+        interface="org.dcm4che3.sample.osgi.device.EchoDeviceService" />
 
 </blueprint>

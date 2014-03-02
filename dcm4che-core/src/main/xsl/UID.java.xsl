@@ -81,7 +81,7 @@
  * This file is generated from Part 6 of the Standard Text Edition 2011.
  */
  
-package org.dcm4che.data;
+package org.dcm4che3.data;
 
 import java.util.ResourceBundle;
 
@@ -91,7 +91,7 @@ import java.util.ResourceBundle;
 public class UID {
 
     private static final ResourceBundle rb = 
-            ResourceBundle.getBundle("org.dcm4che.data.UIDNames");
+            ResourceBundle.getBundle("org.dcm4che3.data.UIDNames");
 
     public static String nameOf(String uid) {
         try {

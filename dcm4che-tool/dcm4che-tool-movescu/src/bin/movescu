@@ -3,7 +3,7 @@
 # movescu  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.movescu.MoveSCU
+MAIN_CLASS=org.dcm4che3.tool.movescu.MoveSCU
 MAIN_JAR=dcm4che-tool-movescu-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

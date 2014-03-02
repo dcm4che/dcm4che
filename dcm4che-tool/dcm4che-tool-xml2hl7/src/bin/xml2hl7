@@ -3,7 +3,7 @@
 # xml2hl7  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.xml2hl7.Xml2HL7
+MAIN_CLASS=org.dcm4che3.tool.xml2hl7.Xml2HL7
 MAIN_JAR=dcm4che-tool-xml2hl7-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

@@ -3,7 +3,7 @@
 # emf2sf  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.emf2sf.Emf2sf
+MAIN_CLASS=org.dcm4che3.tool.emf2sf.Emf2sf
 MAIN_JAR=dcm4che-tool-emf2sf-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

@@ -3,7 +3,7 @@
 # hl7snd  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.hl7snd.HL7Snd
+MAIN_CLASS=org.dcm4che3.tool.hl7snd.HL7Snd
 MAIN_JAR=dcm4che-tool-hl7snd-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

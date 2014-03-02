@@ -3,7 +3,7 @@
 # hl7rcv  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.hl7rcv.HL7Rcv
+MAIN_CLASS=org.dcm4che3.tool.hl7rcv.HL7Rcv
 MAIN_JAR=dcm4che-tool-hl7rcv-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

@@ -3,7 +3,7 @@
 # dcmdump  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.tool.dcmdump.DcmDump
+MAIN_CLASS=org.dcm4che3.tool.dcmdump.DcmDump
 MAIN_JAR=dcm4che-tool-dcmdump-3.3.0-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

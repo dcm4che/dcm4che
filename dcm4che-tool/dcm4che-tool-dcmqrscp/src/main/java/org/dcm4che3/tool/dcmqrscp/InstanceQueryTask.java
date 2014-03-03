@@ -84,7 +84,7 @@ class InstanceQueryTask extends SeriesQueryTask {
         try {
             findNextInstance();
         } catch (IOException e) {
-            throw wrapException(Status.UnableToProcess, e);
+            throw new DicomServiceException(Status.UnableToProcess, e);
         }
     }
 

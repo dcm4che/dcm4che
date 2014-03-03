@@ -107,7 +107,7 @@ class PatientQueryTask extends BasicQueryTask {
         try {
             findNextPatient();
         } catch (IOException e) {
-            throw wrapException(Status.UnableToProcess, e);
+            throw new DicomServiceException(Status.UnableToProcess, e);
         }
     }
 

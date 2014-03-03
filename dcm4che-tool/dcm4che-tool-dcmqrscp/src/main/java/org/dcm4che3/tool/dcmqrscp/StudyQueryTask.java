@@ -79,7 +79,7 @@ class StudyQueryTask extends PatientQueryTask {
         try {
             findNextStudy();
         } catch (IOException e) {
-            throw wrapException(Status.UnableToProcess, e);
+            throw new DicomServiceException(Status.UnableToProcess, e);
         }
     }
 

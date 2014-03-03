@@ -83,7 +83,7 @@ class SeriesQueryTask extends StudyQueryTask {
         try {
             findNextSeries();
         } catch (IOException e) {
-            throw wrapException(Status.UnableToProcess, e);
+            throw new DicomServiceException(Status.UnableToProcess, e);
         }
     }
 

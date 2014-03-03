@@ -59,12 +59,22 @@ public class BasicQueryTask implements QueryTask {
     protected final Attributes rq;
     protected final Attributes keys;
     protected volatile boolean canceled;
+    protected boolean optionalKeysNotSupported = false;
 
-    public BasicQueryTask(Association as, PresentationContext pc, Attributes rq, Attributes keys) {
+    public BasicQueryTask(Association as, PresentationContext pc,
+            Attributes rq, Attributes keys) {
         this.as = as;
         this.pc = pc;
         this.rq = rq;
         this.keys = keys;
+    }
+
+    public boolean isOptionalKeysNotSupported() {
+        return optionalKeysNotSupported;
+    }
+
+    public void setOptionalKeysNotSupported(boolean optionalKeysNotSupported) {
+        this.optionalKeysNotSupported = optionalKeysNotSupported;
     }
 
     @Override
@@ -81,7 +91,7 @@ public class BasicQueryTask implements QueryTask {
                 while (!canceled && hasMoreMatches()) {
                     Attributes match = adjust(nextMatch());
                     if (match != null) {
-                        int status = optionalKeyNotSupported(match)
+                        int status = optionalKeysNotSupported
                                 ? Status.PendingWarning
                                 : Status.Pending;
                         as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status), match);
@@ -125,16 +135,5 @@ public class BasicQueryTask implements QueryTask {
         }
         filtered.addSelected(match, keys);
         return filtered;
-    }
-
-    protected boolean optionalKeyNotSupported(Attributes match) {
-        Attributes notSupported = new Attributes(keys.size());
-        notSupported.addNotSelected(keys, match);
-        notSupported.remove(Tag.SpecificCharacterSet);
-        return !notSupported.isEmpty();
-    }
-
-    protected DicomServiceException wrapException(int status, Throwable e) {
-        return new DicomServiceException(status, e);
     }
 }

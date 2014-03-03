@@ -198,7 +198,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     @Override
     public <T> T getDicomConfigurationExtension(Class<T> clazz) {
         for (LdapDicomConfigurationExtension ext : extensions) {
-            if (clazz.isInstance(ext.getClass()))
+            if (clazz.isInstance(ext))
                 return (T) ext;
         }
         return null;

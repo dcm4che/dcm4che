@@ -143,6 +143,13 @@ public class Attributes implements Serializable {
         addSelected(other, selection);
     }
 
+    public Attributes(Attributes other, boolean bigEndian, Attributes selection) {
+        this(bigEndian, selection.size());
+        if (other.properties != null)
+            properties = new HashMap<String, Object>(other.properties);
+        addSelected(other, selection);
+    }
+
     public Object getProperty(String key, Object defVal) {
         if (properties == null)
             return defVal;
@@ -1725,11 +1732,11 @@ public class Attributes implements Serializable {
         setDateRange(privateCreator, tmTag, VR.TM, range);
     }
 
-    public Object setValue(int tag, VR vr, Value value) {
+    public Object setValue(int tag, VR vr, Object value) {
         return setValue(null, tag, vr, value);
     }
 
-    public Object setValue(String privateCreator, int tag, VR vr, Value value) {
+    public Object setValue(String privateCreator, int tag, VR vr, Object value) {
         return set(privateCreator, tag, vr, value != null ? value : Value.NULL);
     }
 
@@ -1833,19 +1840,19 @@ public class Attributes implements Serializable {
 
 
     public boolean addAll(Attributes other) {
-        return add(other, null, null, 0, 0, false, false, false, null);
+        return add(other, null, null, 0, 0, null, false, false, false, null);
     }
 
     public boolean merge(Attributes other) {
-        return add(other, null, null, 0, 0, true, false, false, null);
+        return add(other, null, null, 0, 0, null, true, false, false, null);
     }
 
     public boolean testMerge(Attributes other) {
-        return add(other, null, null, 0, 0, true, false, true, null);
+        return add(other, null, null, 0, 0, null, true, false, true, null);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, false, false, false, null);
+        return add(other, selection.tags, null, 0, selection.size, selection, false, false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -1854,7 +1861,7 @@ public class Attributes implements Serializable {
             return false;
         Object value = other.values[index];
         if (value instanceof Sequence) {
-            set(privateCreator, tag, (Sequence) value);
+            set(privateCreator, tag, (Sequence) value, null);
         } else if (value instanceof Fragments) {
             set(privateCreator, tag, (Fragments) value);
         } else {
@@ -1891,7 +1898,7 @@ public class Attributes implements Serializable {
      */
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, selection, null, fromIndex, toIndex, false, false, false, null);
+        return add(other, selection, null, fromIndex, toIndex, null, false, false, false, null);
     }
 
     /**
@@ -1905,7 +1912,7 @@ public class Attributes implements Serializable {
      * @return <tt>true</tt> if one ore more attributes were added
      */
     public boolean mergeSelected(Attributes other, int... selection) {
-        return add(other, selection, null, 0, selection.length, true, false, false, null);
+        return add(other, selection, null, 0, selection.length, null, true, false, false, null);
     }
 
     /**
@@ -1917,11 +1924,7 @@ public class Attributes implements Serializable {
      * @return <tt>true</tt> if one ore more attributes would have been added
      */
     public boolean testMergeSelected(Attributes other, int... selection) {
-        return add(other, selection, null, 0, selection.length, true, false, true, null);
-    }
-
-    public boolean addNotSelected(Attributes other, Attributes selection) {
-        return add(other, null, selection.tags, 0, selection.size, false, false, false, null);
+        return add(other, selection, null, 0, selection.length, null, true, false, true, null);
     }
 
     /**
@@ -1950,12 +1953,12 @@ public class Attributes implements Serializable {
      */
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, null, selection, fromIndex, toIndex, false, false, false, null);
+        return add(other, null, selection, fromIndex, toIndex, null, false, false, false, null);
     }
 
     private boolean add(Attributes other, int[] include, int[] exclude,
-            int fromIndex, int toIndex, boolean merge, boolean update,
-            boolean simulate, Attributes modified) {
+            int fromIndex, int toIndex, Attributes selection, boolean merge,
+            boolean update, boolean simulate, Attributes modified) {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
@@ -2010,7 +2013,7 @@ public class Attributes implements Serializable {
                         }
                         if (modified != null) {
                             if (origValue instanceof Sequence) {
-                                modified.set(privateCreator, tag, (Sequence) origValue);
+                                modified.set(privateCreator, tag, (Sequence) origValue, null);
                             } else if (origValue instanceof Fragments) {
                                 modified.set(privateCreator, tag, (Fragments) origValue);
                             } else {
@@ -2023,7 +2026,10 @@ public class Attributes implements Serializable {
             }
             if (!simulate) {
                 if (value instanceof Sequence) {
-                    set(privateCreator, tag, (Sequence) value);
+                    set(privateCreator, tag, (Sequence) value,
+                            selection != null 
+                                ? selection.getNestedDataset(tag)
+                                : null);
                 } else if (value instanceof Fragments) {
                     set(privateCreator, tag, (Fragments) value);
                 } else {
@@ -2037,11 +2043,11 @@ public class Attributes implements Serializable {
     }
 
     public boolean update(Attributes newAttrs, Attributes modified) {
-        return add(newAttrs, null, null, 0, 0, false, true, false, modified);
+        return add(newAttrs, null, null, 0, 0, null, false, true, false, modified);
     }
 
     public boolean testUpdate(Attributes newAttrs, Attributes modified) {
-        return add(newAttrs, null, null, 0, 0, false, true, true, modified);
+        return add(newAttrs, null, null, 0, 0, null, false, true, true, modified);
     }
 
     /**
@@ -2060,7 +2066,7 @@ public class Attributes implements Serializable {
      */
     public boolean updateSelected(Attributes newAttrs,
             Attributes modified, int... selection) {
-        return add(newAttrs, selection, null, 0, selection.length, false, true,
+        return add(newAttrs, selection, null, 0, selection.length, null, false, true,
                 false, modified);
     }
 
@@ -2077,8 +2083,8 @@ public class Attributes implements Serializable {
      */
     public boolean testUpdateSelected(Attributes newAttrs, Attributes modified,
             int... selection) {
-        return add(newAttrs, selection, null, 0, selection.length, false, true,
-                true, modified);
+        return add(newAttrs, selection, null, 0, selection.length, null,
+                false, true, true, modified);
     }
 
     private static Object toggleEndian(VR vr, Object value, boolean toggleEndian) {
@@ -2184,10 +2190,13 @@ public class Attributes implements Serializable {
         return h;
     }
 
-    private void set(String privateCreator, int tag, Sequence src) {
+    private void set(String privateCreator, int tag, Sequence src,
+            Attributes selection) {
         Sequence dst = newSequence(privateCreator, tag, src.size());
         for (Attributes item : src)
-            dst.add(new Attributes(item, bigEndian));
+            dst.add(selection != null && !selection.isEmpty()
+                ? new Attributes(item, bigEndian, selection)
+                : new Attributes(item, bigEndian));
     }
 
     private void set(String privateCreator, int tag, Fragments src) {

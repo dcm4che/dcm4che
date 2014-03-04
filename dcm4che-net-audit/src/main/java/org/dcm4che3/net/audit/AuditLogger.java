@@ -284,15 +284,30 @@ public class AuditLogger extends DeviceExtension {
 
     public ActiveParticipant createActiveParticipant(
             boolean requestor, RoleIDCode... roleIDs) {
-        ActiveParticipant ap = new ActiveParticipant();
-        ap.setUserID(processID());
+
         Collection<String> aets = device.getApplicationAETitles();
-        ap.setAlternativeUserID(
+        
+        return createActiveParticipant(requestor, 
+                processID(), 
                 AuditMessages.alternativeUserIDForAETitle(
-                        aets.toArray(new String[aets.size()])));
-        ap.setUserName(applicationName());
+                        aets.toArray(new String[aets.size()])),
+                applicationName(),
+                localHost().getHostName(), 
+                roleIDs);
+    }
+    
+    public ActiveParticipant createActiveParticipant(
+            boolean requestor, 
+            String userID,
+            String alternativeUserID,
+            String userName,
+            String hostName,
+            RoleIDCode... roleIDs) {
+        ActiveParticipant ap = new ActiveParticipant();
+        ap.setUserID(userID);
+        ap.setAlternativeUserID(alternativeUserID);
+        ap.setUserName(userName);
         ap.setUserIsRequestor(requestor);
-        String hostName = localHost().getHostName();
         ap.setNetworkAccessPointID(hostName);
         ap.setNetworkAccessPointTypeCode(AuditMessages.isIP(hostName) 
                 ? AuditMessages.NetworkAccessPointTypeCode.IPAddress

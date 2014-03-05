@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.dcm4che</groupId>
         <artifactId>dcm4che-osgi-parent</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
     </parent>
     <artifactId>dcm4che-osgi-echo</artifactId>
     <packaging>bundle</packaging>

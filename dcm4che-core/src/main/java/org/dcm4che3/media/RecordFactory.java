@@ -53,6 +53,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
+import org.dcm4che3.util.StringUtils;
 import org.xml.sax.SAXException;
 
 /**
@@ -77,9 +78,7 @@ public class RecordFactory {
 
     public void loadDefaultConfiguration() {
         try {
-            loadConfiguration(Thread.currentThread().getContextClassLoader()
-                    .getResource("org/dcm4che3/media/RecordFactory.xml")
-                    .toString());
+            loadConfiguration(StringUtils.getResource("org/dcm4che3/media/RecordFactory.xml", this.getClass()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

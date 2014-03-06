@@ -56,12 +56,14 @@ public class RLEImageReaderSpi extends ImageReaderSpi {
     private static final String vendorName = "org.dcm4che";
     private static final String version = Implementation.getVersionName();
     private static final String[] formatNames = { "rle", "RLE" };
+    private static String[] entensions = { "" };
+    private static String[] mimeType = { "" };
     private static final Class<?>[] inputTypes = { ImageInputStream.class };
 
     public RLEImageReaderSpi() {
         super(vendorName, version, formatNames, 
-                null,  // suffixes
-                null,  // MIMETypes
+            entensions,  // suffixes
+            mimeType,  // MIMETypes
                 RLEImageReader.class.getName(), inputTypes,
                 null,  // writerSpiNames
                 false, // supportsStandardStreamMetadataFormat

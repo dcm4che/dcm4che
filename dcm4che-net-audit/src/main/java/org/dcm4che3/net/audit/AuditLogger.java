@@ -68,6 +68,7 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.audit.impl.DefaultAuditAnswer;
 import org.dcm4che3.util.SafeClose;
 
 /**
@@ -461,9 +462,9 @@ public class AuditLogger extends DeviceExtension {
             : new GregorianCalendar(Locale.ENGLISH);
     }
 
-    public void write(Calendar timeStamp, AuditMessage message)
+    public AuditAnswer write(Calendar timeStamp, AuditMessage message)
             throws IncompatibleConnectionException, GeneralSecurityException {
-        connection().send(timeStamp, message);
+        return connection().send(timeStamp, message);
     }
 
     private ActiveConnection connection()
@@ -553,21 +554,29 @@ public class AuditLogger extends DeviceExtension {
 
         abstract void sendMessage() throws IOException;
 
-        void send(Calendar timeStamp, AuditMessage msg)
+        /**
+         * Collect the message data and send it to the given remote connection
+         * 
+         * @param timeStamp
+         *        the current time
+         * @param msg
+         *        the audit message to send
+         * @return an object describing success or failure of the audit
+         * @throws IncompatibleConnectionException
+         * @throws GeneralSecurityException
+         */
+        AuditAnswer send(Calendar timeStamp, AuditMessage msg)
                 throws IncompatibleConnectionException, GeneralSecurityException {
             reset();
             try {
+                // Collect message data and send it to the given endpoint
                 writeHeader(severityOf(msg), timeStamp);
                 AuditMessages.toXML(msg, this, formatXML, encoding, schemaURI);
-            } catch (IOException e) {
-                throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
-            }
-            try {
                 connect();
                 sendMessage();
+                return DefaultAuditAnswer.createSuccessAnswer(toString());
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                return DefaultAuditAnswer.createFailureAnswer(toString(), e);
             }
         }
 

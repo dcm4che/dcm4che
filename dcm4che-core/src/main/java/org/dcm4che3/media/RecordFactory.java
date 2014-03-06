@@ -53,6 +53,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
+import org.dcm4che3.util.ResourceLocator;
 import org.xml.sax.SAXException;
 
 /**
@@ -77,15 +78,14 @@ public class RecordFactory {
 
     public void loadDefaultConfiguration() {
         try {
-            loadConfiguration(Thread.currentThread().getContextClassLoader()
-                    .getResource("org/dcm4che3/media/RecordFactory.xml")
-                    .toString());
+            loadConfiguration(ResourceLocator.getResource(
+                    "org/dcm4che3/media/RecordFactory.xml", this.getClass()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void loadConfiguration(String uri) 
+    public void loadConfiguration(String uri)
             throws ParserConfigurationException, SAXException, IOException {
         Attributes attrs = parseXML(uri);
         Sequence sq = attrs.getSequence(Tag.DirectoryRecordSequence);
@@ -93,20 +93,17 @@ public class RecordFactory {
             throw new IllegalArgumentException(
                     "Missing Directory Record Sequence in " + uri);
 
-        EnumMap<RecordType, int[]> recordKeys =
-                new EnumMap<RecordType, int[]>(RecordType.class);
-        HashMap<String, RecordType> recordTypes =
-                new HashMap<String, RecordType>(134);
-        HashMap<String, String> privateRecordUIDs =
-                new HashMap<String, String>();
-        HashMap<String, int[]> privateRecordKeys =
-                new HashMap<String, int[]>();
+        EnumMap<RecordType, int[]> recordKeys = new EnumMap<RecordType, int[]>(
+                RecordType.class);
+        HashMap<String, RecordType> recordTypes = new HashMap<String, RecordType>(
+                134);
+        HashMap<String, String> privateRecordUIDs = new HashMap<String, String>();
+        HashMap<String, int[]> privateRecordKeys = new HashMap<String, int[]>();
         for (Attributes item : sq) {
-            RecordType type = RecordType.forCode(
-                    item.getString(Tag.DirectoryRecordType, null));
-            String privuid = type == RecordType.PRIVATE 
-                    ? item.getString(Tag.PrivateRecordUID, null)
-                    : null;
+            RecordType type = RecordType.forCode(item.getString(
+                    Tag.DirectoryRecordType, null));
+            String privuid = type == RecordType.PRIVATE ? item.getString(
+                    Tag.PrivateRecordUID, null) : null;
             String[] cuids = item.getStrings(Tag.ReferencedSOPClassUIDInFile);
             if (cuids != null) {
                 if (type != RecordType.PRIVATE) {
@@ -136,8 +133,8 @@ public class RecordFactory {
         EnumSet<RecordType> missingTypes = EnumSet.allOf(RecordType.class);
         missingTypes.removeAll(recordKeys.keySet());
         if (!missingTypes.isEmpty())
-            throw new IllegalArgumentException(
-                    "Missing Record Types: " + missingTypes);
+            throw new IllegalArgumentException("Missing Record Types: "
+                    + missingTypes);
         this.recordTypes = recordTypes;
         this.recordKeys = recordKeys;
         this.privateRecordUIDs = privateRecordUIDs;
@@ -214,7 +211,7 @@ public class RecordFactory {
     }
 
     public Attributes createRecord(RecordType type, String privRecUID,
-                Attributes dataset, Attributes fmi, String[] fileIDs) {
+            Attributes dataset, Attributes fmi, String[] fileIDs) {
         if (type == null)
             throw new NullPointerException("type");
         if (dataset == null)
@@ -234,8 +231,7 @@ public class RecordFactory {
         }
         if (keys == null)
             keys = recordKeys.get(type);
-        Attributes rec = new Attributes(
-                keys.length + (fileIDs != null ? 9 : 5));
+        Attributes rec = new Attributes(keys.length + (fileIDs != null ? 9 : 5));
         rec.setInt(Tag.OffsetOfTheNextDirectoryRecord, VR.UL, 0);
         rec.setInt(Tag.RecordInUseFlag, VR.US, IN_USE);
         rec.setInt(Tag.OffsetOfReferencedLowerLevelDirectoryEntity, VR.UL, 0);
@@ -255,14 +251,14 @@ public class RecordFactory {
         Sequence contentSeq = dataset.getSequence(Tag.ContentSequence);
         if (contentSeq != null)
             copyConceptMod(contentSeq, rec);
-        return rec ;
+        return rec;
     }
 
     private void copyConceptMod(Sequence srcSeq, Attributes rec) {
         Sequence dstSeq = null;
         for (Attributes item : srcSeq) {
-            if ("HAS CONCEPT MOD"
-                    .equals(item.getString(Tag.RelationshipType, null))) {
+            if ("HAS CONCEPT MOD".equals(item.getString(Tag.RelationshipType,
+                    null))) {
                 if (dstSeq == null)
                     dstSeq = rec.newSequence(Tag.ContentSequence, 1);
                 dstSeq.add(new Attributes(item, false));

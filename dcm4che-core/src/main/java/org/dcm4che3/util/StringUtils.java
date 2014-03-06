@@ -283,6 +283,10 @@ public class StringUtils {
     }
 
 
+    /**
+     * @deprecated use {@link ResourceLocator.resourceURL(String)} instead. 
+     */
+    @Deprecated
     public static String resourceURL(String name) {
         ClassLoader tcl = Thread.currentThread().getContextClassLoader();
         URL url = tcl.getResource(name);

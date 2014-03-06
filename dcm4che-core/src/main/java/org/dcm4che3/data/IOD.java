@@ -54,6 +54,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che3.util.ByteUtils;
+import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.xml.sax.SAXException;
@@ -851,8 +852,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
     public static IOD load(String uri) throws IOException {
         if (uri.startsWith("resource:")) {
             try {
-                uri = Thread.currentThread().getContextClassLoader()
-                        .getResource(uri.substring(9)).toString();
+                uri = ResourceLocator.getResource(uri.substring(9), IOD.class);
             } catch (NullPointerException npe) {
                 throw new FileNotFoundException(uri);
             }

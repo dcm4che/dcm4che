@@ -59,6 +59,7 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 
@@ -132,8 +133,7 @@ public class ImageReaderFactory implements Serializable {
         try {
             url = new URL(name);
         } catch (MalformedURLException e) {
-            url = Thread.currentThread().getContextClassLoader()
-                    .getResource(name);
+            url = ResourceLocator.getResourceURL(name, this.getClass());
             if (url == null)
                 throw new IOException("No such resource: " + name);
         }

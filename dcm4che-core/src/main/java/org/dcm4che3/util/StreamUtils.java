@@ -149,8 +149,7 @@ public class StreamUtils {
 
     public static InputStream openFileOrURL(String name) throws IOException {
         if (name.startsWith("resource:")) {
-            URL url = Thread.currentThread().getContextClassLoader()
-                    .getResource(name.substring(9));
+            URL url = ResourceLocator.getResourceURL(name.substring(9), StreamUtils.class);
             if (url == null)
                 throw new FileNotFoundException(name);
             return url.openStream();

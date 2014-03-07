@@ -155,15 +155,15 @@ public class HL7Pix extends Device {
         String appAtHostPort = cl.getOptionValue("c");
         if (appAtHostPort == null)
             throw new MissingOptionException(
-                    rb.getString("missing-connect-opt"));
+                    CLIUtils.rb.getString("missing-connect-opt"));
 
         String[] appHostPort = HL7Segment.split(appAtHostPort , '@');
-        if (appHostPort.length == 1)
-            throw new ParseException(rb.getString("invalid-connect-opt"));
+        if (appHostPort.length != 2)
+            throw new ParseException(CLIUtils.rb.getString("invalid-connect-opt"));
 
         String[] hostPort = HL7Segment.split(appHostPort[1], ':');
-        if (hostPort.length == 1)
-            throw new ParseException(rb.getString("invalid-connect-opt"));
+        if (hostPort.length != 2)
+            throw new ParseException(CLIUtils.rb.getString("invalid-connect-opt"));
 
         hl7pix.setReceivingApplication(appHostPort[0]);
         hl7pix.remote.setHostname(hostPort[0]);

@@ -114,6 +114,7 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 	private void store(String deviceDN, T confObj) throws NamingException {
 
 		Attributes attrs = storeTo(confObj, new BasicAttributes(true));
+		attrs.put(new BasicAttribute("cn", commonName));
 		config.createSubcontext(getCnStr() + deviceDN, attrs);
 
 	}
@@ -121,7 +122,6 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 	private Attributes storeTo(T confObj, final Attributes attrs) {
 
 		attrs.put(new BasicAttribute("objectclass", ((ConfigClass) confClass.getAnnotation(ConfigClass.class)).objectClass()));
-		attrs.put(new BasicAttribute("cn", commonName));
 
 
 		ConfigWriter ldapWriter = new LdapConfigWriter(attrs);

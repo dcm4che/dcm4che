@@ -52,201 +52,212 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Roman K
  * 
- * @param <T>
- *            The class that contains actual configuration properties
  */
 public class ReflectiveConfig {
 
-	 public static final Logger log = LoggerFactory.getLogger(ReflectiveConfig.class);
+    public static final Logger log = LoggerFactory
+	    .getLogger(ReflectiveConfig.class);
 
-	/**
-	 * Used by reflective config writer, should implement storage type-specific
-	 * methods
-	 * 
-	 * @author Roman K
-	 */
-	public interface ConfigWriter {
-		void storeNotDef(String propName, Object value, String def);
+    /**
+     * Used by reflective config writer, should implement storage type-specific
+     * methods
+     * 
+     * @author Roman K
+     */
+    public interface ConfigWriter {
+	void storeNotDef(String propName, Object value, String def);
 
-		void storeNotEmpty(String propName, Object value);
+	void storeNotEmpty(String propName, Object value);
 
-		void storeNotNull(String propName, Object value);
+	void storeNotNull(String propName, Object value);
+    }
+
+    /**
+     * Used by reflective config reader, should implement storage type-specific
+     * methods
+     * 
+     * @author Roman K
+     */
+    public interface ConfigReader {
+
+	String[] asStringArray(String propName) throws NamingException;
+
+	int[] asIntArray(String propName) throws NamingException;
+
+	int asInt(String propName, String def) throws NamingException;
+
+	String asString(String propName, String def) throws NamingException;
+
+	boolean asBoolean(String propName, String def) throws NamingException;
+    }
+
+    /**
+     * Used by reflective config diff writer, should implement storage
+     * type-specific methods
+     * 
+     * @author Roman K
+     */
+    public interface DiffWriter {
+	void storeDiff(String propName, Object prev, Object curr);
+    }
+
+    /**
+     * Writes the configuration from the properties of the specified
+     * configuration object into the config storage using the provided writer.
+     * 
+     * @param confObj
+     *            Configuration object
+     * @param writer
+     *            Configuration writer
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     */
+    public static <T> void store(T confObj, ConfigWriter writer)
+	    throws IllegalAccessException, InvocationTargetException,
+	    NoSuchMethodException {
+
+	// look through all fields of the config obj, not including
+	// superclass fields
+	for (Field field : confObj.getClass().getDeclaredFields()) {
+
+	    // if field is not annotated, skip it
+	    ConfigField fieldAnno = (ConfigField) field
+		    .getAnnotation(ConfigField.class);
+	    if (fieldAnno == null)
+		continue;
+
+	    // read a configuration value using its getter
+	    Object value = PropertyUtils.getSimpleProperty(confObj,
+		    field.getName());
+
+	    // call appropriate store method based on the annotation
+	    switch (fieldAnno.store()) {
+	    case storeNotDef:
+		writer.storeNotDef(fieldAnno.name(), value, fieldAnno.def());
+		break;
+	    case storeNotEmpty:
+		writer.storeNotEmpty(fieldAnno.name(), value);
+		break;
+	    default:
+	    case storeNotNull:
+		writer.storeNotNull(fieldAnno.name(), value);
+	    }
 	}
+    }
 
-	/**
-	 * Used by reflective config reader, should implement storage type-specific
-	 * methods
-	 * 
-	 * @author Roman K
-	 */
-	public interface ConfigReader {
+    /**
+     * Reads the configuration into the properties of the specified
+     * configuration object using the provided reader.
+     * 
+     * @param confObj
+     * @param reader
+     * @throws NamingException
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    public static <T> void read(T confObj, ConfigReader reader)
+	    throws NamingException, IllegalAccessException,
+	    InvocationTargetException, NoSuchMethodException {
+	// look through all fields of the config obj, not including superclass
+	// fields
+	for (Field field : confObj.getClass().getDeclaredFields()) {
 
-		String[] asStringArray(String propName) throws NamingException;
+	    // if field is not annotated, skip it
+	    ConfigField fieldAnno = (ConfigField) field
+		    .getAnnotation(ConfigField.class);
+	    if (fieldAnno == null)
+		continue;
 
-		int[] asIntArray(String propName) throws NamingException;
+	    Object value = null;
+	    Class<?> fieldType = field.getType();
 
-		int asInt(String propName, String def) throws NamingException;
+	    // Determine the class of the field and
+	    // use the corresponding method from the provided reader to get the
+	    // value
 
-		String asString(String propName, String def) throws NamingException;
+	    if (fieldType.isArray()) {
+		if (String.class.isAssignableFrom(fieldType.getComponentType())) {
+		    value = reader.asStringArray(fieldAnno.name());
 
-		boolean asBoolean(String propName, String def) throws NamingException;
-	}
-
-	/**
-	 * Used by reflective config diff writer, should implement storage
-	 * type-specific methods
-	 * 
-	 * @author Roman K
-	 */
-	public interface DiffWriter {
-		void storeDiff(String propName, Object prev, Object curr);
-	}
-
-	/**
-	 * Writes the configuration from the properties of the specified
-	 * configuration object into the config storage using the provided writer.
-	 * 
-	 * @param confObj
-	 *            Configuration object
-	 * @param writer
-	 *            Configuration writer
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
-	 * @throws NoSuchMethodException
-	 */
-	public static <T> void store(T confObj, ConfigWriter writer) throws IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException {
-
-		// look through all fields of the config obj, not including
-		// superclass fields
-		for (Field field : confObj.getClass().getDeclaredFields()) {
-
-			// if field is not annotated, skip it
-			ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-			if (fieldAnno == null)
-				continue;
-
-			// read a configuration value using its getter
-			Object value = PropertyUtils.getSimpleProperty(confObj, field.getName());
-
-			// call appropriate store method based on the annotation
-			switch (fieldAnno.store()) {
-			case storeNotDef:
-				writer.storeNotDef(fieldAnno.name(), value, fieldAnno.def());
-				break;
-			case storeNotEmpty:
-				writer.storeNotEmpty(fieldAnno.name(), value);
-				break;
-			default:
-			case storeNotNull:
-				writer.storeNotNull(fieldAnno.name(), value);
-			}
+		} else if (int.class.isAssignableFrom(fieldType
+			.getComponentType())) {
+		    value = reader.asIntArray(fieldAnno.name());
 		}
-	}
+	    } else if (String.class.isAssignableFrom(fieldType)) {
+		value = reader.asString(fieldAnno.name(), (fieldAnno.def()
+			.equals("") ? null : fieldAnno.def()));
 
-	/**
-	 * Reads the configuration into the properties of the specified
-	 * configuration object using the provided reader.
-	 * 
-	 * @param confObj
-	 * @param reader
-	 * @throws NamingException
-	 * @throws NoSuchMethodException
-	 * @throws InvocationTargetException
-	 * @throws IllegalAccessException
-	 */
-	public static <T> void read(T confObj, ConfigReader reader) throws NamingException, IllegalAccessException, InvocationTargetException,
-			NoSuchMethodException {
-		// look through all fields of the config obj, not including superclass
-		// fields
-		for (Field field : confObj.getClass().getDeclaredFields()) {
+	    } else if (boolean.class.isAssignableFrom(fieldType)) {
+		value = reader.asBoolean(fieldAnno.name(), fieldAnno.def());
 
-			// if field is not annotated, skip it
-			ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-			if (fieldAnno == null)
-				continue;
+	    } else if (int.class.isAssignableFrom(fieldType)) {
+		value = reader.asInt(fieldAnno.name(), fieldAnno.def());
+	    }
 
-			Object value = null;
-			Class<?> fieldType = field.getType();
-
-			// Determine the class of the field and
-			// use the corresponding method from the provided reader to get the
-			// value
-
-			if (fieldType.isArray()) {
-				if (String.class.isAssignableFrom(fieldType.getComponentType())) {
-					value = reader.asStringArray(fieldAnno.name());
-
-				} else if (int.class.isAssignableFrom(fieldType.getComponentType())) {
-					value = reader.asIntArray(fieldAnno.name());
-				}
-			} else if (String.class.isAssignableFrom(fieldType)) {
-				value = reader.asString(fieldAnno.name(), (fieldAnno.def().equals("") ? null : fieldAnno.def()));
-
-			} else if (boolean.class.isAssignableFrom(fieldType)) {
-				value = reader.asBoolean(fieldAnno.name(), fieldAnno.def());
-
-			} else if (int.class.isAssignableFrom(fieldType)) {
-				value = reader.asInt(fieldAnno.name(), fieldAnno.def());
-			}
-
-			// set the property value through its setter
-			PropertyUtils.setSimpleProperty(confObj, field.getName(), value);
-
-		}
-	}
-
-	public static <T> void storeAllDiffs(T prevConfObj, T confObj, DiffWriter ldapDiffWriter) throws IllegalAccessException,
-			InvocationTargetException, NoSuchMethodException {
-
-		// look through all fields of the config class, not including
-		// superclass fields
-		for (Field field : confObj.getClass().getDeclaredFields()) {
-
-			// if field is not annotated, skip it
-			ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-			if (fieldAnno == null)
-				continue;
-
-			Object prev = PropertyUtils.getSimpleProperty(prevConfObj, field.getName());
-			Object curr = PropertyUtils.getSimpleProperty(confObj, field.getName());
-
-			ldapDiffWriter.storeDiff(fieldAnno.name(), prev, curr);
-
-		}
-	}
-
-	/**
-	 * Walk through the <b>from</b> object and for each field annotated with
-	 * 
-	 * @ConfigField, copy the value by using getter/setter to the <b>to</b>
-	 *               object.
-	 * 
-	 * @param from
-	 * @param to
-	 * @throws ConfigurationException 
-	 */
-	public static <T> void reconfigure(T from, T to) {
-
-		// look through all fields of the config class, not including
-		// superclass fields
-		for (Field field : from.getClass().getDeclaredFields()) {
-
-			// if field is not annotated, skip it
-			ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-			if (fieldAnno == null)
-				continue;
-
-			try {
-
-				PropertyUtils.setSimpleProperty(to, field.getName(), PropertyUtils.getSimpleProperty(from, field.getName()));
-
-			} catch (Exception e) {
-				log.error("Unable to reconfigure a device: {}",e);
-			}
-
-		}
+	    // set the property value through its setter
+	    PropertyUtils.setSimpleProperty(confObj, field.getName(), value);
 
 	}
+    }
+
+    public static <T> void storeAllDiffs(T prevConfObj, T confObj,
+	    DiffWriter ldapDiffWriter) throws IllegalAccessException,
+	    InvocationTargetException, NoSuchMethodException {
+
+	// look through all fields of the config class, not including
+	// superclass fields
+	for (Field field : confObj.getClass().getDeclaredFields()) {
+
+	    // if field is not annotated, skip it
+	    ConfigField fieldAnno = (ConfigField) field
+		    .getAnnotation(ConfigField.class);
+	    if (fieldAnno == null)
+		continue;
+
+	    Object prev = PropertyUtils.getSimpleProperty(prevConfObj,
+		    field.getName());
+	    Object curr = PropertyUtils.getSimpleProperty(confObj,
+		    field.getName());
+
+	    ldapDiffWriter.storeDiff(fieldAnno.name(), prev, curr);
+
+	}
+    }
+
+    /**
+     * Walk through the <b>from</b> object and for each field annotated with
+     * 
+     * @ConfigField, copy the value by using getter/setter to the <b>to</b>
+     *               object.
+     * 
+     * @param from
+     * @param to
+     */
+    public static <T> void reconfigure(T from, T to) {
+
+	// look through all fields of the config class, not including
+	// superclass fields
+	for (Field field : from.getClass().getDeclaredFields()) {
+
+	    // if field is not annotated, skip it
+	    ConfigField fieldAnno = (ConfigField) field
+		    .getAnnotation(ConfigField.class);
+	    if (fieldAnno == null)
+		continue;
+
+	    try {
+
+		PropertyUtils.setSimpleProperty(to, field.getName(),
+			PropertyUtils.getSimpleProperty(from, field.getName()));
+
+	    } catch (Exception e) {
+		log.error("Unable to reconfigure a device: {}", e);
+	    }
+
+	}
+
+    }
 
 }

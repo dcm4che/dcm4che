@@ -34,6 +34,8 @@
                                          private key, 'secret' by default
         --key-store-type <storetype>     type of key store containing the
                                          private key, JKS by default
+        --proxy  <[user:password@]host:port> specify host and port of the
+                                         HTTP Proxy to tunnel the HL7 connection.
         --response-timeout <ms>          timeout in ms for receiving
                                          outstanding response messages, no
                                          timeout by default

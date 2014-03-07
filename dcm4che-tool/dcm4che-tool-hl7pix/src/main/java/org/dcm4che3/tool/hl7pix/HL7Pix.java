@@ -131,6 +131,12 @@ public class HL7Pix extends Device {
                 .withDescription(rb.getString("connect"))
                 .withLongOpt("connect")
                 .create("c"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("[user:password@]host:port")
+                .withDescription(rb.getString("proxy"))
+                .withLongOpt("proxy")
+                .create(null));
         CLIUtils.addConnectTimeoutOption(opts);
     }
 
@@ -162,6 +168,7 @@ public class HL7Pix extends Device {
         hl7pix.setReceivingApplication(appHostPort[0]);
         hl7pix.remote.setHostname(hostPort[0]);
         hl7pix.remote.setPort(Integer.parseInt(hostPort[1]));
+        hl7pix.remote.setHttpProxy(cl.getOptionValue("proxy"));
     }
 
     private static void configureBind(HL7Pix hl7pix, CommandLine cl) {

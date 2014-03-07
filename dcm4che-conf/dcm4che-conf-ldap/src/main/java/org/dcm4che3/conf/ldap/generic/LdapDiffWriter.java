@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.generic;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.directory.ModificationItem;
 
@@ -45,9 +45,9 @@ import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.DiffWriter;
 
 public class LdapDiffWriter implements DiffWriter {
-	private final ArrayList<ModificationItem> mods;
+	private final List<ModificationItem> mods;
 
-	public LdapDiffWriter(ArrayList<ModificationItem> mods) {
+	public LdapDiffWriter(List<ModificationItem> mods) {
 		this.mods = mods;
 	}
 

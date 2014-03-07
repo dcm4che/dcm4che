@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
@@ -121,8 +122,14 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 
 	private Attributes storeTo(T confObj, final Attributes attrs) {
 
-		attrs.put(new BasicAttribute("objectclass", ((ConfigClass) confClass.getAnnotation(ConfigClass.class)).objectClass()));
+		String objectClassName = ((ConfigClass) confClass.getAnnotation(ConfigClass.class)).objectClass();
 
+		// add or create objectclass attribute
+		Attribute objectClassAttr = attrs.get("objectclass");
+		if (objectClassAttr != null)
+		    objectClassAttr.add(objectClassName);
+		else
+		    attrs.put(new BasicAttribute("objectclass", objectClassName));
 
 		ConfigWriter ldapWriter = new LdapConfigWriter(attrs);
 
@@ -179,7 +186,7 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 			log.error("{}", e);
 		}
 
-	}
+	}	
 
 	@Override
 	protected void mergeChilds(Device prev, Device device, String deviceDN) throws NamingException {

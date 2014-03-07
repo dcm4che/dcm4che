@@ -102,6 +102,12 @@ public class HL7Snd extends Device {
                 .withDescription(rb.getString("connect"))
                 .withLongOpt("connect")
                 .create("c"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("[user:password@]host:port")
+                .withDescription(rb.getString("proxy"))
+                .withLongOpt("proxy")
+                .create(null));
         CLIUtils.addConnectTimeoutOption(opts);
     }
 
@@ -127,6 +133,7 @@ public class HL7Snd extends Device {
         
         conn.setHostname(hostPort[0]);
         conn.setPort(Integer.parseInt(hostPort[1]));
+        conn.setHttpProxy(cl.getOptionValue("proxy"));
     }
 
     private static void configureBind(Connection conn, CommandLine cl) {

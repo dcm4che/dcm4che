@@ -40,9 +40,12 @@ package org.dcm4che3.conf.api.generic;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+
 import javax.naming.NamingException;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.util.AttributesFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +92,7 @@ public class ReflectiveConfig {
 	String asString(String propName, String def) throws NamingException;
 
 	boolean asBoolean(String propName, String def) throws NamingException;
+
     }
 
     /**
@@ -162,6 +166,7 @@ public class ReflectiveConfig {
 	    InvocationTargetException, NoSuchMethodException {
 	// look through all fields of the config obj, not including superclass
 	// fields
+	
 	for (Field field : confObj.getClass().getDeclaredFields()) {
 
 	    // if field is not annotated, skip it
@@ -194,7 +199,13 @@ public class ReflectiveConfig {
 
 	    } else if (int.class.isAssignableFrom(fieldType)) {
 		value = reader.asInt(fieldAnno.name(), fieldAnno.def());
+		
+	    } else if (AttributesFormat.class.isAssignableFrom(fieldType)) {
+		
+		String strRep = reader.asString(fieldAnno.name(), null);
+		value = AttributesFormat.valueOf(strRep);
 	    }
+		
 
 	    // set the property value through its setter
 	    PropertyUtils.setSimpleProperty(confObj, field.getName(), value);

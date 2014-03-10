@@ -122,10 +122,9 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
                                         attrs.get("dcmIIOFormatName"), null),
                                 LdapUtils.stringValue(
                                         attrs.get("dcmJavaClassName"), null),
-                                LdapUtils.stringValue(
-                                        attrs.get("dcmPhotometricInterpretation"), null),
-                                LdapUtils.stringArray(
-                                        attrs.get("dcmImageWriteParam"))));
+                                        LdapUtils.stringValue(
+                                                attrs.get("dcmPatchJPEGLS"), null),
+                               		LdapUtils.stringArray(attrs.get("dcmImageWriteParam"))));
             }
         } finally {
            LdapUtils.safeClose(ne);

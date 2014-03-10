@@ -87,6 +87,9 @@ public class PreferencesImageWriterConfiguration
         ImageWriterFactory factory = new ImageWriterFactory();
         for (String tsuid : prefs.childrenNames())
             factory.put(tsuid, load(prefs.node(tsuid)));
+
+        device.addDeviceExtension(new ImageWriterExtension(factory));
+
     }
 
     private ImageWriterParam load(Preferences prefs) {

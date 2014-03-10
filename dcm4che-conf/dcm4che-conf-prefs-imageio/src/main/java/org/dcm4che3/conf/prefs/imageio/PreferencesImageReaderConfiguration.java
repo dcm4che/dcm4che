@@ -85,6 +85,8 @@ public class PreferencesImageReaderConfiguration
         ImageReaderFactory factory = new ImageReaderFactory();
         for (String tsuid : prefs.childrenNames())
             factory.put(tsuid, load(prefs.node(tsuid)));
+        
+        device.addDeviceExtension(new ImageReaderExtension(factory));        
     }
 
     private ImageReaderParam load(Preferences prefs) {

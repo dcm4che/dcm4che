@@ -58,8 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ReflectiveConfig {
 
-    public static final Logger log = LoggerFactory
-	    .getLogger(ReflectiveConfig.class);
+    public static final Logger log = LoggerFactory.getLogger(ReflectiveConfig.class);
 
     /**
      * Used by reflective config writer, should implement storage type-specific
@@ -117,36 +116,31 @@ public class ReflectiveConfig {
      * @throws InvocationTargetException
      * @throws NoSuchMethodException
      */
-    public static <T> void store(T confObj, ConfigWriter writer)
-	    throws IllegalAccessException, InvocationTargetException,
-	    NoSuchMethodException {
+    public static <T> void store(T confObj, ConfigWriter writer) throws IllegalAccessException,
+	    InvocationTargetException, NoSuchMethodException {
 
 	// look through all fields of the config obj, not including
 	// superclass fields
 	for (Field field : confObj.getClass().getDeclaredFields()) {
 
 	    // if field is not annotated, skip it
-	    ConfigField fieldAnno = (ConfigField) field
-		    .getAnnotation(ConfigField.class);
+	    ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
 	    if (fieldAnno == null)
 		continue;
 
 	    // read a configuration value using its getter
-	    Object value = PropertyUtils.getSimpleProperty(confObj,
-		    field.getName());
+	    Object value = PropertyUtils.getSimpleProperty(confObj, field.getName());
 
-	    // call appropriate store method based on the annotation
-	    switch (fieldAnno.store()) {
-	    case storeNotDef:
+	    Class<?> fieldType = field.getType();
+
+	    // call appropriate store method based of field type and default value specified
+
+	    if (!fieldAnno.def().equals("N/A"))
 		writer.storeNotDef(fieldAnno.name(), value, fieldAnno.def());
-		break;
-	    case storeNotEmpty:
+	    else if (fieldType.isArray())
 		writer.storeNotEmpty(fieldAnno.name(), value);
-		break;
-	    default:
-	    case storeNotNull:
+	    else
 		writer.storeNotNull(fieldAnno.name(), value);
-	    }
 	}
     }
 
@@ -161,17 +155,15 @@ public class ReflectiveConfig {
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public static <T> void read(T confObj, ConfigReader reader)
-	    throws NamingException, IllegalAccessException,
+    public static <T> void read(T confObj, ConfigReader reader) throws NamingException, IllegalAccessException,
 	    InvocationTargetException, NoSuchMethodException {
 	// look through all fields of the config obj, not including superclass
 	// fields
-	
+
 	for (Field field : confObj.getClass().getDeclaredFields()) {
 
 	    // if field is not annotated, skip it
-	    ConfigField fieldAnno = (ConfigField) field
-		    .getAnnotation(ConfigField.class);
+	    ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
 	    if (fieldAnno == null)
 		continue;
 
@@ -186,26 +178,23 @@ public class ReflectiveConfig {
 		if (String.class.isAssignableFrom(fieldType.getComponentType())) {
 		    value = reader.asStringArray(fieldAnno.name());
 
-		} else if (int.class.isAssignableFrom(fieldType
-			.getComponentType())) {
+		} else if (int.class.isAssignableFrom(fieldType.getComponentType())) {
 		    value = reader.asIntArray(fieldAnno.name());
 		}
 	    } else if (String.class.isAssignableFrom(fieldType)) {
-		value = reader.asString(fieldAnno.name(), (fieldAnno.def()
-			.equals("") ? null : fieldAnno.def()));
+		value = reader.asString(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? null : fieldAnno.def()));
 
 	    } else if (boolean.class.isAssignableFrom(fieldType)) {
 		value = reader.asBoolean(fieldAnno.name(), fieldAnno.def());
 
 	    } else if (int.class.isAssignableFrom(fieldType)) {
 		value = reader.asInt(fieldAnno.name(), fieldAnno.def());
-		
+
 	    } else if (AttributesFormat.class.isAssignableFrom(fieldType)) {
-		
+
 		String strRep = reader.asString(fieldAnno.name(), null);
 		value = AttributesFormat.valueOf(strRep);
 	    }
-		
 
 	    // set the property value through its setter
 	    PropertyUtils.setSimpleProperty(confObj, field.getName(), value);
@@ -213,24 +202,20 @@ public class ReflectiveConfig {
 	}
     }
 
-    public static <T> void storeAllDiffs(T prevConfObj, T confObj,
-	    DiffWriter ldapDiffWriter) throws IllegalAccessException,
-	    InvocationTargetException, NoSuchMethodException {
+    public static <T> void storeAllDiffs(T prevConfObj, T confObj, DiffWriter ldapDiffWriter)
+	    throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
 	// look through all fields of the config class, not including
 	// superclass fields
 	for (Field field : confObj.getClass().getDeclaredFields()) {
 
 	    // if field is not annotated, skip it
-	    ConfigField fieldAnno = (ConfigField) field
-		    .getAnnotation(ConfigField.class);
+	    ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
 	    if (fieldAnno == null)
 		continue;
 
-	    Object prev = PropertyUtils.getSimpleProperty(prevConfObj,
-		    field.getName());
-	    Object curr = PropertyUtils.getSimpleProperty(confObj,
-		    field.getName());
+	    Object prev = PropertyUtils.getSimpleProperty(prevConfObj, field.getName());
+	    Object curr = PropertyUtils.getSimpleProperty(confObj, field.getName());
 
 	    ldapDiffWriter.storeDiff(fieldAnno.name(), prev, curr);
 
@@ -253,8 +238,7 @@ public class ReflectiveConfig {
 	for (Field field : from.getClass().getDeclaredFields()) {
 
 	    // if field is not annotated, skip it
-	    ConfigField fieldAnno = (ConfigField) field
-		    .getAnnotation(ConfigField.class);
+	    ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
 	    if (fieldAnno == null)
 		continue;
 

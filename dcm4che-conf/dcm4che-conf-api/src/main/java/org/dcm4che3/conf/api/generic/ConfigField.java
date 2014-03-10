@@ -52,28 +52,16 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD) 
 public @interface ConfigField {
 
-	public enum StoreType {
-		storeNotNull,
-		storeNotEmpty,
-		storeNotDef
-	}
-	
 	/**
 	 * Name in configuration
 	 * @return
 	 */
 	String name();
 
-	/**
-	 * Storing method
-	 * @return
-	 */
-	StoreType store();
-
 	
 	/**
 	 * Default value
 	 * @return
 	 */
-	String def() default "";
+	String def() default "N/A";
 }

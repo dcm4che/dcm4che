@@ -38,6 +38,7 @@
 
 package org.dcm4che3.net.audit;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +53,18 @@ public class AuditRecordRepository extends DeviceExtension {
 
     private static final long serialVersionUID = -2279487409324427161L;
 
+    static {
+        Connection.registerTCPProtocolHandler(
+                Connection.Protocol.SYSLOG_TLS, SyslogProtocolHandler.INSTANCE);
+        Connection.registerUDPProtocolHandler(
+                Connection.Protocol.SYSLOG_UDP, SyslogProtocolHandler.INSTANCE);
+    }
+
     private Boolean installed;
 
     private final List<Connection> conns = new ArrayList<Connection>(1);
+
+    private transient AuditRecordHandler handler;
 
     public boolean isInstalled() {
         return device != null && device.isInstalled() 
@@ -90,6 +100,14 @@ public class AuditRecordRepository extends DeviceExtension {
         return conns;
     }
 
+    public AuditRecordHandler getAuditRecordHandler() {
+        return handler;
+    }
+
+    public void setAuditRecordHandler(AuditRecordHandler handler) {
+        this.handler = handler;
+    }
+
     @Override
     public void reconfigure(DeviceExtension from)  {
         reconfigure((AuditRecordRepository) from);
@@ -98,5 +116,13 @@ public class AuditRecordRepository extends DeviceExtension {
     private void reconfigure(AuditRecordRepository from) {
         setInstalled(from.installed);
         device.reconfigureConnections(conns, from.conns);
+    }
+
+    public void onMessage(byte[] data, int xmlOffset, int xmlLength,
+            Connection conn, InetAddress from) {
+        if (handler == null)
+            throw new IllegalStateException("No AuditRecordHandler initialized");
+
+        handler.onMessage(data, xmlOffset, xmlLength, conn, from);
     }
 }

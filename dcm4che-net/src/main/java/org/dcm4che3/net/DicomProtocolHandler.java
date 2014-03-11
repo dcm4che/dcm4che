@@ -45,7 +45,7 @@ import java.net.Socket;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum DicomProtocolHandler implements ProtocolHandler {
+enum DicomProtocolHandler implements TCPProtocolHandler {
     INSTANCE;
 
     @Override

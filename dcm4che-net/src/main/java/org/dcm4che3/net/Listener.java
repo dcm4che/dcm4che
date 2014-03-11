@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,43 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.net.hl7;
+package org.dcm4che3.net;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.text.ParsePosition;
-
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.hl7.HL7Segment;
-import org.dcm4che3.hl7.MLLPConnection;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.TCPProtocolHandler;
+import java.io.Closeable;
+import java.net.SocketAddress;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-enum HL7ProtocolHandler implements TCPProtocolHandler {
-    INSTANCE;
+public interface Listener extends Closeable {
 
-    @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        s.setSoTimeout(conn.getIdleTimeout());
-        MLLPConnection mllp = new MLLPConnection(s);
-        byte[] msg;
-        while ((msg = mllp.readMessage()) != null) {
-            ParsePosition pos = new ParsePosition(0);
-            HL7Segment msh = HL7Segment.parseMSH(msg, msg.length, pos);
-            try {
-                msg = conn.getDevice().getDeviceExtension(HL7DeviceExtension.class)
-                        .onMessage(msh, msg, 0, msg.length, pos.getIndex(), conn, s);
-            } catch (HL7Exception e) {
-                msg = HL7Message.makeACK(msh, e.getAcknowledgmentCode(), e.getErrorMessage())
-                        .getBytes(null);
-            }
-            mllp.writeMessage(msg);
-        }
-        conn.close(s);
-    }
+    SocketAddress getEndPoint();
+
 }

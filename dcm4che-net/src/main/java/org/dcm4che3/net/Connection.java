@@ -39,6 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +49,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
@@ -58,8 +58,6 @@ import java.util.EnumMap;
 import java.util.List;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -135,15 +133,17 @@ public class Connection implements Serializable {
     private String[] blacklist = {};
     private Boolean installed;
     private Protocol protocol = Protocol.DICOM;
-    private static final EnumMap<Protocol, ProtocolHandler> handlers =
-            new EnumMap<Protocol, ProtocolHandler>(Protocol.class);
+    private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
+            new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
+    private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
+            new EnumMap<Protocol, UDPProtocolHandler>(Protocol.class);
 
     private transient List<InetAddress> blacklistAddrs;
-    private transient volatile ServerSocket server;
+    private transient volatile Listener listener;
     private transient boolean rebindNeeded;
 
     static {
-        registerProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
+        registerTCPProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
     }
 
     public Connection() {
@@ -159,14 +159,24 @@ public class Connection implements Serializable {
         this.port = port;
     }
 
-    public static ProtocolHandler registerProtocolHandler(
-            Protocol protocol, ProtocolHandler handler) {
-        return handlers.put(protocol, handler);
+    public static TCPProtocolHandler registerTCPProtocolHandler(
+            Protocol protocol, TCPProtocolHandler handler) {
+        return tcpHandlers.put(protocol, handler);
     }
 
-    public static ProtocolHandler unregisterProtocolHandler(
+    public static TCPProtocolHandler unregisterTCPProtocolHandler(
             Protocol protocol) {
-        return handlers.remove(protocol);
+         return tcpHandlers.remove(protocol);
+    }
+
+    public static UDPProtocolHandler registerUDPProtocolHandler(
+            Protocol protocol, UDPProtocolHandler handler) {
+        return udpHandlers.put(protocol, handler);
+    }
+
+    public static UDPProtocolHandler unregisterUDPProtocolHandler(
+            Protocol protocol) {
+        return udpHandlers.remove(protocol);
     }
 
     /**
@@ -674,7 +684,7 @@ public class Connection implements Serializable {
         return sb.append(indent).append(']');
     }
 
-    private void setSocketSendOptions(Socket s) throws SocketException {
+    void setSocketSendOptions(Socket s) throws SocketException {
         int size = s.getSendBufferSize();
         if (sendBufferSize == 0) {
             sendBufferSize = size;
@@ -697,13 +707,23 @@ public class Connection implements Serializable {
         }
     }
 
-    private void setReceiveBufferSize(ServerSocket ss) throws SocketException {
+    void setReceiveBufferSize(ServerSocket ss) throws SocketException {
         int size = ss.getReceiveBufferSize();
         if (receiveBufferSize == 0) {
             receiveBufferSize = size;
         } else if (receiveBufferSize != size) {
             ss.setReceiveBufferSize(receiveBufferSize);
             receiveBufferSize = ss.getReceiveBufferSize();
+        }
+    }
+
+    public void setReceiveBufferSize(DatagramSocket ds) throws SocketException {
+        int size = ds.getReceiveBufferSize();
+        if (receiveBufferSize == 0) {
+            receiveBufferSize = size;
+        } else if (receiveBufferSize != size) {
+            ds.setReceiveBufferSize(receiveBufferSize);
+            receiveBufferSize = ds.getReceiveBufferSize();
         }
     }
 
@@ -729,18 +749,18 @@ public class Connection implements Serializable {
         return new InetSocketAddress(addr(), port);
     }
 
-    /**
-     * Returns server socket associated with this Network Connection, bound to
-     * the TCP port, listening for connect requests. Returns <code>null</code>
-     * if this network connection only initiates associations or was not yet
-     * bound by {@link #bind}.
-     * 
-     * @return server socket associated with this Network Connection or
-     *         <code>null</code>
-     */
-    public ServerSocket getServer() {
-        return server;
-    }
+//    /**
+//     * Returns server socket associated with this Network Connection, bound to
+//     * the TCP port, listening for connect requests. Returns <code>null</code>
+//     * if this network connection only initiates associations or was not yet
+//     * bound by {@link #bind}.
+//     * 
+//     * @return server socket associated with this Network Connection or
+//     *         <code>null</code>
+//     */
+//    public ServerSocket getServer() {
+//        return server;
+//    }
 
     private void checkInstalled() {
         if (!isInstalled())
@@ -768,71 +788,35 @@ public class Connection implements Serializable {
         if (device == null)
             throw new IllegalStateException("Not attached to Device");
         if (isListening())
-            throw new IllegalStateException("Already listening - " + server);
-        final ProtocolHandler connectionHandler = handlers.get(protocol);
-        if (connectionHandler == null)
-            throw new IllegalStateException("No ConnectionHandler for protocol " + protocol);
-        server = isTls() ? createTLSServerSocket() : new ServerSocket();
-        setReceiveBufferSize(server);
-        server.bind(getEndPoint(), backlog);
-        device.execute(new Runnable() {
-
-            public void run() {
-                ServerSocket tmp = server;
-                SocketAddress sockAddr = tmp.getLocalSocketAddress();
-                LOG.info("Start listening on {}", sockAddr);
-                try {
-                    for (;;) {
-                        LOG.debug("Wait for connection on {}", sockAddr);
-                        Socket s = server.accept();
-                        if (isBlackListed(s.getInetAddress())) {
-                            LOG.info("Reject connection {}", s);
-                            close(s);
-                        } else {
-                            LOG.info("Accept connection {}", s);
-                            try {
-                                setSocketSendOptions(s);
-                                connectionHandler.onAccept(Connection.this, s);
-                            } catch (Throwable e) {
-                                LOG.warn("Exception on accepted connection " + s + ":", e);
-                                close(s);
-                            }
-                        }
-                    }
-                } catch (Throwable e) {
-                    if (server == tmp) // ignore exception caused by unbind()
-                        LOG.error("Exception on listing on " + sockAddr + ":", e);
-                }
-                LOG.info("Stop listening on {}", sockAddr);
-            }
-        });
+            throw new IllegalStateException("Already listening - " + listener);
+        if (protocol.isTCP()) {
+            TCPProtocolHandler handler = tcpHandlers.get(protocol);
+            if (handler == null)
+                throw new IllegalStateException("No TCP Protocol Handler for protocol " + protocol);
+            listener = new TCPListener(this, handler);
+        } else {
+            UDPProtocolHandler handler = udpHandlers.get(protocol);
+            if (handler == null)
+                throw new IllegalStateException("No UDP Protocol Handler for protocol " + protocol);
+            listener = new UDPListener(this, handler);
+        }
         rebindNeeded = false;
         return true;
     }
 
     public final boolean isListening() {
-        return server != null;
+        return listener != null;
     }
 
-    private ServerSocket createTLSServerSocket() throws IOException, GeneralSecurityException {
-        SSLContext sslContext = device.sslContext();
-        SSLServerSocketFactory ssf = sslContext.getServerSocketFactory();
-        SSLServerSocket ss = (SSLServerSocket) ssf.createServerSocket();
-        ss.setEnabledProtocols(tlsProtocols);
-        ss.setEnabledCipherSuites(tlsCipherSuites);
-        ss.setNeedClientAuth(tlsNeedClientAuth);
-        return ss;
-    }
-
-    private boolean isBlackListed(InetAddress ia) {
+    public boolean isBlackListed(InetAddress ia) {
         return blacklistAddrs().contains(ia);
     }
 
     public synchronized void unbind() {
-        ServerSocket tmp = server;
+        Closeable tmp = listener;
         if (tmp == null)
             return;
-        server = null;
+        listener = null;
         try {
             tmp.close();
         } catch (Throwable e) {
@@ -905,6 +889,10 @@ public class Connection implements Serializable {
             sendBufferSize = ds.getSendBufferSize();
         }
         return ds;
+    }
+
+    public Listener getListener() {
+        return listener;
     }
 
     private void doProxyHandshake(Socket s, String hostname, int port,

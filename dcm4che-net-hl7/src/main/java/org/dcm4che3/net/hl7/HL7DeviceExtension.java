@@ -56,7 +56,7 @@ public class HL7DeviceExtension extends DeviceExtension {
     private static final long serialVersionUID = -411853996726542266L;
 
     static {
-        Connection.registerProtocolHandler(
+        Connection.registerTCPProtocolHandler(
                 Connection.Protocol.HL7, HL7ProtocolHandler.INSTANCE);
     }
 

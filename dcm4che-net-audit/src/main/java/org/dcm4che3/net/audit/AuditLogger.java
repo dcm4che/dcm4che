@@ -41,10 +41,12 @@ package org.dcm4che3.net.audit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -69,6 +71,8 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.util.SafeClose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -77,6 +81,10 @@ import org.dcm4che3.util.SafeClose;
 public class AuditLogger extends DeviceExtension {
 
     private static final long serialVersionUID = 1595714214186063103L;
+
+    private static final int MSG_PROMPT_LEN = 8192;
+
+    private static Logger LOG = LoggerFactory.getLogger(AuditLogger.class);
 
     public enum Facility {
         kern,            // (0) -- kernel messages
@@ -480,9 +488,27 @@ public class AuditLogger extends DeviceExtension {
             throws IncompatibleConnectionException, GeneralSecurityException {
         getActiveConnection().send(timeStamp, message);
     }
-    
+
+    public void write(Calendar timeStamp, Severity severity,
+            byte[] data, int off, int len)
+            throws IncompatibleConnectionException, GeneralSecurityException {
+        getActiveConnection().send(timeStamp, severity, data, off, len);
+    }
+
     public Connection getRemoteActiveConnection()  throws IncompatibleConnectionException {
         return getActiveConnection().remoteConn;
+    }
+
+    public void closeActiveConnection() {
+        ActiveConnection activeConnection = this.activeConnection;
+        if (activeConnection != null) {
+            try {
+                activeConnection.close();
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            this.activeConnection = null;
+        }
     }
 
     private ActiveConnection getActiveConnection()
@@ -590,6 +616,26 @@ public class AuditLogger extends DeviceExtension {
             }
         }
 
+        public void send(Calendar timeStamp, Severity severity,
+                byte[] data, int off, int len)
+                throws IncompatibleConnectionException, GeneralSecurityException {
+            reset();
+            try {
+                writeHeader(severity, timeStamp);
+                write(data, off, len);
+            } catch (IOException e) {
+                throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
+            }
+            try {
+                connect();
+                sendMessage();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+        }
+
         void writeHeader(Severity severity, Calendar timeStamp)
                 throws IOException {
             write('<');
@@ -694,7 +740,10 @@ public class AuditLogger extends DeviceExtension {
 
         @Override
         void sendMessage() throws IOException {
-            ds.send(new DatagramPacket(buf, count, remoteConn.getEndPoint()));
+            InetSocketAddress endPoint = remoteConn.getEndPoint();
+            LOG.info("{} << UDP Syslog message of {} bytes", endPoint, count);
+            LOG.debug(prompt(buf));
+            ds.send(new DatagramPacket(buf, count, endPoint));
         }
 
         @Override
@@ -724,6 +773,8 @@ public class AuditLogger extends DeviceExtension {
 
         @Override
         void sendMessage() throws IOException {
+            LOG.info("{} << TCP Syslog message of {} bytes", sock, count);
+            LOG.debug(prompt(buf));
             try {
                 out.write(Integer.toString(count).getBytes(encoding));
                 out.write(' ');
@@ -742,6 +793,16 @@ public class AuditLogger extends DeviceExtension {
             SafeClose.close(sock);
             sock = null;
             out = null;
+        }
+    }
+
+    private static String prompt(byte[] data) {
+        try {
+            return data.length > MSG_PROMPT_LEN
+                    ? (new String(data, 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
+                    : new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 

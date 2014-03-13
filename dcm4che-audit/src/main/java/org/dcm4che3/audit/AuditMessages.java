@@ -574,7 +574,9 @@ public class AuditMessages {
         public static final ParticipantObjectIDTypeCode NodeID = 
                 new ParticipantObjectIDTypeCode("110182","DCM","Node ID");
         public static final ParticipantObjectIDTypeCode ITI_PatientNumber = 
-            new ParticipantObjectIDTypeCode("2","RFC-3881","Patient Number");
+                new ParticipantObjectIDTypeCode("2","RFC-3881","Patient Number");
+        public static final ParticipantObjectIDTypeCode ITI_ReportNumber = 
+                new ParticipantObjectIDTypeCode("9","RFC-3881","Report Number");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.code = code;

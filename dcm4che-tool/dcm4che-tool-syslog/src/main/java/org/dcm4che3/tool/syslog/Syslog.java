@@ -45,6 +45,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
@@ -76,7 +78,7 @@ public class Syslog {
     private final AuditRecordRepository arr = new AuditRecordRepository();
     private final Device logDevice = new Device("syslog");
     private final Device arrDevice = new Device("syslogd");
-    private long delayBetweenMessages;
+    private int delayBetweenMessages;
 
 
     private AuditLogger.Severity severity = AuditLogger. Severity.notice;
@@ -133,6 +135,12 @@ public class Syslog {
                 .create(null));
         opts.addOption(null, "udp", false, rb.getString("udp"));
         CLIUtils.addConnectTimeoutOption(opts);
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("idle-timeout"))
+                .withLongOpt("idle-timeout")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -179,7 +187,7 @@ public class Syslog {
     private static void addSendOptions(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
-                .withArgName("seconds")
+                .withArgName("ms")
                 .withDescription(rb.getString("delay"))
                 .withLongOpt("delay")
                 .create(null));
@@ -216,8 +224,7 @@ public class Syslog {
             configureBind(main.conn, cl);
             main.setDelayBetweenMessages(toDelay(cl));
             CLIUtils.configure(main.conn, cl);
-            main.remote.setTlsProtocols(main.conn.getTlsProtocols());
-            main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
+            main.init();
             try {
                 main.sendFiles(cl.getArgList());
             } finally {
@@ -234,14 +241,14 @@ public class Syslog {
         }
     }
 
-    private void setDelayBetweenMessages(long delay) {
-        this.delayBetweenMessages = delay;
+    private void setDelayBetweenMessages(int delayBetweenMessages) {
+        this.delayBetweenMessages = delayBetweenMessages;
     }
 
-    private static long toDelay(CommandLine cl) {
+    private static int toDelay(CommandLine cl) {
         return cl.hasOption("delay")
-                ? Integer.parseInt(cl.getOptionValue("delay")) * 1000L
-                : 0L;
+                ? Integer.parseInt(cl.getOptionValue("delay"))
+                : 0;
     }
 
     private static void configureSyslog(Syslog main, CommandLine cl) {
@@ -272,8 +279,17 @@ public class Syslog {
                 : Connection.Protocol.SYSLOG_TLS;
     }
 
+    public void init() {
+        remote.setTlsProtocols(conn.getTlsProtocols());
+        remote.setTlsCipherSuites(conn.getTlsCipherSuites());
+        logDevice.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
+    }
+
     public void close() {
         auditLogger.closeActiveConnection();
+        ScheduledExecutorService scheduler = logDevice.getScheduledExecutor();
+        if (scheduler != null)
+            scheduler.shutdown();
     }
 
     public void sendFiles(List<String> pathnames) throws Exception {

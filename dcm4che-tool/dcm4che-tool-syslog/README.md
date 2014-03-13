@@ -29,6 +29,12 @@
                                               local0 to local7. The default is
                                               authpriv.
      -h,--help                                display this help and exit
+        --idle-timeout <ms>                   specify time in ms, after tcp
+                                              connection is closed between
+                                              sent messages. Only effective if
+                                              a larger delay time between sent
+                                              messages is specified by option
+                                              --delay.
         --key-pass <password>                 password for accessing the key
                                               in the key store, key store
                                               password by default

@@ -484,22 +484,22 @@ public class AuditLogger extends DeviceExtension {
             : new GregorianCalendar(Locale.ENGLISH);
     }
 
-    public void write(Calendar timeStamp, AuditMessage message)
-            throws IncompatibleConnectionException, GeneralSecurityException {
+    public synchronized void write(Calendar timeStamp, AuditMessage message)
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         getActiveConnection().send(timeStamp, message);
     }
 
-    public void write(Calendar timeStamp, Severity severity,
+    public synchronized void write(Calendar timeStamp, Severity severity,
             byte[] data, int off, int len)
-            throws IncompatibleConnectionException, GeneralSecurityException {
+            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         getActiveConnection().send(timeStamp, severity, data, off, len);
     }
 
-    public Connection getRemoteActiveConnection()  throws IncompatibleConnectionException {
+    public synchronized Connection getRemoteActiveConnection() throws IncompatibleConnectionException {
         return getActiveConnection().remoteConn;
     }
 
-    public void closeActiveConnection() {
+    public synchronized void closeActiveConnection() {
         ActiveConnection activeConnection = this.activeConnection;
         if (activeConnection != null) {
             try {
@@ -596,10 +596,11 @@ public class AuditLogger extends DeviceExtension {
         abstract void connect() throws IOException,
                 IncompatibleConnectionException, GeneralSecurityException;
 
-        abstract void sendMessage() throws IOException;
+        abstract void sendMessage() throws IOException,
+                IncompatibleConnectionException, GeneralSecurityException;
 
         void send(Calendar timeStamp, AuditMessage msg)
-                throws IncompatibleConnectionException, GeneralSecurityException {
+                throws IncompatibleConnectionException, GeneralSecurityException, IOException {
             reset();
             try {
                 writeHeader(severityOf(msg), timeStamp);
@@ -607,18 +608,13 @@ public class AuditLogger extends DeviceExtension {
             } catch (IOException e) {
                 throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
             }
-            try {
-                connect();
-                sendMessage();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            connect();
+            sendMessage();
         }
 
         public void send(Calendar timeStamp, Severity severity,
                 byte[] data, int off, int len)
-                throws IncompatibleConnectionException, GeneralSecurityException {
+                throws IOException, IncompatibleConnectionException, GeneralSecurityException {
             reset();
             try {
                 writeHeader(severity, timeStamp);
@@ -626,14 +622,8 @@ public class AuditLogger extends DeviceExtension {
             } catch (IOException e) {
                 throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
             }
-            try {
-                connect();
-                sendMessage();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
+            connect();
+            sendMessage();
         }
 
         void writeHeader(Severity severity, Calendar timeStamp)
@@ -772,18 +762,25 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        void sendMessage() throws IOException {
+        void sendMessage() throws IOException,
+                IncompatibleConnectionException, GeneralSecurityException {
+            try {
+                trySendMessage();
+            } catch (IOException e) {
+                LOG.info("Failed to send message - try reconnect");
+                close();
+                connect();
+                trySendMessage();
+            }
+        }
+
+        private void trySendMessage() throws IOException {
             LOG.info("{} << TCP Syslog message of {} bytes", sock, count);
             LOG.debug(prompt(buf));
-            try {
-                out.write(Integer.toString(count).getBytes(encoding));
-                out.write(' ');
-                out.write(buf, 0, count);
-                out.flush();
-            } catch (IOException e) {
-                close();
-                throw e;
-            }
+            out.write(Integer.toString(count).getBytes(encoding));
+            out.write(' ');
+            out.write(buf, 0, count);
+            out.flush();
         }
 
 

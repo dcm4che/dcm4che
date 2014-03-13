@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.audit.ActiveParticipant;
 import org.dcm4che3.audit.AuditMessage;
@@ -484,18 +486,18 @@ public class AuditLogger extends DeviceExtension {
             : new GregorianCalendar(Locale.ENGLISH);
     }
 
-    public synchronized void write(Calendar timeStamp, AuditMessage message)
+    public void write(Calendar timeStamp, AuditMessage message)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
         getActiveConnection().send(timeStamp, message);
     }
 
-    public synchronized void write(Calendar timeStamp, Severity severity,
+    public void write(Calendar timeStamp, Severity severity,
             byte[] data, int off, int len)
             throws IOException, IncompatibleConnectionException, GeneralSecurityException {
         getActiveConnection().send(timeStamp, severity, data, off, len);
     }
 
-    public synchronized Connection getRemoteActiveConnection() throws IncompatibleConnectionException {
+    public Connection getRemoteActiveConnection() throws IncompatibleConnectionException {
         return getActiveConnection().remoteConn;
     }
 
@@ -511,7 +513,7 @@ public class AuditLogger extends DeviceExtension {
         }
     }
 
-    private ActiveConnection getActiveConnection()
+    private synchronized ActiveConnection getActiveConnection()
             throws IncompatibleConnectionException {
         ActiveConnection activeConnection = this.activeConnection;
         if (activeConnection != null)
@@ -731,7 +733,7 @@ public class AuditLogger extends DeviceExtension {
         @Override
         void sendMessage() throws IOException {
             InetSocketAddress endPoint = remoteConn.getEndPoint();
-            LOG.info("{} << UDP Syslog message of {} bytes", endPoint, count);
+            LOG.info("Sending UDP Syslog message of {} bytes to {}", count, endPoint);
             LOG.debug(prompt(buf));
             ds.send(new DatagramPacket(buf, count, endPoint));
         }
@@ -748,12 +750,14 @@ public class AuditLogger extends DeviceExtension {
     private class TCPConnection extends ActiveConnection  {
         Socket sock;
         OutputStream out;
+        ScheduledFuture<?> idleTimer;
+
         TCPConnection(Connection conn, Connection remoteConn) {
             super(conn, remoteConn);
         }
 
         @Override
-        void connect() throws IOException,
+        synchronized void connect() throws IOException,
             IncompatibleConnectionException, GeneralSecurityException {
             if (sock == null) {
                 sock = conn.connect(remoteConn);
@@ -762,21 +766,50 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        void sendMessage() throws IOException,
+        synchronized void sendMessage() throws IOException,
                 IncompatibleConnectionException, GeneralSecurityException {
+            stopIdleTimer();
             try {
                 trySendMessage();
             } catch (IOException e) {
-                LOG.info("Failed to send message - try reconnect");
+                LOG.info("Failed to send Syslog message to {} - reconnect",
+                        sock, e);
                 close();
                 connect();
                 trySendMessage();
             }
+            LOG.info("Sent Syslog message of {} bytes to {}", count, sock);
+            LOG.debug(prompt(buf));
+            startIdleTimer();
+        }
+
+        private void startIdleTimer() {
+            int idleTimeout = conn.getIdleTimeout();
+            if (idleTimeout > 0) {
+                 LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
+                 idleTimer = conn.getDevice().schedule(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                onIdleTimerExpired();
+                            }
+                        },
+                        idleTimeout,
+                        TimeUnit.MILLISECONDS);
+            }
+        }
+
+        private void stopIdleTimer() {
+            if (idleTimer != null) {
+                LOG.debug("Stop Idle timer for {}", sock);
+                idleTimer.cancel(false);
+                idleTimer = null;
+            }
         }
 
         private void trySendMessage() throws IOException {
-            LOG.info("{} << TCP Syslog message of {} bytes", sock, count);
-            LOG.debug(prompt(buf));
+            LOG.debug("Sending Syslog message of {} bytes to {}",
+                    count, sock);
             out.write(Integer.toString(count).getBytes(encoding));
             out.write(' ');
             out.write(buf, 0, count);
@@ -785,11 +818,28 @@ public class AuditLogger extends DeviceExtension {
 
 
         @Override
-        public void close() {
-            SafeClose.close(out);
-            SafeClose.close(sock);
+        public synchronized void close() {
+            stopIdleTimer();
+            closeSocket();
+        }
+
+        private void closeSocket() {
+            conn.close(sock);
             sock = null;
             out = null;
+        }
+
+        private void onIdleTimerExpired() {
+            ScheduledFuture<?> expiredIdleTimer = idleTimer;
+            synchronized (this) {
+                if (expiredIdleTimer != idleTimer) {
+                    LOG.debug("Detect restart of Idle timer for {}", sock);
+                } else {
+                    LOG.info("Idle timeout for {} expired", sock);
+                    idleTimer = null;
+                    closeSocket();
+                }
+            }
         }
     }
 

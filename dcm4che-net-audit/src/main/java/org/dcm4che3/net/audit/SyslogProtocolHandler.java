@@ -44,7 +44,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 
 import org.dcm4che3.net.Connection;
@@ -87,6 +86,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
                          s);
                 break;
             }
+            LOG.info("Received Syslog message of {} bytes from {}",
+                    length, s);
             onMessage(data, 0, length, conn, s.getInetAddress());
         }
         conn.close(s);
@@ -127,6 +128,8 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
 
     @Override
     public void onReceive(Connection conn, DatagramPacket packet) {
+        LOG.info("Received UDP Syslog message of {} bytes from {}", 
+                packet.getLength(), packet.getAddress());
         onMessage(packet.getData(), packet.getOffset(), packet.getLength(), 
                 conn, packet.getAddress());
     }
@@ -135,17 +138,16 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
             Connection conn, InetAddress from) {
         AuditRecordRepository arr = conn.getDevice()
                 .getDeviceExtension(AuditRecordRepository.class);
-        SocketAddress endPoint = conn.getListener().getEndPoint();
-        LOG.info("{} >> {}: Syslog message of {} bytes", from, endPoint, length);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(prompt(data));
+            LOG.debug(prompt(data, MSG_PROMPT_LEN));
         }
         int xmlOffset = indexOfXML(data, offset, Math.min(MAX_MSG_PREFIX, length));
         if (xmlOffset != -1) {
             int xmlLength = length - xmlOffset + offset;
             arr.onMessage(data, xmlOffset, xmlLength, conn, from);
         } else {
-            LOG.warn("{} >> {}: Ignore unexpected message", from, endPoint);
+            LOG.warn("Ignore unexpected message from {}: {}", from,
+                    prompt(data, MAX_MSG_PREFIX));
         }
     }
 
@@ -195,10 +197,10 @@ enum SyslogProtocolHandler implements TCPProtocolHandler, UDPProtocolHandler {
             && buf[index+6] == '4';
     }
 
-    private static String prompt(byte[] data) {
+    private static String prompt(byte[] data, int maxLen) {
         try {
-            return data.length > MSG_PROMPT_LEN
-                    ? (new String(data, 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
+            return data.length > maxLen
+                    ? (new String(data, 0, maxLen, "UTF-8") + "...") 
                     : new String(data, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

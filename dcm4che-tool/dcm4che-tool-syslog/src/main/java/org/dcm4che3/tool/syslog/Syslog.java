@@ -76,6 +76,8 @@ public class Syslog {
     private final AuditRecordRepository arr = new AuditRecordRepository();
     private final Device logDevice = new Device("syslog");
     private final Device arrDevice = new Device("syslogd");
+    private long delayBetweenMessages;
+
 
     private AuditLogger.Severity severity = AuditLogger. Severity.notice;
 
@@ -108,6 +110,7 @@ public class Syslog {
         addConnectOption(opts);
         addBindOption(opts);
         addSyslogOptions(opts);
+        addSendOptions(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
         CLIUtils.addCommonOptions(opts);
@@ -172,6 +175,16 @@ public class Syslog {
         opts.addOption(null, "bom", false, rb.getString("bom"));
     }
 
+    @SuppressWarnings("static-access")
+    private static void addSendOptions(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("seconds")
+                .withDescription(rb.getString("delay"))
+                .withLongOpt("delay")
+                .create(null));
+    }
+
     private static void configureConnect(Connection conn, CommandLine cl)
             throws MissingOptionException, ParseException {
         if (!cl.hasOption("c"))
@@ -201,6 +214,7 @@ public class Syslog {
             configureConnect(main.remote, cl);
             configureSyslog(main, cl);
             configureBind(main.conn, cl);
+            main.setDelayBetweenMessages(toDelay(cl));
             CLIUtils.configure(main.conn, cl);
             main.remote.setTlsProtocols(main.conn.getTlsProtocols());
             main.remote.setTlsCipherSuites(main.conn.getTlsCipherSuites());
@@ -218,6 +232,16 @@ public class Syslog {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+
+    private void setDelayBetweenMessages(long delay) {
+        this.delayBetweenMessages = delay;
+    }
+
+    private static long toDelay(CommandLine cl) {
+        return cl.hasOption("delay")
+                ? Integer.parseInt(cl.getOptionValue("delay")) * 1000L
+                : 0L;
     }
 
     private static void configureSyslog(Syslog main, CommandLine cl) {
@@ -253,7 +277,10 @@ public class Syslog {
     }
 
     public void sendFiles(List<String> pathnames) throws Exception {
+        int count = 0;
         for (String pathname : pathnames) {
+            if (count++ > 0 && delayBetweenMessages > 0)
+                Thread.sleep(delayBetweenMessages);
             byte[] b = readFile(pathname);
             auditLogger.write(auditLogger.timeStamp(), severity,
                     b, 0, b.length);

@@ -18,6 +18,8 @@
                                               of the Syslog Receiver.
         --connect-timeout <ms>                timeout in ms for TCP connect,
                                               no timeout by default
+        --delay <seconds>                     specify delay in seconds between
+                                              sent messages
         --facility <facility>                 specify facility name of the
                                               emitted syslog messages. Valid
                                               facility names are: kern, user,

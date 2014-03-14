@@ -47,6 +47,7 @@ import java.security.GeneralSecurityException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -97,8 +98,11 @@ class TCPListener implements Listener {
                     Connection.LOG.info("Accept connection {}", s);
                     try {
                         conn.setSocketSendOptions(s);
+                        if (s instanceof SSLSocket) {
+                            ((SSLSocket) s).startHandshake();
+                        }
                         handler.onAccept(conn, s);
-                    } catch (Throwable e) {
+                    } catch (IOException e) {
                         Connection.LOG.warn("Exception on accepted connection {}:",s, e);
                         conn.close(s);
                     }

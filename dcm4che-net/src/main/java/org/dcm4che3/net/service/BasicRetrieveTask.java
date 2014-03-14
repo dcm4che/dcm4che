@@ -185,7 +185,12 @@ public class BasicRetrieveTask implements RetrieveTask {
             writeRSP(status);
         } finally {
             rqas.removeCancelRQHandler(msgId);
-            close();
+            try {
+                close();
+            } catch (Throwable e) {
+                LOG.warn("Exception thrown by {}.close()",
+                        getClass().getName(), e);
+            }
         }
     }
 

@@ -340,8 +340,8 @@ public class DcmQRSCP {
         private AAssociateRQ makeAAssociateRQ(String callingAET,
                 String calledAET, List<InstanceLocator> matches) {
             AAssociateRQ aarq = new AAssociateRQ();
-            aarq.setCalledAET(callingAET);
-            aarq.setCallingAET(calledAET);
+            aarq.setCalledAET(calledAET);
+            aarq.setCallingAET(callingAET);
             for (InstanceLocator match : matches) {
                 if (aarq.addPresentationContextFor(match.cuid, match.tsuid)) {
                     if (!UID.ExplicitVRLittleEndian.equals(match.tsuid))

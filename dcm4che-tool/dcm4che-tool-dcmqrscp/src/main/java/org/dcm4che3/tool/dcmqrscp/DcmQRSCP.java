@@ -40,7 +40,6 @@ package org.dcm4che3.tool.dcmqrscp;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -78,11 +77,11 @@ import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.PDVInputStream;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.AbstractDicomService;
@@ -278,7 +277,11 @@ public class DcmQRSCP {
                     : QueryRetrieveLevel.valueOf(keys, qrLevels);
             level.validateRetrieveKeys(keys, rootLevel, relational(as, rq));
             List<InstanceLocator> matches = DcmQRSCP.this.calculateMatches(keys);
-            RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(as, pc, rq, matches, withoutBulkData);
+            if (matches.isEmpty())
+                return null;
+
+            RetrieveTaskImpl retrieveTask = new RetrieveTaskImpl(
+                    Dimse.C_GET_RQ, as, pc, rq, matches, as, withoutBulkData);
             retrieveTask.setSendPendingRSP(isSendPendingCGet());
             return retrieveTask;
         }
@@ -307,34 +310,47 @@ public class DcmQRSCP {
                 final Attributes rq, Attributes keys) throws DicomServiceException {
             QueryRetrieveLevel level = QueryRetrieveLevel.valueOf(keys, qrLevels);
             level.validateRetrieveKeys(keys, rootLevel, relational(as, rq));
-            String dest = rq.getString(Tag.MoveDestination);
-            final Connection remote = getRemoteConnection(dest);
+            String moveDest = rq.getString(Tag.MoveDestination);
+            final Connection remote = getRemoteConnection(moveDest);
             if (remote == null)
                 throw new DicomServiceException(Status.MoveDestinationUnknown,
-                        "Move Destination: " + dest + " unknown");
+                        "Move Destination: " + moveDest + " unknown");
             List<InstanceLocator> matches = DcmQRSCP.this.calculateMatches(keys);
+            if (matches.isEmpty())
+                return null;
+
+            AAssociateRQ aarq = makeAAssociateRQ(as.getLocalAET(), moveDest, matches);
+            Association storeas = openStoreAssociation(as, remote, aarq);
             BasicRetrieveTask retrieveTask = new BasicRetrieveTask(
-                    BasicRetrieveTask.Service.C_MOVE, as, pc, rq, matches ) {
-
-                @Override
-                protected Association getStoreAssociation() throws DicomServiceException {
-                    try {
-                        return as.getApplicationEntity().connect(
-                                as.getConnection(), remote, makeAAssociateRQ());
-                    } catch (IOException e) {
-                        throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
-                    } catch (InterruptedException e) {
-                        throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
-                    } catch (IncompatibleConnectionException e) {
-                        throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
-                    } catch (GeneralSecurityException e) {
-                        throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
-                    }
-                }
-
-            };
+                    Dimse.C_MOVE_RQ, as, pc, rq, matches, storeas);
             retrieveTask.setSendPendingRSPInterval(getSendPendingCMoveInterval());
             return retrieveTask;
+        }
+
+        private Association openStoreAssociation(Association as,
+                Connection remote, AAssociateRQ aarq) throws DicomServiceException {
+            try {
+                return as.getApplicationEntity().connect(
+                        as.getConnection(), remote, aarq);
+            } catch (Exception e) {
+                throw new DicomServiceException(Status.UnableToPerformSubOperations, e);
+            }
+        }
+
+        private AAssociateRQ makeAAssociateRQ(String callingAET,
+                String calledAET, List<InstanceLocator> matches) {
+            AAssociateRQ aarq = new AAssociateRQ();
+            aarq.setCalledAET(callingAET);
+            aarq.setCallingAET(calledAET);
+            for (InstanceLocator match : matches) {
+                if (aarq.addPresentationContextFor(match.cuid, match.tsuid)) {
+                    if (!UID.ExplicitVRLittleEndian.equals(match.tsuid))
+                        aarq.addPresentationContextFor(match.cuid, UID.ExplicitVRLittleEndian);
+                    if (!UID.ImplicitVRLittleEndian.equals(match.tsuid))
+                        aarq.addPresentationContextFor(match.cuid, UID.ImplicitVRLittleEndian);
+                }
+            }
+            return aarq;
         }
 
         private boolean relational(Association as, Attributes rq) {

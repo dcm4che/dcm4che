@@ -40,23 +40,22 @@ package org.dcm4che3.net.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.Association;
-import org.dcm4che3.net.AssociationStateException;
 import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.DataWriter;
+import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.InputStreamDataWriter;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,68 +68,44 @@ public class BasicRetrieveTask implements RetrieveTask {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
 
-    public enum Service {
-        C_GET {
-            @Override
-            Attributes mkRSP(Attributes rq, int status) {
-                return Commands.mkCGetRSP(rq, status);
-            }
-
-            @Override
-            void releaseStoreAssociation(Association storeas) throws IOException {
-                // NO OP
-            }
-
-            @Override
-            int commandFieldOfRSP() {
-                return 0x8010;
-            }
-        },
-        C_MOVE {
-            @Override
-            Attributes mkRSP(Attributes rq, int status) {
-                return Commands.mkCMoveRSP(rq, status);
-            }
-
-            @Override
-            void releaseStoreAssociation(Association storeas) throws IOException {
-                storeas.release();
-            }
-
-            @Override
-            int commandFieldOfRSP() {
-                return 0x8021;
-            }
-        };
-        abstract Attributes mkRSP(Attributes rq, int status);
-        abstract void releaseStoreAssociation(Association storeas) throws IOException;
-        abstract int commandFieldOfRSP();
-    }
-
-    protected final Service service;
-    protected final Association as;
+    protected final Dimse rq;
+    protected final Association rqas;
+    protected final Association storeas;
     protected final PresentationContext pc;
-    protected final Attributes rq;
+    protected final Attributes rqCmd;
+    protected final int msgId;
+    protected final int priority;
     protected int status = Status.Success;
     protected boolean pendingRSP;
     protected int pendingRSPInterval;
     protected boolean canceled;
-    protected int warning;
-    protected int completed;
-    protected final ArrayList<String> failed = new ArrayList<String>();
     protected final List<InstanceLocator> insts;
+    protected final List<InstanceLocator> completed;
+    protected final List<InstanceLocator> warning;
+    protected final List<InstanceLocator> failed;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
     private ScheduledFuture<?> writePendingRSP;
 
-    public BasicRetrieveTask(Service service, Association as,
-            PresentationContext pc, Attributes rq, List<InstanceLocator> insts) {
-        this.service = service;
-        this.as = as;
-        this.pc = pc;
+
+    public BasicRetrieveTask(Dimse rq, 
+            Association rqas,
+            PresentationContext pc, 
+            Attributes rqCmd,
+            List<InstanceLocator> insts,
+            Association storeas) {
         this.rq = rq;
+        this.rqas = rqas;
+        this.storeas = storeas;
+        this.pc = pc;
+        this.rqCmd = rqCmd;
         this.insts = insts;
+        this.msgId = rqCmd.getInt(Tag.MessageID, -1);
+        this.priority = rqCmd.getInt(Tag.Priority, 0);
+        this.completed = new ArrayList<InstanceLocator>(insts.size());
+        this.warning = new ArrayList<InstanceLocator>(insts.size());
+        this.failed = new ArrayList<InstanceLocator>(insts.size());
     }
 
     public void setSendPendingRSP(boolean pendingRSP) {
@@ -141,6 +116,38 @@ public class BasicRetrieveTask implements RetrieveTask {
         this.pendingRSPInterval = pendingRSPInterval;
     }
 
+    public boolean isCMove() {
+        return rq == Dimse.C_MOVE_RQ;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public Association getRequestAssociation() {
+        return rqas;
+    }
+
+    public Association getStoreAssociation() {
+        return storeas;
+    }
+
+    public List<InstanceLocator> getCompleted() {
+        return completed;
+    }
+
+    public List<InstanceLocator> getWarning() {
+        return warning;
+    }
+
+    public List<InstanceLocator> getFailed() {
+        return failed;
+    }
+
     @Override
     public void onCancelRQ(Association as) {
         canceled = true;
@@ -148,61 +155,50 @@ public class BasicRetrieveTask implements RetrieveTask {
 
     @Override
     public void run() {
-        int msgId = rq.getInt(Tag.MessageID, -1);
-        as.addCancelRQHandler(msgId, this);
+        rqas.addCancelRQHandler(msgId, this);
         try {
-            if (!insts.isEmpty()) {
-                Association storeas = getStoreAssociation();
-                if (pendingRSPInterval > 0)
-                    startWritePendingRSP();
-                for (InstanceLocator inst : insts) {
-                    if (!storeas.isReadyForDataTransfer()) {
-                        failed.add(inst.iuid);
-                        if (status != Status.UnableToPerformSubOperations) {
-                            status = Status.UnableToPerformSubOperations;
-                            LOG.warn("{}: Unable to perform sub-operation: association to {} in state: {}",
-                                    new Object[]{ as, storeas.getRemoteAET(), storeas.getState()});
-                        }
-                        continue;
-                    }
-                    if (canceled) {
-                        status = Status.Cancel;
-                        break;
-                    }
-                    if (pendingRSP)
-                        writePendingRSP();
-                    try {
-                        cstore(storeas, inst);
-                    } catch (Exception e) {
-                        failed.add(inst.iuid);
-                        status = Status.UnableToPerformSubOperations;
-                        LOG.warn(as + ": Unable to perform sub-operation on association to "
-                                + storeas.getRemoteAET(), e);
-                    }
+            if (pendingRSPInterval > 0)
+                startWritePendingRSP();
+            for (Iterator<InstanceLocator> iter = insts.iterator(); iter.hasNext();) {
+                InstanceLocator inst = iter.next();
+                if (canceled) {
+                    status = Status.Cancel;
+                    break;
                 }
-                waitForOutstandingCStoreRSP(storeas);
-                releaseStoreAssociation(storeas);
-                stopWritePendingRSP();
+                if (pendingRSP)
+                    writePendingRSP();
+                try {
+                    cstore(storeas, inst);
+                } catch (Exception e) {
+                    status = Status.UnableToPerformSubOperations;
+                    LOG.warn("{}: Unable to perform sub-operation on association to {}",
+                            rqas, storeas.getRemoteAET(), e);
+                    failed.add(inst);
+                    while (iter.hasNext())
+                        failed.add(iter.next());
+                }
             }
+            waitForOutstandingCStoreRSP(storeas);
+            if (isCMove())
+                releaseStoreAssociation(storeas);
+            stopWritePendingRSP();
             writeRSP(status);
-        } catch (DicomServiceException e) {
-            Attributes rsp = e.mkRSP(service.commandFieldOfRSP(), rq.getInt(Tag.MessageID, 0));
-            writeRSP(rsp, e.getDataset());
         } finally {
-            as.removeCancelRQHandler(msgId);
+            rqas.removeCancelRQHandler(msgId);
             close();
         }
     }
 
     private void startWritePendingRSP() {
-        writePendingRSP = as.getApplicationEntity().getDevice().scheduleAtFixedRate(
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        BasicRetrieveTask.this.writePendingRSP();
-                    }
-                },
-                0, pendingRSPInterval, TimeUnit.SECONDS);
+        writePendingRSP = rqas.getApplicationEntity().getDevice()
+                .scheduleAtFixedRate(
+                    new Runnable(){
+                        @Override
+                        public void run() {
+                            BasicRetrieveTask.this.writePendingRSP();
+                        }
+                    },
+                    0, pendingRSPInterval, TimeUnit.SECONDS);
     }
 
     private void stopWritePendingRSP() {
@@ -217,59 +213,32 @@ public class BasicRetrieveTask implements RetrieveTask {
                     outstandingRSPLock.wait();
             }
         } catch (InterruptedException e) {
-            LOG.warn(as + ": failed to wait for outstanding RSP on association to "
-                    + storeas.getRemoteAET(), e);
+            LOG.warn("{}: failed to wait for outstanding RSP on association to {}",
+                    rqas, storeas.getRemoteAET(), e);
         }
-    }
-
-    protected Association getStoreAssociation() throws DicomServiceException {
-        return as;
-    }
-
-    protected AAssociateRQ makeAAssociateRQ() {
-        AAssociateRQ aarq = new AAssociateRQ();
-        aarq.setCallingAET(as.getLocalAET());
-        aarq.setCalledAET(rq.getString(Tag.MoveDestination));
-        for (InstanceLocator inst : insts) {
-            if (!aarq.containsPresentationContextFor(inst.cuid, inst.tsuid)) {
-                aarq.addPresentationContext(
-                        new PresentationContext(
-                                aarq.getNumberOfPresentationContexts() * 2 + 1,
-                                inst.cuid, inst.tsuid));
-                String[] DEFAULT_TS = { UID.ExplicitVRLittleEndian, UID.ImplicitVRLittleEndian };
-                for (String tsuid : DEFAULT_TS)
-                    if (!inst.tsuid.equals(tsuid)
-                            && !aarq.containsPresentationContextFor(inst.cuid, tsuid))
-                        aarq.addPresentationContext(
-                            new PresentationContext(
-                                    aarq.getNumberOfPresentationContexts() * 2 + 1,
-                                    inst.cuid, tsuid));
-            }
-        }
-        return aarq ;
     }
 
     protected void releaseStoreAssociation(Association storeas) {
         try {
-            service.releaseStoreAssociation(storeas);
-        } catch (AssociationStateException e) {
+            storeas.release();
         } catch (IOException e) {
-            LOG.warn(as + ": failed to release association to "
-                    + storeas.getRemoteAET(), e);
+            LOG.warn("{}: failed to release association to {}",
+                    rqas, storeas.getRemoteAET(), e);
         }
     }
 
     protected void cstore(Association storeas, InstanceLocator inst)
             throws IOException, InterruptedException {
         String tsuid = selectTransferSyntaxFor(storeas, inst);
-        DimseRSPHandler rspHandler = new CStoreRSPHandler(as.nextMessageID(), inst.iuid);
+        DimseRSPHandler rspHandler =
+                new CStoreRSPHandler(storeas.nextMessageID(), inst);
 
-        if (storeas == as)
-            storeas.cstore(inst.cuid, inst.iuid, rq.getInt(Tag.Priority, 0),
-                            createDataWriter(inst, tsuid), tsuid, rspHandler);
+        if (isCMove())
+            storeas.cstore(inst.cuid, inst.iuid, priority,
+                    rqas.getRemoteAET(), msgId,
+                    createDataWriter(inst, tsuid), tsuid, rspHandler);
         else
-            storeas.cstore(inst.cuid, inst.iuid, rq.getInt(Tag.Priority, 0),
-                    as.getRemoteAET(), rq.getInt(Tag.MessageID, 0),
+            storeas.cstore(inst.cuid, inst.iuid, priority,
                     createDataWriter(inst, tsuid), tsuid, rspHandler);
 
         synchronized (outstandingRSPLock) {
@@ -279,11 +248,11 @@ public class BasicRetrieveTask implements RetrieveTask {
 
   private final class CStoreRSPHandler extends DimseRSPHandler {
 
-        private final String iuid;
+        private final InstanceLocator inst;
 
-        public CStoreRSPHandler(int msgId, String iuid) {
+        public CStoreRSPHandler(int msgId, InstanceLocator inst) {
             super(msgId);
-            this.iuid = iuid;
+            this.inst = inst;
         }
 
         @Override
@@ -291,11 +260,11 @@ public class BasicRetrieveTask implements RetrieveTask {
             super.onDimseRSP(as, cmd, data);
             int storeStatus = cmd.getInt(Tag.Status, -1);
             if (storeStatus == Status.Success)
-                completed++;
+                completed.add(inst);
             else if ((storeStatus & 0xB000) == 0xB000)
-                warning++;
+                warning.add(inst);
             else {
-                failed.add(iuid);
+                failed.add(inst);
                 if (status == Status.Success)
                     status = Status.OneOrMoreFailures;
             }
@@ -330,34 +299,37 @@ public class BasicRetrieveTask implements RetrieveTask {
     }
 
     private void writeRSP(int status) {
-        Attributes cmd = service.mkRSP(rq, status);
+        Attributes cmd = Commands.mkRSP(rqCmd, status, rq);
         if (status == Status.Pending || status == Status.Cancel)
             cmd.setInt(Tag.NumberOfRemainingSuboperations, VR.US, remaining());
-        cmd.setInt(Tag.NumberOfCompletedSuboperations, VR.US, completed);
+        cmd.setInt(Tag.NumberOfCompletedSuboperations, VR.US, completed.size());
         cmd.setInt(Tag.NumberOfFailedSuboperations, VR.US, failed.size());
-        cmd.setInt(Tag.NumberOfWarningSuboperations, VR.US, warning);
+        cmd.setInt(Tag.NumberOfWarningSuboperations, VR.US, warning.size());
         Attributes data = null;
         if (!failed.isEmpty() && status != Status.Pending) {
             data = new Attributes(1);
-            data.setString(Tag.FailedSOPInstanceUIDList, VR.UI,
-                    failed.toArray(new String[failed.size()]));
+            String[] iuids = new String[failed.size()];
+            for (int i = 0; i < iuids.length; i++) {
+                iuids[i] = failed.get(0).iuid;
+            }
+            data.setString(Tag.FailedSOPInstanceUIDList, VR.UI, iuids);
         }
         writeRSP(cmd, data);
     }
 
     private void writeRSP(Attributes cmd, Attributes data) {
         try {
-            as.writeDimseRSP(pc, cmd, data);
+            rqas.writeDimseRSP(pc, cmd, data);
         } catch (IOException e) {
             pendingRSP = false;
             stopWritePendingRSP();
-            LOG.warn(as + ": Unable to send C-GET or C-MOVE RSP on association to "
-                    + as.getRemoteAET(), e);
+            LOG.warn("{}: Unable to send C-GET or C-MOVE RSP on association to {}",
+                    rqas, rqas.getRemoteAET(), e);
         }
     }
 
     private int remaining() {
-        return insts.size() - completed - warning - failed.size();
+        return insts.size() - completed.size() - warning.size() - failed.size();
     }
 
     protected void close() {

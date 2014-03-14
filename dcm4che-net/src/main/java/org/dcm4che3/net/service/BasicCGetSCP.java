@@ -39,10 +39,10 @@
 package org.dcm4che3.net.service;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -59,17 +59,19 @@ public class BasicCGetSCP extends AbstractDicomService {
 
     @Override
     public void onDimseRQ(Association as, PresentationContext pc, Dimse dimse,
-            Attributes rq, Attributes keys) throws IOException {
+            Attributes cmd, Attributes keys) throws IOException {
         if (dimse != Dimse.C_GET_RQ)
             throw new DicomServiceException(Status.UnrecognizedOperation);
 
-        RetrieveTask retrieveTask = calculateMatches(as, pc, rq, keys);
-        as.getApplicationEntity().getDevice().execute(retrieveTask);
+        RetrieveTask retrieveTask = calculateMatches(as, pc, cmd, keys);
+        if (retrieveTask != null)
+            as.getApplicationEntity().getDevice().execute(retrieveTask);
+        else
+            as.tryWriteDimseRSP(pc, Commands.mkCGetRSP(cmd, Status.Success));
     }
 
     protected RetrieveTask calculateMatches(Association as, PresentationContext pc,
             Attributes rq, Attributes keys) throws DicomServiceException {
-        return new BasicRetrieveTask(BasicRetrieveTask.Service.C_GET,
-                as, pc, rq, Collections.<InstanceLocator>emptyList());
+        return null;
     }
 }

@@ -214,7 +214,7 @@ public class Commands {
         return rsp;
     }
 
-    private static Attributes mkRSP(Attributes rq, int status, Dimse rqCmd) {
+    public static Attributes mkRSP(Attributes rq, int status, Dimse rqCmd) {
         Attributes rsp = new Attributes();
         rsp.setInt(Tag.CommandField, VR.US, rqCmd.commandFieldOfRSP());
         rsp.setInt(Tag.Status, VR.US, status);

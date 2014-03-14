@@ -48,6 +48,7 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.DataWriter;
 import org.dcm4che3.net.DataWriterAdapter;
+import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicRetrieveTask;
 import org.dcm4che3.net.service.InstanceLocator;
@@ -60,9 +61,10 @@ class RetrieveTaskImpl extends BasicRetrieveTask {
 
     private final boolean withoutBulkData;
 
-    public RetrieveTaskImpl(Association as, PresentationContext pc, Attributes rq,
-            List<InstanceLocator> matches, boolean withoutBulkData) {
-        super(BasicRetrieveTask.Service.C_GET, as, pc, rq, matches);
+    public RetrieveTaskImpl(Dimse rq, Association rqas, PresentationContext pc,
+            Attributes rqCmd, List<InstanceLocator> matches,
+            Association storeas, boolean withoutBulkData) {
+        super(rq, rqas, pc, rqCmd, matches, storeas);
         this.withoutBulkData = withoutBulkData;
     }
 

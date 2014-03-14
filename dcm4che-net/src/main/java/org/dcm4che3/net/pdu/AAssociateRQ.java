@@ -63,6 +63,15 @@ public class AAssociateRQ extends AAssociateRQAC {
         return false;
     }
 
+    public boolean addPresentationContextFor(String as, String ts) {
+        if (containsPresentationContextFor(as, ts))
+            return false;
+
+        int pcid = getNumberOfPresentationContexts() * 2 + 1;
+        addPresentationContext(new PresentationContext(pcid , as, ts));
+        return true;
+    }
+
     @Override
     public String toString() {
         return promptTo(new StringBuilder(512)).toString();

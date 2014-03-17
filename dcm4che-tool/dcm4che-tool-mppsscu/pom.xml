@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>3.3.1-SNAPSHOT</version>
+    <version>3.3.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-mppsscu</artifactId>

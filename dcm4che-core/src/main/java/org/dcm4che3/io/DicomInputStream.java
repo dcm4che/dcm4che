@@ -119,6 +119,7 @@ public class DicomInputStream extends FilterInputStream
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
     private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
+    private boolean decodeUNWithIVRLE = true;
 
     private boolean catBlkFiles;
     private String blkFilePrefix = "blk";
@@ -259,6 +260,14 @@ public class DicomInputStream extends FilterInputStream
         if (handler == null)
             throw new NullPointerException("handler");
         this.handler = handler;
+    }
+
+    public boolean isDecodeUNWithIVRLE() {
+        return decodeUNWithIVRLE;
+    }
+
+    public void setDecodeUNWithIVRLE(boolean decodeUNWithIVRLE) {
+        this.decodeUNWithIVRLE = decodeUNWithIVRLE;
     }
 
     public final void setFileMetaInformationGroupLength(byte[] val) {
@@ -466,8 +475,10 @@ public class DicomInputStream extends FilterInputStream
                 boolean prevExplicitVR = explicitVR;
                 try {
                     if (vr == VR.UN) {
-                        bigEndian = false;
-                        explicitVR = false;
+                        if (decodeUNWithIVRLE) {
+                            bigEndian = false;
+                            explicitVR = false;
+                        }
                         vr = ElementDictionary.vrOf(tag,
                                 attrs.getPrivateCreator(tag));
                         if (vr == VR.UN && length == -1)
@@ -690,20 +701,26 @@ public class DicomInputStream extends FilterInputStream
 
     public byte[] readValue() throws IOException {
         int valLen = length;
-        if (valLen < 0)
-            throw new EOFException(); // assume InputStream length < 2 GiB
-        int allocLen = allocateLimit >= 0
-                ? Math.min(valLen, allocateLimit)
-                : valLen;
-        byte[] value = new byte[allocLen];
-        readFully(value, 0, allocLen);
-        while (allocLen < valLen) {
-            int newLength = Math.min(valLen, allocLen << 1);
-            value = Arrays.copyOf(value, newLength);
-            readFully(value, allocLen, newLength - allocLen);
-            allocLen = newLength;
+        try {
+            if (valLen < 0)
+                throw new EOFException(); // assume InputStream length < 2 GiB
+            int allocLen = allocateLimit >= 0
+                    ? Math.min(valLen, allocateLimit)
+                    : valLen;
+            byte[] value = new byte[allocLen];
+            readFully(value, 0, allocLen);
+            while (allocLen < valLen) {
+                int newLength = Math.min(valLen, allocLen << 1);
+                value = Arrays.copyOf(value, newLength);
+                readFully(value, allocLen, newLength - allocLen);
+                allocLen = newLength;
+            }
+            return value;
+        } catch (IOException e) {
+            LOG.warn("IOException during read of {} #{} @ {}",
+                    TagUtils.toString(tag), length, tagPos, e);
+            throw e;
         }
-        return value;
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {

@@ -91,16 +91,32 @@ class TCPListener implements Listener {
             for (;;) {
                 Connection.LOG.debug("Wait for connection on {}", sockAddr);
                 Socket s = ss.accept();
+                ConnectionMonitor monitor = conn.getDevice() != null
+                        ? conn.getDevice().getConnectionMonitor()
+                        : null;
                 if (conn.isBlackListed(s.getInetAddress())) {
-                    Connection.LOG.info("Reject connection {}", s);
+                    if (monitor != null)
+                        monitor.onConnectionRejectedBlacklisted(conn, s);
+                    Connection.LOG.info("Reject blacklisted connection {}", s);
                     conn.close(s);
                 } else {
-                    Connection.LOG.info("Accept connection {}", s);
                     try {
                         conn.setSocketSendOptions(s);
                         if (s instanceof SSLSocket) {
                             ((SSLSocket) s).startHandshake();
                         }
+                    } catch (IOException e) {
+                        if (monitor != null)
+                            monitor.onConnectionRejected(conn, s, e);
+                        Connection.LOG.warn("Reject connection {}:",s, e);
+                        conn.close(s);
+                        continue;
+                    }
+
+                    if (monitor != null)
+                        monitor.onConnectionAccepted(conn, s);
+                    Connection.LOG.info("Accept connection {}", s);
+                    try {
                         handler.onAccept(conn, s);
                     } catch (IOException e) {
                         Connection.LOG.warn("Exception on accepted connection {}:",s, e);

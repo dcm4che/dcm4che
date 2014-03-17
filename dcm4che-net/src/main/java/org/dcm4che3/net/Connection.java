@@ -836,43 +836,52 @@ public class Connection implements Serializable {
         LOG.info("Initiate connection from {} to {}:{}",
                 new Object[] {bindPoint, remoteHostname, remotePort});
         Socket s = new Socket();
-        s.bind(bindPoint);
-        setReceiveBufferSize(s);
-        setSocketSendOptions(s);
-        String remoteProxy = remoteConn.getHttpProxy();
-        if (remoteProxy != null) {
-            String userauth = null;
-            String[] ss = StringUtils.split(remoteProxy, '@');
-            if (ss.length > 1) {
-                userauth = ss[0];
-                remoteProxy = ss[1];
-            }
-            ss = StringUtils.split(remoteProxy, ':');
-            int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
-            s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
-            try {
-                doProxyHandshake(s, remoteHostname, remotePort, userauth,
+        ConnectionMonitor monitor = device != null
+                ? device.getConnectionMonitor()
+                : null;
+        try {
+            s.bind(bindPoint);
+            setReceiveBufferSize(s);
+            setSocketSendOptions(s);
+            String remoteProxy = remoteConn.getHttpProxy();
+            if (remoteProxy != null) {
+                String userauth = null;
+                String[] ss = StringUtils.split(remoteProxy, '@');
+                if (ss.length > 1) {
+                    userauth = ss[0];
+                    remoteProxy = ss[1];
+                }
+                ss = StringUtils.split(remoteProxy, ':');
+                int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
+                s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
+                try {
+                    doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                            connectTimeout);
+                } catch (IOException e) {
+                    SafeClose.close(s);
+                    throw e;
+                }
+            } else {
+                s.connect(new InetSocketAddress(remoteHostname, remotePort),
                         connectTimeout);
-            } catch (IOException e) {
-                SafeClose.close(s);
-                throw e;
             }
-        } else {
-            s.connect(new InetSocketAddress(remoteHostname, remotePort),
-                    connectTimeout);
-        }
-        if (isTls())
-            try {
+            if (isTls())
                 s = createTLSSocket(s, remoteConn);
-            } catch (GeneralSecurityException e) {
-                SafeClose.close(s);
-                throw e;
-            } catch (IOException e) {
-                SafeClose.close(s);
-                throw e;
-            }
-        LOG.info("Established connection {}", s);
-        return s;
+            if (monitor != null)
+                monitor.onConnectionEstablished(this, remoteConn, s);
+            LOG.info("Established connection {}", s);
+            return s;
+        } catch (GeneralSecurityException e) {
+            if (monitor != null)
+                monitor.onConnectionFailed(this, remoteConn, s, e);
+            SafeClose.close(s);
+            throw e;
+        } catch (IOException e) {
+            if (monitor != null)
+                monitor.onConnectionFailed(this, remoteConn, s, e);
+            SafeClose.close(s);
+            throw e;
+        }
     }
 
     public DatagramSocket createDatagramSocket() throws IOException {

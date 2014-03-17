@@ -126,6 +126,7 @@ public class Device implements Serializable {
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;
+    private transient ConnectionMonitor connectionMonitor;
 
     private transient int assocCount = 0;
     private transient final Object assocCountLock = new Object();
@@ -697,6 +698,14 @@ public class Device implements Serializable {
         if (associationHandler == null)
             throw new NullPointerException();
         this.associationHandler = associationHandler;
+    }
+
+    public ConnectionMonitor getConnectionMonitor() {
+        return connectionMonitor;
+    }
+
+    public void setConnectionMonitor(ConnectionMonitor connectionMonitor) {
+        this.connectionMonitor = connectionMonitor;
     }
 
     public void bindConnections() throws IOException, GeneralSecurityException {

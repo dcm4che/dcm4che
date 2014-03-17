@@ -599,7 +599,7 @@ public class DicomInputStream extends FilterInputStream
         } else {
             byte[] b = readValue();
             if (bigEndian != frags.bigEndian())
-                vr.toggleEndian(b, false);
+                frags.vr().toggleEndian(b, false);
             frags.add(b);
         }
     }

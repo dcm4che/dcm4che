@@ -62,7 +62,7 @@ public class Timeout implements Runnable {
         this.as = as;
         this.expiredMsg = expiredMsg;
         this.cancelMsg = cancelMsg;
-        this.future = as.getApplicationEntity().getDevice()
+        this.future = as.getDevice()
                 .schedule(this, timeout, TimeUnit.MILLISECONDS);
     }
 

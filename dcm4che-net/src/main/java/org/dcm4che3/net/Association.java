@@ -102,7 +102,7 @@ public class Association {
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
 
-     Association(ApplicationEntity ae, Connection local, Socket sock)
+    Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.ae = ae;
@@ -121,6 +121,10 @@ public class Association {
             startRequestTimeout();
         }
         activate();
+    }
+
+    public Device getDevice() {
+         return device;
     }
 
     public int nextMessageID() {

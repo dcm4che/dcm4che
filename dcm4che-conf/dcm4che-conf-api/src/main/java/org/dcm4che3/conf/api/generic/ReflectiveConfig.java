@@ -185,10 +185,10 @@ public class ReflectiveConfig {
 		value = reader.asString(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? null : fieldAnno.def()));
 
 	    } else if (boolean.class.isAssignableFrom(fieldType)) {
-		value = reader.asBoolean(fieldAnno.name(), fieldAnno.def());
+		value = reader.asBoolean(fieldAnno.name(), (fieldAnno.def().equals("N/A")? "false" : fieldAnno.def()));
 
 	    } else if (int.class.isAssignableFrom(fieldType)) {
-		value = reader.asInt(fieldAnno.name(), fieldAnno.def());
+		value = reader.asInt(fieldAnno.name(), (fieldAnno.def().equals("N/A")? "0" : fieldAnno.def()));
 
 	    } else if (AttributesFormat.class.isAssignableFrom(fieldType)) {
 

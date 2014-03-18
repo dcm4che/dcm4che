@@ -140,7 +140,6 @@ public class LookupTableFactory {
 			: storedValue,
 			vLUT);
 		else if(voiLUTFunction != null && voiLUTFunction.equals("SIGMOID")) {
-			System.out.println(voiLUTFunction);
 			StoredValue inBits = modalityLUT != null
 					? new StoredValue.Unsigned(modalityLUT.outBits)
 			: storedValue;

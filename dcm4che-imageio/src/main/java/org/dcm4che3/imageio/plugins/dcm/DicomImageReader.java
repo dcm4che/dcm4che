@@ -295,9 +295,9 @@ public class DicomImageReader extends ImageReader {
             for (int i = 0; i < overlayGroupOffsets.length; i++) {
                 overlayData[i] = extractOverlay(overlayGroupOffsets[i], raster);
             }
-            cm = createColorModel(8, DataBuffer.TYPE_BYTE);
-            SampleModel sm = createSampleModel(DataBuffer.TYPE_BYTE, false);
-            raster = applyLUTs(raster, frameIndex, param, sm, 8);
+            cm = createColorModel(16, DataBuffer.TYPE_USHORT);
+            SampleModel sm = createSampleModel(DataBuffer.TYPE_USHORT, false);
+            raster = applyLUTs(raster, frameIndex, param, sm, 16);
             for (int i = 0; i < overlayGroupOffsets.length; i++) {
                 applyOverlay(overlayGroupOffsets[i], 
                         raster, frameIndex, param, 8, overlayData[i]);

@@ -325,6 +325,15 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.17 NAME 'dcmAuditIncludeInstanceUID'
   EQUALITY booleanMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.18 NAME 'dcmAuditLoggerSpoolDirectoryURI'
+  DESC 'URI of spool directory used to store messages which could not delivered to the record repository; use system temporary directory if absent.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.19 NAME 'dcmAuditLoggerRetryInterval'
+  DESC 'Retry interval in s to re-sent messages which could not delivered to the record repository; do no retry to re-sent messages if absent.'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.3.3.1 NAME 'hl7ApplicationName'
   DESC 'HL7 Application and Facility name (Application^Facility)'
   EQUALITY caseExactMatch
@@ -458,6 +467,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
     dcmAuditMessageFormatXML $
     dcmAuditMessageSchemaURI $
     dcmAuditIncludeInstanceUID $
+    dcmAuditLoggerSpoolDirectoryURI $
+    dcmAuditLoggerRetryInterval $
     dicomInstalled ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'

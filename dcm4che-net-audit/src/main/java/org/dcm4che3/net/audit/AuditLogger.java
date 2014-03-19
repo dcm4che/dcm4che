@@ -39,6 +39,11 @@
 package org.dcm4che3.net.audit;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -48,12 +53,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -61,6 +69,8 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.SSLContext;
 
 import org.dcm4che3.audit.ActiveParticipant;
 import org.dcm4che3.audit.AuditMessage;
@@ -73,6 +83,7 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,7 +167,20 @@ public class AuditLogger extends DeviceExtension {
     private static final char SYSLOG_VERSION = '1';
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
-
+    private static final FilenameFilter FILENAME_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.startsWith("audit") && name.endsWith(".log");
+        }
+    };
+    private static final Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
+        @Override
+        public int compare(File o1, File o2) {
+            long diff = o1.lastModified() - o2.lastModified();
+            return diff < 0 ? -1 : diff > 0 ? 1 : 0;
+        }
+    };
+    
     private static volatile AuditLogger defaultLogger;
     
     private Device arrDevice;
@@ -177,10 +201,16 @@ public class AuditLogger extends DeviceExtension {
     private boolean formatXML;
     private Boolean installed;
     private Boolean includeInstanceUID = false;
+    private File spoolDirectory;
+    private int retryInterval;
 
     private final List<Connection> conns = new ArrayList<Connection>(1);
 
+    private transient MessageBuilder builder;
     private transient ActiveConnection activeConnection;
+    private transient ScheduledFuture<?> retryTimer;
+    private transient Exception lastException;
+    private transient long lastSentTimeInMillis;
 
     public final Device getAuditRecordRepositoryDevice() {
         return arrDevice;
@@ -430,6 +460,64 @@ public class AuditLogger extends DeviceExtension {
         this.includeInstanceUID = includeInstanceUID;
     }
 
+    /**
+     * Get spool directory into which messages failed to sent to the record
+     * repository are stored for later re-send.
+     * 
+     * @return  The directory in which the messages failed to sent are stored,
+     *          or {@code null} if the default temporary-file directory is to
+     *          be used
+     */
+    public File getSpoolDirectory() {
+        return spoolDirectory;
+    }
+
+    /**
+     * Set spool directory into which messages failed sent to the record
+     * repository are stored for later re-send.
+     * 
+     * @param directory The directory in which the messages failed to sent are
+     *                  stored, or {@code null} if the default temporary-file
+     *                  directory is to be used
+     */
+    public void setSpoolDirectory(File directory) {
+        this.spoolDirectory = directory;
+    }
+
+    public String getSpoolDirectoryURI() {
+        return spoolDirectory != null ? spoolDirectory.toURI().toString() : null;
+    }
+
+    public void setSpoolDirectoryURI(String uri) {
+        this.spoolDirectory = uri != null ? new File(URI.create(uri)) : null;
+    }
+
+    /**
+     * Get interval in seconds to retry to sent messages which could not be
+     * sent to the record repository or {@code 0} if messages failed to sent
+     * are not spooled for later re-send.
+     * 
+     * @return interval retry interval in seconds or {@code 0}
+     * 
+     * @see #write(Calendar, AuditMessage)
+     */
+    public int getRetryInterval() {
+        return retryInterval;
+    }
+
+    /**
+     * Set interval in seconds to retry to sent messages which could not be
+     * sent to the record repository or {@code 0} if messages failed to sent
+     * are not spooled for later re-send.
+     * 
+     * @param interval retry interval in seconds or {@code 0}
+     * 
+     * @see #write(Calendar, AuditMessage)
+     */
+    public void setRetryInterval(int interval) {
+        this.retryInterval = interval;
+    }
+
     public void addConnection(Connection conn) {
         if (!conn.getProtocol().isSyslog())
             throw new IllegalArgumentException(
@@ -475,30 +563,211 @@ public class AuditLogger extends DeviceExtension {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
+        setSpoolDirectory(from.spoolDirectory);
+        setRetryInterval(from.retryInterval);
         setInstalled(from.installed);
         setAuditRecordRepositoryDevice(from.arrDevice);
         device.reconfigureConnections(conns, from.conns);
+        closeActiveConnection();
     }
 
     public Calendar timeStamp() {
-        return timestampInUTC 
+        return timestampInUTC
             ? new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.ENGLISH)
             : new GregorianCalendar(Locale.ENGLISH);
     }
 
-    public void write(Calendar timeStamp, AuditMessage message)
+    /**
+     * Send Audit Message by Syslog Protocol to Audit Record Repository. If
+     * an I/O error occurs sending the message to the {@code AuditRecordRepository}
+     * and if a {@code RetryInterval) is configured, the message will be spooled
+     * into the configured {@code SpoolDirectory} for later re-send and the
+     * method returns {@code false}. If no {@code RetryInterval} is configured,
+     * the method throws an {@code IOException) if an I/O error occurs sending
+     * the message.
+     * 
+     * Attention: sending via UDP without getting an I/O error does not ensure
+     * that the Audit Record Repository actually received the message!
+     * 
+     * @param timeStamp included in Syslog Header 
+     * @param msg Audit Message
+     * @return {@code true} if the message was successfully emitted;
+     *         {@code false} if the message was spooled for later 
+     * 
+     * @throws IllegalStateException
+     *         if there is no {@code AuditRecordRepository} associated with
+     *         this {@code AuditLogger}
+     * @throws IncompatibleConnectionException
+     *         if no {@code Connection) of this {@code AuditLogger} is compatible
+     *         with any {@code Connection) of the associated {@code AuditRecordRepository}
+     * @throws GeneralSecurityException
+     *         if the {@link  SSLContext} could not get intialized from configured
+     *         private key and public certificates
+     * @throws IOException
+     *         if an I/O error occurs sending the message to the {@code AuditRecordRepository}
+     *         or on spooling the message to the file system
+     */
+    public boolean write(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
-        getActiveConnection().send(timeStamp, message);
+        return sendMessage(builder().createMessage(timeStamp, msg));
     }
 
-    public void write(Calendar timeStamp, Severity severity,
+    public boolean write(Calendar timeStamp, Severity severity,
             byte[] data, int off, int len)
-            throws IOException, IncompatibleConnectionException, GeneralSecurityException {
-        getActiveConnection().send(timeStamp, severity, data, off, len);
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+         return sendMessage(
+                builder().createMessage(timeStamp, severity, data, off, len));
     }
 
-    public Connection getRemoteActiveConnection() throws IncompatibleConnectionException {
-        return getActiveConnection().remoteConn;
+    private MessageBuilder builder() {
+        if (builder == null)
+            builder = new MessageBuilder();
+
+        return builder;
+    }
+
+    private boolean sendMessage(DatagramPacket msg) throws IncompatibleConnectionException, 
+            GeneralSecurityException, IOException {
+        if (getNumberOfQueuedMessages() > 0) {
+            spoolMessage(msg);
+        } else {
+            try {
+                activeConnection().sendMessage(msg);
+                lastSentTimeInMillis = System.currentTimeMillis();
+                return true;
+            } catch (IOException e) {
+                lastException = e;
+                if (retryInterval > 0) {
+                    LOG.info("Failed to send audit message:", e);
+                    spoolMessage(msg);
+                    scheduleRetry();
+                } else {
+                    throw e;
+                }
+            }
+        }
+        return false;
+    }
+
+    private synchronized void scheduleRetry() {
+        if (retryTimer != null || retryInterval <= 0) {
+            return;
+        }
+
+        LOG.debug("Scheduled retry in {} s", retryInterval);
+        retryTimer = getDevice().schedule(
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        synchronized (AuditLogger.this) {
+                            retryTimer = null;
+                        }
+                        sendQueuedMessages();
+                    }},
+                retryInterval, TimeUnit.SECONDS);
+    }
+
+    private void spoolMessage(DatagramPacket msg) throws IOException {
+        if (spoolDirectory != null)
+            spoolDirectory.mkdirs();
+
+        File f = null;
+        try {
+            f = File.createTempFile("audit", ".log", spoolDirectory);
+            if (spoolDirectory == null)
+                spoolDirectory = f.getParentFile();
+    
+            LOG.info("Spool audit message to {}", f);
+            FileOutputStream out = new FileOutputStream(f);
+            try {
+                out.write(msg.getData(), msg.getOffset(), msg.getLength());
+            } finally {
+                SafeClose.close(out);
+            }
+            f = null;
+        } catch (IOException e) {
+            throw new IOException("Failed to spool audit message", e);
+        } finally {
+            if (f != null)
+                f.delete();
+        }
+    }
+
+    public void sendQueuedMessages() {
+        File dir = spoolDirectory;
+        if (dir == null)
+            return;
+
+        try {
+            File[] queuedMessages = dir.listFiles(FILENAME_FILTER);
+            byte[] b = null;
+            while (queuedMessages != null && queuedMessages.length > 0) {
+                Arrays.sort(queuedMessages, FILE_COMPARATOR);
+                for (File file : queuedMessages) {
+                    LOG.debug("Read audit message from {}", file);
+                    int len = (int) file.length();
+                    if (b == null || b.length < len)
+                        b = new byte[len];
+                    try {
+                        FileInputStream in = new FileInputStream(file);
+                        try {
+                            StreamUtils.readFully(in, b, 0, len);
+                        } finally {
+                            SafeClose.close(in);
+                        }
+                    } catch (IOException e) {
+                        LOG.warn("Failed to read audit message from {}", file, e);
+                        File dest = new File(file.getParent(), file.getPath() + ".err");
+                        file.renameTo(dest);
+                        continue;
+                    }
+                    activeConnection().sendMessage(new DatagramPacket(b, 0, len));
+                    lastSentTimeInMillis = System.currentTimeMillis();
+                    if (file.delete())
+                        LOG.debug("Delete spool file {}", file);
+                    else
+                        LOG.warn("Failed to delete spool file {}", file);
+                }
+                queuedMessages = dir.listFiles(FILENAME_FILTER);
+            }
+        } catch (Exception e) {
+            lastException = e;
+            LOG.info("Failed to send audit message:", e);
+            scheduleRetry();
+        }
+        synchronized (this) {
+            notify();
+        }
+    }
+
+    public Exception getLastException() {
+        return lastException;
+    }
+
+    public long getLastSentTimeInMillis() {
+        return lastSentTimeInMillis;
+    }
+
+    public int getNumberOfQueuedMessages() {
+        try {
+            return spoolDirectory.list(FILENAME_FILTER).length;
+        } catch (NullPointerException e) {
+            return 0;
+        }
+    }
+
+    public File[] getQueuedMessages() {
+        try {
+            return spoolDirectory.listFiles(FILENAME_FILTER);
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
+    public synchronized void waitForNoQueuedMessages(long timeout) 
+            throws InterruptedException {
+        while (getNumberOfQueuedMessages() > 0)
+            wait(timeout);
     }
 
     public synchronized void closeActiveConnection() {
@@ -513,7 +782,7 @@ public class AuditLogger extends DeviceExtension {
         }
     }
 
-    private synchronized ActiveConnection getActiveConnection()
+    private synchronized ActiveConnection activeConnection()
             throws IncompatibleConnectionException {
         ActiveConnection activeConnection = this.activeConnection;
         if (activeConnection != null)
@@ -522,11 +791,13 @@ public class AuditLogger extends DeviceExtension {
         Device arrDev = this.arrDevice;
         if (arrDevice == null)
             throw new IllegalStateException("No AuditRecordRepositoryDevice initalized");
+
         AuditRecordRepository arr = arrDev.getDeviceExtension(AuditRecordRepository.class);
         if (arr == null)
             throw new IllegalStateException("AuditRecordRepositoryDevice "
                     + arrDevice.getDeviceName()
                     + " does not provide Audit Record Repository");
+
         for (Connection remoteConn : arr.getConnections())
             if (remoteConn.isInstalled() && remoteConn.isServer())
                 for (Connection conn : conns)
@@ -587,45 +858,29 @@ public class AuditLogger extends DeviceExtension {
         AuditLogger.defaultLogger = defaultLogger;
     }
 
-    private abstract class ActiveConnection extends ByteArrayOutputStream {
-        final Connection conn;
-        final Connection remoteConn;
-        ActiveConnection(Connection conn, Connection remoteConn) {
-            this.conn = conn;
-            this.remoteConn = remoteConn;
-        }
+    private class MessageBuilder extends ByteArrayOutputStream {
 
-        abstract void connect() throws IOException,
-                IncompatibleConnectionException, GeneralSecurityException;
-
-        abstract void sendMessage() throws IOException,
-                IncompatibleConnectionException, GeneralSecurityException;
-
-        void send(Calendar timeStamp, AuditMessage msg)
-                throws IncompatibleConnectionException, GeneralSecurityException, IOException {
-            reset();
+        DatagramPacket createMessage(Calendar timeStamp, AuditMessage msg) {
             try {
+                reset();
                 writeHeader(severityOf(msg), timeStamp);
-                AuditMessages.toXML(msg, this, formatXML, encoding, schemaURI);
+                AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
             } catch (IOException e) {
-                throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
+                assert false : e;
             }
-            connect();
-            sendMessage();
-        }
+            return new DatagramPacket(buf, 0, count);
+       }
 
-        public void send(Calendar timeStamp, Severity severity,
-                byte[] data, int off, int len)
-                throws IOException, IncompatibleConnectionException, GeneralSecurityException {
-            reset();
+        DatagramPacket createMessage(Calendar timeStamp, Severity severity,
+                byte[] data, int off, int len) {
             try {
+                reset();
                 writeHeader(severity, timeStamp);
                 write(data, off, len);
             } catch (IOException e) {
-                throw (AssertionError) new AssertionError("Unexpected exception: " + e).initCause(e);
+                assert false : e;
             }
-            connect();
-            sendMessage();
+            return new DatagramPacket(buf, 0, count);
         }
 
         void writeHeader(Severity severity, Calendar timeStamp)
@@ -657,7 +912,7 @@ public class AuditLogger extends DeviceExtension {
                 write(BOM);
         }
 
-        private void writeInt(int i) {
+        void writeInt(int i) {
             if (i >= 100)
                 writeNNN(i);
             else if (i >= 10)
@@ -666,7 +921,7 @@ public class AuditLogger extends DeviceExtension {
                 writeN(i);
         }
 
-        private void write(Calendar timeStamp) {
+        void write(Calendar timeStamp) {
             writeNNNN(timeStamp.get(Calendar.YEAR));
             write('-');
             writeNN(timeStamp.get(Calendar.MONTH) + 1);
@@ -716,6 +971,30 @@ public class AuditLogger extends DeviceExtension {
         void writeN(int i) {
             write(DIGITS_0X[i]);
         }
+
+    }
+
+    private static String toString(DatagramPacket packet) {
+        try {
+            return packet.getLength() > MSG_PROMPT_LEN
+                    ? (new String(packet.getData(), 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
+                    : new String(packet.getData(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private abstract class ActiveConnection implements Closeable {
+        final Connection conn;
+        final Connection remoteConn;
+        ActiveConnection(Connection conn, Connection remoteConn) {
+            this.conn = conn;
+            this.remoteConn = remoteConn;
+        }
+
+        abstract void sendMessage(DatagramPacket msg) throws IOException,
+                IncompatibleConnectionException, GeneralSecurityException;
+
     }
 
     private class UDPConnection extends ActiveConnection {
@@ -725,17 +1004,16 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        void connect() throws IOException {
+        void sendMessage(DatagramPacket msg) throws IOException {
             if (ds == null)
-                this.ds = conn.createDatagramSocket();
-        }
+                ds = conn.createDatagramSocket();
 
-        @Override
-        void sendMessage() throws IOException {
             InetSocketAddress endPoint = remoteConn.getEndPoint();
-            LOG.info("Sending UDP Syslog message of {} bytes to {}", count, endPoint);
-            LOG.debug(prompt(buf));
-            ds.send(new DatagramPacket(buf, count, endPoint));
+            LOG.info("Send audit message to {}", endPoint);
+            if (LOG.isDebugEnabled())
+                LOG.debug(AuditLogger.toString(msg));
+            msg.setSocketAddress(endPoint);
+            ds.send(msg);
         }
 
         @Override
@@ -745,6 +1023,7 @@ public class AuditLogger extends DeviceExtension {
                 ds = null;
             }
         }
+
     }
 
     private class TCPConnection extends ActiveConnection  {
@@ -756,8 +1035,7 @@ public class AuditLogger extends DeviceExtension {
             super(conn, remoteConn);
         }
 
-        @Override
-        synchronized void connect() throws IOException,
+        void connect() throws IOException,
             IncompatibleConnectionException, GeneralSecurityException {
             if (sock == null) {
                 sock = conn.connect(remoteConn);
@@ -766,36 +1044,49 @@ public class AuditLogger extends DeviceExtension {
         }
 
         @Override
-        synchronized void sendMessage() throws IOException,
+        synchronized void sendMessage(DatagramPacket packet) throws IOException,
                 IncompatibleConnectionException, GeneralSecurityException {
             stopIdleTimer();
+            connect();
             try {
-                trySendMessage();
+                trySendMessage(packet);
             } catch (IOException e) {
-                LOG.info("Failed to send Syslog message to {} - reconnect",
+                LOG.info("Failed to send audit message to {} - reconnect",
                         sock, e);
                 close();
                 connect();
-                trySendMessage();
+                trySendMessage(packet);
             }
-            LOG.info("Sent Syslog message of {} bytes to {}", count, sock);
-            LOG.debug(prompt(buf));
             startIdleTimer();
+        }
+
+        void trySendMessage(DatagramPacket packet) throws IOException {
+            LOG.info("Send audit message to {}", sock);
+            if (LOG.isDebugEnabled())
+                LOG.debug(AuditLogger.toString(packet));
+            out.write(Integer.toString(packet.getLength()).getBytes(encoding));
+            out.write(' ');
+            out.write(packet.getData(), packet.getOffset(), packet.getLength());
+            out.flush();
         }
 
         private void startIdleTimer() {
             int idleTimeout = conn.getIdleTimeout();
             if (idleTimeout > 0) {
                  LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
-                 idleTimer = conn.getDevice().schedule(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                onIdleTimerExpired();
-                            }
-                        },
-                        idleTimeout,
-                        TimeUnit.MILLISECONDS);
+                 try {
+                     idleTimer = conn.getDevice().schedule(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    onIdleTimerExpired();
+                                }
+                            },
+                            idleTimeout,
+                            TimeUnit.MILLISECONDS);
+                 } catch (Exception e) {
+                     LOG.warn("Failed to start Idle timeout", e);
+                 }
             }
         }
 
@@ -807,16 +1098,6 @@ public class AuditLogger extends DeviceExtension {
             }
         }
 
-        private void trySendMessage() throws IOException {
-            LOG.debug("Sending Syslog message of {} bytes to {}",
-                    count, sock);
-            out.write(Integer.toString(count).getBytes(encoding));
-            out.write(' ');
-            out.write(buf, 0, count);
-            out.flush();
-        }
-
-
         @Override
         public synchronized void close() {
             stopIdleTimer();
@@ -824,7 +1105,8 @@ public class AuditLogger extends DeviceExtension {
         }
 
         private void closeSocket() {
-            conn.close(sock);
+            if (sock != null)
+                conn.close(sock);
             sock = null;
             out = null;
         }
@@ -841,16 +1123,7 @@ public class AuditLogger extends DeviceExtension {
                 }
             }
         }
-    }
 
-    private static String prompt(byte[] data) {
-        try {
-            return data.length > MSG_PROMPT_LEN
-                    ? (new String(data, 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
-                    : new String(data, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

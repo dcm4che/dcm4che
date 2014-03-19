@@ -107,6 +107,10 @@ public class PreferencesAuditLoggerConfiguration
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
         PreferencesUtils.storeNotDef(prefs, "dcmAuditIncludeInstanceUID", 
                 logger.isIncludeInstanceUID(), false);
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditLoggerSpoolDirectoryURI",
+                logger.getSpoolDirectoryURI());
+        PreferencesUtils.storeNotDef(prefs, "dcmAuditLoggerRetryInterval",
+                logger.getRetryInterval(), 0);
         PreferencesUtils.storeNotNull(prefs, "dicomInstalled", logger.getInstalled());
     }
 
@@ -179,6 +183,10 @@ public class PreferencesAuditLoggerConfiguration
                 prefs.getBoolean("dcmAuditTimestampInUTC", false));
         logger.setIncludeInstanceUID(
                 prefs.getBoolean("dcmAuditIncludeInstanceUID", false));
+        logger.setSpoolDirectoryURI(
+                prefs.get("dcmAuditLoggerSpoolDirectoryURI", null));
+        logger.setRetryInterval(
+                prefs.getInt("dcmAuditLoggerRetryInterval", 0));
         logger.setInstalled(PreferencesUtils.booleanValue(prefs.get("dicomInstalled", null)));
     }
 
@@ -265,6 +273,13 @@ public class PreferencesAuditLoggerConfiguration
                 a.isIncludeInstanceUID(), 
                 b.isIncludeInstanceUID(),
                 false);
+        PreferencesUtils.storeDiff(prefs, "dcmAuditLoggerSpoolDirectoryURI",
+                a.getSpoolDirectoryURI(),
+                b.getSpoolDirectoryURI());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditLoggerRetryInterval", 
+                a.getRetryInterval(), 
+                b.getRetryInterval(), 
+                0);
         PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());

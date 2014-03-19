@@ -118,6 +118,10 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 config.deviceRef(logger.getAuditRecordRepositoryDeviceName()));
         LdapUtils.storeNotDef(attrs, "dcmAuditIncludeInstanceUID", 
                 logger.isIncludeInstanceUID(), false);
+        LdapUtils.storeNotNull(attrs, "dcmAuditLoggerSpoolDirectoryURI",
+                logger.getSpoolDirectoryURI());
+        LdapUtils.storeNotDef(attrs, "dcmAuditLoggerRetryInterval",
+                logger.getRetryInterval(), 0);
         LdapUtils.storeNotNull(attrs, "dicomInstalled",
                 logger.getInstalled());
         return attrs;
@@ -188,6 +192,10 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 LdapUtils.booleanValue(attrs.get("dcmAuditTimestampInUTC"), false));
         logger.setIncludeInstanceUID(
                 LdapUtils.booleanValue(attrs.get("dcmAuditIncludeInstanceUID"), false));
+        logger.setSpoolDirectoryURI(
+                LdapUtils.stringValue(attrs.get("dcmAuditLoggerSpoolDirectoryURI"), null));
+        logger.setRetryInterval(
+                LdapUtils.intValue(attrs.get("dcmAuditLoggerRetryInterval"), 0));
         logger.setInstalled(
                 LdapUtils.booleanValue(attrs.get("dicomInstalled"), null));
     }
@@ -277,6 +285,13 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
                 a.isIncludeInstanceUID(), 
                 b.isIncludeInstanceUID(), 
                 false);
+        LdapUtils.storeDiff(mods, "dcmAuditLoggerSpoolDirectoryURI",
+                a.getSpoolDirectoryURI(),
+                b.getSpoolDirectoryURI());
+        LdapUtils.storeDiff(mods, "dcmAuditLoggerRetryInterval", 
+                a.getRetryInterval(), 
+                b.getRetryInterval(), 
+                0);
         LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());

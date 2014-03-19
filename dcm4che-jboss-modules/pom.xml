@@ -152,7 +152,7 @@
                 <descriptor>src/main/assembly/modules.xml</descriptor>
               </descriptors>
             </configuration>
-          </execution>          
+          </execution>
           <execution>
             <id>${project.name}-bundles-assembly</id>
             <phase>package</phase>
@@ -160,13 +160,11 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <appendAssemblyId>false</appendAssemblyId>
-              <finalName>dcm4che-jboss-bundles-${project.version}</finalName>
               <descriptors>
                 <descriptor>src/main/assembly/bundles.xml</descriptor>
               </descriptors>
             </configuration>
-          </execution>          
+          </execution>
         </executions>
       </plugin>
     </plugins>

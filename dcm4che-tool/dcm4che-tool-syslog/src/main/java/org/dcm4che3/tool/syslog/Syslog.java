@@ -81,8 +81,6 @@ public class Syslog {
     private int delayBetweenMessages;
 
 
-    private AuditLogger.Severity severity = AuditLogger. Severity.notice;
-
     public Syslog() throws IOException {
         logDevice.addDeviceExtension(auditLogger);
         logDevice.addConnection(conn);
@@ -98,20 +96,12 @@ public class Syslog {
         arr.addConnection(remote);
     }
 
-    private void setSeverity(AuditLogger.Severity severity) {
-        this.severity = severity;
-    }
-
-    private void setFacility(AuditLogger.Facility facility) {
-        auditLogger.setFacility(facility);
-    }
-
     private static CommandLine parseComandLine(String[] args)
             throws ParseException{
         Options opts = new Options();
         addConnectOption(opts);
         addBindOption(opts);
-        addSyslogOptions(opts);
+        addAuditLogger(opts);
         addSendOptions(opts);
         CLIUtils.addSocketOptions(opts);
         CLIUtils.addTLSOptions(opts);
@@ -154,7 +144,7 @@ public class Syslog {
     }
 
     @SuppressWarnings("static-access")
-    private static void addSyslogOptions(Options opts) {
+    private static void addAuditLogger(Options opts) {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("facility")
@@ -180,7 +170,19 @@ public class Syslog {
                 .withLongOpt("msg-id")
                 .create(null));
         opts.addOption(null, "utc", false, rb.getString("utc"));
-        opts.addOption(null, "bom", false, rb.getString("bom"));
+        opts.addOption(null, "no-bom", false, rb.getString("no-bom"));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("s")
+                .withDescription(rb.getString("retry"))
+                .withLongOpt("retry")
+                .create(null));
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("dir")
+                .withDescription(rb.getString("spool-dir"))
+                .withLongOpt("spool-dir")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -220,13 +222,16 @@ public class Syslog {
             CommandLine cl = parseComandLine(args);
             Syslog main = new Syslog();
             configureConnect(main.remote, cl);
-            configureSyslog(main, cl);
+            main.setProtocol(toProtocol(cl));
+            configureAuditLogger(main.auditLogger, cl);
+            main.setDelayBetweenMessages(
+                    CLIUtils.getIntOption(cl, "delay", 0));
             configureBind(main.conn, cl);
-            main.setDelayBetweenMessages(toDelay(cl));
             CLIUtils.configure(main.conn, cl);
-            main.init();
             try {
+                main.init();
                 main.sendFiles(cl.getArgList());
+                main.waitForNoQueuedMessages();
             } finally {
                 main.close();
             }
@@ -241,26 +246,24 @@ public class Syslog {
         }
     }
 
+    private void waitForNoQueuedMessages() throws InterruptedException {
+        auditLogger.waitForNoQueuedMessages(0);
+    }
+
     private void setDelayBetweenMessages(int delayBetweenMessages) {
         this.delayBetweenMessages = delayBetweenMessages;
     }
 
-    private static int toDelay(CommandLine cl) {
-        return cl.hasOption("delay")
-                ? Integer.parseInt(cl.getOptionValue("delay"))
-                : 0;
-    }
-
-    private static void configureSyslog(Syslog main, CommandLine cl) {
-        main.setProtocol(toProtocol(cl));
-        main.setFacility(toFacility(cl));
-        main.setSeverity(toSeverity(cl));
-        if (cl.hasOption("app-name"))
-            main.auditLogger.setApplicationName("app-name");
-        if (cl.hasOption("msg-id"))
-            main.auditLogger.setMessageID("msg-id");
-        main.auditLogger.setIncludeBOM(cl.hasOption("bom"));
-        main.auditLogger.setTimestampInUTC(cl.hasOption("utc"));
+    private static void configureAuditLogger(AuditLogger logger, CommandLine cl) {
+        logger.setFacility(toFacility(cl));
+        logger.setSuccessSeverity(toSeverity(cl));
+        logger.setApplicationName(cl.getOptionValue("app-name"));
+        logger.setMessageID(cl.getOptionValue("msg-id", AuditLogger.MESSAGE_ID));
+        logger.setIncludeBOM(!cl.hasOption("no-bom"));
+        logger.setTimestampInUTC(cl.hasOption("utc"));
+        if (cl.hasOption("spool-dir"))
+            logger.setSpoolDirectory(new File(cl.getOptionValue("spool-dir")));
+        logger.setRetryInterval(CLIUtils.getIntOption(cl, "retry", 0));
     }
 
     private static AuditLogger.Severity toSeverity(CommandLine cl) {
@@ -283,6 +286,7 @@ public class Syslog {
         remote.setTlsProtocols(conn.getTlsProtocols());
         remote.setTlsCipherSuites(conn.getTlsCipherSuites());
         logDevice.setScheduledExecutor(Executors.newSingleThreadScheduledExecutor());
+        auditLogger.sendQueuedMessages();
     }
 
     public void close() {
@@ -298,7 +302,8 @@ public class Syslog {
             if (count++ > 0 && delayBetweenMessages > 0)
                 Thread.sleep(delayBetweenMessages);
             byte[] b = readFile(pathname);
-            auditLogger.write(auditLogger.timeStamp(), severity,
+            auditLogger.write(auditLogger.timeStamp(),
+                    auditLogger.getSuccessSeverity(),
                     b, 0, b.length);
         }
     }

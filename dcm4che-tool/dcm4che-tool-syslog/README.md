@@ -13,12 +13,11 @@
                                               application; pick up any valid
                                               local address to bind the socket
                                               by default.
-        --bom                                 prefix message content by BOM.
      -c,--connect <host:port>                 specify remote address and port
                                               of the Syslog Receiver.
         --connect-timeout <ms>                timeout in ms for TCP connect,
                                               no timeout by default
-        --delay <seconds>                     specify delay in seconds between
+        --delay <ms>                          specify delay time in ms between
                                               sent messages
         --facility <facility>                 specify facility name of the
                                               emitted syslog messages. Valid
@@ -29,7 +28,7 @@
                                               local0 to local7. The default is
                                               authpriv.
      -h,--help                                display this help and exit
-        --idle-timeout <ms>                   specify time in ms, after tcp
+        --idle-timeout <ms>                   specify time in ms, after TCP
                                               connection is closed between
                                               sent messages. Only effective if
                                               a larger delay time between sent
@@ -55,13 +54,25 @@
         --msg-id <id>                         Specify MSGID in emitted Syslog
                                               messages. 'DICOM+RFC3881' by
                                               default.
+        --no-bom                              do not prefix message content by
+                                              BOM.
         --proxy <[user:password@]host:port>   specify host and port of the
                                               HTTP Proxy to tunnel the TCP
                                               connection.
+        --retry <s>                           specify retry interval in s to
+                                              sent messages to a temporary
+                                              unreachable syslog receiver; no
+                                              retry by default.
         --sorcv-buffer <length>               set SO_RCVBUF socket option to
                                               specified value
         --sosnd-buffer <length>               set SO_SNDBUF socket option to
                                               specified value
+        --spool-dir <dir>                     directory to spool messages if
+                                              the syslog receiver is not
+                                              reachable and a a retry inteval
+                                              was specified by --retry. Use
+                                              system temporary directory by
+                                              default.
         --ssl2Hello                           send/accept SSLv3/TLS
                                               ClientHellos encapsulated in a
                                               SSLv2 ClientHello packet;

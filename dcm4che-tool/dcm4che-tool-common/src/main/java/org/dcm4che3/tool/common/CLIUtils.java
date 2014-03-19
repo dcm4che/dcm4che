@@ -448,58 +448,29 @@ public class CLIUtils {
 
     public static void configure(Connection conn, CommandLine cl)
             throws ParseException, IOException {
-        if (cl.hasOption("max-pdulen-rcv"))
-            conn.setReceivePDULength(Integer.parseInt(
-                    cl.getOptionValue("max-pdulen-rcv")));
-        if (cl.hasOption("max-pdulen-snd"))
-            conn.setSendPDULength(Integer.parseInt(
-                    cl.getOptionValue("max-pdulen-snd")));
+        conn.setReceivePDULength(
+                getIntOption(cl, "max-pdulen-rcv", Connection.DEF_MAX_PDU_LENGTH));
+        conn.setSendPDULength(
+                getIntOption(cl, "max-pdulen-snd", Connection.DEF_MAX_PDU_LENGTH));
         if(cl.hasOption("not-async")) {
             conn.setMaxOpsInvoked(1);
             conn.setMaxOpsPerformed(1);
         } else {
-            int maxOpsInvoked = 0;
-            if (cl.hasOption("max-ops-invoked"))
-                maxOpsInvoked = Integer.parseInt(
-                        cl.getOptionValue("max-ops-invoked"));
-            conn.setMaxOpsInvoked(maxOpsInvoked);
-            int maxOpsPerformed = 0;
-            if (cl.hasOption("max-ops-performed"))
-                maxOpsPerformed = Integer.parseInt(
-                        cl.getOptionValue("max-ops-performed"));
-            conn.setMaxOpsPerformed(maxOpsPerformed);
+            conn.setMaxOpsInvoked(getIntOption(cl, "max-ops-invoked", 0));
+            conn.setMaxOpsPerformed(getIntOption(cl, "max-ops-performed", 0));
         }
         conn.setPackPDV(!cl.hasOption("not-pack-pdv"));
-        if (cl.hasOption("connect-timeout"))
-            conn.setConnectTimeout(
-                    Integer.parseInt(cl.getOptionValue("connect-timeout")));
-        if (cl.hasOption("request-timeout"))
-            conn.setRequestTimeout(
-                    Integer.parseInt(cl.getOptionValue("request-timeout")));
-        if (cl.hasOption("accept-timeout"))
-            conn.setAcceptTimeout(
-                    Integer.parseInt(cl.getOptionValue("accept-timeout")));
-        if (cl.hasOption("release-timeout"))
-            conn.setReleaseTimeout(
-                    Integer.parseInt(cl.getOptionValue("release-timeout")));
-        if (cl.hasOption("response-timeout"))
-            conn.setResponseTimeout(
-                    Integer.parseInt(cl.getOptionValue("response-timeout")));
-        if (cl.hasOption("retrieve-timeout"))
-            conn.setRetrieveTimeout(
-                    Integer.parseInt(cl.getOptionValue("retrieve-timeout")));
-        if (cl.hasOption("idle-timeout"))
-            conn.setIdleTimeout(
-                    Integer.parseInt(cl.getOptionValue("idle-timeout")));
-        if (cl.hasOption("soclose-delay"))
-            conn.setSocketCloseDelay(
-                    Integer.parseInt(cl.getOptionValue("soclose-delay")));
-        if (cl.hasOption("sosnd-buffer"))
-            conn.setSendBufferSize(
-                    Integer.parseInt(cl.getOptionValue("sosnd-buffer")));
-        if (cl.hasOption("sorcv-buffer"))
-            conn.setReceiveBufferSize(
-                    Integer.parseInt(cl.getOptionValue("sorcv-buffer")));
+        conn.setConnectTimeout(getIntOption(cl, "connect-timeout", 0));
+        conn.setRequestTimeout(getIntOption(cl, "request-timeout", 0));
+        conn.setAcceptTimeout(getIntOption(cl, "accept-timeout", 0));
+        conn.setReleaseTimeout(getIntOption(cl, "release-timeout", 0));
+        conn.setResponseTimeout(getIntOption(cl, "response-timeout", 0));
+        conn.setRetrieveTimeout(getIntOption(cl, "retrieve-timeout", 0));
+        conn.setIdleTimeout(getIntOption(cl, "idle-timeout", 0));
+        conn.setSocketCloseDelay(getIntOption(cl, "soclose-delay", 
+                Connection.DEF_SOCKETDELAY));
+        conn.setSendBufferSize(getIntOption(cl, "sosnd-buffer", 0));
+        conn.setReceiveBufferSize(getIntOption(cl, "sorcv-buffer", 0));
         conn.setTcpNoDelay(!cl.hasOption("tcp-delay"));
         configureTLS(conn, cl);
     }

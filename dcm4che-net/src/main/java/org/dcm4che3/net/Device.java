@@ -1024,6 +1024,16 @@ public class Device implements Serializable {
                 initialDelay, period, unit);
     }
 
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command,
+            long initialDelay, long delay, TimeUnit unit) {
+        if (scheduledExecutor == null)
+            throw new IllegalStateException(
+                    "scheduled executor service not initalized");
+
+        return scheduledExecutor.scheduleWithFixedDelay(command,
+                initialDelay, delay, unit);
+    }
+
     @Override
     public String toString() {
         return promptTo(new StringBuilder(512), "").toString();

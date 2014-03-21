@@ -577,6 +577,8 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("2","RFC-3881","Patient Number");
         public static final ParticipantObjectIDTypeCode ITI_ReportNumber = 
                 new ParticipantObjectIDTypeCode("9","RFC-3881","Report Number");
+        public static final ParticipantObjectIDTypeCode ITI_PIXQuery = 
+                new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
 
         public ParticipantObjectIDTypeCode(String code) {
             super.code = code;

@@ -40,13 +40,17 @@ package org.dcm4che3.audit;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.dcm4che3.audit.Accession;
 import org.dcm4che3.audit.ActiveParticipant;
@@ -81,7 +85,7 @@ public class AuditMessages {
     private static JAXBContext jc() throws JAXBException {
         JAXBContext jc = AuditMessages.jc;
         if (jc == null)
-            AuditMessages.jc = jc = JAXBContext.newInstance(AuditMessage.class);
+            AuditMessages.jc = jc = JAXBContext.newInstance("org.dcm4che3.audit", AuditMessage.class.getClassLoader());
         return jc;
     }
 
@@ -795,5 +799,23 @@ public class AuditMessages {
         ByteArrayOutputStream os = new ByteArrayOutputStream(256);
         toXML(message, os, format, encoding, schemaURL);
         return os.toString(encoding);
+    }
+
+    public static AuditMessage fromXML(InputStream is)
+            throws JAXBException {
+        Unmarshaller u = jc().createUnmarshaller();
+        @SuppressWarnings("unchecked")
+        JAXBElement<AuditMessage> je =
+                (JAXBElement<AuditMessage>) u.unmarshal(is);
+        return je.getValue();
+    }
+
+    public static AuditMessage fromXML(Reader is)
+            throws JAXBException {
+        Unmarshaller u = jc().createUnmarshaller();
+        @SuppressWarnings("unchecked")
+        JAXBElement<AuditMessage> je =
+                (JAXBElement<AuditMessage>) u.unmarshal(is);
+        return je.getValue();
     }
 }

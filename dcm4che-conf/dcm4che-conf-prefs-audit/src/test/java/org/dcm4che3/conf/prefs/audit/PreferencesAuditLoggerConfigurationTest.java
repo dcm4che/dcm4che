@@ -38,11 +38,17 @@
 
 package org.dcm4che3.conf.prefs.audit;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 
+import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.prefs.PreferencesDicomConfiguration;
 import org.dcm4che3.conf.prefs.audit.PreferencesAuditLoggerConfiguration;
@@ -149,17 +155,56 @@ public class PreferencesAuditLoggerConfigurationTest {
         logger.addConnection(udp);
         logger.addConnection(tls);
         logger.setAuditRecordRepositoryDevice(arrDevice);
+        logger.setSchemaURI(AuditMessages.SCHEMA_URI);
+        logger.setMessageID("MessageID");
+        logger.setApplicationName("ApplicationName");
+        logger.setAuditEnterpriseSiteID("AuditEnterpriseSiteID");
+        logger.setAuditSourceID("AuditSourceID");
+        logger.setAuditSourceTypeCodes("4", "5");
+        logger.setEncoding("ISO-8859-1");
+        logger.setFacility(AuditLogger.Facility.auth);
+        logger.setSuccessSeverity(AuditLogger.Severity.info);
+        logger.setMinorFailureSeverity(AuditLogger.Severity.notice);
+        logger.setSeriousFailureSeverity(AuditLogger.Severity.warning);
+        logger.setMajorFailureSeverity(AuditLogger.Severity.err);
+        logger.setFormatXML(true);
+        logger.setIncludeBOM(false);
+        logger.setRetryInterval(300);
+        logger.setSpoolDirectory(new File("/tmp"));
+        logger.setIncludeInstanceUID(true);
     }
 
     private void validate(Device device) {
         AuditLogger logger = device.getDeviceExtension(AuditLogger.class);
         assertNotNull(logger);
         assertEquals(2, logger.getConnections().size());
+        assertEquals(AuditMessages.SCHEMA_URI, logger.getSchemaURI());
+        assertEquals("MessageID", logger.getMessageID());
+        assertEquals("ApplicationName", logger.getApplicationName());
+        assertEquals("AuditEnterpriseSiteID", logger.getAuditEnterpriseSiteID());
+        assertEquals("AuditSourceID", logger.getAuditSourceID());
+        assertArrayEquals(new String[]{"4", "5"}, sort(logger.getAuditSourceTypeCodes()));
+        assertEquals("ISO-8859-1", logger.getEncoding());
+        assertEquals(AuditLogger.Facility.auth, logger.getFacility());
+        assertEquals(AuditLogger.Severity.info, logger.getSuccessSeverity());
+        assertEquals(AuditLogger.Severity.notice, logger.getMinorFailureSeverity());
+        assertEquals(AuditLogger.Severity.warning, logger.getSeriousFailureSeverity());
+        assertEquals(AuditLogger.Severity.err, logger.getMajorFailureSeverity());
+        assertTrue(logger.isFormatXML());
+        assertFalse(logger.isIncludeBOM());
+        assertEquals(300, logger.getRetryInterval());
+        assertEquals(new File("/tmp"), logger.getSpoolDirectory());
+        assertTrue(logger.isIncludeInstanceUID());
         Device arrDevice = logger.getAuditRecordRepositoryDevice();
         assertNotNull(arrDevice);
         AuditRecordRepository arr = arrDevice.getDeviceExtension(AuditRecordRepository.class);
         assertNotNull(arr);
         assertEquals(2, arr.getConnections().size());
+    }
+
+    private <T> T[] sort(T[] a) {
+        Arrays.sort(a);
+        return a;
     }
 
 }

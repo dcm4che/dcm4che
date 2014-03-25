@@ -39,6 +39,8 @@
 package org.dcm4che3.audit;
 
 
+import java.io.StringReader;
+
 import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.ParticipantObjectDescription;
 import org.dcm4che3.audit.AuditMessages;
@@ -49,6 +51,81 @@ import org.junit.Test;
  *
  */
 public class AuditMessageTest {
+
+    private static final String AUDIT_MESSAGE =
+            "<AuditMessage>"
+            + "<EventIdentification"
+            + " EventActionCode=\"C\""
+            + " EventDateTime=\"2014-03-12T14:10:50.934+01:00\""
+            + " EventOutcomeIndicator=\"0\">"
+            + "<EventID"
+            + " code=\"110104\""
+            + " displayName=\"DICOM Instances Transferred\""
+            + " codeSystemName=\"DCM\"/>"
+            + "</EventIdentification>"
+            + "<ActiveParticipant"
+            + " UserID=\"123\""
+            + " AlternativeUserID=\"AETITLES=AEFOO\""
+            + " UserIsRequestor=\"false\""
+            + " NetworkAccessPointID=\"192.168.1.2\""
+            + " NetworkAccessPointTypeCode=\"2\">"
+            + "<RoleIDCode"
+            + " code=\"110153\""
+            + " displayName=\"Source\""
+            + " codeSystemName=\"DCM\"/>"
+            + "</ActiveParticipant>"
+            + "<ActiveParticipant"
+            + " UserID=\"67562\""
+            + " AlternativeUserID=\"AETITLES=AEPACS\""
+            + " UserIsRequestor=\"false\""
+            + " NetworkAccessPointID=\"192.168.1.5\""
+            + " NetworkAccessPointTypeCode=\"2\">"
+            + "<RoleIDCode"
+            + " code=\"110152\""
+            + " displayName=\"Destination\""
+            + " codeSystemName=\"DCM\"/>"
+            + "</ActiveParticipant>"
+            + "<ActiveParticipant"
+            + " UserID=\"smitty@readingroom.hospital.org\""
+            + " AlternativeUserID=\"smith@nema\""
+            + " UserName=\"Dr. Smith\""
+            + " UserIsRequestor=\"true\""
+            + " NetworkAccessPointID=\"192.168.1.2\""
+            + " NetworkAccessPointTypeCode=\"2\">"
+            + "<RoleIDCode"
+            + " code=\"110153\""
+            + " displayName=\"Source\""
+            + " codeSystemName=\"DCM\"/>"
+            + "</ActiveParticipant>"
+            + "<AuditSourceIdentification"
+            + " AuditEnterpriseSiteID=\"Hospital\""
+            + " AuditSourceID=\"ReadingRoom\">"
+            + "<AuditSourceTypeCode code=\"1\"/>"
+            + "</AuditSourceIdentification>"
+            + "<ParticipantObjectIdentification"
+            + " ParticipantObjectID=\"1.2.840.10008.2.3.4.5.6.7.78.8\""
+            + " ParticipantObjectTypeCode=\"2\""
+            + " ParticipantObjectTypeCodeRole=\"4\""
+            + " ParticipantObjectDataLifeCycle=\"1\">"
+            + "<ParticipantObjectIDTypeCode"
+            + " code=\"110180\""
+            + " displayName=\"Study Instance UID\""
+            + " codeSystemName=\"DCM\"/>"
+            + "<ParticipantObjectDescription>"
+            + "<MPPS UID=\"1.2.840.10008.1.2.3.4.5\"/>"
+            + "<Accession Number=\"12341234\"/>"
+            + "<SOPClass UID=\"1.2.840.10008.5.1.4.1.1.2\" NumberOfInstances=\"1500\"/>"
+            + "<SOPClass UID=\"1.2.840.10008.5.1.4.1.1.11.1\" NumberOfInstances=\"3\"/>"
+            + "</ParticipantObjectDescription>"
+            + "</ParticipantObjectIdentification>"
+            + "<ParticipantObjectIdentification"
+            + " ParticipantObjectID=\"ptid12345\""
+            + " ParticipantObjectTypeCode=\"1\""
+            + " ParticipantObjectTypeCodeRole=\"1\">"
+            + "<ParticipantObjectIDTypeCode code=\"2\"/>"
+            + "<ParticipantObjectName>John Doe</ParticipantObjectName>"
+            + "</ParticipantObjectIdentification>"
+            + "</AuditMessage>";
 
     @Test
     public void testDICOMInstancesTransferred() throws Exception {
@@ -124,6 +201,11 @@ public class AuditMessageTest {
                         null,
                         null));
         AuditMessages.toXML(msg, System.out, true);
+    }
+
+    @Test
+    public void testFromXML() throws Exception {
+       AuditMessage msg = AuditMessages.fromXML(new StringReader(AUDIT_MESSAGE));
     }
 
 }

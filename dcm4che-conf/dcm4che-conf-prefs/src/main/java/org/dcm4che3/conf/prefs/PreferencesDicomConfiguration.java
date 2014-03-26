@@ -58,7 +58,6 @@ import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
@@ -90,7 +89,6 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             "org.dcm4che.conf.prefs.configurationRoot";
     private static final String USER_CERTIFICATE = "userCertificate";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
-    private static final Code[] EMPTY_CODES = {};
 
     private static final Logger LOG = LoggerFactory.getLogger(
             PreferencesDicomConfiguration.class);
@@ -1240,7 +1238,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         device.setIssuerOfSpecimenIdentifier(
                 issuerOf(prefs.get("dicomIssuerOfSpecimenIdentifier", null)));
         device.setInstitutionNames(PreferencesUtils.stringArray(prefs, "dicomInstitutionName"));
-        device.setInstitutionCodes(codeArray(prefs, "dicomInstitutionCode"));
+        device.setInstitutionCodes(PreferencesUtils.codeArray(prefs, "dicomInstitutionCode"));
         device.setInstitutionAddresses(PreferencesUtils.stringArray(prefs, "dicomInstitutionAddress"));
         device.setInstitutionalDepartmentNames(
                 PreferencesUtils.stringArray(prefs, "dicomInstitutionalDepartmentName"));
@@ -1347,17 +1345,6 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
 
     private static Issuer issuerOf(String s) {
         return s != null ? new Issuer(s) : null;
-    }
-
-    private static Code[] codeArray(Preferences prefs, String key) {
-        int n = prefs.getInt(key + ".#", 0);
-        if (n == 0)
-            return EMPTY_CODES;
-        
-        Code[] codes = new Code[n];
-        for (int i = 0; i < n; i++)
-            codes[i] = new Code(prefs.get(key + '.' + (i+1), null));
-        return codes;
     }
 
     private static void storeNotEmpty(Preferences prefs, String key, byte[][] values) {

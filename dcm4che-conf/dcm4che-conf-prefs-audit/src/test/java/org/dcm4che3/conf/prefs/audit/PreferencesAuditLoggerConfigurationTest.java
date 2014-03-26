@@ -46,9 +46,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.audit.EventID;
+import org.dcm4che3.audit.EventTypeCode;
+import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.prefs.PreferencesDicomConfiguration;
 import org.dcm4che3.conf.prefs.audit.PreferencesAuditLoggerConfiguration;
@@ -57,6 +61,7 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditRecordRepository;
+import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -172,6 +177,22 @@ public class PreferencesAuditLoggerConfigurationTest {
         logger.setRetryInterval(300);
         logger.setSpoolDirectory(new File("/tmp"));
         logger.setIncludeInstanceUID(true);
+        logger.addAuditSuppressCriteria(createAuditSuppressCriteria());
+    }
+
+    private AuditSuppressCriteria createAuditSuppressCriteria() {
+        AuditSuppressCriteria criteria = new AuditSuppressCriteria("AuditSuppressCriteria");
+        criteria.setEventIDs(AuditMessages.EventID.ApplicationActivity);
+        criteria.setEventActionCodes(AuditMessages.EventActionCode.Execute);
+        criteria.setEventTypeCodes(AuditMessages.EventTypeCode.ApplicationStart, 
+                AuditMessages.EventTypeCode.ApplicationStop);
+        criteria.setEventOutcomeIndicators(AuditMessages.EventOutcomeIndicator.Success);
+        criteria.setUserIDs("UserID");
+        criteria.setAlternativeUserIDs("AltUserID");
+        criteria.setNetworkAccessPointIDs("127.0.0.1");
+        criteria.setUserRoleIDCodes(AuditMessages.RoleIDCode.ApplicationLauncher);
+        criteria.setUserIsRequestor(true);
+        return criteria;
     }
 
     private void validate(Device device) {
@@ -195,11 +216,52 @@ public class PreferencesAuditLoggerConfigurationTest {
         assertEquals(300, logger.getRetryInterval());
         assertEquals(new File("/tmp"), logger.getSpoolDirectory());
         assertTrue(logger.isIncludeInstanceUID());
+        validate(logger.getAuditSuppressCriteriaList());
         Device arrDevice = logger.getAuditRecordRepositoryDevice();
         assertNotNull(arrDevice);
         AuditRecordRepository arr = arrDevice.getDeviceExtension(AuditRecordRepository.class);
         assertNotNull(arr);
         assertEquals(2, arr.getConnections().size());
+    }
+
+    private void validate(List<AuditSuppressCriteria> criteriaList) {
+        assertEquals(1, criteriaList.size());
+        AuditSuppressCriteria criteria = criteriaList.get(0);
+        assertEquals("AuditSuppressCriteria", criteria.getCommonName());
+        EventID[] eventIDs = criteria.getEventIDs();
+        assertEquals(1, eventIDs.length);
+        assertEquals(AuditMessages.EventID.ApplicationActivity.getCode(),
+                eventIDs[0].getCode());
+        assertEquals(AuditMessages.EventID.ApplicationActivity.getCodeSystemName(),
+                eventIDs[0].getCodeSystemName());
+        assertEquals(AuditMessages.EventID.ApplicationActivity.getDisplayName(),
+                eventIDs[0].getDisplayName());
+        String[] eventActionCodes = criteria.getEventActionCodes();
+        assertEquals(1, eventActionCodes.length);
+        assertEquals(AuditMessages.EventActionCode.Execute, eventActionCodes[0]);
+        EventTypeCode[] eventTypeCodes = criteria.getEventTypeCodes();
+        assertEquals(2, eventTypeCodes.length);
+        String[] eventOutcomeIndicators = criteria.getEventOutcomeIndicators();
+        assertEquals(1, eventOutcomeIndicators.length);
+        assertEquals(AuditMessages.EventOutcomeIndicator.Success, eventOutcomeIndicators[0]);
+        String[] userIDs = criteria.getUserIDs();
+        assertEquals(1, userIDs.length);
+        assertEquals("UserID", userIDs[0]);
+        String[] altUserIDs = criteria.getAlternativeUserIDs();
+        assertEquals(1, altUserIDs.length);
+        assertEquals("AltUserID", altUserIDs[0]);
+        String[] networkAccessPointIDs = criteria.getNetworkAccessPointIDs();
+        assertEquals(1, networkAccessPointIDs.length);
+        assertEquals("127.0.0.1", networkAccessPointIDs[0]);
+        RoleIDCode[] userRoleIDCodes = criteria.getUserRoleIDCodes();
+        assertEquals(1, userRoleIDCodes.length);
+        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCode(),
+                userRoleIDCodes[0].getCode());
+        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCodeSystemName(),
+                userRoleIDCodes[0].getCodeSystemName());
+        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getDisplayName(),
+                userRoleIDCodes[0].getDisplayName());
+        assertEquals(true, criteria.getUserIsRequestor());
     }
 
     private <T> T[] sort(T[] a) {

@@ -534,7 +534,7 @@ attributetype ( 1.2.840.10008.15.0.3.28
 #    Format:
 #      <Issuer of Patient ID> 
 #    or
-#      <Issuer of Patient ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Issuer of Patient ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -593,9 +593,9 @@ attributetype ( 1.2.840.10008.15.0.3.31
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -620,9 +620,9 @@ attributetype ( 1.2.840.10008.15.0.3.32
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -647,9 +647,9 @@ attributetype ( 1.2.840.10008.15.0.3.33
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -674,9 +674,9 @@ attributetype ( 1.2.840.10008.15.0.3.34
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -701,9 +701,9 @@ attributetype ( 1.2.840.10008.15.0.3.35
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.
@@ -728,9 +728,9 @@ attributetype ( 1.2.840.10008.15.0.3.36
 #    Format:
 #      <Local Namespace Entity ID> 
 #    or
-#      ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      & <Universal Entity ID> & <Universal Entity ID Type>
 #    or
-#      <Local Namespace Entity ID> ^ <Universal Entity ID> ^ <Universal Entity ID Type>
+#      <Local Namespace Entity ID> & <Universal Entity ID> & <Universal Entity ID Type>
 #
 #    It is a single-valued attribute.
 #    This attribute's syntax is 'Directory String'.

@@ -72,7 +72,6 @@ import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
@@ -102,7 +101,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private static final String PKI_USER = "pkiUser";
     private static final String USER_CERTIFICATE_BINARY = "userCertificate;binary";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
-    private static final Code[] EMPTY_CODES = {};
 
     private final DirContext ctx;
     private final String baseDN;
@@ -1012,7 +1010,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         device.setIssuerOfSpecimenIdentifier(
                 issuerValue(attrs.get("dicomIssuerOfSpecimenIdentifier")));
         device.setInstitutionNames(LdapUtils.stringArray(attrs.get("dicomInstitutionName")));
-        device.setInstitutionCodes(codeArray(attrs.get("dicomInstitutionCode")));
+        device.setInstitutionCodes(LdapUtils.codeArray(attrs.get("dicomInstitutionCode")));
         device.setInstitutionAddresses(LdapUtils.stringArray(attrs.get("dicomInstitutionAddress")));
         device.setInstitutionalDepartmentNames(
                 LdapUtils.stringArray(attrs.get("dicomInstitutionDepartmentName")));
@@ -1528,17 +1526,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             bb[i] = (byte[]) attr.get(i);
 
         return bb;
-    }
-
-    private Code[] codeArray(Attribute attr) throws NamingException {
-        if (attr == null)
-            return EMPTY_CODES;
-
-        Code[] codes = new Code[attr.size()];
-        for (int i = 0; i < codes.length; i++)
-            codes[i] = new Code((String) attr.get(i));
-
-        return codes;
     }
 
     private static Issuer issuerValue(Attribute attr) throws NamingException {

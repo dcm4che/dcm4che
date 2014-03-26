@@ -42,6 +42,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.data.Code;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StringUtils;
@@ -51,6 +52,8 @@ import org.dcm4che3.util.StringUtils;
  *
  */
 public class PreferencesUtils {
+
+    private static final Code[] EMPTY_CODES = {};
 
     public static void removeKeys(Preferences prefs, String key, int from, int to) {
         for (int i = from; i < to;) 
@@ -153,6 +156,18 @@ public class PreferencesUtils {
             ss[i] = prefs.get(key + '.' + (i+1), null);
         return ss;
     }
+
+    public static Code[] codeArray(Preferences prefs, String key) {
+        int n = prefs.getInt(key + ".#", 0);
+        if (n == 0)
+            return EMPTY_CODES;
+        
+        Code[] codes = new Code[n];
+        for (int i = 0; i < n; i++)
+            codes[i] = new Code(prefs.get(key + '.' + (i+1), null));
+        return codes;
+    }
+
 
     public static int[] intArray(Preferences prefs, String key)  {
         int n = prefs.getInt(key + ".#", 0);

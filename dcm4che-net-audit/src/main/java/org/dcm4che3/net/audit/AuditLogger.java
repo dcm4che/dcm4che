@@ -93,6 +93,10 @@ import org.slf4j.LoggerFactory;
  */
 public class AuditLogger extends DeviceExtension {
 
+    public enum SendStatus {
+        SENT, QUEUED, SUPPRESSED
+    }
+
     private static final long serialVersionUID = 1595714214186063103L;
 
     private static final int MSG_PROMPT_LEN = 8192;
@@ -167,12 +171,6 @@ public class AuditLogger extends DeviceExtension {
     private static final char SYSLOG_VERSION = '1';
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
-    private static final FilenameFilter FILENAME_FILTER = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.startsWith("audit") && name.endsWith(".log");
-        }
-    };
     private static final Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
         @Override
         public int compare(File o1, File o2) {
@@ -180,7 +178,6 @@ public class AuditLogger extends DeviceExtension {
             return diff < 0 ? -1 : diff > 0 ? 1 : 0;
         }
     };
-    
     private static volatile AuditLogger defaultLogger;
     
     private Device arrDevice;
@@ -202,8 +199,12 @@ public class AuditLogger extends DeviceExtension {
     private Boolean installed;
     private Boolean includeInstanceUID = false;
     private File spoolDirectory;
+    private String spoolFileNamePrefix = "audit";
+    private String spoolFileNameSuffix= ".log";
     private int retryInterval;
 
+    private final List<AuditSuppressCriteria> suppressAuditMessageFilters = 
+            new ArrayList<AuditSuppressCriteria>(0);
     private final List<Connection> conns = new ArrayList<Connection>(1);
 
     private transient MessageBuilder builder;
@@ -211,6 +212,13 @@ public class AuditLogger extends DeviceExtension {
     private transient ScheduledFuture<?> retryTimer;
     private transient Exception lastException;
     private transient long lastSentTimeInMillis;
+    private transient final FilenameFilter FILENAME_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.startsWith(spoolFileNamePrefix) && name.endsWith(spoolFileNameSuffix);
+        }
+    };
+    
 
     public final Device getAuditRecordRepositoryDevice() {
         return arrDevice;
@@ -492,6 +500,26 @@ public class AuditLogger extends DeviceExtension {
         this.spoolDirectory = uri != null ? new File(URI.create(uri)) : null;
     }
 
+    public String getSpoolNameFilePrefix() {
+        return spoolFileNamePrefix;
+    }
+
+    public void setSpoolFileNamePrefix(String prefix) {
+        if (prefix.length() < 3)
+            throw new IllegalArgumentException("Spool file name prefix too short");
+        this.spoolFileNamePrefix = prefix;
+    }
+
+    public String getSpoolFileNameSuffix() {
+        return spoolFileNameSuffix;
+    }
+
+    public void setSpoolFileNameSuffix(String suffix) {
+        if (suffix.isEmpty())
+            throw new IllegalArgumentException("Spool file name suffix cannot be empty");
+        this.spoolFileNameSuffix = suffix;
+    }
+
     /**
      * Get interval in seconds to retry to sent messages which could not be
      * sent to the record repository or {@code 0} if messages failed to sent
@@ -542,6 +570,47 @@ public class AuditLogger extends DeviceExtension {
         return conns;
     }
 
+    public List<AuditSuppressCriteria> getAuditSuppressCriteriaList() {
+        return suppressAuditMessageFilters;
+    }
+
+    public AuditSuppressCriteria findAuditSuppressCriteriaByCommonName(String cn) {
+        for (AuditSuppressCriteria criteria : suppressAuditMessageFilters) {
+            if (criteria.getCommonName().equals(cn))
+                return criteria;
+        }
+        return null;
+    }
+
+    public void setAuditSuppressCriteriaList(List<AuditSuppressCriteria> filters) {
+        this.suppressAuditMessageFilters.clear();
+        this.suppressAuditMessageFilters.addAll(filters);
+    }
+
+    public void addAuditSuppressCriteria(AuditSuppressCriteria criteria) {
+        this.suppressAuditMessageFilters.add(criteria);
+    }
+
+    public void clearAllAuditSuppressCriteria() {
+        this.suppressAuditMessageFilters.clear();
+    }
+
+    /**
+     * Test if the Event Identification and the Active ActiveParticipant of an 
+     * Audit Message matches one of the {@code AuditSuppressCriteria}
+     * 
+     * @param msg Audit Message to test
+     * @return {@code true} the specified audit message will be suppressed;
+     *         otherwise {@code false}
+     */
+    public boolean isAuditMessageSuppressed(AuditMessage msg) {
+        for (AuditSuppressCriteria criteria : suppressAuditMessageFilters) {
+            if (criteria.match(msg))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public void reconfigure(DeviceExtension from)  {
         reconfigure((AuditLogger) from);
@@ -564,9 +633,12 @@ public class AuditLogger extends DeviceExtension {
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
         setSpoolDirectory(from.spoolDirectory);
+        setSpoolFileNamePrefix(from.spoolFileNamePrefix);
+        setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);
         setInstalled(from.installed);
         setAuditRecordRepositoryDevice(from.arrDevice);
+        setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
         device.reconfigureConnections(conns, from.conns);
         closeActiveConnection();
     }
@@ -578,7 +650,8 @@ public class AuditLogger extends DeviceExtension {
     }
 
     /**
-     * Send Audit Message by Syslog Protocol to Audit Record Repository. If
+     * Send Audit Message by Syslog Protocol to Audit Record Repository, if the
+     * message does not match any configured {@code AuditSuppressCriteria}. If
      * an I/O error occurs sending the message to the {@code AuditRecordRepository}
      * and if a {@code RetryInterval) is configured, the message will be spooled
      * into the configured {@code SpoolDirectory} for later re-send and the
@@ -591,8 +664,9 @@ public class AuditLogger extends DeviceExtension {
      * 
      * @param timeStamp included in Syslog Header 
      * @param msg Audit Message
-     * @return {@code true} if the message was successfully emitted;
-     *         {@code false} if the message was spooled for later 
+     * @return {@code SendStatus.SUPPRESSED} if the message was suppressed;
+     *         {@code SendStatus.SENT} if the message was successfully emitted;
+     *         {@code SendStatus.QUEUED} if the message was spooled for later re-send
      * 
      * @throws IllegalStateException
      *         if there is no {@code AuditRecordRepository} associated with
@@ -607,12 +681,15 @@ public class AuditLogger extends DeviceExtension {
      *         if an I/O error occurs sending the message to the {@code AuditRecordRepository}
      *         or on spooling the message to the file system
      */
-    public boolean write(Calendar timeStamp, AuditMessage msg)
+    public SendStatus write(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
+        if (isAuditMessageSuppressed(msg))
+            return SendStatus.SUPPRESSED;
+
         return sendMessage(builder().createMessage(timeStamp, msg));
     }
 
-    public boolean write(Calendar timeStamp, Severity severity,
+    public SendStatus write(Calendar timeStamp, Severity severity,
             byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
          return sendMessage(
@@ -626,7 +703,7 @@ public class AuditLogger extends DeviceExtension {
         return builder;
     }
 
-    private boolean sendMessage(DatagramPacket msg) throws IncompatibleConnectionException, 
+    private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException, 
             GeneralSecurityException, IOException {
         if (getNumberOfQueuedMessages() > 0) {
             spoolMessage(msg);
@@ -634,7 +711,7 @@ public class AuditLogger extends DeviceExtension {
             try {
                 activeConnection().sendMessage(msg);
                 lastSentTimeInMillis = System.currentTimeMillis();
-                return true;
+                return SendStatus.SENT;
             } catch (IOException e) {
                 lastException = e;
                 if (retryInterval > 0) {
@@ -646,7 +723,7 @@ public class AuditLogger extends DeviceExtension {
                 }
             }
         }
-        return false;
+        return SendStatus.QUEUED;
     }
 
     private synchronized void scheduleRetry() {
@@ -673,7 +750,7 @@ public class AuditLogger extends DeviceExtension {
 
         File f = null;
         try {
-            f = File.createTempFile("audit", ".log", spoolDirectory);
+            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
             if (spoolDirectory == null)
                 spoolDirectory = f.getParentFile();
     

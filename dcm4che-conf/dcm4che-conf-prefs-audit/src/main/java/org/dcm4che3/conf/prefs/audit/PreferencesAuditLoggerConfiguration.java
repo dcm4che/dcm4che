@@ -48,6 +48,7 @@ import org.dcm4che3.conf.prefs.PreferencesUtils;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,6 +113,35 @@ public class PreferencesAuditLoggerConfiguration
         PreferencesUtils.storeNotDef(prefs, "dcmAuditLoggerRetryInterval",
                 logger.getRetryInterval(), 0);
         PreferencesUtils.storeNotNull(prefs, "dicomInstalled", logger.getInstalled());
+        store(logger.getAuditSuppressCriteriaList(), prefs);
+    }
+
+    private void store(List<AuditSuppressCriteria> list, Preferences parentNode) {
+        Preferences ascNode = parentNode.node("dcmAuditSuppressCriteria");
+        for (AuditSuppressCriteria criteria : list) {
+            storeTo(criteria, ascNode.node(criteria.getCommonName()));
+        }
+    }
+
+    private void storeTo(AuditSuppressCriteria criteria, Preferences prefs) {
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditEventID",
+                criteria.getEventIDsAsStringArray());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditEventTypeCode",
+                criteria.getEventTypeCodesAsStringArray());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditEventActionCode",
+                criteria.getEventActionCodes());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditEventOutcomeIndicator",
+                criteria.getEventOutcomeIndicators());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditUserID",
+                criteria.getUserIDs());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditAlternativeUserID",
+                criteria.getAlternativeUserIDs());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditUserRoleIDCode",
+                criteria.getUserRoleIDCodesAsStringArray());
+        PreferencesUtils.storeNotEmpty(prefs, "dcmAuditNetworkAccessPointID",
+                criteria.getNetworkAccessPointIDs());
+        PreferencesUtils.storeNotNull(prefs, "dcmAuditUserIsRequestor",
+                criteria.getUserIsRequestor());
     }
 
     @Override
@@ -138,7 +168,40 @@ public class PreferencesAuditLoggerConfiguration
                 arrDeviceRef.equals(config.deviceRef(device.getDeviceName()))
                     ? device
                     : loadAuditRecordRepository(arrDeviceRef));
+        loadAuditSuppressCriteria(logger, loggerNode);
         device.addDeviceExtension(logger);
+    }
+
+    private void loadAuditSuppressCriteria(AuditLogger logger, Preferences loggerNode)
+            throws BackingStoreException {
+        Preferences parentNode = loggerNode.node("dcmAuditSuppressCriteria");
+        for (String cn : parentNode.childrenNames()) {
+            AuditSuppressCriteria criteria = new  AuditSuppressCriteria(cn);
+            loadAuditSuppressCriteria(criteria, parentNode.node(cn));
+            logger.addAuditSuppressCriteria(criteria);
+        }
+    }
+
+    private void loadAuditSuppressCriteria(AuditSuppressCriteria criteria,
+            Preferences prefs) {
+        criteria.setEventIDsAsStringArray(
+                PreferencesUtils.stringArray(prefs, "dcmAuditEventID"));
+        criteria.setEventTypeCodesAsStringArray(
+                PreferencesUtils.stringArray(prefs, "dcmAuditEventTypeCode"));
+        criteria.setEventActionCodes(
+                PreferencesUtils.stringArray(prefs, "dcmAuditEventActionCode"));
+        criteria.setEventOutcomeIndicators(
+                PreferencesUtils.stringArray(prefs, "dcmAuditEventOutcomeIndicator"));
+        criteria.setUserIDs(
+                PreferencesUtils.stringArray(prefs, "dcmAuditUserID"));
+        criteria.setAlternativeUserIDs(
+                PreferencesUtils.stringArray(prefs, "dcmAuditAlternativeUserID"));
+        criteria.setUserRoleIDCodesAsStringArray(
+                PreferencesUtils.stringArray(prefs, "dcmAuditUserRoleIDCode"));
+        criteria.setNetworkAccessPointIDs(
+                PreferencesUtils.stringArray(prefs, "dcmAuditNetworkAccessPointID"));
+        criteria.setUserIsRequestor(PreferencesUtils.booleanValue(
+                prefs.get("dcmAuditUserIsRequestor", null)));
     }
 
     private Device loadAuditRecordRepository(String arrDeviceRef) {
@@ -209,7 +272,8 @@ public class PreferencesAuditLoggerConfiguration
             storeDiffs(arrNode, prevLogger, logger);
     }
 
-    private void storeDiffs(Preferences prefs, AuditLogger a, AuditLogger b) {
+    private void storeDiffs(Preferences prefs, AuditLogger a, AuditLogger b)
+            throws BackingStoreException {
         PreferencesUtils.storeDiff(prefs, "dcmAuditFacility",
                 a.getFacility().ordinal(),
                 b.getFacility().ordinal(),
@@ -283,6 +347,7 @@ public class PreferencesAuditLoggerConfiguration
         PreferencesUtils.storeDiff(prefs, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        mergeAuditSuppressCriteria(a, b, prefs);
     }
 
     private String arrDeviceRef(AuditLogger a) {
@@ -290,5 +355,56 @@ public class PreferencesAuditLoggerConfiguration
         return arrDevice != null
                 ? config.deviceRef(arrDevice.getDeviceName())
                 : null;
+    }
+
+    private void mergeAuditSuppressCriteria(AuditLogger prevLogger,
+            AuditLogger logger, Preferences auditLoggerNode)
+                    throws BackingStoreException {
+        Preferences parentNode = auditLoggerNode.node("dcmAuditSuppressCriteria");
+        for (AuditSuppressCriteria prevCriteria : prevLogger.getAuditSuppressCriteriaList()) {
+            String cn = prevCriteria.getCommonName();
+            if (logger.findAuditSuppressCriteriaByCommonName(cn) == null)
+                parentNode.node(cn).removeNode();
+        }
+        for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
+            String cn = criteria.getCommonName();
+            AuditSuppressCriteria prev = prevLogger.findAuditSuppressCriteriaByCommonName(cn);
+            Preferences node = parentNode.node(cn);
+            if (prev == null)
+                storeTo(criteria, node);
+            else
+                storeDiffs(prev, criteria, node);
+        }
+    }
+
+    private void storeDiffs(AuditSuppressCriteria a,
+            AuditSuppressCriteria b, Preferences prefs) {
+        PreferencesUtils.storeDiff(prefs, "dcmAuditEventID",
+                a.getEventIDsAsStringArray(),
+                b.getEventIDsAsStringArray());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditEventTypeCode",
+                a.getEventTypeCodesAsStringArray(),
+                b.getEventTypeCodesAsStringArray());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditEventActionCode",
+                a.getEventActionCodes(),
+                b.getEventActionCodes());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditEventOutcomeIndicator",
+                a.getEventOutcomeIndicators(),
+                b.getEventOutcomeIndicators());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditUserID",
+                a.getUserIDs(),
+                b.getUserIDs());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditAlternativeUserID",
+                a.getAlternativeUserIDs(),
+                b.getAlternativeUserIDs());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditUserRoleIDCode",
+                a.getUserRoleIDCodesAsStringArray(),
+                b.getUserRoleIDCodesAsStringArray());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditNetworkAccessPointID",
+                a.getNetworkAccessPointIDs(),
+                b.getNetworkAccessPointIDs());
+        PreferencesUtils.storeDiff(prefs, "dcmAuditUserIsRequestor",
+                a.getUserIsRequestor(),
+                b.getUserIsRequestor());
     }
 }

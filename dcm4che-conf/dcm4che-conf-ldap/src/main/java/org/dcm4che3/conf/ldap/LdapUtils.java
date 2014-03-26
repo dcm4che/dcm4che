@@ -50,6 +50,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
+import org.dcm4che3.data.Code;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.ByteUtils;
@@ -60,6 +61,8 @@ import org.dcm4che3.util.StringUtils;
  *
  */
 public class LdapUtils {
+
+    private static final Code[] EMPTY_CODES = {};
 
     @SuppressWarnings("unchecked")
     public static boolean hasObjectClass(Attributes attrs, String objectClass)
@@ -287,6 +290,18 @@ public class LdapUtils {
     
         return a;
     }
+
+    public static Code[] codeArray(Attribute attr) throws NamingException {
+        if (attr == null)
+            return EMPTY_CODES;
+
+        Code[] codes = new Code[attr.size()];
+        for (int i = 0; i < codes.length; i++)
+            codes[i] = new Code((String) attr.get(i));
+
+        return codes;
+    }
+
 
    public static Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {

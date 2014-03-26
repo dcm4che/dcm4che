@@ -42,17 +42,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +80,14 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
 
     private void store(String deviceDN, AuditLogger logger)
             throws NamingException {
-        config.createSubcontext(CN_AUDIT_LOGGER + deviceDN,
+        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
+        config.createSubcontext(auditLoggerDN,
                 storeTo(logger, deviceDN, new BasicAttributes(true)));
+        for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
+            config.createSubcontext(
+                    LdapUtils.dnOf("cn", criteria.getCommonName(), auditLoggerDN),
+                    storeTo(criteria, new BasicAttributes(true)));
+        }
     }
 
     private Attributes storeTo(AuditLogger logger, String deviceDN, Attributes attrs) {
@@ -127,12 +136,38 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         return attrs;
     }
 
+    private Attributes storeTo(AuditSuppressCriteria criteria, BasicAttributes attrs) {
+        attrs.put(new BasicAttribute("objectclass", "dcmAuditSuppressCriteria"));
+        attrs.put(new BasicAttribute("cn", criteria.getCommonName()));
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventID",
+                criteria.getEventIDsAsStringArray());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventTypeCode",
+                criteria.getEventTypeCodesAsStringArray());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventActionCode",
+                criteria.getEventActionCodes());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditEventOutcomeIndicator",
+                criteria.getEventOutcomeIndicators());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditUserID",
+                criteria.getUserIDs());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditAlternativeUserID",
+                criteria.getAlternativeUserIDs());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditUserRoleIDCode",
+                criteria.getUserRoleIDCodesAsStringArray());
+        LdapUtils.storeNotEmpty(attrs, "dcmAuditNetworkAccessPointID",
+                criteria.getNetworkAccessPointIDs());
+        LdapUtils.storeNotNull(attrs, "dcmAuditUserIsRequestor",
+                criteria.getUserIsRequestor());
+        return attrs;
+    }
+
+
     @Override
     protected void loadChilds(Device device, String deviceDN)
             throws NamingException, ConfigurationException {
+        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
         Attributes attrs;
         try {
-            attrs = config.getAttributes(CN_AUDIT_LOGGER + deviceDN);
+            attrs = config.getAttributes(auditLoggerDN);
         } catch (NameNotFoundException e) {
             return;
         }
@@ -147,6 +182,7 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         logger.setAuditRecordRepositoryDevice(deviceDN.equals(arrDeviceDN)
                 ? device
                 : loadAuditRecordRepository(arrDeviceDN));
+        loadAuditSuppressCriteria(logger, auditLoggerDN);
         device.addDeviceExtension(logger);
     }
 
@@ -157,6 +193,41 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             LOG.info("Failed to load Audit Record Repository "
                     + arrDeviceRef + " referenced by Audit Logger", e);
             return null;
+        }
+    }
+
+    private void loadAuditSuppressCriteria(AuditLogger auditLogger, String auditLoggerDN)
+            throws NamingException {
+        NamingEnumeration<SearchResult> ne = 
+                config.search(auditLoggerDN, "(objectclass=dcmAuditSuppressCriteria)");
+        try {
+            while (ne.hasMore()) {
+                SearchResult sr = ne.next();
+                Attributes attrs = sr.getAttributes();
+                AuditSuppressCriteria criteria =
+                        new AuditSuppressCriteria((String) attrs.get("cn").get());
+                criteria.setEventIDsAsStringArray(LdapUtils.stringArray(
+                        attrs.get("dcmAuditEventID")));
+                criteria.setEventTypeCodesAsStringArray(LdapUtils.stringArray(
+                        attrs.get("dcmAuditEventTypeCode")));
+                criteria.setEventActionCodes(LdapUtils.stringArray(
+                        attrs.get("dcmAuditEventActionCode")));
+                criteria.setEventOutcomeIndicators(LdapUtils.stringArray(
+                        attrs.get("dcmAuditEventOutcomeIndicator")));
+                criteria.setUserIDs(LdapUtils.stringArray(
+                        attrs.get("dcmAuditUserID")));
+                criteria.setAlternativeUserIDs(LdapUtils.stringArray(
+                        attrs.get("dcmAuditAlternativeUserID")));
+                criteria.setUserRoleIDCodesAsStringArray(LdapUtils.stringArray(
+                        attrs.get("dcmAuditUserRoleIDCode")));
+                criteria.setNetworkAccessPointIDs(LdapUtils.stringArray(
+                        attrs.get("dcmAuditNetworkAccessPointID")));
+                criteria.setUserIsRequestor(LdapUtils.booleanValue(
+                        attrs.get("dcmAuditUserIsRequestor"), null));
+                auditLogger.addAuditSuppressCriteria(criteria);
+            }
+        } finally {
+            LdapUtils.safeClose(ne);
         }
     }
 
@@ -205,18 +276,41 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
             throws NamingException {
         AuditLogger prevLogger = prev.getDeviceExtension(AuditLogger.class);
         AuditLogger logger = device.getDeviceExtension(AuditLogger.class);
+        String auditLoggerDN = CN_AUDIT_LOGGER + deviceDN;
         if (logger == null) {
             if (prevLogger != null)
-                config.destroySubcontextWithChilds(CN_AUDIT_LOGGER + deviceDN);
+                config.destroySubcontextWithChilds(auditLoggerDN);
             return;
         }
         if (prevLogger == null) {
             store(deviceDN, logger);
             return;
         }
-        config.modifyAttributes(CN_AUDIT_LOGGER + deviceDN,
+        config.modifyAttributes(auditLoggerDN,
                 storeDiffs(prevLogger, logger, deviceDN,
                         new ArrayList<ModificationItem>()));
+        mergeAuditSuppressCriteria(prevLogger, logger, auditLoggerDN);
+    }
+
+    private void mergeAuditSuppressCriteria(AuditLogger prevLogger,
+            AuditLogger logger, String auditLoggerDN) throws NamingException {
+        for (AuditSuppressCriteria prevCriteria : prevLogger.getAuditSuppressCriteriaList()) {
+            String cn = prevCriteria.getCommonName();
+            if (logger.findAuditSuppressCriteriaByCommonName(cn) == null)
+                config.destroySubcontext(LdapUtils.dnOf("cn", cn, auditLoggerDN));
+        }
+        for (AuditSuppressCriteria criteria : logger.getAuditSuppressCriteriaList()) {
+            String cn = criteria.getCommonName();
+            String dn = LdapUtils.dnOf("cn", cn, auditLoggerDN);
+            AuditSuppressCriteria prev = prevLogger.findAuditSuppressCriteriaByCommonName(cn);
+            if (prev == null)
+                config.createSubcontext(
+                        dn,
+                        storeTo(criteria, new BasicAttributes(true)));
+            else
+                config.modifyAttributes(dn, storeDiffs(prev, criteria, 
+                        new ArrayList<ModificationItem>()));
+        }
     }
 
     private List<ModificationItem> storeDiffs(AuditLogger a, AuditLogger b,
@@ -295,6 +389,38 @@ public class LdapAuditLoggerConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeDiff(mods, "dicomInstalled",
                 a.getInstalled(),
                 b.getInstalled());
+        return mods;
+    }
+
+    private List<ModificationItem> storeDiffs(AuditSuppressCriteria a,
+            AuditSuppressCriteria b, ArrayList<ModificationItem> mods) {
+        LdapUtils.storeDiff(mods, "dcmAuditEventID",
+                a.getEventIDsAsStringArray(),
+                b.getEventIDsAsStringArray());
+        LdapUtils.storeDiff(mods, "dcmAuditEventTypeCode",
+                a.getEventTypeCodesAsStringArray(),
+                b.getEventTypeCodesAsStringArray());
+        LdapUtils.storeDiff(mods, "dcmAuditEventActionCode",
+                a.getEventActionCodes(),
+                b.getEventActionCodes());
+        LdapUtils.storeDiff(mods, "dcmAuditEventOutcomeIndicator",
+                a.getEventOutcomeIndicators(),
+                b.getEventOutcomeIndicators());
+        LdapUtils.storeDiff(mods, "dcmAuditUserID",
+                a.getUserIDs(),
+                b.getUserIDs());
+        LdapUtils.storeDiff(mods, "dcmAuditAlternativeUserID",
+                a.getAlternativeUserIDs(),
+                b.getAlternativeUserIDs());
+        LdapUtils.storeDiff(mods, "dcmAuditUserRoleIDCode",
+                a.getUserRoleIDCodesAsStringArray(),
+                b.getUserRoleIDCodesAsStringArray());
+        LdapUtils.storeDiff(mods, "dcmAuditNetworkAccessPointID",
+                a.getNetworkAccessPointIDs(),
+                b.getNetworkAccessPointIDs());
+        LdapUtils.storeDiff(mods, "dcmAuditUserIsRequestor",
+                a.getUserIsRequestor(),
+                b.getUserIsRequestor());
         return mods;
     }
 

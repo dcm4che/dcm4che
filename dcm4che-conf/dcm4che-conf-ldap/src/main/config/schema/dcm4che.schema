@@ -397,8 +397,58 @@ attributetype ( 1.2.40.0.13.1.15.1.3.18 NAME 'dcmAuditLoggerSpoolDirectoryURI'
 attributetype ( 1.2.40.0.13.1.15.1.3.19 NAME 'dcmAuditLoggerRetryInterval'
   DESC 'Retry interval in s to re-sent messages which could not delivered to the record repository; do no retry to re-sent messages if absent.'
   EQUALITY integerMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+  SINGLE-VALUE )
 
+attributetype ( 1.2.40.0.13.1.15.1.3.20 NAME 'dcmAuditEventID'
+  DESC 'RFC 3881 Audit Event ID code and codeSystemName in format (CV, CSD, "CM")'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.21 NAME 'dcmAuditEventTypeCode'
+  DESC 'RFC 3881 Audit Event Type code in format (CV, CSD, "CM")'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.22 NAME 'dcmAuditEventActionCode'
+  DESC 'RFC 3881 Audit Event Action Type code. Enumerated values: C, R, U, D, E'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.23 NAME 'dcmAuditEventOutcomeIndicator'
+  DESC 'RFC 3881 Audit Event Outcome Indicator. Enumerated values: 0, 4, 8, 12'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.24 NAME 'dcmAuditUserID'
+  DESC 'RFC 3881 Audit Active Participant User ID.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.25 NAME 'dcmAuditAlternativeUserID'
+  DESC 'RFC 3881 Audit Active Participant Alternative User ID.'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.26 NAME 'dcmAuditUserRoleIDCode'
+  DESC 'RFC 3881 Audit Active Participant User Role ID code in format (CV, CSD, "CM")'
+  EQUALITY caseExactMatch
+  SUBSTR caseExactSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.27 NAME 'dcmAuditNetworkAccessPointID'
+  DESC 'RFC 3881 Audit Active Participant Network Access Point ID'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.1.3.28 NAME 'dcmAuditUserIsRequestor'
+  DESC 'Indicates if Active Participant is initiator/requestor of the Audit Event as specified by RFC 3881'
+  EQUALITY booleanMatch 
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 
 attributetype ( 1.2.40.0.13.1.15.3.3.1 NAME 'hl7ApplicationName'
   DESC 'HL7 Application and Facility name (Application^Facility)'
@@ -549,6 +599,22 @@ objectclass ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
     dcmAuditLoggerSpoolDirectoryURI $
     dcmAuditLoggerRetryInterval $
     dicomInstalled ) )
+
+objectclass ( 1.2.40.0.13.1.15.1.4.2 NAME 'dcmAuditSuppressCriteria'
+  DESC 'Audit Suppress Criteria'
+  SUP top STRUCTURAL
+  MUST ( cn ) 
+  MAY (
+    dcmAuditEventID $
+    dcmAuditEventTypeCode $
+    dcmAuditEventActionCode $
+    dcmAuditEventOutcomeIndicator $
+    dcmAuditUserID $
+    dcmAuditAlternativeUserID $
+    dcmAuditUserRoleIDCode $
+    dcmAuditNetworkAccessPointID $
+    dcmAuditUserIsRequestor ) )
+
 
 objectclass ( 1.2.40.0.13.1.15.2.4.1 NAME 'dcmAuditRecordRepository'
   DESC 'Audit Record Repository related information'

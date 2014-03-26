@@ -65,10 +65,6 @@ import org.dcm4che3.data.Code;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-/**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- *
- */
 public class AuditSuppressCriteria {
 
     private final String commonName;

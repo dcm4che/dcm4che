@@ -123,6 +123,9 @@ public class AuditSuppressCriteria {
      * If no value is specified, the {@link EventTypeCode} of the {@link EventIdentification}
      * of a message will not be concerned by this {@code AuditSuppressCriteria}.
      * 
+     * If values are specified, Audit Messages without {@code EventTypeCode}s
+     * will not match this {@code AuditSuppressCriteria}.
+     * 
      * Audit Messages with multiple {@code EventTypeCode}s will match if one
      * of the {@code EventTypeCode} match one of the specified values.
      * 
@@ -150,6 +153,9 @@ public class AuditSuppressCriteria {
      * 
      * If no value is specified, the {@code EventActionCode} of the {@link EventIdentification}
      * of a message will not be concerned by this {@code AuditSuppressCriteria}.
+     * 
+     * If values are specified, Audit Messages without {@code EventActionCode}
+     * will not match this {@code AuditSuppressCriteria}.
      * 
      * @param eventActionCodes values of {@code EventActionCode} of the {@link EventIdentification}
      * of messages which shall be suppressed. 
@@ -202,9 +208,12 @@ public class AuditSuppressCriteria {
      * {@code ActiveParticipant}s with multiple {@code EventTypeCode}s will match if one
      * of the {@code EventTypeCode} match one of the specified values.
      *
-     * If no value is specified, the {@code AlternativeUserID} of {@link ActiveParticipant}s
+     * If no value is specified, the {@code AlternativeUserID} of {@code ActiveParticipant}s
      * of a message will not be concerned by this {@code AuditSuppressCriteria}.
      * 
+     * If values are specified,  {@code ActiveParticipant}s without {@code AlternativeUserID}
+     * will not match this {@code AuditSuppressCriteria}.
+     *
      * @param altUserID values of {@code AlternativeUserID} of the {@link ActiveParticipant}s
      * of messages which shall be suppressed. 
      */
@@ -221,6 +230,12 @@ public class AuditSuppressCriteria {
      * 
      * If no value is specified, the {@code RoleIDCode} of {@link ActiveParticipant}s
      * of a message will not be concerned by this {@code AuditSuppressCriteria}.
+     * 
+     * If values are specified,  {@code ActiveParticipant}s without {@code RoleIDCode}s
+     * will not match this {@code AuditSuppressCriteria}.
+     *
+     * {@code ActiveParticipant}s with multiple {@code RoleIDCode}s will match if one
+     * of the {@code RoleIDCode} match one of the specified values.
      * 
      * @param roleIDCodes values of {@code RoleIDCode} of the {@link ActiveParticipant}s
      * of messages which shall be suppressed. 
@@ -247,6 +262,9 @@ public class AuditSuppressCriteria {
      * If no value is specified, the {@code NetworkAccessPointID} of {@link ActiveParticipant}s
      * of a message will not be concerned by this {@code AuditSuppressCriteria}.
      * 
+     * If values are specified,  {@code ActiveParticipant}s without {@code NetworkAccessPointID}s
+     * will not match this {@code AuditSuppressCriteria}.
+     *
      * @param networkAccessPointIDs values of {@code NetworkAccessPointID} of the {@link ActiveParticipant}s
      * of messages which shall be suppressed. 
      */

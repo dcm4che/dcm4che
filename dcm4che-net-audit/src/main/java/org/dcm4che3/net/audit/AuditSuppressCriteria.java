@@ -296,7 +296,7 @@ public class AuditSuppressCriteria {
         if (!match(msg.getActiveParticipant()))
             return false;
 
-        return false;
+        return true;
     }
 
     private boolean match(EventIdentification eventIdentification) {
@@ -351,8 +351,8 @@ public class AuditSuppressCriteria {
     }
 
     private boolean match(List<ActiveParticipant> aps) {
-        if (aps.isEmpty())
-            return containsActiveParticipantCriteria();
+        if (!containsActiveParticipantCriteria())
+            return true;
 
         for (ActiveParticipant ap : aps) {
             if (match(ap))

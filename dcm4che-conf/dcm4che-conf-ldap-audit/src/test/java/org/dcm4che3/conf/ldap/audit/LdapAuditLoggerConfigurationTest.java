@@ -69,6 +69,8 @@ import org.junit.Test;
  */
 public class LdapAuditLoggerConfigurationTest {
 
+    private static File SPOOL_DIRECTORY = new File(System.getProperty("java.io.tmpdir"));
+
     private LdapDicomConfiguration config;
 
     @Before
@@ -171,7 +173,7 @@ public class LdapAuditLoggerConfigurationTest {
         logger.setFormatXML(true);
         logger.setIncludeBOM(false);
         logger.setRetryInterval(300);
-        logger.setSpoolDirectory(new File("/tmp"));
+        logger.setSpoolDirectory(SPOOL_DIRECTORY);
         logger.setIncludeInstanceUID(true);
         logger.addAuditSuppressCriteria(createAuditSuppressCriteria());
     }
@@ -210,7 +212,7 @@ public class LdapAuditLoggerConfigurationTest {
         assertTrue(logger.isFormatXML());
         assertFalse(logger.isIncludeBOM());
         assertEquals(300, logger.getRetryInterval());
-        assertEquals(new File("/tmp"), logger.getSpoolDirectory());
+        assertEquals(SPOOL_DIRECTORY, logger.getSpoolDirectory());
         assertTrue(logger.isIncludeInstanceUID());
         validate(logger.getAuditSuppressCriteriaList());
         Device arrDevice = logger.getAuditRecordRepositoryDevice();

@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -96,7 +98,14 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     private final Preferences rootPrefs;
     private final List<PreferencesDicomConfigurationExtension> extensions =
             new ArrayList<PreferencesDicomConfigurationExtension>();
+    /**
+     * Needed for avoiding infinite loops when dealing with extensions containing circular references
+     * e.g., one device extension references another device which has an extension that references the former device.
+     * Devices that have been created but not fully loaded are added to this threadlocal. See loadDevice.
+     */
+    private ThreadLocal<Map<String,Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String,Device>>();
 
+    
     public PreferencesDicomConfiguration() {
         this(rootPrefs());
     }
@@ -1070,8 +1079,28 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private Device loadDevice(Preferences deviceNode) throws ConfigurationException {
+
+        // get the device cache for this loading phase
+        Map<String, Device> deviceCache = currentlyLoadedDevicesLocal.get();
+
+        // if there is none, create one for the current thread and remember that it should be cleaned up when the device is loaded
+        boolean doCleanUpCache = false;
+        if (deviceCache == null) {
+            doCleanUpCache = true;
+            deviceCache = new HashMap<String, Device>();
+            currentlyLoadedDevicesLocal.set(deviceCache);
+        }
+
+        // if a requested device is already being (was) loaded, do not load it again, just return existing Device object 
+        if (deviceCache.containsKey(deviceNode.name()))
+            return deviceCache.get(deviceNode.name());
+        
         try {
             Device device = newDevice(deviceNode);
+
+            // remember this device so it won't be loaded again in this run
+            deviceCache.put(deviceNode.name(), device);
+            
             loadFrom(device, deviceNode);
             loadChilds(device, deviceNode);
             return device;
@@ -1079,6 +1108,10 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             throw new ConfigurationException(e);
         } catch (CertificateException e) {
             throw new ConfigurationException(e);
+        }   finally {
+
+            // if this loadDevice call initialized the cache, then clean it up
+            if (doCleanUpCache) currentlyLoadedDevicesLocal.remove();
         }
     }
 

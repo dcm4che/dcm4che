@@ -37,41 +37,57 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.generic;
 
+import java.util.Map;
+
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 
 import org.dcm4che3.conf.ldap.LdapUtils;
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 
+@Deprecated
 public class LdapConfigReader implements ConfigReader {
-	private final Attributes attrs;
+    private final Attributes attrs;
 
-	public LdapConfigReader(Attributes attrs) {
-		this.attrs = attrs;
-	}
+    public LdapConfigReader(Attributes attrs) {
+        this.attrs = attrs;
+    }
 
-	@Override
-	public String[] asStringArray(String propName) throws NamingException {
-		return LdapUtils.stringArray(attrs.get(propName));
-	}
+    @Override
+    public String[] asStringArray(String propName) throws NamingException {
+        return LdapUtils.stringArray(attrs.get(propName));
+    }
 
-	@Override
-	public int[] asIntArray(String propName) throws NamingException {
-		return LdapUtils.intArray(attrs.get(propName));
-	}
+    @Override
+    public int[] asIntArray(String propName) throws NamingException {
+        return LdapUtils.intArray(attrs.get(propName));
+    }
 
-	@Override
-	public int asInt(String propName, String def) throws NamingException {
-		return LdapUtils.intValue(attrs.get(propName), Integer.parseInt(def));
-	}
+    @Override
+    public int asInt(String propName, String def) throws NamingException {
+        return LdapUtils.intValue(attrs.get(propName), Integer.parseInt(def));
+    }
 
-	@Override
-	public String asString(String propName, String def) throws NamingException {
-		return LdapUtils.stringValue(attrs.get(propName), def);
-	}
+    @Override
+    public String asString(String propName, String def) throws NamingException {
+        return LdapUtils.stringValue(attrs.get(propName), def);
+    }
 
-	@Override
-	public boolean asBoolean(String propName, String def) throws NamingException {
-		return LdapUtils.booleanValue(attrs.get(propName), Boolean.parseBoolean(def));
-	}
+    @Override
+    public boolean asBoolean(String propName, String def) throws NamingException {
+        return LdapUtils.booleanValue(attrs.get(propName), Boolean.parseBoolean(def));
+    }
+
+    @Override
+    public Map<String, ConfigReader> readCollection(String keyName) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigReader getChildReader(String propName) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

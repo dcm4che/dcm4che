@@ -43,25 +43,66 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a field of a configuration class as a configuration field, meaning that it will be persisted.
- * If a field of a config class is not annotated, it will be skipped and NOT persisted. 
+ * Marks a field of a configuration class as a configuration field, meaning that it will be persisted. If a field of a
+ * config class is not annotated, it will be skipped and NOT persisted.
+ * 
  * @author Roman K
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD) 
+@Target(ElementType.FIELD)
 public @interface ConfigField {
 
-	/**
-	 * Name in configuration
-	 * @return
-	 */
-	String name();
+    /**
+     * Name in configuration
+     * 
+     * @return
+     */
+    String name();
 
-	
-	/**
-	 * Default value
-	 * @return
-	 */
-	String def() default "N/A";
+    /**
+     * Default value
+     * 
+     * @return
+     */
+    String def() default "N/A";
+
+    /**
+     * What is used as a map key, e.g. which names ldap nodes have like if a key is 'name', then nodes are
+     * name=registry, name=repository
+     * 
+     * @return
+     */
+    String mapKey() default "cn";
+
+    /**
+     * What to use for LDAP collection elements as object class if the value class is not a composite ConfigClass'ed
+     * type
+     * 
+     * @return
+     */
+    String mapElementObjectClass() default "";
+
+    /**
+     * Maps support non-ConfigClass'ed value types as well. As an attribute name in child nodes, name() will be used. If
+     * you need a different name for the collection node itself in this case, use this parameter.
+     */
+    String mapName() default "N/A";
+
+    /**
+     * For Maps. Which delimeter is used to separate key from value.
+     * 
+     * @return
+     */
+    @Deprecated
+    String delimeter() default "|";
+
+    /**
+     * For Maps. Which key to use if only value is provided.
+     * 
+     * @return
+     */
+    @Deprecated
+    String defaultKey() default "*";
+
 }

@@ -37,54 +37,105 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.generic;
 
+import java.lang.reflect.Field;
+
 import javax.naming.directory.Attributes;
 
 import org.dcm4che3.conf.ldap.LdapUtils;
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class LdapConfigWriter implements ConfigWriter {
 
-	public static final Logger log = LoggerFactory.getLogger(LdapConfigWriter.class);
+    public static final Logger log = LoggerFactory.getLogger(LdapConfigWriter.class);
 
-	private final Attributes attrs;
+    private final Attributes attrs;
 
-	public LdapConfigWriter(Attributes attrs) {
-		this.attrs = attrs;
-	}
+    public LdapConfigWriter(Attributes attrs) {
+        this.attrs = attrs;
+    }
 
-	@Override
-	public void storeNotDef(String propName, Object value, String def) {
+    @Override
+    public void storeNotDef(String propName, Object value, String def) {
 
-		if (value instanceof Boolean) {
-			LdapUtils.storeNotDef(attrs, propName, (Boolean) value, Boolean.parseBoolean(def));
-		} else if (value instanceof Integer) {
-			LdapUtils.storeNotDef(attrs, propName, (Integer) value, Integer.parseInt(def));
-		}
-	}
+        if (value instanceof Boolean) {
+            LdapUtils.storeNotDef(attrs, propName, (Boolean) value, Boolean.parseBoolean(def));
+        } else if (value instanceof Integer) {
+            LdapUtils.storeNotDef(attrs, propName, (Integer) value, Integer.parseInt(def));
+        }
+    }
 
-	@Override
-	public void storeNotEmpty(String propName, Object value) {
+    @Override
+    public void storeNotEmpty(String propName, Object value) {
 
-		// workaround for arrays since varargs would perceive them
-		// as Object not as Object[]
-		if (value != null && value.getClass().isArray())
-			LdapUtils.storeNotEmpty(attrs, propName, (Object[]) value);
-		else
-			log.error("Cannot use storeNotEmpty for a non-array");
+        // workaround for arrays since varargs would perceive them
+        // as Object not as Object[]
+        if (value != null && value.getClass().isArray())
+            LdapUtils.storeNotEmpty(attrs, propName, (Object[]) value);
+        else
+            log.error("Cannot use storeNotEmpty for a non-array");
 
+    }
 
-	}
+    @Override
+    public void storeNotNull(String propName, Object value) {
 
-	@Override
-	public void storeNotNull(String propName, Object value) {
+        // workaround for arrays since varargs would perceive them
+        // as Object not as Object[]
+        if (value != null && value.getClass().isArray())
+            LdapUtils.storeNotNull(attrs, propName, (Object[]) value);
+        LdapUtils.storeNotNull(attrs, propName, value);
 
-		// workaround for arrays since varargs would perceive them
-		// as Object not as Object[]
-		if (value != null && value.getClass().isArray())
-			LdapUtils.storeNotNull(attrs, propName, (Object[]) value);
-		LdapUtils.storeNotNull(attrs, propName, value);
+    }
 
-	}
+    @Override
+    public ConfigWriter getCollectionElementWriter(String keyName, String keyValue, Field field) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigWriter createChild(String propName) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void flushWriter() throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void storeDiff(String propName, Object prev, Object curr) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void flushDiffs() throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigWriter getChildWriter(String propName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

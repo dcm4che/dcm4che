@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.generic;
 
+import java.awt.dnd.DnDConstants;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -56,170 +58,144 @@ import org.dcm4che3.conf.api.generic.ConfigClass;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.DiffWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A generic Ldap ConfigurationExtension implementation that works for an arbitrary config class annotated 
- * with @ConfigClass and @ConfigField annotations. 
- * Config class must be provided both as a generic arg and as a constructor arg.  
+ * A generic Ldap ConfigurationExtension implementation that works for an arbitrary config class annotated with @ConfigClass
+ * and @ConfigField annotations. Config class must be provided both as a generic arg and as a constructor arg.
+ * 
  * @author Roman K
- *
- * @param <T> Config class
+ * 
+ * @param <T>
+ *            Config class
  */
 public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapDicomConfigurationExtension {
 
-	public static final Logger log = LoggerFactory.getLogger(LdapGenericConfigExtension.class);
+    public static final Logger log = LoggerFactory.getLogger(LdapGenericConfigExtension.class);
 
-	/**
-	 * LDAP cn
-	 */
-	private String commonName;
+    /**
+     * LDAP cn
+     */
+    private String commonName;
 
-	private Class<T> confClass;
+    private Class<T> confClass;
 
-	private String getCnStr() {
-		return "cn=" + commonName + ",";
-	}
+    private ReflectiveConfig reflectiveConfig = new ReflectiveConfig(null, null);
 
-	public LdapGenericConfigExtension(Class<T> confClass) throws ConfigurationException {
-		super();
+    private String getCnStr() {
+        return "cn=" + commonName + ",";
+    }
 
-		this.confClass = confClass;
+    @Override
+    public void setDicomConfiguration(LdapDicomConfiguration config) {
+        super.setDicomConfiguration(config);
+        reflectiveConfig.setDicomConfiguration(config);
+    }
 
-		ConfigClass ccAnno = (ConfigClass) confClass.getAnnotation(ConfigClass.class);
+    public LdapGenericConfigExtension(Class<T> confClass) throws ConfigurationException {
+        super();
 
-		// no annotation - no configuration
-		if (ccAnno == null)
-			throw new ConfigurationException("The configuration class must be annotated with @ConfigClass");
+        this.confClass = confClass;
 
-		// get common name
-		if (ccAnno.commonName().equals("") || ccAnno.objectClass().equals(""))
-			throw new ConfigurationException(
-					"To use LDAP config, specify common name and objectClass for the config class in @ConfigClass annotation");
+        ConfigClass ccAnno = (ConfigClass) confClass.getAnnotation(ConfigClass.class);
 
-		commonName = ccAnno.commonName();
-	}
+        // no annotation - no configuration
+        if (ccAnno == null)
+            throw new ConfigurationException("The configuration class must be annotated with @ConfigClass");
 
-	@Override
-	protected void storeChilds(String deviceDN, Device device) throws NamingException {
+        // get common name
+        if (ccAnno.commonName().equals("") || ccAnno.objectClass().equals(""))
+            throw new ConfigurationException("To use LDAP config, specify common name and objectClass for the config class in @ConfigClass annotation");
 
-		T confObj = device.getDeviceExtension(confClass);
+        commonName = ccAnno.commonName();
+    }
 
-		if (confObj != null)
-			store(deviceDN, confObj);
+    @Override
+    protected void storeChilds(String deviceDN, Device device) throws NamingException {
 
-	}
+        T confObj = device.getDeviceExtension(confClass);
 
-	private void store(String deviceDN, T confObj) throws NamingException {
+        if (confObj != null)
+            store(deviceDN, confObj);
 
-		Attributes attrs = storeTo(confObj, new BasicAttributes(true));
-		attrs.put(new BasicAttribute("cn", commonName));
-		config.createSubcontext(getCnStr() + deviceDN, attrs);
+    }
 
-	}
+    private void store(String deviceDN, T confObj) throws NamingException {
 
-	private Attributes storeTo(T confObj, final Attributes attrs) {
+        Attributes attrs = new BasicAttributes(true);
+        attrs.put(new BasicAttribute("cn", commonName));
 
-		String objectClassName = ((ConfigClass) confClass.getAnnotation(ConfigClass.class)).objectClass();
+        String objectClassName = ((ConfigClass) confClass.getAnnotation(ConfigClass.class)).objectClass();
 
-		// add or create objectclass attribute
-		Attribute objectClassAttr = attrs.get("objectclass");
-		if (objectClassAttr != null)
-		    objectClassAttr.add(objectClassName);
-		else
-		    attrs.put(new BasicAttribute("objectclass", objectClassName));
+        // add or create objectclass attribute
+        Attribute objectClassAttr = attrs.get("objectclass");
+        if (objectClassAttr != null)
+            objectClassAttr.add(objectClassName);
+        else
+            attrs.put(new BasicAttribute("objectclass", objectClassName));
 
-		ConfigWriter ldapWriter = new LdapConfigWriter(attrs);
+        ConfigWriter ldapWriter = new LdapConfigIO(attrs, getCnStr() + deviceDN, config);
 
-		try {
+        try {
 
-			ReflectiveConfig.store(confObj, ldapWriter);
+            reflectiveConfig.storeConfig(confObj, ldapWriter);
 
-		} catch (Exception e) {
-			log.error("Unable to store configuration!");
-			log.error("{}", e);
-		}
+        } catch (Exception e) {
+            log.error("Unable to store configuration for class " + confClass.getSimpleName(), e);
+        }
 
-		return attrs;
+    }
 
-	}
+    @Override
+    protected void loadChilds(Device device, String deviceDN) throws NamingException, ConfigurationException {
+        Attributes attrs;
+        try {
+            attrs = config.getAttributes(getCnStr() + deviceDN);
+        } catch (NameNotFoundException e) {
+            return;
+        }
 
-	@Override
-	protected void loadChilds(Device device, String deviceDN) throws NamingException, ConfigurationException {
-		Attributes attrs;
-		try {
-			attrs = config.getAttributes(getCnStr() + deviceDN);
-		} catch (NameNotFoundException e) {
-			return;
-		}
+        // TODO: creation can be done already by the reflective adapter
+        try {
 
-		T confObj;
+            T confObj = confClass.newInstance();
 
-		try {
+            ConfigReader ldapReader = new LdapConfigIO(attrs, getCnStr() + deviceDN, config);
 
-			confObj = confClass.newInstance();
+            reflectiveConfig.readConfig(confObj, ldapReader);
 
-		} catch (Exception e) {
-			throw new ConfigurationException(e);
-		}
+            device.addDeviceExtension(confObj);
 
-		loadFrom(confObj, attrs);
-		device.addDeviceExtension(confObj);
-	}
+        } catch (Exception e) {
+            log.error("Unable to read configuration for class " + confClass.getSimpleName(), e);
+        }
 
-	private void loadFrom(T confObj, final Attributes attrs) throws NamingException, ConfigurationException {
-		
-		/**
-		 * Closure for attrs into an interface that is used by
-		 * reflective field iterator
-		 */		
-		ConfigReader ldapReader = new LdapConfigReader(attrs);
+    }
 
-		try {
+    @Override
+    protected void mergeChilds(Device prev, Device device, String deviceDN) throws NamingException {
+        T prevConfObj = prev.getDeviceExtension(confClass);
+        T confObj = device.getDeviceExtension(confClass);
 
-			ReflectiveConfig.read(confObj, ldapReader);
+        if (confObj == null) {
+            if (prevConfObj != null)
+                config.destroySubcontextWithChilds(getCnStr() + deviceDN);
+            return;
+        }
+        if (prevConfObj == null) {
+            store(deviceDN, confObj);
+            return;
+        }
 
-		} catch (Exception e) {
-			log.error("Unable to read configuration!");
-			log.error("{}", e);
-		}
+        ConfigWriter ldapDiffWriter = new LdapConfigIO(new ArrayList<ModificationItem>(), getCnStr() + deviceDN, config);
 
-	}	
+        try {
 
-	@Override
-	protected void mergeChilds(Device prev, Device device, String deviceDN) throws NamingException {
-		T prevConfObj = prev.getDeviceExtension(confClass);
-		T confObj = device.getDeviceExtension(confClass);
+            reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, ldapDiffWriter);
 
-		if (confObj == null) {
-			if (prevConfObj != null)
-				config.destroySubcontextWithChilds(getCnStr() + deviceDN);
-			return;
-		}
-		if (prevConfObj == null) {
-			store(deviceDN, confObj);
-			return;
-		}
-
-		List<ModificationItem> modifiedItems = storeDiffs(prevConfObj, confObj, deviceDN, new ArrayList<ModificationItem>());
-		config.modifyAttributes(getCnStr() + deviceDN, modifiedItems);
-	}
-
-	private List<ModificationItem> storeDiffs(T prevConfObj, T confObj, String deviceDN, final ArrayList<ModificationItem> mods) {
-
-		DiffWriter ldapDiffWriter = new LdapDiffWriter(mods);
-
-		try {
-
-			ReflectiveConfig.storeAllDiffs(prevConfObj, confObj, ldapDiffWriter);
-
-		} catch (Exception e) {
-			log.error("Unable to store the diffs for configuration!");
-			log.error("{}", e);
-		}
-
-		return mods;
-	}
+        } catch (Exception e) {
+            log.error("Unable to merge configuration for class " + confClass.getSimpleName(), e);
+        }
+    }
 }

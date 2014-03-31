@@ -37,42 +37,57 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.prefs.generic;
 
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 import javax.naming.NamingException;
 
 import org.dcm4che3.conf.prefs.PreferencesUtils;
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigNode;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 
 public class PrefsConfigReader implements ConfigReader {
-	private final Preferences prefs;
+    private final Preferences prefs;
 
-	public PrefsConfigReader(Preferences prefs) {
-		this.prefs = prefs;
-	}
+    public PrefsConfigReader(Preferences prefs) {
+        this.prefs = prefs;
+    }
 
-	@Override
-	public String[] asStringArray(String propName) throws NamingException {
-		return PreferencesUtils.stringArray(prefs, propName);
-	}
+    @Override
+    public String[] asStringArray(String propName) throws NamingException {
+        return PreferencesUtils.stringArray(prefs, propName);
+    }
 
-	@Override
-	public int[] asIntArray(String propName) throws NamingException {
-		return PreferencesUtils.intArray(prefs, propName);
-	}
+    @Override
+    public int[] asIntArray(String propName) throws NamingException {
+        return PreferencesUtils.intArray(prefs, propName);
+    }
 
-	@Override
-	public int asInt(String propName, String def) throws NamingException {
-		return prefs.getInt(propName, Integer.parseInt(def));
-	}
+    @Override
+    public int asInt(String propName, String def) throws NamingException {
+        return prefs.getInt(propName, Integer.parseInt(def));
+    }
 
-	@Override
-	public String asString(String propName, String def) throws NamingException {
-		return prefs.get(propName, def);
-	}
+    @Override
+    public String asString(String propName, String def) throws NamingException {
+        return prefs.get(propName, def);
+    }
 
-	@Override
-	public boolean asBoolean(String propName, String def) throws NamingException {
-		return PreferencesUtils.booleanValue(prefs.get(propName, def));
-	}
+    @Override
+    public boolean asBoolean(String propName, String def) throws NamingException {
+        return PreferencesUtils.booleanValue(prefs.get(propName, def));
+    }
+
+    @Override
+    public Map<String, ConfigReader> readCollection(String keyName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigReader getChildReader(String propName) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

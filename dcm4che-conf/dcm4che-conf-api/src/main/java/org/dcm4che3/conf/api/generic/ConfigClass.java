@@ -43,28 +43,32 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a class as a configuration class, and specifies storage type-specific parameters 
+ * Marks a class as a configuration class, and specifies storage type-specific parameters
+ * 
  * @author Roman K
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE) 
+@Target(ElementType.TYPE)
 public @interface ConfigClass {
-	/**
-	 * LDAP cn
-	 * @return
-	 */
-	String commonName() default "";
+    /**
+     * LDAP cn
+     * 
+     * @return
+     */
+    String commonName() default "";
 
-	/**
-	 * LDAP object class
-	 * @return
-	 */
-	String objectClass() default "";
-	
-	/**
-	 * Java Preferences node name
-	 * @return
-	 */
-	String nodeName() default "";
+    /**
+     * LDAP object class
+     * 
+     * @return
+     */
+    String objectClass() default "";
+
+    /**
+     * Java Preferences node name
+     * 
+     * @return
+     */
+    String nodeName() default "";
 }

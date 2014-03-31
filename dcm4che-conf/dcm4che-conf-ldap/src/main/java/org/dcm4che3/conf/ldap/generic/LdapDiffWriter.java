@@ -37,26 +37,90 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap.generic;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.ldap.LdapUtils;
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.DiffWriter;
 
+@Deprecated
 public class LdapDiffWriter implements DiffWriter {
-	private final List<ModificationItem> mods;
+    private final List<ModificationItem> mods;
 
-	public LdapDiffWriter(List<ModificationItem> mods) {
-		this.mods = mods;
-	}
+    public LdapDiffWriter(List<ModificationItem> mods) {
+        this.mods = mods;
+    }
 
-	@Override
-	public void storeDiff(String propName, Object prev, Object curr) {
+    @Override
+    public void storeDiff(String propName, Object prev, Object curr) {
 
-		if (prev != null && curr != null && prev.getClass().isArray() && curr.getClass().isArray())
-			LdapUtils.storeDiff(mods, propName, (Object[]) prev, (Object[]) curr);
-		else
-			LdapUtils.storeDiff(mods, propName, prev, curr);
-	}
+        if (prev != null && curr != null && prev.getClass().isArray() && curr.getClass().isArray())
+            LdapUtils.storeDiff(mods, propName, (Object[]) prev, (Object[]) curr);
+        else
+            LdapUtils.storeDiff(mods, propName, prev, curr);
+    }
+
+    @Override
+    public void storeNotDef(String propName, Object value, String def) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void storeNotEmpty(String propName, Object value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void storeNotNull(String propName, Object value) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public ConfigWriter getCollectionElementWriter(String keyName, String keyValue, Field field) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigWriter createChild(String propName) throws ConfigurationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void flushWriter() throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void flushDiffs() throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ConfigWriter getChildWriter(String propName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

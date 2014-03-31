@@ -42,6 +42,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.prefs.PreferencesDicomConfiguration;
 import org.dcm4che3.conf.prefs.PreferencesDicomConfigurationExtension;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -49,131 +50,138 @@ import org.dcm4che3.conf.api.generic.ConfigClass;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.DiffWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A generic Java Prefs ConfigurationExtension implementation that works for an arbitrary config class annotated 
- * with @ConfigClass and @ConfigField annotations. 
- * Config class must be provided both as a generic arg and as a constructor arg.  
+ * A generic Java Prefs ConfigurationExtension implementation that works for an arbitrary config class annotated with @ConfigClass
+ * and @ConfigField annotations. Config class must be provided both as a generic arg and as a constructor arg.
+ * 
  * @author Roman K
- *
- * @param <T> Config class
+ * 
+ * @param <T>
+ *            Config class
  */
 
 public class PreferencesGenericConfigExtension<T extends DeviceExtension> extends PreferencesDicomConfigurationExtension {
 
-	public static final Logger log = LoggerFactory.getLogger(PreferencesGenericConfigExtension.class);
+    public static final Logger log = LoggerFactory.getLogger(PreferencesGenericConfigExtension.class);
 
-	private String nodename;
+    private String nodename;
 
-	private Class<T> confClass;
+    private Class<T> confClass;
 
-	public PreferencesGenericConfigExtension(Class<T> confClass) throws ConfigurationException {
-		super();
+    private ReflectiveConfig reflectiveConfig = new ReflectiveConfig(null, null);
 
-		this.confClass = confClass;
+    @Override
+    public void setDicomConfiguration(PreferencesDicomConfiguration config) {
+        super.setDicomConfiguration(config);
+        reflectiveConfig.setDicomConfiguration(config);
+    }
 
-		ConfigClass ccAnno = (ConfigClass) confClass.getAnnotation(ConfigClass.class);
+    public PreferencesGenericConfigExtension(Class<T> confClass) throws ConfigurationException {
+        super();
 
-		// no annotation - no configuration
-		if (ccAnno == null)
-			throw new ConfigurationException("The configuration class must be annotated with @ConfigClass");
+        this.confClass = confClass;
 
-		if (ccAnno.nodeName().equals(""))
-			throw new ConfigurationException(
-					"To use java preferences config, specify node name for the config class in @ConfigClass annotation");
+        ConfigClass ccAnno = (ConfigClass) confClass.getAnnotation(ConfigClass.class);
 
-		nodename = ccAnno.nodeName();
+        // no annotation - no configuration
+        if (ccAnno == null)
+            throw new ConfigurationException("The configuration class must be annotated with @ConfigClass");
 
-	}
+        if (ccAnno.nodeName().equals(""))
+            throw new ConfigurationException("To use java preferences config, specify node name for the config class in @ConfigClass annotation");
 
-	@Override
-	protected void storeChilds(Device device, Preferences deviceNode) {
-		T confObj = device.getDeviceExtension(confClass);
-		if (confObj != null)
-			storeTo(confObj, deviceNode.node(nodename));
-	}
+        nodename = ccAnno.nodeName();
 
-	private void storeTo(T confObj, final Preferences prefs) {
+    }
 
-		ConfigWriter prefsWriter = new PrefsConfigWriter(prefs);
+    @Override
+    protected void storeChilds(Device device, Preferences deviceNode) {
+        T confObj = device.getDeviceExtension(confClass);
+        if (confObj != null)
+            storeTo(confObj, deviceNode.node(nodename));
+    }
 
-		try {
+    private void storeTo(T confObj, final Preferences prefs) {
 
-			ReflectiveConfig.store(confObj, prefsWriter);
+        ConfigWriter prefsWriter = new PrefsConfigWriter(prefs);
 
-		} catch (Exception e) {
-			log.error("Unable to store configuration!");
-			log.error("{}", e);
+        try {
 
-		}
+            reflectiveConfig.storeConfig(confObj, prefsWriter);
 
-	}
+        } catch (Exception e) {
+            log.error("Unable to store configuration!");
+            log.error("{}", e);
 
-	@Override
-	protected void loadChilds(Device device, Preferences deviceNode) throws BackingStoreException, ConfigurationException {
-		if (!deviceNode.nodeExists(nodename))
-			return;
+        }
 
-		Preferences loggerNode = deviceNode.node(nodename);
-		T confObj;
+    }
 
-		try {
-			confObj = confClass.newInstance();
-		} catch (Exception e) {
-			throw new ConfigurationException(e);
-		}
+    @Override
+    protected void loadChilds(Device device, Preferences deviceNode) throws BackingStoreException, ConfigurationException {
+        if (!deviceNode.nodeExists(nodename))
+            return;
 
-		loadFrom(confObj, loggerNode);
-		device.addDeviceExtension(confObj);
-	}
+        Preferences loggerNode = deviceNode.node(nodename);
+        T confObj;
 
-	private void loadFrom(T confObj, final Preferences prefs) {
+        try {
+            confObj = confClass.newInstance();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
 
-		ConfigReader ldapReader = new PrefsConfigReader(prefs);
+        loadFrom(confObj, loggerNode);
+        device.addDeviceExtension(confObj);
+    }
 
-		try {
+    private void loadFrom(T confObj, final Preferences prefs) {
 
-			ReflectiveConfig.read(confObj, ldapReader);
+        ConfigReader ldapReader = new PrefsConfigReader(prefs);
 
-		} catch (Exception e) {
-			log.error("Unable to read configuration!");
-			log.error("{}", e);
-		}
+        try {
 
-	}
+            reflectiveConfig.readConfig(confObj, ldapReader);
 
-	@Override
-	protected void mergeChilds(Device prev, Device device, Preferences deviceNode) throws BackingStoreException {
-		T prevConfObj = prev.getDeviceExtension(confClass);
-		T confObj = device.getDeviceExtension(confClass);
+        } catch (Exception e) {
+            log.error("Unable to read configuration!");
+            log.error("{}", e);
+        }
 
-		if (confObj == null && prevConfObj == null)
-			return;
+    }
 
-		Preferences xdsNode = deviceNode.node(nodename);
-		if (confObj == null)
-			xdsNode.removeNode();
-		else if (prevConfObj == null)
-			storeTo(confObj, xdsNode);
-		else
-			storeDiffs(xdsNode, prevConfObj, confObj);
-	}
+    @Override
+    protected void mergeChilds(Device prev, Device device, Preferences deviceNode) throws BackingStoreException {
+        T prevConfObj = prev.getDeviceExtension(confClass);
+        T confObj = device.getDeviceExtension(confClass);
 
-	private void storeDiffs(final Preferences prefs, T prevConfObj, T confObj) {
+        if (confObj == null && prevConfObj == null)
+            return;
 
-		DiffWriter prefsDiffWriter = new PrefsDiffWriter(prefs);
+        Preferences xdsNode = deviceNode.node(nodename);
+        if (confObj == null)
+            xdsNode.removeNode();
+        else if (prevConfObj == null)
+            storeTo(confObj, xdsNode);
+        else
+            storeDiffs(xdsNode, prevConfObj, confObj);
+    }
 
-		try {
+    private void storeDiffs(final Preferences prefs, T prevConfObj, T confObj) {
 
-			ReflectiveConfig.storeAllDiffs(prevConfObj, confObj, prefsDiffWriter);
+        ConfigWriter prefsDiffWriter = new PrefsConfigWriter(prefs);
 
-		} catch (Exception e) {
-			log.error("Unable to store the diffs for configuration!");
-			log.error("{}", e);
-		}
+        try {
 
-	}
+            reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, prefsDiffWriter);
+
+        } catch (Exception e) {
+            log.error("Unable to store the diffs for configuration!");
+            log.error("{}", e);
+        }
+
+    }
 }

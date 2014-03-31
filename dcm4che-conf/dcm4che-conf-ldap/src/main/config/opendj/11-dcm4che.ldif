@@ -596,3 +596,8 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmSOPClass $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
+objectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
+  DESC 'Collection folder'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn  ) )

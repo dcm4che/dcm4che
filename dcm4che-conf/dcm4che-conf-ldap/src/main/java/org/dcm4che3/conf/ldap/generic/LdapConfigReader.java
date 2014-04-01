@@ -55,28 +55,48 @@ public class LdapConfigReader implements ConfigReader {
     }
 
     @Override
-    public String[] asStringArray(String propName) throws NamingException {
-        return LdapUtils.stringArray(attrs.get(propName));
+    public String[] asStringArray(String propName) throws ConfigurationException {
+        try {
+            return LdapUtils.stringArray(attrs.get(propName));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override
-    public int[] asIntArray(String propName) throws NamingException {
-        return LdapUtils.intArray(attrs.get(propName));
+    public int[] asIntArray(String propName) throws ConfigurationException {
+        try {
+            return LdapUtils.intArray(attrs.get(propName));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override
-    public int asInt(String propName, String def) throws NamingException {
-        return LdapUtils.intValue(attrs.get(propName), Integer.parseInt(def));
+    public int asInt(String propName, String def) throws ConfigurationException {
+        try {
+            return LdapUtils.intValue(attrs.get(propName), Integer.parseInt(def));
+        } catch (Exception e) {
+            throw new ConfigurationException(e);        
+        }
     }
 
     @Override
-    public String asString(String propName, String def) throws NamingException {
-        return LdapUtils.stringValue(attrs.get(propName), def);
+    public String asString(String propName, String def) throws ConfigurationException {
+        try {
+            return LdapUtils.stringValue(attrs.get(propName), def);
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override
-    public boolean asBoolean(String propName, String def) throws NamingException {
-        return LdapUtils.booleanValue(attrs.get(propName), Boolean.parseBoolean(def));
+    public boolean asBoolean(String propName, String def) throws ConfigurationException {
+        try {
+            return LdapUtils.booleanValue(attrs.get(propName), Boolean.parseBoolean(def));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override

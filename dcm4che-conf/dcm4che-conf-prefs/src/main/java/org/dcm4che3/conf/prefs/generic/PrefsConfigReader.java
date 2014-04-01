@@ -55,27 +55,27 @@ public class PrefsConfigReader implements ConfigReader {
     }
 
     @Override
-    public String[] asStringArray(String propName) throws NamingException {
+    public String[] asStringArray(String propName) {
         return PreferencesUtils.stringArray(prefs, propName);
     }
 
     @Override
-    public int[] asIntArray(String propName) throws NamingException {
+    public int[] asIntArray(String propName) {
         return PreferencesUtils.intArray(prefs, propName);
     }
 
     @Override
-    public int asInt(String propName, String def) throws NamingException {
+    public int asInt(String propName, String def) {
         return prefs.getInt(propName, Integer.parseInt(def));
     }
 
     @Override
-    public String asString(String propName, String def) throws NamingException {
+    public String asString(String propName, String def) {
         return prefs.get(propName, def);
     }
 
     @Override
-    public boolean asBoolean(String propName, String def) throws NamingException {
+    public boolean asBoolean(String propName, String def) {
         return PreferencesUtils.booleanValue(prefs.get(propName, def));
     }
 

@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.naming.NamingException;
-
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.generic.ConfigField;
@@ -117,7 +115,7 @@ public class DefaultConfigTypeAdapters {
         }
 
         @Override
-        public String read(ReflectiveConfig config, ConfigReader reader, Field field) throws NamingException {
+        public String read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
             return reader.asString(fieldAnno.name(), null);
         }
@@ -146,7 +144,7 @@ public class DefaultConfigTypeAdapters {
     public static class StringTypeAdapter extends PrimitiveAbstractTypeAdapter<String> {
 
         @Override
-        public String read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+        public String read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
             return reader.asString(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? null : fieldAnno.def()));
         }
@@ -157,7 +155,7 @@ public class DefaultConfigTypeAdapters {
      */
     public static class IntegerTypeAdapter extends PrimitiveAbstractTypeAdapter<Integer> {
         @Override
-        public Integer read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+        public Integer read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
             return reader.asInt(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? "0" : fieldAnno.def()));
         }
@@ -168,7 +166,7 @@ public class DefaultConfigTypeAdapters {
      */
     public static class BooleanTypeAdapter extends PrimitiveAbstractTypeAdapter<Boolean> {
         @Override
-        public Boolean read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+        public Boolean read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
             return reader.asBoolean(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? "false" : fieldAnno.def()));
         }
@@ -185,7 +183,7 @@ public class DefaultConfigTypeAdapters {
         }
 
         @Override
-        public Object read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+        public Object read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
             if (String.class.isAssignableFrom(field.getType().getComponentType()))

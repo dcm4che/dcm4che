@@ -68,7 +68,7 @@ public class MapAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode
 
     @SuppressWarnings("unchecked")
     @Override
-    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
         ConfigNode cnode = new ConfigNode();

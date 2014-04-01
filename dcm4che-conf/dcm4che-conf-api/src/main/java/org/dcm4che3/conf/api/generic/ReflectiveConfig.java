@@ -54,8 +54,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Generic helper class that provides reflective traversing of classes annotated with Config annotations, and
- * storing/reading config from/to such classes
+ * Generic helper class that provides reflective traversing of classes annotated
+ * with Config annotations, and storing/reading config from/to such classes
  * 
  * @author Roman K
  * 
@@ -66,15 +66,16 @@ public class ReflectiveConfig {
     public static final Logger log = LoggerFactory.getLogger(ReflectiveConfig.class);
 
     /**
-     * Type adapter that handles configuration read/write/serialize/deserialize for a specific java class.
+     * Type adapter that handles configuration read/write/serialize/deserialize
+     * for a specific java class.
      * 
      * @author Roman K
      * 
      * @param <T>
      *            Java class
      * @param <ST>
-     *            Serialized representation - this intermediate format is needed for merging, so only the actual config
-     *            data is used.
+     *            Serialized representation - this intermediate format is needed
+     *            for merging, so only the actual config data is used.
      */
     public interface ConfigTypeAdapter<T, ST> {
 
@@ -83,11 +84,13 @@ public class ReflectiveConfig {
          * 
          * @param obj
          * @param config
-         *            ReflectiveConfig that can be used e.g. to retrieve DicomConfiguration <b>Can be <i>null</i>!</b>
+         *            ReflectiveConfig that can be used e.g. to retrieve
+         *            DicomConfiguration <b>Can be <i>null</i>!</b>
          * @param writer
          *            ConfigWriter to use
          * @param field
-         *            Config field. Can be used to read additional annotations, check type, etc.
+         *            Config field. Can be used to read additional annotations,
+         *            check type, etc.
          * @return
          */
         void write(ST serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException;
@@ -97,9 +100,11 @@ public class ReflectiveConfig {
          * 
          * @param obj
          * @param config
-         *            ReflectiveConfig that can be used e.g. to retrieve DicomConfiguration <b>Can be <i>null</i>!</b>
+         *            ReflectiveConfig that can be used e.g. to retrieve
+         *            DicomConfiguration <b>Can be <i>null</i>!</b>
          * @param field
-         *            Config field. Can be used to read additional annotations, check type, etc.
+         *            Config field. Can be used to read additional annotations,
+         *            check type, etc.
          * @return
          * @throws ConfigurationException
          */
@@ -110,25 +115,29 @@ public class ReflectiveConfig {
          * 
          * @param str
          * @param config
-         *            ReflectiveConfig that can be used e.g. to retrieve DicomConfiguration <b>Can be <i>null</i>!</b>
+         *            ReflectiveConfig that can be used e.g. to retrieve
+         *            DicomConfiguration <b>Can be <i>null</i>!</b>
          * @param reader
          *            ConfigReader to use
          * @param field
-         *            Config field. Can be used to read additional annotations, check type, etc.
+         *            Config field. Can be used to read additional annotations,
+         *            check type, etc.
          * @return
          * @throws ConfigurationException
          * @throws NamingException
          */
-        ST read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException;
+        ST read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException;
 
         /**
          * Constructs an object from its serialized form
          * 
          * @param serialized
          * @param config
-         *            ReflectiveConfig that can be used e.g. to retrieve DicomConfiguration <b>Can be <i>null</i>!</b>
+         *            ReflectiveConfig that can be used e.g. to retrieve
+         *            DicomConfiguration <b>Can be <i>null</i>!</b>
          * @param field
-         *            Config field. Can be used to read additional annotations, check type, etc.
+         *            Config field. Can be used to read additional annotations,
+         *            check type, etc.
          * @return
          * @throws ConfigurationException
          */
@@ -141,7 +150,8 @@ public class ReflectiveConfig {
     }
 
     /**
-     * Generic serialized representation of a config 'node' that has attributes and children nodes
+     * Generic serialized representation of a config 'node' that has attributes
+     * and children nodes
      * 
      * @author Roman K
      * 
@@ -153,7 +163,8 @@ public class ReflectiveConfig {
         }
 
         /**
-         * Object can be either serialized representation of a field or a ConfigNode
+         * Object can be either serialized representation of a field or a
+         * ConfigNode
          */
         public Map<String, Object> attributes;
 
@@ -169,7 +180,8 @@ public class ReflectiveConfig {
     }
 
     /**
-     * Used by reflective config writer, should implement storage type-specific methods
+     * Used by reflective config writer, should implement storage type-specific
+     * methods
      * 
      * @author Roman K
      */
@@ -210,21 +222,22 @@ public class ReflectiveConfig {
     }
 
     /**
-     * Used by reflective config reader, should implement storage type-specific methods
+     * Used by reflective config reader, should implement storage type-specific
+     * methods
      * 
      * @author Roman K
      */
     public interface ConfigReader {
 
-        String[] asStringArray(String propName) throws NamingException;
+        String[] asStringArray(String propName) throws ConfigurationException;
 
-        int[] asIntArray(String propName) throws NamingException;
+        int[] asIntArray(String propName) throws ConfigurationException;
 
-        int asInt(String propName, String def) throws NamingException;
+        int asInt(String propName, String def) throws ConfigurationException;
 
-        String asString(String propName, String def) throws NamingException;
+        String asString(String propName, String def) throws ConfigurationException;
 
-        boolean asBoolean(String propName, String def) throws NamingException;
+        boolean asBoolean(String propName, String def) throws ConfigurationException;
 
         // collections
 
@@ -244,8 +257,8 @@ public class ReflectiveConfig {
     private static final ReflectiveConfig singleton = new ReflectiveConfig(null, null);
 
     /**
-     * Writes the configuration from the properties of the specified configuration object into the config storage using
-     * the provided writer.
+     * Writes the configuration from the properties of the specified
+     * configuration object into the config storage using the provided writer.
      * 
      * @param confObj
      *            Configuration object
@@ -258,7 +271,8 @@ public class ReflectiveConfig {
     }
 
     /**
-     * Reads the configuration into the properties of the specified configuration object using the provided reader.
+     * Reads the configuration into the properties of the specified
+     * configuration object using the provided reader.
      * 
      * @param confObj
      * @param reader
@@ -271,7 +285,8 @@ public class ReflectiveConfig {
     /**
      * Walk through the <b>from</b> object and for each field annotated with
      * 
-     * @ConfigField, copy the value by using getter/setter to the <b>to</b> object.
+     * @ConfigField, copy the value by using getter/setter to the <b>to</b>
+     *               object.
      * 
      * @param from
      * @param to
@@ -300,7 +315,8 @@ public class ReflectiveConfig {
     }
 
     /**
-     * Calls store diff methods for all pairs of the annotated fields of prevConfObj and confObj
+     * Calls store diff methods for all pairs of the annotated fields of
+     * prevConfObj and confObj
      * 
      * @param prevConfObj
      * @param confObj
@@ -319,14 +335,16 @@ public class ReflectiveConfig {
     private DicomConfiguration dicomConfiguration;
 
     /**
-     * Creates an instance of ReflectiveConfig that will use the specified config context and custom representations
+     * Creates an instance of ReflectiveConfig that will use the specified
+     * config context and custom representations
      * 
      * @param customRepresentations
-     *            Null can be provided. class-representation map for types that should be treated in a special way when
-     *            reading/writing the configuration.
+     *            Null can be provided. class-representation map for types that
+     *            should be treated in a special way when reading/writing the
+     *            configuration.
      * @param configCtx
-     *            Null can be provided. DicomCofiguration that will be forwarded to custom representation
-     *            implementations as config context.
+     *            Null can be provided. DicomCofiguration that will be forwarded
+     *            to custom representation implementations as config context.
      */
     public ReflectiveConfig(Map<Class, ConfigTypeAdapter> customRepresentations, DicomConfiguration configCtx) {
         super();
@@ -338,13 +356,7 @@ public class ReflectiveConfig {
     public <T> void readConfig(T confObj, ConfigReader reader) throws ConfigurationException {
 
         ReflectiveAdapter<T> adapter = new ReflectiveAdapter<T>((Class<T>) confObj.getClass(), confObj);
-
-        try {
-            adapter.deserialize(adapter.read(this, reader, null), this, null);
-        } catch (NamingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        adapter.deserialize(adapter.read(this, reader, null), this, null);
     }
 
     @SuppressWarnings("unchecked")

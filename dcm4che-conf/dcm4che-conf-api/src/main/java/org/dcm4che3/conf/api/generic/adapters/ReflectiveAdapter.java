@@ -139,7 +139,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException, NamingException {
+    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
 
         // if this object is a property, get a child
         if (field != null && field.getType().equals(clazz)) {

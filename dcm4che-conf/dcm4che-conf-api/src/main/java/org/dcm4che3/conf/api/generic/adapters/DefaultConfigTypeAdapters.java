@@ -68,7 +68,7 @@ public class DefaultConfigTypeAdapters {
     public abstract static class PrimitiveAbstractTypeAdapter<T> implements ConfigTypeAdapter<T, T> {
 
         @Override
-        public boolean isWritingChildren() {
+        public boolean isWritingChildren(Field field) {
             return false;
         }
 
@@ -110,7 +110,7 @@ public class DefaultConfigTypeAdapters {
     public abstract static class CommonAbstractTypeAdapter<T> implements ConfigTypeAdapter<T, String> {
 
         @Override
-        public boolean isWritingChildren() {
+        public boolean isWritingChildren(Field field) {
             return false;
         }
 
@@ -178,7 +178,7 @@ public class DefaultConfigTypeAdapters {
     public static class ArrayTypeAdapter extends PrimitiveAbstractTypeAdapter<Object> {
 
         @Override
-        public boolean isWritingChildren() {
+        public boolean isWritingChildren(Field field) {
             return false;
         }
 
@@ -252,7 +252,8 @@ public class DefaultConfigTypeAdapters {
         defaultTypeAdapters.put(AttributesFormat.class, new AttributeFormatTypeAdapter());
         defaultTypeAdapters.put(Device.class, new DeviceTypeAdapter());
 
-        defaultTypeAdapters.put(Map.class, new MapAdapter());
+        defaultTypeAdapters.put(Map.class, new MapTypeAdapter());
+        defaultTypeAdapters.put(Set.class, new SetTypeAdapter());
 
     }
 

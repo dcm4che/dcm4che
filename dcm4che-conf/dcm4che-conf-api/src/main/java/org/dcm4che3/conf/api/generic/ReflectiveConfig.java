@@ -145,7 +145,12 @@ public class ReflectiveConfig {
 
         void merge(T prev, T curr, ReflectiveConfig config, ConfigWriter diffwriter, Field field) throws ConfigurationException;
 
-        boolean isWritingChildren();
+        /**
+         * Should indicate whether the specified field will generate a child when writing configuration
+         * @param field
+         * @return
+         */
+        boolean isWritingChildren(Field field);
 
     }
 
@@ -205,7 +210,7 @@ public class ReflectiveConfig {
          */
         ConfigWriter getCollectionElementWriter(String keyName, String keyValue, Field field) throws ConfigurationException;
 
-        public ConfigWriter createChild(String propName) throws ConfigurationException;
+        public ConfigWriter createCollectionChild(String propName, Field field) throws ConfigurationException;
 
         void flushWriter() throws ConfigurationException;
 
@@ -214,10 +219,12 @@ public class ReflectiveConfig {
         void flushDiffs() throws ConfigurationException;
 
         void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException;
+        
+        void removeCurrentNode() throws ConfigurationException;
 
         ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue);
 
-        ConfigWriter getChildWriter(String propName);
+        ConfigWriter getChildWriter(String propName, Field field) throws ConfigurationException;
 
     }
 

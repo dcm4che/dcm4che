@@ -29,10 +29,10 @@ import org.dcm4che3.net.TransferCapability;
  * 
  */
 
-public class MapAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode> {
+public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode> {
 
     @Override
-    public boolean isWritingChildren() {
+    public boolean isWritingChildren(Field field) {
         return true;
     }
 
@@ -130,7 +130,7 @@ public class MapAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode
         // getValueAdapter
         ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
 
-        ConfigWriter collectionWriter = writer.createChild(getCollectionName(fieldAnno));
+        ConfigWriter collectionWriter = writer.createCollectionChild(getCollectionName(fieldAnno), field);
 
         for (Entry<String, Object> e : serialized.attributes.entrySet()) {
 
@@ -148,7 +148,7 @@ public class MapAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode
         ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
 
-        ConfigWriter collectionWriter = diffwriter.getChildWriter(getCollectionName(fieldAnno));
+        ConfigWriter collectionWriter = diffwriter.getChildWriter(getCollectionName(fieldAnno), field);
 
         // remove nodes that were deleted since prev
         for (Entry<K, V> e : prev.entrySet())

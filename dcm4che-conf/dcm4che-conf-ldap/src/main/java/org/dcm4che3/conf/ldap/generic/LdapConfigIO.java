@@ -89,6 +89,15 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
         this.mods = mods;
     }
 
+    // for common methods
+    public LdapConfigIO(Attributes attrs, List<ModificationItem> mods, String dn, LdapDicomConfiguration config) {
+        super();
+        this.dn = dn;
+        this.config = config;
+        this.attrs = attrs;
+        this.mods = mods;
+    }
+
     // for diff writer
     public LdapConfigIO(List<ModificationItem> mods, String dn, LdapDicomConfiguration config) {
         super();
@@ -141,7 +150,7 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
         try {
             return LdapUtils.intValue(attrs.get(propName), Integer.parseInt(def));
         } catch (Exception e) {
-            throw new ConfigurationException(e);        
+            throw new ConfigurationException(e);
         }
     }
 
@@ -267,7 +276,7 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
     }
 
     @Override
-    public ConfigWriter createChild(String propName) throws ConfigurationException {
+    public ConfigWriter createCollectionChild(String propName, Field field) throws ConfigurationException {
         String folderDn = getFolderDn(propName);
 
         // create 'folder'
@@ -275,7 +284,6 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
             Attributes attrs = new BasicAttributes(true);
             attrs.put("cn", propName);
             attrs.put("objectClass", FOLDER_OBJECT_CLASS);
-
             config.createSubcontext(folderDn, attrs);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
@@ -307,7 +315,8 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
         } else if (!fieldAnno.mapElementObjectClass().equals("")) {
             attrs.put("objectClass", fieldAnno.mapElementObjectClass());
         } else
-            throw new ConfigurationException("objectClass for collection element cannot be resolved, key (" + keyName + " - " + keyValue + ")");
+            throw new ConfigurationException("objectClass for collection element cannot be resolved, key (" + keyName + " - " + keyValue
+                    + ")");
 
         return new LdapConfigIO(attrs, getCollectionElementDn(keyName, keyValue), config);
     }
@@ -340,8 +349,17 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
     }
 
     @Override
-    public ConfigWriter getChildWriter(String propName) {
-        return new LdapConfigIO(new ArrayList<ModificationItem>(), getFolderDn(propName), config);
+    public ConfigWriter getChildWriter(String propName, Field field) throws ConfigurationException {
+
+        Attributes attrs = new BasicAttributes();
+
+        ConfigClass classAnno = (ConfigClass) field.getType().getAnnotation(ConfigClass.class);
+        if (classAnno != null) {
+//            throw new ConfigurationException("Ldap object class for the child node is unknown");
+            attrs.put("objectClass", classAnno.objectClass());
+        }
+
+        return new LdapConfigIO(attrs,new ArrayList<ModificationItem>(), getFolderDn(propName), config);
     }
 
     @Override
@@ -351,6 +369,15 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
             LdapUtils.storeDiff(mods, propName, (Object[]) prev, (Object[]) curr);
         else
             LdapUtils.storeDiff(mods, propName, prev, curr);
+    }
+
+    @Override
+    public void removeCurrentNode() throws ConfigurationException {
+        try {
+            config.destroySubcontextWithChilds(dn);
+        } catch (NamingException e) {
+            throw new ConfigurationException();
+        }
     }
 
 }

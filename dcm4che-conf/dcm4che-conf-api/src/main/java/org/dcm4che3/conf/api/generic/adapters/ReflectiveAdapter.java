@@ -19,10 +19,12 @@ import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
  * Reflective adapter that handles classes with ConfigClass annotations.<br/>
  * <br/>
  * 
- * <b>field</b> argument is not actually used in the methods, the class must be set in the constructor.
+ * <b>field</b> argument is not actually used in the methods, the class must be
+ * set in the constructor.
  * 
- * User has to use 2 arg constructor and initialize providedConfObj when the already created conf object should be used
- * instead of instantiating one in deserialize method, as, e.g. in ReflectiveConfig.readConfig
+ * User has to use 2 arg constructor and initialize providedConfObj when the
+ * already created conf object should be used instead of instantiating one in
+ * deserialize method, as, e.g. in ReflectiveConfig.readConfig
  * 
  */
 public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
@@ -30,7 +32,8 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
     private Class<T> clazz;
 
     /**
-     * Initialized only when doing first level parsing, e.g. in ReflectiveConfig.readConfig
+     * Initialized only when doing first level parsing, e.g. in
+     * ReflectiveConfig.readConfig
      */
     private T providedConfObj;
 
@@ -46,18 +49,24 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
     }
 
     @Override
-    public boolean isWritingChildren() {
-        return false;
+    public boolean isWritingChildren(Field field) {
+        // if this object is a property, create a child
+        return (field != null && field.getType().equals(clazz));
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void write(ConfigNode serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
 
+        if (serialized == null) {
+            return;
+        }
+        
         // if this object is a property, create a child
         if (field != null && field.getType().equals(clazz)) {
             ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-            writer = writer.createChild(fieldAnno.name());
+            writer = writer.getChildWriter(fieldAnno.name(), field);
         }
 
         for (Field classField : clazz.getDeclaredFields()) {
@@ -73,7 +82,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
             if (customRep != null) {
 
                 // this is done in the next phase after flush
-                if (!customRep.isWritingChildren())
+                if (!customRep.isWritingChildren(classField))
                     customRep.write(serialized.attributes.get(fieldAnno.name()), config, writer, classField);
             } else {
                 throw new ConfigurationException("Corresponding 'writer' was not found for field" + fieldAnno.name());
@@ -94,7 +103,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
             // find typeadapter
             ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
 
-            if (customRep.isWritingChildren())
+            if (customRep.isWritingChildren(classField))
                 customRep.write(serialized.attributes.get(fieldAnno.name()), config, writer, classField);
 
         }
@@ -105,6 +114,9 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
     @Override
     public ConfigNode serialize(T obj, ReflectiveConfig config, Field field) throws ConfigurationException {
 
+        if (obj == null) return null;
+
+        
         ConfigNode cnode = new ConfigNode();
         for (Field classField : clazz.getDeclaredFields()) {
 
@@ -144,7 +156,15 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
         // if this object is a property, get a child
         if (field != null && field.getType().equals(clazz)) {
             ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-            reader = reader.getChildReader(fieldAnno.name());
+            try {
+                reader = reader.getChildReader(fieldAnno.name());
+            } catch (ConfigurationException e) {
+                // if there is any default specified, load as null
+                if (fieldAnno.def().equals("null"))
+                    return null;
+                else
+                    throw e;
+            }
         }
 
         ConfigNode cnode = new ConfigNode();
@@ -176,6 +196,8 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
     @Override
     public T deserialize(ConfigNode serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
 
+        if (serialized == null) return null;
+        
         T confObj;
 
         // create instance or use provided when it was created earlier,
@@ -226,7 +248,18 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
         // if this object is a property, get a child
         if (field != null && field.getType().equals(clazz)) {
             ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-            diffwriter = diffwriter.getChildWriter(fieldAnno.name());
+            
+            if (prev == null) {
+                write(serialize(curr, config, field), config, diffwriter, field);
+                return;
+            } else
+            if (curr == null) {
+                diffwriter.getChildWriter(fieldAnno.name(), field).removeCurrentNode();
+                return;
+            }
+
+            diffwriter = diffwriter.getChildWriter(fieldAnno.name(), field);
+
         }
 
         // look through all fields of the config class, not including

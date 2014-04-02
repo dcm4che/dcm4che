@@ -103,7 +103,7 @@ public class PrefsConfigWriter implements ConfigWriter {
     }
 
     @Override
-    public ConfigWriter createChild(String propName) throws ConfigurationException {
+    public ConfigWriter createCollectionChild(String propName, Field field) throws ConfigurationException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -133,8 +133,14 @@ public class PrefsConfigWriter implements ConfigWriter {
     }
 
     @Override
-    public ConfigWriter getChildWriter(String propName) {
+    public ConfigWriter getChildWriter(String propName, Field field) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void removeCurrentNode() throws ConfigurationException {
+        // TODO Auto-generated method stub
+        
     }
 }

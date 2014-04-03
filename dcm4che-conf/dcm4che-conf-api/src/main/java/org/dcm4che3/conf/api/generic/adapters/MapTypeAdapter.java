@@ -90,6 +90,8 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
     @Override
     public Map<K, V> deserialize(ConfigNode serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
 
+        if (serialized == null) return null;
+        
         ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
 
@@ -106,6 +108,8 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
     @Override
     public ConfigNode serialize(Map<K, V> obj, ReflectiveConfig config, Field field) throws ConfigurationException {
 
+        if (obj == null) return null;
+        
         ConfigNode cnode = new ConfigNode();
 
         ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
@@ -132,6 +136,8 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
         ConfigWriter collectionWriter = writer.createCollectionChild(getCollectionName(fieldAnno), field);
 
+        if (serialized == null) return;
+        
         for (Entry<String, Object> e : serialized.attributes.entrySet()) {
 
             ConfigWriter elementWriter = collectionWriter.getCollectionElementWriter(fieldAnno.mapKey(), e.getKey(), field);

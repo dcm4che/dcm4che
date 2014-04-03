@@ -1053,9 +1053,13 @@ public class AuditLogger extends DeviceExtension {
 
     private static String toString(DatagramPacket packet) {
         try {
-            return packet.getLength() > MSG_PROMPT_LEN
-                    ? (new String(packet.getData(), 0, MSG_PROMPT_LEN, "UTF-8") + "...") 
-                    : new String(packet.getData(), "UTF-8");
+            int len = packet.getLength();
+            boolean truncate = len > MSG_PROMPT_LEN;
+            String s = new String(packet.getData(), 0,
+                    truncate ? MSG_PROMPT_LEN : len, "UTF-8");
+            if (truncate)
+                s += "...";
+            return s;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

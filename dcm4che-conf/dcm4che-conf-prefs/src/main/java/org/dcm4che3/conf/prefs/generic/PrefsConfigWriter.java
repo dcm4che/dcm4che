@@ -38,6 +38,7 @@
 package org.dcm4che3.conf.prefs.generic;
 
 import java.lang.reflect.Field;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.dcm4che3.conf.prefs.PreferencesUtils;
@@ -98,49 +99,49 @@ public class PrefsConfigWriter implements ConfigWriter {
 
     @Override
     public ConfigWriter getCollectionElementWriter(String keyName, String keyValue, Field field) throws ConfigurationException {
-        // TODO Auto-generated method stub
-        return null;
+        return new PrefsConfigWriter(prefs.node(keyValue));
     }
 
     @Override
     public ConfigWriter createCollectionChild(String propName, Field field) throws ConfigurationException {
-        // TODO Auto-generated method stub
-        return null;
+        return new PrefsConfigWriter(prefs.node(propName));
     }
 
     @Override
     public void flushWriter() throws ConfigurationException {
-        // TODO Auto-generated method stub
-
+        // noop
     }
 
     @Override
     public void flushDiffs() throws ConfigurationException {
-        // TODO Auto-generated method stub
-
+        // noop
     }
 
     @Override
     public void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException {
-        // TODO Auto-generated method stub
-
+        try {
+            prefs.node(keyValue).removeNode();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException("Cannot remove config child node "+keyValue+" for "+prefs.absolutePath() ,e);
+        }
     }
 
     @Override
     public ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue) {
-        // TODO Auto-generated method stub
-        return null;
+        return new PrefsConfigWriter(prefs.node(keyValue));
     }
 
     @Override
     public ConfigWriter getChildWriter(String propName, Field field) {
-        // TODO Auto-generated method stub
-        return null;
+        return new PrefsConfigWriter(prefs.node(propName));
     }
 
     @Override
     public void removeCurrentNode() throws ConfigurationException {
-        // TODO Auto-generated method stub
-        
+        try {
+            prefs.removeNode();
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException("Cannot remove config node "+prefs.absolutePath() ,e);
+        }
     }
 }

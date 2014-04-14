@@ -37,7 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.prefs.generic;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.naming.NamingException;
@@ -80,14 +82,27 @@ public class PrefsConfigReader implements ConfigReader {
     }
 
     @Override
-    public Map<String, ConfigReader> readCollection(String keyName) {
-        // TODO Auto-generated method stub
-        return null;
+    public Map<String, ConfigReader> readCollection(String keyName) throws ConfigurationException {
+        Map<String, ConfigReader> map = new HashMap<String, ConfigReader>();
+
+        try {
+            for (String name : prefs.childrenNames()) {
+                map.put(name, new PrefsConfigReader(prefs.node(name)));
+            }
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException("Cannot read child configuration nodes from "+prefs.name(),e);
+        }
+
+        return map;
     }
 
     @Override
     public ConfigReader getChildReader(String propName) throws ConfigurationException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            if (!prefs.nodeExists(propName)) throw new ConfigurationException("Node "+propName+" does not exist for "+prefs.absolutePath()); else
+            return new PrefsConfigReader(prefs.node(propName));
+        } catch (BackingStoreException e) {
+            throw new ConfigurationException("Cannot read child configuration node from "+prefs.absolutePath(),e);
+        }
     }
 }

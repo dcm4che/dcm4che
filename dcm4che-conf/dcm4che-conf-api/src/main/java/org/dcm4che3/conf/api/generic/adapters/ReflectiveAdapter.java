@@ -83,7 +83,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
                 // this is done in the next phase after flush
                 if (!customRep.isWritingChildren(classField))
-                    customRep.write(serialized.attributes.get(fieldAnno.name()), config, writer, classField);
+                    customRep.write(serialized.get(fieldAnno.name()), config, writer, classField);
             } else {
                 throw new ConfigurationException("Corresponding 'writer' was not found for field" + fieldAnno.name());
             }
@@ -104,7 +104,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
             ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
 
             if (customRep.isWritingChildren(classField))
-                customRep.write(serialized.attributes.get(fieldAnno.name()), config, writer, classField);
+                customRep.write(serialized.get(fieldAnno.name()), config, writer, classField);
 
         }
 
@@ -139,7 +139,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
             if (customRep != null) {
                 Object serialized = customRep.serialize(value, config, classField);
-                cnode.attributes.put(fieldAnno.name(), serialized);
+                cnode.put(fieldAnno.name(), serialized);
             } else {
                 throw new ConfigurationException("Corresponding 'writer' was not found for field " + fieldAnno.name());
             }
@@ -181,7 +181,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
             if (customRep != null) {
 
                 Object value = customRep.read(config, reader, classField);
-                cnode.attributes.put(fieldAnno.name(), value);
+                cnode.put(fieldAnno.name(), value);
 
             } else
                 throw new ConfigurationException("Corresponding 'reader' was not found for field " + fieldAnno.name());
@@ -224,7 +224,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
             if (customRep != null) {
                 try {
-                    Object value = customRep.deserialize(serialized.attributes.get(fieldAnno.name()), config, classField);
+                    Object value = customRep.deserialize(serialized.get(fieldAnno.name()), config, classField);
 
                     // set using a setter
                     PropertyUtils.setSimpleProperty(confObj, classField.getName(), value);

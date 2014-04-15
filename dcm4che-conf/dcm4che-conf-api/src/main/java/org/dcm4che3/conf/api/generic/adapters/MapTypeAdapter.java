@@ -81,7 +81,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
         // for each element, read it using the value adapter
         for (Entry<String, ConfigReader> e : map.entrySet()) {
-            cnode.attributes.put(e.getKey(), valueAdapter.read(config, e.getValue(), field));
+            cnode.put(e.getKey(), valueAdapter.read(config, e.getValue(), field));
         }
         return cnode;
     }
@@ -97,7 +97,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
         // deserialize entries
         Map<K, V> map = new HashMap<K, V>();
-        for (Entry<String, Object> e : serialized.attributes.entrySet()) {
+        for (Entry<String, Object> e : serialized.entrySet()) {
             map.put(keyAdapter.deserialize(e.getKey(), config, null), valueAdapter.deserialize(e.getValue(), config, field));
         }
 
@@ -116,7 +116,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
 
         for (Entry<K, V> e : obj.entrySet()) {
-            cnode.attributes.put(keyAdapter.serialize(e.getKey(), config, null), valueAdapter.serialize(e.getValue(), config, field));
+            cnode.put(keyAdapter.serialize(e.getKey(), config, null), valueAdapter.serialize(e.getValue(), config, field));
         }
 
         return cnode;
@@ -138,7 +138,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
         if (serialized == null) return;
         
-        for (Entry<String, Object> e : serialized.attributes.entrySet()) {
+        for (Entry<String, Object> e : serialized.entrySet()) {
 
             ConfigWriter elementWriter = collectionWriter.getCollectionElementWriter(fieldAnno.mapKey(), e.getKey(), field);
             valueAdapter.write(e.getValue(), config, elementWriter, field);

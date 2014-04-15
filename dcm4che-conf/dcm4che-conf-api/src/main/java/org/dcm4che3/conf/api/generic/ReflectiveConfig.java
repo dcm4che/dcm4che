@@ -156,26 +156,22 @@ public class ReflectiveConfig {
 
     /**
      * Generic serialized representation of a config 'node' that has attributes
-     * and children nodes
+     * and children nodes. Object can be either a serialized representation of a field or a ConfigNode
      * 
      * @author Roman K
      * 
      */
-    public static class ConfigNode {
+    public static class ConfigNode extends HashMap<String,Object>{
 
         public ConfigNode() {
-            attributes = new HashMap<String, Object>();
+            super();
+            //attributes = new HashMap<String, Object>();
         }
 
-        /**
-         * Object can be either serialized representation of a field or a
-         * ConfigNode
-         */
-        public Map<String, Object> attributes;
 
         @Override
         public String toString() {
-            // TODO implement nice toString for diffs
+            // TODO implement nice toString for 
             return super.toString();
         }
     }

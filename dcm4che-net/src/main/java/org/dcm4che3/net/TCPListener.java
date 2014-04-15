@@ -61,16 +61,22 @@ class TCPListener implements Listener {
 
     public TCPListener(Connection conn, TCPProtocolHandler handler)
             throws IOException, GeneralSecurityException {
-        this.conn = conn;
-        this.handler = handler;
-        ss = conn.isTls() ? createTLSServerSocket(conn) : new ServerSocket();
-        conn.setReceiveBufferSize(ss);
-        ss.bind(conn.getEndPoint(), conn.getBacklog());
-        conn.getDevice().execute(new Runnable(){
-
-            @Override
-            public void run() { listen(); }
-        });
+        try {
+        
+            this.conn = conn;
+            this.handler = handler;
+            ss = conn.isTls() ? createTLSServerSocket(conn) : new ServerSocket();
+            conn.setReceiveBufferSize(ss);
+            ss.bind(conn.getEndPoint(), conn.getBacklog());
+            conn.getDevice().execute(new Runnable(){
+    
+                @Override
+                public void run() { listen(); }
+            });
+        
+        } catch (IOException e) {
+            throw new IOException("Unable to start TCPListener on "+conn.getHostname()+":"+conn.getPort(), e);
+        }
     }
 
     private ServerSocket createTLSServerSocket(Connection conn)

@@ -2666,23 +2666,22 @@ public class Attributes implements Serializable {
             }
             return;
         }
-        if (el.type == IOD.DataElementType.TYPE_0) {
-            result.addNotAllowedAttribute(el);
-            return;
-        }
         Object value = values[index];
-        VR vr = vrs[index];
-        if (vr.isStringType()) {
-            value = decodeStringValue(index);
-        }
-
         if (isEmpty(value)) {
             if (el.type == IOD.DataElementType.TYPE_1) {
                 result.addMissingAttributeValue(el);
             }
             return;
         }
-        
+        if (el.type == IOD.DataElementType.TYPE_0) {
+            result.addNotAllowedAttribute(el);
+            return;
+        }
+        VR vr = vrs[index];
+        if (vr.isStringType()) {
+            value = decodeStringValue(index);
+        }
+
         Object validVals = el.getValues();
         if (el.vr == VR.SQ) {
             if (!(value instanceof Sequence)) {

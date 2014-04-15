@@ -46,7 +46,6 @@ import javax.naming.NamingException;
 
 import org.dcm4che3.conf.prefs.PreferencesUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigNode;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 
 public class PrefsConfigReader implements ConfigReader {

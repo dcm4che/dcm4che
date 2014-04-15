@@ -4,7 +4,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -20,12 +23,12 @@ import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
  *
  * @param <T>
  */
-public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, String[]> {
+public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, List<String>> {
 
     @Override
-    public void write(String[] serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
+    public void write(List<String> serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
-        writer.storeNotEmpty(fieldAnno.name(), serialized);
+        writer.storeNotEmpty(fieldAnno.name(), serialized.toArray(new String[serialized.size()]));
     }
     
     private ConfigTypeAdapter<T, String> getElementAdapter(Field field, ReflectiveConfig config) {
@@ -44,32 +47,31 @@ public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, String[]> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public String[] serialize(Set<T> obj, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public List<String> serialize(Set<T> obj, ReflectiveConfig config, Field field) throws ConfigurationException {
         if (obj == null) return null;
 
         ConfigTypeAdapter<T,String> ta = getElementAdapter(field,config);
         
-        String[] serialized = new String[obj.size()];
-        int i=0;
+        List<String> serialized = new ArrayList<String>(obj.size());
         for (Object o : obj) 
-            serialized[i++] = ta.serialize((T) o, config, field);
+            serialized.add(ta.serialize((T) o, config, field));
         return serialized;
     }
 
     @Override
-    public String[] read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
+    public List<String> read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
-        return reader.asStringArray(fieldAnno.name());
+        return Arrays.asList(reader.asStringArray(fieldAnno.name()));
     }
 
     @Override
-    public Set<T> deserialize(String[] serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public Set<T> deserialize(List<String> serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
         
         ConfigTypeAdapter<T,String> ta = getElementAdapter(field,config);
         
         Set<T> set = new HashSet<T>(); 
-        for (int i=0;i<serialized.length;i++) 
-            set.add(ta.deserialize(serialized[i], config, field));
+        for (String s: serialized) 
+            set.add(ta.deserialize(s, config, field));
         return set;
     }
 
@@ -78,8 +80,8 @@ public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, String[]> {
         // regular merge
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
-        String[] prevSerialized = serialize(prev, config, field);
-        String[] currSerialized = serialize(curr, config, field);
+        String[] prevSerialized = serialize(prev, config, field).toArray(new String[0]);
+        String[] currSerialized = serialize(curr, config, field).toArray(new String[0]);
 
         diffwriter.storeDiff(fieldAnno.name(), prevSerialized, currSerialized);
     }

@@ -1,7 +1,9 @@
 package org.dcm4che3.conf.api.generic.adapters;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -10,7 +12,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigNode;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigTypeAdapter;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
@@ -27,7 +28,7 @@ import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
  * deserialize method, as, e.g. in ReflectiveConfig.readConfig
  * 
  */
-public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
+public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Object>> {
 
     private Class<T> clazz;
 
@@ -57,7 +58,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void write(ConfigNode serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
+    public void write(Map<String,Object> serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
 
         if (serialized == null) {
             return;
@@ -112,12 +113,12 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public ConfigNode serialize(T obj, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public Map<String,Object> serialize(T obj, ReflectiveConfig config, Field field) throws ConfigurationException {
 
         if (obj == null) return null;
 
         
-        ConfigNode cnode = new ConfigNode();
+        Map<String,Object> cnode = new HashMap<String,Object>();
         for (Field classField : clazz.getDeclaredFields()) {
 
             // if field is not annotated, skip it
@@ -151,7 +152,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
+    public Map<String,Object> read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
 
         // if this object is a property, get a child
         if (field != null && field.getType().equals(clazz)) {
@@ -167,7 +168,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
             }
         }
 
-        ConfigNode cnode = new ConfigNode();
+        Map<String,Object> cnode = new HashMap<String,Object>();
         for (Field classField : clazz.getDeclaredFields()) {
 
             // if field is not annotated, skip it
@@ -194,7 +195,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, ConfigNode> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public T deserialize(ConfigNode serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public T deserialize(Map<String,Object> serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
 
         if (serialized == null) return null;
         

@@ -16,7 +16,6 @@ import javax.naming.directory.ModificationItem;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigNode;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigTypeAdapter;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
@@ -29,7 +28,7 @@ import org.dcm4che3.net.TransferCapability;
  * 
  */
 
-public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, ConfigNode> {
+public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<String,Object>> {
 
     @Override
     public boolean isWritingChildren(Field field) {
@@ -68,10 +67,10 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
     @SuppressWarnings("unchecked")
     @Override
-    public ConfigNode read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
+    public Map<String,Object> read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
-        ConfigNode cnode = new ConfigNode();
+        Map<String,Object> cnode = new HashMap<String,Object>();
 
         // read collection
         ConfigReader collectionReader = reader.getChildReader(getCollectionName(fieldAnno));
@@ -88,7 +87,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
     @SuppressWarnings("unchecked")
     @Override
-    public Map<K, V> deserialize(ConfigNode serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public Map<K, V> deserialize(Map<String,Object> serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
 
         if (serialized == null) return null;
         
@@ -106,11 +105,11 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
     @SuppressWarnings("unchecked")
     @Override
-    public ConfigNode serialize(Map<K, V> obj, ReflectiveConfig config, Field field) throws ConfigurationException {
+    public Map<String,Object> serialize(Map<K, V> obj, ReflectiveConfig config, Field field) throws ConfigurationException {
 
         if (obj == null) return null;
         
-        ConfigNode cnode = new ConfigNode();
+        Map<String,Object> cnode = new HashMap<String,Object>();
 
         ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
@@ -128,7 +127,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Config
 
     @SuppressWarnings("unchecked")
     @Override
-    public void write(ConfigNode serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
+    public void write(Map<String,Object> serialized, ReflectiveConfig config, ConfigWriter writer, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
         // getValueAdapter

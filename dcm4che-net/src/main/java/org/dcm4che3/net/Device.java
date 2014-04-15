@@ -1084,6 +1084,7 @@ public class Device implements Serializable {
         setKeyStoreType(from.keyStoreType);
         setKeyStorePin(from.keyStorePin);
         setKeyStoreKeyPin(from.keyStoreKeyPin);
+        setTimeZoneOfDevice(from.timeZoneOfDevice);
         setIssuerOfPatientID(from.issuerOfPatientID);
         setIssuerOfAccessionNumber(from.issuerOfAccessionNumber);
         setOrderPlacerIdentifier(from.orderPlacerIdentifier);

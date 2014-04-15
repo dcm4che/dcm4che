@@ -41,9 +41,13 @@ package org.dcm4che3.conf.prefs;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.EnumSet;
+import java.util.TimeZone;
 import java.util.prefs.Preferences;
 
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
@@ -243,5 +247,32 @@ public class PreferencesDicomConfigurationTest {
         ApplicationEntity ae2 = createAE("TEST-AET2", conn);
         device.addApplicationEntity(ae2);
     }
+    
+    @Test
+    public void testTimeZoneConversion() throws Exception
+    {
+	Device modalityInChina = createDevice("modalityInChina", "modalityInChina");
+	modalityInChina.setTimeZoneOfDevice(TimeZone.getTimeZone("Asia/Shanghai"));
+	Device archiveInAustria = createDevice("archiveInAustria", "archiveInAustria");
+	archiveInAustria.setTimeZoneOfDevice(TimeZone.getTimeZone("Europe/Vienna"));
+	//if(!config.exists("dicomDeviceName=modalityInChina,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
+        config.persist(modalityInChina);
+	//if(!config.exists("dicomDeviceName=archiveInAustria,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
+        config.persist(archiveInAustria);
+        
+        TimeZone a = modalityInChina.getTimeZoneOfDevice();
+        TimeZone b = archiveInAustria.getTimeZoneOfDevice();
+        Attributes attr = new Attributes();
+        attr.setDefaultTimeZone(a);
+        attr.setDate(Tag.StudyDateAndTime, new Date(0));
+        assertEquals("China Standard Time",attr.getTimeZone().getDisplayName());
+        assertEquals("19700101",attr.getString(Tag.StudyDate));
+        assertEquals("080000.000",attr.getString(Tag.StudyTime));
+        attr.setTimezone(b);
+        assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
+        assertEquals("19700101",attr.getString(Tag.StudyDate));
+        assertEquals("010000.000",attr.getString(Tag.StudyTime));
+    }
+    
 
 }

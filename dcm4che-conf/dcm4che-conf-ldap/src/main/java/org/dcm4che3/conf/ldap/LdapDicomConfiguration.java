@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.naming.Context;
 import javax.naming.NameAlreadyBoundException;
@@ -726,6 +727,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotNull(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
         LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
         LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
+        LdapUtils.storeNotNull(attrs, "dcmTimeZoneOfDevice", toTimeZoneString(device.getTimeZoneOfDevice()));        
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(device, attrs);
         return attrs;
@@ -1076,10 +1078,26 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         device.setKeyStoreKeyPin(LdapUtils.stringValue(attrs.get("dcmKeyStoreKeyPin"), null));
         device.setKeyStoreKeyPinProperty(
                 LdapUtils.stringValue(attrs.get("dcmKeyStoreKeyPinProperty"), null));
+        device.setTimeZoneOfDevice(timeZoneOf(
+        	LdapUtils.stringValue(attrs.get("dcmTimeZoneOfDevice"), null)));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadFrom(device, attrs);
     }
 
+    private TimeZone timeZoneOf(String timeZoneID) {
+	if(timeZoneID==null)
+	return null;
+	else
+	return TimeZone.getTimeZone(timeZoneID);
+    }
+
+    private String toTimeZoneString(TimeZone tz)
+    {
+	if(tz==null)
+	    return null;
+	else
+	    return tz.getID();
+    }
     private void loadConnections(Device device, String deviceDN) throws NamingException {
         NamingEnumeration<SearchResult> ne = 
                 search(deviceDN, "(objectclass=dicomNetworkConnection)");
@@ -1338,6 +1356,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dcmKeyStoreKeyPinProperty",
                 a.getKeyStoreKeyPinProperty(),
                 b.getKeyStoreKeyPinProperty());
+        LdapUtils.storeDiff(mods, "dcmTimeZoneOfDevice",
+        	a.getTimeZoneOfDevice(),
+        	b.getTimeZoneOfDevice());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;
@@ -1799,4 +1820,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     public void sync() throws ConfigurationException {
         // NOOP
     }
+    
+
 }

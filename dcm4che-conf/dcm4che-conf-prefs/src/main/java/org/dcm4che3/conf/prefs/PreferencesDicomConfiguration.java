@@ -50,6 +50,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -572,7 +573,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeNotNull(prefs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
         PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
         PreferencesUtils.storeNotNull(prefs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
-
+        PreferencesUtils.storeNotNull(prefs, "dcmTimeZoneOfDevice", toTimeZoneString(device.getTimeZoneOfDevice()));
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.storeTo(device, prefs);
     }
@@ -774,7 +775,9 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeDiff(prefs, "dcmKeyStoreKeyPinProperty",
                 a.getKeyStoreKeyPinProperty(),
                 b.getKeyStoreKeyPinProperty());
-
+        PreferencesUtils.storeDiff(prefs, "dcmTimeZoneOfDevice",
+        	a.getTimeZoneOfDevice(),
+        	b.getTimeZoneOfDevice());
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, prefs);
     }
@@ -1299,7 +1302,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         device.setKeyStoreKeyPin(prefs.get("dcmKeyStoreKeyPin", null));
         device.setKeyStoreKeyPinProperty(
                 prefs.get("dcmKeyStoreKeyPinProperty", null));
-
+        device.setTimeZoneOfDevice(timeZoneOf(
+        	prefs.get("dcmTimeZoneOfDevice", null)));
         for (PreferencesDicomConfigurationExtension ext : extensions)
             ext.loadFrom(device, prefs);
     }
@@ -1498,4 +1502,18 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         }
     }
 
+    private TimeZone timeZoneOf(String timeZoneID) {
+	if(timeZoneID==null)
+	return null;
+	else
+	return TimeZone.getTimeZone(timeZoneID);
+    }
+    
+    private String toTimeZoneString(TimeZone tz)
+    {
+	if(tz==null)
+	    return null;
+	else
+	    return tz.getID();
+    }
 }

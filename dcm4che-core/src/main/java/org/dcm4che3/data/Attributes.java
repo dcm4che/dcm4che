@@ -1460,6 +1460,7 @@ public class Attributes implements Serializable {
             setString(Tag.TimezoneOffsetFromUTC, VR.SH,
                     DateUtils.formatTimezoneOffsetFromUTC(tz));
         }
+        this.tz=null;
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {

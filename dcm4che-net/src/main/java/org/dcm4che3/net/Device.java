@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -114,6 +115,8 @@ public class Device implements Serializable {
     private byte[][] vendorData = {};
     private int limitOpenAssociations;
     private boolean installed = true;
+    private TimeZone timeZoneOfDevice;
+
     private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
             new LinkedHashMap<String, X509Certificate[]>();
     private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
@@ -681,7 +684,16 @@ public class Device implements Serializable {
         this.installed = installed;
         needRebindConnections();
     }
+    
+    public void setTimeZoneOfDevice(TimeZone timeZoneOfDevice) {
+        this.timeZoneOfDevice = timeZoneOfDevice;
+    }
 
+    public TimeZone getTimeZoneOfDevice()
+    {
+	return timeZoneOfDevice;
+    }
+   
     public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
         this.dimseRQHandler = dimseRQHandler;
     }

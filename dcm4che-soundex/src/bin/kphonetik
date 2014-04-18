@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che.soundex.KPhonetik
-MAIN_JAR=dcm4che-soundex-3.3.2.jar
+MAIN_JAR=dcm4che-soundex-3.3.3-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"
 

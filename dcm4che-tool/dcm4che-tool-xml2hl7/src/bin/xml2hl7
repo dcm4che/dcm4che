@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.xml2hl7.Xml2HL7
-MAIN_JAR=dcm4che-tool-xml2hl7-3.3.2.jar
+MAIN_JAR=dcm4che-tool-xml2hl7-3.3.3-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -38,7 +38,7 @@ fi
 
 # Setup the classpath
 CP="$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-hl7-3.3.2.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-hl7-3.3.3-SNAPSHOT.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

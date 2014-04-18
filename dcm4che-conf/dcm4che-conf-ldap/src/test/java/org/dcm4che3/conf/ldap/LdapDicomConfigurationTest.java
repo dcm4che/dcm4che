@@ -261,11 +261,11 @@ public class LdapDicomConfigurationTest {
         cal.setTime(new Date(0));
         assertFalse(b.inDaylightTime(cal.getTime()));
         attr.setDate(Tag.StudyDateAndTime, cal.getTime());
-       // assertEquals("China Standard Time",attr.getTimeZone().getDisplayName());
+        assertEquals("Asia/Shanghai",attr.getTimeZone().getID());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
         assertEquals("080000.000",attr.getString(Tag.StudyTime));        
         attr.setTimezone(b);
-        assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
+        assertEquals("Europe/Vienna",attr.getTimeZone().getID());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
         assertEquals("010000.000",attr.getString(Tag.StudyTime));
         //daylight saving
@@ -283,7 +283,6 @@ public class LdapDicomConfigurationTest {
         assertEquals("20080729",attr.getString(Tag.StudyDate));
         assertEquals("060000.000",attr.getString(Tag.StudyTime));
         attr.setTimezone(b);
-        assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
         assertEquals("20080729",attr.getString(Tag.StudyDate));
         assertEquals("000000.000",attr.getString(Tag.StudyTime));
       

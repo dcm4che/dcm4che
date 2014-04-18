@@ -265,11 +265,11 @@ public class PreferencesDicomConfigurationTest {
         Attributes attr = new Attributes();
         attr.setDefaultTimeZone(a);
         attr.setDate(Tag.StudyDateAndTime, new Date(0));
-        assertEquals("China Standard Time",attr.getTimeZone().getDisplayName());
+        assertEquals("Asia/Shanghai",attr.getTimeZone().getID());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
         assertEquals("080000.000",attr.getString(Tag.StudyTime));
         attr.setTimezone(b);
-        assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
+        assertEquals("Europe/Vienna",attr.getTimeZone().getID());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
         assertEquals("010000.000",attr.getString(Tag.StudyTime));
     }

@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class BasicRetrieveTask implements RetrieveTask {
+public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTask {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
 
@@ -79,10 +79,10 @@ public class BasicRetrieveTask implements RetrieveTask {
     protected boolean pendingRSP;
     protected int pendingRSPInterval;
     protected boolean canceled;
-    protected final List<InstanceLocator> insts;
-    protected final List<InstanceLocator> completed;
-    protected final List<InstanceLocator> warning;
-    protected final List<InstanceLocator> failed;
+    protected final List<T> insts;
+    protected final List<T> completed;
+    protected final List<T> warning;
+    protected final List<T> failed;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -93,7 +93,7 @@ public class BasicRetrieveTask implements RetrieveTask {
             Association rqas,
             PresentationContext pc, 
             Attributes rqCmd,
-            List<InstanceLocator> insts,
+            List<T> insts,
             Association storeas) {
         this.rq = rq;
         this.rqas = rqas;
@@ -103,9 +103,9 @@ public class BasicRetrieveTask implements RetrieveTask {
         this.insts = insts;
         this.msgId = rqCmd.getInt(Tag.MessageID, -1);
         this.priority = rqCmd.getInt(Tag.Priority, 0);
-        this.completed = new ArrayList<InstanceLocator>(insts.size());
-        this.warning = new ArrayList<InstanceLocator>(insts.size());
-        this.failed = new ArrayList<InstanceLocator>(insts.size());
+        this.completed = new ArrayList<T>(insts.size());
+        this.warning = new ArrayList<T>(insts.size());
+        this.failed = new ArrayList<T>(insts.size());
     }
 
     public void setSendPendingRSP(boolean pendingRSP) {
@@ -136,15 +136,15 @@ public class BasicRetrieveTask implements RetrieveTask {
         return storeas;
     }
 
-    public List<InstanceLocator> getCompleted() {
+    public List<T> getCompleted() {
         return completed;
     }
 
-    public List<InstanceLocator> getWarning() {
+    public List<T> getWarning() {
         return warning;
     }
 
-    public List<InstanceLocator> getFailed() {
+    public List<T> getFailed() {
         return failed;
     }
 
@@ -159,8 +159,8 @@ public class BasicRetrieveTask implements RetrieveTask {
         try {
             if (pendingRSPInterval > 0)
                 startWritePendingRSP();
-            for (Iterator<InstanceLocator> iter = insts.iterator(); iter.hasNext();) {
-                InstanceLocator inst = iter.next();
+            for (Iterator<T> iter = insts.iterator(); iter.hasNext();) {
+                T inst = iter.next();
                 if (canceled) {
                     status = Status.Cancel;
                     break;
@@ -232,7 +232,7 @@ public class BasicRetrieveTask implements RetrieveTask {
         }
     }
 
-    protected void cstore(Association storeas, InstanceLocator inst)
+    protected void cstore(Association storeas, T inst)
             throws IOException, InterruptedException {
         String tsuid = selectTransferSyntaxFor(storeas, inst);
         DimseRSPHandler rspHandler =
@@ -253,9 +253,9 @@ public class BasicRetrieveTask implements RetrieveTask {
 
   private final class CStoreRSPHandler extends DimseRSPHandler {
 
-        private final InstanceLocator inst;
+        private final T inst;
 
-        public CStoreRSPHandler(int msgId, InstanceLocator inst) {
+        public CStoreRSPHandler(int msgId, T inst) {
             super(msgId);
             this.inst = inst;
         }
@@ -289,11 +289,11 @@ public class BasicRetrieveTask implements RetrieveTask {
         }
     }
 
-    protected String selectTransferSyntaxFor(Association storeas, InstanceLocator inst) {
+    protected String selectTransferSyntaxFor(Association storeas, T inst) {
         return inst.tsuid;
     }
 
-    protected DataWriter createDataWriter(InstanceLocator inst, String tsuid) throws IOException {
+    protected DataWriter createDataWriter(T inst, String tsuid) throws IOException {
         DicomInputStream in = new DicomInputStream(inst.getFile());
         in.readFileMetaInformation();
         return new InputStreamDataWriter(in);

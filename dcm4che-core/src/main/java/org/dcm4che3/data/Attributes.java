@@ -1531,18 +1531,65 @@ public class Attributes implements Serializable {
                     das[0] = dt.substring(0,8);
                     values[tmIndex] = dt.substring(8);
                 } else {
+                    String[] tmRange = null;
+                    if (isRange((String) tm)) {
+                        tmRange = splitRange((String) tm);
+                        if (tmRange[0] == null)
+                            tmRange[0] = "000000.000";
+                        if (tmRange[1] == null)
+                            tmRange[1] = "235959.999";
+                    }
                     if (da == Value.NULL) {
-                        values[tmIndex] = updateTimeZoneTM(
-                                from, to, (String) tm);
+                        if (tmRange != null) {
+                            tmRange[0] = updateTimeZoneTM(
+                                    from, to, tmRange[0]);
+                            tmRange[1] = updateTimeZoneTM(
+                                    from, to, tmRange[1]);
+                            values[tmIndex] = toDateRangeString(
+                                    tmRange[0], tmRange[1]);
+                        } else {
+                            values[tmIndex] = updateTimeZoneTM(
+                                    from, to, (String) tm);
+                        }
                     } else {
-                        String dt = updateTimeZoneDT(
-                                from, to, (String) da + (String) tm);
-                        values[daIndex] = dt.substring(0,8);
-                        values[tmIndex] = dt.substring(8);
+                        if (tmRange != null || isRange((String) da)) {
+                            String[] daRange = splitRange((String) da);
+                            if (daRange[0] == null) {
+                                daRange[0] = "";
+                                tmRange[0] = updateTimeZoneTM(from, to, tmRange[0]);
+                            } else {
+                                String dt = updateTimeZoneDT(
+                                        from, to, daRange[0] + tmRange[0]);
+                                daRange[0] = dt.substring(0,8);
+                                tmRange[0] = dt.substring(8);
+                            }
+                            if (daRange[1] == null) {
+                                daRange[1] = "";
+                                tmRange[1] = updateTimeZoneTM(from, to, tmRange[1]);
+                            } else {
+                                String dt = updateTimeZoneDT(
+                                        from, to, daRange[1] + tmRange[1]);
+                                daRange[1] = dt.substring(0,8);
+                                tmRange[1] = dt.substring(8);
+                            }
+                            values[daIndex] = toDateRangeString(
+                                    daRange[0], daRange[1]);
+                            values[tmIndex] = toDateRangeString(
+                                    tmRange[0], tmRange[1]);
+                        } else {
+                            String dt = updateTimeZoneDT(
+                                    from, to, (String) da + (String) tm);
+                            values[daIndex] = dt.substring(0,8);
+                            values[tmIndex] = dt.substring(8);
+                        }
                     }
                 }
             }
         }
+    }
+
+    private static boolean isRange(String s) {
+        return s.indexOf('-') >= 0;
     }
 
     private String updateTimeZoneDT(TimeZone from, TimeZone to, String dt) {
@@ -1719,6 +1766,10 @@ public class Attributes implements Serializable {
                 ? (String) vr.toValue(new Date[]{range.getEndDate()}, tz,
                         precision)
                 : "";
+        return toDateRangeString(start, end);
+    }
+
+    private static String toDateRangeString(String start, String end) {
         return start.equals(end) ? start : (start + '-' + end);
     }
 

@@ -41,6 +41,7 @@ package org.dcm4che3.conf.ldap;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.TimeZone;
@@ -254,14 +255,38 @@ public class LdapDicomConfigurationTest {
         TimeZone b = archiveInAustria.getTimeZoneOfDevice();
         Attributes attr = new Attributes();
         attr.setDefaultTimeZone(a);
-        attr.setDate(Tag.StudyDateAndTime, new Date(0));
-        assertEquals("China Standard Time",attr.getTimeZone().getDisplayName());
+        attr.setTimezone(a);
+        Calendar cal = Calendar.getInstance();
+        //no daylight saving
+        cal.setTime(new Date(0));
+        assertFalse(b.inDaylightTime(cal.getTime()));
+        attr.setDate(Tag.StudyDateAndTime, cal.getTime());
+       // assertEquals("China Standard Time",attr.getTimeZone().getDisplayName());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
-        assertEquals("080000.000",attr.getString(Tag.StudyTime));
+        assertEquals("080000.000",attr.getString(Tag.StudyTime));        
         attr.setTimezone(b);
         assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
         assertEquals("19700101",attr.getString(Tag.StudyDate));
         assertEquals("010000.000",attr.getString(Tag.StudyTime));
+        //daylight saving
+        attr = new Attributes();
+        cal.set(Calendar.YEAR, 2008);
+        cal.set(Calendar.MONTH, 6);
+        cal.set(Calendar.DATE, 29);
+        cal.set(Calendar.HOUR, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        assertTrue(b.inDaylightTime(cal.getTime()));
+        attr.setDate(Tag.StudyDateAndTime, cal.getTime());
+        attr.setDefaultTimeZone(a);
+        attr.setTimezone(a);
+        assertEquals("20080729",attr.getString(Tag.StudyDate));
+        assertEquals("060000.000",attr.getString(Tag.StudyTime));
+        attr.setTimezone(b);
+        assertEquals("Central European Time",attr.getTimeZone().getDisplayName());
+        assertEquals("20080729",attr.getString(Tag.StudyDate));
+        assertEquals("000000.000",attr.getString(Tag.StudyTime));
+      
     }
     
 }

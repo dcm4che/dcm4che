@@ -239,17 +239,17 @@ public class LdapDicomConfigurationTest {
         ApplicationEntity ae2 = createAE("TEST-AET2", conn);
         device.addApplicationEntity(ae2);
     }
+
     @Test
-    public void testTimeZoneConversion() throws Exception
-    {
-	Device modalityInChina = createDevice("modalityInChina", "modalityInChina");
-	modalityInChina.setTimeZoneOfDevice(TimeZone.getTimeZone("Asia/Shanghai"));
-	Device archiveInAustria = createDevice("archiveInAustria", "archiveInAustria");
-	archiveInAustria.setTimeZoneOfDevice(TimeZone.getTimeZone("Europe/Vienna"));
-	if(!config.exists("dicomDeviceName=modalityInChina,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
-        config.persist(modalityInChina);
-	if(!config.exists("dicomDeviceName=archiveInAustria,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
-        config.persist(archiveInAustria);
+    public void testTimeZoneConversion() throws Exception  {
+        Device modalityInChina = createDevice("modalityInChina", "modalityInChina");
+        modalityInChina.setTimeZoneOfDevice(TimeZone.getTimeZone("Asia/Shanghai"));
+        Device archiveInAustria = createDevice("archiveInAustria", "archiveInAustria");
+        archiveInAustria.setTimeZoneOfDevice(TimeZone.getTimeZone("Europe/Vienna"));
+        if(!config.exists("dicomDeviceName=modalityInChina,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
+            config.persist(modalityInChina);
+        if(!config.exists("dicomDeviceName=archiveInAustria,cn=Devices,cn=DICOM Configuration,dc=example,dc=com"))
+            config.persist(archiveInAustria);
         
         TimeZone a = modalityInChina.getTimeZoneOfDevice();
         TimeZone b = archiveInAustria.getTimeZoneOfDevice();

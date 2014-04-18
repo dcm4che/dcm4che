@@ -6,7 +6,7 @@
   <parent>
     <artifactId>dcm4che-conf</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.2-SNAPSHOT</version>
+    <version>3.3.2</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-conf-prefs-hl7</artifactId>

@@ -53,9 +53,6 @@ public class DateRange implements Serializable {
     private final Date end;
 
     public DateRange(Date start, Date end) {
-        if (start != null && end != null && start.after(end))
-            throw new IllegalArgumentException("start: " + start
-                    + " after end: " + end);
         this.start = start;
         this.end = end;
     }
@@ -66,6 +63,10 @@ public class DateRange implements Serializable {
 
     public final Date getEndDate() {
         return end;
+    }
+
+    public boolean isStartDateExeedsEndDate() {
+        return start != null && end != null && start.after(end);
     }
 
     public boolean contains(Date when) {

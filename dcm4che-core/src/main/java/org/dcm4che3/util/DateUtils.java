@@ -142,8 +142,30 @@ public class DateUtils {
     }
 
 
+    /**
+     * Returns Timezone Offset From UTC in format {@code (+|i)HHMM} of specified
+     * Timezone without concerning Daylight saving time (DST).
+     *
+     * @param tz Timezone
+     * @return Timezone Offset From UTC in format {@code (+|i)HHMM}
+     */
     public static String formatTimezoneOffsetFromUTC(TimeZone tz) {
         return appendZZZZZ(tz.getRawOffset(), new StringBuilder(5)).toString();
+    }
+
+    /**
+     * Returns Timezone Offset From UTC in format {@code (+|i)HHMM} of specified
+     * Timezone on specified date. If no date is specified, DST is considered
+     * for the current date.
+     *
+     * @param tz Timezone
+     * @param date Date or {@code null}
+     * @return Timezone Offset From UTC in format {@code (+|i)HHMM}
+     */
+    public static String formatTimezoneOffsetFromUTC(TimeZone tz, Date date) {
+        return appendZZZZZ(tz.getOffset(date == null 
+                ? System.currentTimeMillis() : date.getTime()), 
+                new StringBuilder(5)).toString();
     }
 
     private static StringBuilder formatDT(Calendar cal, StringBuilder toAppendTo,

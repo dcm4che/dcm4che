@@ -949,7 +949,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             loadChilds(device, deviceDN);
             return device;
         } catch (NameNotFoundException e) {
-            throw new ConfigurationNotFoundException(e);
+            throw new ConfigurationNotFoundException("Device with specified name not found",e);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         } catch (CertificateException e) {

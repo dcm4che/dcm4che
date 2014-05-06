@@ -1,4 +1,4 @@
-# dcm4che extensions of the DICOM Application Configuration Data Model Hierarchy LDAP Schema
+# DICOM Application Configuration Data Model Hierarchy LDAP Schema
 dn: cn=dcm4che,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: dcm4che
@@ -243,6 +243,11 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.57 NAME 'dcmBodyPartExamined'
   DESC 'DICOM attribute Body Part Examined (0018,0015)'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+  
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.58 NAME 'dcmTimeZoneOfDevice'
+  DESC 'Time Zone ID of the Device; matches Java TimeZone ID'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -256,7 +261,7 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.2 NAME 'dcmAuditEnterpriseSiteID'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.3 NAME 'dcmAuditSourceTypeCode'
-  DESC 'RFC 3881 Audit Source Type Code; value "dicomPrimaryDeviceType" is replaced by the primary type(s) of the DICOM device'
+  DESC 'RFC 3881 Audit Source Type Code; value "dicomPrimaryDeviceType" is replaced by the primary type of the DICOM device'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15)
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.4 NAME 'dcmAuditFacility'
@@ -431,7 +436,8 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
     dcmKeyStorePin $
     dcmKeyStorePinProperty $
     dcmKeyStoreKeyPin $
-    dcmKeyStoreKeyPinProperty ) )
+    dcmKeyStoreKeyPinProperty $
+    dcmTimeZoneOfDevice ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
   DESC 'Extended DICOM Network AE related information'
   SUP top AUXILIARY
@@ -553,7 +559,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.5 NAME 'hl7Application'
 olcObjectClasses: ( 1.2.40.0.13.1.15.3.4.7 NAME 'hl7UniqueApplicationName'
   DESC 'A Unique HL7 Application Entity title'
   SUP top STRUCTURAL
-    MUST ( hl7ApplicationName ) )
+  MUST ( hl7ApplicationName ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.1 NAME 'dcmImageReaderFactory'
   DESC 'Image Reader Factory related information'
   SUP top STRUCTURAL
@@ -595,3 +601,9 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmSOPClass $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
+    
+olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
+  DESC 'Collection folder'
+  SUP top STRUCTURAL
+  MUST ( 
+    cn  ))    

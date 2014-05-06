@@ -142,7 +142,8 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
             reflectiveConfig.storeConfig(confObj, ldapWriter);
 
         } catch (Exception e) {
-            log.error("Unable to store configuration for class " + confClass.getSimpleName(), e);
+            log.error("Unable to store configuration for class " + confClass.getSimpleName()+
+                    " for device DN: " + deviceDN, e);
         }
 
     }
@@ -168,7 +169,8 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
             device.addDeviceExtension(confObj);
 
         } catch (Exception e) {
-            log.error("Unable to read configuration for class " + confClass.getSimpleName(), e);
+            log.error("Unable to read configuration for class " + confClass.getSimpleName()+
+                    " for device: " + device.getDeviceName() , e);
         }
 
     }
@@ -195,7 +197,8 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
             reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, ldapDiffWriter);
 
         } catch (Exception e) {
-            log.error("Unable to merge configuration for class " + confClass.getSimpleName(), e);
+            log.error("Unable to merge configuration for class " + confClass.getSimpleName()+
+                    " for device: " + device.getDeviceName(), e);
         }
     }
 }

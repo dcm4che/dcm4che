@@ -100,24 +100,18 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
     @Override
     protected void storeChilds(Device device, Preferences deviceNode) {
         T confObj = device.getDeviceExtension(confClass);
-        if (confObj != null)
-            storeTo(confObj, deviceNode.node(nodename));
-    }
-
-    private void storeTo(T confObj, final Preferences prefs) {
-
-        ConfigWriter prefsWriter = new PrefsConfigWriter(prefs);
-
-        try {
-
-            reflectiveConfig.storeConfig(confObj, prefsWriter);
-
-        } catch (Exception e) {
-            log.error("Unable to store configuration!");
-            log.error("{}", e);
-
+        if (confObj != null) {
+            ConfigWriter prefsWriter = new PrefsConfigWriter(deviceNode.node(nodename));
+            
+            try {
+            
+                reflectiveConfig.storeConfig(confObj, prefsWriter);
+            
+            } catch (Exception e) {
+                log.error("Unable to store configuration for class "+confClass.getSimpleName()+
+                        " for device: " + device.getDeviceName() , e);
+            }
         }
-
     }
 
     @Override
@@ -134,23 +128,17 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
             throw new ConfigurationException(e);
         }
 
-        loadFrom(confObj, loggerNode);
-        device.addDeviceExtension(confObj);
-    }
-
-    private void loadFrom(T confObj, final Preferences prefs) {
-
-        ConfigReader ldapReader = new PrefsConfigReader(prefs);
-
+        ConfigReader prefsReader = new PrefsConfigReader(loggerNode);
+        
         try {
-
-            reflectiveConfig.readConfig(confObj, ldapReader);
-
+        
+            reflectiveConfig.readConfig(confObj, prefsReader);
+        
         } catch (Exception e) {
-            log.error("Unable to read configuration!");
-            log.error("{}", e);
+            log.error("Unable to read configuration for class "+confClass.getSimpleName()+
+                    " for device: " + device.getDeviceName() ,e);
         }
-
+        device.addDeviceExtension(confObj);
     }
 
     @Override
@@ -164,24 +152,28 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
         Preferences xdsNode = deviceNode.node(nodename);
         if (confObj == null)
             xdsNode.removeNode();
-        else if (prevConfObj == null)
-            storeTo(confObj, xdsNode);
-        else
-            storeDiffs(xdsNode, prevConfObj, confObj);
-    }
-
-    private void storeDiffs(final Preferences prefs, T prevConfObj, T confObj) {
-
-        ConfigWriter prefsDiffWriter = new PrefsConfigWriter(prefs);
-
-        try {
-
-            reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, prefsDiffWriter);
-
-        } catch (Exception e) {
-            log.error("Unable to store the diffs for configuration!");
-            log.error("{}", e);
+        else if (prevConfObj == null) {
+            ConfigWriter prefsWriter = new PrefsConfigWriter(xdsNode);
+            
+            try {
+            
+                reflectiveConfig.storeConfig(confObj, prefsWriter);
+            
+            } catch (Exception e) {
+                log.error("Unable to store configuration for class "+confClass.getSimpleName()+
+                        (confObj.getDevice() != null ? " for device: " + confObj.getDevice().getDeviceName(): "") , e);
+            }
+        } else {
+            ConfigWriter prefsDiffWriter = new PrefsConfigWriter(xdsNode);
+            
+            try {
+            
+                reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, prefsDiffWriter);
+            
+            } catch (Exception e) {
+                log.error("Unable to merge configuration for class "+confClass.getSimpleName()+
+                        " for device: " + device.getDeviceName(), e);
+            }
         }
-
     }
 }

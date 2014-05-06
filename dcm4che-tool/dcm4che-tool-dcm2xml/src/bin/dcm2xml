@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.dcm2xml.Dcm2Xml
-MAIN_JAR=dcm4che-tool-dcm2xml-3.3.3-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-dcm2xml-3.3.3.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -39,8 +39,8 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/dcm2xml/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.3-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.3-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.3.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.3.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"

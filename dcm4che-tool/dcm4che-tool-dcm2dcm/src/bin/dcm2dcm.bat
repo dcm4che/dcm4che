@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che3.tool.dcm2dcm.Dcm2Dcm
-set MAIN_JAR=dcm4che-tool-dcm2dcm-3.3.3.jar
+set MAIN_JAR=dcm4che-tool-dcm2dcm-3.3.4-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -42,11 +42,11 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\dcm2dcm\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-3.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.3.3.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.3.3.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.3.4-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.3.4-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-3.3.4-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.3.4-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.3.4-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar"
 set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar"
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar

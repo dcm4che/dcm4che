@@ -39,6 +39,7 @@
 package org.dcm4che3.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -62,8 +63,23 @@ public class SAXReader {
         return attrs;
     }
 
+    public static Attributes parse(InputStream is, Attributes attrs)
+            throws ParserConfigurationException, SAXException, IOException {
+        if (attrs == null)
+            attrs = new Attributes();
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        SAXParser parser = f.newSAXParser();
+        parser.parse(is, new ContentHandlerAdapter(attrs));
+        return attrs;
+    }
+
     public static Attributes parse(String uri)
             throws ParserConfigurationException, SAXException, IOException {
         return parse(uri, null);
+    }
+
+    public static Attributes parse(InputStream is)
+            throws ParserConfigurationException, SAXException, IOException {
+        return parse(is, null);
     }
 }

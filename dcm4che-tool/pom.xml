@@ -81,6 +81,7 @@
     <module>dcm4che-tool-ihe</module>
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>
+    <module>dcm4che-tool-json2dcm</module>
   </modules>
   <build>
     <plugins>

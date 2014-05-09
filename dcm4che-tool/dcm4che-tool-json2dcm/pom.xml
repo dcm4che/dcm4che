@@ -42,21 +42,27 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.dcm4che</groupId>
-    <artifactId>dcm4che-parent</artifactId>
+    <groupId>org.dcm4che.tool</groupId>
+    <artifactId>dcm4che-tool</artifactId>
     <version>3.3.4-SNAPSHOT</version>
   </parent>
-  <artifactId>dcm4che-json</artifactId>
-  <description>JSON Support</description>
+  <artifactId>dcm4che-tool-json2dcm</artifactId>
+  <description>Convert JSON to DICOM file</description>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-core</artifactId>
+      <artifactId>dcm4che-json</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>javax.json</artifactId>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-common</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
   </dependencies>
 </project>

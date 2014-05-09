@@ -114,6 +114,7 @@
     <module>dcm4che-karaf</module>
     <module>dcm4che-cdi</module>
     <module>dcm4che-ws-rs</module>
+    <module>dcm4che-json</module>
   </modules>
   <distributionManagement>
     <repository>
@@ -145,6 +146,11 @@
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.7.5</version>
         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>1.0.4</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

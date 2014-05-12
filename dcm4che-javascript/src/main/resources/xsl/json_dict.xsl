@@ -133,8 +133,8 @@ DCM4CHE.elementDictionary = (function (dictionary) {
         },
         lookup:lookup
     }
-}({"gggg0000":{"VR": "UL" ,  "VM": "1" ,  "keyword": "GroupLength"},
-    "pppp0000":{"VR": "LO" ,  "VM": "1" ,  "keyword": "PrivateCreator"},
+}({"gggg0000":{"VR": "UL" ,  "VM": "1" ,  "keyword": "GroupLength", "name": "Group Length"},
+    "pppp0000":{"VR": "LO" ,  "VM": "1" ,  "keyword": "PrivateCreator", "name": "Private Creator"},
   <xsl:apply-templates select="element"/>
   <xsl-text disable-output-escaping="yes">
 </xsl-text>
@@ -148,6 +148,9 @@ DCM4CHE.elementDictionary = (function (dictionary) {
     <xsl:text>" , </xsl:text>
     <xsl:text> "keyword": "</xsl:text>
     <xsl:value-of select="@keyword" />
+        <xsl:text>" , </xsl:text>
+    <xsl:text> "name": "</xsl:text>
+    <xsl:value-of select="."/>
     <xsl:text>" }</xsl:text>
     <xsl:choose>
     <xsl:when test="position()=last()">

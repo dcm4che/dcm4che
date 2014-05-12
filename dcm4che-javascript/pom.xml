@@ -16,19 +16,13 @@
     <resources>
       <resource>
         <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
         <excludes>
           <exclude>xml/**</exclude>
+          <exclude>xsl/**</exclude>
         </excludes>
+
       </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>**/*.js</include>
-        </includes>
-      </resource>
+
       <resource>
         <directory>src/main/js</directory>
         <targetPath>js</targetPath>
@@ -91,19 +85,19 @@
               <goal>attach-artifact</goal>
             </goals>
             <configuration>
-          <resources>
-          <resource>
-          <directory>src/main/resources</directory>
-          </resource>
-          </resources>
+              <resources>
+                <resource>
+                  <directory>src/main/resources</directory>
+                </resource>
+              </resources>
               <artifacts>
                 <artifact>
-                  <file>target/classes/js/dict.js</file>
+                  <file>${basedir}/target/classes/js/dict.js</file>
                   <type>js</type>
                   <classifier>full</classifier>
                 </artifact>
                 <artifact>
-                  <file>target/classes/dict-min.js</file>
+                  <file>${basedir}/target/classes/dict-min.js</file>
                   <type>js</type>
                   <classifier>min</classifier>
                 </artifact>
@@ -118,7 +112,20 @@
         <executions>
           <execution>
             <id>default-jar</id>
-            <phase>none</phase>
+            <configuration>
+              <excludes>
+                <exclude>min/js/**</exclude>
+                <exclude>js/dict-min.js</exclude>
+              </excludes>
+              <outputDirectory>${basedir}/target/classes/</outputDirectory>
+              <includeEmptyDirs>false</includeEmptyDirs>
+              <resources>
+                <resource>
+                  <directory>${basedir}/src/main/js</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -135,7 +142,7 @@
         <configuration>
           <sourceFolder>src/main/js</sourceFolder>
           <splitDependencies>false</splitDependencies>
-          <destinationFolder>target/min/classes</destinationFolder>
+          <outputDirectory>${basedir}/target/classes</outputDirectory>
         </configuration>
       </plugin>
     </plugins>

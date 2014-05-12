@@ -96,7 +96,7 @@ var dictionary = [{"CREATOR": "standard", "DICT":{
 function addDict(dictJSON, privateCreator)
 {
 dictionary.push({"CREATOR" : privateCreator, "DICT":JSON.parse(dictJSON)});
-};
+}
 
 function keywordOf(tag, privateCreator)
 {
@@ -110,7 +110,7 @@ function keywordOf(tag, privateCreator)
         return dictionary[i].DICT[tag].KEYWORD;
     }
     return dictionary[0].DICT[tag].KEYWORD;
-};
+}
 
 function tagOf(keyword, privateCreator)
 {
@@ -127,7 +127,7 @@ function tagOf(keyword, privateCreator)
             }
 
     return tagOf(keyword);
-};
+}
 
 //default
 function tagOf(keyword) {
@@ -135,7 +135,7 @@ function tagOf(keyword) {
         if (dictionary[0].DICT[name].KEYWORD == keyword)
             return name;
     }
-};
+}
 
 function getDictSize(index)
 {
@@ -145,7 +145,7 @@ function getDictSize(index)
         cnt++;
     }
     return cnt;
-};
+}
 </xsl-text>
   </xsl:template>  
   <xsl:template match="element">

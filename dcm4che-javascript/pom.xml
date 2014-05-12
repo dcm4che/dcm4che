@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.dcm4che</groupId>
@@ -6,20 +7,52 @@
     <version>3.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-javascript</artifactId>
-  <name>dcm4che-javascript</name>
-    <build>
+  <name>Javascript DICOM Dictionary API</name>
+  <description>Provide Javascript API for DICOM Dictionary</description>
+  <packaging>js</packaging>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <outputDirectory>target/classes</outputDirectory>
+    <testOutputDirectory>target/test-scripts</testOutputDirectory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
       <resource>
-        <directory>target/generated-resources</directory>
+        <directory>src/main/resources</directory>
         <excludes>
           <exclude>xml/**</exclude>
         </excludes>
       </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.js</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/js</directory>
+        <targetPath>js</targetPath>
+      </resource>
     </resources>
     <plugins>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/js</directory>
+              <includes>
+                <include>**/*.js</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
@@ -38,17 +71,54 @@
                 <include>p6_element.xml</include>
               </includes>
               <stylesheet>src/main/resources/xsl/json_dict.xsl</stylesheet>
-              <outputDir>target/generated-resources/javascript/</outputDir>
+              <outputDir>src/main/js/</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>dict.js</targetName>
+                  <targetName>1-min.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
           </transformationSets>
         </configuration>
       </plugin>
-      </plugins>
-      </build>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>webminifier-maven-plugin</artifactId>
+        <version>1.0.1</version>
+        <configuration>
+          <sourceFolder>src/main/js</sourceFolder>
+          <splitDependencies>false</splitDependencies>
+          <destinationFolder>target/min/classes</destinationFolder>
+          <detail>true</detail>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>minify-js</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.1</version>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>javascript-maven-plugin</artifactId>
+        <version>2.0.0-alpha-1</version>
+      </extension>
+    </extensions>
+
+  </build>
+
 </project>

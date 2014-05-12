@@ -9,13 +9,10 @@
   <artifactId>dcm4che-javascript</artifactId>
   <name>Javascript DICOM Dictionary API</name>
   <description>Provide Javascript API for DICOM Dictionary</description>
-  <packaging>js</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
-    <outputDirectory>target/classes</outputDirectory>
-    <testOutputDirectory>target/test-scripts</testOutputDirectory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -75,7 +72,7 @@
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>1-min.js</targetName>
+                  <targetName>dict.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>
@@ -84,19 +81,34 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>webminifier-maven-plugin</artifactId>
-        <version>1.0.1</version>
-        <configuration>
-          <sourceFolder>src/main/js</sourceFolder>
-          <splitDependencies>false</splitDependencies>
-          <destinationFolder>target/min/classes</destinationFolder>
-          <detail>true</detail>
-        </configuration>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
             <goals>
-              <goal>minify-js</goal>
+              <goal>attach-artifact</goal>
             </goals>
+            <configuration>
+          <resources>
+          <resource>
+          <directory>src/main/resources</directory>
+          </resource>
+          </resources>
+              <artifacts>
+                <artifact>
+                  <file>target/classes/js/dict.js</file>
+                  <type>js</type>
+                  <classifier>full</classifier>
+                </artifact>
+                <artifact>
+                  <file>target/classes/dict-min.js</file>
+                  <type>js</type>
+                  <classifier>min</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -110,15 +122,23 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>yuicompressor-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compress</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceFolder>src/main/js</sourceFolder>
+          <splitDependencies>false</splitDependencies>
+          <destinationFolder>target/min/classes</destinationFolder>
+        </configuration>
+      </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>javascript-maven-plugin</artifactId>
-        <version>2.0.0-alpha-1</version>
-      </extension>
-    </extensions>
-
   </build>
 
 </project>

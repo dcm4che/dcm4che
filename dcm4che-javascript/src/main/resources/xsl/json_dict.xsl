@@ -88,82 +88,70 @@
  */
  
  </xsl:text>
- 
-var dictionary = [{"CREATOR": "standard", "DICT":{
+var DCM4CHE = DCM4CHE || {};
+
+DCM4CHE.elementDictionary = (function (dictionary) {
+    var tables = [dictionary],
+        mask = function(tag, privateCreator) {
+            return privateCreator
+                ? tag.slice(0,4) + "xx" + tag.slice(6)
+                : ((tag.substr(0,2) == "50" <![CDATA[&]]><![CDATA[&]]> tag.charAt(3)%2==0) ||
+                  (tag.substr(0,2) == "60" <![CDATA[&]]><![CDATA[&]]> tag.charAt(3)%2==0) ||
+                (tag.substr(0,2) == "7F" <![CDATA[&]]><![CDATA[&]]> tag.substr(0,3)!="7FE")||
+                tag.substr(0,2) == "10" )?tag.substr(0,2) + "xx" + tag.slice(4):tag;
+        },
+        groupLengthOrPrivateCreator = function (tag, privateCreator) {
+            if(tag.substr(4,4) === "0000"){
+                return "gggg0000";
+            }
+            else if(tag.charAt(3)%2 !== 0 <![CDATA[&]]><![CDATA[&]]> tag.substr(4,2) === "00")
+            {
+                return "pppp0000";
+            }
+            return mask(tag,privateCreator);
+        }
+        ,
+        lookup = function(type, tag, privateCreator) {
+            var i = tables.length, value;
+            tag = groupLengthOrPrivateCreator(tag,privateCreator);
+            if((tag ==="gggg0000" || tag ==="pppp0000"))
+                privateCreator=undefined;
+
+            while (i--) {
+                if (privateCreator === tables[i].privateCreator) {
+                    value = tables[i][tag][type];
+                    if (value)
+                        return value;
+                }
+            }
+
+            return "?";
+        }
+    return {
+        addTables: function (table) {
+            tables.push(table);
+        },
+        lookup:lookup
+    }
+}({"gggg0000":{"VR": "UL" ,  "VM": "1" ,  "keyword": "GroupLength"},
+    "pppp0000":{"VR": "LO" ,  "VM": "1" ,  "keyword": "PrivateCreator"},
   <xsl:apply-templates select="element"/>
   <xsl-text disable-output-escaping="yes">
-//add Private Dictionary
-function addDict(dictJSON, privateCreator)
-{
-dictionary.push({"CREATOR" : privateCreator, "DICT":JSON.parse(dictJSON)});
-}
-
-function keywordOf(tag, privateCreator)
-{
-    if(privateCreator==undefined || privateCreator == null)
-    return dictionary["standard"].DICT[tag].KEYWORD;
-
-    for(var i=0 ; i&lt;dictionary.length;i++)
-    {
-        if(dictionary[i].CREATOR == privateCreator)
-        if(dictionary[i].DICT[tag]!=undefined)
-        return dictionary[i].DICT[tag].KEYWORD;
-    }
-    return dictionary[0].DICT[tag].KEYWORD;
-}
-
-function tagOf(keyword, privateCreator)
-{
-    if(privateCreator==undefined || privateCreator == null)
-        privateCreator = "standard";
-
-    for(var i=0 ; i&lt;dictionary.length;i++)
-    {
-        if(dictionary[i].CREATOR == privateCreator)
-            for (name in dictionary[i].DICT) {
-                if (dictionary[i].DICT[name].KEYWORD == keyword)
-                    return name;
-            }
-            }
-
-    return tagOf(keyword);
-}
-
-//default
-function tagOf(keyword) {
-    for (name in dictionary[0].DICT) {
-        if (dictionary[0].DICT[name].KEYWORD == keyword)
-            return name;
-    }
-}
-
-function getDictSize(index)
-{
-    var cnt=0;
-    for(name in dictionary[index].DICT)
-    {
-        cnt++;
-    }
-    return cnt;
-}
 </xsl-text>
   </xsl:template>  
   <xsl:template match="element">
     <xsl:text>"</xsl:text>
     <xsl:value-of select="@tag" />
     <xsl:text>": { </xsl:text>
-    <xsl:text> "VR": "</xsl:text>
+    <xsl:text> "vr": "</xsl:text>
     <xsl:value-of select="@vr" />
     <xsl:text>" , </xsl:text>
-    <xsl:text> "VM": "</xsl:text>
-    <xsl:value-of select="@vm" />
-    <xsl:text>" , </xsl:text>
-    <xsl:text> "KEYWORD": "</xsl:text>
+    <xsl:text> "keyword": "</xsl:text>
     <xsl:value-of select="@keyword" />
     <xsl:text>" }</xsl:text>
     <xsl:choose>
     <xsl:when test="position()=last()">
-    <xsl:text>}}];</xsl:text>
+    <xsl:text>}));</xsl:text>
     </xsl:when>
     <xsl:otherwise>
     <xsl:text> , </xsl:text>

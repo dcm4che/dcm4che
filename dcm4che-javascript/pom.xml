@@ -24,26 +24,11 @@
       </resource>
 
       <resource>
-        <directory>src/main/js</directory>
+        <directory>${basedir}/target/classes/js</directory>
         <targetPath>js</targetPath>
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>2.5</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>src/main/js</directory>
-              <includes>
-                <include>**/*.js</include>
-              </includes>
-              <followSymlinks>false</followSymlinks>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
@@ -62,7 +47,7 @@
                 <include>p6_element.xml</include>
               </includes>
               <stylesheet>src/main/resources/xsl/json_dict.xsl</stylesheet>
-              <outputDir>src/main/js/</outputDir>
+              <outputDir>${basedir}/target/classes/js/</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -120,7 +105,7 @@
               <includeEmptyDirs>false</includeEmptyDirs>
               <resources>
                 <resource>
-                  <directory>${basedir}/src/main/js</directory>
+                  <directory>${basedir}/target/classes/js</directory>
                   <filtering>true</filtering>
                 </resource>
               </resources>
@@ -139,7 +124,7 @@
           </execution>
         </executions>
         <configuration>
-          <sourceFolder>src/main/js</sourceFolder>
+          <sourceFolder>${basedir}/target/classes/js</sourceFolder>
           <splitDependencies>false</splitDependencies>
           <outputDirectory>${basedir}/target/classes</outputDirectory>
         </configuration>

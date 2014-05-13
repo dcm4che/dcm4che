@@ -29,11 +29,11 @@
         <configuration>
           <transformationSets>
             <transformationSet>
-              <dir>src/main/resources/xml</dir>
+              <dir>src/main/scripts/xml</dir>
               <includes>
                 <include>p6_element.xml</include>
               </includes>
-              <stylesheet>src/main/resources/xsl/json_dict.xsl</stylesheet>
+              <stylesheet>src/main/scripts/xsl/json_dict.xsl</stylesheet>
               <outputDir>${basedir}/target/generated-resources/js</outputDir>
               <fileMappers>
                 <fileMapper

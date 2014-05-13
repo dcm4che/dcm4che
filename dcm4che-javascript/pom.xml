@@ -115,7 +115,6 @@
             <configuration>
               <excludes>
                 <exclude>min/js/**</exclude>
-                <exclude>js/dict-min.js</exclude>
               </excludes>
               <outputDirectory>${basedir}/target/classes/</outputDirectory>
               <includeEmptyDirs>false</includeEmptyDirs>

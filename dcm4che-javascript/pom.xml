@@ -7,7 +7,7 @@
     <version>3.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-javascript</artifactId>
-  <name>Javascript DICOM Dictionary API</name>
+  <name>dcm4che-javascript</name>
   <description>Provide Javascript API for DICOM Dictionary</description>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -97,7 +97,7 @@
                   <classifier>full</classifier>
                 </artifact>
                 <artifact>
-                  <file>${basedir}/target/classes/dict-min.js</file>
+                  <file>${basedir}/target/classes/js/dict-min.js</file>
                   <type>js</type>
                   <classifier>min</classifier>
                 </artifact>

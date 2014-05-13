@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -13,21 +15,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <excludes>
-          <exclude>xml/**</exclude>
-          <exclude>xsl/**</exclude>
-        </excludes>
-
-      </resource>
-
-      <resource>
-        <directory>${basedir}/target/classes/js</directory>
-        <targetPath>js</targetPath>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -47,7 +34,7 @@
                 <include>p6_element.xml</include>
               </includes>
               <stylesheet>src/main/resources/xsl/json_dict.xsl</stylesheet>
-              <outputDir>${basedir}/target/classes/js/</outputDir>
+              <outputDir>${basedir}/target/generated-resources/js</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -56,6 +43,22 @@
               </fileMappers>
             </transformationSet>
           </transformationSets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>yuicompressor-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compress</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${basedir}/target/generated-resources/js</sourceDirectory>
+          <splitDependencies>false</splitDependencies>
+          <outputDirectory>${basedir}/target/generated-resources/js</outputDirectory>
         </configuration>
       </plugin>
       <plugin>
@@ -70,19 +73,14 @@
               <goal>attach-artifact</goal>
             </goals>
             <configuration>
-              <resources>
-                <resource>
-                  <directory>src/main/resources</directory>
-                </resource>
-              </resources>
               <artifacts>
                 <artifact>
-                  <file>${basedir}/target/classes/js/dict.js</file>
+                  <file>${basedir}/target/generated-resources/js/dict.js</file>
                   <type>js</type>
                   <classifier>full</classifier>
                 </artifact>
                 <artifact>
-                  <file>${basedir}/target/classes/js/dict-min.js</file>
+                  <file>${basedir}/target/generated-resources/js/dict-min.js</file>
                   <type>js</type>
                   <classifier>min</classifier>
                 </artifact>
@@ -98,38 +96,46 @@
           <execution>
             <id>default-jar</id>
             <configuration>
-              <excludes>
-                <exclude>min/js/**</exclude>
-              </excludes>
-              <outputDirectory>${basedir}/target/classes/</outputDirectory>
+              <classesDirectory>${basedir}/target/generated-resources</classesDirectory>
+              <outputDirectory>${basedir}/target/</outputDirectory>
               <includeEmptyDirs>false</includeEmptyDirs>
-              <resources>
-                <resource>
-                  <directory>${basedir}/target/classes/js</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
+              <archive>
+                <addMavenDescriptor>false</addMavenDescriptor>
+              </archive>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>yuicompressor-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compress</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <sourceFolder>${basedir}/target/classes/js</sourceFolder>
-          <splitDependencies>false</splitDependencies>
-          <outputDirectory>${basedir}/target/classes</outputDirectory>
-        </configuration>
-      </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>yuicompressor-maven-plugin</artifactId>
+                    <versionRange>[1.4.0,)</versionRange>
+                    <goals>
+                      <goal>compress</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 </project>

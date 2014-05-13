@@ -233,6 +233,14 @@
         <xsl:text>"</xsl:text>
     </xsl:template>
 
+    <xsl:template match="InlineBinary" mode="DataFragment">
+        <xsl:param name="br"/>
+        <xsl:value-of select="$br"/>
+        <xsl:text>"InlineBinary" : "</xsl:text>
+        <xsl:value-of select="text()"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
+
     <xsl:template match="PersonName">
         <xsl:param name="br"/>
         <xsl:variable name="br2" select="concat($br,' ')"/>
@@ -311,9 +319,37 @@
         </xsl:if>
     </xsl:template>
 
+    <xsl:template match="DataFragment">
+        <xsl:param name="br"/>
+        <xsl:variable name="br2" select="concat($br,' ')"/>
+        <xsl:text>,</xsl:text>
+        <xsl:if test="position()=1">
+            <xsl:value-of select="$br"/>
+            <xsl:text>"DataFragment" : [</xsl:text>
+        </xsl:if>
+        <xsl:value-of select="$br2"/>
+        <xsl:text>{</xsl:text>
+        <xsl:apply-templates select="*" mode="DataFragment">
+            <xsl:with-param name="br" select="concat($br2,' ')"/>
+        </xsl:apply-templates>
+        <xsl:value-of select="$br2"/>
+        <xsl:text>}</xsl:text>
+        <xsl:if test="position()=last()">
+            <xsl:value-of select="concat($br,']')"/>
+        </xsl:if>
+    </xsl:template>
+
     <xsl:template match="BulkData">
         <xsl:param name="br"/>
         <xsl:text>,</xsl:text>
+        <xsl:value-of select="$br"/>
+        <xsl:text>"BulkDataURI" : "</xsl:text>
+        <xsl:value-of select="@uri"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
+
+    <xsl:template match="BulkData" mode="DataFragment">
+        <xsl:param name="br"/>
         <xsl:value-of select="$br"/>
         <xsl:text>"BulkDataURI" : "</xsl:text>
         <xsl:value-of select="@uri"/>

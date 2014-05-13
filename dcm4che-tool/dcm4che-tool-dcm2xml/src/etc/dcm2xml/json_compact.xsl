@@ -203,6 +203,12 @@
         <xsl:text>"</xsl:text>
     </xsl:template>
 
+    <xsl:template match="InlineBinary" mode="DataFragment">
+        <xsl:text>"InlineBinary":"</xsl:text>
+        <xsl:value-of select="text()"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
+
     <xsl:template match="PersonName">
         <xsl:text>,</xsl:text>
         <xsl:if test="position()=1">"Value":[{</xsl:if>
@@ -256,10 +262,25 @@
         <xsl:if test="position()=last()">]</xsl:if>
     </xsl:template>
 
+    <xsl:template match="DataFragment">
+        <xsl:text>,</xsl:text>
+        <xsl:if test="position()=1">"DataFragment":[</xsl:if>
+        <xsl:text>{</xsl:text>
+        <xsl:apply-templates select="*" mode="DataFragment"/>
+        <xsl:text>}</xsl:text>
+        <xsl:if test="position()=last()">]</xsl:if>
+    </xsl:template>
+
     <xsl:template match="BulkData">
         <xsl:text>,"BulkDataURI":"</xsl:text>
         <xsl:value-of select="@uri"/>
         <xsl:text>"</xsl:text>
     </xsl:template>
 
+
+    <xsl:template match="BulkData" mode="DataFragment">
+        <xsl:text>"BulkDataURI":"</xsl:text>
+        <xsl:value-of select="@uri"/>
+        <xsl:text>"</xsl:text>
+    </xsl:template>
 </xsl:stylesheet>

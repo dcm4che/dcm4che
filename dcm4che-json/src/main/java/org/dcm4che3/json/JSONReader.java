@@ -50,6 +50,7 @@ import javax.json.stream.JsonParsingException;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.PersonName;
 import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.data.Sequence;
@@ -220,16 +221,18 @@ public class JSONReader {
                 case UN:
                     throw new JsonParsingException("Unexpected \"Value\""
                             + "\", expected \"InlineBinary\""
-                            + " or \"BulkDataURI\"", location);
+                            + " or \"BulkDataURI\" or  \"DataFragment\"", location);
                 }
             } else if ("InlineBinary".equals(key)) {
-                readInlineBinary(attrs, tag, vr);
+                attrs.setBytes(tag, vr, readInlineBinary());
             } else if ("BulkDataURI".equals(key)) {
-                readBulkData(attrs, tag, vr);
+                attrs.setValue(tag, vr, readBulkData(attrs.bigEndian()));
+            } else if ("DataFragment".equals(key)) {
+                readDataFragment(attrs, tag, vr);
             } else {
                 throw new JsonParsingException("Unexpected \"" + key
                         + "\", expected \"Value\" or \"InlineBinary\""
-                        + " or \"BulkDataURI\"", location);
+                        + " or \"BulkDataURI\" or  \"DataFragment\"", location);
             }
             if (next() != Event.END_OBJECT) {
                 throw new JsonParsingException("Unexpected " + event
@@ -398,6 +401,7 @@ public class JSONReader {
 
     private void readSequence(Attributes attrs, int tag) {
         final Sequence seq = attrs.newSequence(tag, 10);
+        Attributes fmi0 = fmi;
         readDatasets(new Callback(){
 
             @Override
@@ -405,10 +409,11 @@ public class JSONReader {
                 seq.add(item);
             }});
 
+        fmi = fmi0;
         seq.trimToSize();
     }
 
-    private void readInlineBinary(Attributes attrs, int tag, VR vr) {
+    private byte[] readInlineBinary() {
         if (next() != Event.VALUE_STRING) {
             throw new JsonParsingException("Unexpected " + event
                     + ", expected bulk data URI", location);
@@ -420,17 +425,64 @@ public class JSONReader {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        bout.toByteArray();
-        attrs.setBytes(tag, vr, bout.toByteArray());
+        return bout.toByteArray();
     }
 
-    private void readBulkData(Attributes attrs, int tag, VR vr) {
+    private BulkData readBulkData(boolean bigEndian) {
         if (next() != Event.VALUE_STRING) {
             throw new JsonParsingException("Unexpected " + event
                     + ", expected bulk data URI", location);
         }
         String uri = parser.getString();
-        BulkData bulkdata = new BulkData(null, uri, attrs.bigEndian());
-        attrs.setValue(tag, vr, bulkdata);
+        return new BulkData(null, uri, bigEndian);
     }
+
+    private void readDataFragment(Attributes attrs, int tag, VR vr) {
+        if (next() != Event.START_ARRAY) {
+            throw new JsonParsingException("Unexpected " + event
+                    + ", expected array of data fragment objects", location);
+        }
+        Fragments frags = attrs.newFragments(tag, vr, 10);
+        for (;;) {
+            switch (next()) {
+            case END_ARRAY:
+                frags.trimToSize();
+                return;
+            case VALUE_NULL:
+                frags.add(null);
+                break;
+            case START_OBJECT:
+                frags.add(readDataFragment(attrs.bigEndian()));
+                break;
+            default:
+                throw new JsonParsingException("Unexpected " + event 
+                        + ", expected data fragment object", location);
+            }
+        }
+    }
+
+    private Object readDataFragment(boolean bigEndian) {
+        if (next() != Event.KEY_NAME) {
+            throw new JsonParsingException("Unexpected " + event
+                    + ", expected \"InlineBinary\""
+                    + " or \"BulkDataURI\"", location);
+        }
+        String key = getString();
+        Object value;
+        if ("BulkDataURI".equals(key)) {
+            value = readBulkData(bigEndian);
+        } else if ("InlineBinary".equals(key)) {
+            value = readInlineBinary();
+        } else {
+            throw new JsonParsingException("Unexpected \"" + key
+                    + "\", expected \"InlineBinary\""
+                    + " or \"BulkDataURI\"", location);
+        }
+        if (next() != Event.END_OBJECT) {
+            throw new JsonParsingException("Unexpected " + event
+                    + " expected end of data fragment object", location);
+        }
+        return value;
+    }
+
 }

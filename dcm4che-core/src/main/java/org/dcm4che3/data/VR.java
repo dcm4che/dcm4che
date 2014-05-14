@@ -41,10 +41,8 @@ package org.dcm4che3.data;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.dcm4che3.io.SAXWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -181,7 +179,7 @@ public enum VR {
         return valueType.toBytes(val, cs);
     }
 
-    Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs) {
+    public Object toStrings(Object val, boolean bigEndian, SpecificCharacterSet cs) {
         return valueType.toStrings(val, bigEndian, cs);
     }
 
@@ -256,11 +254,6 @@ public enum VR {
     public boolean prompt(Object val, boolean bigEndian,
             SpecificCharacterSet cs, int maxChars, StringBuilder sb) {
         return valueType.prompt(val, bigEndian, cs, maxChars, sb);
-    }
-
-    public void toXML(Object val, boolean bigEndian,
-            SpecificCharacterSet cs, SAXWriter saxWriter) throws SAXException {
-        valueType.toXML(val, bigEndian, cs, saxWriter, inlineBinary);
     }
 
     public int vmOf(Object val) {

@@ -41,11 +41,9 @@ package org.dcm4che3.data;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -540,30 +538,6 @@ enum BinaryValueType implements ValueType {
                 sb.append('\\');
         }
         return true;
-    }
-
-    @Override
-    public void toXML(Object val, boolean bigEndian,
-            SpecificCharacterSet cs, SAXWriter saxWriter, boolean inlineBinary)
-            throws SAXException {
-        if (val instanceof byte[]) {
-            toXML((byte[]) val, bigEndian, saxWriter, inlineBinary);
-            return;
-        }
-
-        throw new UnsupportedOperationException();
-   }
-
-    private void toXML(byte[] b, boolean bigEndian, SAXWriter saxWriter,
-            boolean inlineBinary) throws SAXException {
-        if (inlineBinary) {
-            saxWriter.writeInlineBinary(bigEndian ? toggleEndian(b, true) : b);
-        } else {
-            for (int i = 0, n = b.length / numBytes, off = 0; i < n;
-                    i++, off += numBytes) {
-                saxWriter.writeValue(i, toString(b, off, bigEndian));
-            }
-        }
     }
 
     @Override

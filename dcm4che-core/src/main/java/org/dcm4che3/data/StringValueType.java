@@ -41,9 +41,7 @@ package org.dcm4che3.data;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.util.StringUtils;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -92,13 +90,6 @@ enum StringValueType implements ValueType {
         @Override
         protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
             return cs;
-        }
-
-        @Override
-        protected void toXML(int i, String s, SAXWriter saxWriter)
-                throws SAXException {
-            if (s != null)
-                saxWriter.writePersonName(i, new PersonName(s, true));
         }
     },
     DS("\\", null) {
@@ -557,26 +548,6 @@ enum StringValueType implements ValueType {
         }
         sb.setLength(sb.length()-1);
         return true;
-    }
-
-    @Override
-    public void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean inlineBinary) throws SAXException {
-        if (inlineBinary)
-            throw new IllegalArgumentException("inlineBinary=true");
-        Object o = toStrings(val, bigEndian, cs);
-        if (o instanceof String[]) {
-            String[] ss = (String[]) o;
-            for (int i = 0; i < ss.length; i++)
-                toXML(i, ss[i], saxWriter);
-        } else
-            toXML(0, (String) o, saxWriter);
-    }
-
-    protected void toXML(int i, String s, SAXWriter saxWriter)
-            throws SAXException {
-        if (s != null)
-            saxWriter.writeValue(i, s);
     }
 
     @Override

@@ -56,14 +56,12 @@ import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -71,7 +69,8 @@ import org.xml.sax.SAXException;
 public class Attributes implements Serializable {
 
     public interface Visitor {
-        boolean visit(Attributes attrs, int tag, VR vr, Object value);
+        boolean visit(Attributes attrs, int tag, VR vr, Object value)
+                throws Exception;
     }
 
     private static final Logger LOG = 
@@ -2460,8 +2459,23 @@ public class Attributes implements Serializable {
      *  is also invoked for attributes in nested datasets
      * @return <code>true</code> if the operation was not aborted.
      */
-    public boolean accept(Visitor visitor, boolean visitNestedDatasets) {
-        for (int i = 0; i < size; i++) {
+    public boolean accept(Visitor visitor, boolean visitNestedDatasets)
+            throws Exception{
+        if (isEmpty())
+            return true;
+
+        if (tags[0] < 0) {
+            int index0 = -(1 + indexOf(0));
+            return accept(visitor, visitNestedDatasets, index0, size)
+                && accept(visitor, visitNestedDatasets, 0, index0);
+        } else {
+            return accept(visitor, visitNestedDatasets, 0, size);
+        }
+    }
+
+    private boolean accept(Visitor visitor, boolean visitNestedDatasets,
+            int start, int end) throws Exception {
+        for (int i = start; i < end; i++) {
             if (!visitor.visit(this, tags[i], vrs[i], values[i]))
                 return false;
             if (visitNestedDatasets && (values[i] instanceof Sequence)) {
@@ -2497,31 +2511,6 @@ public class Attributes implements Serializable {
                             TagUtils.groupNumber(groupLengthTag))
                     + ",eeee).");
         
-    }
-
-    public void writeTo(SAXWriter out) throws SAXException {
-        if (isEmpty())
-            return;
-
-        SpecificCharacterSet cs = getSpecificCharacterSet();
-        if (tags[0] < 0) {
-            int index0 = -(1 + indexOf(0));
-            writeTo(out, cs, index0, size);
-            writeTo(out, cs, 0, index0);
-        } else {
-            writeTo(out, cs, 0, size);
-        }
-    }
-
-    private void writeTo(SAXWriter out, SpecificCharacterSet cs,
-            int start, int end) throws SAXException {
-        for (int i = start; i < end; i++) {
-            VR vr = vrs[i];
-            Object value = values[i];
-            if (vr.isStringType() && value instanceof byte[])
-                values[i] = value = vr.toStrings((byte[]) value, bigEndian, cs);
-            out.writeAttribute(tags[i], vr, value, cs, this);
-        }
     }
 
     public Attributes createFileMetaInformation(String tsuid) {

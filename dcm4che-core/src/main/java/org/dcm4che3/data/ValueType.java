@@ -103,8 +103,5 @@ interface ValueType {
     boolean prompt(Object val, boolean bigEndian, SpecificCharacterSet cs,
             int maxChars, StringBuilder sb);
 
-    void toXML(Object val, boolean bigEndian, SpecificCharacterSet cs,
-            SAXWriter saxWriter, boolean inlineBinary) throws SAXException;
-
     int vmOf(Object val);
 }

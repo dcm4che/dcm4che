@@ -115,6 +115,9 @@
         </xsl:if>
         <xsl:value-of select="concat($br,' ')"/>
         <xsl:choose>
+            <xsl:when test="not(text())">
+                <xsl:text>null</xsl:text>
+            </xsl:when>
             <xsl:when test="../@vr='DS' or ../@vr='FL' or ../@vr='FD' or ../@vr='IS' or ../@vr='SL' or ../@vr='SS' or ../@vr='UL' or ../@vr='US'">
                  <xsl:call-template name="number">
                     <xsl:with-param name="text" select="text()"/>

@@ -108,11 +108,7 @@ public class SAXWriter implements DicomInputHandler {
                 @Override
                 public boolean visit(Attributes attrs, int tag, VR vr, Object value)
                         throws Exception {
-                     writeAttribute(tag, vr,
-                            vr.isStringType() && value instanceof byte[]
-                                    ? vr.toStrings((byte[]) value, item.bigEndian(), cs)
-                                    : value,
-                            cs, item);
+                     writeAttribute(tag, vr, value, cs, item);
                      return true;
                 }},
                 false);

@@ -187,15 +187,8 @@ public class SAXWriter implements DicomInputHandler {
         if (value instanceof Value)
             writeAttribute((Value) value, attrs.bigEndian());
         else if (!vr.isInlineBinary()) {
-            Object o = vr.toStrings(value, attrs.bigEndian(), 
+            writeValues(vr, value, attrs.bigEndian(),
                     attrs.getSpecificCharacterSet(vr));
-            String[] ss = (o instanceof String[])
-                    ? (String[]) o
-                    : new String[] { (String) o };
-            if (vr == VR.PN)
-                writePersonNames(ss);
-            else
-                writeValues(ss);
         } else if (value instanceof byte[]) {
             writeInlineBinary(attrs.bigEndian()
                     ? vr.toggleEndian((byte[]) value, true)
@@ -271,21 +264,13 @@ public class SAXWriter implements DicomInputHandler {
                     if (tag == Tag.TransferSyntaxUID
                             || tag == Tag.SpecificCharacterSet)
                         attrs.setBytes(tag, vr, b);
-                    if (dis.bigEndian())
-                        vr.toggleEndian(b, false);
                     if (vr.isInlineBinary())
-                        writeInlineBinary(b);
-                    else  {
-                        Object o = vr.toStrings(b, false, 
+                        writeInlineBinary(dis.bigEndian()
+                                ? vr.toggleEndian(b, false)
+                                : b);
+                    else
+                        writeValues(vr, b, dis.bigEndian(),
                                 attrs.getSpecificCharacterSet(vr));
-                        String[] ss = (o instanceof String[])
-                                ? (String[]) o
-                                : new String[] { (String) o };
-                        if (vr == VR.PN)
-                            writePersonNames(ss);
-                        else
-                            writeValues(ss);
-                    }
                  }
             }
             endElement("DicomAttribute");
@@ -347,10 +332,24 @@ public class SAXWriter implements DicomInputHandler {
         }
     }
 
-    private void writeValues(String... ss) throws SAXException {
-        for (int i = 0; i < ss.length; i++) {
+    private void writeValues(VR vr, Object val, boolean bigEndian,
+            SpecificCharacterSet cs) throws SAXException {
+        if (vr.isStringType())
+            val = vr.toStrings(val, bigEndian, cs);
+        int vm = vr.vmOf(val);
+        for (int i = 0; i < vm; i++) {
+            String s = vr.toString(val, bigEndian, i, null);
             addAttribute("number", Integer.toString(i + 1));
-            writeElement("Value", ss[i]);
+            if (vr == VR.PN) {
+                PersonName pn = new PersonName(s);
+                startElement("PersonName");
+                writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
+                writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);
+                writePNGroup("Phonetic", pn, PersonName.Group.Phonetic);
+                writeElement("Value", s);
+            } else {
+                writeElement("Value", s);
+            }
         }
     }
 
@@ -386,20 +385,6 @@ public class SAXWriter implements DicomInputHandler {
                 ch.characters(buf, 0, len);
             }
             endElement(qname);
-        }
-    }
-
-    private void writePersonNames(String... ss) throws SAXException {
-        PersonName pn;
-        for (int i = 0; i < ss.length; i++) {
-            pn = new PersonName(ss[i]);
-            if (!pn.isEmpty()) {
-                startElement("PersonName", "number", i + 1);
-                writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
-                writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);
-                writePNGroup("Phonetic", pn, PersonName.Group.Phonetic);
-                endElement("PersonName");
-            }
         }
     }
 

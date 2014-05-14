@@ -183,33 +183,33 @@ public enum VR {
         return valueType.toStrings(val, bigEndian, cs);
     }
 
-    String toString(Object val, boolean bigEndian, int valueIndex,
+    public String toString(Object val, boolean bigEndian, int valueIndex,
             String defVal) {
         return valueType.toString(val, bigEndian, valueIndex, defVal);
     }
 
-    int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
+    public int toInt(Object val, boolean bigEndian, int valueIndex, int defVal) {
         return valueType.toInt(val, bigEndian, valueIndex, defVal);
     }
 
-    int[] toInts(Object val, boolean bigEndian) {
+    public int[] toInts(Object val, boolean bigEndian) {
         return valueType.toInts(val, bigEndian);
     }
 
-    float toFloat(Object  val, boolean bigEndian, int valueIndex, float defVal) {
+    public float toFloat(Object  val, boolean bigEndian, int valueIndex, float defVal) {
         return valueType.toFloat(val, bigEndian, valueIndex, defVal);
     }
 
-    float[] toFloats(Object val, boolean bigEndian) {
+    public float[] toFloats(Object val, boolean bigEndian) {
         return valueType.toFloats(val, bigEndian);
     }
 
-    double toDouble(Object val, boolean bigEndian, int valueIndex,
+    public double toDouble(Object val, boolean bigEndian, int valueIndex,
             double defVal) {
         return valueType.toDouble(val, bigEndian, valueIndex, defVal);
     }
 
-    double[] toDoubles(Object val, boolean bigEndian) {
+    public double[] toDoubles(Object val, boolean bigEndian) {
         return valueType.toDoubles(val, bigEndian);
     }
 

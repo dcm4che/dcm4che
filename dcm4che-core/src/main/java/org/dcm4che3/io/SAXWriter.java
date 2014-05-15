@@ -50,7 +50,6 @@ import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
-import org.dcm4che3.data.Attributes.Visitor;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.ByteUtils;
@@ -103,7 +102,8 @@ public class SAXWriter implements DicomInputHandler {
 
     private void writeItem(final Attributes item) throws SAXException {
         final SpecificCharacterSet cs = item.getSpecificCharacterSet();
-        try {            item.accept(new Visitor(){
+        try {
+            item.accept(new Attributes.Visitor(){
 
                 @Override
                 public boolean visit(Attributes attrs, int tag, VR vr, Object value)

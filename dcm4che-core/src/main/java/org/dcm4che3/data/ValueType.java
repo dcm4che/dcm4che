@@ -41,9 +41,6 @@ package org.dcm4che3.data;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.dcm4che3.io.SAXWriter;
-import org.xml.sax.SAXException;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */

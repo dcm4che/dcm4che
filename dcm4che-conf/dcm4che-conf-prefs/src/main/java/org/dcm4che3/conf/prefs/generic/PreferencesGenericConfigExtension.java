@@ -119,7 +119,6 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
         if (!deviceNode.nodeExists(nodename))
             return;
 
-        Preferences loggerNode = deviceNode.node(nodename);
         T confObj;
 
         try {
@@ -128,7 +127,7 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
             throw new ConfigurationException(e);
         }
 
-        ConfigReader prefsReader = new PrefsConfigReader(loggerNode);
+        ConfigReader prefsReader = new PrefsConfigReader(deviceNode.node(nodename));
         
         try {
         

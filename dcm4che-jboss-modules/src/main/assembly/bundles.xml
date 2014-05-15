@@ -151,6 +151,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/bundles/org/dcm4che/json/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-json</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/bundles/org/dcm4che/mime/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-mime</include>

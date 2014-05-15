@@ -3,7 +3,8 @@ package org.dcm4che3.conf.prefs.cdi;
 import java.util.prefs.Preferences;
 
 /**
- * To be used with CDI. The default implementation is org.dcm4che3.conf.prefs.cdi.DefaultPrefsFactory.java
+ * To be used with CDI.
+ * This interface will be injected into dcm4che components that use Preferences as a configuration backend. 
  * @author Roman K
  *
  */

@@ -47,7 +47,17 @@
     <version>3.3.4-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-json</artifactId>
+  <packaging>bundle</packaging>
   <description>JSON Support</description>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
@@ -57,6 +67,10 @@
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
 </project>

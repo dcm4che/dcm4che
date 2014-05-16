@@ -864,4 +864,15 @@ public class IOD extends ArrayList<IOD.DataElement> {
         iod.trimToSize();
         return iod;
     }
+
+    public static IOD valueOf(Code code) {
+        IOD iod = new IOD();
+        iod.add(new DataElement(
+                Tag.CodeValue, VR.SH, DataElementType.TYPE_1, 1, 1, 0)
+                .setValues(code.getCodeValue()));
+        iod.add(new DataElement(
+                Tag.CodingSchemeDesignator, VR.SH, DataElementType.TYPE_1, 1, 1, 0)
+                .setValues(code.getCodingSchemeDesignator()));
+        return iod;
+    }
 }

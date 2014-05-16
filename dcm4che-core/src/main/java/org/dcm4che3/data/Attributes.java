@@ -2738,13 +2738,16 @@ public class Attributes implements Serializable {
             }
             if (validVals instanceof Code[]) {
                 boolean invalidItem = false;
+                ValidationResult[] itemValidationResults = new ValidationResult[seqSize];
                 for (int i = 0; i < seqSize; i++) {
-                    invalidItem = invalidItem 
-                            || !isValidValue(seq.get(i), (Code[]) validVals);
+                    ValidationResult itemValidationResult =
+                            validateCode(seq.get(i), (Code[]) validVals);
+                    invalidItem = invalidItem || !itemValidationResult.isValid();
+                    itemValidationResults[i] = itemValidationResult;
                 }
                 if (invalidItem) {
                     result.addInvalidAttributeValue(el, 
-                            ValidationResult.Invalid.Value);
+                            ValidationResult.Invalid.Value, itemValidationResults);
                 }
             } else if (validVals instanceof IOD[]) {
                 IOD[] itemIODs = (IOD[]) validVals;
@@ -2826,8 +2829,14 @@ public class Attributes implements Serializable {
         }
     }
 
-    private boolean isValidValue(Attributes item, Code[] validVals) {
-         return isOneOf(new Code(item), validVals);
+    private ValidationResult validateCode(Attributes item, Code[] validVals) {
+        ValidationResult result = null;
+        for (Code code : validVals) {
+            result = item.validate(IOD.valueOf(code));
+            if (result.isValid())
+                break;
+        }
+        return result;
     }
 
     private boolean isValidValue(String[] val, int valueNumber, String[] validVals) {

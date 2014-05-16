@@ -873,6 +873,15 @@ public class IOD extends ArrayList<IOD.DataElement> {
         iod.add(new DataElement(
                 Tag.CodingSchemeDesignator, VR.SH, DataElementType.TYPE_1, 1, 1, 0)
                 .setValues(code.getCodingSchemeDesignator()));
+        String codingSchemeVersion = code.getCodingSchemeVersion();
+        if (codingSchemeVersion == null)
+            iod.add(new DataElement(
+                    Tag.CodingSchemeVersion, VR.SH, DataElementType.TYPE_0, -1, -1, 0));
+        else
+            iod.add(new DataElement(
+                    Tag.CodingSchemeVersion, VR.SH, DataElementType.TYPE_1, 1, 1, 0)
+                    .setValues(codingSchemeVersion));
+            
         return iod;
     }
 }

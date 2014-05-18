@@ -116,6 +116,7 @@
     <module>dcm4che-ws-rs</module>
     <module>dcm4che-json</module>
     <module>dcm4che-javascript</module>
+    <module>dcm4che-dict</module>
   </modules>
   <distributionManagement>
     <repository>

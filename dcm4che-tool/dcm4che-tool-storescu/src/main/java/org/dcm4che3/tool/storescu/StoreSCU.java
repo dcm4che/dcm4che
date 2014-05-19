@@ -87,6 +87,11 @@ import org.dcm4che3.util.TagUtils;
  */
 public class StoreSCU {
 
+    public interface RSPHandlerFactory {
+        
+        DimseRSPHandler createDimseRSPHandler(File f);
+    }
+
     private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.storescu.messages");
 
@@ -108,6 +113,22 @@ public class StoreSCU {
     private long totalSize;
     private int filesScanned;
     private int filesSent;
+    
+    private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory(){
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandler(final File f) {
+            
+            return new DimseRSPHandler(as.nextMessageID()) {
+                
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                    super.onDimseRSP(as, cmd, data);
+                    StoreSCU.this.onCStoreRSP(cmd, f);
+                }
+            };
+        }
+    };
 
     public StoreSCU(ApplicationEntity ae) throws IOException {
         this.remote = new Connection();
@@ -117,6 +138,11 @@ public class StoreSCU {
                         UID.ImplicitVRLittleEndian));
     }
 
+
+    public void setRspHandlerFactory(RSPHandlerFactory rspHandlerFactory) {
+        this.rspHandlerFactory = rspHandlerFactory;
+    }
+    
     public AAssociateRQ getAAssociateRQ() {
         return rq;
     }
@@ -434,7 +460,7 @@ public class StoreSCU {
             try {
                 in.skip(fmiEndPos);
                 InputStreamDataWriter data = new InputStreamDataWriter(in);
-                as.cstore(cuid, iuid, priority, data, ts, rspHandler(f));
+                as.cstore(cuid, iuid, priority, data, ts, rspHandlerFactory.createDimseRSPHandler(f));
             } finally {
                 SafeClose.close(in);
             }
@@ -446,22 +472,11 @@ public class StoreSCU {
                 if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
                     iuid = data.getString(Tag.SOPInstanceUID);
                 as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
-                        rspHandler(f));
+                        rspHandlerFactory.createDimseRSPHandler(f));
             } finally {
                 SafeClose.close(in);
             }
          }
-    }
-
-    private DimseRSPHandler rspHandler(final File f) {
-        return new DimseRSPHandler(as.nextMessageID()) {
-   
-            @Override
-            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-                super.onDimseRSP(as, cmd, data);
-                StoreSCU.this.onCStoreRSP(cmd, f);
-            }
-        };
     }
 
     public void close() throws IOException, InterruptedException {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE elements [
+<!ENTITY commandelements SYSTEM "commandelements.xml">
+<!ENTITY dataelements SYSTEM "dataelements.xml">
+]>
+<elements>
+&commandelements;
+&dataelements;
+</elements>

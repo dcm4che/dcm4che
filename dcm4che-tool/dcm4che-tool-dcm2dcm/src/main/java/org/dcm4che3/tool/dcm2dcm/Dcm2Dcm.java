@@ -258,7 +258,7 @@ public class Dcm2Dcm {
 
     private static String transferSyntaxOf(CommandLine cl, String def) {
         return cl.hasOption("ivrle") ? UID.ImplicitVRLittleEndian
-                : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndian
+                : cl.hasOption("evrbe") ? UID.ExplicitVRBigEndianRetired
                 : cl.hasOption("defl") ? UID.DeflatedExplicitVRLittleEndian
                 : cl.hasOption("jpeg") ? UID.JPEGBaseline1
                 : cl.hasOption("jpll") ? UID.JPEGLossless

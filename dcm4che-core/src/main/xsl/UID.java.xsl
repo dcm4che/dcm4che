@@ -125,7 +125,7 @@ public class UID {
     public static final String </xsl:text>
     <xsl:value-of select="@keyword" />
     <xsl:text> = "</xsl:text>
-    <xsl:value-of select="@uid" />
+    <xsl:value-of select="@value" />
     <xsl:text>";
 </xsl:text>
   </xsl:template>

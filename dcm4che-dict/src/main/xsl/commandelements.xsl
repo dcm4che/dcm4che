@@ -24,6 +24,9 @@
       <xsl:attribute name="vm">
         <xsl:value-of select="doc:td[5]/doc:para"/>
       </xsl:attribute>
+      <xsl:if test="not(td[6])">
+        <xsl:attribute name="retired">true</xsl:attribute>
+      </xsl:if>
       <xsl:value-of select="doc:td[2]/doc:para"/>
     </xsl:element>
   </xsl:template>

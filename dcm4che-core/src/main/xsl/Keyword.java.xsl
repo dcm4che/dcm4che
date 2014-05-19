@@ -100,7 +100,7 @@ public class Keyword {
         switch (tag) {
 </xsl:text>
     <xsl:apply-templates 
-      select="element[@keyword!='' and not(starts-with(@tag,'002804x'))]" />
+      select="//el[@keyword!='' and not(starts-with(@tag,'002804x'))]" />
     <xsl:text>        }
         return "";
     }
@@ -108,7 +108,7 @@ public class Keyword {
 }
 </xsl:text>
   </xsl:template>
-  <xsl:template match="element">
+  <xsl:template match="el">
     <xsl:text>        case Tag.</xsl:text>
     <xsl:value-of select="@keyword" />
     <xsl:text>:

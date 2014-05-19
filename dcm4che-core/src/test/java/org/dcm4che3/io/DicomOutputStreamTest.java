@@ -121,7 +121,7 @@ public class DicomOutputStreamTest {
     @Test
     public void testWriteDatasetBigEndian() throws IOException {
         DicomOutputStream out = new DicomOutputStream(file);
-        testWriteDataset(out, UID.ExplicitVRBigEndian);
+        testWriteDataset(out, UID.ExplicitVRBigEndianRetired);
     }
 
     @Test

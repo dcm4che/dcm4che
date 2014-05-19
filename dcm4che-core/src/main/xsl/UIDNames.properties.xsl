@@ -84,7 +84,7 @@
     <xsl:apply-templates select="uid" />
   </xsl:template>
   <xsl:template match="uid">
-    <xsl:value-of select="@uid" />
+    <xsl:value-of select="@value" />
     <xsl:text>=</xsl:text>
     <xsl:value-of select="text()" />
     <xsl:text>

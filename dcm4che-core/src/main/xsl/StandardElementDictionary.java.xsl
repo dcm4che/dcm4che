@@ -118,37 +118,37 @@ public class StandardElementDictionary extends ElementDictionary {
                 &amp;&amp; (tag &amp; 0xFFFF0000) != 0x7FE00000)
             tag &amp;= 0xFF00FFFF;
         switch (tag) {</xsl:text>
-    <xsl:apply-templates select="element[@vr='AE']"/>
-    <xsl:apply-templates select="element[@vr='AS']"/>
-    <xsl:apply-templates select="element[@vr='AT']"/>
-    <xsl:apply-templates select="element[@vr='CS' and @keyword!='SourceImageIDs']"/>
-    <xsl:apply-templates select="element[@vr='DA']"/>
-    <xsl:apply-templates select="element[@vr='DS']"/>
-    <xsl:apply-templates select="element[@vr='DT']"/>
-    <xsl:apply-templates select="element[@vr='FL']"/>
-    <xsl:apply-templates select="element[@vr='FD']"/>
-    <xsl:apply-templates select="element[@vr='IS']"/>
-    <xsl:apply-templates select="element[@vr='LO']"/>
-    <xsl:apply-templates select="element[@vr='LT']"/>
-    <xsl:apply-templates select="element[@vr='OB']"/>
-    <xsl:apply-templates select="element[@vr='OF']"/>
-    <xsl:apply-templates select="element[contains(@vr,'OW')]">
+    <xsl:apply-templates select="//el[@vr='AE']"/>
+    <xsl:apply-templates select="//el[@vr='AS']"/>
+    <xsl:apply-templates select="//el[@vr='AT']"/>
+    <xsl:apply-templates select="//el[@vr='CS' and @keyword!='SourceImageIDs']"/>
+    <xsl:apply-templates select="//el[@vr='DA']"/>
+    <xsl:apply-templates select="//el[@vr='DS']"/>
+    <xsl:apply-templates select="//el[@vr='DT']"/>
+    <xsl:apply-templates select="//el[@vr='FL']"/>
+    <xsl:apply-templates select="//el[@vr='FD']"/>
+    <xsl:apply-templates select="//el[@vr='IS']"/>
+    <xsl:apply-templates select="//el[@vr='LO']"/>
+    <xsl:apply-templates select="//el[@vr='LT']"/>
+    <xsl:apply-templates select="//el[@vr='OB']"/>
+    <xsl:apply-templates select="//el[@vr='OF']"/>
+    <xsl:apply-templates select="//el[contains(@vr,'OW')]">
         <xsl:with-param name="vr">OW</xsl:with-param>
     </xsl:apply-templates>
-    <xsl:apply-templates select="element[@vr='PN']"/>
-    <xsl:apply-templates select="element[@vr='SH']"/>
-    <xsl:apply-templates select="element[@vr='SL']"/>
-    <xsl:apply-templates select="element[@vr='SQ']"/>
-    <xsl:apply-templates select="element[@vr='SS' or @vr='US|SS']">
+    <xsl:apply-templates select="//el[@vr='PN']"/>
+    <xsl:apply-templates select="//el[@vr='SH']"/>
+    <xsl:apply-templates select="//el[@vr='SL']"/>
+    <xsl:apply-templates select="//el[@vr='SQ']"/>
+    <xsl:apply-templates select="//el[@vr='SS' or @vr='US|SS']">
         <xsl:with-param name="vr">SS</xsl:with-param>
     </xsl:apply-templates>
-    <xsl:apply-templates select="element[@vr='ST']"/>
-    <xsl:apply-templates select="element[@vr='TM']"/>
-    <xsl:apply-templates select="element[@vr='UI']"/>
-    <xsl:apply-templates select="element[@vr='UL']"/>
-    <xsl:apply-templates select="element[@vr='US']"/>
-    <xsl:apply-templates select="element[@vr='UT']"/>
-    <xsl:apply-templates select="element[@keyword!='' and @vr='']"/>
+    <xsl:apply-templates select="//el[@vr='ST']"/>
+    <xsl:apply-templates select="//el[@vr='TM']"/>
+    <xsl:apply-templates select="//el[@vr='UI']"/>
+    <xsl:apply-templates select="//el[@vr='UL']"/>
+    <xsl:apply-templates select="//el[@vr='US']"/>
+    <xsl:apply-templates select="//el[@vr='UT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='']"/>
 <xsl:text>
         }
         return VR.UN;
@@ -157,7 +157,7 @@ public class StandardElementDictionary extends ElementDictionary {
 </xsl:text>
   </xsl:template>
 
-  <xsl:template match="element">
+  <xsl:template match="el">
     <xsl:param name="vr" select="@vr" />
     <xsl:if test="not(starts-with(@tag,'002804x'))">
       <xsl:text>

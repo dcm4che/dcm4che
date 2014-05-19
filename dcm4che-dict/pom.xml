@@ -7,10 +7,14 @@
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-dict</artifactId>
+  <description>Generate XML Element and UID Dictionary from DICOM Part 6 and 7</description>
   <build>
     <resources>
       <resource>
-        <directory>${project.build.directory}/generated-resources</directory>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>target/generated-resources/xml/xslt</directory>
       </resource>
     </resources>
     <plugins>
@@ -28,12 +32,11 @@
         <configuration>
           <transformationSets>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>src/main/docbook</dir>
               <includes>
                 <include>part07.xml</include>
               </includes>
               <stylesheet>src/main/xsl/commandelements.xsl</stylesheet>
-              <outputDir>${project.build.directory}/generated-resources/xml</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -42,12 +45,11 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>src/main/docbook</dir>
               <includes>
                 <include>part06.xml</include>
               </includes>
               <stylesheet>src/main/xsl/dataelements.xsl</stylesheet>
-              <outputDir>${project.build.directory}/generated-resources/xml</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -56,12 +58,11 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>src/main/docbook</dir>
               <includes>
                 <include>part06.xml</include>
               </includes>
               <stylesheet>src/main/xsl/uids.xsl</stylesheet>
-              <outputDir>${project.build.directory}/generated-resources/xml</outputDir>
               <fileMappers>
                 <fileMapper
                   implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
@@ -71,23 +72,6 @@
             </transformationSet>
           </transformationSets>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>bundle</goal>
-            </goals>
-            <configuration>
-              <resourcesDirectory>${project.build.directory}/generated-resources</resourcesDirectory>
-              <includes>
-                <include>**/*.xml</include>
-              </includes>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

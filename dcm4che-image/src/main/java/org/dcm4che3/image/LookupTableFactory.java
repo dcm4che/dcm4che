@@ -45,8 +45,8 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.util.ByteUtils;
 
 /**
@@ -75,6 +75,7 @@ public class LookupTableFactory {
 		rescaleSlope = attrs.getFloat(Tag.RescaleSlope, 1);
 		modalityLUT = createLUT(storedValue,
 				attrs.getNestedDataset(Tag.ModalityLUTSequence));
+
 	}
 
 	public void setPresentationLUT(Attributes attrs) {
@@ -129,7 +130,8 @@ public class LookupTableFactory {
 								: 0;
 				windowCenter = wcs[index];
 				windowWidth = wws[index];
-				return;
+
+				//return;
 			}
 		}
 		voiLUTFunction = img.getString(Tag.VOILUTFunction);
@@ -139,12 +141,15 @@ public class LookupTableFactory {
 			: storedValue,
 			vLUT);
 		else if(voiLUTFunction != null && voiLUTFunction.equals("SIGMOID")) {
-			System.out.println(voiLUTFunction);
+
 			StoredValue inBits = modalityLUT != null
 					? new StoredValue.Unsigned(modalityLUT.outBits)
 			: storedValue;
 					voiLUT = createSigmoidLUT(inBits, 8);
 		}
+
+		return;
+
 	}
 
 	private LookupTable createLUT(StoredValue inBits, Attributes attrs) {
@@ -169,6 +174,7 @@ public class LookupTableFactory {
 		int outBits = desc[2];
 		if (data == null)
 			return null;
+
 
 		if (data.length == len << 1) {
 			if (outBits > 8) {
@@ -323,8 +329,6 @@ public class LookupTableFactory {
 		return new int[] { min, max };
 	}
 
-
-
 	public LookupTable createSigmoidLUT(StoredValue inBits,
 			int outBits){
 
@@ -337,13 +341,17 @@ public class LookupTableFactory {
 		float k = -4 * m / w;
 		int size = inBits.maxValue(); //LUT
 		int offset = 0; //Need to use no offset, not necessary for linear LUT
+
 		float ic = c;
+
 		ic = (c - b) / m -offset;
 
 		if(outBits > 8){
 			short[] lut = new short[size];
 			for (int i = 0; i < size; i++){
+
 				int tmp = calcSigmoid(outRange, i, ic, k);
+				
 				lut[i] = (short) (tmp);
 			}
 
@@ -352,6 +360,7 @@ public class LookupTableFactory {
 			byte[] lut = new byte[size];
 
 			for (int i = 0; i < size; i++){
+
 				int tmp = calcSigmoid(outRange, i, ic, k);
 
 				lut[i] = (byte) ((tmp) & 0xff);
@@ -368,6 +377,7 @@ public class LookupTableFactory {
 		double num = (1 + Math.exp((i - ic) * k));
 
 		return (int) (outRange / num);
+
 
 	}
 

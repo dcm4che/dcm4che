@@ -17,7 +17,7 @@
    -
    - The Initial Developer of the Original Code is
    - Agfa Healthcare.
-   - Portions created by the Initial Developer are Copyright (C) 2011
+   - Portions created by the Initial Developer are Copyright (C) 2011-2014
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
@@ -36,12 +36,19 @@
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
    - ***** END LICENSE BLOCK *****  -->
-
-<!DOCTYPE elements [
-<!ENTITY p6 SYSTEM "../../../target/generated-resources/xml/xslt/p6_uid.xml">
-<!ENTITY private SYSTEM "private-uids.xml">
-]>
-<uids>
-  &p6;
-  &private;
-</uids>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0
+    http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>modules</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/xml/xslt</directory>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>

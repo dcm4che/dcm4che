@@ -103,7 +103,7 @@ public enum TransferSyntaxType {
         map.put(UID.ImplicitVRLittleEndian, NATIVE);
         map.put(UID.ExplicitVRLittleEndian, NATIVE);
         map.put(UID.DeflatedExplicitVRLittleEndian, NATIVE);
-        map.put(UID.ExplicitVRBigEndian, NATIVE);
+        map.put(UID.ExplicitVRBigEndianRetired, NATIVE);
         map.put(UID.JPEGBaseline1, JPEG_BASELINE);
         map.put(UID.JPEGExtended24, JPEG_EXTENDED);
         map.put(UID.JPEGLosslessNonHierarchical14, JPEG_LOSSLESS);

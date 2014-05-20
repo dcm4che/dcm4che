@@ -63,6 +63,23 @@
     </resources>
     <plugins>
       <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.dcm4che:dcm4che-dict:${project.version}</resourceBundle>
+              </resourceBundles>
+              <attachToMain>false</attachToMain>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
         <executions>
@@ -75,46 +92,7 @@
         <configuration>
           <transformationSets>
             <transformationSet>
-              <dir>src/main/xml</dir>
-              <includes>
-                <include>part7.xml</include>
-              </includes>
-              <stylesheet>src/main/xsl/p7_element.xsl</stylesheet>
-              <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>p7_element.xml</targetName>
-                </fileMapper>
-              </fileMappers>
-            </transformationSet>
-            <transformationSet>
-              <dir>src/main/xml</dir>
-              <includes>
-                <include>part6.xml</include>
-              </includes>
-              <stylesheet>src/main/xsl/p6_element.xsl</stylesheet>
-              <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>p6_element.xml</targetName>
-                </fileMapper>
-              </fileMappers>
-            </transformationSet>
-            <transformationSet>
-              <dir>src/main/xml</dir>
-              <includes>
-                <include>part6.xml</include>
-              </includes>
-              <stylesheet>src/main/xsl/p6_uid.xsl</stylesheet>
-              <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
-                  <targetName>p6_uid.xml</targetName>
-                </fileMapper>
-              </fileMappers>
-            </transformationSet>
-            <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -128,7 +106,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -142,7 +120,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>elements.xml</include>
               </includes>
@@ -156,7 +134,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>uids.xml</include>
               </includes>
@@ -170,7 +148,7 @@
               </fileMappers>
             </transformationSet>
             <transformationSet>
-              <dir>src/main/xml</dir>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
               <includes>
                 <include>uids.xml</include>
               </includes>
@@ -252,6 +230,11 @@
     </pluginManagement>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-dict</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>

@@ -88,7 +88,7 @@ package org.dcm4che3.data;
  */
 public class Tag {
 </xsl:text>
-    <xsl:apply-templates select="element[@keyword!='']" />
+    <xsl:apply-templates select="//el[@keyword!='']" />
     <xsl:text>
     /** (0008,0012) VR=DA VM=1 Instance Creation Date
      *  (0008,0013) VR=TM VM=1 Instance Creation Time */
@@ -256,7 +256,7 @@ public class Tag {
 }
 </xsl:text>
   </xsl:template>
-  <xsl:template match="element">
+  <xsl:template match="el">
     <xsl:text>
     /** (</xsl:text>
     <xsl:value-of select="substring(@tag,1,4)" />

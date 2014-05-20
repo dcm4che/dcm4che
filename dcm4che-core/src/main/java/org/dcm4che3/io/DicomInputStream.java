@@ -725,7 +725,7 @@ public class DicomInputStream extends FilterInputStream
 
     private void switchTransferSyntax(String tsuid) throws IOException {
         this.tsuid = tsuid;
-        bigEndian = tsuid.equals(UID.ExplicitVRBigEndian);
+        bigEndian = tsuid.equals(UID.ExplicitVRBigEndianRetired);
         explicitVR = !tsuid.equals(UID.ImplicitVRLittleEndian);
         if (tsuid.equals(UID.DeflatedExplicitVRLittleEndian)
                         || tsuid.equals(UID.JPIPReferencedDeflate)) {
@@ -785,7 +785,7 @@ public class DicomInputStream extends FilterInputStream
         if (vr == VR.UN)
             return false;
         if (ByteUtils.bytesToVR(b128, 4) == vr.code()) {
-            this.tsuid = bigEndian ? UID.ExplicitVRBigEndian 
+            this.tsuid = bigEndian ? UID.ExplicitVRBigEndianRetired 
                                    : UID.ExplicitVRLittleEndian;
             this.bigEndian = bigEndian;
             this.explicitVR = true;

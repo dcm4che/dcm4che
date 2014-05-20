@@ -35,6 +35,14 @@
           <xsl:value-of select="$vr"/>
         </xsl:attribute>
       </xsl:if>
+      <xsl:attribute name="vm">
+        <xsl:call-template name="para2str">
+          <xsl:with-param name="para" select="doc:td[5]/doc:para"/>
+        </xsl:call-template>
+      </xsl:attribute>
+      <xsl:if test="doc:td[6]/doc:para/doc:emphasis">
+        <xsl:attribute name="retired">true</xsl:attribute>
+      </xsl:if>
       <xsl:call-template name="para2str">
         <xsl:with-param name="para" select="doc:td[2]/doc:para"/>
       </xsl:call-template>
@@ -53,6 +61,6 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:value-of select="translate($str,'&#8203;','')"/>
+    <xsl:value-of select="translate($str,'&#x200b;&#xad;','')"/>
   </xsl:template>
 </xsl:stylesheet>

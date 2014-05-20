@@ -61,6 +61,6 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:value-of select="translate($str,'&#8203;','')"/>
+    <xsl:value-of select="translate($str,'&#x200b;&#xad;','')"/>
   </xsl:template>
 </xsl:stylesheet>

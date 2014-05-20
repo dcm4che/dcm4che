@@ -254,7 +254,7 @@ public class StringUtils {
     }
 
     public static String truncate(String s, int maxlen) {
-        return s.length() > maxlen ? s.substring(0, 64) : s;
+        return s.length() > maxlen ? s.substring(0, maxlen) : s;
     }
 
     public static <T> boolean equals(T o1, T o2) {

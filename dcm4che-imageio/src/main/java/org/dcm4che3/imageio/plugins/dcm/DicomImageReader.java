@@ -38,6 +38,8 @@
 
 package org.dcm4che3.imageio.plugins.dcm;
 
+import ij.io.Opener;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -287,7 +289,7 @@ public class DicomImageReader extends ImageReader {
             raster = bi.getRaster();
         } else
             raster = (WritableRaster) readRaster(frameIndex, param);
-
+            
         ColorModel cm;
         if (pmi.isMonochrome()) {
             int[] overlayGroupOffsets = getActiveOverlayGroupOffsets(param);
@@ -305,7 +307,9 @@ public class DicomImageReader extends ImageReader {
         } else {
             cm = createColorModel(bitsStored, dataType);
         }
-        return new BufferedImage(cm, raster , false, null);
+        
+        BufferedImage buff = new BufferedImage(cm, raster , false, null);
+        return buff;
     }
 
     private byte[] extractOverlay(int gg0000, WritableRaster raster) {

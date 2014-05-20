@@ -41,5 +41,10 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>gov.nih.imagej</groupId>
+    	<artifactId>imagej</artifactId>
+    	<version>1.47</version>
+    </dependency>
   </dependencies>
 </project>

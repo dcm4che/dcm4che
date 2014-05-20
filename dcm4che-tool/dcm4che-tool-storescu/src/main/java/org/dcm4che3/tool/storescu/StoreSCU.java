@@ -362,13 +362,18 @@ public class StoreSCU {
         relExtNeg = enable;
     }
 
-    public void scanFiles(List<String> fnames) throws IOException {
+    public void scanFiles(List<String> fnames) throws IOException
+    {
+        this.scanFiles(fnames, true);
+    }
+    
+    public void scanFiles(List<String> fnames, boolean printout) throws IOException {
         tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
         tmpFile.deleteOnExit();
         final BufferedWriter fileInfos = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(tmpFile)));
         try {
-            DicomFiles.scan(fnames, new DicomFiles.Callback() {
+            DicomFiles.scan(fnames, printout, new DicomFiles.Callback() {
                 
                 @Override
                 public boolean dicomFile(File f, Attributes fmi, long dsPos,

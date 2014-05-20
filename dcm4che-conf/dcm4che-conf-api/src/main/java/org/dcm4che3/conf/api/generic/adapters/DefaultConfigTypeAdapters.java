@@ -101,6 +101,11 @@ public class DefaultConfigTypeAdapters {
 
             diffwriter.storeDiff(fieldAnno.name(), prevSerialized, currSerialized);
         }
+        
+        @Override
+        public Map<String, Object> getMetadata(ReflectiveConfig config, Field classField) {
+            return null;
+        }
 
     }
 
@@ -134,6 +139,11 @@ public class DefaultConfigTypeAdapters {
             String currSerialized = serialize(curr, config, field);
 
             diffwriter.storeDiff(fieldAnno.name(), prevSerialized, currSerialized);
+        }
+        
+        @Override
+        public Map<String, Object> getMetadata(ReflectiveConfig config, Field classField) {
+            return null;
         }
 
     }

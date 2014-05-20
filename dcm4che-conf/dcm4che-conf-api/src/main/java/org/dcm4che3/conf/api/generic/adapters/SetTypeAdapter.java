@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -89,6 +90,11 @@ public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, List<String>
     @Override
     public boolean isWritingChildren(Field field) {
         return false;
+    }
+
+    @Override
+    public Map<String, Object> getMetadata(ReflectiveConfig config, Field classField) throws ConfigurationException {
+        return null;
     }
 
 }

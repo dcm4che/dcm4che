@@ -179,8 +179,18 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
                 ConfigWriter elementWriter = collectionWriter.getCollectionElementDiffWriter(fieldAnno.mapKey(), serializedKey);
                 valueAdapter.merge(prev.get(e.getKey()), e.getValue(), config, elementWriter, field);
                 elementWriter.flushDiffs();
-                ;
             }
         }
+    }
+    
+    @Override
+    public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
+        ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
+
+        // getValueAdapter
+        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
+
+        return valueAdapter.getMetadata(config, field);
+        
     }
 }

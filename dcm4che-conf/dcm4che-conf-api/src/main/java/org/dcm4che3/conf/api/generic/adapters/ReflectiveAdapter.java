@@ -292,5 +292,42 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
         diffwriter.flushDiffs();
 
     }
+    
+    @SuppressWarnings("rawtypes")
+    public Map<String,Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
+
+        Map<String,Object> classMetaData = new HashMap<String,Object>();
+        // go through all annotated fields
+        for (Field classField : clazz.getDeclaredFields()) {
+
+            // if field is not annotated, skip it
+            ConfigField fieldAnno = (ConfigField) classField.getAnnotation(ConfigField.class);
+            if (fieldAnno == null)
+                continue;
+
+            // save metadata
+            Map<String, Object> fieldMetaData = new HashMap<String, Object>();
+            classMetaData.put(fieldAnno.name(), fieldMetaData);
+
+            fieldMetaData.put("label", fieldAnno.label());
+            fieldMetaData.put("description", fieldAnno.description());
+            fieldMetaData.put("optional", fieldAnno.optional());
+            
+            //TODO: add type, default?
+            
+            // find typeadapter
+            ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
+
+            if (customRep != null) {
+                Map<String, Object> childrenMetaData = customRep.getMetadata(config, classField);
+                if (childrenMetaData != null)
+                    fieldMetaData.put("children", childrenMetaData);
+            };
+
+        }
+
+        return classMetaData;
+
+    }
 
 }

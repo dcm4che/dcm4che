@@ -272,17 +272,17 @@ public class ValidationResult {
         for (InvalidAttributeValue iav : invalidAttributeValues) {
             int tag = iav.dataElement.tag;
             appendAttribute(level, tag, sb);
-            sb.append(" [");
             VR.Holder vr = new VR.Holder();
             Object value = attrs.getValue(tag, vr);
+            sb.append(' ').append(vr.vr);
+            sb.append(" [");
             vr.vr.prompt(value,
                     attrs.bigEndian(), 
                     attrs.getSpecificCharacterSet(vr.vr), 200, sb);
-            sb.append("] // ");
-            sb.append(iav.dataElement);
-            sb.append('\n');
+            sb.append("] : Invalid ").append(iav.reason);
+            sb.append(" // ").append(iav.dataElement).append('\n');
             if (iav.itemValidationResults != null) {
-                Sequence seq = attrs.getSequence(tag);
+                Sequence seq = (Sequence) value;
                 for (int i = 0; i < iav.itemValidationResults.length; i++) {
                     ValidationResult itemResult = iav.itemValidationResults[i];
                     if (!itemResult.isValid()) {

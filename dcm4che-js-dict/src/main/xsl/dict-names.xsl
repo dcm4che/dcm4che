@@ -39,23 +39,21 @@
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text"></xsl:output>
+
   <xsl:template match="/">
     <xsl:text>var DCM4CHE = DCM4CHE || {};
 DCM4CHE.elementName = (function (dictionary) {
   var tables = [dictionary],
   forTag = function (tag, privateCreator) {
     var i = tables.length, value;
-    if (tag.slice(4) === "0000") {
-      tag = "gggg0000";
-      privateCreator = undefined;
-    } else if ("02468ACE".indexOf(tag.charAt(3)) &lt; 0) {
-      if (tag.slice(4,6) === "00") {
-        tag = "pppp00ee";
-        privateCreator = undefined;
-      } else {
-        tag = tag.slice(0,4) + "xx" + tag.slice(6);
-      }
+    if (tag.slice(4) === "0000")
+      return "Group Length";
+    if ("02468ACE".indexOf(tag.charAt(3)) &lt; 0) {
+      if (tag.slice(4,6) === "00")
+        return "Private Creator";
+      tag = tag.slice(0,4) + "xx" + tag.slice(6);
     } else {
+      privateCreator = undefined;
       switch (tag.slice(0,2)) {
       case "10":
         switch (tag.slice(2,4)) {
@@ -91,20 +89,25 @@ DCM4CHE.elementName = (function (dictionary) {
       },
       forTag:forTag
   }
-}({
-"gggg0000":"Group Length",
-"pppp00ee":"Private Creator"</xsl:text>
+}({</xsl:text>
     <xsl:apply-templates select="//el"/>
     <xsl:text>
 }));
 </xsl:text>
   </xsl:template>  
+
   <xsl:template match="el">
-    <xsl:text>,
+    <xsl:text>,</xsl:text>
+    <xsl:call-template name="el"/>
+  </xsl:template>
+
+  <xsl:template match="el[1]" name="el">
+    <xsl:text>
 "</xsl:text>
     <xsl:value-of select="@tag" />
     <xsl:text>":"</xsl:text>
     <xsl:value-of select="text()"/>
     <xsl:text>"</xsl:text>
   </xsl:template>
+
 </xsl:stylesheet>

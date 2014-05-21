@@ -259,6 +259,8 @@ public class ValidationResult {
         sb.append(title);
         for (DataElement el : list) {
             appendAttribute(level, el.tag, sb);
+            sb.append(" // ");
+            sb.append(el);
             sb.append('\n');
         }
     }
@@ -276,7 +278,9 @@ public class ValidationResult {
             vr.vr.prompt(value,
                     attrs.bigEndian(), 
                     attrs.getSpecificCharacterSet(vr.vr), 200, sb);
-            sb.append("]\n");
+            sb.append("] // ");
+            sb.append(iav.dataElement);
+            sb.append('\n');
             if (iav.itemValidationResults != null) {
                 Sequence seq = attrs.getSequence(tag);
                 for (int i = 0; i < iav.itemValidationResults.length; i++) {

@@ -165,11 +165,6 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-javascript</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-mime</artifactId>
       <version>${project.version}</version>
     </dependency>

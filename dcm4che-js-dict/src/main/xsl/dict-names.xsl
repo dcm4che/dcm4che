@@ -89,7 +89,8 @@ DCM4CHE.elementName = (function (dictionary) {
       },
       forTag:forTag
   }
-}({</xsl:text>
+}({
+"privateCreator":undefined</xsl:text>
     <xsl:apply-templates select="//el"/>
     <xsl:text>
 }));
@@ -97,12 +98,7 @@ DCM4CHE.elementName = (function (dictionary) {
   </xsl:template>  
 
   <xsl:template match="el">
-    <xsl:text>,</xsl:text>
-    <xsl:call-template name="el"/>
-  </xsl:template>
-
-  <xsl:template match="el[1]" name="el">
-    <xsl:text>
+    <xsl:text>,
 "</xsl:text>
     <xsl:value-of select="@tag" />
     <xsl:text>":"</xsl:text>

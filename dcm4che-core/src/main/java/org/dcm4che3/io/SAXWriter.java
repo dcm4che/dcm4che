@@ -342,7 +342,6 @@ public class SAXWriter implements DicomInputHandler {
                 writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
                 writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);
                 writePNGroup("Phonetic", pn, PersonName.Group.Phonetic);
-                writeElement("Value", s);
             } else {
                 writeElement("Value", s);
             }

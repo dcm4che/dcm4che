@@ -93,7 +93,7 @@ import org.dcm4che3.util.SafeClose;
  */
 public class FindSCU {
 
-    private static enum InformationModel {
+    public static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),
@@ -313,6 +313,26 @@ public class FindSCU {
         opts.addOption("K", "no-keyword", false, rb.getString("no-keyword"));
         opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
         opts.addOption(null, "out-cat", false, rb.getString("out-cat"));
+    }
+    
+    public ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
+
+    public Connection getRemoteConnection() {
+        return remote;
+    }
+    
+    public AAssociateRQ getAAssociateRQ() {
+        return rq;
+    }
+
+    public Device getDevice() {
+        return device;
+    }    
+    
+    public Attributes getKeys() {
+        return keys;
     }
 
     @SuppressWarnings("unchecked")
@@ -544,4 +564,6 @@ public class FindSCU {
 
         return tf.newTransformerHandler(tpls);
     }
+
+
 }

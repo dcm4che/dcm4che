@@ -160,6 +160,12 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-js-dict</artifactId>
+      <type>zip</type>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-json</artifactId>
       <version>${project.version}</version>
     </dependency>

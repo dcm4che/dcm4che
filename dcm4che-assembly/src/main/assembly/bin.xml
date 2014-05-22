@@ -878,6 +878,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>js</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-js-dict</include>
+      </includes>
+      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>lib</outputDirectory>
       <includes>
         <include>com.sun.media:clib_jiio</include>

@@ -326,6 +326,10 @@ public class FindSCU {
     public AAssociateRQ getAAssociateRQ() {
         return rq;
     }
+    
+    public Association getAssociation() {
+        return as;
+    }
 
     public Device getDevice() {
         return device;
@@ -470,10 +474,11 @@ public class FindSCU {
         query(attrs);
     }
 
+    
    public void query() throws IOException, InterruptedException {
         query(keys);
     }
-
+   
     private void query(Attributes keys) throws IOException, InterruptedException {
          DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
@@ -499,9 +504,17 @@ public class FindSCU {
             }
         };
 
-        as.cfind(model.cuid, priority, keys, null, rspHandler);
+        query(keys, rspHandler);
     }
 
+    public void query( DimseRSPHandler rspHandler) throws IOException, InterruptedException {
+        query(keys, rspHandler);
+    }
+    
+    private void query(Attributes keys, DimseRSPHandler rspHandler) throws IOException, InterruptedException {
+        as.cfind(model.cuid, priority, keys, null, rspHandler);
+    }
+    
     private void onResult(Attributes data) {
         int numMatches = totNumMatches.incrementAndGet();
         if (outDir == null) 

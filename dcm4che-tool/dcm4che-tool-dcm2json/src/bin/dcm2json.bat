@@ -34,7 +34,7 @@ set JAVA=java
 
 goto SKIP_SET_JAVA_HOME
 
-:HAVE_JAVA_HOMEs
+:HAVE_JAVA_HOME
 
 set JAVA=%JAVA_HOME%\bin\java
 

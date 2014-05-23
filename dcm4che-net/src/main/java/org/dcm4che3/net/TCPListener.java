@@ -67,7 +67,7 @@ class TCPListener implements Listener {
             this.handler = handler;
             ss = conn.isTls() ? createTLSServerSocket(conn) : new ServerSocket();
             conn.setReceiveBufferSize(ss);
-            ss.bind(conn.getEndPoint(), conn.getBacklog());
+            ss.bind(conn.getBindPoint(), conn.getBacklog());
             conn.getDevice().execute(new Runnable(){
     
                 @Override

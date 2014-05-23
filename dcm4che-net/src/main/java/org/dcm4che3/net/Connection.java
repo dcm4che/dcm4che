@@ -49,6 +49,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
@@ -108,6 +109,7 @@ public class Connection implements Serializable {
     private Device device;
     private String commonName;
     private String hostname;
+    private String bindAddress;
     private String httpProxy;
     private int port = NOT_LISTENING;
     private int backlog = DEF_BACKLOG;
@@ -128,6 +130,7 @@ public class Connection implements Serializable {
     private boolean packPDV = true;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
+    private boolean bindClient = false;
     private String[] tlsCipherSuites = {};
     private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
     private String[] blacklist = {};
@@ -139,6 +142,8 @@ public class Connection implements Serializable {
             new EnumMap<Protocol, UDPProtocolHandler>(Protocol.class);
 
     private transient List<InetAddress> blacklistAddrs;
+    private transient InetAddress hostAddr;
+    private transient InetAddress bindAddr;
     private transient volatile Listener listener;
     private transient boolean rebindNeeded;
 
@@ -222,11 +227,65 @@ public class Connection implements Serializable {
      *            A String containing the host name.
      */
     public final void setHostname(String hostname) {
-        if (hostname != null ? hostname.equals(this.hostname) : this.hostname == null)
+        if (hostname != null 
+                ? hostname.equals(this.hostname)
+                : this.hostname == null)
             return;
 
         this.hostname = hostname;
         needRebind();
+    }
+
+    /**
+     * Bind address of the connection or {@code null}. If {@code null}, bind to
+     * {@link #getHostname()}. 
+     * 
+     * @return Bind address of the connection or {@code null}
+     */
+    public final String getBindAddress() {
+        return bindAddress;
+    }
+
+    /**
+     * Bind address of the connection or {@code null}. If {@code null}, bind to
+     * {@link #getHostname()}.
+     * 
+     * @param bindAddress
+     *            Bind address of the connection or {@code null}
+     */
+    public final void setBindAddress(String bindAddress) {
+        if (bindAddress != null 
+                ? bindAddress.equals(this.bindAddress)
+                : this.bindAddress == null)
+            return;
+
+        this.bindAddress = bindAddress;
+        this.bindAddr = null;
+        needRebind();
+   }
+
+    /**
+     * Determine if out-going connections are bound to {@link #getBindAddress()}
+     * or if the system pick up any local ip. {@code false} by default.
+     * 
+     * @return {@code true} if out-going connections are bound to {@link #getBindAddress()};
+     *  {@code false} if the system pick up any local ip for out-going connections
+     */
+    public final boolean isBindClient() {
+        return bindClient;
+    }
+
+    /**
+     * Set whether out-going connections are bound to {@link #getBindAddress()}
+     * or if the system pick up any local ip.
+     * 
+     * @param bindClient
+     *            {@code true} if out-going connections are bound to
+     *            {@link #getBindAddress()}; {@code false} if the system pick up
+     *            any local ip for out-going connections
+     */
+    public final void setBindClient(boolean bindClient) {
+        this.bindClient = bindClient;
     }
 
     public Protocol getProtocol() {
@@ -727,8 +786,21 @@ public class Connection implements Serializable {
         }
     }
 
-    private InetAddress addr() throws UnknownHostException {
-        return hostname != null ? InetAddress.getByName(hostname) : null;
+    private InetAddress hostAddr() throws UnknownHostException {
+        if (hostAddr == null && hostname != null)
+            hostAddr = InetAddress.getByName(hostname);
+        
+        return hostAddr;
+    }
+
+    private InetAddress bindAddr() throws UnknownHostException {
+        if (bindAddress == null)
+            return hostAddr();
+
+        if (bindAddr == null)
+            bindAddr = InetAddress.getByName(bindAddress);
+
+        return bindAddr;
     }
 
     private List<InetAddress> blacklistAddrs() {
@@ -746,21 +818,16 @@ public class Connection implements Serializable {
 
 
     public InetSocketAddress getEndPoint() throws UnknownHostException {
-        return new InetSocketAddress(addr(), port);
+        return new InetSocketAddress(hostAddr(), port);
     }
 
-//    /**
-//     * Returns server socket associated with this Network Connection, bound to
-//     * the TCP port, listening for connect requests. Returns <code>null</code>
-//     * if this network connection only initiates associations or was not yet
-//     * bound by {@link #bind}.
-//     * 
-//     * @return server socket associated with this Network Connection or
-//     *         <code>null</code>
-//     */
-//    public ServerSocket getServer() {
-//        return server;
-//    }
+    public InetSocketAddress getBindPoint() throws UnknownHostException {
+        return new InetSocketAddress(bindAddr(), port);
+    }
+
+    public InetSocketAddress getClientBindPoint() throws UnknownHostException {
+        return new InetSocketAddress(bindClient ? bindAddr() : null, 0);
+    }
 
     private void checkInstalled() {
         if (!isInstalled())
@@ -830,17 +897,18 @@ public class Connection implements Serializable {
         if (!protocol.isTCP())
             throw new IllegalStateException("Not a TCP Connection");
         checkCompatible(remoteConn);
-        InetSocketAddress bindPoint = getBindPoint();
+        SocketAddress bindPoint = getClientBindPoint();
         String remoteHostname = remoteConn.getHostname();
         int remotePort = remoteConn.getPort();
         LOG.info("Initiate connection from {} to {}:{}",
-                new Object[] {bindPoint, remoteHostname, remotePort});
+                bindPoint, remoteHostname, remotePort);
         Socket s = new Socket();
         ConnectionMonitor monitor = device != null
                 ? device.getConnectionMonitor()
                 : null;
         try {
-            s.bind(bindPoint);
+            if (bindClient)
+                s.bind(bindPoint);
             setReceiveBufferSize(s);
             setSocketSendOptions(s);
             String remoteProxy = remoteConn.getHttpProxy();
@@ -862,8 +930,7 @@ public class Connection implements Serializable {
                     throw e;
                 }
             } else {
-                s.connect(new InetSocketAddress(remoteHostname, remotePort),
-                        connectTimeout);
+                s.connect(remoteConn.getEndPoint(), connectTimeout);
             }
             if (isTls())
                 s = createTLSSocket(s, remoteConn);
@@ -889,7 +956,9 @@ public class Connection implements Serializable {
         if (protocol.isTCP())
             throw new IllegalStateException("Not a UDP Connection");
 
-        DatagramSocket ds = new DatagramSocket(getBindPoint());
+        DatagramSocket ds = new DatagramSocket();
+        if (bindClient)
+            ds.bind(getClientBindPoint());
         int size = ds.getSendBufferSize();
         if (sendBufferSize == 0) {
             sendBufferSize = size;
@@ -1021,16 +1090,6 @@ public class Connection implements Serializable {
         return dest;
     }
 
-    private InetSocketAddress getBindPoint() throws UnknownHostException {
-        // don't use loopback address as bind point to avoid
-        // ConnectionException connection to remote endpoint
-        return new InetSocketAddress(maskLoopBackAddress(addr()), 0);
-    }
-
-    private static InetAddress maskLoopBackAddress(InetAddress addr) {
-        return addr != null && addr.isLoopbackAddress() ? null : addr;
-    }
-
     boolean equalsRDN(Connection other) {
         return commonName != null
                 ? commonName.equals(other.commonName)
@@ -1044,6 +1103,8 @@ public class Connection implements Serializable {
         setCommonName(from.commonName);
         setHostname(from.hostname);
         setPort(from.port);
+        setBindAddress(from.bindAddress);
+        setBindClient(from.bindClient);
         setProtocol(from.protocol);
         setHttpProxy(from.httpProxy);
         setBacklog(from.backlog);

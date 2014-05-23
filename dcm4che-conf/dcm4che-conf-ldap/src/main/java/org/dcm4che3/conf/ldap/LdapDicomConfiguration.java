@@ -772,6 +772,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotDef(attrs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         LdapUtils.storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        LdapUtils.storeNotNull(attrs, "dcmBindAddress", conn.getBindAddress());
+        LdapUtils.storeNotDef(attrs, "dcmBindClient", conn.isBindClient(), false);
         LdapUtils.storeNotDef(attrs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         LdapUtils.storeNotDef(attrs, "dcmReceivePDULength",
@@ -1162,6 +1164,8 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         conn.setReceiveBufferSize(LdapUtils.intValue(attrs.get("dcmTCPReceiveBufferSize"),
                 Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(LdapUtils.booleanValue(attrs.get("dcmTCPNoDelay"), true));
+        conn.setBindAddress(LdapUtils.stringValue(attrs.get("dcmBindAddress"), null));
+        conn.setBindClient(LdapUtils.booleanValue(attrs.get("dcmBindClient"), false));
         conn.setTlsNeedClientAuth(LdapUtils.booleanValue(attrs.get("dcmTLSNeedClientAuth"), true));
         String[] tlsProtocols = LdapUtils.stringArray(attrs.get("dcmTLSProtocol"));
         if (tlsProtocols.length > 0)
@@ -1439,6 +1443,13 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
+        LdapUtils.storeDiff(mods, "dcmBindAddress",
+                a.getBindAddress(),
+                b.getBindAddress());
+        LdapUtils.storeDiff(mods, "dcmBindClient",
+                a.isBindClient(),
+                b.isBindClient(),
+                false);
         LdapUtils.storeDiff(mods, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);

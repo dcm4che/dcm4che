@@ -61,7 +61,7 @@ class UDPListener implements Listener {
             throws IOException, GeneralSecurityException {
         this.conn = conn;
         this.handler = handler;
-        ds = new DatagramSocket(conn.getEndPoint());
+        ds = new DatagramSocket(conn.getBindPoint());
         conn.setReceiveBufferSize(ds);
         conn.getDevice().execute(new Runnable(){
 

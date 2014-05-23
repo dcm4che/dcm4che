@@ -612,6 +612,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         PreferencesUtils.storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        PreferencesUtils.storeNotNull(prefs, "dcmBindAddress", conn.getBindAddress());
+        PreferencesUtils.storeNotDef(prefs, "dcmBindClient", conn.isBindClient(), false);
         PreferencesUtils.storeNotDef(prefs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         PreferencesUtils.storeNotDef(prefs, "dcmReceivePDULength",
@@ -857,6 +859,13 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
+        PreferencesUtils.storeDiff(prefs, "dcmBindAddress",
+                a.getBindAddress(),
+                b.getBindAddress());
+        PreferencesUtils.storeDiff(prefs, "dcmBindClient",
+                a.isBindClient(),
+                b.isBindClient(),
+                false);
         storeDiff(prefs, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
@@ -1338,6 +1347,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setReceiveBufferSize(
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
+        conn.setBindAddress(prefs.get("dcmBindAddress", null));
+        conn.setBindClient(prefs.getBoolean("dcmBindClient", false));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
         String[] tlsProtocols = PreferencesUtils.stringArray(prefs, "dcmTLSProtocol");
         if (tlsProtocols.length > 0)

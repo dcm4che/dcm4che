@@ -2747,7 +2747,7 @@ public class Attributes implements Serializable {
                 }
                 if (invalidItem) {
                     result.addInvalidAttributeValue(el, 
-                            ValidationResult.Invalid.Value, itemValidationResults);
+                            ValidationResult.Invalid.Code, itemValidationResults, null);
                 }
             } else if (validVals instanceof IOD[]) {
                 IOD[] itemIODs = (IOD[]) validVals;
@@ -2781,17 +2781,11 @@ public class Attributes implements Serializable {
                     invalidItem = invalidItem || !itemValidationResult.isValid();
                     itemValidationResults[i] = itemValidationResult;
                 }
-                if (invalidItem) {
-                    result.addInvalidAttributeValue(el, 
-                            ValidationResult.Invalid.Item, itemValidationResults);
-                } else {
-                    for (int j = 0; j < itemIODs.length; j++)
-                        if (itemIODs[j].getType() == DataElementType.TYPE_1
-                                && matchingItems[j] == 0) {
-                            result.addInvalidAttributeValue(el, 
-                                    ValidationResult.Invalid.MissingItem);
-                            break;
-                        }
+                IOD[] missingItems = checkforMissingItems(matchingItems, itemIODs);
+                if (invalidItem || missingItems != null) {
+                    result.addInvalidAttributeValue(el,
+                            ValidationResult.Invalid.Item, 
+                            itemValidationResults, missingItems);
                 }
             }
             return;
@@ -2827,6 +2821,18 @@ public class Attributes implements Serializable {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
             }
         }
+    }
+
+    private IOD[] checkforMissingItems(int[] matchingItems, IOD[] itemIODs) {
+        IOD[] missingItems = new IOD[matchingItems.length];
+        int n = 0;
+        for (int i = 0; i < matchingItems.length; i++) {
+            IOD itemIOD = itemIODs[i];
+            if (matchingItems[i] == 0
+                    && itemIOD.getType() == DataElementType.TYPE_1)
+                missingItems[n++] = itemIOD;
+        }
+        return n > 0 ? Arrays.copyOf(missingItems, n) : null;
     }
 
     private ValidationResult validateCode(Attributes item, Code[] validVals) {

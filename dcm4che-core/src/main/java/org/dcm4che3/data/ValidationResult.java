@@ -283,7 +283,7 @@ public class ValidationResult {
             appendAttribute(level, tag, sb);
             VR.Holder vr = new VR.Holder();
             Object value = attrs.getValue(tag, vr);
-            sb.append(" vr=").append(vr.vr);
+            sb.append(' ').append(vr.vr);
             sb.append(" [");
             vr.vr.prompt(value,
                     attrs.bigEndian(), 

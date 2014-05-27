@@ -119,9 +119,6 @@ public class Issuer implements Serializable {
         if (universalEntityID != null) {
             if (universalEntityIDType == null)
                 throw new IllegalArgumentException("Missing Universal Entity ID Type");
-        } else {
-            if (universalEntityIDType != null)
-                throw new IllegalArgumentException("Missing Universal Entity ID");
         }
     }
 
@@ -173,16 +170,17 @@ public class Issuer implements Serializable {
         if (this == other || other == null)
             return true;
 
-        int equalsID, equalsUID, equalsUIDType;
-        if ((equalsID = matches(localNamespaceEntityID, other.localNamespaceEntityID)) < 0
-                || (equalsUID = matches(universalEntityID, other.universalEntityID)) < 0
-                || (equalsUIDType = matches(universalEntityIDType, other.universalEntityIDType)) < 0)
-            return false;
-        return equalsID > 0 || equalsUID > 0 && equalsUIDType > 0;
-    }
+        boolean matchLocal = localNamespaceEntityID != null
+                && other.localNamespaceEntityID != null;
+        boolean matchUniversal = universalEntityID != null
+                && other.universalEntityID != null;
 
-    private int matches(String s1, String s2) {
-        return s1 == null || s2 == null ? 0 : s1.equals(s2) ? 1 : -1;
+        return (matchLocal || matchUniversal)
+            && (!matchLocal
+                || localNamespaceEntityID.equals(other.localNamespaceEntityID))
+            && (!matchUniversal
+                || universalEntityID.equals(other.universalEntityID)
+                && universalEntityIDType.equals(other.universalEntityIDType));
     }
 
     @Override

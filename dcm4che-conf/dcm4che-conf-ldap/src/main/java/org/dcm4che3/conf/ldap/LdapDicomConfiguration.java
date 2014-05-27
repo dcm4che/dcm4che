@@ -773,7 +773,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         LdapUtils.storeNotDef(attrs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
         LdapUtils.storeNotNull(attrs, "dcmBindAddress", conn.getBindAddress());
-        LdapUtils.storeNotDef(attrs, "dcmBindClient", conn.isBindClient(), false);
+        LdapUtils.storeNotNull(attrs, "dcmClientBindAddress", conn.getClientBindAddress());
         LdapUtils.storeNotDef(attrs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         LdapUtils.storeNotDef(attrs, "dcmReceivePDULength",
@@ -1165,7 +1165,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                 Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(LdapUtils.booleanValue(attrs.get("dcmTCPNoDelay"), true));
         conn.setBindAddress(LdapUtils.stringValue(attrs.get("dcmBindAddress"), null));
-        conn.setBindClient(LdapUtils.booleanValue(attrs.get("dcmBindClient"), false));
+        conn.setClientBindAddress(LdapUtils.stringValue(attrs.get("dcmClientBindAddress"), null));
         conn.setTlsNeedClientAuth(LdapUtils.booleanValue(attrs.get("dcmTLSNeedClientAuth"), true));
         String[] tlsProtocols = LdapUtils.stringArray(attrs.get("dcmTLSProtocol"));
         if (tlsProtocols.length > 0)
@@ -1446,10 +1446,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dcmBindAddress",
                 a.getBindAddress(),
                 b.getBindAddress());
-        LdapUtils.storeDiff(mods, "dcmBindClient",
-                a.isBindClient(),
-                b.isBindClient(),
-                false);
+        LdapUtils.storeDiff(mods, "dcmClientBindAddress",
+                a.getClientBindAddress(),
+                b.getClientBindAddress());
         LdapUtils.storeDiff(mods, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);

@@ -613,7 +613,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         PreferencesUtils.storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
         PreferencesUtils.storeNotNull(prefs, "dcmBindAddress", conn.getBindAddress());
-        PreferencesUtils.storeNotDef(prefs, "dcmBindClient", conn.isBindClient(), false);
+        PreferencesUtils.storeNotNull(prefs, "dcmClientBindAddress", conn.getClientBindAddress());
         PreferencesUtils.storeNotDef(prefs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         PreferencesUtils.storeNotDef(prefs, "dcmReceivePDULength",
@@ -862,10 +862,9 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeDiff(prefs, "dcmBindAddress",
                 a.getBindAddress(),
                 b.getBindAddress());
-        PreferencesUtils.storeDiff(prefs, "dcmBindClient",
-                a.isBindClient(),
-                b.isBindClient(),
-                false);
+        PreferencesUtils.storeDiff(prefs, "dcmClientBindAddress",
+                a.getClientBindAddress(),
+                b.getClientBindAddress());
         storeDiff(prefs, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
@@ -1348,7 +1347,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
         conn.setBindAddress(prefs.get("dcmBindAddress", null));
-        conn.setBindClient(prefs.getBoolean("dcmBindClient", false));
+        conn.setClientBindAddress(prefs.get("dcmClientBindAddress", null));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
         String[] tlsProtocols = PreferencesUtils.stringArray(prefs, "dcmTLSProtocol");
         if (tlsProtocols.length > 0)

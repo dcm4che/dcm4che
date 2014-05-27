@@ -110,6 +110,7 @@ public class Connection implements Serializable {
     private String commonName;
     private String hostname;
     private String bindAddress;
+    private String clientBindAddress;
     private String httpProxy;
     private int port = NOT_LISTENING;
     private int backlog = DEF_BACKLOG;
@@ -130,7 +131,6 @@ public class Connection implements Serializable {
     private boolean packPDV = true;
     private boolean tcpNoDelay = true;
     private boolean tlsNeedClientAuth = true;
-    private boolean bindClient = false;
     private String[] tlsCipherSuites = {};
     private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
     private String[] blacklist = {};
@@ -144,6 +144,7 @@ public class Connection implements Serializable {
     private transient List<InetAddress> blacklistAddrs;
     private transient InetAddress hostAddr;
     private transient InetAddress bindAddr;
+    private transient InetAddress clientBindAddr;
     private transient volatile Listener listener;
     private transient boolean rebindNeeded;
 
@@ -237,8 +238,8 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Bind address of the connection or {@code null}. If {@code null}, bind to
-     * {@link #getHostname()}. 
+     * Bind address of listening socket or {@code null}. If {@code null}, bind
+     * listening socket to {@link #getHostname()}. This is the default.
      * 
      * @return Bind address of the connection or {@code null}
      */
@@ -247,11 +248,11 @@ public class Connection implements Serializable {
     }
 
     /**
-     * Bind address of the connection or {@code null}. If {@code null}, bind to
-     * {@link #getHostname()}.
+     * Bind address of listening socket or {@code null}. If {@code null}, bind
+     * listening socket to {@link #getHostname()}.
      * 
      * @param bindAddress
-     *            Bind address of the connection or {@code null}
+     *            Bind address of listening socket or {@code null}
      */
     public final void setBindAddress(String bindAddress) {
         if (bindAddress != null 
@@ -265,27 +266,31 @@ public class Connection implements Serializable {
    }
 
     /**
-     * Determine if out-going connections are bound to {@link #getBindAddress()}
-     * or if the system pick up any local ip. {@code false} by default.
+     * Bind address of outgoing connections or {@code null}. If {@code null},
+     * the system pick up any local ip. This is the default.
      * 
-     * @return {@code true} if out-going connections are bound to {@link #getBindAddress()};
-     *  {@code false} if the system pick up any local ip for out-going connections
+     * @param bindAddress
+     *            Bind address of outgoing connection or {@code null}
      */
-    public final boolean isBindClient() {
-        return bindClient;
+    public String getClientBindAddress() {
+        return clientBindAddress;
     }
 
     /**
-     * Set whether out-going connections are bound to {@link #getBindAddress()}
-     * or if the system pick up any local ip.
+     * Bind address of outgoing connections or {@code null}. If {@code null},
+     * the system pick up any local ip for outgoing connections.
      * 
-     * @param bindClient
-     *            {@code true} if out-going connections are bound to
-     *            {@link #getBindAddress()}; {@code false} if the system pick up
-     *            any local ip for out-going connections
+     * @param bindAddress
+     *            Bind address of outgoing connection or {@code null}
      */
-    public final void setBindClient(boolean bindClient) {
-        this.bindClient = bindClient;
+    public void setClientBindAddress(String bindAddress) {
+        if (bindAddress != null 
+                ? bindAddress.equals(this.clientBindAddress)
+                : this.clientBindAddress == null)
+            return;
+
+        this.clientBindAddress = bindAddress;
+        this.clientBindAddr = null;
     }
 
     public Protocol getProtocol() {
@@ -803,6 +808,16 @@ public class Connection implements Serializable {
         return bindAddr;
     }
 
+    private InetAddress clientBindAddr() throws UnknownHostException {
+        if (clientBindAddress == null)
+            return null;
+
+        if (clientBindAddr == null)
+            clientBindAddr = InetAddress.getByName(clientBindAddress);
+
+        return clientBindAddr;
+    }
+
     private List<InetAddress> blacklistAddrs() {
         if (blacklistAddrs == null) {
             blacklistAddrs = new ArrayList<InetAddress>(blacklist.length);
@@ -826,7 +841,7 @@ public class Connection implements Serializable {
     }
 
     public InetSocketAddress getClientBindPoint() throws UnknownHostException {
-        return new InetSocketAddress(bindClient ? bindAddr() : null, 0);
+        return new InetSocketAddress(clientBindAddr(), 0);
     }
 
     private void checkInstalled() {
@@ -907,8 +922,7 @@ public class Connection implements Serializable {
                 ? device.getConnectionMonitor()
                 : null;
         try {
-            if (bindClient)
-                s.bind(bindPoint);
+            s.bind(bindPoint);
             setReceiveBufferSize(s);
             setSocketSendOptions(s);
             String remoteProxy = remoteConn.getHttpProxy();
@@ -957,8 +971,7 @@ public class Connection implements Serializable {
             throw new IllegalStateException("Not a UDP Connection");
 
         DatagramSocket ds = new DatagramSocket();
-        if (bindClient)
-            ds.bind(getClientBindPoint());
+        ds.bind(getClientBindPoint());
         int size = ds.getSendBufferSize();
         if (sendBufferSize == 0) {
             sendBufferSize = size;
@@ -1104,7 +1117,7 @@ public class Connection implements Serializable {
         setHostname(from.hostname);
         setPort(from.port);
         setBindAddress(from.bindAddress);
-        setBindClient(from.bindClient);
+        setClientBindAddress(from.clientBindAddress);
         setProtocol(from.protocol);
         setHttpProxy(from.httpProxy);
         setBacklog(from.backlog);

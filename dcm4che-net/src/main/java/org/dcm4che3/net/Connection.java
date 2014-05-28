@@ -974,8 +974,7 @@ public class Connection implements Serializable {
         if (protocol.isTCP())
             throw new IllegalStateException("Not a UDP Connection");
 
-        DatagramSocket ds = new DatagramSocket();
-        ds.bind(getClientBindPoint());
+        DatagramSocket ds = new DatagramSocket(getClientBindPoint());
         int size = ds.getSendBufferSize();
         if (sendBufferSize == 0) {
             sendBufferSize = size;

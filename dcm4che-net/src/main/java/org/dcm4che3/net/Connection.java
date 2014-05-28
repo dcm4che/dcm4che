@@ -266,19 +266,23 @@ public class Connection implements Serializable {
    }
 
     /**
-     * Bind address of outgoing connections or {@code null}. If {@code null},
-     * the system pick up any local ip. This is the default.
+     * Bind address of outgoing connections, {@code "0.0.0.0"} or {@code null}.
+     * If {@code "0.0.0.0"} the system pick up any local ip for outgoing
+     * connections. If {@code null}, bind outgoing connections to
+     * {@link #getHostname()}. This is the default.
      * 
      * @param bindAddress
-     *            Bind address of outgoing connection or {@code null}
+     *            Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
      */
     public String getClientBindAddress() {
         return clientBindAddress;
     }
 
     /**
-     * Bind address of outgoing connections or {@code null}. If {@code null},
-     * the system pick up any local ip for outgoing connections.
+     * Bind address of outgoing connections, {@code "0.0.0.0"}  or {@code null}.
+     * If {@code "0.0.0.0"} the system pick up any local ip for outgoing
+     * connections. If {@code null}, bind outgoing connections to
+     * {@link #getHostname()}.
      * 
      * @param bindAddress
      *            Bind address of outgoing connection or {@code null}
@@ -810,7 +814,7 @@ public class Connection implements Serializable {
 
     private InetAddress clientBindAddr() throws UnknownHostException {
         if (clientBindAddress == null)
-            return null;
+            return hostAddr();
 
         if (clientBindAddr == null)
             clientBindAddr = InetAddress.getByName(clientBindAddress);

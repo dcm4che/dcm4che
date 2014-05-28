@@ -256,7 +256,7 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.59 NAME 'dcmBindAddress'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.60 NAME 'dcmClientBindAddress'
-  DESC 'Bind address of outgoing connections; let system pick up any local ip if absent'
+  DESC 'Bind address of outgoing connections; use hostname of the connection if absent'
   EQUALITY caseIgnoreMatch
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15

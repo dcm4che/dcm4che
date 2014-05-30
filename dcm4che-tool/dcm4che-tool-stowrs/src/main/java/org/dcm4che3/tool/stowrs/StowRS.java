@@ -653,11 +653,15 @@ public class StowRS {
     }
 
     private static File generateMetaData(CommandLine cl) {
-        LOG.info("No metadata file specified, using etc/stowrs/metadata.xml");
-        if (cl.getOptionValue("t").contains("JSON"))
+        
+        if (cl.getOptionValue("t").contains("JSON")){
+            LOG.info("No metadata file specified, using etc/stowrs/metadata.json");
             return new File("../etc/stowrs/metadata.json");
-        else
+        }
+        else{
+            LOG.info("No metadata file specified, using etc/stowrs/metadata.xml");
             return new File("../etc/stowrs/metadata.xml");
+        }
     }
 
     public void sendDicomFile(StowRS instance, File f) throws IOException,

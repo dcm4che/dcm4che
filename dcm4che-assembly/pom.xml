@@ -349,6 +349,16 @@
       <artifactId>dcm4che-tool-ihe-modality</artifactId>
       <version>${project.version}</version>
     </dependency>
+        <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-stowrs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-jpg2dcm</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.sun.media</groupId>
       <artifactId>jai_imageio</artifactId>

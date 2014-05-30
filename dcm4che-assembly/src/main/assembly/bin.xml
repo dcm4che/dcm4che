@@ -421,6 +421,45 @@
       <outputDirectory>.</outputDirectory>
       <lineEnding>keep</lineEnding>
     </fileSet>
+        <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stowrs/src</directory>
+      <includes>
+        <include>bin/stowrs</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-stowrs/src</directory>
+      <includes>
+        <include>bin/stowrs.bat</include>
+        <include>etc/stowrs/log4j.properties</include>
+        <include>etc/stowrs/metadata.xml</include>
+        <include>etc/stowrs/metadata.json</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
+    
+           <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-jpg2dcm/src</directory>
+      <includes>
+        <include>bin/jpg2dcm</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-jpg2dcm/src</directory>
+      <includes>
+        <include>bin/jpg2dcm.bat</include>
+        <include>etc/jpg2dcm/**</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
     <fileSet>
       <directory>../dcm4che-tool/dcm4che-tool-ianscp/src</directory>
       <includes>
@@ -851,9 +890,11 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7pix</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
+        <include>org.dcm4che.tool:dcm4che-tool-stowrs</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
+        <include>org.dcm4che.tool:dcm4che-tool-jpg2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-mkkos</include>
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>

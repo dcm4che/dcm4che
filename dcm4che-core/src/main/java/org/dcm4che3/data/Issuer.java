@@ -138,6 +138,19 @@ public class Issuer implements Serializable {
         return universalEntityIDType;
     }
 
+    public void merge(Issuer other) {
+        if (!matches(other))
+            throw new IllegalArgumentException("other=" + other);
+
+        if (this.localNamespaceEntityID == null) {
+            this.localNamespaceEntityID = other.localNamespaceEntityID;
+        }
+        if (this.universalEntityID == null) {
+            this.universalEntityID = other.universalEntityID;
+            this.universalEntityIDType = other.universalEntityIDType;
+        }
+    }
+
     @Override
     public int hashCode() {
         return 37 * (

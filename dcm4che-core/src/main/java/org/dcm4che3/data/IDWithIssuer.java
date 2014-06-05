@@ -111,13 +111,21 @@ public class IDWithIssuer {
                     : issuer.equals(other.issuer);
     }
 
+    public boolean matches(IDWithIssuer other) {
+        return id.equals(other.id) &&
+                issuer == null 
+                    ? other.issuer == null
+                    : issuer.matches(other.issuer);
+    }
+
     public Attributes exportPatientIDWithIssuer(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(3);
 
         attrs.setString(Tag.PatientID, VR.LO, id);
-        if (getIssuer() == null)
+        if (getIssuer() == null) {
             return attrs;
+        }
 
         return getIssuer().toIssuerOfPatientID(attrs);
     }

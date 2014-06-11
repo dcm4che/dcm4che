@@ -331,7 +331,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public synchronized Device loadDevice(String pathName) throws ConfigurationException,
             ConfigurationNotFoundException {
         if (!PreferencesUtils.nodeExists(rootPrefs, pathName))
-            throw new ConfigurationNotFoundException();
+            throw new ConfigurationNotFoundException("Device "+pathName+" not found in configuration");
 
         return loadDevice(rootPrefs.node(pathName));
     }

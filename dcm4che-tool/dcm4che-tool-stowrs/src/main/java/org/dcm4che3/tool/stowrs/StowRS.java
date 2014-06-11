@@ -55,10 +55,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -66,6 +68,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
@@ -330,6 +333,7 @@ public class StowRS {
     }
 
     private static void setPDFAttributes(File bulkDataFile, Attributes metadata) {
+        metadata.setString(Tag.SOPClassUID, VR.UI, UID.EncapsulatedPDFStorage);
         metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
         metadata.setString(Tag.ContentDate, VR.DA,
                 DateUtils.formatDA(null, new Date(bulkDataFile.lastModified())));
@@ -525,6 +529,10 @@ public class StowRS {
 
     private static void setPixelAttributes(File bulkDataFile,
             Attributes metadata) {
+        metadata.setString(Tag.SOPClassUID, VR.UI, UID.SecondaryCaptureImageStorage);
+        metadata.setInt(Tag.NumberOfFrames, VR.IS, 1);
+        metadata.setInt(Tag.InstanceNumber, VR.IS, 1);
+        metadata.setNull(Tag.PurposeOfReferenceCodeSequence, VR.SQ);
         jpgHeaderLen = 0;
         DataInputStream jpgInput;
         try {

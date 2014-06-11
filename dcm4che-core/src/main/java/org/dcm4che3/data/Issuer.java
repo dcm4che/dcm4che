@@ -138,17 +138,22 @@ public class Issuer implements Serializable {
         return universalEntityIDType;
     }
 
-    public void merge(Issuer other) {
+    public boolean merge(Issuer other) {
         if (!matches(other))
             throw new IllegalArgumentException("other=" + other);
 
-        if (this.localNamespaceEntityID == null) {
+        boolean mergeLocalNamespace;
+        boolean mergeUniversal;
+        if (mergeLocalNamespace = this.localNamespaceEntityID == null
+                && other.localNamespaceEntityID != null) {
             this.localNamespaceEntityID = other.localNamespaceEntityID;
-        }
-        if (this.universalEntityID == null) {
+         }
+        if (mergeUniversal = this.universalEntityID == null
+                && other.universalEntityID != null) {
             this.universalEntityID = other.universalEntityID;
             this.universalEntityIDType = other.universalEntityIDType;
         }
+        return mergeLocalNamespace || mergeUniversal;
     }
 
     @Override

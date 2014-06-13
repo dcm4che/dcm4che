@@ -234,7 +234,7 @@ public class Issuer implements Serializable {
         if (universalEntityID != null)
             item.setString(Tag.UniversalEntityID, VR.UT, universalEntityID);
         if (universalEntityIDType != null)
-            item.setString(Tag.UniversalEntityIDType, VR.UT, universalEntityIDType);
+            item.setString(Tag.UniversalEntityIDType, VR.CS, universalEntityIDType);
         return item ;
     }
 
@@ -246,7 +246,7 @@ public class Issuer implements Serializable {
         if (universalEntityID != null) {
             Attributes item = new Attributes(2);
             item.setString(Tag.UniversalEntityID, VR.UT, universalEntityID);
-            item.setString(Tag.UniversalEntityIDType, VR.UT, universalEntityIDType);
+            item.setString(Tag.UniversalEntityIDType, VR.CS, universalEntityIDType);
             attrs.newSequence(Tag.IssuerOfPatientIDQualifiersSequence, 1).add(item);
         }
         return attrs;

@@ -39,10 +39,6 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:template name="uidsEx">
-    <uid value="1.2.840.10008.5.1.1.40" keyword="DisplaySystemSOPClass">Display System SOP Class</uid>
-    <uid value="1.2.840.10008.5.1.1.40.1" keyword="DisplaySystemSOPInstance">Display System SOP Instance</uid>
-    <uid value="1.2.840.10008.5.1.4.1.1.13.1.4" keyword="BreastProjectionXRayImageStorageForPresentation">Breast Projection X-Ray Image Storage - For Presentation</uid>
-    <uid value="1.2.840.10008.5.1.4.1.1.13.1.5" keyword="BreastProjectionXRayImageStorageForProcessing">Breast Projection X-Ray Image Storage - ForProcessing</uid>
   </xsl:template>
 
 </xsl:stylesheet>

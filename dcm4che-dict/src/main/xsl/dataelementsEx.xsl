@@ -39,31 +39,6 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:template name="dataelementsEx">
-    <el tag="00020017" keyword="SendingApplicationEntityTitle" vr="AE" vm="1">Sending Application Entity Title</el>
-    <el tag="00020018" keyword="ReceivingApplicationEntityTitle" vr="AE" vm="1">Receiving Application Entity Title</el>
-    <el tag="00180013" keyword="ContrastBolusT1Relaxivity" vr="FL" vm="1">Contrast/Bolus T1 Relaxivity</el>
-    <el tag="00189518" keyword="PrimaryPositionerIncrementSign" vr="SS" vm="1">Primary Positioner Increment Sign</el>
-    <el tag="00189519" keyword="SecondaryPositionerIncrementSign" vr="SS" vm="1">Secondary Positioner Increment Sign</el>
-    <el tag="00189541" keyword="DetectorPositionSequence" vr="SQ" vm="1">Detector Position Sequence</el>
-    <el tag="00189542" keyword="XRayAcquisitionDoseSequence" vr="SQ" vm="1">X-Ray Acquisition Dose Sequence</el>
-    <el tag="00189543" keyword="XRaySourceIsocenterPrimaryAngle" vr="FD" vm="1">X-Ray Source Isocenter Primary Angle</el>
-    <el tag="00189544" keyword="XRaySourceIsocenterSecondaryAngle" vr="FD" vm="1">X-Ray Source Isocenter Secondary Angle</el>
-    <el tag="00189545" keyword="IsocenterPrimaryAngle" vr="FD" vm="1">Breast Support Isocenter Primary Angle</el>
-    <el tag="00189546" keyword="IsocenterSecondaryAngle" vr="FD" vm="1">Breast Support Isocenter Secondary Angle</el>
-    <el tag="00189547" keyword="BreastSupportXPositionToIsocenter" vr="FD" vm="1">Breast Support X Position to Isocenter</el>
-    <el tag="00189548" keyword="BreastSupportYPositionToIsocenter" vr="FD" vm="1">Breast Support Y Position to Isocenter</el>
-    <el tag="00189549" keyword="BreastSupportZPositionToIsocenter" vr="FD" vm="1">Breast Support Z Position to Isocenter</el>
-    <el tag="00189550" keyword="DetectorIsocenterPrimaryAngle" vr="FD" vm="1">Detector Isocenter Primary Angle</el>
-    <el tag="00189551" keyword="DetectorIsocenterSecondaryAngle" vr="FD" vm="1">Detector Isocenter Secondary Angle</el>
-    <el tag="00189552" keyword="DetectorXPositionToIsocenter" vr="FD" vm="1">Detector X Position to Isocenter</el>
-    <el tag="00189553" keyword="DetectorYPositionToIsocenter" vr="FD" vm="1">Detector Y Position to Isocenter</el>
-    <el tag="00189554" keyword="DetectorZPositionToIsocenter" vr="FD" vm="1">Detector Z Position to Isocenter</el>
-    <el tag="00189555" keyword="XRayGridSequence" vr="SQ" vm="1">X-Ray Grid Sequence</el>
-    <el tag="00189556" keyword="XRayFilterSequence" vr="SQ" vm="1">X-Ray Filter Sequence</el>
-    <el tag="00189557" keyword="DetectorActiveAreaTLHCPosition" vr="FD" vm="3">Detector Active Area TLHC Position</el>
-    <el tag="00189558" keyword="DetectorActiveAreaOrientation" vr="FD" vm="6">Detector Active Area Orientation</el>
-    <el tag="00189559" keyword="PositionerPrimaryAngleDirection" vr="CS" vm="1">Positioner Primary Angle Direction</el>
-    <el tag="0020930B" keyword="VolumeToTransducerRelationship" vr="CS" vm="1">Volume to Transducer Relationship</el>
   </xsl:template>
 
 </xsl:stylesheet>

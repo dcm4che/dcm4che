@@ -296,7 +296,12 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
     @SuppressWarnings("rawtypes")
     public Map<String,Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
 
+        Map<String,Object> classMetaDataWrapper = new HashMap<String,Object>();
         Map<String,Object> classMetaData = new HashMap<String,Object>();
+        classMetaDataWrapper.put("attributes", classMetaData);
+        classMetaDataWrapper.put("type", clazz.getSimpleName());
+        
+        
         // go through all annotated fields
         for (Field classField : clazz.getDeclaredFields()) {
 
@@ -313,20 +318,18 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
             fieldMetaData.put("description", fieldAnno.description());
             fieldMetaData.put("optional", fieldAnno.optional());
             
-            //TODO: add type, default?
-            
             // find typeadapter
             ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
 
             if (customRep != null) {
-                Map<String, Object> childrenMetaData = customRep.getMetadata(config, classField);
-                if (childrenMetaData != null)
-                    fieldMetaData.put("children", childrenMetaData);
+                Map<String, Object> childMetaData = customRep.getMetadata(config, classField);
+                if (childMetaData != null)
+                    fieldMetaData.putAll(childMetaData);
             };
 
         }
 
-        return classMetaData;
+        return classMetaDataWrapper;
 
     }
 

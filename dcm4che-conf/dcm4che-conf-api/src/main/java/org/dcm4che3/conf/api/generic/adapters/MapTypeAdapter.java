@@ -187,10 +187,23 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
     public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
         ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
 
-        // getValueAdapter
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
-
-        return valueAdapter.getMetadata(config, field);
+        Map<String, Object> metadata =  new HashMap<String, Object>();
+        Map<String, Object> keyMetadata =  new HashMap<String, Object>();
+        Map<String, Object> valueMetadata =  new HashMap<String, Object>();
         
+        metadata.put("type", "Map");
+        
+        // get adapters
+        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
+        ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
+
+        // fill in key and value metadata
+        keyMetadata.putAll(keyAdapter.getMetadata(config, field));
+        metadata.put("keyMetadata", keyMetadata);
+        
+        valueMetadata.putAll(valueAdapter.getMetadata(config, field));
+        metadata.put("valueMetadata", valueMetadata);
+
+        return metadata;
     }
 }

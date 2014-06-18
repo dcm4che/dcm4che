@@ -151,7 +151,7 @@ public class ReflectiveConfig {
          */
         boolean isWritingChildren(Field field);
 
-        Map<String, Object> getMetadata(ReflectiveConfig config, Field classField) throws ConfigurationException;
+        Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException;
 
     }
 

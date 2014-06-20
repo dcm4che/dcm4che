@@ -846,6 +846,26 @@
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
     </fileSet>
+         <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-probetc/src</directory>
+      <includes>
+        <include>bin/probetc</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <fileMode>0755</fileMode>
+      <lineEnding>unix</lineEnding>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4che-tool/dcm4che-tool-probetc/src</directory>
+      <includes>
+        <include>bin/probetc.bat</include>
+        <include>etc/probetc/log4j.properties</include>
+        <include>etc/probetc/ldap.properties</include>
+        <include>etc/probetc/SampleTCFile</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
@@ -907,6 +927,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
+        <include>org.dcm4che.tool:dcm4che-tool-probetc</include>
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
         <include>com.sun.media:jai_imageio</include>
         <include>com.sun.media:clibwrapper_jiio</include>

@@ -165,7 +165,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
 
             // serialize key
             String serializedKey = keyAdapter.serialize(e.getKey(), config, null);
-
+ 
             // if new node
             if (prev.get(e.getKey()) == null) {
                 ConfigWriter elementWriter = collectionWriter.getCollectionElementWriter(fieldAnno.mapKey(), serializedKey, field);
@@ -202,7 +202,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         metadata.put("keyMetadata", keyMetadata);
         
         valueMetadata.putAll(valueAdapter.getMetadata(config, field));
-        metadata.put("valueMetadata", valueMetadata);
+        metadata.put("elementMetadata", valueMetadata);
 
         return metadata;
     }

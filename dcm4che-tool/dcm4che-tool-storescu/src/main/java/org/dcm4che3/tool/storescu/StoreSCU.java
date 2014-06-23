@@ -51,6 +51,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -62,6 +63,7 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.imageio.codec.Decompressor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.net.ApplicationEntity;
@@ -441,6 +443,11 @@ public class StoreSCU {
             if (relExtNeg)
                 rq.addCommonExtendedNegotiation(
                         relSOPClasses.getCommonExtendedNegotiation(cuid));
+            if (!ts.equals(UID.ExplicitVRLittleEndian))
+                rq.addPresentationContext(
+                        new PresentationContext(
+                                rq.getNumberOfPresentationContexts() * 2 + 1,
+                                cuid, UID.ExplicitVRLittleEndian));
             if (!ts.equals(UID.ImplicitVRLittleEndian))
                 rq.addPresentationContext(
                         new PresentationContext(
@@ -459,8 +466,9 @@ public class StoreSCU {
     }
 
     public void send(final File f, long fmiEndPos, String cuid, String iuid,
-            String ts) throws IOException, InterruptedException {
-        if (uidSuffix == null && attrs.isEmpty()) {
+            String filets) throws IOException, InterruptedException {
+        String ts = selectTransferSyntax(cuid, filets);
+        if (uidSuffix == null && attrs.isEmpty() && ts.equals(filets)) {
             FileInputStream in = new FileInputStream(f);
             try {
                 in.skip(fmiEndPos);
@@ -476,6 +484,9 @@ public class StoreSCU {
                 Attributes data = in.readDataset(-1, -1);
                 if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
                     iuid = data.getString(Tag.SOPInstanceUID);
+                if (!ts.equals(filets)) {
+                    Decompressor.decompress(data, filets);
+                }
                 as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
                         rspHandlerFactory.createDimseRSPHandler(f));
             } finally {
@@ -483,6 +494,18 @@ public class StoreSCU {
             }
          }
     }
+
+    private String selectTransferSyntax(String cuid, String filets) {
+        Set<String> tss = as.getTransferSyntaxesFor(cuid);
+        if (tss.contains(filets))
+            return filets;
+
+        if (tss.contains(UID.ExplicitVRLittleEndian))
+            return UID.ExplicitVRLittleEndian;
+
+        return UID.ImplicitVRLittleEndian;
+    }
+
 
     public void close() throws IOException, InterruptedException {
         if (as != null) {

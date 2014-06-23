@@ -112,6 +112,19 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:attribute>
+      <xsl:attribute name="type">
+        <xsl:call-template name="removeSpaces">
+          <xsl:with-param name="name">
+            <xsl:call-template name="replaceNonAlpha">
+              <xsl:with-param name="name">
+                <xsl:call-template name="para2str">
+                  <xsl:with-param name="para" select="doc:td[3]/doc:para"/>
+                </xsl:call-template>
+              </xsl:with-param>
+            </xsl:call-template>
+          </xsl:with-param>
+        </xsl:call-template>
+      </xsl:attribute>
       <xsl:value-of select="$name"/>
     </xsl:element>
   </xsl:template>

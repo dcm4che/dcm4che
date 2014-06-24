@@ -49,9 +49,57 @@
   <packaging>pom</packaging>
   <name>dcm4che-assembly</name>
   <description>Assemble dcm4che distribution packages</description>
-  <build>
-    <finalName>dcm4che-${project.version}</finalName>
+     <build>
+         <finalName>dcm4che-${project.version}</finalName>
     <plugins>
+      <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.dcm4che:dcm4che-dict:${project.version}</resourceBundle>
+              </resourceBundles>
+              <outputDirectory>${project.build.directory}/archive-tmp/maven-shared-archive-resources</outputDirectory>
+              <attachToMain>false</attachToMain>
+            </configuration>
+          </execution>
+          
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>transform</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <transformationSets>
+            <transformationSet>
+              <dir>${project.build.directory}/archive-tmp/maven-shared-archive-resources</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/sampleTCFile.xsl</stylesheet>
+              <outputDir>src/etc/probetc</outputDir>
+              <fileMappers>
+                <fileMapper
+                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>sampleTCFile.properties</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            </transformationSets>
+            </configuration>
+            </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.3</version>

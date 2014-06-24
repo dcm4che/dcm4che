@@ -46,16 +46,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.print.attribute.standard.Destination;
-import javax.sound.midi.Track;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingOptionException;
@@ -65,7 +60,6 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.prefs.PreferencesDicomConfiguration;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Connection;
@@ -73,26 +67,18 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.TransferCapability.Role;
-import org.dcm4che3.net.pdu.AAssociateAC;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.net.pdu.UserIdentityRQ;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.UIDUtils;
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
  */
-/*
- * usage as a testtool ProbeTC ptc = new ProbeTC("STORESCP@0.0.0.0:11115",
- * "STORESCP", "DCM4CHEE-PROXY", "STGCMTSCU", "prefs" ,null); ptc.probeAndSet();
- */
+
 public class ProbeTC {
 
     private String destinationAET;
@@ -102,7 +88,6 @@ public class ProbeTC {
     private File ldapConfigurationFile;
     private String configurationType;
     private String configType;
-    private Properties ldapProps;
     private String callingAET;
     static final Logger LOG = LoggerFactory.getLogger(ProbeTC.class);
     private static Options opts;
@@ -157,15 +142,16 @@ public class ProbeTC {
             throws ParseException {
         opts = new Options();
         opts.addOption(OptionBuilder.hasArg().withArgName("aet@host:port")
-                .withDescription(rb.getString("probed-ae"))
-                .withLongOpt("probed-ae").create("p"));
+                .withDescription(rb.getString("connection"))
+                .withLongOpt("connection").create("c"));
         opts.addOption("d", "destination-aet", true,
                 rb.getString("destination-aet"));
         opts.addOption("s", "source-aet", true, rb.getString("source-aet"));
-        opts.addOption("t", "Title", true, rb.getString("Title"));
-        opts.addOption("c", "configuration", true,
-                rb.getString("configuration"));
-        opts.addOption("f", "file", true, rb.getString("file"));
+        opts.addOption("b", "broadcastTitle", true, rb.getString("broadcastTitle"));
+        opts.addOption("ldap", "ldap", true,
+                rb.getString("ldap"));
+        opts.addOption("prefs", "prefs", false,
+                rb.getString("prefs"));
         CLIUtils.addCommonOptions(opts);
         return CLIUtils.parseComandLine(args, opts, rb, ProbeTC.class);
     }
@@ -281,31 +267,29 @@ public class ProbeTC {
 
     public static void main(String[] args) throws ParseException, IOException,
             InterruptedException, IncompatibleConnectionException,
-            GeneralSecurityException {
+            GeneralSecurityException, IllegalAccessException {
         CommandLine cl = null;
 
         cl = parseComandLine(args);
         ProbeTC instance = new ProbeTC();
         Device device = null;
-        if (cl.hasOption("t")) {
-            device = new Device(cl.getOptionValue("t").toLowerCase());
+        if (cl.hasOption("b")) {
+            device = new Device(cl.getOptionValue("b").toLowerCase());
         } else {
-            LOG.error("Missing AETitle");
+            LOG.error("Missing broadcast AETitle");
+            throw new IllegalAccessException("missing broadcast AETitle");
         }
         Connection conn = new Connection();
         device.addConnection(conn);
-        ApplicationEntity ae = new ApplicationEntity(cl.getOptionValue("t")
+        ApplicationEntity ae = new ApplicationEntity(cl.getOptionValue("b")
                 .toUpperCase());
         if (cl.hasOption("d")) {
             instance.setDestinationAET(cl.getOptionValue("d"));
-        } else {
-            LOG.error("Missing destination AET");
-        }
+        } 
         if (cl.hasOption("s")) {
             instance.setSourceAET(cl.getOptionValue("s"));
-        } else {
-            LOG.error("Missing source AET");
-        }
+            
+        } 
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
 
@@ -317,26 +301,32 @@ public class ProbeTC {
         // ApplicationEntity(cl.getOptionValue("s").split(":")[0]);
 
         // here load the TCs
-        if (cl.hasOption("c")) {
-            if (cl.getOptionValue("c").compareToIgnoreCase("ldap") == 0) {
+
+            if (cl.hasOption("ldap")) {
                 try {
                     InputStream is = null;
                     Properties p = new Properties();
-                    if (cl.hasOption("f")) {
+                    if (!cl.getOptionValue("ldap").isEmpty()) {
                         is = new FileInputStream(new File(
-                                cl.getOptionValue("f")));
+                                cl.getOptionValue("ldap")));
                     } else {
-                        LOG.info("No ldap.properties file specified using default file from etc");
-                        is = new FileInputStream(new File(
-                                "../etc/probetc/ldap.properties"));
+                        LOG.error("Missing ldap properties file");
+                        throw new IllegalAccessException("missing ldap properties file");
                     }
                     p.load(is);
                     LdapDicomConfiguration conf = new LdapDicomConfiguration(p);
                     LOG.info("Started Loading LDAP configuration");
+                    ArrayList<TransferCapability> tcs = null;
+                    if(cl.hasOption("s")){
                     ApplicationEntity sourceAE = conf
                             .findApplicationEntity(instance.sourceAET);
-                    ArrayList<TransferCapability> tcs = (ArrayList<TransferCapability>) sourceAE
+                    tcs = (ArrayList<TransferCapability>) sourceAE
                             .getTransferCapabilities();
+                    }
+                    else
+                    {
+                        tcs = loadTCFile();
+                    }
                     ArrayList<PresentationContext> pcs = addChunkedPCsandSend(
                             ae, device, instance, tcs);
                     // print accepted ones
@@ -354,9 +344,11 @@ public class ProbeTC {
 
                     }
                     LOG.info("finished probing TCs");
+                    if(instance.destinationAET!=null){
                     LOG.info("Adding Accepted TCs to configuration backend");
                     ApplicationEntity destinationAE = conf
                             .findApplicationEntity(instance.destinationAET);
+                    
                     Device toStore = destinationAE.getDevice();
                     TransferCapability[] TCs = mergeTCs(acceptedPCs);
                     for (TransferCapability tc : TCs)
@@ -366,20 +358,27 @@ public class ProbeTC {
                     conf.merge(toStore);
                     logAddedTCs(TCs, destinationAE);
                     conf.close();
+                    }
                     System.exit(1);
                 } catch (ConfigurationException e) {
                     LOG.error("Configuration backend error - {}", e);
                 }
-            } else if (cl.getOptionValue("c").compareToIgnoreCase("prefs") == 0) {
+            } else if (cl.hasOption("prefs")) {
                 // prefs
                 try {
-
                     PreferencesDicomConfiguration conf = new PreferencesDicomConfiguration();
                     LOG.info("Started Loading LDAP configuration");
+                    ArrayList<TransferCapability> tcs = null;
+                    if(cl.hasOption("s")){
                     ApplicationEntity sourceAE = conf
                             .findApplicationEntity(instance.sourceAET);
-                    ArrayList<TransferCapability> tcs = (ArrayList<TransferCapability>) sourceAE
+                    tcs = (ArrayList<TransferCapability>) sourceAE
                             .getTransferCapabilities();
+                    }
+                    else
+                    {
+                        tcs = loadTCFile();
+                    }
                     ArrayList<PresentationContext> pcs = addChunkedPCsandSend(
                             ae, device, instance, tcs);
                     // print accepted ones
@@ -397,9 +396,11 @@ public class ProbeTC {
 
                     }
                     LOG.info("finished probing TCs");
+                    if(instance.destinationAET!=null){
                     LOG.info("Adding Accepted TCs to configuration backend");
                     ApplicationEntity destinationAE = conf
                             .findApplicationEntity(instance.destinationAET);
+                    
                     Device toStore = destinationAE.getDevice();
                     TransferCapability[] TCs = mergeTCs(acceptedPCs);
                     for (TransferCapability tc : TCs)
@@ -409,74 +410,71 @@ public class ProbeTC {
                     conf.merge(toStore);
                     logAddedTCs(TCs, destinationAE);
                     conf.close();
+                    }
                     System.exit(1);
                 } catch (ConfigurationException e) {
                     LOG.error("Configuration backend error - {}", e);
                 }
             }
-        } else {
-            // ldap
-            try {
-                InputStream is = null;
-                Properties p = new Properties();
-                if (cl.hasOption("f")) {
-                    is = new FileInputStream(new File(cl.getOptionValue("f")));
-                } else {
-                    LOG.info("No ldap.properties file specified using default file from etc");
-                    is = new FileInputStream(new File(
-                            "../etc/probetc/ldap.properties"));
-                }
-                p.load(is);
-                LdapDicomConfiguration conf = new LdapDicomConfiguration(p);
-                LOG.info("Started Loading LDAP configuration");
-                ApplicationEntity sourceAE = conf
-                        .findApplicationEntity(instance.sourceAET);
-                ArrayList<TransferCapability> tcs = (ArrayList<TransferCapability>) sourceAE
-                        .getTransferCapabilities();
-                ArrayList<PresentationContext> pcs = addChunkedPCsandSend(ae,
-                        device, instance, tcs);
-                // print accepted ones
-                ArrayList<PresentationContext> acceptedPCs = new ArrayList<PresentationContext>();
-                for (PresentationContext pc : pcs)
-                    if (pc.isAccepted())
-                        acceptedPCs.add(pc);
+            else
+            {
+                
+                    LOG.info("Started Loading TCS from file no configuration set or get");
+                    ArrayList<TransferCapability> tcs = null;
+                        tcs = loadTCFile();
+                        LOG.info("added the following presentation contexts: " +tcs.get(0).getSopClass());
+                    ArrayList<PresentationContext> pcs = addChunkedPCsandSend(
+                            ae, device, instance, tcs);
+                    // print accepted ones
+                    ArrayList<PresentationContext> acceptedPCs = new ArrayList<PresentationContext>();
+                    for (PresentationContext pc : pcs)
+                        if (pc.isAccepted())
+                            acceptedPCs.add(pc);
 
-                LOG.info("Probed the source ae and found the following accepted presentation contexts");
-                for (PresentationContext pc : acceptedPCs) {
-                    LOG.info("PC[" + pc.getPCID() + "]\tAbstractSyntax:"
-                            + pc.getAbstractSyntax() + "\n with "
-                            + " the following Transfer-Syntax:["
-                            + pc.getTransferSyntax() + "]");
+                    LOG.info("Probed the source ae and found the following accepted presentation contexts");
+                    for (PresentationContext pc : acceptedPCs) {
+                        LOG.info("PC[" + pc.getPCID() + "]\tAbstractSyntax:"
+                                + pc.getAbstractSyntax() + "\n with "
+                                + " the following Transfer-Syntax:["
+                                + pc.getTransferSyntax() + "]");
 
-                }
-                LOG.info("finished probing TCs");
-                LOG.info("Adding Accepted TCs to configuration backend");
-                ApplicationEntity destinationAE = conf
-                        .findApplicationEntity(instance.destinationAET);
-                Device toStore = destinationAE.getDevice();
-                TransferCapability[] TCs = mergeTCs(acceptedPCs);
-                for (TransferCapability tc : TCs)
-                    toStore.getApplicationEntity(instance.destinationAET)
-                            .addTransferCapability(tc);
+                    }
+                    LOG.info("finished probing TCs");
 
-                conf.merge(toStore);
-                logAddedTCs(TCs, destinationAE);
-                conf.close();
-                System.exit(1);
-            } catch (ConfigurationException e) {
-                LOG.error("Configuration backend error - {}", e);
+                    System.exit(1);
+
             }
+        
 
+    }
+
+    private static ArrayList<TransferCapability> loadTCFile() {
+        ArrayList<TransferCapability> tcs = new ArrayList<TransferCapability> ();
+        Properties p=null;
+        try {
+            p = CLIUtils.loadProperties(
+                            "resource:sampleTCFile.properties",
+                    null);
+        } catch (IOException e) {
+            LOG.error("unable to load sop-classes properties file");
         }
-
+        for (String cuid : p.stringPropertyNames()) {
+            String ts = p.getProperty(cuid);
+            LOG.info(ts);
+            tcs.add(
+                    new TransferCapability(null, ts.split(":")[0],
+                                TransferCapability.Role.SCP,
+                                StringUtils.split(ts.split(":")[1], ',')));
+        }
+        return tcs;
     }
 
     public static void configureConnect(Connection conn, AAssociateRQ rq,
             CommandLine cl, ApplicationEntity ae) throws ParseException,
             IOException {
-        if (!cl.hasOption("p"))
+        if (!cl.hasOption("c"))
             throw new MissingOptionException(rb.getString("missing-probed-ae"));
-        String tmpOption = cl.getOptionValue("p");
+        String tmpOption = cl.getOptionValue("c");
         String aeTitle = tmpOption.split("@")[0];
 
         if (tmpOption.split("@")[1] == null)
@@ -575,6 +573,7 @@ public class ProbeTC {
         ArrayList<PresentationContext> allACPCs = new ArrayList<PresentationContext>();
 
         for (TransferCapability tc : tcs)
+            if(tcs.size()>127)
             for (String ts : tc.getTransferSyntaxes()) {
                 fullListSingleTS.add(new PresentationContext(pcID, tc
                         .getSopClass(), ts));
@@ -584,6 +583,14 @@ public class ProbeTC {
                     pcID = 1;
                     fullListSingleTS = new ArrayList<PresentationContext>();
                 }
+            }
+            else{
+                for (String ts : tc.getTransferSyntaxes()) {
+                    fullListSingleTS.add(new PresentationContext(pcID, tc
+                            .getSopClass(), ts));
+                    pcID++;
+                }
+                lst.add(fullListSingleTS);
             }
 
         instance.rq.setCallingAET(ae.getAETitle());

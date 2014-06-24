@@ -6,8 +6,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -89,6 +91,21 @@ public class SetTypeAdapter<T> implements ConfigTypeAdapter<Set<T>, List<String>
     @Override
     public boolean isWritingChildren(Field field) {
         return false;
+    }
+
+    @Override
+    public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
+        Map<String, Object> metadata =  new HashMap<String, Object>();
+        Map<String, Object> elementMetadata =  new HashMap<String, Object>();
+        
+        metadata.put("type", "Set");
+        
+        ConfigTypeAdapter<T,String> ta = getElementAdapter(field,config);
+        
+        elementMetadata.putAll(ta.getMetadata(config, field));
+        metadata.put("elementMetadata", elementMetadata);
+        
+        return metadata;
     }
 
 }

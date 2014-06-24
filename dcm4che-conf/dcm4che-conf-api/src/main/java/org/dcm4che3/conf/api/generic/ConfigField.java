@@ -88,6 +88,25 @@ public @interface ConfigField {
      * you need a different name for the collection node itself in this case, use this parameter.
      */
     String mapName() default "N/A";
+    
+    /**
+     * Label to show in configuration UIs. If empty empty string (default), the name will be used.
+     * @return
+     */
+    String label() default "";
+    
+    /**
+     * Description to show in configuration UIs.
+     * @return
+     */
+    String description() default "";
+    
+    /**
+     * Indicates that the configuration parameter is optional. By default, all parameters are required.
+     * For the time being, only used in configuration UIs, the backend validation will follow.
+     * @return
+     */
+    boolean optional() default false;
 
     /**
      * For Maps. Which delimeter is used to separate key from value.

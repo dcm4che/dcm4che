@@ -67,15 +67,14 @@ public class ReflectiveConfig {
 
     /**
      * Type adapter that handles configuration read/write/serialize/deserialize
-     * for a specific java class.
+     * for a specific config java class.
      * 
      * @author Roman K
      * 
      * @param <T>
      *            Java class
      * @param <ST>
-     *            Serialized representation - this intermediate format is needed
-     *            for merging, so only the actual config data is used.
+     *            Serialized representation - this intermediate format is used by UIs and storeDiffs.
      */
     public interface ConfigTypeAdapter<T, ST> {
 
@@ -152,9 +151,11 @@ public class ReflectiveConfig {
          */
         boolean isWritingChildren(Field field);
 
+        Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException;
+
     }
 
-    @Deprecated
+    @Deprecated 
     public interface DiffWriter extends ConfigWriter {
     }
 

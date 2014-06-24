@@ -39,18 +39,17 @@ package org.dcm4che3.conf.api.generic.adapters;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
-import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigTypeAdapter;
+import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.AttributesFormat;
 
@@ -208,7 +207,22 @@ public class DefaultConfigTypeAdapters {
      * Array
      */
     public static class ArrayTypeAdapter extends PrimitiveAbstractTypeAdapter<Object> {
-
+        
+        @Override
+        public Object deserialize(Object serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
+            // Support for Sets/Lists - needed for JSON deserialization
+            // Creates an array with proper component type
+            if (Collection.class.isAssignableFrom(serialized.getClass())) {
+                Collection l = ((Collection) serialized);
+                Object arr = Array.newInstance(field.getType().getComponentType(), l.size());
+                int i=0;
+                for (Object el : l) 
+                    Array.set(arr, i++, el);
+                return arr;
+            }
+            return super.deserialize(serialized, config, field);
+        }
+        
         @Override
         public boolean isWritingChildren(Field field) {
             return false;

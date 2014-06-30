@@ -72,7 +72,7 @@ public class StoreTest {
     private String host;
     private int port;
     String aeTitle;
-    String baseDirectory;
+    File baseDirectory;
 
     private long totalSize;
     private int filesSent;
@@ -85,7 +85,7 @@ public class StoreTest {
      * @param aeTitle
      * @param baseDirectory
      */
-    public StoreTest(String host, int port, String aeTitle, String baseDirectory) {
+    public StoreTest(String host, int port, String aeTitle, File baseDirectory) {
         super();
         this.host = host;
         this.port = port;

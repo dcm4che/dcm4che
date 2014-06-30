@@ -71,14 +71,14 @@ public class QueryTest {
     private String host;
     private int port;
     String aeTitle;
-    
+
     private int numMatches;
-    private ArrayList<String> returnedValues = new ArrayList<String>(); 
+    private ArrayList<String> returnedValues = new ArrayList<String>();
     private Integer returnTag = null;
 
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
-    
+
     private Attributes queryatts = new Attributes();
     private int expectedResult = Integer.MIN_VALUE;
     private List<String> expectedValues = null;
@@ -95,8 +95,9 @@ public class QueryTest {
         this.aeTitle = aeTitle;
     }
 
-    public QueryResult query(String testDescription) throws IOException, InterruptedException,
-            IncompatibleConnectionException, GeneralSecurityException {
+    public QueryResult query(String testDescription) throws IOException,
+            InterruptedException, IncompatibleConnectionException,
+            GeneralSecurityException {
 
         FindSCU main = new FindSCU();
         main.getAAssociateRQ().setCalledAET(aeTitle);
@@ -113,62 +114,65 @@ public class QueryTest {
                 EnumSet.noneOf(QueryOption.class));
 
         main.getKeys().addAll(queryatts);
-        
+
         long t1 = System.currentTimeMillis();
-        
+
         try {
-            
+
             main.open();
             main.query(getDimseRSPHandler(main.getAssociation().nextMessageID()));
-            
+
         } finally {
-            main.close(); //is waiting for all the responsens to be complete
+            main.close(); // is waiting for all the responsens to be complete
             executorService.shutdown();
             scheduledExecutorService.shutdown();
-            
+
         }
-        
+
         long t2 = System.currentTimeMillis();
-        
-        
+
         if (this.expectedResult >= 0)
-            assertTrue(numMatches == this.expectedResult);
-        
-        if (this.expectedValues!=null)
+            assertTrue("test[" + testDescription
+                    + "] not returned expected result:" + this.expectedResult
+                    + " but:" + numMatches, numMatches == this.expectedResult);
+
+        if (this.expectedValues != null)
             for (String expectedValue : expectedValues)
-                assertTrue("tag["+ ElementDictionary.keywordOf(returnTag,null) +"] not returned expected value:" + expectedValue,
+                assertTrue(
+                        "tag[" + ElementDictionary.keywordOf(returnTag, null)
+                                + "] not returned expected value:"
+                                + expectedValue,
                         returnedValues.contains(expectedValue));
 
-        return new QueryResult(testDescription, expectedResult, numMatches,(t2-t1));
+        return new QueryResult(testDescription, expectedResult, numMatches,
+                (t2 - t1));
     }
-    
-    public void addTag(int tag, String value) throws Exception
-    {
+
+    public void addTag(int tag, String value) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null);
         queryatts.setString(tag, vr, value);
-    }   
-    
-    public void setReturnTag(int tag) throws Exception
-    {
+    }
+
+    public void setReturnTag(int tag) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null);
         queryatts.setNull(tag, vr);
         returnTag = tag;
-    } 
+    }
 
     public void setExpectedResultsNumeber(int expectedResult) {
         this.expectedResult = expectedResult;
     }
-    
+
     public void addExpectedResult(String value) {
-        
+
         if (this.expectedValues == null)
             this.expectedValues = new ArrayList<String>();
-        
+
         this.expectedValues.add(value);
     }
 
     private DimseRSPHandler getDimseRSPHandler(int messageID) {
-        
+
         DimseRSPHandler rspHandler = new DimseRSPHandler(messageID) {
 
             @Override
@@ -177,13 +181,13 @@ public class QueryTest {
                 super.onDimseRSP(as, cmd, data);
                 int status = cmd.getInt(Tag.Status, -1);
                 if (Status.isPending(status)) {
-                    if (returnTag!=null) {
-                        
+                    if (returnTag != null) {
+
                         String returnedValue = data.getString(returnTag);
                         if (!returnedValues.contains(returnedValue))
                             returnedValues.add(returnedValue);
-                        
-                        //System.out.println(returnedValue);
+
+                        // System.out.println(returnedValue);
                     }
                     ++numMatches;
                 }

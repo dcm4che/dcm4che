@@ -60,7 +60,6 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.tool.common.GenericTest;
 import org.dcm4che3.tool.mppsscu.MppsSCU;
 import org.dcm4che3.util.TagUtils;
 
@@ -68,10 +67,11 @@ import org.dcm4che3.util.TagUtils;
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
  */
-public class MppsTest extends GenericTest {
+public class MppsTest {
 
     private String testDescription;
     private String fileName;
+    private Properties config;
 
     private int nCreateSent;  
     private int nCreateWarnings;    
@@ -84,10 +84,11 @@ public class MppsTest extends GenericTest {
      * @param testDescription
      * @param fileName
      */
-    public MppsTest(String testDescription, String fileName) {
+    public MppsTest(String testDescription, String fileName, Properties config) {
         super();
         this.testDescription = testDescription;
         this.fileName = fileName;
+        this.config = config;
     }
     
     public MppsResult mppsscu() throws IOException, InterruptedException,
@@ -95,7 +96,6 @@ public class MppsTest extends GenericTest {
 
         long t1, t2, t3;
 
-        Properties config = loadConfig();
         String host = config.getProperty("remoteConn.hostname");
         int port = new Integer(config.getProperty("remoteConn.port"));
         String aeTitle = config.getProperty("mpps.aetitle");

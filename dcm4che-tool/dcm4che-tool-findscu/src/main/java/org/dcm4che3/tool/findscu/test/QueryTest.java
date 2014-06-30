@@ -60,7 +60,6 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.tool.common.GenericTest;
 import org.dcm4che3.tool.findscu.FindSCU;
 import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
 
@@ -68,9 +67,11 @@ import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
  */
-public class QueryTest extends GenericTest {
+public class QueryTest {
 
     private String testDescription;
+    private Properties config;
+    
     private int numMatches;
     private ArrayList<String> returnedValues = new ArrayList<String>(); 
     private Integer returnTag = null;
@@ -87,15 +88,15 @@ public class QueryTest extends GenericTest {
      * @param testDescription
      * @param fileName
      */
-    public QueryTest(String testDescription) {
+    public QueryTest(String testDescription, Properties config) {
         super();
         this.testDescription = testDescription;
+        this.config = config;
     }
 
     public QueryResult query() throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
         
-        Properties config = loadConfig();
         String host = config.getProperty("remoteConn.hostname");
         int port = new Integer(config.getProperty("remoteConn.port"));
         String aeTitle = config.getProperty("query.aetitle");

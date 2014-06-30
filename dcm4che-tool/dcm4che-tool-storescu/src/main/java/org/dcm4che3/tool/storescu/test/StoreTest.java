@@ -44,9 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,7 +60,6 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.tool.common.GenericTest;
 import org.dcm4che3.tool.storescu.StoreSCU;
 import org.dcm4che3.util.TagUtils;
 
@@ -70,10 +67,11 @@ import org.dcm4che3.util.TagUtils;
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * 
  */
-public class StoreTest extends GenericTest {
+public class StoreTest {
 
     private String testDescription;
-    private String fileName;
+    private File file;
+    private Properties config;
 
     private long totalSize;
     private int filesSent;
@@ -85,26 +83,22 @@ public class StoreTest extends GenericTest {
      * @param testDescription
      * @param fileName
      */
-    public StoreTest(String testDescription, String fileName) {
+    public StoreTest(String testDescription, File file, Properties config) {
         super();
         this.testDescription = testDescription;
-        this.fileName = fileName;
+        this.file = file;
+        this.config = config;
     }
     
     public StoreResult store() throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-
-        List<StoreResult> results = new ArrayList<StoreResult>();
         
         long t1, t2;
 
-        Properties config = loadConfig();
         String host = config.getProperty("remoteConn.hostname");
         int port = new Integer(config.getProperty("remoteConn.port"));
         String aeTitle = config.getProperty("store.aetitle");
         String directory = config.getProperty("store.directory");
-
-        File file = new File(directory, fileName);
 
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),

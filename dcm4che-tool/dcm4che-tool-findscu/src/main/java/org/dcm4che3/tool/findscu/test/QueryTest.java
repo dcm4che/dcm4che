@@ -45,7 +45,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -69,8 +68,9 @@ import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
  */
 public class QueryTest {
 
-    private String testDescription;
-    private Properties config;
+    private String host;
+    private int port;
+    String aeTitle;
     
     private int numMatches;
     private ArrayList<String> returnedValues = new ArrayList<String>(); 
@@ -84,22 +84,19 @@ public class QueryTest {
     private List<String> expectedValues = null;
 
     /**
-     * @param testName
-     * @param testDescription
-     * @param fileName
+     * @param host
+     * @param port
+     * @param aeTitle
      */
-    public QueryTest(String testDescription, Properties config) {
+    public QueryTest(String host, int port, String aeTitle) {
         super();
-        this.testDescription = testDescription;
-        this.config = config;
+        this.host = host;
+        this.port = port;
+        this.aeTitle = aeTitle;
     }
 
-    public QueryResult query() throws IOException, InterruptedException,
+    public QueryResult query(String testDescription) throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-        
-        String host = config.getProperty("remoteConn.hostname");
-        int port = new Integer(config.getProperty("remoteConn.port"));
-        String aeTitle = config.getProperty("query.aetitle");
 
         FindSCU main = new FindSCU();
         main.getAAssociateRQ().setCalledAET(aeTitle);

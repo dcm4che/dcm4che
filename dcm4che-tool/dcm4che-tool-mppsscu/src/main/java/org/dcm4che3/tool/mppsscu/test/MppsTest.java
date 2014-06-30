@@ -69,9 +69,10 @@ import org.dcm4che3.util.TagUtils;
  */
 public class MppsTest {
 
-    private String testDescription;
-    private String fileName;
-    private Properties config;
+    private String host;
+    private int port;
+    String aeTitle;
+    String baseDirectory;
 
     private int nCreateSent;  
     private int nCreateWarnings;    
@@ -80,28 +81,25 @@ public class MppsTest {
     private int nSetFailures;
     
     /**
-     * @param testName
-     * @param testDescription
-     * @param fileName
+     * @param host
+     * @param port
+     * @param aeTitle
+     * @param baseDirectory
      */
-    public MppsTest(String testDescription, String fileName, Properties config) {
+    public MppsTest(String host, int port, String aeTitle, String baseDirectory) {
         super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.config = config;
+        this.host = host;
+        this.port = port;
+        this.aeTitle = aeTitle;
+        this.baseDirectory = baseDirectory;
     }
-    
-    public MppsResult mppsscu() throws IOException, InterruptedException,
+
+    public MppsResult mppsscu(String testDescription, String fileName) throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
 
         long t1, t2, t3;
 
-        String host = config.getProperty("remoteConn.hostname");
-        int port = new Integer(config.getProperty("remoteConn.port"));
-        String aeTitle = config.getProperty("mpps.aetitle");
-        String directory = config.getProperty("mpps.directory");
-
-        File file = new File(directory, fileName);
+        File file = new File(baseDirectory, fileName);
 
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),

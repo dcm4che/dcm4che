@@ -69,36 +69,37 @@ import org.dcm4che3.util.TagUtils;
  */
 public class StoreTest {
 
-    private String testDescription;
-    private File file;
-    private Properties config;
+    private String host;
+    private int port;
+    String aeTitle;
+    String baseDirectory;
 
     private long totalSize;
     private int filesSent;
-    private int warnings;    
+    private int warnings;
     private int failures;
 
     /**
-     * @param testName
-     * @param testDescription
-     * @param fileName
+     * @param host
+     * @param port
+     * @param aeTitle
+     * @param baseDirectory
      */
-    public StoreTest(String testDescription, File file, Properties config) {
+    public StoreTest(String host, int port, String aeTitle, String baseDirectory) {
         super();
-        this.testDescription = testDescription;
-        this.file = file;
-        this.config = config;
+        this.host = host;
+        this.port = port;
+        this.aeTitle = aeTitle;
+        this.baseDirectory = baseDirectory;
     }
-    
-    public StoreResult store() throws IOException, InterruptedException,
+
+    public StoreResult store(String testDescription, String fileName)
+            throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-        
+
         long t1, t2;
 
-        String host = config.getProperty("remoteConn.hostname");
-        int port = new Integer(config.getProperty("remoteConn.port"));
-        String aeTitle = config.getProperty("store.aetitle");
-        String directory = config.getProperty("store.directory");
+        File file = new File(baseDirectory, fileName);
 
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),
@@ -149,7 +150,8 @@ public class StoreTest {
 
         // scan
         t1 = System.currentTimeMillis();
-        main.scanFiles(Arrays.asList(file.getAbsolutePath()), false); //do not printout
+        main.scanFiles(Arrays.asList(file.getAbsolutePath()), false); // do not
+                                                                      // printout
         t2 = System.currentTimeMillis();
 
         // create executor
@@ -171,8 +173,9 @@ public class StoreTest {
             executorService.shutdown();
             scheduledExecutorService.shutdown();
         }
-        
-        return new StoreResult(testDescription, directory, totalSize, (t2 - t1), filesSent, warnings, failures);
+
+        return new StoreResult(testDescription, fileName, totalSize, (t2 - t1),
+                filesSent, warnings, failures);
     }
 
     private void onCStoreRSP(Attributes cmd, File f) {
@@ -188,9 +191,9 @@ public class StoreTest {
             totalSize += f.length();
             ++filesSent;
             ++warnings;
-//            System.err.println(MessageFormat.format("warning",
-//                    TagUtils.shortToHexString(status), f));
-//            System.err.println(cmd);
+            // System.err.println(MessageFormat.format("warning",
+            // TagUtils.shortToHexString(status), f));
+            // System.err.println(cmd);
             break;
         default:
             ++failures;

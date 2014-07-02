@@ -4779,6 +4779,26 @@
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
+            <para>(0010,1100)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Referenced Patient Photo Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Referenced​Patient​Photo​Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0010,2000)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -12246,7 +12266,7 @@
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,1202)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22091,7 +22111,7 @@
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9541)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22109,7 +22129,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9542)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22127,7 +22147,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9543)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22145,7 +22165,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9544)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22163,7 +22183,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9545)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22181,7 +22201,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9546)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22199,7 +22219,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9547)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22217,7 +22237,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9548)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22235,7 +22255,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9549)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22253,7 +22273,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9550)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22271,7 +22291,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9551)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22289,7 +22309,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9552)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22307,7 +22327,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9553)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22325,7 +22345,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9554)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22343,7 +22363,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9555)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22361,7 +22381,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9556)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22379,7 +22399,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9557)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22397,7 +22417,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9558)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -22415,7 +22435,7 @@
           <td align="center" colspan="1" rowspan="1"/>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0018,9559)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35253,7 +35273,7 @@
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7000)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35262,15 +35282,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Equipment​Administrator​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7001)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35279,15 +35302,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Number​Of​Display​Subsystems</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7002)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35296,15 +35322,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Current​Configuration​ID</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7003)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35313,15 +35342,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​ID</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7004)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35330,15 +35362,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​Name</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SH</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7005)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35347,15 +35382,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​Description</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>LO</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7006)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35364,15 +35402,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>System​Status</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7007)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35381,15 +35422,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>System​Status​Comment</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>LO</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7008)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35398,15 +35442,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Target​Luminance​Characteristics​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7009)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35415,15 +35462,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Characteristics​ID</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700A)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35432,15 +35482,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​Configuration​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700B)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35449,15 +35502,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Configuration​ID</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700C)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35466,15 +35522,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Configuration​Name</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SH</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700D)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35483,15 +35542,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Configuration​Description</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>LO</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700E)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35500,15 +35562,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Referenced​Target​Luminance​Characteristics​ID</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,700F)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35517,15 +35582,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>QAResults​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7010)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35534,15 +35602,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​QAResults​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7011)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35551,15 +35622,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Configuration​QAResults​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7012)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35568,15 +35642,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Measurement​Equipment​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7013)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35585,15 +35662,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Measurement​Functions</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1-n</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7014)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35602,15 +35682,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Measurement​Equipment​Type</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7015)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35619,15 +35702,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Visual​Evaluation​Result​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7016)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35636,15 +35722,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Calibration​Result​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7017)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35653,15 +35742,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>DDLValue</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7018)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35670,15 +35762,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>CIExy​White​Point</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>2</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7019)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35687,15 +35782,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Function​Type</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701A)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35704,15 +35802,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Gamma​Value</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701B)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35721,15 +35822,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Number​Of​Luminance​Points</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>US</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701C)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35738,15 +35842,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Response​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701D)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35755,15 +35862,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Target​Minimum​Luminance</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701E)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35772,15 +35882,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Target​Maximum​Luminance</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,701F)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35789,15 +35902,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Value</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7020)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35806,15 +35922,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Response​Description</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>LO</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7021)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35823,15 +35942,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>White​Point​Flag</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7022)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35840,15 +35962,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Device​Type​Code​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7023)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35857,15 +35982,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Display​Subsystem​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7024)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35874,15 +36002,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Result​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7025)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35891,15 +36022,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Ambient​Light​Value​Source</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7026)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35908,15 +36042,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Measured​Characteristics</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1-n</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7027)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35925,15 +36062,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Luminance​Uniformity​Result​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7028)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35942,15 +36082,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Visual​Evaluation​Test​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,7029)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35959,15 +36102,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Test​Result</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,702A)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35976,15 +36122,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Test​Result​Comment</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>LO</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,702B)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -35993,15 +36142,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Test​Image​Validation</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,702C)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -36010,15 +36162,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Test​Pattern​Code​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,702D)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -36027,15 +36182,18 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Measurement​Pattern​Code​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>(0028,702E)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -36044,11 +36202,14 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Visual​Evaluation​Method​Code​Sequence</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
           </td>
         </tr>
         <tr valign="top">
@@ -50460,6 +50621,26 @@
           </td>
           <td align="left" colspan="1" rowspan="1">
             <para>Slice​Progression​Direction</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>CS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0054,0501)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Scan Progression Direction</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Scan​Progression​Direction</para>
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
@@ -68097,6 +68278,66 @@
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
+            <para>(3008,0171)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Pulse Specific Brachy Control Point Delivered Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Pulse​Specific​Brachy​Control​Point​Delivered​Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(3008,0172)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Pulse Number</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Pulse​Number</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>US</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(3008,0173)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Brachy Pulse Control Point Delivered Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Brachy​Pulse​Control​Point​Delivered​Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
             <para>(3008,0200)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -69943,6 +70184,26 @@
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>CS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,00C5)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Beam Delivery Duration Limit</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Beam​Delivery​Duration​Limit</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FD</para>
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
@@ -83990,7 +84251,7 @@
           <td align="left" colspan="1" rowspan="1">
             <para>SOP Class</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para><olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/></para>
           </td>
         </tr>
@@ -84004,7 +84265,7 @@
           <td align="left" colspan="1" rowspan="1">
             <para>Well-known SOP Instance</para>
           </td>
-          <td align="left" colspan="1" rowspan="1">
+          <td align="center" colspan="1" rowspan="1">
             <para><olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/></para>
           </td>
         </tr>

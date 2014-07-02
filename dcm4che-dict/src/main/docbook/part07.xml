@@ -12933,7 +12933,7 @@
     <title>Registry of DICOM Command Elements</title>
   
     <table frame="box" label="E.1-1" rules="all" xml:id="table_E.1-1">
-    <caption>Command Fields (Part 1)</caption>
+    <caption>Command Fields</caption>
     <thead>
    <tr valign="top">
       <th align="center" colspan="1" rowspan="1">

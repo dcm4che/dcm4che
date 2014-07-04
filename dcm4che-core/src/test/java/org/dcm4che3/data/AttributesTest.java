@@ -248,4 +248,41 @@ public class AttributesTest {
         assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
     }
 
+    @Test
+    public void testGetModified() {
+        Attributes original = new Attributes();
+        Attributes otherPID = new Attributes();
+        Attributes rqAttrs = new Attributes();
+        original.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber");
+        original.setNull(Tag.PatientName, VR.PN);
+        original.setString(Tag.PatientID, VR.LO, "PatientID");
+        original.setString(Tag.IssuerOfPatientID, VR.LO, "IssuerOfPatientID");
+        original.newSequence(Tag.OtherPatientIDsSequence, 1).add(otherPID);
+        original.newSequence(Tag.RequestAttributesSequence, 1).add(rqAttrs);
+        original.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00990001, VR.LO, "0099xx01B");
+        original.setString("PrivateCreatorB", 0x00990002, VR.LO, "0099xx02B");
+        otherPID.setString(Tag.PatientID, VR.LO, "OtherPatientID");
+        otherPID.setString(Tag.IssuerOfPatientID, VR.LO, "OtherIssuerOfPatientID");
+        rqAttrs.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID");
+        rqAttrs.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID");
+
+        Attributes other = new Attributes(original);
+        other.setNull(Tag.AccessionNumber, VR.SH);
+        other.setString(Tag.PatientName, VR.LO, "Added^Patient^Name");
+        other.setString(Tag.PatientID, VR.LO, "ModifiedPatientID");
+        other.getNestedDataset(Tag.OtherPatientIDsSequence)
+                .setString(Tag.PatientID, VR.LO, "ModifiedOtherPatientID");
+        other.setString("PrivateCreatorB", 0x00990002, VR.LO, "Modfied0099xx02B");
+
+        Attributes modified = original.getModified(other);
+        assertEquals(5, modified.size());
+        assertEquals("AccessionNumber", modified.getString(Tag.AccessionNumber));
+        assertEquals("PatientID", modified.getString(Tag.PatientID));
+        Attributes modOtherPID = modified.getNestedDataset(Tag.OtherPatientIDsSequence);
+        assertNotNull(modOtherPID);
+        assertEquals("OtherPatientID", modOtherPID.getString(Tag.PatientID));
+        assertEquals("PrivateCreatorB", modified.getString(0x00990010));
+        assertEquals("0099xx02B", modified.getString(0x00991002));
+    }
 }

@@ -2882,4 +2882,59 @@ public class Attributes implements Serializable {
                 return true;
         return false;
     }
+
+    /**
+     * Returns attributes of this data set which were removed or replaced in
+     * the specified other data set.
+     * 
+     * @param other data set
+     * @return attributes of this data set which were removed or replaced in
+     *         the specified other data set.
+     */
+    public Attributes getModified(Attributes other) {
+        Attributes modified = new Attributes(size);
+        int creatorTag = -1;
+        int otherCreatorTag = 0;
+        String privateCreator = null;
+        for (int i = 0; i < size; i++) {
+            int tag = tags[i];
+            if ((tag & 0x00010000) != 0) { // private group
+                if ((tag & 0x0000ff00) == 0) { // private creator
+                    Object o = decodeStringValue(i);
+                    if (o instanceof String) {
+                        privateCreator = (String) o;
+                        creatorTag = tag;
+                        otherCreatorTag = creatorTagOf(
+                                privateCreator, tag, false);
+                    } else {
+                        privateCreator = null;
+                    }
+                    continue;
+                }
+                if (otherCreatorTag != -1
+                        && TagUtils.creatorTagOf(tag) == creatorTag) {
+                    tag = TagUtils.toPrivateTag(otherCreatorTag, tag);
+                }
+            } else {
+                privateCreator = null;
+            }
+
+            Object origValue = values[i];
+            if (origValue instanceof Value && ((Value) origValue).isEmpty())
+                continue;
+
+            int j = other.indexOf(tag);
+            if (j >= 0 && equalValues(other, i, j))
+                continue;
+
+            if (origValue instanceof Sequence) {
+                modified.set(privateCreator, tag, (Sequence) origValue, null);
+            } else if (origValue instanceof Fragments) {
+                modified.set(privateCreator, tag, (Fragments) origValue);
+            } else {
+                modified.set(privateCreator, tag, vrs[i], origValue);
+            }
+        }
+        return modified;
+    }
 }

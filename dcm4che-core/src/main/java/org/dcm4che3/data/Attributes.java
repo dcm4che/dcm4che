@@ -2886,7 +2886,7 @@ public class Attributes implements Serializable {
     /**
      * Add attributes of this data set which were replaced in
      * the specified other data set into the result data set.
-     * If no result data set is passed, a new result set will be initiated.
+     * If no result data set is passed, a new result set will be instantiated.
      * 
      * @param other data set
      * @param result data set or {@code null} 

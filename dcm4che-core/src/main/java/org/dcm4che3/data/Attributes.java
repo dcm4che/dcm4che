@@ -2884,6 +2884,73 @@ public class Attributes implements Serializable {
     }
 
     /**
+     * Add attributes of this data set which were replaced in
+     * the specified other data set into the result data set.
+     * If no result data set is passed, a new result set will be initiated.
+     * 
+     * @param other data set
+     * @param result data set or {@code null} 
+     *
+     * @return result data set.
+     */
+    public Attributes getModified(Attributes other, Attributes result) {
+        if (result == null)
+            result = new Attributes(other.size);
+        int creatorTag = -1;
+        int prevOtherCreatorTag = -1;
+        int otherCreatorTag = -1;
+        String privateCreator = null;
+        for (int i = 0; i < other.size; i++) {
+            int tag = other.tags[i];
+            if ((tag & 0x00010000) != 0) { // private group
+                if ((tag & 0x0000ff00) == 0)
+                    continue; // skip private creator
+
+                otherCreatorTag = TagUtils.creatorTagOf(tag);
+                if (prevOtherCreatorTag != otherCreatorTag) {
+                    prevOtherCreatorTag = otherCreatorTag;
+                    creatorTag = -1;
+                    int k = other.indexOf(otherCreatorTag);
+                    if (k >= 0) {
+                        Object o = other.decodeStringValue(k);
+                        if (o instanceof String) {
+                            privateCreator = (String) o;
+                            creatorTag = creatorTagOf(
+                                    privateCreator, tag, false);
+                        }
+                    }
+                }
+                if (creatorTag == -1)
+                    continue; // no matching Private Creator
+
+                tag = TagUtils.toPrivateTag(creatorTag, tag);
+            } else {
+                privateCreator = null;
+            }
+
+            int j = indexOf(tag);
+            if (j < 0)
+                continue;
+
+            Object origValue = values[j];
+            if (origValue instanceof Value && ((Value) origValue).isEmpty())
+                continue;
+
+            if (equalValues(other, j, i))
+                continue;
+
+            if (origValue instanceof Sequence) {
+                result.set(privateCreator, tag, (Sequence) origValue, null);
+            } else if (origValue instanceof Fragments) {
+                result.set(privateCreator, tag, (Fragments) origValue);
+            } else {
+                result.set(privateCreator, tag, vrs[i], origValue);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns attributes of this data set which were removed or replaced in
      * the specified other data set.
      * 
@@ -2891,31 +2958,40 @@ public class Attributes implements Serializable {
      * @return attributes of this data set which were removed or replaced in
      *         the specified other data set.
      */
-    public Attributes getModified(Attributes other) {
+    public Attributes getRemovedOrModified(Attributes other) {
         Attributes modified = new Attributes(size);
         int creatorTag = -1;
+        int prevCreatorTag = -1;
         int otherCreatorTag = 0;
         String privateCreator = null;
         for (int i = 0; i < size; i++) {
             int tag = tags[i];
             if ((tag & 0x00010000) != 0) { // private group
-                if ((tag & 0x0000ff00) == 0) { // private creator
-                    Object o = decodeStringValue(i);
-                    if (o instanceof String) {
-                        privateCreator = (String) o;
-                        creatorTag = tag;
-                        otherCreatorTag = creatorTagOf(
-                                privateCreator, tag, false);
-                    } else {
-                        privateCreator = null;
+                if ((tag & 0x0000ff00) == 0)
+                    continue; // skip private creator
+
+                creatorTag = TagUtils.creatorTagOf(tag);
+                if (prevCreatorTag != creatorTag) {
+                    prevCreatorTag = creatorTag;
+                    otherCreatorTag = -1;
+                    privateCreator = null;
+                    int k = indexOf(creatorTag);
+                    if (k >= 0) {
+                        Object o = decodeStringValue(k);
+                        if (o instanceof String) {
+                            privateCreator = (String) o;
+                            otherCreatorTag = other.creatorTagOf(
+                                    privateCreator, tag, false);
+                        }
                     }
-                    continue;
                 }
-                if (otherCreatorTag != -1
-                        && TagUtils.creatorTagOf(tag) == creatorTag) {
+                if (privateCreator == null)
+                    continue; // no Private Creator
+
+                if (otherCreatorTag != -1)
                     tag = TagUtils.toPrivateTag(otherCreatorTag, tag);
-                }
             } else {
+                otherCreatorTag = 0;
                 privateCreator = null;
             }
 
@@ -2923,9 +2999,11 @@ public class Attributes implements Serializable {
             if (origValue instanceof Value && ((Value) origValue).isEmpty())
                 continue;
 
-            int j = other.indexOf(tag);
-            if (j >= 0 && equalValues(other, i, j))
-                continue;
+            if (otherCreatorTag >= 0) {
+                int j = other.indexOf(tag);
+                if (j >= 0 && equalValues(other, i, j))
+                    continue;
+            }
 
             if (origValue instanceof Sequence) {
                 modified.set(privateCreator, tag, (Sequence) origValue, null);

@@ -250,6 +250,46 @@ public class AttributesTest {
 
     @Test
     public void testGetModified() {
+        Attributes original = createOriginal();
+        Attributes other = modify(original);
+        Attributes modified = original.getModified(other, null);
+        assertEquals(4, modified.size());
+        assertModified(modified);
+    }
+
+    @Test
+    public void testGetRemovedOrModified() {
+        Attributes original = createOriginal();
+        Attributes other = modify(original);
+        Attributes modified = original.getRemovedOrModified(other);
+        assertEquals(5, modified.size());
+        assertEquals("AccessionNumber", modified.getString(Tag.AccessionNumber));
+        assertModified(modified);
+    }
+
+    private void assertModified(Attributes modified) {
+        assertEquals("PatientID", modified.getString(Tag.PatientID));
+        Attributes modOtherPID = modified.getNestedDataset(Tag.OtherPatientIDsSequence);
+        assertNotNull(modOtherPID);
+        assertEquals("OtherPatientID", modOtherPID.getString(Tag.PatientID));
+        assertEquals("PrivateCreatorB", modified.getString(0x00990010));
+        assertEquals("0099xx02B", modified.getString(0x00991002));
+    }
+
+    private Attributes modify(Attributes original) {
+        Attributes other = new Attributes(original.size()+2);
+        other.setString("PrivateCreatorC", 0x00990002, VR.LO, "New0099xx02C");
+        other.addAll(original);
+        other.remove(Tag.AccessionNumber);
+        other.setString(Tag.PatientName, VR.LO, "Added^Patient^Name");
+        other.setString(Tag.PatientID, VR.LO, "ModifiedPatientID");
+        other.getNestedDataset(Tag.OtherPatientIDsSequence)
+                .setString(Tag.PatientID, VR.LO, "ModifiedOtherPatientID");
+        other.setString("PrivateCreatorB", 0x00990002, VR.LO, "Modfied0099xx02B");
+        return other;
+    }
+
+    private Attributes createOriginal() {
         Attributes original = new Attributes();
         Attributes otherPID = new Attributes();
         Attributes rqAttrs = new Attributes();
@@ -266,23 +306,6 @@ public class AttributesTest {
         otherPID.setString(Tag.IssuerOfPatientID, VR.LO, "OtherIssuerOfPatientID");
         rqAttrs.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID");
         rqAttrs.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID");
-
-        Attributes other = new Attributes(original);
-        other.setNull(Tag.AccessionNumber, VR.SH);
-        other.setString(Tag.PatientName, VR.LO, "Added^Patient^Name");
-        other.setString(Tag.PatientID, VR.LO, "ModifiedPatientID");
-        other.getNestedDataset(Tag.OtherPatientIDsSequence)
-                .setString(Tag.PatientID, VR.LO, "ModifiedOtherPatientID");
-        other.setString("PrivateCreatorB", 0x00990002, VR.LO, "Modfied0099xx02B");
-
-        Attributes modified = original.getModified(other);
-        assertEquals(5, modified.size());
-        assertEquals("AccessionNumber", modified.getString(Tag.AccessionNumber));
-        assertEquals("PatientID", modified.getString(Tag.PatientID));
-        Attributes modOtherPID = modified.getNestedDataset(Tag.OtherPatientIDsSequence);
-        assertNotNull(modOtherPID);
-        assertEquals("OtherPatientID", modOtherPID.getString(Tag.PatientID));
-        assertEquals("PrivateCreatorB", modified.getString(0x00990010));
-        assertEquals("0099xx02B", modified.getString(0x00991002));
+        return original;
     }
 }

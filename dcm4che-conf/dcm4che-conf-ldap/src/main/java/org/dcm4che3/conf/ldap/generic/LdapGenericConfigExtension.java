@@ -52,6 +52,7 @@ import javax.naming.directory.ModificationItem;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.conf.api.generic.ConfigClass;
@@ -201,4 +202,12 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
                     " for device: " + device.getDeviceName(), e);
         }
     }
+    
+    @Override
+    protected void loadChilds(ApplicationEntity ae, String aeDN) throws NamingException {
+        // TODO Auto-generated method stub
+        super.loadChilds(ae, aeDN);
+    }
+    
+    
 }

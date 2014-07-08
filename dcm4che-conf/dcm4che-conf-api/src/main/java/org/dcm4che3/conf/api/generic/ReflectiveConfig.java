@@ -334,6 +334,12 @@ public class ReflectiveConfig {
         this.dicomConfiguration = configCtx;
     }
 
+    /**
+     * Reads config into the provided confObj from reader
+     * @param confObj
+     * @param reader
+     * @throws ConfigurationException
+     */
     @SuppressWarnings("unchecked")
     public <T> void readConfig(T confObj, ConfigReader reader) throws ConfigurationException {
 

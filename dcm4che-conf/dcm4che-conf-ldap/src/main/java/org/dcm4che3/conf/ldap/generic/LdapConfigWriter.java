@@ -38,8 +38,10 @@
 package org.dcm4che3.conf.ldap.generic;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import javax.naming.directory.Attributes;
+import javax.naming.directory.ModificationItem;
 
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -47,17 +49,32 @@ import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Only used by the archive for writing/storediffing the device level attributes ( with disabled flushing since flush is done by the ArchiveConfExension), 
+ * children are handled in a separate routine with the GenericExtension
+ * @author Roman K
+ *
+ */
 @Deprecated
 public class LdapConfigWriter implements ConfigWriter {
 
     public static final Logger log = LoggerFactory.getLogger(LdapConfigWriter.class);
 
     private final Attributes attrs;
+    private final List<ModificationItem> mods;
 
+    // for writing
     public LdapConfigWriter(Attributes attrs) {
         this.attrs = attrs;
+        this.mods = null;
     }
 
+    // for storediffs
+    public LdapConfigWriter(List<ModificationItem> mods) {
+        this.mods = mods;
+        this.attrs = null;
+    }
+    
     @Override
     public void storeNotDef(String propName, Object value, String def) {
 
@@ -93,55 +110,45 @@ public class LdapConfigWriter implements ConfigWriter {
 
     @Override
     public ConfigWriter getCollectionElementWriter(String keyName, String keyValue, Field field) throws ConfigurationException {
-        // TODO Auto-generated method stub
-        return null;
+        return NoopConfigWriter.getInstance();
     }
 
     @Override
     public ConfigWriter createCollectionChild(String propName, Field field) throws ConfigurationException {
-        // TODO Auto-generated method stub
-        return null;
+        return NoopConfigWriter.getInstance();
     }
 
     @Override
     public void flushWriter() throws ConfigurationException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void storeDiff(String propName, Object prev, Object curr) {
-        // TODO Auto-generated method stub
-
+        if (prev != null && curr != null && prev.getClass().isArray() && curr.getClass().isArray())
+            LdapUtils.storeDiff(mods, propName, (Object[]) prev, (Object[]) curr);
+        else
+            LdapUtils.storeDiff(mods, propName, prev, curr);
     }
 
     @Override
     public void flushDiffs() throws ConfigurationException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue) {
-        // TODO Auto-generated method stub
-        return null;
+        return NoopConfigWriter.getInstance();
     }
 
     @Override
     public ConfigWriter getChildWriter(String propName, Field field) {
-        // TODO Auto-generated method stub
-        return null;
+        return NoopConfigWriter.getInstance();
     }
 
     @Override
     public void removeCurrentNode() {
-        // TODO Auto-generated method stub
-        
     }
 }

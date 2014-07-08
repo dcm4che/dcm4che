@@ -61,7 +61,9 @@ public @interface ConfigField {
     String name();
 
     /**
-     * Default value
+     * Warning - not the common "default". The logic is that  
+     * if the attribute at hand will have the value specified by this parameter, it will not be persisted.
+     * Additionally, if applied to a Object-typed field, will populate it with null if there is no child and not throw exception.
      * 
      * @return
      */

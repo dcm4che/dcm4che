@@ -106,9 +106,9 @@ public class IDWithIssuer {
             return false;
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
-                issuer == null 
+                (issuer == null 
                     ? other.issuer == null
-                    : issuer.equals(other.issuer);
+                    : issuer.equals(other.issuer));
     }
 
     public boolean matches(IDWithIssuer other) {

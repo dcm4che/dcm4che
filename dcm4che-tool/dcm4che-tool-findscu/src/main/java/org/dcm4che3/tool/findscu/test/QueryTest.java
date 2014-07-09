@@ -51,6 +51,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
@@ -183,9 +184,22 @@ public class QueryTest {
                 if (Status.isPending(status)) {
                     if (returnTag != null) {
 
-                        String returnedValue = data.getString(returnTag);
-                        if (!returnedValues.contains(returnedValue))
-                            returnedValues.add(returnedValue);
+                        if (returnTag.equals(Tag.OtherPatientIDsSequence))
+                        {
+                            Sequence seq = data.getSequence(returnTag);
+                            for (Attributes element : seq)
+                            {
+                                String returnedValue = element.getString(Tag.PatientID);
+                                if (!returnedValues.contains(returnedValue))
+                                    returnedValues.add(returnedValue);
+                            }
+                        }
+                        else
+                        {
+                            String returnedValue = data.getString(returnTag);
+                            if (!returnedValues.contains(returnedValue))
+                                returnedValues.add(returnedValue);
+                        }
 
                         // System.out.println(returnedValue);
                     }

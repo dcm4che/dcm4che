@@ -107,7 +107,9 @@ public class Association {
         this.serialNo = prevSerialNo.incrementAndGet();
         this.ae = ae;
         this.requestor = ae != null;
-        this.name = "Association" + delim() + serialNo;
+        this.name = "" + sock.getLocalSocketAddress()
+             + delim() + sock.getRemoteSocketAddress()
+             + '(' + serialNo + ')';
         this.conn = local;
         this.device = local.getDevice();
         this.sock = sock;
@@ -131,8 +133,8 @@ public class Association {
         return messageID.incrementAndGet() & 0xFFFF;
     }
 
-    private char delim() {
-        return requestor ? '-' : '+';
+    private String delim() {
+        return requestor ? "->" : "<-";
     }
 
     @Override
@@ -407,7 +409,7 @@ public class Association {
     }
 
     void write(AAssociateRQ rq) throws IOException {
-        name = rq.getCalledAET() + delim() + serialNo;
+        name = rq.getCallingAET() + delim() + rq.getCalledAET() + '(' + serialNo + ')';
         this.rq = rq;
         LOG.info("{} << A-ASSOCIATE-RQ", name);
         LOG.debug("{}", rq);
@@ -507,6 +509,7 @@ public class Association {
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {
+        name = rq.getCalledAET() + delim() + rq.getCallingAET() + '(' + serialNo + ')';
         LOG.info("{} >> A-ASSOCIATE-RQ", name);
         LOG.debug("{}", rq);
         stopTimeout();
@@ -515,7 +518,6 @@ public class Association {
 
     void handle(AAssociateRQ rq) throws IOException {
         this.rq = rq;
-        name = rq.getCallingAET() + delim() + serialNo;
         enterState(State.Sta3);
         try {
             ae = device.getApplicationEntity(rq.getCalledAET());

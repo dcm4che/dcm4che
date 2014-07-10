@@ -70,11 +70,11 @@ fi
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"
 
 if [ -n "$IMAGE_READER_FACTORY" ]; then
-    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che.imageio.codec.ImageReaderFactory=$IMAGE_READER_FACTORY"
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageReaderFactory=$IMAGE_READER_FACTORY"
 fi
 
 if [ -n "$IMAGE_WRITER_FACTORY" ]; then
-    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
 fi
 
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=${JAVA_LIBRARY_PATH}"

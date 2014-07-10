@@ -3,7 +3,7 @@
 # soundex  Launcher
 # -------------------------------------------------------------------------
 
-MAIN_CLASS=org.dcm4che.soundex.Phonem
+MAIN_CLASS=org.dcm4che3.soundex.Phonem
 MAIN_JAR=dcm4che-soundex-3.3.4-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"

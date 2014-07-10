@@ -60,6 +60,6 @@ if "%JAVA_LIBRARY_PATH%" == "" set JAVA_LIBRARY_PATH=%DCM4CHE_HOME%\lib\win-i686
 set JAVA_OPTS=%JAVA_OPTS% "-Djava.library.path=%JAVA_LIBRARY_PATH%"
 
 if not "%IMAGE_READER_FACTORY%" == "" ^
- set JAVA_OPTS=%JAVA_OPTS% "-Dorg.dcm4che.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%
+ set JAVA_OPTS=%JAVA_OPTS% "-Dorg.dcm4che3.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

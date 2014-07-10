@@ -741,20 +741,11 @@ public class DcmQRSCP {
             EnumSet<QueryOption> queryOptions) {
         for (String cuid : p.stringPropertyNames()) {
             String ts = p.getProperty(cuid);
-            TransferCapability tc = new TransferCapability(null, cuid, role,
-                    ts.equals("*")
-                        ? new String[] { "*" }
-                        : toUIDs(StringUtils.split(ts, ',')));
+            TransferCapability tc = new TransferCapability(null, 
+                    CLIUtils.toUID(cuid), role, CLIUtils.toUIDs(ts));
             tc.setQueryOptions(queryOptions);
             ae.addTransferCapability(tc);
         }
-    }
-
-    private static String[] toUIDs(String[] names) {
-        String[] uids = new String[names.length];
-        for (int i = 0; i < uids.length; i++)
-            uids[i] = UID.forName(names[i].trim());
-        return uids ;
     }
 
     private static void configureRemoteConnections(DcmQRSCP main, CommandLine cl)

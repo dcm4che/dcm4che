@@ -71,7 +71,6 @@ import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -291,13 +290,11 @@ public class StoreSCP {
                     null);
             for (String cuid : p.stringPropertyNames()) {
                 String ts = p.getProperty(cuid);
-                ae.addTransferCapability(
-                        ts.equals("*")
-                            ? new TransferCapability(null, cuid,
-                                    TransferCapability.Role.SCP, "*")
-                            : new TransferCapability(null, cuid,
-                                    TransferCapability.Role.SCP,
-                                    StringUtils.split(ts, ',')));
+                TransferCapability tc = new TransferCapability(null,
+                        CLIUtils.toUID(cuid), 
+                        TransferCapability.Role.SCP,
+                        CLIUtils.toUIDs(ts));
+                ae.addTransferCapability(tc);
             }
         }
      }

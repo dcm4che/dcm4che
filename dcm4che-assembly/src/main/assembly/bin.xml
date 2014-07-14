@@ -143,6 +143,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-movescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-mppsscu</include>
+        <include>org.dcm4che.tool:dcm4che-tool-prefs2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescp</include>
         <include>org.dcm4che.tool:dcm4che-tool-storescu</include>
         <include>org.dcm4che.tool:dcm4che-tool-stgcmtscu</include>

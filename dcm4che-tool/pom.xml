@@ -86,6 +86,7 @@
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
     <module>dcm4che-tool-probetc</module>
+    <module>dcm4che-tool-prefs2xml</module>
   </modules>
   <build>
     <plugins>

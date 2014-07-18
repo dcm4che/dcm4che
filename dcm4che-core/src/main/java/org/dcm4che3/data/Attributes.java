@@ -94,7 +94,7 @@ public class Attributes implements Serializable {
     private long itemPosition = -1;
     private boolean containsSpecificCharacterSet;
     private boolean containsTimezoneOffsetFromUTC;
-    private HashMap<String, Object> properties;
+    private Map<String, Object> properties;
     private TimeZone defaultTimeZone;
 
     public Attributes() {
@@ -147,6 +147,14 @@ public class Attributes implements Serializable {
         if (other.properties != null)
             properties = new HashMap<String, Object>(other.properties);
         addSelected(other, selection);
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 
     public Object getProperty(String key, Object defVal) {

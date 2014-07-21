@@ -1,9 +1,9 @@
 dcm4che-3.x DICOM Toolkit
 =========================
-Build Status: ![live build-status indicator](https://travis-ci.org/abluesongbird/dcm4che.svg?branch=master)
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
 Issue Tracker: http://www.dcm4che.org/jira/browse/LIB  
+Build Status: ![live build-status indicator](https://travis-ci.org/abluesongbird/dcm4che.svg?branch=master)
 
 This is a complete rewrite of [dcm4che-2.x](http://www.dcm4che.org/confluence/display/d2/).
 

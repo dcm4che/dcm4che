@@ -48,33 +48,51 @@ public class QueryResult {
     private int expectedResult = Integer.MIN_VALUE;
     private int numMatches;
     private long time;
+    private long timeFirst;
     /**
      * @param testDescription
      * @param expectedResult
      * @param numMatches
      * @param time
+     * @param timeFirst
      */
     public QueryResult(String testDescription, int expectedResult,
-            int numMatches, long time) {
+            int numMatches, long time, long timeFirst) {
         super();
         this.testDescription = testDescription;
         this.expectedResult = expectedResult;
         this.numMatches = numMatches;
         this.time = time;
+        this.timeFirst = timeFirst;
     }
     public String getTestDescription() {
         return testDescription;
     }
+    public void setTestDescription(String testDescription) {
+        this.testDescription = testDescription;
+    }
     public int getExpectedResult() {
         return expectedResult;
+    }
+    public void setExpectedResult(int expectedResult) {
+        this.expectedResult = expectedResult;
     }
     public int getNumMatches() {
         return numMatches;
     }
+    public void setNumMatches(int numMatches) {
+        this.numMatches = numMatches;
+    }
     public long getTime() {
         return time;
     }
-    
-    
-
-}
+    public void setTime(long time) {
+        this.time = time;
+    }
+    public long getTimeFirst() {
+        return timeFirst;
+    }
+    public void setTimeFirst(long timeFirst) {
+        this.timeFirst = timeFirst;
+    }
+ }

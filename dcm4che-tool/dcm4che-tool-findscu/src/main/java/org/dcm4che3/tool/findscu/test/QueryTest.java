@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,6 +84,8 @@ public class QueryTest {
     private Attributes queryatts = new Attributes();
     private int expectedResult = Integer.MIN_VALUE;
     private List<String> expectedValues = null;
+    
+    private long timeFirst=0;
 
     /**
      * @param host
@@ -96,7 +99,20 @@ public class QueryTest {
         this.aeTitle = aeTitle;
     }
 
+    public QueryResult queryfuzzy(String testDescription) throws IOException,
+    InterruptedException, IncompatibleConnectionException,
+    GeneralSecurityException {
+        return query(testDescription,true);
+    }
+
     public QueryResult query(String testDescription) throws IOException,
+    InterruptedException, IncompatibleConnectionException,
+    GeneralSecurityException {
+        return query(testDescription,false);
+    }
+
+    
+    private QueryResult query(String testDescription, boolean fuzzy) throws IOException,
             InterruptedException, IncompatibleConnectionException,
             GeneralSecurityException {
 
@@ -111,12 +127,14 @@ public class QueryTest {
         main.getDevice().setExecutor(executorService);
         main.getDevice().setScheduledExecutor(scheduledExecutorService);
 
-        main.setInformationModel(InformationModel.StudyRoot, IVR_LE_FIRST,
-                EnumSet.noneOf(QueryOption.class));
+        EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
+        if (fuzzy) queryOptions.add(QueryOption.FUZZY);
+        
+        main.setInformationModel(InformationModel.StudyRoot, IVR_LE_FIRST,queryOptions);
 
         main.getKeys().addAll(queryatts);
 
-        long t1 = System.currentTimeMillis();
+        long timeStart = System.currentTimeMillis();
 
         try {
 
@@ -130,7 +148,7 @@ public class QueryTest {
 
         }
 
-        long t2 = System.currentTimeMillis();
+        long timeEnd = System.currentTimeMillis();
 
         if (this.expectedResult >= 0)
             assertTrue("test[" + testDescription
@@ -146,7 +164,7 @@ public class QueryTest {
                         returnedValues.contains(expectedValue));
 
         return new QueryResult(testDescription, expectedResult, numMatches,
-                (t2 - t1));
+                (timeEnd - timeStart), (timeFirst-timeStart));
     }
 
     public void addTag(int tag, String value) throws Exception {
@@ -180,6 +198,7 @@ public class QueryTest {
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
+                if (numMatches==0) timeFirst = System.currentTimeMillis();
                 int status = cmd.getInt(Tag.Status, -1);
                 if (Status.isPending(status)) {
                     if (returnTag != null) {

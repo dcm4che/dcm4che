@@ -85,6 +85,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
@@ -94,7 +95,7 @@ import java.util.StringTokenizer;
 public class SpecificCharacterSet {
     
     public static final SpecificCharacterSet DEFAULT =
-            new SpecificCharacterSet(Codec.ISO_646);
+            new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, "ISO_IR 100");
 
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = 
             new ThreadLocal<SoftReference<Encoder>>();
@@ -103,6 +104,7 @@ public class SpecificCharacterSet {
             new ThreadLocal<SoftReference<Encoder>>();
 
     protected final Codec[] codecs;
+    protected final String[] dicomCodes;
 
     private enum Codec {
         ISO_646("US-ASCII", 0x2842, 0),
@@ -246,7 +248,6 @@ public class SpecificCharacterSet {
         public int getEscSeq1() {
             return escSeq1;
         }
-
     }
 
     private static final class Encoder {
@@ -294,8 +295,8 @@ public class SpecificCharacterSet {
 
     private static final class ISO2022 extends SpecificCharacterSet {
 
-        private ISO2022(Codec... charsetInfos) {
-            super(charsetInfos);
+        private ISO2022(Codec[] charsetInfos, String... codes) {
+            super(charsetInfos, codes);
         }
 
         @Override
@@ -470,8 +471,13 @@ public class SpecificCharacterSet {
         Codec[] infos = new Codec[codes.length];
         for (int i = 0; i < codes.length; i++)
             infos[i] = Codec.forCode(codes[i]);
-        return codes.length > 1 ? new ISO2022(infos)
-                : new SpecificCharacterSet(infos);
+        return codes.length > 1 ? new ISO2022(infos,codes)
+                : new SpecificCharacterSet(infos, codes);
+    }
+    
+    public String[] toCodes () {
+        
+        return dicomCodes;
     }
 
     private static Encoder encoder(ThreadLocal<SoftReference<Encoder>> tl,
@@ -484,8 +490,9 @@ public class SpecificCharacterSet {
         return enc;
     }
 
-    protected SpecificCharacterSet(Codec... codecs) {
+    protected SpecificCharacterSet(Codec[] codecs, String... codes) {
         this.codecs = codecs;
+        this.dicomCodes = codes;
     }
 
     public byte[] encode(String val, String delimiters) {
@@ -494,6 +501,35 @@ public class SpecificCharacterSet {
 
     public String decode(byte[] val) {
         return codecs[0].decode(val, 0, val.length);
+    }
+
+    public boolean isUTF8() {
+        return codecs[0].equals(Codec.UTF_8);
+    }
+    
+    public boolean isASCII() {
+        return codecs[0].equals(Codec.ISO_646);
+    }
+
+    public boolean containsASCII() {
+        return codecs[0].containsASCII();
+    }
+    
+    @Override public boolean equals(Object other) {
+        
+        if (other == null) {
+            return false;
+        }
+        if (getClass() != other.getClass()) {
+            return false;
+        }
+        final SpecificCharacterSet othercs = (SpecificCharacterSet) other;
+        return Arrays.equals(this.codecs,othercs.codecs);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(this.codecs);
     }
 
 }

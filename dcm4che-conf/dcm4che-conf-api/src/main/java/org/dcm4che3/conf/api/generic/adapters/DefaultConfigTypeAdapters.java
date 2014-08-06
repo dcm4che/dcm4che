@@ -39,6 +39,7 @@ package org.dcm4che3.conf.api.generic.adapters;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class DefaultConfigTypeAdapters {
     public abstract static class PrimitiveAbstractTypeAdapter<T> implements ConfigTypeAdapter<T, T> {
 
         Map<String, Object> metadata =  new HashMap<String, Object>();
-        
+
         @Override
         public boolean isWritingChildren(Field field) {
             return false;
@@ -102,7 +103,7 @@ public class DefaultConfigTypeAdapters {
 
             diffwriter.storeDiff(fieldAnno.name(), prevSerialized, currSerialized);
         }
-        
+
         /**
          * Constant metadata defined in constructors
          */
@@ -111,7 +112,7 @@ public class DefaultConfigTypeAdapters {
             return metadata;
         }
 
-        
+
     }
 
     /**
@@ -147,7 +148,7 @@ public class DefaultConfigTypeAdapters {
 
             diffwriter.storeDiff(fieldAnno.name(), prevSerialized, currSerialized);
         }
-        
+
         @Override
         public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
             return metadata;
@@ -162,7 +163,7 @@ public class DefaultConfigTypeAdapters {
         public StringTypeAdapter() {
             metadata.put("type", "String");
         }
-        
+
         @Override
         public String read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
@@ -179,7 +180,7 @@ public class DefaultConfigTypeAdapters {
         public IntegerTypeAdapter() {
             metadata.put("type", "Integer");
         }
-        
+
         @Override
         public Integer read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
@@ -195,7 +196,7 @@ public class DefaultConfigTypeAdapters {
         public BooleanTypeAdapter() {
             metadata.put("type", "Boolean");
         }
-        
+
         @Override
         public Boolean read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
@@ -207,7 +208,7 @@ public class DefaultConfigTypeAdapters {
      * Array
      */
     public static class ArrayTypeAdapter extends PrimitiveAbstractTypeAdapter<Object> {
-        
+
         @Override
         public Object deserialize(Object serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
             // Support for Sets/Lists - needed for JSON deserialization
@@ -222,7 +223,7 @@ public class DefaultConfigTypeAdapters {
             }
             return super.deserialize(serialized, config, field);
         }
-        
+
         @Override
         public boolean isWritingChildren(Field field) {
             return false;
@@ -245,21 +246,21 @@ public class DefaultConfigTypeAdapters {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
             writer.storeNotEmpty(fieldAnno.name(), serialized);
         }
-        
+
         @Override
         public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
 
             Map<String, Object> metadata =  new HashMap<String, Object>();
             Map<String, Object> elementMetadata =  new HashMap<String, Object>();
-            
+
             metadata.put("type", "Array");
             metadata.put("elementMetadata", elementMetadata);
-            
+
             if (String.class.isAssignableFrom(field.getType().getComponentType()))
                 elementMetadata.put("type", "String");
             else if (int.class.isAssignableFrom(field.getType().getComponentType()))
                 elementMetadata.put("type", "Integer");
-            
+
             return metadata;
         }
 
@@ -273,7 +274,7 @@ public class DefaultConfigTypeAdapters {
         public AttributeFormatTypeAdapter() {
             metadata.put("type", "AttributesFormat");
         }
-        
+
         @Override
         public AttributesFormat deserialize(String serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
             return AttributesFormat.valueOf(serialized);
@@ -307,6 +308,34 @@ public class DefaultConfigTypeAdapters {
 
     }
 
+    /**
+     * AttributesFormat
+     */
+    public static class EnumTypeAdapter extends CommonAbstractTypeAdapter<Enum<?>> {
+
+        public EnumTypeAdapter() {
+            metadata.put("type", "Enum");
+        }
+
+        @Override
+        public Enum<?> deserialize(String serialized, ReflectiveConfig config, Field field) throws ConfigurationException {
+            if (serialized == null) 
+                return null;
+            try {
+                Method method = field.getType().getMethod("valueOf", String.class);
+                return (Enum<?>) method.invoke(null, serialized);
+            } catch (Exception x) {
+                throw new ConfigurationException("Deserialization of Enum failed! field:"+field, x);
+            }
+        }
+
+        @Override
+        public String serialize(Enum<?> obj, ReflectiveConfig config, Field field) {
+            return (obj == null ? null : obj.name());
+        }
+
+    }
+
     public static Map<Class, ConfigTypeAdapter> defaultTypeAdapters;
 
     static {
@@ -326,6 +355,7 @@ public class DefaultConfigTypeAdapters {
         defaultTypeAdapters.put(Map.class, new MapTypeAdapter());
         defaultTypeAdapters.put(Set.class, new SetTypeAdapter());
 
+        defaultTypeAdapters.put(Enum.class, new EnumTypeAdapter());
     }
 
     public static Map<Class, ConfigTypeAdapter> get() {

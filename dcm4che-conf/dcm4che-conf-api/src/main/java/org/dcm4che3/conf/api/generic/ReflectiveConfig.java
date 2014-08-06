@@ -194,7 +194,7 @@ public class ReflectiveConfig {
         void flushDiffs() throws ConfigurationException;
 
         void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException;
-        
+
         void removeCurrentNode() throws ConfigurationException;
 
         ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue);
@@ -370,15 +370,18 @@ public class ReflectiveConfig {
         Map<Class, ConfigTypeAdapter> def = DefaultConfigTypeAdapters.get();
 
         // if it is a config class, use reflective adapter
-        if (clazz.getAnnotation(ConfigClass.class) != null)
+        if (clazz.getAnnotation(ConfigClass.class) != null) {
             adapter = new ReflectiveAdapter(clazz);
-        else if (clazz.isArray())
+        } else if (clazz.isArray()) {
             // if array
             adapter = (ConfigTypeAdapter<T, ?>) new DefaultConfigTypeAdapters.ArrayTypeAdapter();
-        else
-            // try find in defaults
-            adapter = def.get(clazz);
-
+        } else {
+            if (clazz.isEnum()) {
+                adapter = def.get(Enum.class);
+            } else {
+                adapter = def.get(clazz);
+            }
+        }
         // if still not found, try custom
         if (adapter == null && customRepresentations != null)
             adapter = customRepresentations.get(clazz);

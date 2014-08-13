@@ -70,7 +70,7 @@ public class LdapDicomConfigurationExtension {
     protected void storeTo(Device device, Attributes attrs) { }
 
     protected void storeChilds(String deviceDN, Device device)
-            throws NamingException { }
+            throws NamingException, ConfigurationException { }
 
     protected void loadFrom(Device device, Attributes attrs)
             throws NamingException, CertificateException { }
@@ -81,7 +81,7 @@ public class LdapDicomConfigurationExtension {
     protected void storeDiffs(Device prev, Device device, List<ModificationItem> mods) {}
 
     protected void mergeChilds(Device prev, Device device, String deviceDN)
-            throws NamingException { }
+            throws NamingException, ConfigurationException { }
 
     protected void storeTo(ApplicationEntity ae, Attributes attrs) {}
 

@@ -498,7 +498,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             storeCertificates(dn, certs);
     }
 
-    private void storeChilds(String deviceDN, Device device) throws NamingException {
+    private void storeChilds(String deviceDN, Device device) throws NamingException, ConfigurationException {
         for (Connection conn : device.listConnections())
             createSubcontext(LdapUtils.dnOf(conn, deviceDN), storeTo(conn, new BasicAttributes(true)));
         for (LdapDicomConfigurationExtension ext : extensions)
@@ -556,7 +556,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     }
 
     private void mergeChilds(Device prev, Device device, String deviceDN)
-            throws NamingException {
+            throws NamingException, ConfigurationException {
         mergeConnections(prev, device, deviceDN);
         mergeAEs(prev, device, deviceDN);
         for (LdapDicomConfigurationExtension ext : extensions)

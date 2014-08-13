@@ -406,7 +406,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             storeCertificates(ref, certs);
     }
 
-    private void storeChilds(Device device, Preferences deviceNode) {
+    private void storeChilds(Device device, Preferences deviceNode) throws ConfigurationException {
         Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         int connIndex = 1;
         List<Connection> devConns = device.listConnections();
@@ -495,7 +495,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private void mergeChilds(Device prev, Device device,
-            Preferences devicePrefs) throws BackingStoreException {
+            Preferences devicePrefs) throws BackingStoreException, ConfigurationException {
         mergeConnections(prev, device, devicePrefs);
         mergeAEs(prev, device, devicePrefs);
         for (PreferencesDicomConfigurationExtension ext : extensions)

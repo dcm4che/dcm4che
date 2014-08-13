@@ -70,6 +70,12 @@ public @interface ConfigField {
     String def() default "N/A";
 
     /**
+     * If set to false, will not throw exceptions while loading the configuration in case if the property is not present in the persisted configuration.
+     * I.e. will keep the value that was initialized by the class constructor for the field.
+     */
+    boolean failIfNotPresent() default true;
+
+    /**
      * What is used as a map key, e.g. which names ldap nodes have like if a key is 'name', then nodes are
      * name=registry, name=repository
      * 

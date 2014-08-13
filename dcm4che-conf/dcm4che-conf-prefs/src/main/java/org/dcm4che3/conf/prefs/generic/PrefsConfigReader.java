@@ -44,6 +44,7 @@ import java.util.prefs.Preferences;
 
 import javax.naming.NamingException;
 
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.prefs.PreferencesUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
@@ -98,7 +99,7 @@ public class PrefsConfigReader implements ConfigReader {
     @Override
     public ConfigReader getChildReader(String propName) throws ConfigurationException {
         try {
-            if (!prefs.nodeExists(propName)) throw new ConfigurationException("Node "+propName+" does not exist for "+prefs.absolutePath()); else
+            if (!prefs.nodeExists(propName)) throw new ConfigurationNotFoundException("Node "+propName+" does not exist for "+prefs.absolutePath()); else
             return new PrefsConfigReader(prefs.node(propName));
         } catch (BackingStoreException e) {
             throw new ConfigurationException("Cannot read child configuration node from "+prefs.absolutePath(),e);

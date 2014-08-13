@@ -54,6 +54,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -177,7 +178,7 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
         try {
             return new LdapConfigIO(config.getAttributes(getFolderDn(propName)), getFolderDn(propName), config);
         } catch (NamingException e) {
-            throw new ConfigurationException(e);
+            throw new ConfigurationNotFoundException(e);
         }
     }
 

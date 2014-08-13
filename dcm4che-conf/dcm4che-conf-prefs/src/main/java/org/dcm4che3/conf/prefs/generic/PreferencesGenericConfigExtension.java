@@ -132,12 +132,12 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
         try {
         
             reflectiveConfig.readConfig(confObj, prefsReader);
-        
+            device.addDeviceExtension(confObj);
+
         } catch (Exception e) {
             throw new ConfigurationException("Unable to read configuration for class "+confClass.getSimpleName()+
                     " for device: " + device.getDeviceName() ,e);
         }
-        device.addDeviceExtension(confObj);
     }
 
     @Override

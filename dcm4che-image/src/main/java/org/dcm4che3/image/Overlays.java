@@ -136,8 +136,8 @@ public class Overlays {
             int rows, int columns, int stride, int mask,
             byte[] ovlyData, int off, int length) {
         for (int y = 0, i = off, imax = off + length;
-                y < columns && i < imax; y++) {
-            for (int j = y * stride, jmax = j + rows; j < jmax && i < imax; j++, i++) {
+                y < rows && i < imax; y++) {
+            for (int j = y * stride, jmax = j + columns; j < jmax && i < imax; j++, i++) {
                 if ((pixeldata[j] & mask) != 0) {
                     ovlyData[i >>> 3] |= 1 << (i & 7);
                 }

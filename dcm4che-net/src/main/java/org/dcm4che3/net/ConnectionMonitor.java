@@ -50,11 +50,11 @@ public interface ConnectionMonitor {
             Socket s);
 
     void onConnectionFailed(Connection conn, Connection remoteConn,
-            Socket s, Exception e);
+            Socket s, Throwable e);
 
     void onConnectionRejectedBlacklisted(Connection conn, Socket s);
 
-    void onConnectionRejected(Connection conn, Socket s, Exception e);
+    void onConnectionRejected(Connection conn, Socket s, Throwable e);
 
     void onConnectionAccepted(Connection conn, Socket s);
 

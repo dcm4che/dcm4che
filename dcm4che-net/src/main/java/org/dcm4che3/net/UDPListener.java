@@ -76,7 +76,7 @@ class UDPListener implements Listener {
         Connection.LOG.info("Start UDP listener on {}", sockAddr);
         byte[] data = new byte[MAX_PACKAGE_LEN];
         try {
-            for (;;) {
+            while (!ds.isClosed()) {
                 Connection.LOG.debug("Wait for UDP datagram package on {}", sockAddr);
                 DatagramPacket dp = new DatagramPacket(data, MAX_PACKAGE_LEN);
                 ds.receive(dp);

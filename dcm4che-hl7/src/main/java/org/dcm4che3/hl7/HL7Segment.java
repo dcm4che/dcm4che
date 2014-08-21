@@ -201,6 +201,8 @@ public class HL7Segment implements Serializable {
 
     public static HL7Segment parseMSH(byte[] b, int size, ParsePosition pos) {
         String s = parse(b, size, pos, null);
+        if (s.length() < 8)
+            throw new IllegalArgumentException("Invalid MSH Segment: " + s);
         return new HL7Segment(s, s.charAt(3), s.substring(4,8));
     }
 

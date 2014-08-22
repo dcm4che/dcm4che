@@ -39,10 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketAddress;
+import java.net.*;
 import java.security.GeneralSecurityException;
 
 /**
@@ -61,7 +58,11 @@ class UDPListener implements Listener {
             throws IOException, GeneralSecurityException {
         this.conn = conn;
         this.handler = handler;
-        ds = new DatagramSocket(conn.getBindPoint());
+        try {
+            ds = new DatagramSocket(conn.getBindPoint());
+        } catch (BindException e) {
+            throw new IOException("Cannot start UDP listener on "+conn.getBindPoint().getHostName()+":"+conn.getBindPoint().getPort(),e);
+        }
         conn.setReceiveBufferSize(ds);
         conn.getDevice().execute(new Runnable(){
 

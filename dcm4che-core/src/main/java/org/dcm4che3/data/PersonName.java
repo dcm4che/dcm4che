@@ -93,9 +93,8 @@ public class PersonName {
             case '^':
                 if (++cindex > 4)
                     if (lenient) {
-                        if (cindex == 5)
-                            LOG.info(
-                                "illegal PN: {} - ignore illegal component(s)", s);
+                        LOG.info(
+                            "illegal PN: {} - ignore illegal component(s)", s);
                         break;
                     } else
                         throw new IllegalArgumentException(s);

@@ -111,7 +111,7 @@ class TCPListener implements Listener {
                         if (s instanceof SSLSocket) {
                             ((SSLSocket) s).startHandshake();
                         }
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         if (monitor != null)
                             monitor.onConnectionRejected(conn, s, e);
                         Connection.LOG.warn("Reject connection {}:",s, e);

@@ -81,6 +81,18 @@ public class MediaTypes {
     public final static MediaType IMAGE_GIF_TYPE =
             new MediaType("image", "gif");
 
+
+    /**
+     * "image/png"
+     */
+    public final static String IMAGE_PNG = "image/png";
+
+    /**
+     * "image/png"
+     */
+    public final static MediaType IMAGE_PNG_TYPE =
+            new MediaType("image", "png");
+
     /**
      * "image/jpeg"
      */

@@ -193,6 +193,17 @@ public class MediaTypes {
             new MediaType("application", "pdf");
 
     /**
+     * "text/rtf"
+     */
+    public final static String TEXT_RTF = "text/rtf";
+
+    /**
+     * "text/rtf"
+     */
+    public final static MediaType TEXT_RTF_TYPE =
+            new MediaType("text", "rtf");
+
+    /**
      * "application/zip"
      */
     public final static String APPLICATION_ZIP = "application/zip";

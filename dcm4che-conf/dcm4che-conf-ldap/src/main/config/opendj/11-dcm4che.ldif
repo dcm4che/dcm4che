@@ -435,6 +435,10 @@ attributeTypes: ( 1.2.40.0.13.1.15.4.3.4 NAME 'dcmImageWriteParam'
   DESC 'Image Write parameter'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+attributeTypes: ( 1.2.40.0.13.1.15.4.3.5 NAME 'dcmWriteIIOMetadata'
+  DESC 'Image Write parameter'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 objectClasses: ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
@@ -601,7 +605,8 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   MAY (
     dcmJavaClassName $
     dcmPatchJPEGLS $
-    dcmImageWriteParam ) )
+    dcmImageWriteParam $
+    dcmWriteIIOMetadata ) )
 objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
   DESC 'Compression rule'
   SUP top STRUCTURAL
@@ -616,7 +621,6 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmSOPClass $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
-    
 objectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   DESC 'Collection folder'
   SUP top STRUCTURAL

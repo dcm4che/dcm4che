@@ -63,11 +63,16 @@ import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * 
+ *
  */
 public class ImageReaderFactory implements Serializable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
 
     private static final long serialVersionUID = -2881173333124498212L;
 
@@ -189,8 +194,39 @@ public class ImageReaderFactory implements Serializable {
 
     public static ImageReader getImageReader(ImageReaderParam param) {
 
-        // ImageReaderSpi are laoded through the java ServiceLoader,
-        // istead of imageio ServiceRegistry
+        if (Boolean.parseBoolean(System.getProperty("dcm4che.useImageIOServiceRegistry"))){
+            LOG.debug("getImageReader() - Load imageReader by using ImageIO. Get readers by format name: {}", param.formatName);
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(param.formatName);
+
+            if (!readers.hasNext()){
+                throw new RuntimeException("No Image Reader for format: " + param.formatName + " registered");
+            }
+
+            ImageReader imageReader = null;
+
+            if (param.className == null){
+                LOG.debug("getImageReader() - no className set. Use first reader in list");
+                imageReader = readers.next();
+            }else{
+                LOG.debug("getImageReader() - className set to \"{}\"", param.className);
+                final ImageReader firstImageReader = readers.next();
+                imageReader = firstImageReader;
+                while (imageReader != null && !imageReader.getClass().getName().equals(param.className)){
+                    imageReader = readers.hasNext() ? readers.next() : null;
+                }
+
+                if (imageReader == null){
+                    LOG.warn("getImageReader() - Preferred reader \"{}\" not found. Use first in list.", param.className);
+                    imageReader = firstImageReader;
+                }
+            }
+
+            LOG.debug("Return found reader: {}", imageReader);
+            return imageReader;
+        }
+        
+        // ImageReaderSpi are loaded through the java ServiceLoader,
+        // instead of ImageIO ServiceRegistry
         Iterator<ImageReaderSpi> iter = ServiceLoader
                 .load(ImageReaderSpi.class).iterator();
 

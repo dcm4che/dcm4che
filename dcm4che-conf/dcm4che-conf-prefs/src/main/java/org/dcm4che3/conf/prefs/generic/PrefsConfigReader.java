@@ -48,6 +48,7 @@ import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.prefs.PreferencesUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
+import org.dcm4che3.data.Code;
 
 public class PrefsConfigReader implements ConfigReader {
     private final Preferences prefs;
@@ -59,6 +60,11 @@ public class PrefsConfigReader implements ConfigReader {
     @Override
     public String[] asStringArray(String propName) {
         return PreferencesUtils.stringArray(prefs, propName);
+    }
+
+    @Override
+    public Code[] asCodeArray(String propName) throws ConfigurationException {
+        return PreferencesUtils.codeArray(prefs, propName);
     }
 
     @Override

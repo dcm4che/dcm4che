@@ -51,6 +51,7 @@ import org.dcm4che3.conf.api.generic.ReflectiveConfig;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigTypeAdapter;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
+import org.dcm4che3.data.Code;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.util.AttributesFormat;
 
@@ -237,6 +238,8 @@ public class DefaultConfigTypeAdapters {
                 return reader.asStringArray(fieldAnno.name());
             else if (int.class.isAssignableFrom(field.getType().getComponentType()))
                 return reader.asIntArray(fieldAnno.name());
+            else if (Code.class.isAssignableFrom(field.getType().getComponentType()))
+                return reader.asCodeArray(fieldAnno.name());
             else
                 return null;
         }

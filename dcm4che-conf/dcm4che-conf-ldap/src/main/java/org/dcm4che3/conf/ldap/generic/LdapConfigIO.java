@@ -62,6 +62,7 @@ import org.dcm4che3.conf.api.generic.ConfigClass;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
+import org.dcm4che3.data.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +133,15 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
     public String[] asStringArray(String propName) throws ConfigurationException {
         try {
             return LdapUtils.stringArray(attrs.get(propName));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public Code[] asCodeArray(String propName) throws ConfigurationException {
+        try {
+            return LdapUtils.codeArray(attrs.get(propName));
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }

@@ -50,6 +50,7 @@ import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.conf.api.generic.adapters.ReflectiveAdapter;
+import org.dcm4che3.data.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,6 +227,8 @@ public class ReflectiveConfig {
         Map<String, ConfigReader> readCollection(String keyName) throws ConfigurationException;
 
         ConfigReader getChildReader(String propName) throws ConfigurationException;
+
+        Code[] asCodeArray(String name) throws ConfigurationException;
 
     }
 

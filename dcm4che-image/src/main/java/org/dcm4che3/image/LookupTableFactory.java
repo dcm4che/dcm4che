@@ -175,7 +175,6 @@ public class LookupTableFactory {
 		if (data == null)
 			return null;
 
-
 		if (data.length == len << 1) {
 			if (outBits > 8) {
 				if (outBits > 16)

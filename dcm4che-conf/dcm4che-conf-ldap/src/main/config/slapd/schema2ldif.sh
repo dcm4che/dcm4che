@@ -6,6 +6,6 @@ echo objectClass: olcSchemaConfig
 echo cn: $cn
 sed '
 /^#.*/d
-/^$/d
+/^ *$/d
 s/attributetype/olcAttributeTypes:/
 s/objectclass/olcObjectClasses:/' $1

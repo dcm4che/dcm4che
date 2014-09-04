@@ -56,11 +56,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Sequence;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
@@ -80,10 +80,12 @@ import org.dcm4che3.util.DateUtils;
  * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
 public class MppsSCU {
-
-    private static final class MppsWithIUID {
-        String iuid;
-        Attributes mpps;
+    
+    public static final class MppsWithIUID {
+        
+        public String iuid;
+        public Attributes mpps;
+        
         MppsWithIUID(String iuid, Attributes mpps) {
             this.iuid = iuid;
             this.mpps = mpps;
@@ -205,6 +207,50 @@ public class MppsSCU {
         ppsStartTime = DateUtils.formatTM(null, now);
     }
 
+    
+
+    public interface RSPHandlerFactory {
+        
+        DimseRSPHandler createDimseRSPHandlerForNCreate(MppsWithIUID mppsWithUID);
+        DimseRSPHandler createDimseRSPHandlerForNSet();
+    }
+    
+    //default response handler
+    private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory(){
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNCreate(final MppsWithIUID mppsWithUID) {
+            
+            return new DimseRSPHandler(as.nextMessageID()) {
+                
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                    switch(cmd.getInt(Tag.Status, -1)) {
+                        case Status.Success:
+                        case Status.AttributeListError:
+                        case Status.AttributeValueOutOfRange:
+                            mppsWithUID.iuid = cmd.getString(
+                                    Tag.AffectedSOPInstanceUID, mppsWithUID.iuid);
+                            addCreatedMpps(mppsWithUID);
+                    }
+                    super.onDimseRSP(as, cmd, data);
+                }
+            };
+        }
+        
+        @Override
+        public DimseRSPHandler createDimseRSPHandlerForNSet() {
+            
+            return new DimseRSPHandler(as.nextMessageID());
+        }
+    };
+    
+    //Response handler is settable from outside
+    public void setRspHandlerFactory(RSPHandlerFactory rspHandlerFactory) {
+        this.rspHandlerFactory = rspHandlerFactory;
+    }
+
+
     private final ApplicationEntity ae;
     private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
@@ -236,6 +282,11 @@ public class MppsSCU {
 
     public AAssociateRQ getAAssociateRQ() {
         return rq;
+    }
+    
+    public void addCreatedMpps (MppsWithIUID mpps)
+    {
+        created.add(mpps);
     }
 
     public final void setUIDSuffix(String uidSuffix) {
@@ -338,20 +389,7 @@ public class MppsSCU {
             boolean echo = argList.isEmpty();
             if (!echo) {
                 System.out.println(rb.getString("scanning"));
-                DicomFiles.scan(argList, new DicomFiles.Callback() {
-                    
-                    @Override
-                    public boolean dicomFile(File f, Attributes fmi, 
-                            long dsPos, Attributes ds) {
-                        if (UID.ModalityPerformedProcedureStepSOPClass.equals(
-                                fmi.getString(Tag.MediaStorageSOPClassUID))) {
-                            return main.addMPPS(
-                                    fmi.getString(Tag.MediaStorageSOPInstanceUID),
-                                    ds);
-                        }
-                        return main.addInstance(ds);
-                    }
-                });
+                main.scanFiles(argList, true);
             }
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
@@ -381,6 +419,25 @@ public class MppsSCU {
             e.printStackTrace();
             System.exit(2);
         }
+    }
+    
+    public void scanFiles(List<String> fnames, boolean printout) throws IOException {
+        
+        if (printout) System.out.println(rb.getString("scanning"));
+        DicomFiles.scan(fnames, printout, new DicomFiles.Callback() {
+            
+            @Override
+            public boolean dicomFile(File f, Attributes fmi, 
+                    long dsPos, Attributes ds) {
+                if (UID.ModalityPerformedProcedureStepSOPClass.equals(
+                        fmi.getString(Tag.MediaStorageSOPClassUID))) {
+                    return addMPPS(
+                            fmi.getString(Tag.MediaStorageSOPInstanceUID),
+                            ds);
+                }
+                return addInstance(ds);
+            }
+        });
     }
 
     private static void configureMPPS(MppsSCU main, CommandLine cl)
@@ -514,24 +571,8 @@ public class MppsSCU {
         for (int tag : CREATE_MPPS_TOP_LEVEL_EMPTY_ATTRS)
             mpps.setNull(tag, dict.vrOf(tag));
 
-        DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
-
-            @Override
-            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-                switch(cmd.getInt(Tag.Status, -1)) {
-                    case Status.Success:
-                    case Status.AttributeListError:
-                    case Status.AttributeValueOutOfRange:
-                        mppsWithUID.iuid = cmd.getString(
-                                Tag.AffectedSOPInstanceUID, mppsWithUID.iuid);
-                        created.add(mppsWithUID);
-                }
-                super.onDimseRSP(as, cmd, data);
-            }
-
-        };
         as.ncreate(UID.ModalityPerformedProcedureStepSOPClass,
-                iuid, mpps, null, rspHandler);
+                iuid, mpps, null, rspHandlerFactory.createDimseRSPHandlerForNCreate(mppsWithUID));
     }
 
     public void updateMpps() throws IOException, InterruptedException {
@@ -541,9 +582,8 @@ public class MppsSCU {
 
     private void setMpps(MppsWithIUID mppsWithIUID)
             throws IOException, InterruptedException {
-                DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID());
         as.nset(UID.ModalityPerformedProcedureStepSOPClass,
-                mppsWithIUID.iuid, mppsWithIUID.mpps, null, rspHandler);
+                mppsWithIUID.iuid, mppsWithIUID.mpps, null, rspHandlerFactory.createDimseRSPHandlerForNSet());
     }
 
     public boolean addInstance(Attributes inst) {

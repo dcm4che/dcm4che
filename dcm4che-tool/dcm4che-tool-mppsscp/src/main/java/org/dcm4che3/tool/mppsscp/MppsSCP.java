@@ -69,7 +69,6 @@ import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,17 +239,11 @@ public class MppsSCP {
         for (String cuid : p.stringPropertyNames()) {
             String ts = p.getProperty(cuid);
             ae.addTransferCapability(
-                    new TransferCapability(null, cuid,
-                                TransferCapability.Role.SCP,
-                                toUIDs(StringUtils.split(ts, ','))));
+                    new TransferCapability(null,
+                            CLIUtils.toUID(cuid),
+                            TransferCapability.Role.SCP,
+                            CLIUtils.toUIDs(ts)));
         }
-    }
-
-    private static String[] toUIDs(String[] names) {
-        String[] uids = new String[names.length];
-        for (int i = 0; i < uids.length; i++)
-            uids[i] = UID.forName(names[i].trim());
-        return uids ;
     }
 
     private Attributes create(Association as, Attributes rq, Attributes rqAttrs)

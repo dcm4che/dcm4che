@@ -56,7 +56,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -84,6 +84,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
         public final int valueNumber;
         private Condition condition;
         private Object values;
+        private int lineNumber = -1;
 
         public DataElement(int tag, VR vr, DataElementType type,
                 int minVM, int maxVM, int valueNumber) {
@@ -145,59 +146,16 @@ public class IOD extends ArrayList<IOD.DataElement> {
             return values;
         }
 
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<DataElement keyword=\"")
-              .append(ElementDictionary.getStandardElementDictionary().keywordOf(tag))
-              .append("\" tag=\"").append(TagUtils.toHexString(tag))
-              .append("\" vr=\"").append(vr)
-              .append("\" type=\"").append(type);
-            if (condition != null)
-                sb.append('C');
-            sb.append(vr == VR.SQ ? "\" items=\"" : "\" vm=\"");
-            if (minVM == -1)
-                sb.append('n');
-            else
-                sb.append(minVM);
-            if (maxVM != minVM) {
-                sb.append('-');
-                if (maxVM == -1)
-                    sb.append('n');
-                else
-                    sb.append(maxVM);
-            }
-            if (valueNumber != 0)
-                sb.append("\" valueNumber=\"").append(valueNumber);
-            if (values instanceof String[]
-                    || values instanceof int[]
-                    || values instanceof Code[]) {
-                sb.append("\">").append(StringUtils.LINE_SEPARATOR);
-                if (values instanceof String[])
-                    for (String val : (String[]) values)
-                        sb.append("  <Value>").append(val).append("</Value>")
-                        .append(StringUtils.LINE_SEPARATOR);
-                else if (values instanceof int[])
-                    for (int val : (int[]) values)
-                        sb.append("  <Value>").append(val).append("</Value>")
-                        .append(StringUtils.LINE_SEPARATOR);
-                else 
-                    for (Code val : (Code[]) values) {
-                        sb.append("  <Code codeValue=\"").append(val.getCodeValue())
-                          .append("\" codingSchemeDesignator=\"").append(val.getCodingSchemeDesignator());
-                        if (val.getCodingSchemeVersion() != null)
-                          sb.append("\" codingSchemeVersion=\"").append(val.getCodingSchemeVersion());
-                        sb.append("\" codeMeaning=\"").append(val.getCodeMeaning())
-                          .append("\" />").append(StringUtils.LINE_SEPARATOR);
-                     };
-                sb.append("</DataElement>");
-            } else {
-                sb.append("\"/>");
-            }
-            return sb.toString();
+        public int getLineNumber() {
+            return lineNumber;
+        }
+
+        public DataElement setLineNumber(int lineNumber) {
+            this.lineNumber = lineNumber;
+            return this;
         }
 
    }
-
 
     public abstract static class Condition {
          protected String id;
@@ -230,6 +188,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
          public boolean isEmpty() {
              return false;
          }
+
     }
 
     abstract static class CompositeCondition extends Condition  {
@@ -279,7 +238,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             return not;
         }
-   }
+    }
 
     public static class Present extends Condition {
         protected final int tag;
@@ -399,11 +358,11 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             return false;
         }
-
     }
 
     private DataElementType type;
     private Condition condition;
+    private int lineNumber = -1;
 
     public void setType(DataElementType type) {
         this.type = type;
@@ -419,6 +378,14 @@ public class IOD extends ArrayList<IOD.DataElement> {
 
     public Condition getCondition() {
         return condition;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
     public void parse(String uri) throws IOException {
@@ -446,9 +413,15 @@ public class IOD extends ArrayList<IOD.DataElement> {
         private LinkedList<Condition> conditionStack = new LinkedList<Condition>();
         private Map<String, IOD> id2iod = new HashMap<String, IOD>();
         private Map<String, Condition> id2cond = new HashMap<String, Condition>();
+        private Locator locator;
 
         public SAXHandler(IOD iod) {
             iodStack.add(iod);
+        }
+
+        @Override
+        public void setDocumentLocator(Locator locator) {
+            this.locator = locator;
         }
 
         @Override
@@ -640,6 +613,8 @@ public class IOD extends ArrayList<IOD.DataElement> {
             }
             DataElement el = new DataElement(tag, vr, type, minVM, maxVM,
                     valueNumberOf(valueNumberStr, 0));
+            if (locator != null)
+                el.setLineNumber(locator.getLineNumber());
             iod.add(el);
             elementConditions = true;
             itemConditions = false;
@@ -765,6 +740,8 @@ public class IOD extends ArrayList<IOD.DataElement> {
                 iod = new IOD();
                 if (type != null)
                     iod.setType(typeOf(type));
+                if (locator != null)
+                    iod.setLineNumber(locator.getLineNumber());
             }
             getLastDataElement().addItemIOD(iod);
             iodStack.add(iod);
@@ -879,8 +856,7 @@ public class IOD extends ArrayList<IOD.DataElement> {
                     Tag.CodingSchemeVersion, VR.SH, DataElementType.TYPE_0, -1, -1, 0));
         else
             iod.add(new DataElement(
-                    Tag.CodingSchemeVersion, VR.SH, DataElementType.TYPE_1, 1, 1, 0)
-                    .setValues(codingSchemeVersion));
+                    Tag.CodingSchemeVersion, VR.SH, DataElementType.TYPE_1, 1, 1, 0));
             
         return iod;
     }

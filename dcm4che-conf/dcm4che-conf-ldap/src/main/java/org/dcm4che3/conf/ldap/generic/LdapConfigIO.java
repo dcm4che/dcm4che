@@ -54,6 +54,7 @@ import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -61,6 +62,7 @@ import org.dcm4che3.conf.api.generic.ConfigClass;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigWriter;
+import org.dcm4che3.data.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +139,15 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
     }
 
     @Override
+    public Code[] asCodeArray(String propName) throws ConfigurationException {
+        try {
+            return LdapUtils.codeArray(attrs.get(propName));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
     public int[] asIntArray(String propName) throws ConfigurationException {
         try {
             return LdapUtils.intArray(attrs.get(propName));
@@ -177,7 +188,7 @@ public class LdapConfigIO implements ConfigWriter, ConfigReader {
         try {
             return new LdapConfigIO(config.getAttributes(getFolderDn(propName)), getFolderDn(propName), config);
         } catch (NamingException e) {
-            throw new ConfigurationException(e);
+            throw new ConfigurationNotFoundException(e);
         }
     }
 

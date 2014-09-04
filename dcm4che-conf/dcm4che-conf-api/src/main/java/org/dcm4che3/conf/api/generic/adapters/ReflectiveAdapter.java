@@ -10,6 +10,7 @@ import javax.naming.NamingException;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.generic.ConfigField;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
@@ -157,15 +158,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
         // if this object is a property, get a child
         if (field != null && field.getType().equals(clazz)) {
             ConfigField fieldAnno = (ConfigField) field.getAnnotation(ConfigField.class);
-            try {
-                reader = reader.getChildReader(fieldAnno.name());
-            } catch (ConfigurationException e) {
-                // if there is any default specified, load as null
-                if (fieldAnno.def().equals("null"))
-                    return null;
-                else
-                    throw e;
-            }
+            reader = reader.getChildReader(fieldAnno.name());
         }
 
         Map<String,Object> cnode = new HashMap<String,Object>();
@@ -180,17 +173,17 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
             ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
 
             if (customRep != null) {
-
-                Object value = customRep.read(config, reader, classField);
-                cnode.put(fieldAnno.name(), value);
-
+                try {
+                    Object value = customRep.read(config, reader, classField);
+                    cnode.put(fieldAnno.name(), value);
+                } catch (ConfigurationNotFoundException e) {
+                    if (fieldAnno.failIfNotPresent()) throw e;
+                }
             } else
                 throw new ConfigurationException("Corresponding 'reader' was not found for field " + fieldAnno.name());
-
         }
 
         return cnode;
-
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -227,8 +220,9 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
                 try {
                     Object value = customRep.deserialize(serialized.get(fieldAnno.name()), config, classField);
 
-                    // set using a setter
-                    PropertyUtils.setSimpleProperty(confObj, classField.getName(), value);
+                    // set using a setter, exception is when failIfNotPresent is false and there were no value
+                    if (value != null || fieldAnno.failIfNotPresent())
+                        PropertyUtils.setSimpleProperty(confObj, classField.getName(), value);
                 } catch (Exception e) {
                     throw new ConfigurationException("Error while reading configuration field " + fieldAnno.name(), e);
                 }
@@ -290,6 +284,46 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String,Obj
 
         // do actual merge
         diffwriter.flushDiffs();
+
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public Map<String,Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
+
+        Map<String,Object> classMetaDataWrapper = new HashMap<String,Object>();
+        Map<String,Object> classMetaData = new HashMap<String,Object>();
+        classMetaDataWrapper.put("attributes", classMetaData);
+        classMetaDataWrapper.put("type", clazz.getSimpleName());
+        
+        
+        // go through all annotated fields
+        for (Field classField : clazz.getDeclaredFields()) {
+
+            // if field is not annotated, skip it
+            ConfigField fieldAnno = (ConfigField) classField.getAnnotation(ConfigField.class);
+            if (fieldAnno == null)
+                continue;
+
+            // save metadata
+            Map<String, Object> fieldMetaData = new HashMap<String, Object>();
+            classMetaData.put(fieldAnno.name(), fieldMetaData);
+
+            fieldMetaData.put("label", fieldAnno.label());
+            fieldMetaData.put("description", fieldAnno.description());
+            fieldMetaData.put("optional", fieldAnno.optional());
+            
+            // find typeadapter
+            ConfigTypeAdapter customRep = config.lookupTypeAdapter(classField.getType());
+
+            if (customRep != null) {
+                Map<String, Object> childMetaData = customRep.getMetadata(config, classField);
+                if (childMetaData != null)
+                    fieldMetaData.putAll(childMetaData);
+            };
+
+        }
+
+        return classMetaDataWrapper;
 
     }
 

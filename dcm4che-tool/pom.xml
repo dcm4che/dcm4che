@@ -82,13 +82,16 @@
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>
     <module>dcm4che-tool-json2dcm</module>
+	<module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-dcm2json</module>
+    <module>dcm4che-tool-stowrs</module>
+    <module>dcm4che-tool-probetc</module>
+    <module>dcm4che-tool-prefs2xml</module>
   </modules>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
         <configuration>
           <archive>
             <manifest>

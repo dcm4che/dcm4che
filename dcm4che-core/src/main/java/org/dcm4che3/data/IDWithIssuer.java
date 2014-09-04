@@ -38,6 +38,10 @@
 
 package org.dcm4che3.data;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.util.StringUtils;
 
@@ -52,6 +56,8 @@ public class IDWithIssuer {
     private Issuer issuer;
 
     public IDWithIssuer(String id, Issuer issuer) {
+        if (id.isEmpty())
+            throw new IllegalArgumentException("empty id");
         this.id = id;
         this.setIssuer(issuer);
     }
@@ -84,13 +90,42 @@ public class IDWithIssuer {
         return getIssuer() == null ? id : id + "^^^" + getIssuer().toString('&');
     }
 
-    public Attributes toPatientIDWithIssuer(Attributes attrs) {
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        if (issuer != null)
+            result += issuer.hashCode() * 31;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof IDWithIssuer))
+            return false;
+        IDWithIssuer other = (IDWithIssuer) obj;
+        return id.equals(other.id) &&
+                (issuer == null 
+                    ? other.issuer == null
+                    : issuer.equals(other.issuer));
+    }
+
+    public boolean matches(IDWithIssuer other) {
+        return id.equals(other.id) &&
+                (issuer == null 
+                    ? other.issuer == null
+                    : issuer.matches(other.issuer));
+    }
+
+    public Attributes exportPatientIDWithIssuer(Attributes attrs) {
         if (attrs == null)
             attrs = new Attributes(3);
 
         attrs.setString(Tag.PatientID, VR.LO, id);
-        if (getIssuer() == null)
+        if (getIssuer() == null) {
             return attrs;
+        }
 
         return getIssuer().toIssuerOfPatientID(attrs);
     }
@@ -105,7 +140,7 @@ public class IDWithIssuer {
                 Issuer.valueOf(attrs.getNestedDataset(issuerSeqTag)));
     }
 
-    public static IDWithIssuer fromPatientIDWithIssuer(Attributes attrs) {
+    public static IDWithIssuer pidOf(Attributes attrs) {
         String id = attrs.getString(Tag.PatientID);
         if (id == null)
             return null;
@@ -113,4 +148,24 @@ public class IDWithIssuer {
         return new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
     }
 
+    public static Set<IDWithIssuer> pidsOf(Attributes attrs) {
+        IDWithIssuer pid = IDWithIssuer.pidOf(attrs);
+        Sequence opidseq = attrs.getSequence(Tag.OtherPatientIDsSequence);
+        if (opidseq == null)
+            if (pid == null)
+                return Collections.emptySet();
+            else
+                return Collections.singleton(pid);
+        
+        Set<IDWithIssuer> pids =
+                new HashSet<IDWithIssuer>((1 + opidseq.size()) << 1);
+        if (pid != null)
+            pids.add(pid);
+        for (Attributes item : opidseq) {
+            pid = IDWithIssuer.pidOf(item);
+            if (pid != null)
+                pids.add(pid);
+        }
+        return pids;
+    }
 }

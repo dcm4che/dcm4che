@@ -93,7 +93,7 @@ import org.dcm4che3.util.SafeClose;
  */
 public class FindSCU {
 
-    private static enum InformationModel {
+    public static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelFIND, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelFIND, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired, "STUDY"),
@@ -314,6 +314,30 @@ public class FindSCU {
         opts.addOption(null, "xmlns", false, rb.getString("xmlns"));
         opts.addOption(null, "out-cat", false, rb.getString("out-cat"));
     }
+    
+    public ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
+
+    public Connection getRemoteConnection() {
+        return remote;
+    }
+    
+    public AAssociateRQ getAAssociateRQ() {
+        return rq;
+    }
+    
+    public Association getAssociation() {
+        return as;
+    }
+
+    public Device getDevice() {
+        return device;
+    }    
+    
+    public Attributes getKeys() {
+        return keys;
+    }
 
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
@@ -450,10 +474,11 @@ public class FindSCU {
         query(attrs);
     }
 
+    
    public void query() throws IOException, InterruptedException {
         query(keys);
     }
-
+   
     private void query(Attributes keys) throws IOException, InterruptedException {
          DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
@@ -479,9 +504,17 @@ public class FindSCU {
             }
         };
 
-        as.cfind(model.cuid, priority, keys, null, rspHandler);
+        query(keys, rspHandler);
     }
 
+    public void query( DimseRSPHandler rspHandler) throws IOException, InterruptedException {
+        query(keys, rspHandler);
+    }
+    
+    private void query(Attributes keys, DimseRSPHandler rspHandler) throws IOException, InterruptedException {
+        as.cfind(model.cuid, priority, keys, null, rspHandler);
+    }
+    
     private void onResult(Attributes data) {
         int numMatches = totNumMatches.incrementAndGet();
         if (outDir == null) 
@@ -544,4 +577,6 @@ public class FindSCU {
 
         return tf.newTransformerHandler(tpls);
     }
+
+
 }

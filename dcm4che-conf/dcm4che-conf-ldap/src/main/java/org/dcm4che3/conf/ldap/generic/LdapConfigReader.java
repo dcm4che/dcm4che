@@ -45,6 +45,7 @@ import javax.naming.directory.Attributes;
 import org.dcm4che3.conf.ldap.LdapUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
+import org.dcm4che3.data.Code;
 
 @Deprecated
 public class LdapConfigReader implements ConfigReader {
@@ -67,6 +68,15 @@ public class LdapConfigReader implements ConfigReader {
     public int[] asIntArray(String propName) throws ConfigurationException {
         try {
             return LdapUtils.intArray(attrs.get(propName));
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    @Override
+    public Code[] asCodeArray(String propName) throws ConfigurationException {
+        try {
+            return LdapUtils.codeArray(attrs.get(propName));
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }

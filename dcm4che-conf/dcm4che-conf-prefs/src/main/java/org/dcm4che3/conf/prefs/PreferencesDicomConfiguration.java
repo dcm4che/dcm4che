@@ -331,7 +331,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     public synchronized Device loadDevice(String pathName) throws ConfigurationException,
             ConfigurationNotFoundException {
         if (!PreferencesUtils.nodeExists(rootPrefs, pathName))
-            throw new ConfigurationNotFoundException();
+            throw new ConfigurationNotFoundException("Device "+pathName+" not found in configuration");
 
         return loadDevice(rootPrefs.node(pathName));
     }
@@ -406,7 +406,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
             storeCertificates(ref, certs);
     }
 
-    private void storeChilds(Device device, Preferences deviceNode) {
+    private void storeChilds(Device device, Preferences deviceNode) throws ConfigurationException {
         Preferences connsNode = deviceNode.node("dcmNetworkConnection");
         int connIndex = 1;
         List<Connection> devConns = device.listConnections();
@@ -495,7 +495,7 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
     }
 
     private void mergeChilds(Device prev, Device device,
-            Preferences devicePrefs) throws BackingStoreException {
+            Preferences devicePrefs) throws BackingStoreException, ConfigurationException {
         mergeConnections(prev, device, devicePrefs);
         mergeAEs(prev, device, devicePrefs);
         for (PreferencesDicomConfigurationExtension ext : extensions)
@@ -612,6 +612,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         PreferencesUtils.storeNotDef(prefs, "dcmTCPReceiveBufferSize",
                 conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
         PreferencesUtils.storeNotDef(prefs, "dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+        PreferencesUtils.storeNotNull(prefs, "dcmBindAddress", conn.getBindAddress());
+        PreferencesUtils.storeNotNull(prefs, "dcmClientBindAddress", conn.getClientBindAddress());
         PreferencesUtils.storeNotDef(prefs, "dcmSendPDULength",
                 conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
         PreferencesUtils.storeNotDef(prefs, "dcmReceivePDULength",
@@ -857,6 +859,12 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
                 a.isTcpNoDelay(),
                 b.isTcpNoDelay(),
                 true);
+        PreferencesUtils.storeDiff(prefs, "dcmBindAddress",
+                a.getBindAddress(),
+                b.getBindAddress());
+        PreferencesUtils.storeDiff(prefs, "dcmClientBindAddress",
+                a.getClientBindAddress(),
+                b.getClientBindAddress());
         storeDiff(prefs, "dcmTLSProtocol",
                 a.isTls() ? a.getTlsProtocols() : StringUtils.EMPTY_STRING,
                 b.isTls() ? b.getTlsProtocols() : StringUtils.EMPTY_STRING);
@@ -1338,6 +1346,8 @@ public final class PreferencesDicomConfiguration implements DicomConfiguration {
         conn.setReceiveBufferSize(
                 prefs.getInt("dcmTCPReceiveBufferSize", Connection.DEF_BUFFERSIZE));
         conn.setTcpNoDelay(prefs.getBoolean("dcmTCPNoDelay", true));
+        conn.setBindAddress(prefs.get("dcmBindAddress", null));
+        conn.setClientBindAddress(prefs.get("dcmClientBindAddress", null));
         conn.setTlsNeedClientAuth(prefs.getBoolean("dcmTLSNeedClientAuth", true));
         String[] tlsProtocols = PreferencesUtils.stringArray(prefs, "dcmTLSProtocol");
         if (tlsProtocols.length > 0)

@@ -736,4 +736,20 @@ public class CLIUtils {
         return true;
     }
 
+    public static String[] toUIDs(String s) {
+        if (s.equals("*"))
+            return new String[] { "*" };
+
+        String[] uids = StringUtils.split(s, ',');
+        for (int i = 0; i < uids.length; i++)
+            uids[i] = toUID(uids[i]);
+        return uids ;
+    }
+
+    public static String toUID(String uid) {
+        uid = uid.trim();
+        return (uid.equals("*") || Character.isDigit(uid.charAt(0)))
+                ? uid
+                : UID.forName(uid);
+    }
 }

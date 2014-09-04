@@ -50,6 +50,7 @@ import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.generic.ReflectiveConfig.ConfigReader;
 import org.dcm4che3.conf.api.generic.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.conf.api.generic.adapters.ReflectiveAdapter;
+import org.dcm4che3.data.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,15 +68,14 @@ public class ReflectiveConfig {
 
     /**
      * Type adapter that handles configuration read/write/serialize/deserialize
-     * for a specific java class.
+     * for a specific config java class.
      * 
      * @author Roman K
      * 
      * @param <T>
      *            Java class
      * @param <ST>
-     *            Serialized representation - this intermediate format is needed
-     *            for merging, so only the actual config data is used.
+     *            Serialized representation - this intermediate format is used by UIs and storeDiffs.
      */
     public interface ConfigTypeAdapter<T, ST> {
 
@@ -152,9 +152,11 @@ public class ReflectiveConfig {
          */
         boolean isWritingChildren(Field field);
 
+        Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException;
+
     }
 
-    @Deprecated
+    @Deprecated 
     public interface DiffWriter extends ConfigWriter {
     }
 
@@ -193,7 +195,7 @@ public class ReflectiveConfig {
         void flushDiffs() throws ConfigurationException;
 
         void removeCollectionElement(String keyName, String keyValue) throws ConfigurationException;
-        
+
         void removeCurrentNode() throws ConfigurationException;
 
         ConfigWriter getCollectionElementDiffWriter(String keyName, String keyValue);
@@ -225,6 +227,8 @@ public class ReflectiveConfig {
         Map<String, ConfigReader> readCollection(String keyName) throws ConfigurationException;
 
         ConfigReader getChildReader(String propName) throws ConfigurationException;
+
+        Code[] asCodeArray(String name) throws ConfigurationException;
 
     }
 
@@ -333,6 +337,12 @@ public class ReflectiveConfig {
         this.dicomConfiguration = configCtx;
     }
 
+    /**
+     * Reads config into the provided confObj from reader
+     * @param confObj
+     * @param reader
+     * @throws ConfigurationException
+     */
     @SuppressWarnings("unchecked")
     public <T> void readConfig(T confObj, ConfigReader reader) throws ConfigurationException {
 
@@ -363,15 +373,18 @@ public class ReflectiveConfig {
         Map<Class, ConfigTypeAdapter> def = DefaultConfigTypeAdapters.get();
 
         // if it is a config class, use reflective adapter
-        if (clazz.getAnnotation(ConfigClass.class) != null)
+        if (clazz.getAnnotation(ConfigClass.class) != null) {
             adapter = new ReflectiveAdapter(clazz);
-        else if (clazz.isArray())
+        } else if (clazz.isArray()) {
             // if array
             adapter = (ConfigTypeAdapter<T, ?>) new DefaultConfigTypeAdapters.ArrayTypeAdapter();
-        else
-            // try find in defaults
-            adapter = def.get(clazz);
-
+        } else {
+            if (clazz.isEnum()) {
+                adapter = def.get(Enum.class);
+            } else {
+                adapter = def.get(clazz);
+            }
+        }
         // if still not found, try custom
         if (adapter == null && customRepresentations != null)
             adapter = customRepresentations.get(clazz);

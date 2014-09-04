@@ -94,7 +94,7 @@ public class Attributes implements Serializable {
     private long itemPosition = -1;
     private boolean containsSpecificCharacterSet;
     private boolean containsTimezoneOffsetFromUTC;
-    private HashMap<String, Object> properties;
+    private Map<String, Object> properties;
     private TimeZone defaultTimeZone;
 
     public Attributes() {
@@ -147,6 +147,14 @@ public class Attributes implements Serializable {
         if (other.properties != null)
             properties = new HashMap<String, Object>(other.properties);
         addSelected(other, selection);
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 
     public Object getProperty(String key, Object defVal) {
@@ -2747,7 +2755,7 @@ public class Attributes implements Serializable {
                 }
                 if (invalidItem) {
                     result.addInvalidAttributeValue(el, 
-                            ValidationResult.Invalid.Value, itemValidationResults);
+                            ValidationResult.Invalid.Code, itemValidationResults, null);
                 }
             } else if (validVals instanceof IOD[]) {
                 IOD[] itemIODs = (IOD[]) validVals;
@@ -2781,17 +2789,11 @@ public class Attributes implements Serializable {
                     invalidItem = invalidItem || !itemValidationResult.isValid();
                     itemValidationResults[i] = itemValidationResult;
                 }
-                if (invalidItem) {
-                    result.addInvalidAttributeValue(el, 
-                            ValidationResult.Invalid.Item, itemValidationResults);
-                } else {
-                    for (int j = 0; j < itemIODs.length; j++)
-                        if (itemIODs[j].getType() == DataElementType.TYPE_1
-                                && matchingItems[j] == 0) {
-                            result.addInvalidAttributeValue(el, 
-                                    ValidationResult.Invalid.MissingItem);
-                            break;
-                        }
+                IOD[] missingItems = checkforMissingItems(matchingItems, itemIODs);
+                if (invalidItem || missingItems != null) {
+                    result.addInvalidAttributeValue(el,
+                            ValidationResult.Invalid.Item, 
+                            itemValidationResults, missingItems);
                 }
             }
             return;
@@ -2827,6 +2829,18 @@ public class Attributes implements Serializable {
                 result.addInvalidAttributeValue(el, ValidationResult.Invalid.Value);
             }
         }
+    }
+
+    private IOD[] checkforMissingItems(int[] matchingItems, IOD[] itemIODs) {
+        IOD[] missingItems = new IOD[matchingItems.length];
+        int n = 0;
+        for (int i = 0; i < matchingItems.length; i++) {
+            IOD itemIOD = itemIODs[i];
+            if (matchingItems[i] == 0
+                    && itemIOD.getType() == DataElementType.TYPE_1)
+                missingItems[n++] = itemIOD;
+        }
+        return n > 0 ? Arrays.copyOf(missingItems, n) : null;
     }
 
     private ValidationResult validateCode(Attributes item, Code[] validVals) {
@@ -2875,5 +2889,138 @@ public class Attributes implements Serializable {
             if (val == i)
                 return true;
         return false;
+    }
+
+    /**
+     * Add attributes of this data set which were replaced in
+     * the specified other data set into the result data set.
+     * If no result data set is passed, a new result set will be instantiated.
+     * 
+     * @param other data set
+     * @param result data set or {@code null} 
+     *
+     * @return result data set.
+     */
+    public Attributes getModified(Attributes other, Attributes result) {
+        if (result == null)
+            result = new Attributes(other.size);
+        int creatorTag = -1;
+        int prevOtherCreatorTag = -1;
+        int otherCreatorTag = -1;
+        String privateCreator = null;
+        for (int i = 0; i < other.size; i++) {
+            int tag = other.tags[i];
+            if ((tag & 0x00010000) != 0) { // private group
+                if ((tag & 0x0000ff00) == 0)
+                    continue; // skip private creator
+
+                otherCreatorTag = TagUtils.creatorTagOf(tag);
+                if (prevOtherCreatorTag != otherCreatorTag) {
+                    prevOtherCreatorTag = otherCreatorTag;
+                    creatorTag = -1;
+                    int k = other.indexOf(otherCreatorTag);
+                    if (k >= 0) {
+                        Object o = other.decodeStringValue(k);
+                        if (o instanceof String) {
+                            privateCreator = (String) o;
+                            creatorTag = creatorTagOf(
+                                    privateCreator, tag, false);
+                        }
+                    }
+                }
+                if (creatorTag == -1)
+                    continue; // no matching Private Creator
+
+                tag = TagUtils.toPrivateTag(creatorTag, tag);
+            } else {
+                privateCreator = null;
+            }
+
+            int j = indexOf(tag);
+            if (j < 0)
+                continue;
+
+            Object origValue = values[j];
+            if (origValue instanceof Value && ((Value) origValue).isEmpty())
+                continue;
+
+            if (equalValues(other, j, i))
+                continue;
+
+            if (origValue instanceof Sequence) {
+                result.set(privateCreator, tag, (Sequence) origValue, null);
+            } else if (origValue instanceof Fragments) {
+                result.set(privateCreator, tag, (Fragments) origValue);
+            } else {
+                result.set(privateCreator, tag, vrs[i], origValue);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns attributes of this data set which were removed or replaced in
+     * the specified other data set.
+     * 
+     * @param other data set
+     * @return attributes of this data set which were removed or replaced in
+     *         the specified other data set.
+     */
+    public Attributes getRemovedOrModified(Attributes other) {
+        Attributes modified = new Attributes(size);
+        int creatorTag = -1;
+        int prevCreatorTag = -1;
+        int otherCreatorTag = 0;
+        String privateCreator = null;
+        for (int i = 0; i < size; i++) {
+            int tag = tags[i];
+            if ((tag & 0x00010000) != 0) { // private group
+                if ((tag & 0x0000ff00) == 0)
+                    continue; // skip private creator
+
+                creatorTag = TagUtils.creatorTagOf(tag);
+                if (prevCreatorTag != creatorTag) {
+                    prevCreatorTag = creatorTag;
+                    otherCreatorTag = -1;
+                    privateCreator = null;
+                    int k = indexOf(creatorTag);
+                    if (k >= 0) {
+                        Object o = decodeStringValue(k);
+                        if (o instanceof String) {
+                            privateCreator = (String) o;
+                            otherCreatorTag = other.creatorTagOf(
+                                    privateCreator, tag, false);
+                        }
+                    }
+                }
+                if (privateCreator == null)
+                    continue; // no Private Creator
+
+                if (otherCreatorTag != -1)
+                    tag = TagUtils.toPrivateTag(otherCreatorTag, tag);
+            } else {
+                otherCreatorTag = 0;
+                privateCreator = null;
+            }
+
+            Object origValue = values[i];
+            if (origValue instanceof Value && ((Value) origValue).isEmpty())
+                continue;
+
+            if (otherCreatorTag >= 0) {
+                int j = other.indexOf(tag);
+                if (j >= 0 && equalValues(other, i, j))
+                    continue;
+            }
+
+            if (origValue instanceof Sequence) {
+                modified.set(privateCreator, tag, (Sequence) origValue, null);
+            } else if (origValue instanceof Fragments) {
+                modified.set(privateCreator, tag, (Fragments) origValue);
+            } else {
+                modified.set(privateCreator, tag, vrs[i], origValue);
+            }
+        }
+        return modified;
     }
 }

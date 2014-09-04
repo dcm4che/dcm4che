@@ -290,4 +290,11 @@ public class HL7Rcv {
         return out.toByteArray();
     }
 
+    public Device getDevice() {
+        return device;
+    }
+
+    public Connection getConn() {
+        return conn;
+    }
 }

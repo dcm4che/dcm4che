@@ -49,9 +49,57 @@
   <packaging>pom</packaging>
   <name>dcm4che-assembly</name>
   <description>Assemble dcm4che distribution packages</description>
-  <build>
-    <finalName>dcm4che-${project.version}</finalName>
+     <build>
+         <finalName>dcm4che-${project.version}</finalName>
     <plugins>
+      <plugin>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <resourceBundle>org.dcm4che:dcm4che-dict:${project.version}</resourceBundle>
+              </resourceBundles>
+              <outputDirectory>${project.build.directory}/archive-tmp/maven-shared-archive-resources</outputDirectory>
+              <attachToMain>false</attachToMain>
+            </configuration>
+          </execution>
+          
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>transform</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <transformationSets>
+            <transformationSet>
+              <dir>${project.build.directory}/archive-tmp/maven-shared-archive-resources</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/sampleTCFile.xsl</stylesheet>
+              <outputDir>src/etc/probetc</outputDir>
+              <fileMappers>
+                <fileMapper
+                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>sampleTCFile.properties</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            </transformationSets>
+            </configuration>
+            </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.3</version>
@@ -160,12 +208,13 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-json</artifactId>
+      <artifactId>dcm4che-js-dict</artifactId>
+      <type>zip</type>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-javascript</artifactId>
+      <artifactId>dcm4che-json</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -305,6 +354,11 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-prefs2xml</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-storescp</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -346,6 +400,21 @@
     <dependency>
       <groupId>org.dcm4che.tool.ihe</groupId>
       <artifactId>dcm4che-tool-ihe-modality</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+        <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-stowrs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-jpg2dcm</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che.tool</groupId>
+      <artifactId>dcm4che-tool-probetc</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

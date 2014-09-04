@@ -52,6 +52,7 @@ import javax.naming.directory.ModificationItem;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapDicomConfigurationExtension;
+import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.conf.api.generic.ConfigClass;
@@ -112,7 +113,7 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
     }
 
     @Override
-    protected void storeChilds(String deviceDN, Device device) throws NamingException {
+    protected void storeChilds(String deviceDN, Device device) throws NamingException, ConfigurationException {
 
         T confObj = device.getDeviceExtension(confClass);
 
@@ -121,7 +122,7 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 
     }
 
-    private void store(String deviceDN, T confObj) throws NamingException {
+    private void store(String deviceDN, T confObj) throws NamingException, ConfigurationException {
 
         Attributes attrs = new BasicAttributes(true);
         attrs.put(new BasicAttribute("cn", commonName));
@@ -142,7 +143,7 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
             reflectiveConfig.storeConfig(confObj, ldapWriter);
 
         } catch (Exception e) {
-            log.error("Unable to store configuration for class " + confClass.getSimpleName()+
+            throw new ConfigurationException("Unable to store configuration for class " + confClass.getSimpleName()+
                     " for device DN: " + deviceDN, e);
         }
 
@@ -169,14 +170,14 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
             device.addDeviceExtension(confObj);
 
         } catch (Exception e) {
-            log.error("Unable to read configuration for class " + confClass.getSimpleName()+
+            throw new ConfigurationException("Unable to read configuration for class " + confClass.getSimpleName()+
                     " for device: " + device.getDeviceName() , e);
         }
 
     }
 
     @Override
-    protected void mergeChilds(Device prev, Device device, String deviceDN) throws NamingException {
+    protected void mergeChilds(Device prev, Device device, String deviceDN) throws NamingException, ConfigurationException {
         T prevConfObj = prev.getDeviceExtension(confClass);
         T confObj = device.getDeviceExtension(confClass);
 
@@ -196,8 +197,8 @@ public class LdapGenericConfigExtension<T extends DeviceExtension> extends LdapD
 
             reflectiveConfig.storeConfigDiffs(prevConfObj, confObj, ldapDiffWriter);
 
-        } catch (Exception e) {
-            log.error("Unable to merge configuration for class " + confClass.getSimpleName()+
+        } catch (ConfigurationException e) {
+            throw new ConfigurationException("Unable to merge configuration for class " + confClass.getSimpleName()+
                     " for device: " + device.getDeviceName(), e);
         }
     }

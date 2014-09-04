@@ -6,6 +6,6 @@ echo objectClass: ldapSubentry
 echo objectClass: subschema
 sed '
 /^#.*/d
-/^$/d
+/^ *$/d
 s/attributetype/attributeTypes:/
 s/objectclass/objectClasses:/' $1

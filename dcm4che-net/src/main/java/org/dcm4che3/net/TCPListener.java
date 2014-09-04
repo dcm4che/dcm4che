@@ -67,7 +67,7 @@ class TCPListener implements Listener {
             this.handler = handler;
             ss = conn.isTls() ? createTLSServerSocket(conn) : new ServerSocket();
             conn.setReceiveBufferSize(ss);
-            ss.bind(conn.getEndPoint(), conn.getBacklog());
+            ss.bind(conn.getBindPoint(), conn.getBacklog());
             conn.getDevice().execute(new Runnable(){
     
                 @Override
@@ -94,7 +94,7 @@ class TCPListener implements Listener {
         SocketAddress sockAddr = ss.getLocalSocketAddress();
         Connection.LOG.info("Start TCP Listener on {}", sockAddr);
         try {
-            for (;;) {
+            while (!ss.isClosed()) {
                 Connection.LOG.debug("Wait for connection on {}", sockAddr);
                 Socket s = ss.accept();
                 ConnectionMonitor monitor = conn.getDevice() != null
@@ -111,7 +111,7 @@ class TCPListener implements Listener {
                         if (s instanceof SSLSocket) {
                             ((SSLSocket) s).startHandshake();
                         }
-                    } catch (IOException e) {
+                    } catch (Throwable e) {
                         if (monitor != null)
                             monitor.onConnectionRejected(conn, s, e);
                         Connection.LOG.warn("Reject connection {}:",s, e);
@@ -124,7 +124,7 @@ class TCPListener implements Listener {
                     Connection.LOG.info("Accept connection {}", s);
                     try {
                         handler.onAccept(conn, s);
-                    } catch (IOException e) {
+                    } catch (Throwable e) {
                         Connection.LOG.warn("Exception on accepted connection {}:",s, e);
                         conn.close(s);
                     }

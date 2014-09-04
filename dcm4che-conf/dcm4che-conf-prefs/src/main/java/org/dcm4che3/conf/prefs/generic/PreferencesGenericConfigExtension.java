@@ -98,7 +98,7 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
     }
 
     @Override
-    protected void storeChilds(Device device, Preferences deviceNode) {
+    protected void storeChilds(Device device, Preferences deviceNode) throws ConfigurationException {
         T confObj = device.getDeviceExtension(confClass);
         if (confObj != null) {
             ConfigWriter prefsWriter = new PrefsConfigWriter(deviceNode.node(nodename));
@@ -108,7 +108,7 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
                 reflectiveConfig.storeConfig(confObj, prefsWriter);
             
             } catch (Exception e) {
-                log.error("Unable to store configuration for class "+confClass.getSimpleName()+
+                throw new ConfigurationException("Unable to store configuration for class "+confClass.getSimpleName()+
                         " for device: " + device.getDeviceName() , e);
             }
         }
@@ -132,16 +132,16 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
         try {
         
             reflectiveConfig.readConfig(confObj, prefsReader);
-        
+            device.addDeviceExtension(confObj);
+
         } catch (Exception e) {
-            log.error("Unable to read configuration for class "+confClass.getSimpleName()+
+            throw new ConfigurationException("Unable to read configuration for class "+confClass.getSimpleName()+
                     " for device: " + device.getDeviceName() ,e);
         }
-        device.addDeviceExtension(confObj);
     }
 
     @Override
-    protected void mergeChilds(Device prev, Device device, Preferences deviceNode) throws BackingStoreException {
+    protected void mergeChilds(Device prev, Device device, Preferences deviceNode) throws BackingStoreException, ConfigurationException {
         T prevConfObj = prev.getDeviceExtension(confClass);
         T confObj = device.getDeviceExtension(confClass);
 
@@ -159,7 +159,7 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
                 reflectiveConfig.storeConfig(confObj, prefsWriter);
             
             } catch (Exception e) {
-                log.error("Unable to store configuration for class "+confClass.getSimpleName()+
+                throw new ConfigurationException("Unable to store configuration for class "+confClass.getSimpleName()+
                         (confObj.getDevice() != null ? " for device: " + confObj.getDevice().getDeviceName(): "") , e);
             }
         } else {

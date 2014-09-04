@@ -61,11 +61,19 @@ public @interface ConfigField {
     String name();
 
     /**
-     * Default value
+     * Warning - not the common "default". The logic is that  
+     * if the attribute at hand will have the value specified by this parameter, it will not be persisted.
+     * Additionally, if applied to a Object-typed field, will populate it with null if there is no child and not throw exception.
      * 
      * @return
      */
     String def() default "N/A";
+
+    /**
+     * If set to false, will not throw exceptions while loading the configuration in case if the property is not present in the persisted configuration.
+     * I.e. will keep the value that was initialized by the class constructor for the field.
+     */
+    boolean failIfNotPresent() default true;
 
     /**
      * What is used as a map key, e.g. which names ldap nodes have like if a key is 'name', then nodes are
@@ -88,6 +96,25 @@ public @interface ConfigField {
      * you need a different name for the collection node itself in this case, use this parameter.
      */
     String mapName() default "N/A";
+    
+    /**
+     * Label to show in configuration UIs. If empty empty string (default), the name will be used.
+     * @return
+     */
+    String label() default "";
+    
+    /**
+     * Description to show in configuration UIs.
+     * @return
+     */
+    String description() default "";
+    
+    /**
+     * Indicates that the configuration parameter is optional. By default, all parameters are required.
+     * For the time being, only used in configuration UIs, the backend validation will follow.
+     * @return
+     */
+    boolean optional() default false;
 
     /**
      * For Maps. Which delimeter is used to separate key from value.

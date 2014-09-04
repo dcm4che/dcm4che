@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NativeDicomModel xml-space="preserved">
+	<DicomAttribute keyword="FileMetaInformationVersion" tag="00020001" vr="OB">
+		<InlineBinary>AAE=</InlineBinary>
+	</DicomAttribute>
+	<DicomAttribute keyword="MediaStorageSOPClassUID" tag="00020002" vr="UI">
+		<Value number="1">1.2.840.10008.5.1.4.1.1.2</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="MediaStorageSOPInstanceUID" tag="00020003" vr="UI">
+		<Value number="1">1.2.840.113704.1.111.3080.1217330248.7779</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="TransferSyntaxUID" tag="00020010" vr="UI">
+		<Value number="1">1.2.840.10008.1.2.4.91</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ImplementationClassUID" tag="00020012" vr="UI">
+		<Value number="1">1.3.6.1.4.1.19291.2.1</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ImplementationVersionName" tag="00020013" vr="SH">
+		<Value number="1">SAEX001</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SourceApplicationEntityTitle" tag="00020016" vr="AE">
+		<Value number="1">SomeAE</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ImageType" tag="00080008" vr="CS">
+		<Value number="1">ORIGINAL</Value>
+		<Value number="2">PRIMARY</Value>
+		<Value number="3">AXIAL</Value>
+		<Value number="4">HELIX</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="InstanceCreationDate" tag="00080012" vr="DA">
+		<Value number="1">20080729</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="InstanceCreationTime" tag="00080013" vr="TM">
+		<Value number="1">131728.000000</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SOPClassUID" tag="00080016" vr="UI">
+		<Value number="1">1.2.840.10008.5.1.4.1.1.2</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SOPInstanceUID" tag="00080018" vr="UI">
+		<Value number="1">1.2.840.113704.1.111.3080.1217330248.7779</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="StudyDate" tag="00080020" vr="DA">
+		<Value number="1">20080729</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="AcquisitionDate" tag="00080022" vr="DA">
+		<Value number="1">20080729</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ContentDate" tag="00080023" vr="DA">
+		<Value number="1">20080729</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="AcquisitionDateTime" tag="0008002A" vr="DT">
+		<Value number="1">20080729131503</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="StudyTime" tag="00080030" vr="TM">
+		<Value number="1">125554.000000</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="AcquisitionTime" tag="00080032" vr="TM">
+		<Value number="1">131503.000000</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ContentTime" tag="00080033" vr="TM">
+		<Value number="1">131505.888000</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="AccessionNumber" tag="00080050" vr="SH">
+		<Value number="1">A10003204947</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="Modality" tag="00080060" vr="CS">
+		<Value number="1">CT</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="Manufacturer" tag="00080070" vr="LO">
+		<Value number="1">Agfa</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="InstitutionName" tag="00080080" vr="LO">
+		<Value number="1">SomeInstitution</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReferringPhysicianName" tag="00080090" vr="PN">
+		<PersonName number="1">
+			<Alphabetic>
+				<FamilyName>BUGS</FamilyName>
+				<GivenName>BUNNY</GivenName>
+			</Alphabetic>
+		</PersonName>
+	</DicomAttribute>
+	<DicomAttribute keyword="StationName" tag="00081010" vr="SH">
+		<Value number="1">ICT256</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="StudyDescription" tag="00081030" vr="LO">
+		<Value number="1">CAT SCAN CARDIAC</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ProcedureCodeSequence" tag="00081032" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="CodeValue" tag="00080100" vr="SH">
+				<Value number="1">CTCOEUR</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="CodingSchemeDesignator" tag="00080102" vr="SH">
+				<Value number="1">BROKER</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="CodeMeaning" tag="00080104" vr="LO">
+				<Value number="1">CAT SCAN CARDIAC</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="SeriesDescription" tag="0008103E" vr="LO">
+		<Value number="1">SOME DESC</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="InstitutionalDepartmentName" tag="00081040" vr="LO">
+		<Value number="1">Radiology</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ManufacturerModelName" tag="00081090" vr="LO">
+		<Value number="1">SOMENAME</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReferencedStudySequence" tag="00081110" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="ReferencedSOPClassUID" tag="00081150" vr="UI">
+				<Value number="1">1.2.840.10008.3.1.2.3.1</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ReferencedSOPInstanceUID" tag="00081155" vr="UI">
+				<Value number="1">2.16.840.1.113669.632.20.121711.10000158860</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReferencedPerformedProcedureStepSequence" tag="00081111" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="ReferencedSOPClassUID" tag="00081150" vr="UI">
+				<Value number="1">1.2.840.10008.3.1.2.3.3</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ReferencedSOPInstanceUID" tag="00081155" vr="UI">
+				<Value number="1">1.2.840.113704.1.111.876.1217328691.10</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReferencedPatientSequence" tag="00081120" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="ReferencedSOPClassUID" tag="00081150" vr="UI">
+				<Value number="1">1.2.840.10008.3.1.2.1.1</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ReferencedSOPInstanceUID" tag="00081155" vr="UI">
+				<Value number="1">1.2.124.113532.172.18.1.55.20080729.121953.413140</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReferencedImageSequence" tag="00081140" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="ReferencedSOPClassUID" tag="00081150" vr="UI">
+				<Value number="1">1.2.840.10008.5.1.4.1.1.2</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ReferencedSOPInstanceUID" tag="00081155" vr="UI">
+				<Value number="1">1.2.840.113704.1.111.3080.1217329466.7556</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientName" tag="00100010" vr="PN">
+		<PersonName number="1">
+			<Alphabetic>
+				<FamilyName>DUCK</FamilyName>
+			</Alphabetic>
+		</PersonName>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientID" tag="00100020" vr="LO">
+		<Value number="1">222111</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="IssuerOfPatientID" tag="00100021" vr="LO">
+		<Value number="1">041G04:20061118:120819573:001183</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientBirthDate" tag="00100030" vr="DA">
+		<Value number="1">20080822</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientSex" tag="00100040" vr="CS">
+		<Value number="1">0000</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="OtherPatientIDs" tag="00101000" vr="LO">
+		<Value number="1">222111</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientAge" tag="00101010" vr="AS">
+		<Value number="1">069Y</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PregnancyStatus" tag="001021C0" vr="US">
+		<Value number="1">4</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ContrastBolusAgent" tag="00180010" vr="LO">
+		<Value number="1">CONTRAST</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ScanOptions" tag="00180022" vr="CS">
+		<Value number="1">HELIX</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SliceThickness" tag="00180050" vr="DS">
+		<Value number="1">0.67</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="KVP" tag="00180060" vr="DS">
+		<Value number="1">120</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SpacingBetweenSlices" tag="00180088" vr="DS">
+		<Value number="1">0.33</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="DataCollectionDiameter" tag="00180090" vr="DS">
+		<Value number="1">500</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SoftwareVersions" tag="00181020" vr="LO">
+		<Value number="1">2.2.6</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ProtocolName" tag="00181030" vr="LO">
+		<Value number="1">CA SCORING/COEUR IV/COEUR</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ReconstructionDiameter" tag="00181100" vr="DS">
+		<Value number="1">204</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="GantryDetectorTilt" tag="00181120" vr="DS">
+		<Value number="1">0</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="TableHeight" tag="00181130" vr="DS">
+		<Value number="1">94</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="RotationDirection" tag="00181140" vr="CS">
+		<Value number="1">CW</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="XRayTubeCurrent" tag="00181151" vr="IS">
+		<Value number="1">381</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="Exposure" tag="00181152" vr="IS">
+		<Value number="1">800</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="FilterType" tag="00181160" vr="SH">
+		<Value number="1">XCB</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="ConvolutionKernel" tag="00181210" vr="SH">
+		<Value number="1">XCB</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PatientPosition" tag="00185100" vr="CS">
+		<Value number="1">FFS</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="CTExposureSequence" tag="00189321" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="EstimatedDoseSaving" tag="00189324" vr="FD">
+				<Value number="1">0</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ExposureTimeInms" tag="00189328" vr="FD">
+				<Value number="1">2.09973753280839</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="XRayTubeCurrentInmA" tag="00189330" vr="FD">
+				<Value number="1">381</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ExposureInmAs" tag="00189332" vr="FD">
+				<Value number="1">800</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="CTDIvol" tag="00189345" vr="FD">
+				<Value number="1">47</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="CTDIvol" tag="00189345" vr="FD">
+		<Value number="1">47</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="StudyInstanceUID" tag="0020000D" vr="UI">
+		<Value number="1">2.16.840.1.113669.632.20.121711.10000158860</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SeriesInstanceUID" tag="0020000E" vr="UI">
+		<Value number="1">1.2.840.113704.1.111.5224.1217330018.18</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="StudyID" tag="00200010" vr="SH">
+		<Value number="1">333111</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="SeriesNumber" tag="00200011" vr="IS">
+		<Value number="1">5</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="InstanceNumber" tag="00200013" vr="IS">
+		<Value number="1">84</Value>
+	</DicomAttribute>
+	
+	<DicomAttribute keyword="RequestingPhysician" tag="00321032" vr="PN">
+		<PersonName number="1">
+			<Alphabetic>
+				<FamilyName>HAHE</FamilyName>
+			</Alphabetic>
+		</PersonName>
+	</DicomAttribute>
+	<DicomAttribute keyword="RequestingService" tag="00321033" vr="LO">
+		<Value number="1">240</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="RequestedProcedureDescription" tag="00321060" vr="LO">
+		<Value number="1">Cat scan Cardiac</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="AdmissionID" tag="00380010" vr="LO">
+		<Value number="1">285212/00108210</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PerformedProcedureStepID" tag="00400253" vr="SH">
+		<Value number="1">498724</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="PerformedProcedureStepDescription" tag="00400254" vr="LO">
+		<Value number="1">CAT SCAN Cardiac</Value>
+	</DicomAttribute>
+	<DicomAttribute keyword="RequestAttributesSequence" tag="00400275" vr="SQ">
+		<Item number="1">
+			<DicomAttribute keyword="ScheduledProcedureStepDescription" tag="00400007" vr="LO">
+				<Value number="1">Cat scan Cardiac</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="ScheduledProtocolCodeSequence" tag="00400008" vr="SQ"/>
+			<DicomAttribute keyword="ScheduledProcedureStepID" tag="00400009" vr="SH">
+				<Value number="1">A10003204947</Value>
+			</DicomAttribute>
+			<DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH">
+				<Value number="1">A10003204946</Value>
+			</DicomAttribute>
+		</Item>
+	</DicomAttribute>
+	<DicomAttribute keyword="RequestedProcedureID" tag="00401001" vr="SH">
+		<Value number="1">A10003204947</Value>
+	</DicomAttribute>
+</NativeDicomModel>

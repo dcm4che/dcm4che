@@ -1,0 +1,11 @@
+#!/bin/sh
+# Usage: mkkey <cn> <truststore>
+
+DIRNAME="`dirname "$0"`"
+DCM4CHE_HOME=`cd "$DIRNAME"/..; pwd`
+DIR=$DCM4CHE_HOME/etc/$1
+DNAME="CN=$1,OU=dcm4che-tool,O=dcm4che,L=Vienna,ST=Vienna,C=AT"
+keytool -genkey -keyalg RSA -storepass secret -keypass secret -dname $DNAME -validity 365 -alias $1 -keystore $DIR/key.jks
+keytool -exportcert -storepass secret -alias $1 -keystore $DIR/key.jks -file $DIR/cert.pem
+keytool -importcert -noprompt -storepass secret -alias $1 -keystore $2 -file $DIR/cert.pem
+

@@ -66,7 +66,7 @@ public class PreferencesDicomConfigurationExtension {
 
     protected void storeTo(Device device, Preferences prefs) {}
 
-    protected void storeChilds(Device device, Preferences prefs) {}
+    protected void storeChilds(Device device, Preferences prefs) throws ConfigurationException {}
 
     protected void loadFrom(Device device, Preferences prefs)
             throws CertificateException, BackingStoreException {}
@@ -77,7 +77,7 @@ public class PreferencesDicomConfigurationExtension {
     protected void storeDiffs(Device a, Device b, Preferences prefs) {}
 
     protected void mergeChilds(Device a, Device b, Preferences prefs)
-            throws BackingStoreException {}
+            throws BackingStoreException, ConfigurationException {}
 
     protected void storeTo(ApplicationEntity ae, Preferences prefs) {}
 

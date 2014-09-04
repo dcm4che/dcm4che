@@ -71,6 +71,29 @@ public class MediaTypes {
             new MediaType("application", "dicom+xml");
 
     /**
+     * "image/gif"
+     */
+    public final static String IMAGE_GIF = "image/gif";
+
+    /**
+     * "image/gif"
+     */
+    public final static MediaType IMAGE_GIF_TYPE =
+            new MediaType("image", "gif");
+
+
+    /**
+     * "image/png"
+     */
+    public final static String IMAGE_PNG = "image/png";
+
+    /**
+     * "image/png"
+     */
+    public final static MediaType IMAGE_PNG_TYPE =
+            new MediaType("image", "png");
+
+    /**
      * "image/jpeg"
      */
     public final static String IMAGE_JPEG = "image/jpeg";
@@ -168,6 +191,17 @@ public class MediaTypes {
      */
     public final static MediaType APPLICATION_PDF_TYPE =
             new MediaType("application", "pdf");
+
+    /**
+     * "text/rtf"
+     */
+    public final static String TEXT_RTF = "text/rtf";
+
+    /**
+     * "text/rtf"
+     */
+    public final static MediaType TEXT_RTF_TYPE =
+            new MediaType("text", "rtf");
 
     /**
      * "application/zip"

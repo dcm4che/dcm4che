@@ -165,7 +165,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
 
             // serialize key
             String serializedKey = keyAdapter.serialize(e.getKey(), config, null);
-
+ 
             // if new node
             if (prev.get(e.getKey()) == null) {
                 ConfigWriter elementWriter = collectionWriter.getCollectionElementWriter(fieldAnno.mapKey(), serializedKey, field);
@@ -179,8 +179,31 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
                 ConfigWriter elementWriter = collectionWriter.getCollectionElementDiffWriter(fieldAnno.mapKey(), serializedKey);
                 valueAdapter.merge(prev.get(e.getKey()), e.getValue(), config, elementWriter, field);
                 elementWriter.flushDiffs();
-                ;
             }
         }
+    }
+    
+    @Override
+    public Map<String, Object> getMetadata(ReflectiveConfig config, Field field) throws ConfigurationException {
+        ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
+
+        Map<String, Object> metadata =  new HashMap<String, Object>();
+        Map<String, Object> keyMetadata =  new HashMap<String, Object>();
+        Map<String, Object> valueMetadata =  new HashMap<String, Object>();
+        
+        metadata.put("type", "Map");
+        
+        // get adapters
+        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) getValueAdapter(field, config);
+        ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) getKeyAdapter(field, config);
+
+        // fill in key and value metadata
+        keyMetadata.putAll(keyAdapter.getMetadata(config, field));
+        metadata.put("keyMetadata", keyMetadata);
+        
+        valueMetadata.putAll(valueAdapter.getMetadata(config, field));
+        metadata.put("elementMetadata", valueMetadata);
+
+        return metadata;
     }
 }

@@ -1,46 +1,48 @@
-    usage: dcm2xml [<options>] <dicom-file>
+    usage: dcm2jpg [<options>] <dicom-file> <jpeg-file>
+                   or dcm2jpg [Options] <dicom-file>... <outdir>
+                   or dcm2jpg [Options] <indir>... <outdir>
     
-    Convert <dicom-file> (or the standard input if <dicom-file> = '-') in XML
-    presentation and optionally apply XSLT stylesheet on it. Writes result to
-    standard output.
+    Convert DICOM image(s) to JPEG(s) or other image formats
     -
     Options:
-     -b,--with-bulkdata              include bulkdata directly in XML output;
-                                     by default, only references to bulkdata
-                                     are included.
-     -B,--no-bulkdata                do not include bulkdata in XML output; by
-                                     default, references to bulkdata are
-                                     included.
-        --blk-file-prefix <prefix>   prefix for generating file names for
-                                     extracted bulkdata; 'blk' by default
-        --blk-file-suffix <suffix>   directory were files with extracted
-                                     bulkdata are stored if the DICOM object
-                                     is read from "standard input; if not
-                                     specified, files are stored into the
-                                     default temporary-file directory
-     -c,--cat-blk-files              concatenate extracted bulkdata into one
-                                     file
-     -d,--blk-file-dir <directory>   directory were files with extracted
-                                     bulkdata are stored if the DICOM object
-                                     is read from "standard input; if not
-                                     specified, files are stored into the
-                                     default temporary-file directory
-     -h,--help                       display this help and exit
-     -I,--indent                     use additional whitespace in XML output
-     -K,--no-keyword                 do not include keyword attribute of
-                                     DicomAttribute element in XML output
-     -V,--version                    output version information and exit
-     -X,--blk-spec <xml-file>        specify bulkdata attributes explicitly by
-                                     XML presentation in <xml-file>
-     -x,--xsl <xsl-file>             apply specified XSLT stylesheet
-        --xmlns                      include
-                                     xmlns='http://dicom.nema.org/PS3.19/model
-                                     s/NativeDICOM' attribute in root element
-    Examples:
-    $ dcm2xml image.dcm
-    Write XML representation of DICOM file image.dcm to standard output,
-    including only a reference to the pixel data in image.dcm
-    $ dcm2xml --blk-file-dir=/tmp/pixeldata/ - < image.dcm
-    Write XML representation of DICOM file image.dcm to standard output,
-    including a reference to the extracted pixel data in file
-    /tmp/pixeldata/blk#####.tmp
+     -c,--windowCenter <center>   Window Center of linear VOI LUT function to
+                                  apply
+     -C <type>                    Compression Type of Image Writer to be used
+     -E <class>                   ImageWriter class to be used for encoding,
+                                  choose the first Image Writer found for
+                                  given image format by default
+     -F <format>                  output image format, JPEG by default
+        --frame <number>          frame to convert, 1 (= first frame) by
+                                  default
+     -h,--help                    display this help and exit
+        --lsE                     list available Image Writers for specified
+                                  output image format
+        --lsF                     list supported output image formats
+        --noauto                  disable auto-windowing for images w/o VOI
+                                  attributes
+        --overlays <mask>         render overlays specified by bits 1-16 of
+                                  <mask> in hex; FFFF by default.
+        --ovlygray <value>        grayscale value of rendered overlays in hex;
+                                  FFFF (= white) by default.
+        --ps <file>               file path of presentation state to apply
+     -q <quality>                 compression quality (0.0-1.0) of output
+                                  image
+        --suffix <suffix>         file extension used with destination
+                                  directory argument,lower case format name by
+                                  default
+        --uselut                  use explicit VOI LUT in image, even if the
+                                  image also specifies Window Center/Width;
+                                  prefer applying Window Center/Width over
+                                  explicit VOI LUT by default
+     -V,--version                 output version information and exit
+        --voilut <number>         use <number>. explicit VOI LUT, if the image
+                                  provides several explicit VOI LUT; use 1. by
+                                  default.
+     -w,--windowWidth <width>     Window Width of linear VOI LUT function to
+                                  apply
+        --window <number>         use <number>. Window Center/Width value, if
+                                  the image provides several Window
+                                  Center/Width values; use 1. by default.
+    -
+    Example: dcm2jpg img.dcm img.jpg
+    => Convert DICOM image 'img.dcm' to JPEG image 'img.jpg'

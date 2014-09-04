@@ -244,11 +244,23 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.57 NAME 'dcmBodyPartExamined'
   DESC 'DICOM attribute Body Part Examined (0018,0015)'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
-  
 attributeTypes: ( 1.2.40.0.13.1.15.0.3.58 NAME 'dcmTimeZoneOfDevice'
   DESC 'Time Zone ID of the Device; matches Java TimeZone ID'
   EQUALITY caseExactMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.59 NAME 'dcmBindAddress'
+  DESC 'Bind address of listening socket; use hostname of the connection if absent'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.60 NAME 'dcmClientBindAddress'
+  DESC 'Bind address of outgoing connections; use hostname of the connection if absent'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -423,6 +435,10 @@ attributeTypes: ( 1.2.40.0.13.1.15.4.3.4 NAME 'dcmImageWriteParam'
   DESC 'Image Write parameter'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+attributeTypes: ( 1.2.40.0.13.1.15.4.3.5 NAME 'dcmWriteIIOMetadata'
+  DESC 'Image Write parameter'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 objectClasses: ( 1.2.40.0.13.1.15.0.4.4 NAME 'dcmDevice'
   DESC 'Extended DICOM Device related information'
   SUP top AUXILIARY
@@ -458,6 +474,8 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
     dcmTCPSendBufferSize $
     dcmTCPReceiveBufferSize $
     dcmTCPNoDelay $
+    dcmBindAddress $
+    dcmClientBindAddress $
     dcmBlacklistedHostname $
     dcmSendPDULength $
     dcmReceivePDULength $
@@ -587,7 +605,8 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.4 NAME 'dcmImageWriter'
   MAY (
     dcmJavaClassName $
     dcmPatchJPEGLS $
-    dcmImageWriteParam ) )
+    dcmImageWriteParam $
+    dcmWriteIIOMetadata ) )
 objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
   DESC 'Compression rule'
   SUP top STRUCTURAL
@@ -602,7 +621,6 @@ objectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmSOPClass $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
-    
 objectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'
   DESC 'Collection folder'
   SUP top STRUCTURAL

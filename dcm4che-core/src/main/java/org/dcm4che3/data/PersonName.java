@@ -38,6 +38,7 @@
 
 package org.dcm4che3.data;
 
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -92,9 +93,8 @@ public class PersonName {
             case '^':
                 if (++cindex > 4)
                     if (lenient) {
-                        if (cindex == 5)
-                            LOG.info(
-                                "illegal PN: {} - ignore illegal component(s)", s);
+                        LOG.info(
+                            "illegal PN: {} - ignore illegal component(s)", s);
                         break;
                     } else
                         throw new IllegalArgumentException(s);
@@ -218,4 +218,22 @@ public class PersonName {
     private static String trim(String s) {
         return s == null || (s = s.trim()).isEmpty() ? null : s;
     }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(fields);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        
+        if (!(obj instanceof PersonName))
+            return false;
+
+        PersonName other = (PersonName) obj;
+        return Arrays.equals(fields, other.fields);
+    }
+
 }

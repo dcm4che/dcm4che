@@ -266,7 +266,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     private void writePersonName(String s) {
-        PersonName pn = new PersonName(s);
+        PersonName pn = new PersonName(s, true);
         gen.writeStartObject();
         writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
         writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);

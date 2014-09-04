@@ -54,6 +54,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 
@@ -79,13 +80,23 @@ public class ImageWriterFactory implements Serializable {
         public final String className;
         public final PatchJPEGLS patchJPEGLS;
         public final Property[] imageWriteParams;
+        public final Property[] iioMetadata;
 
         public ImageWriterParam(String formatName, String className,
-                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams) {
+                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams, Property[] iioMetadata) {
             this.formatName = formatName;
             this.className = nullify(className);
             this.patchJPEGLS = patchJPEGLS;
             this.imageWriteParams = imageWriteParams;
+            this.iioMetadata = iioMetadata;
+        }
+
+        public ImageWriterParam(String formatName, String className,
+                String patchJPEGLS, String[] imageWriteParams, String[] iioMetadata) {
+            this(formatName, className, patchJPEGLS != null
+                    && !patchJPEGLS.isEmpty() ? PatchJPEGLS
+                    .valueOf(patchJPEGLS) : null, Property
+                    .valueOf(imageWriteParams), Property.valueOf(iioMetadata));
         }
 
         public ImageWriterParam(String formatName, String className,
@@ -93,11 +104,16 @@ public class ImageWriterFactory implements Serializable {
             this(formatName, className, patchJPEGLS != null
                     && !patchJPEGLS.isEmpty() ? PatchJPEGLS
                     .valueOf(patchJPEGLS) : null, Property
-                    .valueOf(imageWriteParams));
+                    .valueOf(imageWriteParams), null);
         }
+
 
         public Property[] getImageWriteParams() {
             return imageWriteParams;
+        }
+
+        public Property[] getIIOMetadata() {
+            return iioMetadata;
         }
     }
 

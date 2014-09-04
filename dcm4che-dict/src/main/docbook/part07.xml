@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="5.0" xml:id="PS3.7" label="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2013 - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2014a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2013</year>
+      <year>2014</year>
       <holder>NEMA</holder>
     </copyright>
   </info>
@@ -12933,7 +12933,7 @@
     <title>Registry of DICOM Command Elements</title>
   
     <table frame="box" label="E.1-1" rules="all" xml:id="table_E.1-1">
-    <caption>Command Fields (Part 1)</caption>
+    <caption>Command Fields</caption>
     <thead>
    <tr valign="top">
       <th align="center" colspan="1" rowspan="1">

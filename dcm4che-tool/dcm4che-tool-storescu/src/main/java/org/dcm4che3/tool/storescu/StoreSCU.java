@@ -51,9 +51,12 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -62,7 +65,9 @@ import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.imageio.codec.Decompressor;
 import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
@@ -80,6 +85,7 @@ import org.dcm4che3.tool.common.DicomFiles;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -87,14 +93,18 @@ import org.dcm4che3.util.TagUtils;
  */
 public class StoreSCU {
 
-    private static ResourceBundle rb =
-            ResourceBundle.getBundle("org.dcm4che3.tool.storescu.messages");
+    public interface RSPHandlerFactory {
+
+        DimseRSPHandler createDimseRSPHandler(File f);
+    }
+
+    private static ResourceBundle rb = ResourceBundle
+            .getBundle("org.dcm4che3.tool.storescu.messages");
 
     private final ApplicationEntity ae;
     private final Connection remote;
     private final AAssociateRQ rq = new AAssociateRQ();
-    private final RelatedGeneralSOPClasses relSOPClasses =
-            new RelatedGeneralSOPClasses();
+    private final RelatedGeneralSOPClasses relSOPClasses = new RelatedGeneralSOPClasses();
     private Attributes attrs;
     private String uidSuffix;
     private boolean relExtNeg;
@@ -109,12 +119,32 @@ public class StoreSCU {
     private int filesScanned;
     private int filesSent;
 
+    private RSPHandlerFactory rspHandlerFactory = new RSPHandlerFactory() {
+
+        @Override
+        public DimseRSPHandler createDimseRSPHandler(final File f) {
+
+            return new DimseRSPHandler(as.nextMessageID()) {
+
+                @Override
+                public void onDimseRSP(Association as, Attributes cmd,
+                        Attributes data) {
+                    super.onDimseRSP(as, cmd, data);
+                    StoreSCU.this.onCStoreRSP(cmd, f);
+                }
+            };
+        }
+    };
+
     public StoreSCU(ApplicationEntity ae) throws IOException {
         this.remote = new Connection();
         this.ae = ae;
-        rq.addPresentationContext(
-                new PresentationContext(1, UID.VerificationSOPClass,
-                        UID.ImplicitVRLittleEndian));
+        rq.addPresentationContext(new PresentationContext(1,
+                UID.VerificationSOPClass, UID.ImplicitVRLittleEndian));
+    }
+
+    public void setRspHandlerFactory(RSPHandlerFactory rspHandlerFactory) {
+        this.rspHandlerFactory = rspHandlerFactory;
     }
 
     public AAssociateRQ getAAssociateRQ() {
@@ -128,7 +158,7 @@ public class StoreSCU {
     public Attributes getAttributes() {
         return attrs;
     }
-    
+
     public void setAttributes(Attributes attrs) {
         this.attrs = attrs;
     }
@@ -158,7 +188,7 @@ public class StoreSCU {
     }
 
     private static CommandLine parseComandLine(String[] args)
-            throws ParseException{
+            throws ParseException {
         Options opts = new Options();
         CLIUtils.addConnectOption(opts);
         CLIUtils.addBindOption(opts, "STORESCU");
@@ -175,56 +205,37 @@ public class StoreSCU {
 
     @SuppressWarnings("static-access")
     private static void addAttributesOption(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArgs()
-                .withArgName("[seq/]attr=value")
-                .withValueSeparator('=')
-                .withDescription(rb.getString("set"))
+        opts.addOption(OptionBuilder.hasArgs().withArgName("[seq/]attr=value")
+                .withValueSeparator('=').withDescription(rb.getString("set"))
                 .create("s"));
     }
 
     @SuppressWarnings("static-access")
     public static void addUIDSuffixOption(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("suffix")
+        opts.addOption(OptionBuilder.hasArg().withArgName("suffix")
                 .withDescription(rb.getString("uid-suffix"))
-                .withLongOpt("uid-suffix")
-                .create(null));
+                .withLongOpt("uid-suffix").create(null));
     }
 
     @SuppressWarnings("static-access")
     public static void addTmpFileOptions(Options opts) {
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("directory")
+        opts.addOption(OptionBuilder.hasArg().withArgName("directory")
                 .withDescription(rb.getString("tmp-file-dir"))
-                .withLongOpt("tmp-file-dir")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("prefix")
+                .withLongOpt("tmp-file-dir").create(null));
+        opts.addOption(OptionBuilder.hasArg().withArgName("prefix")
                 .withDescription(rb.getString("tmp-file-prefix"))
-                .withLongOpt("tmp-file-prefix")
-                .create(null));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("suffix")
+                .withLongOpt("tmp-file-prefix").create(null));
+        opts.addOption(OptionBuilder.hasArg().withArgName("suffix")
                 .withDescription(rb.getString("tmp-file-suffix"))
-                .withLongOpt("tmp-file-suffix")
-                .create(null));
+                .withLongOpt("tmp-file-suffix").create(null));
     }
 
     @SuppressWarnings("static-access")
     private static void addRelatedSOPClassOptions(Options opts) {
-        opts.addOption(null, "rel-ext-neg", false,
-                rb.getString("rel-ext-neg"));
-        opts.addOption(OptionBuilder
-                .hasArg()
-                .withArgName("file|url")
+        opts.addOption(null, "rel-ext-neg", false, rb.getString("rel-ext-neg"));
+        opts.addOption(OptionBuilder.hasArg().withArgName("file|url")
                 .withDescription(rb.getString("rel-sop-classes"))
-                .withLongOpt("rel-sop-classes")
-                .create(null));
+                .withLongOpt("rel-sop-classes").create(null));
     }
 
     @SuppressWarnings("unchecked")
@@ -262,13 +273,13 @@ public class StoreSCU {
                 if (n == 0)
                     return;
                 System.out.println(MessageFormat.format(
-                        rb.getString("scanned"), n,
-                        (t2 - t1) / 1000F, (t2 - t1) / n));
+                        rb.getString("scanned"), n, (t2 - t1) / 1000F,
+                        (t2 - t1) / n));
             }
-            ExecutorService executorService =
-                    Executors.newSingleThreadExecutor();
-            ScheduledExecutorService scheduledExecutorService =
-                    Executors.newSingleThreadScheduledExecutor();
+            ExecutorService executorService = Executors
+                    .newSingleThreadExecutor();
+            ScheduledExecutorService scheduledExecutorService = Executors
+                    .newSingleThreadScheduledExecutor();
             device.setExecutor(executorService);
             device.setScheduledExecutor(scheduledExecutorService);
             try {
@@ -276,8 +287,8 @@ public class StoreSCU {
                 main.open();
                 t2 = System.currentTimeMillis();
                 System.out.println(MessageFormat.format(
-                        rb.getString("connected"),
-                        main.as.getRemoteAET(), t2 - t1));
+                        rb.getString("connected"), main.as.getRemoteAET(), t2
+                                - t1));
                 if (echo)
                     main.echo();
                 else {
@@ -294,8 +305,7 @@ public class StoreSCU {
                 float s = (t2 - t1) / 1000F;
                 float mb = main.totalSize / 1048576F;
                 System.out.println(MessageFormat.format(rb.getString("sent"),
-                        main.filesSent,
-                        mb, s, mb / s));
+                        main.filesSent, mb, s, mb / s));
             }
         } catch (ParseException e) {
             System.err.println("storescu: " + e.getMessage());
@@ -314,20 +324,22 @@ public class StoreSCU {
 
     private static void configureTmpFile(StoreSCU storescu, CommandLine cl) {
         if (cl.hasOption("tmp-file-dir"))
-            storescu.setTmpFileDirectory(new File(cl.getOptionValue("tmp-file-dir")));
-        storescu.setTmpFilePrefix(cl.getOptionValue("tmp-file-prefix", "storescu-"));
+            storescu.setTmpFileDirectory(new File(cl
+                    .getOptionValue("tmp-file-dir")));
+        storescu.setTmpFilePrefix(cl.getOptionValue("tmp-file-prefix",
+                "storescu-"));
         storescu.setTmpFileSuffix(cl.getOptionValue("tmp-file-suffix"));
     }
 
-    public static void configureRelatedSOPClass(StoreSCU storescu, CommandLine cl)
-            throws IOException {
+    public static void configureRelatedSOPClass(StoreSCU storescu,
+            CommandLine cl) throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
             storescu.enableSOPClassRelationshipExtNeg(true);
             Properties p = new Properties();
-            CLIUtils.loadProperties(cl.hasOption("rel-sop-classes")
-                    ? cl.getOptionValue("rel-ext-neg")
-                    : "resource:rel-sop-classes.properties",
-                    p);
+            CLIUtils.loadProperties(
+                    cl.hasOption("rel-sop-classes") ? cl
+                            .getOptionValue("rel-ext-neg")
+                            : "resource:rel-sop-classes.properties", p);
             storescu.relSOPClasses.init(p);
         }
     }
@@ -337,13 +349,18 @@ public class StoreSCU {
     }
 
     public void scanFiles(List<String> fnames) throws IOException {
+        this.scanFiles(fnames, true);
+    }
+
+    public void scanFiles(List<String> fnames, boolean printout)
+            throws IOException {
         tmpFile = File.createTempFile(tmpPrefix, tmpSuffix, tmpDir);
         tmpFile.deleteOnExit();
         final BufferedWriter fileInfos = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(tmpFile)));
         try {
-            DicomFiles.scan(fnames, new DicomFiles.Callback() {
-                
+            DicomFiles.scan(fnames, printout, new DicomFiles.Callback() {
+
                 @Override
                 public boolean dicomFile(File f, Attributes fmi, long dsPos,
                         Attributes ds) throws IOException {
@@ -360,20 +377,20 @@ public class StoreSCU {
     }
 
     public void sendFiles() throws IOException {
-        BufferedReader fileInfos = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(tmpFile)));
+        BufferedReader fileInfos = new BufferedReader(new InputStreamReader(
+                new FileInputStream(tmpFile)));
         try {
             String line;
             while (as.isReadyForDataTransfer()
                     && (line = fileInfos.readLine()) != null) {
                 String[] ss = StringUtils.split(line, '\t');
                 try {
-                    send(new File(ss[4]), Long.parseLong(ss[3]), ss[1], ss[0], ss[2]);
+                    send(new File(ss[4]), Long.parseLong(ss[3]), ss[1], ss[0],
+                            ss[2]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }            
+            }
             try {
                 as.waitForOutstandingRSP();
             } catch (InterruptedException e) {
@@ -408,18 +425,19 @@ public class StoreSCU {
 
         if (!rq.containsPresentationContextFor(cuid)) {
             if (relExtNeg)
-                rq.addCommonExtendedNegotiation(
-                        relSOPClasses.getCommonExtendedNegotiation(cuid));
+                rq.addCommonExtendedNegotiation(relSOPClasses
+                        .getCommonExtendedNegotiation(cuid));
+            if (!ts.equals(UID.ExplicitVRLittleEndian))
+                rq.addPresentationContext(new PresentationContext(rq
+                        .getNumberOfPresentationContexts() * 2 + 1, cuid,
+                        UID.ExplicitVRLittleEndian));
             if (!ts.equals(UID.ImplicitVRLittleEndian))
-                rq.addPresentationContext(
-                        new PresentationContext(
-                                rq.getNumberOfPresentationContexts() * 2 + 1,
-                                cuid, UID.ImplicitVRLittleEndian));
+                rq.addPresentationContext(new PresentationContext(rq
+                        .getNumberOfPresentationContexts() * 2 + 1, cuid,
+                        UID.ImplicitVRLittleEndian));
         }
-        rq.addPresentationContext(
-                new PresentationContext(
-                        rq.getNumberOfPresentationContexts() * 2 + 1,
-                        cuid, ts));
+        rq.addPresentationContext(new PresentationContext(rq
+                .getNumberOfPresentationContexts() * 2 + 1, cuid, ts));
         return true;
     }
 
@@ -428,40 +446,60 @@ public class StoreSCU {
     }
 
     public void send(final File f, long fmiEndPos, String cuid, String iuid,
-            String ts) throws IOException, InterruptedException {
-        if (uidSuffix == null && attrs.isEmpty()) {
-            FileInputStream in = new FileInputStream(f);
-            try {
-                in.skip(fmiEndPos);
-                InputStreamDataWriter data = new InputStreamDataWriter(in);
-                as.cstore(cuid, iuid, priority, data, ts, rspHandler(f));
-            } finally {
-                SafeClose.close(in);
+            String filets) throws IOException, InterruptedException,
+            ParserConfigurationException, SAXException {
+        String ts = selectTransferSyntax(cuid, filets);
+
+        if (f.getName().endsWith(".xml")) {
+            Attributes parsedDicomFile = SAXReader.parse(new FileInputStream(f));
+            if (CLIUtils.updateAttributes(parsedDicomFile, attrs, uidSuffix))
+                iuid = parsedDicomFile.getString(Tag.SOPInstanceUID);
+            if (!ts.equals(filets)) {
+                Decompressor.decompress(parsedDicomFile, filets);
             }
+            as.cstore(cuid, iuid, priority,
+                    new DataWriterAdapter(parsedDicomFile), ts,
+                    rspHandlerFactory.createDimseRSPHandler(f));
         } else {
-            DicomInputStream in = new DicomInputStream(f);
-            try {
-                in.setIncludeBulkData(IncludeBulkData.URI);
-                Attributes data = in.readDataset(-1, -1);
-                if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
-                    iuid = data.getString(Tag.SOPInstanceUID);
-                as.cstore(cuid, iuid, priority, new DataWriterAdapter(data), ts,
-                        rspHandler(f));
-            } finally {
-                SafeClose.close(in);
+            if (uidSuffix == null && attrs.isEmpty() && ts.equals(filets)) {
+                FileInputStream in = new FileInputStream(f);
+                try {
+                    in.skip(fmiEndPos);
+                    InputStreamDataWriter data = new InputStreamDataWriter(in);
+                    as.cstore(cuid, iuid, priority, data, ts,
+                            rspHandlerFactory.createDimseRSPHandler(f));
+                } finally {
+                    SafeClose.close(in);
+                }
+            } else {
+                DicomInputStream in = new DicomInputStream(f);
+                try {
+                    in.setIncludeBulkData(IncludeBulkData.URI);
+                    Attributes data = in.readDataset(-1, -1);
+                    if (CLIUtils.updateAttributes(data, attrs, uidSuffix))
+                        iuid = data.getString(Tag.SOPInstanceUID);
+                    if (!ts.equals(filets)) {
+                        Decompressor.decompress(data, filets);
+                    }
+                    as.cstore(cuid, iuid, priority,
+                            new DataWriterAdapter(data), ts,
+                            rspHandlerFactory.createDimseRSPHandler(f));
+                } finally {
+                    SafeClose.close(in);
+                }
             }
-         }
+        }
     }
 
-    private DimseRSPHandler rspHandler(final File f) {
-        return new DimseRSPHandler(as.nextMessageID()) {
-   
-            @Override
-            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-                super.onDimseRSP(as, cmd, data);
-                StoreSCU.this.onCStoreRSP(cmd, f);
-            }
-        };
+    private String selectTransferSyntax(String cuid, String filets) {
+        Set<String> tss = as.getTransferSyntaxesFor(cuid);
+        if (tss.contains(filets))
+            return filets;
+
+        if (tss.contains(UID.ExplicitVRLittleEndian))
+            return UID.ExplicitVRLittleEndian;
+
+        return UID.ImplicitVRLittleEndian;
     }
 
     public void close() throws IOException, InterruptedException {
@@ -498,7 +536,7 @@ public class StoreSCU {
             System.out.print('E');
             System.err.println(MessageFormat.format(rb.getString("error"),
                     TagUtils.shortToHexString(status), f));
-                   System.err.println(cmd);
+            System.err.println(cmd);
         }
     }
 }

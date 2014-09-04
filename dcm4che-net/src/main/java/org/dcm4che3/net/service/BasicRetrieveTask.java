@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.Association;
@@ -167,8 +168,21 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
                 }
                 if (pendingRSP)
                     writePendingRSP();
+                String tsuid;
+                DataWriter dataWriter;
                 try {
-                    cstore(storeas, inst);
+                    tsuid = selectTransferSyntaxFor(storeas, inst);
+                    dataWriter = createDataWriter(inst, tsuid);
+                } catch (Exception e) {
+                    status = Status.OneOrMoreFailures;
+                    LOG.info("{}: Unable to retrieve {}/{} to {}", rqas,
+                            UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
+                            storeas.getRemoteAET(), e);
+                    failed.add(inst);
+                    continue;
+                }
+                try {
+                    cstore(storeas, inst, tsuid, dataWriter);
                 } catch (Exception e) {
                     status = Status.UnableToPerformSubOperations;
                     LOG.warn("{}: Unable to perform sub-operation on association to {}",
@@ -232,26 +246,23 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         }
     }
 
-    protected void cstore(Association storeas, T inst)
-            throws IOException, InterruptedException {
-        String tsuid = selectTransferSyntaxFor(storeas, inst);
+    protected void cstore(Association storeas, T inst, String tsuid, 
+            DataWriter dataWriter) throws IOException, InterruptedException {
         DimseRSPHandler rspHandler =
                 new CStoreRSPHandler(storeas.nextMessageID(), inst);
-
         if (isCMove())
             storeas.cstore(inst.cuid, inst.iuid, priority,
                     rqas.getRemoteAET(), msgId,
-                    createDataWriter(inst, tsuid), tsuid, rspHandler);
+                    dataWriter, tsuid, rspHandler);
         else
             storeas.cstore(inst.cuid, inst.iuid, priority,
-                    createDataWriter(inst, tsuid), tsuid, rspHandler);
-
+                    dataWriter, tsuid, rspHandler);
         synchronized (outstandingRSPLock) {
             outstandingRSP++;
         }
     }
 
-  private final class CStoreRSPHandler extends DimseRSPHandler {
+    private final class CStoreRSPHandler extends DimseRSPHandler {
 
         private final T inst;
 
@@ -289,11 +300,12 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         }
     }
 
-    protected String selectTransferSyntaxFor(Association storeas, T inst) {
+    protected String selectTransferSyntaxFor(Association storeas, T inst)
+            throws Exception {
         return inst.tsuid;
     }
 
-    protected DataWriter createDataWriter(T inst, String tsuid) throws IOException {
+    protected DataWriter createDataWriter(T inst, String tsuid) throws Exception {
         DicomInputStream in = new DicomInputStream(inst.getFile());
         in.readFileMetaInformation();
         return new InputStreamDataWriter(in);

@@ -1,0 +1,60 @@
+#!/bin/sh
+### ====================================================================== ###
+##                                                                          ##
+##  dcm4che2/jpg2dcm  Launch Script                                         ##
+##                                                                          ##
+### ====================================================================== ###
+
+### $Id: jpg2dcm 18015 2013-08-27 12:03:33Z gunterze $ ###
+
+MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.Jpg2Dcm
+MAIN_JAR=dcm4che-tool-jpg2dcm-3.3.4-SNAPSHOT.jar
+
+DIRNAME="`dirname "$0"`"
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+    [ -n "$DCM4CHE_HOME" ] &&
+        DCM4CHE_HOME=`cygpath --unix "$DCM4CHE_HOME"`
+    [ -n "$JAVA_HOME" ] &&
+        JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
+fi
+
+# Setup DCM4CHE_HOME
+if [ "x$DCM4CHE_HOME" = "x" ]; then
+    DCM4CHE_HOME=`cd "$DIRNAME"/..; pwd`
+fi
+
+# Setup the JVM
+if [ "x$JAVA_HOME" != "x" ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA="java"
+fi
+
+# Setup the classpath
+CP="$DCM4CHE_HOME/etc/"
+CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.4-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.4-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.2.jar"
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin; then
+    JAVA=`cygpath --path --windows "$JAVA"`
+    CP=`cygpath --path --windows "$CP"`
+fi
+
+# Execute the JVM
+exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

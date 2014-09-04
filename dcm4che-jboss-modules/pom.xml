@@ -174,4 +174,44 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>copy-modules-to-jboss</id>
+      <activation>
+        <property>
+          <name>jboss.dir</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+
+              <!-- Copies jboss modules to the specified jboss folder -->
+              <execution>
+                <phase>install</phase>
+                <id>unzip-dcm4che-jboss-modules</id>
+                <configuration>
+                  <tasks>
+                    <unzip dest="${jboss.dir}" overwrite="true">
+
+                      <fileset dir="target">
+                        <include name="*.zip" />
+                        <exclude name="*-bundles.zip" />
+                      </fileset>
+
+                    </unzip>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

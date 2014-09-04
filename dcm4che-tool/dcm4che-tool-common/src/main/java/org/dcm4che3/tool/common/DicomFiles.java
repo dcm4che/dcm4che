@@ -66,14 +66,18 @@ public abstract class DicomFiles {
     }
 
     public static void scan(List<String> fnames, Callback scb) {
-        for (String fname : fnames)
-            scan(new File(fname), scb);
+        scan(fnames, true, scb); //default printout = true
     }
-
-    private static void scan(File f, Callback scb) {
+    
+    public static void scan(List<String> fnames, boolean printout, Callback scb) {
+        for (String fname : fnames)
+            scan(new File(fname), printout, scb);
+    }
+    
+    private static void scan(File f, boolean printout, Callback scb) {
         if (f.isDirectory()) {
             for (String s : f.list())
-                scan(new File(f, s), scb);
+                scan(new File(f, s), printout, scb);
             return;
         }
         if (f.getName().endsWith(".xml")) {
@@ -88,7 +92,7 @@ public abstract class DicomFiles {
                 if (fmi == null)
                     fmi = ds.createFileMetaInformation(UID.ExplicitVRLittleEndian);
                 boolean b = scb.dicomFile(f, fmi, -1, ds);
-                System.out.print(b ? '.' : 'I');
+                if (printout)System.out.print(b ? '.' : 'I');
             } catch (Exception e) {
                 System.out.println();
                 System.out.println("Failed to parse file " + f + ": " + e.getMessage());
@@ -102,12 +106,12 @@ public abstract class DicomFiles {
                 Attributes fmi = in.readFileMetaInformation();
                 long dsPos = in.getPosition();
                 Attributes ds = in.readDataset(-1, Tag.PixelData);
-                if (fmi == null || !fmi.containsValue(Tag.TransactionUID)
+                if (fmi == null || !fmi.containsValue(Tag.TransferSyntaxUID)
                         || !fmi.containsValue(Tag.MediaStorageSOPClassUID)
                         || !fmi.containsValue(Tag.MediaStorageSOPInstanceUID))
                     fmi = ds.createFileMetaInformation(in.getTransferSyntax());
                 boolean b = scb.dicomFile(f, fmi, dsPos, ds);
-                System.out.print(b ? '.' : 'I');
+                if (printout)System.out.print(b ? '.' : 'I');
             } catch (Exception e) {
                 System.out.println();
                 System.out.println("Failed to scan file " + f + ": " + e.getMessage());

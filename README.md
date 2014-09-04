@@ -3,6 +3,7 @@ dcm4che-3.x DICOM Toolkit
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
 Issue Tracker: http://www.dcm4che.org/jira/browse/LIB  
+Build Status: [![Build Status](https://travis-ci.org/dcm4che/dcm4che.svg?branch=master)](https://travis-ci.org/dcm4che/dcm4che)
 
 This is a complete rewrite of [dcm4che-2.x](http://www.dcm4che.org/confluence/display/d2/).
 

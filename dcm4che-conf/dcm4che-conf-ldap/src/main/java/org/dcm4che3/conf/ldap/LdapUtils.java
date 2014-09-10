@@ -190,8 +190,8 @@ public class LdapUtils {
                             new BasicAttribute(attrId, "" + val)));
     }
 
-    public static void storeDiff(List<ModificationItem> mods, String attrId,
-            Object prev, Object val) {
+    public static <T> void storeDiff(List<ModificationItem> mods, String attrId,
+            T prev, T val) {
         if (val == null) {
             if (prev != null)
                 mods.add(new ModificationItem(DirContext.REMOVE_ATTRIBUTE,

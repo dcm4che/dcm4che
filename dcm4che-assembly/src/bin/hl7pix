@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.hl7pix.HL7Pix
-MAIN_JAR=dcm4che-tool-hl7pix-3.3.4.jar
+MAIN_JAR=dcm4che-tool-hl7pix-3.3.5-SNAPSHOT.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -39,10 +39,10 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/hl7pix/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.4.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-hl7-3.3.4.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.3.4.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.4.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.5-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-hl7-3.3.5-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.3.5-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.5-SNAPSHOT.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"

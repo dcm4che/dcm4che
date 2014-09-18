@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,17 +175,18 @@ public class Dcm2Json {
                 DicomInputStream dis =
                         new DicomInputStream(new File(fname));
                 try {
-                    main.parse(dis);
+                   ByteArrayOutputStream os = (ByteArrayOutputStream) main.parse(dis);
+                   System.out.println(os.toString());
                 } finally {
                     dis.close();
                 }
             }
         } catch (ParseException e) {
-            System.err.println("dcm2xml: " + e.getMessage());
+            System.err.println("dcm2json: " + e.getMessage());
             System.err.println(rb.getString("try"));
             System.exit(2);
         } catch (Exception e) {
-            System.err.println("dcm2xml: " + e.getMessage());
+            System.err.println("dcm2json: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
         }
@@ -238,7 +240,7 @@ public class Dcm2Json {
         return argList.get(0);
     }
 
-    public void parse(DicomInputStream dis) throws IOException {
+    public OutputStream parse(DicomInputStream dis) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
         if (blkAttrs != null)
             dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
@@ -246,11 +248,13 @@ public class Dcm2Json {
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
         dis.setConcatenateBulkDataFiles(catBlkFiles);
-        JsonGenerator jsonGen = createGenerator(System.out);
+        OutputStream os = new ByteArrayOutputStream(10*8*1024);
+        JsonGenerator jsonGen = createGenerator(os);
         JSONWriter jsonWriter = new JSONWriter(jsonGen);
         dis.setDicomInputHandler(jsonWriter);
         dis.readDataset(-1, -1);
         jsonGen.flush();
+        return os;
     }
 
     private JsonGenerator createGenerator(OutputStream out) {

@@ -80,6 +80,7 @@ import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,6 +250,8 @@ public class DicomImageReader extends ImageReader {
             byte[][] data = ((DataBufferByte) buf).getBankData();
             for (byte[] bs : data)
                 iis.readFully(bs);
+            if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+                ByteUtils.swapShorts(data);
         } else {
             short[] data = ((DataBufferUShort) buf).getData();
             iis.readFully(data, 0, data.length);

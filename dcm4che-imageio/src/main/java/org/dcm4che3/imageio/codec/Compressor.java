@@ -71,6 +71,7 @@ import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
+import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,7 @@ public class Compressor extends Decompressor implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(Compressor.class);
 
     private BulkData pixeldata;
+    private VR.Holder pixeldataVR = new VR.Holder();
     private ImageWriter compressor;
     private ImageReader verifier;
     private PatchJPEGLS patchJPEGLS;
@@ -100,7 +102,7 @@ public class Compressor extends Decompressor implements Closeable {
     public Compressor(Attributes dataset, String from) {
         super(dataset, from);
 
-        Object pixeldata = dataset.getValue(Tag.PixelData);
+        Object pixeldata = dataset.getValue(Tag.PixelData, pixeldataVR);
         if (pixeldata == null)
             return;
 
@@ -352,8 +354,11 @@ public class Compressor extends Decompressor implements Closeable {
         DataBuffer db = bi.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            for (byte[] bs : ((DataBufferByte) db).getBankData())
+            byte[][] data = ((DataBufferByte) db).getBankData();
+            for (byte[] bs : data)
                 iis.readFully(bs);
+            if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+                ByteUtils.swapShorts(data);
             break;
         case DataBuffer.TYPE_USHORT:
             readFully(((DataBufferUShort) db).getData());

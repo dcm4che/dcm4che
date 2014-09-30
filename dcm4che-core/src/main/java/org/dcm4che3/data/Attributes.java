@@ -482,7 +482,11 @@ public class Attributes implements Serializable {
             return;
 
         Object value = values[index];
-        if (!(value instanceof byte[] || value == Value.NULL))
+        if (!(value == Value.NULL
+                || value instanceof byte[]
+                || vr.isStringType() 
+                    && (value instanceof String 
+                    || value instanceof String[])))
             throw new IllegalStateException("value instanceof " + value.getClass());
 
         vrs[index] = vr;

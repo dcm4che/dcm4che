@@ -337,7 +337,7 @@ public class SAXWriter implements DicomInputHandler {
             String s = vr.toString(val, bigEndian, i, null);
             addAttribute("number", Integer.toString(i + 1));
             if (vr == VR.PN) {
-                PersonName pn = new PersonName(s);
+                PersonName pn = new PersonName(s, true);
                 startElement("PersonName");
                 writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
                 writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);

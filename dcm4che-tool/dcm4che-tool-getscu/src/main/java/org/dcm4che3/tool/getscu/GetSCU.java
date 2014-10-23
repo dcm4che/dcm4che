@@ -91,7 +91,7 @@ public class GetSCU {
     
     private static final Logger LOG = LoggerFactory.getLogger(GetSCU.class); 
 
-    private static enum InformationModel {
+    public static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelGET, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
@@ -119,7 +119,7 @@ public class GetSCU {
     };
 
     private final Device device = new Device("getscu");
-    private final ApplicationEntity ae = new ApplicationEntity("GETSCU");
+    private final ApplicationEntity ae;
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
@@ -156,12 +156,37 @@ public class GetSCU {
     };
 
     public GetSCU() throws IOException {
+        ae = new ApplicationEntity("GETSCU");
         device.addConnection(conn);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
         device.setDimseRQHandler(createServiceRegistry());
     }
+    
+    public ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
 
+    public Connection getRemoteConnection() {
+        return remote;
+    }
+    
+    public AAssociateRQ getAAssociateRQ() {
+        return rq;
+    }
+    
+    public Association getAssociation() {
+        return as;
+    }
+
+    public Device getDevice() {
+        return device;
+    }    
+    
+    public Attributes getKeys() {
+        return keys;
+    }
+    
     private void storeTo(Association as, Attributes fmi, 
             PDVInputStream data, File file) throws IOException  {
         LOG.info("{}: M-WRITE {}", as, file);
@@ -429,7 +454,7 @@ public class GetSCU {
     public void retrieve() throws IOException, InterruptedException {
         retrieve(keys);
     }
-
+    
     private void retrieve(Attributes keys) throws IOException, InterruptedException {
          DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
 
@@ -440,6 +465,14 @@ public class GetSCU {
             }
         };
 
+        retrieve (keys, rspHandler);
+    }
+    
+    public void retrieve(DimseRSPHandler rspHandler) throws IOException, InterruptedException {
+        retrieve(keys, rspHandler);
+    }
+    
+    private void retrieve(Attributes keys, DimseRSPHandler rspHandler) throws IOException, InterruptedException {
         as.cget(model.cuid, priority, keys, null, rspHandler);
     }
 

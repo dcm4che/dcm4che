@@ -1919,7 +1919,7 @@ public class Attributes implements Serializable {
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
-        int index = other.indexOf(tag);
+        int index = other.indexOf(privateCreator, tag);
         if (index < 0)
             return false;
         Object value = other.values[index];

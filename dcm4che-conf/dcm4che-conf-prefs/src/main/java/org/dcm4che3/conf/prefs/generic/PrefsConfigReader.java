@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javax.naming.NamingException;
-
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.prefs.PreferencesUtils;
 import org.dcm4che3.conf.api.ConfigurationException;
@@ -83,7 +81,7 @@ public class PrefsConfigReader implements ConfigReader {
     }
 
     @Override
-    public boolean asBoolean(String propName, String def) {
+    public Boolean asBoolean(String propName, String def) {
         return PreferencesUtils.booleanValue(prefs.get(propName, def));
     }
 

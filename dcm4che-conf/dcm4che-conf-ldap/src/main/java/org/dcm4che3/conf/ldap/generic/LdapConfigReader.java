@@ -101,9 +101,10 @@ public class LdapConfigReader implements ConfigReader {
     }
 
     @Override
-    public boolean asBoolean(String propName, String def) throws ConfigurationException {
+    public Boolean asBoolean(String propName, String def) throws ConfigurationException {
         try {
-            return LdapUtils.booleanValue(attrs.get(propName), Boolean.parseBoolean(def));
+            return LdapUtils.booleanValue(attrs.get(propName),
+                    def != null ? Boolean.valueOf(def) : null);
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }

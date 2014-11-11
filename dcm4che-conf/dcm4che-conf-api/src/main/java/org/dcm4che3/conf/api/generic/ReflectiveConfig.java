@@ -220,7 +220,7 @@ public class ReflectiveConfig {
 
         String asString(String propName, String def) throws ConfigurationException;
 
-        boolean asBoolean(String propName, String def) throws ConfigurationException;
+        Boolean asBoolean(String propName, String def) throws ConfigurationException;
 
         // collections
 

@@ -201,7 +201,9 @@ public class DefaultConfigTypeAdapters {
         @Override
         public Boolean read(ReflectiveConfig config, ConfigReader reader, Field field) throws ConfigurationException {
             ConfigField fieldAnno = field.getAnnotation(ConfigField.class);
-            return reader.asBoolean(fieldAnno.name(), (fieldAnno.def().equals("N/A") ? "false" : fieldAnno.def()));
+            return reader.asBoolean(fieldAnno.name(), (fieldAnno.def().equals("N/A")
+                    ? (field.getType().isPrimitive() ? "false" : null)
+                    : fieldAnno.def()));
         }
     }
 

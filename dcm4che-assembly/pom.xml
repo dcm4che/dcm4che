@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.5-0-SNAPSHOT</version>
+    <version>3.3.5-0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-assembly</artifactId>
@@ -91,8 +91,7 @@
               <stylesheet>src/main/xsl/sampleTCFile.xsl</stylesheet>
               <outputDir>src/etc/probetc</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>sampleTCFile.properties</targetName>
                 </fileMapper>
               </fileMappers>

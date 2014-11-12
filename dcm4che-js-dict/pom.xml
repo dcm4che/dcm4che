@@ -43,7 +43,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>3.3.5-SNAPSHOT</version>
+    <version>3.3.5-0-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-js-dict</artifactId>
   <name>dcm4che-js-dict</name>

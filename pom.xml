@@ -41,7 +41,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
-  <version>3.3.5-0</version>
+  <version>3.3.5-0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
   <description>dcm4che DICOM toolkit and utilities</description>
@@ -69,8 +69,8 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git@github.com:dcm4che/dcm4che.git</connection>
-    <developerConnection>scm:git:git@github.com:dcm4che/dcm4che.git</developerConnection>
+    <connection>scm:git:https://github.com/dcm4che/dcm4che.git</connection>
+    <developerConnection>scm:git:https://github.com/dcm4che/dcm4che.git</developerConnection>
     <url>http://github.com/dcm4che/dcm4che</url>
     <tag>dcm4che-parent-3.3.5-0</tag>
   </scm>

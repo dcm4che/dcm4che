@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.5-0-SNAPSHOT</version>
+    <version>3.3.5-0</version>
   </parent>
   <artifactId>dcm4che-audit</artifactId>
   <packaging>bundle</packaging>

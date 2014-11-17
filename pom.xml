@@ -41,19 +41,42 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
+  <version>3.3.5-0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>3.3.5-SNAPSHOT</version>
   <description>dcm4che DICOM toolkit and utilities</description>
+  <url>http://dcm4che.org</url>
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 1.1</name>
+      <url>https://www.mozilla.org/MPL/1.1/</url>
+    </license>
+    <license>
+      <name>GNU General Public License, version 2</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0-standalone.html</url>
+    </license>
+    <license>
+      <name>GNU Lesser General Public License, version 2.1</name>
+      <url>https://www.gnu.org/licenses/lgpl-2.1-standalone.html</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Gunter Zeilinger</name>
+      <email>gunterze@gmail.com</email>
+      <organization>dcm4che.org</organization>
+      <organizationUrl>http://dcm4che.org</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</connection>
+    <developerConnection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</developerConnection>
+    <url>http://github.com/dcm4che/dcm4che</url>
+  </scm>
   <issueManagement>
     <system>JIRA</system>
     <url>http://dcm4che.org/jira</url>
   </issueManagement>
-  <scm>
-    <connection>scm:git:git://github.com/dcm4che/dcm4che.git</connection>
-    <developerConnection>scm:git:git://github.com/dcm4che/dcm4che.git</developerConnection>
-    <url>http://github.com/dcm4che/dcm4che</url>
-  </scm>
   <organization>
     <name>dcm4che.org</name>
     <url>http://dcm4che.org</url>
@@ -69,22 +92,68 @@
         <version>2.2</version>
       </extension>
     </extensions>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.5</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>2.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.1</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <useReleaseProfile>false</useReleaseProfile>
+            <releaseProfiles>staging</releaseProfiles>
+            <goals>deploy</goals>
+            <scmCommentPrefix>[maven-release-plugin] [skip ci]</scmCommentPrefix>
+            <tagNameFormat>@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.2.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
@@ -176,4 +245,32 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <profiles>
+    <profile>
+      <id>staging</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>

@@ -1,11 +1,14 @@
 language: java
 
-env: 
-  global: 
-    secure: VL6w/3/2XvPAWAqf9ezV+oJrni6Qi5haYt7+FOT/BP5KGk9FgE2LJZ90UOoSj+8yWiN0aJPfuAMgKTc6V24TgqiMMe8bV0Et+2jsd6kVM/L+u8xe9Jwyx0uJezlTOalK/yzQRon+6O+O/KfrRB8k8fyx2zlgTwQ3es5BF730QL0=
+jdk:
+- oraclejdk7
 
-jdk: 
-  - oraclejdk7
+before_install:
+- openssl aes-256-cbc -K $encrypted_4269c1dbcc16_key -iv $encrypted_4269c1dbcc16_iv
+  -in .travis.d/secret.tar.enc -out .travis.d/secret.tar -d
+
+script:
+- .travis.d/script.sh
 
 after_success:
-  - "curl -H \"Authorization: token ${TRAVIS_TOKEN}\" -H 'Accept: application/vnd.travis-ci.2+json' -X POST https://api.travis-ci.org/builds/$(curl -s -H 'Accept: application/vnd.travis-ci.2+json' https://api.travis-ci.org/repos/dcm4che/dcm4chee-arc-cdi/builds | grep -o '^{\"builds\":\\[{\"id\":[0-9]*' | grep -o '[0-9]*' | tr -d '\\n')/restart"
+- .travis.d/after_success.sh

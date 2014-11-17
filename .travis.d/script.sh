@@ -5,14 +5,18 @@ MASTER_COMMIT=$(git rev-parse master)
 
 # Only release from master if
 # A) we know of no commits since this build's commit and
-# B) this build is not a pull request.
+# B) this build is not a pull request and
+# C) secure variables are available
 if [[ ${TRAVIS_BRANCH} == "master" && \
   ${TRAVIS_COMMIT} == ${MASTER_COMMIT} && \
-  ${TRAVIS_PULL_REQUEST} == "false" ]]
+  ${TRAVIS_PULL_REQUEST} == "false" && \
+  ${TRAVISE_SECURE_ENV_VARS} == "true" ]]
 then
   echo "The current commit is a release candidate: attempt to release."
   
   # Make credentials available
+  openssl aes-256-cbc -K $encrypted_4269c1dbcc16_key -iv $encrypted_4269c1dbcc16_iv \
+    -in .travis.d/secret.tar.enc -out .travis.d/secret.tar -d
   tar xf .travis.d/secret.tar -C .travis.d
 
   # Setup git clone for committing release POMs

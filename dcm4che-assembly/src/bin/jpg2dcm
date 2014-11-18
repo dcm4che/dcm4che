@@ -8,7 +8,7 @@
 ### $Id: jpg2dcm 18015 2013-08-27 12:03:33Z gunterze $ ###
 
 MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.Jpg2Dcm
-MAIN_JAR=dcm4che-tool-jpg2dcm-3.3.5-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-jpg2dcm-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -43,8 +43,8 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.5-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"

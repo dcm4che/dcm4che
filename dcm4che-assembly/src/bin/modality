@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.ihe.modality.Modality
-MAIN_JAR=dcm4che-tool-ihe-modality-3.3.5-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-ihe-modality-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -39,13 +39,13 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/modality/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-mppsscu-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-storescu-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-stgcmtscu-3.3.5-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-mkkos-3.3.5-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-mppsscu-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-storescu-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-stgcmtscu-${project.version}.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-mkkos-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.7.5.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.17.jar"

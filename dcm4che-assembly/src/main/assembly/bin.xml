@@ -67,6 +67,7 @@
       <outputDirectory>.</outputDirectory>
       <fileMode>0755</fileMode>
       <lineEnding>unix</lineEnding>
+      <filtered>true</filtered>
     </fileSet>
     <fileSet>
       <directory>./src</directory>
@@ -89,6 +90,7 @@
       </excludes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
+      <filtered>true</filtered>
     </fileSet>
   </fileSets>
   <dependencySets>

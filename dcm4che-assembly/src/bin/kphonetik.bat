@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che3.soundex.KPhonetik
-set MAIN_JAR=dcm4che-soundex-3.3.5-SNAPSHOT.jar
+set MAIN_JAR=dcm4che-soundex-${project.version}.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%

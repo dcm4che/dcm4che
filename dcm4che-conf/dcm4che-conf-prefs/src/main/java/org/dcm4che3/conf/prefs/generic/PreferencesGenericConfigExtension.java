@@ -175,4 +175,9 @@ public class PreferencesGenericConfigExtension<T extends DeviceExtension> extend
             }
         }
     }
+
+    public static <T extends DeviceExtension> PreferencesGenericConfigExtension<T> create(
+            Class<T> confClass) throws ConfigurationException {
+        return new PreferencesGenericConfigExtension<T>(confClass);
+    }
 }

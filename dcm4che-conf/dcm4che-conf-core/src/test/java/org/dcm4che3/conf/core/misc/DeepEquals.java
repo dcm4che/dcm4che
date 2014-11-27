@@ -57,7 +57,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang.ClassUtils;
 
 public class DeepEquals
 {
@@ -323,7 +323,7 @@ public class DeepEquals
         
     	// try sorting
         
-        if (len >0 ) {
+        /*if (len >0 ) {
         	if (Array.get(array1, 0) instanceof Comparable) 
         	{
         		
@@ -331,9 +331,7 @@ public class DeepEquals
         		
         		if (ClassUtils.isPrimitiveOrWrapper(c))
         		{
-            	/*	Arrays.sort(array1);
-                    Arrays.sort((Object[]) array2);*/
-        			
+
         		} else {
         	
         		Arrays.sort((Object[]) array1);
@@ -341,7 +339,7 @@ public class DeepEquals
         		}
         		
         	}
-        }
+        }*/
         
 
         for (int i = 0; i < len; i++)

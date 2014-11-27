@@ -43,19 +43,16 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
@@ -68,19 +65,31 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
+@LDAP(objectClasses = "dcmImageReaderFactory")
+@ConfigurableClass
 public class ImageReaderFactory implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
 
     private static final long serialVersionUID = -2881173333124498212L;
 
+    @LDAP(objectClasses = "dcmImageReader")
+    @ConfigurableClass
     public static class ImageReaderParam implements Serializable {
 
         private static final long serialVersionUID = 6593724836340684578L;
 
-        public final String formatName;
-        public final String className;
-        public final PatchJPEGLS patchJPEGLS;
+        @ConfigurableProperty(name = "dcmIIOFormatName")
+        public String formatName;
+
+        @ConfigurableProperty(name = "dcmJavaClassName")
+        public String className;
+
+        @ConfigurableProperty(name = "dcmPatchJPEGLS")
+        public PatchJPEGLS patchJPEGLS;
+
+        public ImageReaderParam() {
+        }
 
         public ImageReaderParam(String formatName, String className,
                 String patchJPEGLS) {
@@ -90,6 +99,29 @@ public class ImageReaderFactory implements Serializable {
                     .valueOf(patchJPEGLS) : null;
         }
 
+        public String getFormatName() {
+            return formatName;
+        }
+
+        public void setFormatName(String formatName) {
+            this.formatName = formatName;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public PatchJPEGLS getPatchJPEGLS() {
+            return patchJPEGLS;
+        }
+
+        public void setPatchJPEGLS(PatchJPEGLS patchJPEGLS) {
+            this.patchJPEGLS = patchJPEGLS;
+        }
     }
 
     private static String nullify(String s) {
@@ -97,7 +129,22 @@ public class ImageReaderFactory implements Serializable {
     }
 
     private static ImageReaderFactory defaultFactory;
-    private final HashMap<String, ImageReaderParam> map = new HashMap<String, ImageReaderParam>();
+
+    @LDAP(distinguishingField = "dicomTransferSyntax", noContainerNode = true)
+    @ConfigurableProperty(
+            name="dicomImageReaderMap",
+            label = "Image Readers",
+            description = "Image readers by transfer syntaxes"
+    )
+    private Map<String, ImageReaderParam> map = new LinkedHashMap<String, ImageReaderParam>();
+
+    public Map<String, ImageReaderParam> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<String, ImageReaderParam> map) {
+        this.map = map;
+    }
 
     public static ImageReaderFactory getDefault() {
         if (defaultFactory == null)

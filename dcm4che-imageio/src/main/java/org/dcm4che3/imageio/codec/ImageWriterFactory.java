@@ -43,18 +43,15 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageWriterSpi;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.ResourceLocator;
@@ -65,19 +62,35 @@ import org.dcm4che3.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * 
  */
+@LDAP(objectClasses = "dcmImageWriterFactory")
+@ConfigurableClass
 public class ImageWriterFactory implements Serializable {
 
     private static final long serialVersionUID = 6328126996969794374L;
 
+    @LDAP(objectClasses = "dcmImageWriter")
+    @ConfigurableClass
     public static class ImageWriterParam implements Serializable {
 
         private static final long serialVersionUID = 3521737269113651910L;
 
-        public final String formatName;
-        public final String className;
-        public final PatchJPEGLS patchJPEGLS;
-        public final Property[] imageWriteParams;
-        public final Property[] iioMetadata;
+        @ConfigurableProperty(name="dcmIIOFormatName")
+        public String formatName;
+
+        @ConfigurableProperty(name="dcmJavaClassName")
+        public String className;
+
+        @ConfigurableProperty(name="dcmPatchJPEGLS")
+        public PatchJPEGLS patchJPEGLS;
+
+        @ConfigurableProperty(name = "dcmImageWriteParam")
+        public Property[] imageWriteParams;
+
+        @ConfigurableProperty(name = "dcmWriteIIOMetadata")
+        public Property[] iioMetadata;
+
+        public ImageWriterParam() {
+        }
 
         public ImageWriterParam(String formatName, String className,
                 PatchJPEGLS patchJPEGLS, Property[] imageWriteParams, Property[] iioMetadata) {
@@ -112,16 +125,65 @@ public class ImageWriterFactory implements Serializable {
         public Property[] getIIOMetadata() {
             return iioMetadata;
         }
+
+        public String getFormatName() {
+            return formatName;
+        }
+
+        public void setFormatName(String formatName) {
+            this.formatName = formatName;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public void setClassName(String className) {
+            this.className = className;
+        }
+
+        public PatchJPEGLS getPatchJPEGLS() {
+            return patchJPEGLS;
+        }
+
+        public void setPatchJPEGLS(PatchJPEGLS patchJPEGLS) {
+            this.patchJPEGLS = patchJPEGLS;
+        }
+
+        public void setImageWriteParams(Property[] imageWriteParams) {
+            this.imageWriteParams = imageWriteParams;
+        }
+
+        public Property[] getIioMetadata() {
+            return iioMetadata;
+        }
+
+        public void setIioMetadata(Property[] iioMetadata) {
+            this.iioMetadata = iioMetadata;
+        }
     }
+
+    private static ImageWriterFactory defaultFactory;
+
+    @LDAP(distinguishingField = "dicomTransferSyntax", noContainerNode = true)
+    @ConfigurableProperty(
+        name="dicomImageWriterMap",
+        label = "Image Writers",
+        description = "Image writers by transfer syntaxes"
+    )
+    private Map<String, ImageWriterParam> map = new LinkedHashMap<String, ImageWriterParam>();
 
     private static String nullify(String s) {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;
     }
 
-    private static ImageWriterFactory defaultFactory;
+    public Map<String, ImageWriterParam> getMap() {
+        return map;
+    }
 
-    private PatchJPEGLS patchJPEGLS;
-    private final HashMap<String, ImageWriterParam> map = new HashMap<String, ImageWriterParam>();
+    public void setMap(Map<String, ImageWriterParam> map) {
+        this.map = map;
+    }
 
     public static ImageWriterFactory getDefault() {
         if (defaultFactory == null)
@@ -180,14 +242,6 @@ public class ImageWriterFactory implements Serializable {
             map.put((String) entry.getKey(), new ImageWriterParam(ss[0], ss[1],
                     ss[2], StringUtils.split(ss[3], ';')));
         }
-    }
-
-    public final PatchJPEGLS getPatchJPEGLS() {
-        return patchJPEGLS;
-    }
-
-    public final void setPatchJPEGLS(PatchJPEGLS patchJPEGLS) {
-        this.patchJPEGLS = patchJPEGLS;
     }
 
     public ImageWriterParam get(String tsuid) {

@@ -46,6 +46,9 @@ import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventIdentification;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
 
 /**
@@ -65,18 +68,46 @@ import org.dcm4che3.data.Code;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
+@LDAP(objectClasses = "dcmAuditSuppressCriteria")
+@ConfigurableClass
 public class AuditSuppressCriteria {
 
-    private final String commonName;
+    @ConfigurableProperty(name="cn")
+    private String commonName;
+
+    @ConfigurableProperty(name="dcmAuditEventID")
     private EventID[] eventIDs = {};
+
+    @ConfigurableProperty(name="dcmAuditEventTypeCode")
     private EventTypeCode[] eventTypeCodes = {};
+
+    @ConfigurableProperty(name="dcmAuditEventActionCode")
     private String eventActionCodes[] = {};
+
+    @ConfigurableProperty(name="dcmAuditEventOutcomeIndicator")
     private String[] eventOutcomeIndicators = {};
+
+    @ConfigurableProperty(name="dcmAuditUserID")
     private String[] userIDs = {};
+
+    @ConfigurableProperty(name="dcmAuditAlternativeUserID")
     private String[] alternativeUserIDs = {};
+
+    @ConfigurableProperty(name="dcmAuditUserRoleIDCode")
     private RoleIDCode[] roleIDCodes = {};
+
+    @ConfigurableProperty(name="dcmAuditNetworkAccessPointID")
     private String[] networkAccessPointIDs = {};
+
+    @ConfigurableProperty(name="dcmAuditUserIsRequestor")
     private Boolean userIsRequestor;
+
+    public AuditSuppressCriteria() {
+    }
+
+    public void setCommonName(String commonName) {
+        this.commonName = commonName;
+    }
 
     public AuditSuppressCriteria(String cn) {
         if (cn.isEmpty())

@@ -44,7 +44,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
 import org.dcm4che3.camel.DicomDeviceComponent;
 import org.dcm4che3.camel.DicomMessage;
-import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
+import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
 import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.Dimse;
@@ -58,7 +60,7 @@ import org.dcm4che3.net.service.DicomServiceException;
 public class EchoSCP implements Processor {
 
     public static void main(String[] args) throws Exception {
-        LdapDicomConfiguration dicomConf = new LdapDicomConfiguration();
+        DicomConfiguration dicomConf = new CommonDicomConfiguration(new SingleJsonFileConfigurationStorage("config.json"));
         Device device = dicomConf.findDevice(args[0]);
         Main main = new Main();
         main.bind("dicomDevice", new DicomDeviceComponent(device));

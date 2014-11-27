@@ -31,73 +31,25 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/conf/core-api/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-conf-core-api</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>/modules/org/dcm4che/conf/core/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-conf-core</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/modules/org/dcm4che/conf/api-hl7/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-conf-api-hl7</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/ldap/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-ldap</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/ldap-audit/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-ldap-audit</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/ldap-hl7/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/ldap-imageio/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-ldap-imageio</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/prefs/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/prefs-audit/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-audit</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/prefs-hl7/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-hl7</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/modules/org/dcm4che/conf/prefs-imageio/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-imageio</include>
       </includes>
       <useTransitiveDependencies>false</useTransitiveDependencies>
       <useProjectArtifact>false</useProjectArtifact>

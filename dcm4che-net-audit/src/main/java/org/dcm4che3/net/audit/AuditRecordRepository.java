@@ -42,6 +42,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.DeviceExtension;
 
@@ -49,6 +52,8 @@ import org.dcm4che3.net.DeviceExtension;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
+@LDAP(objectClasses = "dcmAuditRecordRepository")
+@ConfigurableClass
 public class AuditRecordRepository extends DeviceExtension {
 
     private static final long serialVersionUID = -2279487409324427161L;
@@ -60,26 +65,28 @@ public class AuditRecordRepository extends DeviceExtension {
                 Connection.Protocol.SYSLOG_UDP, SyslogProtocolHandler.INSTANCE);
     }
 
-    private Boolean installed;
+    @ConfigurableProperty(name="dicomInstalled")
+    private Boolean arrInstalled;
 
-    private final List<Connection> conns = new ArrayList<Connection>(1);
+    @ConfigurableProperty(name="dicomNetworkConnectionReference", collectionOfReferences = true)
+    private final List<Connection> connections = new ArrayList<Connection>(1);
 
     private transient AuditRecordHandler handler;
 
     public boolean isInstalled() {
         return device != null && device.isInstalled() 
-                && (installed == null || installed.booleanValue());
+                && (arrInstalled == null || arrInstalled.booleanValue());
     }
 
-    public final Boolean getInstalled() {
-        return installed;
+    public final Boolean getArrInstalled() {
+        return arrInstalled;
     }
 
-    public void setInstalled(Boolean installed) {
+    public void setArrInstalled(Boolean installed) {
         if (installed != null && installed.booleanValue()
                 && device != null && !device.isInstalled())
             throw new IllegalStateException("owning device not installed");
-        this.installed = installed;
+        this.arrInstalled = installed;
     }
 
     public void addConnection(Connection conn) {
@@ -89,15 +96,20 @@ public class AuditRecordRepository extends DeviceExtension {
         if (device != null && device != conn.getDevice())
             throw new IllegalStateException(conn + " not contained by " + 
                     device.getDeviceName());
-        conns.add(conn);
+        connections.add(conn);
     }
     
     public boolean removeConnection(Connection conn) {
-        return conns.remove(conn);
+        return connections.remove(conn);
     }
 
     public List<Connection> getConnections() {
-        return conns;
+        return connections;
+    }
+
+    public void setConnections(List<Connection> connections) {
+        this.connections.clear();
+        for (Connection connection : connections) addConnection(connection);
     }
 
     public AuditRecordHandler getAuditRecordHandler() {
@@ -114,8 +126,8 @@ public class AuditRecordRepository extends DeviceExtension {
     }
 
     private void reconfigure(AuditRecordRepository from) {
-        setInstalled(from.installed);
-        device.reconfigureConnections(conns, from.conns);
+        setArrInstalled(from.arrInstalled);
+        device.reconfigureConnections(connections, from.connections);
     }
 
     public void onMessage(byte[] data, int xmlOffset, int xmlLength,

@@ -52,10 +52,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
@@ -228,10 +225,6 @@ public class ImageWriterFactory implements Serializable {
 
             if (iter != null && iter.hasNext()) {
 
-                String className = param.className;
-                if (className == null)
-                    return iter.next().createWriterInstance();
-
                 do {
                     ImageWriterSpi writerspi = iter.next();
                     if (supportsFormat(writerspi.getFormatNames(),
@@ -239,7 +232,8 @@ public class ImageWriterFactory implements Serializable {
 
                         ImageWriter writer = writerspi.createWriterInstance();
 
-                        if (writer.getClass().getName().equals(className))
+                        if (param.className == null
+                                || param.className.equals(writer.getClass()))
                             return writer;
                     }
                 } while (iter.hasNext());

@@ -54,9 +54,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
 import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.ResourceLocator;
@@ -234,10 +232,6 @@ public class ImageReaderFactory implements Serializable {
 
             if (iter != null && iter.hasNext()) {
 
-                String className = param.className;
-                if (className == null)
-                    return iter.next().createReaderInstance();
-
                 do {
                     ImageReaderSpi readerspi = iter.next();
                     if (supportsFormat(readerspi.getFormatNames(),
@@ -245,7 +239,8 @@ public class ImageReaderFactory implements Serializable {
 
                         ImageReader reader = readerspi.createReaderInstance();
 
-                        if (reader.getClass().getName().equals(className))
+                        if (param.className == null
+                                || param.className.equals(reader.getClass().getName()))
                             return reader;
                     }
                 } while (iter.hasNext());

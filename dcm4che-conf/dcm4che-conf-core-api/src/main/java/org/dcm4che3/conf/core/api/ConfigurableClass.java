@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.conf.api.generic;
+package org.dcm4che3.conf.core.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -43,32 +43,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a class as a configuration class, and specifies storage type-specific parameters
+ * Marks a class as a configurable class
  * 
  * @author Roman K
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface ConfigClass {
-    /**
-     * LDAP cn
-     * 
-     * @return
-     */
-    String commonName() default "";
-
-    /**
-     * LDAP object class
-     * 
-     * @return
-     */
-    String objectClass() default "";
-
-    /**
-     * Java Preferences node name
-     * 
-     * @return
-     */
-    String nodeName() default "";
+public @interface ConfigurableClass {
 }

@@ -41,7 +41,11 @@ package org.dcm4che3.conf.api;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Dimse;
+import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.TransferCapability.Role;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.UIDUtils;
@@ -49,15 +53,26 @@ import org.dcm4che3.util.UIDUtils;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
+@LDAP(objectClasses = "dcmAttributeCoercion")
+@ConfigurableClass
 public class AttributeCoercion
     implements Serializable, Comparable<AttributeCoercion> {
 
 
     private static final long serialVersionUID = 7799241531490684097L;
 
-    private final String commonName;
-    private final Condition condition;
-    private final String uri;
+    @ConfigurableProperty(name = "cn")
+    private String commonName;
+
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty(name="condition")
+    private Condition condition;
+
+    @ConfigurableProperty(name = "labeledURI")
+    private String uri;
+
+    public AttributeCoercion() {
+    }
 
     public AttributeCoercion(String commonName, String[] sopClasses,
             Dimse dimse, Role role, String[] aeTitles, String uri) {
@@ -75,8 +90,29 @@ public class AttributeCoercion
         this.uri = uri;
     }
 
-    public final String getCommonName() {
+    public Condition getCondition() {
+        return condition;
+    }
+
+    public void setCondition(Condition condition) {
+        this.condition = condition;
+        this.condition.calcWeight();
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getCommonName() {
         return commonName;
+    }
+
+    public void setCommonName(String commonName) {
+        this.commonName = commonName;
     }
 
     public final String[] getSOPClasses() {
@@ -152,16 +188,28 @@ public class AttributeCoercion
         sb.append(StringUtils.LINE_SEPARATOR);
     }
 
-    private static class Condition
+    @ConfigurableClass
+    public static class Condition
             implements Serializable, Comparable<Condition> {
 
         private static final long serialVersionUID = -8993828886666689060L;
 
-        final String[] sopClasses;
-        final Dimse dimse;
-        final Role role;
-        final String[] aeTitles;
-        final int weight;
+        @ConfigurableProperty(name = "dcmSOPClass")
+        String[] sopClasses;
+
+        @ConfigurableProperty(name = "dcmDIMSE")
+        Dimse dimse;
+
+        @ConfigurableProperty(name = "dicomTransferRole")
+        Role role;
+
+        @ConfigurableProperty(name = "dcmAETitle")
+        String[] aeTitles;
+
+        int weight;
+
+        public Condition() {
+        }
 
         public Condition(String[] sopClasses, Dimse dimse, Role role,
                 String[] aeTitles) {
@@ -174,8 +222,45 @@ public class AttributeCoercion
             this.dimse = dimse;
             this.role = role;
             this.aeTitles = aeTitles;
+            calcWeight();
+        }
+
+        public void calcWeight() {
             this.weight = (aeTitles.length != 0 ? 2 : 0)
-                      + (sopClasses.length != 0 ? 1 : 0);
+                    + (sopClasses.length != 0 ? 1 : 0);
+
+        }
+
+        public String[] getSopClasses() {
+            return sopClasses;
+        }
+
+        public void setSopClasses(String[] sopClasses) {
+            this.sopClasses = sopClasses;
+        }
+
+        public Dimse getDimse() {
+            return dimse;
+        }
+
+        public void setDimse(Dimse dimse) {
+            this.dimse = dimse;
+        }
+
+        public Role getRole() {
+            return role;
+        }
+
+        public void setRole(Role role) {
+            this.role = role;
+        }
+
+        public String[] getAeTitles() {
+            return aeTitles;
+        }
+
+        public void setAeTitles(String[] aeTitles) {
+            this.aeTitles = aeTitles;
         }
 
         @Override

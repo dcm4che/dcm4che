@@ -35,101 +35,64 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.conf.api.generic;
+package org.dcm4che3.conf.core.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 /**
- * Marks a field of a configuration class as a configuration field, meaning that it will be persisted. If a field of a
- * config class is not annotated, it will be skipped and NOT persisted.
- * 
+ * Marks a field, or a setter parameter of a configuration class to be a persistable configuration property of the bean
+ *
  * @author Roman K
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ConfigField {
+public @interface ConfigurableProperty {
+
+    public static final String NO_DEFAULT_VALUE = "N/A";
 
     /**
-     * Name in configuration
-     * 
+     * Specifies that the annotated field/property is a collection, elements of which are stored as references
+     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/device1")
      * @return
      */
-    String name();
+    boolean collectionOfReferences() default false;
+
+    public enum EnumRepresentation {
+        ORDINAL,
+        STRING
+    }
 
     /**
-     * Warning - not the common "default". The logic is that  
-     * if the attribute at hand will have the value specified by this parameter, it will not be persisted.
-     * Additionally, if applied to a Object-typed field, will populate it with null if there is no child and not throw exception.
-     * 
+     * Name of the node. If not specified, the field/parameter name is used.
+     *
      * @return
      */
-    String def() default "N/A";
+    String name() default "";
 
     /**
-     * If set to false, will not throw exceptions while loading the configuration in case if the property is not present in the persisted configuration.
-     * I.e. will keep the value that was initialized by the class constructor for the field.
-     */
-    boolean failIfNotPresent() default true;
-
-    /**
-     * What is used as a map key, e.g. which names ldap nodes have like if a key is 'name', then nodes are
-     * name=registry, name=repository
-     * 
+     * Default for primitives (int, string, boolean). If default is not specified, the property is considered required.
+     * For specifying whether an Object-typed property is not allowed to be null, use @NotNull
      * @return
      */
-    String mapKey() default "cn";
+    String defaultValue() default NO_DEFAULT_VALUE;
 
-    /**
-     * What to use for LDAP collection elements as object class if the value class is not a composite ConfigClass'ed
-     * type
-     * 
-     * @return
-     */
-    String mapElementObjectClass() default "";
-
-    /**
-     * Maps support non-ConfigClass'ed value types as well. As an attribute name in child nodes, name() will be used. If
-     * you need a different name for the collection node itself in this case, use this parameter.
-     */
-    String mapName() default "N/A";
-    
     /**
      * Label to show in configuration UIs. If empty empty string (default), the name will be used.
      * @return
      */
     String label() default "";
-    
+
     /**
      * Description to show in configuration UIs.
      * @return
      */
     String description() default "";
-    
-    /**
-     * Indicates that the configuration parameter is optional. By default, all parameters are required.
-     * For the time being, only used in configuration UIs, the backend validation will follow.
-     * @return
-     */
-    boolean optional() default false;
 
-    /**
-     * For Maps. Which delimeter is used to separate key from value.
-     * 
-     * @return
-     */
-    @Deprecated
-    String delimeter() default "|";
-
-    /**
-     * For Maps. Which key to use if only value is provided.
-     * 
-     * @return
-     */
-    @Deprecated
-    String defaultKey() default "*";
-
+    EnumRepresentation enumRepresentation() default EnumRepresentation.STRING;
 }

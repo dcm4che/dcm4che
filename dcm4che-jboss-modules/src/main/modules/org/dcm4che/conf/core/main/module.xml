@@ -5,6 +5,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+
         <module name="org.dcm4che.net" export="true"/>
         <module name="org.dcm4che.conf.core-api"/>
         <module name="org.dcm4che.conf.api"/>

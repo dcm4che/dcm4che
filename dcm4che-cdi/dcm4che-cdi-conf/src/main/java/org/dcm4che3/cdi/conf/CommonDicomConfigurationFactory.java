@@ -154,7 +154,7 @@ public class CommonDicomConfigurationFactory {
 
     private Configuration decorate(Configuration configurationStorage) {
         // caching
-        boolean cached = Boolean.valueOf(getPropertyWithNotice("org.dcm4che.configuration.cached", "false"));
+        boolean cached = Boolean.valueOf(getPropertyWithNotice("org.dcm4che.configuration.cached", "true"));
         if (cached) configurationStorage = new CachedRootNodeConfiguration(configurationStorage);
 
         // defaults

@@ -83,7 +83,7 @@ public class CommonDicomConfigurationFactory {
 
     @Produces @ApplicationScoped
     public DicomConfiguration getDicomConfiguration() throws ConfigurationException {
-        String configTypeStr = getPropertyWithNotice("org.dcm4che.conf.storage", "json_file");
+        String configTypeStr = getPropertyWithNotice("org.dcm4che.conf.storage", "json_file", false, " Possible values: 'json_file', 'ldap'");
         ConfigType configType = ConfigType.valueOf(configTypeStr.toUpperCase().trim());
 
         switch (configType) {
@@ -96,7 +96,7 @@ public class CommonDicomConfigurationFactory {
                 Hashtable<String,String> ldapProps = new Hashtable<String, String>();
                 ldapProps.put("java.naming.provider.url", getPropertyWithNotice("org.dcm4che.conf.ldap.url", "ldap://localhost:389/dc=example,dc=com"));
                 ldapProps.put("java.naming.security.principal", getPropertyWithNotice("org.dcm4che.conf.ldap.principal", "cn=Directory Manager"));
-                ldapProps.put("java.naming.security.credentials", getPropertyWithNotice("org.dcm4che.conf.ldap.credentials", "1", true));
+                ldapProps.put("java.naming.security.credentials", getPropertyWithNotice("org.dcm4che.conf.ldap.credentials", "1", true, null));
                 ldapProps.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
                 ldapProps.put("java.naming.ldap.attributes.binary", "dicomVendorData");
                 return createDicomConfiguration(new LdapConfigurationStorage(ldapProps, getAllExtensions()));
@@ -108,13 +108,16 @@ public class CommonDicomConfigurationFactory {
     }
 
     String getPropertyWithNotice(String propertyName, String defaultValue) {
-        return getPropertyWithNotice(propertyName, defaultValue, false);
+        return getPropertyWithNotice(propertyName, defaultValue, false, null);
     }
 
-    String getPropertyWithNotice(String propertyName, String defaultValue, boolean hideValue) {
+
+
+    String getPropertyWithNotice(String propertyName, String defaultValue, boolean hideValue, String options) {
 
         if (System.getProperty(propertyName) == null) {
-            LOG.warn("Configuration storage init: system property '{}' not found. Using default value '{}'", propertyName, defaultValue);
+
+            LOG.warn("Configuration storage init: system property '{}' not found. Using default value '{}'. "+(options!=null?options:""), propertyName, defaultValue);
         } else {
             LOG.info("Initializing dcm4che configuration storage " + "({} = {})", propertyName, hideValue ? "***" : defaultValue);
         }

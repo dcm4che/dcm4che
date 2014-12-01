@@ -6,6 +6,10 @@ doTest() {
   mvn verify
 }
 
+echo "TRAVIS_BRANCH = '${TRAVIS_BRANCH}'"
+echo "TRAVIS_PULL_REQUEST = '${TRAVIS_PULL_REQUEST}'"
+echo "TRAVIS_SECURE_ENV_VARS = '${TRAVIS_SECURE_ENV_VARS}'"
+
 # Only release from master if
 # A) we know of no commits since this build's commit and
 # B) this build is not a pull request and
@@ -15,6 +19,9 @@ if [[ ${TRAVIS_BRANCH} == "master" && \
   ${TRAVISE_SECURE_ENV_VARS} == "true" ]]
 then
     MASTER_COMMIT=$(git ls-remote origin master | cut -f 1)
+
+    echo "TRAVIS_COMMIT = '${TRAVIS_COMMIT}'"
+    echo "MASTER_COMMIT = '${MASTER_COMMIT}'"
 
     if [[ ${TRAVIS_COMMIT} == ${MASTER_COMMIT} ]]
     then

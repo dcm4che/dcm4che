@@ -59,10 +59,10 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.*;
 
-public class CommonDicomConfigurationFactory {
+public class DicomConfigurationFactory {
 
     private static Logger LOG = LoggerFactory
-            .getLogger(CommonDicomConfigurationFactory.class);
+            .getLogger(DicomConfigurationFactory.class);
 
     public enum ConfigType {
         JSON_FILE,
@@ -115,9 +115,9 @@ public class CommonDicomConfigurationFactory {
 
     String getPropertyWithNotice(String propertyName, String defaultValue, boolean hideValue, String options) {
 
-        String userValue = System.getProperty(propertyName, defaultValue);
+        String userValue = System.getProperty(propertyName);
         if (userValue == null) {
-
+            userValue = defaultValue;
             LOG.warn("Configuration storage init: system property '{}' not found. Using default value '{}'. "+(options!=null?options:""), propertyName, defaultValue);
         } else {
             LOG.info("Initializing dcm4che configuration storage " + "({} = {})", propertyName, hideValue ? "***" : userValue);

@@ -41,7 +41,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
-  <version>3.3.5-0-SNAPSHOT</version>
+  <version>3.3.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
   <description>dcm4che DICOM toolkit and utilities</description>
@@ -132,18 +132,6 @@
           </executions>
         </plugin>
         <plugin>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.5</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <useReleaseProfile>false</useReleaseProfile>
-            <releaseProfiles>staging</releaseProfiles>
-            <goals>deploy</goals>
-            <scmCommentPrefix>[maven-release-plugin] [skip ci]</scmCommentPrefix>
-            <tagNameFormat>@{project.version}</tagNameFormat>
-          </configuration>
-        </plugin>
-        <plugin>
           <artifactId>maven-source-plugin</artifactId>
           <version>2.2.1</version>
           <executions>
@@ -154,6 +142,12 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.3</version>
+          <extensions>true</extensions>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
@@ -247,9 +241,13 @@
   </dependencyManagement>
   <profiles>
     <profile>
-      <id>staging</id>
+      <id>ossrh</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+          </plugin>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
           </plugin>

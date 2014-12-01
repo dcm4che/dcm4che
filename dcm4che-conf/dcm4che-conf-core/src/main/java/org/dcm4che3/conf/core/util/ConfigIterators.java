@@ -42,7 +42,10 @@ package org.dcm4che3.conf.core.util;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -51,6 +54,9 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class ConfigIterators {
+
+    private static Logger LOG = LoggerFactory
+            .getLogger(ConfigIterators.class);
 
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedSetter>> configurableSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedSetter>>());
@@ -100,6 +106,34 @@ public class ConfigIterators {
         List<AnnotatedSetter> list = configurableSettersCache.get(clazz);
         if (list != null) return list;
 
+        processAndCacheAnnotationsForClass(clazz);
+
+        return configurableSettersCache.get(clazz);
+    }
+
+    public static List<AnnotatedConfigurableProperty> getAllConfigurableFields(Class clazz) {
+
+        //check cache
+        List<AnnotatedConfigurableProperty> l = configurableFieldsCache.get(clazz);
+        if (l != null) return l;
+        processAndCacheAnnotationsForClass(clazz);
+
+        return configurableFieldsCache.get(clazz);
+
+    }
+
+    private static void processAndCacheAnnotationsForClass(Class clazz) {
+        processAnnotatedSetters(clazz);
+        processAnnotatedProperties(clazz);
+
+
+        if (clazz.getAnnotation(ConfigurableClass.class) == null)
+            throw new IllegalArgumentException("Class '"+clazz.getName()+"' is not a configurable class. Make sure the a dependency to org.dcm4che.conf.core-api exists.");
+    }
+
+
+    private static List<AnnotatedSetter> processAnnotatedSetters(Class clazz) {
+        List<AnnotatedSetter> list;
         list = new ArrayList<AnnotatedSetter>();
 
         // scan all methods including superclasses, assume each is a config-setter
@@ -107,7 +141,7 @@ public class ConfigIterators {
             AnnotatedSetter annotatedSetter = new AnnotatedSetter();
             annotatedSetter.setParameters(new ArrayList<AnnotatedConfigurableProperty>());
 
-            
+
             Annotation[][] parameterAnnotations = m.getParameterAnnotations();
             Type[] genericParameterTypes = m.getGenericParameterTypes();
 
@@ -143,13 +177,8 @@ public class ConfigIterators {
         return list;
     }
 
-
-    public static List<AnnotatedConfigurableProperty> getAllConfigurableFields(Class clazz) {
-
-        //check cache
-        List<AnnotatedConfigurableProperty> l = configurableFieldsCache.get(clazz);
-        if (l != null) return l;
-
+    private static List<AnnotatedConfigurableProperty> processAnnotatedProperties(Class clazz) {
+        List<AnnotatedConfigurableProperty> l;
         l = new ArrayList<AnnotatedConfigurableProperty>();
 
         // scan all fields from this class and superclasses

@@ -115,13 +115,14 @@ public class CommonDicomConfigurationFactory {
 
     String getPropertyWithNotice(String propertyName, String defaultValue, boolean hideValue, String options) {
 
-        if (System.getProperty(propertyName) == null) {
+        String userValue = System.getProperty(propertyName, defaultValue);
+        if (userValue == null) {
 
             LOG.warn("Configuration storage init: system property '{}' not found. Using default value '{}'. "+(options!=null?options:""), propertyName, defaultValue);
         } else {
-            LOG.info("Initializing dcm4che configuration storage " + "({} = {})", propertyName, hideValue ? "***" : defaultValue);
+            LOG.info("Initializing dcm4che configuration storage " + "({} = {})", propertyName, hideValue ? "***" : userValue);
         }
-        return System.getProperty(propertyName, defaultValue);
+        return userValue;
     }
 
     private List<Class<?>> getAllExtensions() {

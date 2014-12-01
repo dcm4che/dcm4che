@@ -38,7 +38,7 @@ then
 
       # Run the release
       mvn -s .travis.d/settings.xml versions:set -DnewVersion='${BUILD_VERSION}'
-      mvn -s .travis.d/settings.xml -P ossrh,travis-secret deploy
+      mvn -s .travis.d/settings.xml -P ossrh,travis-secret deploy -Dscm.revision="${TRAVIS_COMMIT}"
     else
       doTest
     fi

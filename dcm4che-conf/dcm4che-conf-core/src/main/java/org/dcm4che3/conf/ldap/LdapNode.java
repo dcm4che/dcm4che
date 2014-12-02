@@ -302,12 +302,12 @@ public class LdapNode {
     }
 
     private LdapNode makeLdapElementNode(AnnotatedConfigurableProperty property, String key) {
-        LdapNode elementNode1 = new LdapNode();
+        LdapNode elementNode = new LdapNode();
         String elementDistinguishingField = LdapConfigUtils.getDistinguishingFieldForCollectionElement(property);
-        elementNode1.setDn(LdapConfigUtils.dnOf(getDn(), elementDistinguishingField, key));
-        elementNode1.getAttributes().put(elementDistinguishingField, key);
-        elementNode1.setParent(this);
-        return elementNode1;
+        elementNode.setDn(LdapConfigUtils.dnOf(getDn(), elementDistinguishingField, key));
+        elementNode.getAttributes().put(elementDistinguishingField, key);
+        elementNode.setParent(this);
+        return elementNode;
     }
 
     //<editor-fold desc="getters/setters">

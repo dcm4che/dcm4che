@@ -179,10 +179,18 @@ public class LdapConfigurationStorage implements Configuration {
             for (String c : ldapNode.getObjectClasses()) objectClass.add(c);
             ldapNode.getAttributes().put(objectClass);
 
-            try {
-                storeAttributes(ldapNode);
-            } catch (NameAlreadyBoundException alreadyBoundE) {
 
+            Attributes attributes = null;
+            try {
+                attributes = ldapCtx.getAttributes(ldapNode.getDn());
+            } catch (NameNotFoundException e) {
+                // attributes stay null
+            }
+
+            if (attributes == null)
+                storeAttributes(ldapNode);
+            else {
+                // TODO: PERFORMANCE: filter out the attributes that did not change
                 // Append objectClass
                 ldapNode.getAttributes().remove("objectClass");
                 Attribute existingObjectClasses = getLdapCtx().getAttributes(ldapNode.getDn(), new String[]{"objectClass"}).get("objectClass");
@@ -211,7 +219,6 @@ public class LdapConfigurationStorage implements Configuration {
                     //noop, proceed
                 }
             }
-
 
         }
 

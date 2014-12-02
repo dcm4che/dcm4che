@@ -31,8 +31,10 @@ then
       # of the time but will not be unique in the case of rebuilds
       BUILD_VERSION="3.3.5-$(printf '%04d' ${TRAVIS_BUILD_NUMBER})$(date -u '+%Y%m%d%H%M%S')"
 
+      echo "BUILD_VERSION = '${BUILD_VERSION}'"
+
       # Stage the release, setting the version number and the commit hash
-      mvn -s .travis.d/settings.xml versions:set -DnewVersion='${BUILD_VERSION}'
+      mvn -s .travis.d/settings.xml versions:set -DnewVersion="${BUILD_VERSION}"
       mvn -s .travis.d/settings.xml -P ossrh,travis-secret deploy -Dscm.revision="${TRAVIS_COMMIT}"
     else
       echo "A later release candidate has been committed: attempt to verify."

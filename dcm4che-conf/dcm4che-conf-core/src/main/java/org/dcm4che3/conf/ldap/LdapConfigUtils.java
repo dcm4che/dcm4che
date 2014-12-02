@@ -135,10 +135,7 @@ public class LdapConfigUtils {
     }
 
     public static String dnOf(String parentDN, String attrID, String attrValue) {
-        return attrID + '=' + attrValue.replace(",", "\\2C").replace("\"","\\22") + ',' + parentDN;
-
-        // does not work for slapd for some reason
-        //        return attrID + '=' + Rdn.escapeValue(attrValue) + ',' + parentDN;
+        return attrID + '=' + Rdn.escapeValue(attrValue) + ',' + parentDN;
     }
 
     static ArrayList<String> extractObjectClasses(AnnotatedConfigurableProperty property) {

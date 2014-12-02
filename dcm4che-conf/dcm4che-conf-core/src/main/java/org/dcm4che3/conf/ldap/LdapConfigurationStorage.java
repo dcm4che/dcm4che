@@ -46,6 +46,7 @@ import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
 
 import javax.naming.*;
 import javax.naming.directory.*;
+import javax.naming.ldap.LdapName;
 import java.util.*;
 
 
@@ -75,13 +76,13 @@ public class LdapConfigurationStorage implements Configuration {
     }
 
     public synchronized void destroySubcontextWithChilds(String name) throws NamingException {
-        NamingEnumeration list = getLdapCtx().list(name);
+        NamingEnumeration list = getLdapCtx().list(new LdapName(name));
 
         while (list.hasMore()) {
             this.destroySubcontextWithChilds(((NameClassPair) list.next()).getNameInNamespace());
         }
 
-        getLdapCtx().destroySubcontext(name);
+        getLdapCtx().destroySubcontext(new LdapName(name));
     }
 
 
@@ -182,7 +183,7 @@ public class LdapConfigurationStorage implements Configuration {
 
             Attributes attributes = null;
             try {
-                attributes = ldapCtx.getAttributes(ldapNode.getDn());
+                attributes = ldapCtx.getAttributes(new LdapName(ldapNode.getDn()));
             } catch (NameNotFoundException e) {
                 // attributes stay null
             }
@@ -227,11 +228,11 @@ public class LdapConfigurationStorage implements Configuration {
     }
 
     private void storeAttributes(LdapNode ldapNode) throws NamingException {
-        getLdapCtx().createSubcontext(ldapNode.getDn(), ldapNode.getAttributes());
+        getLdapCtx().createSubcontext(new LdapName(ldapNode.getDn()), ldapNode.getAttributes());
     }
 
     private void replaceAttributes(LdapNode ldapNode) throws NamingException {
-        getLdapCtx().modifyAttributes(ldapNode.getDn(), DirContext.REPLACE_ATTRIBUTE, ldapNode.getAttributes());
+        getLdapCtx().modifyAttributes(new LdapName(ldapNode.getDn()), DirContext.REPLACE_ATTRIBUTE, ldapNode.getAttributes());
     }
 
     @Override

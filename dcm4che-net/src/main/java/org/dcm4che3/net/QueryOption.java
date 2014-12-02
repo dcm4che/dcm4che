@@ -40,6 +40,8 @@ package org.dcm4che3.net;
 
 import java.util.EnumSet;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 
 
@@ -55,6 +57,7 @@ public enum QueryOption {
                 : 1];
         for (QueryOption query : opts)
             info[query.ordinal()] = 1;
+
         return info;
     }
 

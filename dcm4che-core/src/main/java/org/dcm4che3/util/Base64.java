@@ -38,6 +38,7 @@
 
 package org.dcm4che3.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -110,6 +111,36 @@ public class Base64 {
                 break;
             out.write((byte)((b3 << 6) | INV_BASE64[ch[off++]]));
         }
+    }
+
+    /**
+     * Convenience method. To achieve best performance, use Base64.encode
+     * @param bytes data to encode
+     * @return Base64-encoded string
+     */
+    public static String toBase64(byte[] bytes) {
+        final char[] encodedChars = new char[(bytes.length * 4 / 3 + 3) & ~3];
+        encode(bytes, 0, bytes.length, encodedChars, 0);
+        return new String(encodedChars);
+    }
+
+    /**
+     * Convenience method. To achieve best performance, use Base64.decode
+     * @param base64String encoded string
+     * @return Decoded data
+     * @throws IOException
+     */
+    public static byte[] fromBase64(String base64String) throws IOException {
+        final int encodedLength = base64String.length();
+        final int decodedLength = encodedLength * 3 / 4;
+
+        final char[] encodedChars = new char[encodedLength];
+        base64String.getChars(0, encodedLength, encodedChars, 0);
+
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream(decodedLength);
+        decode(encodedChars,0, encodedLength,stream);
+
+        return stream.toByteArray();
     }
 
 }

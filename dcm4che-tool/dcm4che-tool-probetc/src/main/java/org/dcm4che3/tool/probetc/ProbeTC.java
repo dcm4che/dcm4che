@@ -58,6 +58,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
 import org.dcm4che3.conf.prefs.PreferencesDicomConfiguration;
 import org.dcm4che3.net.ApplicationEntity;
@@ -129,7 +130,7 @@ public class ProbeTC {
         Connection conn = new Connection();
         conn.setHostname(host);
         conn.setPort(port);
-        conn.setInstalled(true);
+        conn.setConnectionInstalled(true);
         setDestination(conn);
 
         this.setProbedAE(new ApplicationEntity(aeTitle));
@@ -202,7 +203,7 @@ public class ProbeTC {
                 e.printStackTrace();
             }
             try {
-                LdapDicomConfiguration conf = new LdapDicomConfiguration(p);
+                DicomConfiguration conf = new LdapDicomConfiguration(p);
                 LOG.info("Started Loading LDAP configuration");
                 ApplicationEntity sourceAE = conf
                         .findApplicationEntity(instance.sourceAET);
@@ -233,7 +234,7 @@ public class ProbeTC {
         } else {
 
             try {
-                PreferencesDicomConfiguration conf = new PreferencesDicomConfiguration();
+                DicomConfiguration conf = new PreferencesDicomConfiguration();
                 LOG.info("Started Loading LDAP configuration");
                 ApplicationEntity sourceAE = conf
                         .findApplicationEntity(instance.sourceAET);
@@ -314,7 +315,7 @@ public class ProbeTC {
                         throw new IllegalAccessException("missing ldap properties file");
                     }
                     p.load(is);
-                    LdapDicomConfiguration conf = new LdapDicomConfiguration(p);
+                    DicomConfiguration conf = new LdapDicomConfiguration(p);
                     LOG.info("Started Loading LDAP configuration");
                     ArrayList<TransferCapability> tcs = null;
                     if(cl.hasOption("s")){
@@ -366,7 +367,7 @@ public class ProbeTC {
             } else if (cl.hasOption("prefs")) {
                 // prefs
                 try {
-                    PreferencesDicomConfiguration conf = new PreferencesDicomConfiguration();
+                    DicomConfiguration conf = new PreferencesDicomConfiguration();
                     LOG.info("Started Loading LDAP configuration");
                     ArrayList<TransferCapability> tcs = null;
                     if(cl.hasOption("s")){
@@ -484,7 +485,7 @@ public class ProbeTC {
         probedAET = aeTitle;
         conn.setHostname(host);
         conn.setPort(port);
-        conn.setInstalled(true);
+        conn.setConnectionInstalled(true);
         ae = new ApplicationEntity(aeTitle);
         ae.addConnection(conn);
     }

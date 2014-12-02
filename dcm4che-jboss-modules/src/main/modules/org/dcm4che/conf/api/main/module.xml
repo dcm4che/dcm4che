@@ -7,7 +7,6 @@
     <dependencies>
         <module name="org.dcm4che.net" export="true"/>
         <module name="org.slf4j"/>
-        <module name="org.apache.commons.beanutils"/>
-
+        <module name="org.dcm4che.conf.core-api"/>
     </dependencies>
 </module>

@@ -6,6 +6,7 @@
 
     <dependencies>
         <module name="org.dcm4che.audit" export="true"/>
+        <module name="org.dcm4che.conf.core-api"/>
         <module name="org.dcm4che.net" export="true"/>
         <module name="org.slf4j"/>
     </dependencies>

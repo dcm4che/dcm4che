@@ -42,7 +42,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.image.PhotometricInterpretation;
@@ -51,12 +55,15 @@ import org.dcm4che3.image.PhotometricInterpretation;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
+@ConfigurableClass
 public class CompressionRules
         implements Iterable<CompressionRule>, Serializable {
     
     private static final long serialVersionUID = 5027417735779753342L;
 
-    private final ArrayList<CompressionRule> list =
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty
+    private List<CompressionRule> list =
             new ArrayList<CompressionRule>();
 
     public void add(CompressionRule rule) {
@@ -67,6 +74,15 @@ public class CompressionRules
         if (index < 0)
             index = -(index+1);
         list.add(index, rule);
+    }
+
+    public List<CompressionRule> getList() {
+        return list;
+    }
+
+    public void setList(List<CompressionRule> list) {
+        this.list.clear();
+        for (CompressionRule rule : list) add(rule);
     }
 
     public void add(CompressionRules rules) {

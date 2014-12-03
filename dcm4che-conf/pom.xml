@@ -13,5 +13,6 @@
     <module>dcm4che-conf-core-api</module>
     <module>dcm4che-conf-api</module>
     <module>dcm4che-conf-api-hl7</module>
+    <module>dcm4che-conf-ldap</module>
   </modules>
 </project>

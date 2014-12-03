@@ -181,6 +181,9 @@ public class CompressionRule
         @ConfigurableProperty(name = "dcmSOPClass")
         String[] sopClasses;
 
+        @ConfigurableProperty(name = "dcmImageType")
+        String[] imageType;
+        
         @ConfigurableProperty(name = "dcmBodyPartExamined")
         String[] bodyPartExamined;
 
@@ -246,6 +249,14 @@ public class CompressionRule
 
         public void setSopClasses(String[] sopClasses) {
             this.sopClasses = sopClasses;
+        }
+        
+        public String[] getImageType() {
+            return imageType;
+        }
+
+        public void setImageType(String[] imageType) {
+            this.imageType = imageType;
         }
 
         public String[] getBodyPartExamined() {

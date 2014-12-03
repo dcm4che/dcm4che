@@ -260,6 +260,10 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.60 NAME 'dcmClientBindAddress'
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.61 NAME 'dcmImageType'
+  DESC 'DICOM Image Type (0008,0008) Attribute'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )    
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -333,9 +337,9 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.15 NAME 'dcmAuditMessageSchemaURI'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.16 NAME 'dcmAuditRecordRepositoryDeviceReference'
-   DESC 'The DN of a dicomDeviceObject which provides the Audit Record Repository to which audit messages are sent'
-   EQUALITY distinguishedNameMatch
-   SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+   DESC 'The name of the DICOM Device which provides the Audit Record Repository to which audit messages are sent'
+   EQUALITY caseExactMatch
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
    SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.17 NAME 'dcmAuditIncludeInstanceUID'
   DESC 'Indicates if Audit Log Message should contain optional Instance UIDs'
@@ -618,6 +622,7 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.5 NAME 'dcmCompressionRule'
     dcmPixelRepresentation $
     dcmAETitle $
     dcmSOPClass $
+    dcmImageType $
     dcmBodyPartExamined $
     dcmImageWriteParam ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.4.4.6 NAME 'dcmCollection'

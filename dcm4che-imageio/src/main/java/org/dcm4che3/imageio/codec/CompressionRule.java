@@ -77,11 +77,13 @@ public class CompressionRule
 
     public CompressionRule(String commonName, String[] pmis, int[] bitsStored,
             int pixelRepresentation, String[] aeTitles, String[] sopClasses,
-            String[] bodyPartExamined, String tsuid, String... params) {
+            String[] imgTypes, String[] bodyPartExamined, String tsuid, 
+            String... params) {
         this.commonName = commonName;
         this.condition = new Condition(pmis, bitsStored, pixelRepresentation,
                 StringUtils.maskNull(aeTitles),
                 StringUtils.maskNull(sopClasses),
+                StringUtils.maskNull(imgTypes),
                 StringUtils.maskNull(bodyPartExamined));
         this.tsuid = tsuid;
         this.imageWriteParams = Property.valueOf(params);
@@ -150,9 +152,9 @@ public class CompressionRule
 
     public boolean matchesCondition(PhotometricInterpretation pmi, 
             int bitsStored, int pixelRepresentation, String aeTitle, 
-            String sopClass, String bodyPart) {
+            String sopClass, String[] imgTypes, String bodyPart) {
         return condition.matches(pmi, bitsStored, pixelRepresentation, aeTitle,
-                sopClass, bodyPart);
+                sopClass, imgTypes, bodyPart);
     }
 
     @Override
@@ -193,7 +195,8 @@ public class CompressionRule
         }
 
         Condition(String[] pmis, int[] bitsStored, int pixelRepresentation,
-                String[] aeTitles, String[] sopClasses, String[] bodyPartExamined) {
+                String[] aeTitles, String[] sopClasses, String[] imgTypes, String[] bodyPartExamined) {
+            
             this.pmis = EnumSet.noneOf(PhotometricInterpretation.class);
             for (String pmi : pmis)
                 this.pmis.add(PhotometricInterpretation.fromString(pmi));
@@ -201,14 +204,16 @@ public class CompressionRule
             this.bitsStoredMask = toBitsStoredMask(bitsStored);
             this.aeTitles = aeTitles;
             this.sopClasses = sopClasses;
+            this.imageType = imgTypes;
             this.bodyPartExamined = bodyPartExamined;
             calcWeight();
         }
 
         public void calcWeight() {
-            this.weight = (aeTitles.length != 0 ? 4 : 0)
-                    + (sopClasses.length != 0 ? 2 : 0)
-                    + (bodyPartExamined.length != 0 ? 1 : 0);
+            this.weight = (aeTitles.length != 0 ? 8 : 0)
+                    + (sopClasses.length != 0 ? 4 : 0)
+                    + (bodyPartExamined.length != 0 ? 2 : 0)
+                    + (imageType.length != 0 ? 1 : 0);
         }
 
         public EnumSet<PhotometricInterpretation> getPmis() {
@@ -300,12 +305,13 @@ public class CompressionRule
 
         public boolean matches(PhotometricInterpretation pmi, 
                 int bitsStored, int pixelRepresentation, 
-                String aeTitle, String sopClass, String bodyPart) {
+                String aeTitle, String sopClass, String[] imgTypes, String bodyPart) {
             return pmis.contains(pmi)
                     && matchBitStored(bitsStored)
                     && matchPixelRepresentation(pixelRepresentation)
                     && isEmptyOrContains(this.aeTitles, aeTitle)
                     && isEmptyOrContains(this.sopClasses, sopClass)
+                    && isEmptyOrContains(this.imageType, imgTypes)
                     && isEmptyOrContains(this.bodyPartExamined, bodyPart);
         }
 
@@ -324,6 +330,17 @@ public class CompressionRule
 
             for (int i = 0; i < a.length; i++)
                 if (o.equals(a[i]))
+                    return true;
+
+            return false;
+        }
+        
+        private static boolean isEmptyOrContains(Object[] a1, Object[] a2) {
+            if (a1 == null || a1.length == 0 || a2 == null || a2.length == 0)
+                return true;
+
+            for (int i = 0; i < a2.length; i++)
+                if (isEmptyOrContains(a1,a2[i]))
                     return true;
 
             return false;

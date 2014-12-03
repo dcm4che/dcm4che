@@ -113,6 +113,7 @@ public class CompressionRules
                     attrs.getInt(Tag.BitsStored, 0),
                     attrs.getInt(Tag.PixelRepresentation, 0),
                     attrs.getString(Tag.SOPClassUID),
+                    attrs.getStrings(Tag.ImageType),
                     attrs.getString(Tag.BodyPartExamined));
         } catch (IllegalArgumentException ignore) {
             return null;
@@ -122,10 +123,10 @@ public class CompressionRules
     public CompressionRule findCompressionRule(String aeTitle,
             PhotometricInterpretation pmi,
             int bitsStored, int pixelRepresentation, 
-            String sopClass, String bodyPart) {
+            String sopClass, String[] imgTypes, String bodyPart) {
         for (CompressionRule ac : list)
             if (ac.matchesCondition(pmi, bitsStored, pixelRepresentation,
-                    aeTitle, sopClass, bodyPart))
+                    aeTitle, sopClass, imgTypes, bodyPart))
                 return ac;
         return null;
     }

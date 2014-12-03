@@ -171,7 +171,12 @@ public class CompressionRule
         @ConfigurableProperty(name = "dcmPhotometricInterpretation")
         EnumSet<PhotometricInterpretation> pmis;
 
+        /**
+         * Proxy-property, actually stored in bitsStoredMask, see getter/setter
+         */
         @ConfigurableProperty(name = "dcmBitsStored")
+        int bitsStoredMaskArray[];
+
         int bitsStoredMask;
 
         @ConfigurableProperty(name = "dcmPixelRepresentation",defaultValue = "-1")
@@ -298,6 +303,15 @@ public class CompressionRule
             return bitsStored;
         }
 
+
+        public int[] getBitsStoredMaskArray() {
+            return getBitsStored();
+        }
+
+        public void setBitsStoredMaskArray(int[] bitsStoredMaskArray) {
+            this.bitsStoredMask = toBitsStoredMask(bitsStoredMaskArray);
+        }
+
         @Override
         public int compareTo(Condition o) {
             return o.weight - weight;
@@ -340,7 +354,7 @@ public class CompressionRule
                 return true;
 
             for (int i = 0; i < a2.length; i++)
-                if (isEmptyOrContains(a1,a2[i]))
+                if (isEmptyOrContains(a1, a2[i]))
                     return true;
 
             return false;

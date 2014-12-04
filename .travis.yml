@@ -6,7 +6,7 @@ jdk:
 env: 
   global: 
   - RELEASE_CANDIDATE=$(.travis.d/release_candidate.sh)
-  - secure: "W+wNRvTd5jSxhn+NJvrIO7xsBuHWb5UbUNALXNYLfTJa9aI3jdNsaf8Bkfd8EK+Bczg005g2HlKTXvpgpH6gvvIc8+3FGfEOb0yDn5fFliXAaeLkxDLx62HDZDkuZ2xT9Dk8hqLYDBj8Fqn0HJyDXtVASvxk4+IWrv3I0tSQd/0="
+  - secure: "bbuXX0WsP2DX6rb9gXvlkyYr+Za8rvMx+SBgCODuao8JGy8PyDPgnJzVV4i85+1YvKx2iGv0//fN646VelJbXSdyGNzVx+JRjS6rdR43rZj1WA3+T2mwoKDaKcXruKLt6XmuHIBA69G+4PWVMjEqShE2dpiV8VnBib+FMeK/grw="
 
 script:
 - .travis.d/script.sh

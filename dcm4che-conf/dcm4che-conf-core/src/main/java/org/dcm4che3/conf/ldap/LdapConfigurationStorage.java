@@ -60,16 +60,16 @@ public class LdapConfigurationStorage implements Configuration {
         return allExtensionClasses;
     }
 
-    public LdapConfigurationStorage(Hashtable<String, String> env, List<Class<?>> allExtensionClasses) throws ConfigurationException {
+    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses) throws ConfigurationException {
         this.allExtensionClasses = allExtensionClasses;
 
         try {
-            env = (Hashtable) env.clone();
+            Hashtable env_ = (Hashtable) env.clone();
             String e = (String) env.get("java.naming.provider.url");
-            int end = e.lastIndexOf(47);
-            env.put("java.naming.provider.url", e.substring(0, end));
+            int end = e.lastIndexOf('/');
+            env_.put("java.naming.provider.url", e.substring(0, end));
             this.baseDN = e.substring(end + 1);
-            this.ldapCtx = new InitialDirContext(env);
+            this.ldapCtx = new InitialDirContext(env_);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }

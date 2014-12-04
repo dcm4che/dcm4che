@@ -5,6 +5,8 @@ set -ev
 # A) we know of no commits since this build's commit and
 # B) this build is not a pull request and
 # C) secure variables are available
+echo "RELEASE_CANDIDATE = '${RELEASE_CANDIDATE}'"
+
 if [[ ${RELEASE_CANDIDATE} == "true" ]]
 then
   echo "The current commit is the latest release candidate: attempt to release."

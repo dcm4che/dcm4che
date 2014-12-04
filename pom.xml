@@ -279,7 +279,7 @@
   </dependencyManagement>
   <profiles>
     <profile>
-      <id>ossrh</id>
+      <id>ossrh-up</id>
       <build>
         <plugins>
           <plugin>

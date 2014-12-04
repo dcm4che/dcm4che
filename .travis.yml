@@ -5,7 +5,7 @@ jdk:
 
 env: 
   global: 
-  - RELEASE_CANDIDATE=$(.travis.d/before_install.sh)
+  - RELEASE_CANDIDATE=$(.travis.d/release_candidate.sh)
   - secure: "W+wNRvTd5jSxhn+NJvrIO7xsBuHWb5UbUNALXNYLfTJa9aI3jdNsaf8Bkfd8EK+Bczg005g2HlKTXvpgpH6gvvIc8+3FGfEOb0yDn5fFliXAaeLkxDLx62HDZDkuZ2xT9Dk8hqLYDBj8Fqn0HJyDXtVASvxk4+IWrv3I0tSQd/0="
 
 script:

@@ -54,16 +54,15 @@ public class LdapConfigurationStorage implements Configuration {
 
     private final String baseDN;
     private final InitialDirContext ldapCtx;
-    private final List<Class<?>> allExtensionClasses;
+    private final List<Class<?>> allExtensionClasses = new ArrayList<Class<?>>();
 
     public List<Class<?>> getAllExtensionClasses() {
         return allExtensionClasses;
     }
 
-    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses) throws ConfigurationException {
-        this.allExtensionClasses = allExtensionClasses;
-
-        try {
+    public LdapConfigurationStorage(Hashtable<?, ?> env)
+            throws ConfigurationException {
+         try {
             Hashtable env_ = (Hashtable) env.clone();
             String e = (String) env.get("java.naming.provider.url");
             int end = e.lastIndexOf('/');
@@ -73,6 +72,11 @@ public class LdapConfigurationStorage implements Configuration {
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
+    }
+
+    public LdapConfigurationStorage addExtensionClass(Class<?> clazz) {
+        allExtensionClasses.add(clazz);
+        return this;
     }
 
     public synchronized void destroySubcontextWithChilds(String name) throws NamingException {

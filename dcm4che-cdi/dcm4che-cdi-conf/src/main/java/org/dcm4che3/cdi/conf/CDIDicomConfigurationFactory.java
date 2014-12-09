@@ -39,52 +39,46 @@
  */
 package org.dcm4che3.cdi.conf;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.dicom.DicomConfigurationFactory;
-import org.dcm4che3.net.AEExtension;
-import org.dcm4che3.net.DeviceExtension;
-import org.dcm4che3.net.hl7.HL7ApplicationExtension;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Iterator;
+
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.dcm4che3.net.AEExtension;
+import org.dcm4che3.net.DeviceExtension;
+import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 
 /**
  * @author Roman K
  */
 public class CDIDicomConfigurationFactory {
 
+    @Inject
+    Instance<DeviceExtension> deviceExtensions;
 
     @Inject
-    Instance<DeviceExtension> deviceExtensionInstance;
+    Instance<AEExtension> aeExtensions;
 
     @Inject
-    Instance<HL7ApplicationExtension> hl7ExtensionInstance;
-
-    @Inject
-    Instance<AEExtension> aeExtensionsInstance;
+    Instance<HL7ApplicationExtension> hl7ApplicationExtensions;
 
     @Produces
     @ApplicationScoped
-    public DicomConfiguration getCDIDicomConfiguration() throws ConfigurationException {
-        return DicomConfigurationFactory.createDicomConfiguration(System.getProperties(), getExtensionClasses(deviceExtensionInstance), getExtensionClasses(aeExtensionsInstance), getExtensionClasses(hl7ExtensionInstance));
-    }
-
-    private <T> ArrayList<Class<? extends T>> getExtensionClasses(Instance<T> instance) {
-        ArrayList<Class<? extends T>> classes = new ArrayList<Class<? extends T>>();
-
-        Iterator<T> iterator = instance.iterator();
-        while (iterator.hasNext()) {
-            Class<? extends T> aClass = (Class<? extends T>) iterator.next().getClass();
-            classes.add(aClass);
-        }
-
-        return classes;
+    public DicomConfiguration getCDIDicomConfiguration()
+            throws ConfigurationException {
+        DicomConfigurationBuilder builder = DicomConfigurationBuilder
+                .newConfigurationBuilder(System.getProperties());
+        for (DeviceExtension ext : deviceExtensions)
+            builder.registerDeviceExtension(ext.getClass());
+        for (AEExtension ext : aeExtensions)
+            builder.registerAEExtension(ext.getClass());
+        for (HL7ApplicationExtension ext : hl7ApplicationExtensions)
+            builder.registerHL7ApplicationExtension(ext.getClass());
+        return builder.build();
     }
 
     public void dispose(@Disposes DicomConfiguration conf) {

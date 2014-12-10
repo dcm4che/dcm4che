@@ -535,6 +535,9 @@ public class DicomImageReader extends ImageReader {
     }
 
     private void checkIndex(int frameIndex) {
+        if (frames == 0)
+            throw new InternalError("Missing Pixel Data");
+        
         if (frameIndex < 0 || frameIndex >= frames)
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);
     }

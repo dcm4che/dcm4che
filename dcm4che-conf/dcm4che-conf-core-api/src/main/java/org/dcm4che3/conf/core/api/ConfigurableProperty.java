@@ -54,7 +54,10 @@ import java.util.Objects;
 @Target(ElementType.FIELD)
 public @interface ConfigurableProperty {
 
-    public static final String NO_DEFAULT_VALUE = "N/A";
+    /**
+     * Just a random string very unlikely to be equal to any user-specified default string (java does not allow to use null...)
+     */
+    public static final String NO_DEFAULT_VALUE = " $#!@@#$@!#$%  Default-value-does-not-exist-for-this-property  $#!@@#$@!#$%";
 
     /**
      * Specifies that the annotated field/property is a collection, elements of which are stored as references
@@ -62,6 +65,12 @@ public @interface ConfigurableProperty {
      * @return
      */
     boolean collectionOfReferences() default false;
+
+    /**
+     * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings)
+     * @return
+     */
+    boolean required() default false;
 
     public enum EnumRepresentation {
         ORDINAL,

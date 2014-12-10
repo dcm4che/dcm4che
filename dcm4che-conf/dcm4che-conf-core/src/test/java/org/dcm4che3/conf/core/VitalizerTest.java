@@ -45,6 +45,7 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.misc.DeepEqualsDiffer;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -118,6 +119,9 @@ public class VitalizerTest {
         @ConfigurableProperty(name = "strProp")
         String str;
 
+        @ConfigurableProperty(name = "nullStrProp")
+        String nullstr;
+
         @ConfigurableProperty(name = "subProp1")
         TestConfigSubClass subProp1;
 
@@ -160,6 +164,14 @@ public class VitalizerTest {
 
         public void setaSet(Set<String> aSet) {
             this.aSet = aSet;
+        }
+
+        public String getNullstr() {
+            return nullstr;
+        }
+
+        public void setNullstr(String nullstr) {
+            this.nullstr = nullstr;
         }
 
         public String[] getStrArrayProp() {
@@ -335,6 +347,24 @@ public class VitalizerTest {
         DeepEqualsDiffer.assertDeepEquals("Config node before deserialization must be the same as after serializing back", testConfigClassNode, generatedNode);
         //boolean b = DeepEquals.deepEquals(testConfigClassNode, generatedNode);
         //Assert.assertTrue("Config node before deserialization must be the same as after serializing back. Last keys"+DeepEquals.lastDualKey,b);
+
+    }
+
+    @Test
+    public void testNulls() throws ConfigurationException {
+
+        HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
+        BeanVitalizer beanVitalizer = new BeanVitalizer();
+
+        TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);
+
+        // unspecified string attribute results into null
+        Assert.assertEquals(null, configuredInstance.getNullstr());
+
+        Map<String, Object> generatedNode = beanVitalizer.createConfigNodeFromInstance(configuredInstance);
+
+        // null value produces no attribute-value record in serialized repr
+        Assert.assertEquals(false, generatedNode.containsKey("nullStrProp") );
 
     }
 

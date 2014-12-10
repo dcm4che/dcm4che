@@ -79,7 +79,10 @@ public class DefaultConfigTypeAdapters {
     public static void delegateChildToConfigNode(Object object, Map<String, Object> parentNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         String nodeName = property.getAnnotatedName();
         ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
-        parentNode.put(nodeName, adapter.toConfigNode(object, property, vitalizer));
+        Object value = adapter.toConfigNode(object, property, vitalizer);
+        // filter out nulls
+        if (value != null)
+            parentNode.put(nodeName, value);
     }
 
     /**

@@ -170,8 +170,6 @@ public class LdapConfigurationStorage implements Configuration {
 
 
         merge(ldapNode);
-
-        // TODO: also fill in other parameters from the configNode according to 'partially overwritten' contract
     }
 
 

@@ -91,24 +91,24 @@ public interface Configuration {
     /**
      * Persists the configuration node to the specified path.
      * The path must exist (or at least all nodes but the last one).
-     * The property is created/partially overwritten, i.e. if there were any child nodes in the old root that are not present in the new node root, they will remain in the new tree.
+     * The property is created/fully overwritten, i.e. if there were any child nodes in the old root that are not present in the new node root, they will be deleted in the new tree.
      * <br/>
      * <p><h2>Defaults:</h2>
      * The property values that are equal to default values are be filtered, i.e. not persisted.
      * <p/>
      * </p>
      *
-     * @param path              path to the container where the property will be set
-     * @param configNode        new configuration to persist as a value of this property
-     * @param configurableClass class annotated with ConfigurableClass, ConfigurableProperty and ConfigurableField annotations that corresponds to this node.
+     * @param path              path to the node
+     * @param configNode        configuration node to persist
+     * @param configurableClass class annotated with ConfigurableClass, ConfigurableProperty annotations that corresponds to this node.
      *                          This parameter is required e.g., by LDAP backend to provide additional metadata like ObjectClasses and LDAP node hierarchy relations.
-     *                          configurableClass is persisted and can be retrieved by getConfigurationNodeClass
      */
     void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException;
 
     /**
-     * Invalidates any state, so next time the corresponding part of configuration is accessed with getConfigurationNode, it is be re-loaded from the backend.
-     * It is imperative that some other nodes might be also refreshed during the operation.
+     * Invalidates any present cached state for the node
+     * It is imperative that some other nodes might also be refreshed during the operation.
+     * There is no guarantee whether the new version will be re-loaded lazily or eagerly
      *
      * @param path
      */

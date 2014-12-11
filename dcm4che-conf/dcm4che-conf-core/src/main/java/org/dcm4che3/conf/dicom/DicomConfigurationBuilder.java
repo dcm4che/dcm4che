@@ -122,7 +122,7 @@ public class DicomConfigurationBuilder {
         switch(ConfigType.valueOf(configType.toUpperCase().trim())) {
         case JSON_FILE:
             builder = newJsonConfigurationBuilder(getPropertyWithNotice(props,
-                "org.dcm4che.conf.filename", "configuration.json"));
+                "org.dcm4che.conf.filename", "../standalone/configuration/sample-config.json"));
             break;
         case LDAP:
             Hashtable<String,String> ldapProps = new Hashtable<String, String>();

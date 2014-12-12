@@ -85,7 +85,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         // create instance or use provided when it was created for us
         if (providedConfObj == null) {
             try {
-                confObj = (T) clazz.newInstance();
+                confObj = vitalizer.newInstance(clazz);
             } catch (Exception e) {
                 throw new ConfigurationException("Error while instantiating config class " + clazz.getSimpleName()
                         + ". Check whether null-arg constructor exists.", e);

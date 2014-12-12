@@ -100,13 +100,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 //            configNode.put("#class", configurableClass.getName());
 
         if (!path.equals("/")) {
-            if (ConfigNodeUtil.nodeExists(configurationRoot, path)) {
-                for (String key : configNode.keySet())
-                    ConfigNodeUtil.replaceNode(configurationRoot, ConfigNodeUtil.concat(path, key), configNode.get(key));
-            } else
                 ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
-
-
         } else
             configurationRoot = configNode;
 

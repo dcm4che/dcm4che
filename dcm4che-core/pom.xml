@@ -55,9 +55,6 @@
       </resource>
       <resource>
         <directory>target/generated-resources</directory>
-        <excludes>
-          <exclude>xml/**</exclude>
-        </excludes>
       </resource>
     </resources>
     <plugins>
@@ -200,20 +197,9 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <versionRange>[1.7,)</versionRange>
-                    <goals>
-                      <goal>add-source</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
+                    <execute>
+                      <runOnConfiguration>true</runOnConfiguration>
+                    </execute>
                   </action>
                 </pluginExecution>
               </pluginExecutions>

@@ -89,7 +89,7 @@ public class AssociationHandler {
                 : null;
         if (ae.getDevice().isLimitOfOpenAssociationsExceeded())
             throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                    AAssociateRJ.SOURCE_SERVICE_PROVIDER_PRES,
                     AAssociateRJ.REASON_LOCAL_LIMIT_EXCEEDED);
         return makeAAssociateAC(as, rq, userIdentity);
     }

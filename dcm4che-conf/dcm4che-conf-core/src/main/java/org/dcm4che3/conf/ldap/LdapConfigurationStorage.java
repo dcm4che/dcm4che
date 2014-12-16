@@ -166,7 +166,9 @@ public class LdapConfigurationStorage implements Configuration {
 
         try {
             Object o = ldapCtx.lookup(new LdapName(dn));
-            if (o==null) return false;
+            if (o == null) return false;
+        } catch (NameNotFoundException nnfe) {
+            return false;
         } catch (NamingException e) {
             throw new ConfigurationException(e);
         }

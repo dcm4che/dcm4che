@@ -18,7 +18,7 @@ then
 
   # Generate the build number; the TRAVIS_BUILD_NUMBER will suffice most
   # of the time but will not be unique in the case of rebuilds
-  BUILD_VERSION="3.3.5-$(printf '%04d' ${TRAVIS_BUILD_NUMBER})$(date -u '+%Y%m%d%H%M%S')"
+  BUILD_VERSION="3.3.6-$(printf '%04d' ${TRAVIS_BUILD_NUMBER})$(date -u '+%Y%m%d%H%M%S')"
 
   # Stage the release, setting the version number and the commit hash
   mvn -s .travis.d/settings.xml versions:set -DnewVersion="${BUILD_VERSION}"

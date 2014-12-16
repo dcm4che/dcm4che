@@ -51,7 +51,6 @@ import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -123,12 +122,16 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         // quick init
         try {
             if (!configurationExists()) {
-                config.persistNode("/dicomConfigurationRoot", createInitialConfigRootNode(), DicomConfigurationRootNode.class);
+                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), DicomConfigurationRootNode.class);
 
             }
         } catch (ConfigurationException e) {
             throw new RuntimeException("Dicom configuration cannot be initialized", e);
         }
+    }
+
+    public Configuration getConfigurationStorage() {
+        return config;
     }
 
     protected HashMap<String, Object> createInitialConfigRootNode() {
@@ -140,13 +143,13 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public boolean configurationExists() throws ConfigurationException {
-        return config.nodeExists("dicomConfigurationRoot");
+        return config.nodeExists(DicomPath.ConfigRoot.path());
     }
 
     @Override
     public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists()) return false;
-        config.persistNode("/dicomConfigurationRoot", new HashMap<String, Object>(), DicomConfigurationRootNode.class);
+        config.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), DicomConfigurationRootNode.class);
         return true;
     }
 
@@ -223,7 +226,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
     @Override
     public boolean registerAETitle(String aet) throws ConfigurationException {
 
-        final String path = getAETPath(aet);
+        final String path = DicomPath.UniqueAETByName.set("aeName", aet).path();
         if (config.nodeExists(path)) return false;
 
         final HashMap<String, Object> map = new HashMap<String, Object>();
@@ -234,19 +237,15 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     }
 
-    private String getAETPath(String aet) {
-        return "/dicomConfigurationRoot/dicomUniqueAETitlesRegistryRoot[@name='" + ConfigNodeUtil.escapeApos(aet) + "']";
-    }
-
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
-        config.removeNode(getAETPath(aet));
+        config.removeNode(DicomPath.UniqueAETByName.set("aeName", aet).path());
     }
 
     @Override
     public ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException {
 
-        Iterator search = config.search("dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='" + aet + "']]/dicomDeviceName");
+        Iterator search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
 
         try {
             String deviceNameNode = (String) search.next();
@@ -304,7 +303,13 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
         // add device extensions
         for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
-            Map<String, Object> deviceExtensionNode = (Map<String, Object>) config.getConfigurationNode(deviceRef(name) + "/deviceExtensions/" + deviceExtensionClass.getSimpleName(), deviceExtensionClass);
+
+            String deviceExtensionPath = DicomPath.DeviceExtension.
+                    set("deviceName", name).
+                    set("extensionName", deviceExtensionClass.getSimpleName()).
+                    path();
+
+            Map<String, Object> deviceExtensionNode = (Map<String, Object>) config.getConfigurationNode(deviceExtensionPath, deviceExtensionClass);
             if (deviceExtensionNode != null) {
                 DeviceExtension ext = vitalizer.newInstance(deviceExtensionClass);
                 // add extension before vitalizing it, so the device field is accessible for use in setters
@@ -318,7 +323,14 @@ public class CommonDicomConfiguration implements DicomConfiguration {
             String aeTitle = entry.getKey();
             ApplicationEntity ae = entry.getValue();
             for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses) {
-                Object aeExtNode = config.getConfigurationNode(deviceRef(name) + "/dicomNetworkAE[@name='" + ConfigNodeUtil.escapeApos(aeTitle) + "']/aeExtensions/" + aeExtensionClass.getSimpleName(), aeExtensionClass);
+
+                String aeExtPath = DicomPath.AEExtension.
+                        set("deviceName", name).
+                        set("aeName", aeTitle).
+                        set("extensionName", aeExtensionClass.getSimpleName()).
+                        path();
+
+                Object aeExtNode = config.getConfigurationNode(aeExtPath, aeExtensionClass);
                 if (aeExtNode != null) {
                     AEExtension ext = vitalizer.newInstance(aeExtensionClass);
                     // add extension before vitalizing it, so the device field is accessible for use in setters
@@ -338,7 +350,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String[] listDeviceNames() throws ConfigurationException {
-        Iterator search = config.search("dicomConfigurationRoot/dicomDeviceRoot/*/dicomDeviceName");
+        Iterator search = config.search(DicomPath.AllDeviceNames.path());
         List<String> deviceNames = null;
         try {
             deviceNames = new ArrayList<String>();
@@ -354,7 +366,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
     public String[] listRegisteredAETitles() throws ConfigurationException {
         List<String> aeNames = new ArrayList<String>();
         try {
-            Iterator search = config.search("dicomConfigurationRoot/dicomDeviceRoot/*/dicomNetworkAE/dicomAETitle");
+            Iterator search = config.search(DicomPath.AllAETitles.path());
             while (search.hasNext())
                 aeNames.add((String) search.next());
         } catch (Exception e) {
@@ -374,12 +386,11 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public void merge(Device device) throws ConfigurationException {
-        String devicePath = deviceRef(device.getDeviceName());
 
         // persist device
         final Map<String, Object> deviceConfigNode = vitalizer.createConfigNodeFromInstance(device, Device.class);
 
-        config.persistNode(devicePath, deviceConfigNode, Device.class);
+        config.persistNode(deviceRef(device.getDeviceName()), deviceConfigNode, Device.class);
 
         // persist AEExtensions
         for (Map.Entry<String, ApplicationEntity> entry : device.getApplicationEntitiesMap().entrySet()) {
@@ -390,14 +401,25 @@ public class CommonDicomConfiguration implements DicomConfiguration {
                 AEExtension aeExtension = ae.getAEExtension(aeExtensionClass);
                 if (aeExtension == null) continue;
                 Map<String, Object> aeExtNode = vitalizer.createConfigNodeFromInstance(aeExtension, aeExtensionClass);
-                config.persistNode(devicePath + "/dicomNetworkAE[@name='" + ae.getAETitle() + "']/aeExtensions/" + aeExtensionClass.getSimpleName(), aeExtNode, aeExtensionClass);
+
+                String aeExtensionPath = DicomPath.AEExtension.
+                        set("deviceName", device.getDeviceName()).
+                        set("aeName", ae.getAETitle()).
+                        set("extensionName", aeExtensionClass.getSimpleName()).
+                        path();
+
+                config.persistNode(aeExtensionPath, aeExtNode, aeExtensionClass);
             }
         }
 
         // persist DeviceExtensions
         for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
             final DeviceExtension deviceExtension = device.getDeviceExtension(deviceExtensionClass);
-            final String extensionPath = devicePath + "/deviceExtensions/" + deviceExtensionClass.getSimpleName();
+            final String extensionPath =
+                    DicomPath.DeviceExtension.
+                            set("deviceName", device.getDeviceName()).
+                            set("extensionName", deviceExtensionClass.getSimpleName()).
+                            path();
 
             if (deviceExtension == null)
                 config.removeNode(extensionPath);
@@ -413,7 +435,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public String deviceRef(String name) {
-        return "/dicomConfigurationRoot/dicomDevicesRoot[@name='" + ConfigNodeUtil.escapeApos(name) + "']";
+        return DicomPath.DeviceByName.set("deviceName", name).path();
     }
 
     @Override
@@ -438,7 +460,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public void sync() throws ConfigurationException {
-        config.refreshNode("/dicomConfigurationRoot");
+        config.refreshNode(DicomPath.ConfigRoot.path());
     }
 
 
@@ -447,7 +469,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         try {
             return (T) this;
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Cannot find a configuration extension for class "+clazz.getName());
+            throw new IllegalArgumentException("Cannot find a configuration extension for class " + clazz.getName());
         }
     }
 }

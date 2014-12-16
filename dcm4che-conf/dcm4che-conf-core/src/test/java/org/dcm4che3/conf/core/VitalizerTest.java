@@ -381,9 +381,4 @@ public class VitalizerTest {
 
     }
 
-    @Test
-    public void testParser() {
-        Object expression = Parser.parseExpression("dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='DCM4CHEE']]/dicomName", new TreeCompiler());
-    }
-
 }

@@ -145,7 +145,7 @@ public class DicomConfigurationBuilder {
         default:
             throw new RuntimeException("Not implemented");
         }
-        boolean cached = Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.configuration.cached", "true"));
+        boolean cached = Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "true"));
         return cached ? builder.cache() : builder;
 
     }

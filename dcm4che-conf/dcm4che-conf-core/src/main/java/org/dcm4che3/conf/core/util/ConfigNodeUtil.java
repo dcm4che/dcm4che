@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 
 public class ConfigNodeUtil {
 
-    //TODO:!!! implement placeholder pattern "abc/{}/sdf[s='{}']",a1,a2 to encapsulate escaping
 
     public static String concat(String path1, String path2) {
         String res = path1 + "/" + path2;

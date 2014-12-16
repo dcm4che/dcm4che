@@ -67,7 +67,7 @@ public @interface ConfigurableProperty {
     boolean collectionOfReferences() default false;
 
     /**
-     * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings)
+     * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings
      * @return
      */
     boolean required() default false;

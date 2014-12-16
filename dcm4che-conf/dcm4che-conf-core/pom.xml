@@ -49,16 +49,7 @@
     </parent>
     <artifactId>dcm4che-conf-core</artifactId>
     <name>dcm4che-conf-core</name>
-    <packaging>bundle</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.dcm4che</groupId>

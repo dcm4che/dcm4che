@@ -311,18 +311,24 @@ public class LdapConfigUtils {
 
     }
 
-    private static List<Rdn> getNonBaseRdns(String dn, String baseDN) throws InvalidNameException {
+    public static List<Rdn> getNonBaseRdns(String dn, String baseDN) throws InvalidNameException {
         LdapName baseDnName = new LdapName(baseDN);
         LdapName name = new LdapName(dn);
 
         // ffd to the interesting part
         List<Rdn> rdns = new LinkedList<Rdn>(name.getRdns());
+        List<Rdn> baseRdns = baseDnName.getRdns();
+
+        return getNonBaseRdns(rdns, baseRdns);
+    }
+
+    public static List<Rdn> getNonBaseRdns(List<Rdn> rdns, List<Rdn> baseRdns) {
         Iterator<Rdn> nameIter = rdns.iterator();
-        Iterator<Rdn> baseIter = baseDnName.getRdns().iterator();
+        Iterator<Rdn> baseIter = baseRdns.iterator();
         while (baseIter.hasNext() && baseIter.next().equals(nameIter.next()))
             nameIter.remove();
         if (baseIter.hasNext())
-            throw new IllegalArgumentException("Dn " + dn + " does not match base dn " + baseDnName);
+            throw new IllegalArgumentException("Dn " + rdns + " does not match base dn " + baseRdns);
         return rdns;
     }
 
@@ -334,10 +340,6 @@ public class LdapConfigUtils {
     private static String escapeStringFromLdap(Object value) {
 
         return escapeApos(value.toString()).replace("\\,", ",");
-    }
-
-    static String LdapDNToRef(String ldapDn) {
-        return ldapDn;
     }
 
     static Class<?> getExtensionClassBySimpleName(LdapConfigurationStorage configurationStorage, String extensionSimpleName) throws ClassNotFoundException {

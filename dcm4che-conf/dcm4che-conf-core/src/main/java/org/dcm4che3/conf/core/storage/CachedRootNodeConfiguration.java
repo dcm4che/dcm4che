@@ -84,13 +84,21 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
 
     @Override
     public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
+        if (!path.equals("/"))
+            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
+        else
+            configurationRoot = configNode;
         delegate.persistNode(path, configNode, configurableClass);
     }
 
     @Override
     public void refreshNode(String path) throws ConfigurationException {
-        ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, delegate.getConfigurationNode(path, null));
+        Map<String, Object> newConfigurationNode = (Map<String, Object>) delegate.getConfigurationNode(path, null);
+        if (path.equals("/"))
+            configurationRoot = newConfigurationNode;
+        else
+            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, newConfigurationNode);
+
     }
 
     @Override

@@ -45,20 +45,11 @@
     <parent>
         <artifactId>dcm4che-conf</artifactId>
         <groupId>org.dcm4che</groupId>
-        <version>3.3.5-SNAPSHOT</version>
+        <version>3.3.6-SNAPSHOT</version>
     </parent>
     <artifactId>dcm4che-conf-core</artifactId>
     <name>dcm4che-conf-core</name>
-    <packaging>bundle</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.dcm4che</groupId>

@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * <strong>This API is UNSTABLE (can and will be likely changed in a non-compatible way in near future), please do not use it without prior consulting with Roman K</strong><br/>
  * Denotes a configuration source. Can be used by BeanVitalizer that creates POJOs, or configuration administration app that provides UI to edit configuration.
  * <br/> <br/>
  * <ul>
@@ -55,7 +56,6 @@ import java.util.Map;
  * <li> Map&lt;String,Object&gt; where each object is a configuration node (single map can have values of multiple types.</li>
  * </ul>
  * <p/>
- * Clustering?
  */
 public interface Configuration {
 

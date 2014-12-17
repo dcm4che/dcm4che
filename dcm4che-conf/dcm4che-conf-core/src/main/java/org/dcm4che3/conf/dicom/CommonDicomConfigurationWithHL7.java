@@ -41,9 +41,7 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
-import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -85,7 +83,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     }
 
     private String getHL7UniqueAppItemPath(String name) {
-        return "/dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot[@name='" + ConfigNodeUtil.escapeApos(name) + "']";
+        return DicomPath.UniqueHL7AppByName.set("hl7AppName",name).path();
     }
 
     @Override
@@ -95,7 +93,8 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
 
     @Override
     public HL7Application findHL7Application(String name) throws ConfigurationException {
-        String pathForDeviceName = "/dicomConfigurationRoot/dicomDevicesRoot/*[deviceExtensions/HL7DeviceExtension/hl7Apps/*[hl7ApplicationName='" + ConfigNodeUtil.escapeApos(name) + "']]/dicomDeviceName";
+        String pathForDeviceName = DicomPath.DeviceNameByHL7AppName.set("hl7AppName", name).path();
+
         try {
             Iterator search = config.search(pathForDeviceName);
             String deviceName = (String) search.next();
@@ -112,7 +111,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
 
     @Override
     public String[] listRegisteredHL7ApplicationNames() throws ConfigurationException {
-        String hl7NamesPath = "dicomConfigurationRoot/dicomDevicesRoot/*/deviceExtensions/HL7DeviceExtension/hl7Apps/*/hl7ApplicationName";
+        String hl7NamesPath = DicomPath.AllHL7AppNames.path();
         List<String> list = new ArrayList<String>();
         try {
             Iterator search = config.search(hl7NamesPath);
@@ -184,6 +183,10 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     }
 
     private String getPathForHL7AppExtension(Device device, String hl7AppName, Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass) {
-        return "/dicomConfigurationRoot/dicomDevicesRoot[@name='" + device.getDeviceName() + "']/deviceExtensions/HL7DeviceExtension/hl7Apps[@name='" + hl7AppName + "']/hl7AppExtensions/" + hl7ApplicationExtensionClass.getSimpleName();
+       return  DicomPath.HL7AppExtension.
+               set("deviceName",device.getDeviceName()).
+               set("hl7AppName", hl7AppName).
+               set("extensionName", hl7ApplicationExtensionClass.getSimpleName())
+               .path();
     }
 }

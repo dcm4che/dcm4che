@@ -103,6 +103,7 @@
         <include>org.dcm4che:dcm4che-conf-core-api</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-emf</include>
+        <include>org.dcm4che:dcm4che-filecache</include>
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>

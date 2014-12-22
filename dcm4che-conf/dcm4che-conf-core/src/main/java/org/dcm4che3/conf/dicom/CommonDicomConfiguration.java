@@ -279,7 +279,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         try {
 
             return loadDevice(name, deviceCache);
-        } catch (ConfigurationException e) {
+        } catch (Exception e) {
             throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
         } finally {
             // if this loadDevice call initialized the cache, then clean it up

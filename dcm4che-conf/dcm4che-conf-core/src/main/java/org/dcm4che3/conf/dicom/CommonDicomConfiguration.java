@@ -77,7 +77,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
     private final Collection<Class<? extends DeviceExtension>> deviceExtensionClasses;
     private final Collection<Class<? extends AEExtension>> aeExtensionClasses;
 
-
     /**
      * Needed for avoiding infinite loops when dealing with extensions containing circular references
      * e.g., one device extension references another device which has an extension that references the former device.
@@ -85,13 +84,13 @@ public class CommonDicomConfiguration implements DicomConfiguration {
      */
     private ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
 
-
     public CommonDicomConfiguration(Configuration config) {
         this.config = config;
 
         deviceExtensionClasses = new ArrayList<Class<? extends DeviceExtension>>();
         aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
     }
+
 
     public CommonDicomConfiguration(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses) {
         this.config = configurationStorage;
@@ -130,10 +129,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public Configuration getConfigurationStorage() {
-        return config;
-    }
-
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
@@ -153,13 +148,13 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-
     @LDAP(objectClasses = "hl7UniqueApplicationName", distinguishingField = "hl7ApplicationName")
     @ConfigurableClass
     static class HL7UniqueAppRegistryItem {
 
         @ConfigurableProperty(name = "hl7ApplicationName")
         String name;
+
 
         public HL7UniqueAppRegistryItem() {
         }
@@ -171,16 +166,15 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         public void setName(String name) {
             this.name = name;
         }
+
     }
 
     @LDAP(objectClasses = "dicomUniqueAETitle", distinguishingField = "dicomAETitle")
     @ConfigurableClass
     public static class AETitleItem {
-
         public AETitleItem(String aeTitle) {
             this.aeTitle = aeTitle;
         }
-
 
         @ConfigurableProperty(name = "dicomAETitle")
         String aeTitle;
@@ -188,6 +182,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         public String getAeTitle() {
             return aeTitle;
         }
+
 
         public void setAeTitle(String aeTitle) {
             this.aeTitle = aeTitle;
@@ -220,7 +215,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         @ConfigurableProperty(name = "hl7UniqueApplicationNamesRegistryRoot")
         Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry;
 
-
     }
 
     @Override
@@ -236,6 +230,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         return true;
 
     }
+
 
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
@@ -383,7 +378,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         merge(device);
     }
 
-
     @Override
     public void merge(Device device) throws ConfigurationException {
 
@@ -433,6 +427,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         config.removeNode(deviceRef(name));
     }
 
+
     @Override
     public String deviceRef(String name) {
         return DicomPath.DeviceByName.set("deviceName", name).path();
@@ -463,7 +458,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         config.refreshNode(DicomPath.ConfigRoot.path());
     }
 
-
     @Override
     public <T> T getDicomConfigurationExtension(Class<T> clazz) {
         try {
@@ -471,6 +465,15 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Cannot find a configuration extension for class " + clazz.getName());
         }
+    }
+
+    public BeanVitalizer getVitalizer() {
+        return vitalizer;
+    }
+
+
+    public Configuration getConfigurationStorage() {
+        return config;
     }
 }
 

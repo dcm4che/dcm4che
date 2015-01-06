@@ -6,6 +6,8 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <!-- to allow CDI-enabled configuration backends -->
+        <module name="javax.enterprise.api"/>
 
         <module name="org.dcm4che.net" export="true"/>
         <module name="org.dcm4che.conf.core-api"/>

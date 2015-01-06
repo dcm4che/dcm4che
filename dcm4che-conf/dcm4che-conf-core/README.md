@@ -16,13 +16,13 @@ As a user-developer
 - Correctly named getters and setters MUST be provided for all configurable properties.
 
 
-
 As a configuration provider developer
 -------------------------------------
 - Encapsulate all calls to Vitalizer, Adapters, and Configuration into some Configuration provider class like DicomConfguration!
 - Use `Configuration` to load/persist configuration nodes.
 - Use `BeanVitalizer` to 'vitalize' objects, i.e. to fill in all the configurable properties of a bean using the loaded configuration node.
 - Provide RESTful services to load/persist configuration nodes, use ReflectiveAdapter.getSchema to generate JSON schema for a configurable class.
+- DO NOT make a custom representation for configurable classes, it will break things. Use references instead.
 
 
 

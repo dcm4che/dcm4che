@@ -72,7 +72,9 @@ public class LdapConfigNodeReader {
         try {
             attributes = ldapConfigurationStorage.getLdapCtx().getAttributes(dn);
         } catch (NameNotFoundException noname) {
-            attributes = null;
+            // when multiple nested properties have noContainerNode=true, it could happen that
+            // attributes = null;
+            return null;
         }
 
         Map<String, Object> configNode = new HashMap<String, Object>();
@@ -93,8 +95,14 @@ public class LdapConfigNodeReader {
                         String key = (String) resAttributes.get(distField).get();
 
                         // check if it is a primitive or a custom representation, e.g a ref
-                        if (property.getAnnotation(LDAP.class).storedAsReference() || !property.isMapOfConfObjects()) {
-                            map.put(key, resAttributes.get(property.getAnnotation(LDAP.class).mapValueAttribute()).get());
+                        if (!property.isMapOfConfObjects()) {
+
+                            Object value = resAttributes.get(property.getAnnotation(LDAP.class).mapValueAttribute()).get();
+
+                            if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+                                value = LdapConfigUtils.ldapDnToRef((String) value, property.getPseudoPropertyForCollectionElement(), ldapConfigurationStorage);
+
+                            map.put(key, value);
                         } else {
                             Object value = readNode(ldapConfigurationStorage, res.getName() + "," + subDn, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass());
                             map.put(key, value);
@@ -111,10 +119,12 @@ public class LdapConfigNodeReader {
             // nested
             if (property.isConfObject()) {
 
-                if (property.getAnnotation(LDAP.class).storedAsReference()) {
+                if (property.getAnnotation(ConfigurableProperty.class).isReference()) {
                     if (attributes != null) {
                         isAnyContents = true;
-                        configNode.put(property.getAnnotatedName(),attributes.get(LdapConfigUtils.getLDAPPropertyName(property)).get());
+                        Object value = attributes.get(LdapConfigUtils.getLDAPPropertyName(property)).get();
+                        value = LdapConfigUtils.ldapDnToRef((String) value, property, ldapConfigurationStorage);
+                        configNode.put(property.getAnnotatedName(), value);
                     }
                 } else {
                     String subDn = LdapConfigUtils.getSubDn(dn, property);
@@ -126,11 +136,10 @@ public class LdapConfigNodeReader {
                 continue;
             }
 
-            // collection with confObjects
+            // collection with confObjects (not refs)
             if (property.isArrayOfConfObjects()
                     || property.isCollectionOfConfObjects()
-                    && !property.getAnnotation(ConfigurableProperty.class).collectionOfReferences()
-                    && !property.getAnnotation(LDAP.class).storedAsReference()) {
+                    && !property.getAnnotation(ConfigurableProperty.class).collectionOfReferences()) {
 
                 Class elemClass = property.getPseudoPropertyForConfigClassCollectionElement().getRawClass();
                 String subDn = LdapConfigUtils.getSubDn(dn, property);
@@ -141,7 +150,6 @@ public class LdapConfigNodeReader {
                     while (enumeration.hasMore()) {
                         isAnyContents = true;
                         SearchResult next = enumeration.next();
-                        // check if it is a primitive or a custom representation, e.g a ref
                         list.add(readNode(ldapConfigurationStorage, next.getName() + "," + dn, elemClass));
                     }
                     configNode.put(property.getAnnotatedName(), list);
@@ -151,7 +159,7 @@ public class LdapConfigNodeReader {
                 continue;
             }
 
-            // primitive collection or custom representation collection
+            // primitive or custom representation or reference collection
             if ((Collection.class.isAssignableFrom(property.getRawClass()) || property.getRawClass().isArray()) && attributes != null) {
                 ArrayList<Object> list = new ArrayList<Object>();
 
@@ -175,15 +183,15 @@ public class LdapConfigNodeReader {
                 Attribute attribute = attributes.get(LdapConfigUtils.getLDAPPropertyName(property));
                 if (attribute == null) continue;
 
-                // special case with references
                 for (int i = 0; i < attribute.size(); i++) {
                     isAnyContents = true;
-                    if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences() &&
-                            property.getPseudoPropertyForConfigClassCollectionElement().getRawClass().equals(Connection.class)) {
-                        list.add(LdapConfigUtils.connectionLdapDnToRef((String) attribute.get(i), ldapConfigurationStorage));
-                    } else {
-                        list.add(attribute.get(i));
-                    }
+                    Object val = attribute.get(i);
+
+                    // special case with references
+                    if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+                        val = LdapConfigUtils.ldapDnToRef((String) val, property.getPseudoPropertyForCollectionElement(), ldapConfigurationStorage);
+
+                    list.add(val);
                 }
                 configNode.put(property.getAnnotatedName(), list);
                 continue;

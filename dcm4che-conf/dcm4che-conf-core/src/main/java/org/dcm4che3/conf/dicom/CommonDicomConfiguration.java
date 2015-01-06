@@ -99,12 +99,11 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         this.aeExtensionClasses = aeExtensionClasses;
 
         // register reference handler
-        this.vitalizer.setReferenceTypeAdapter(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage));
+        this.vitalizer.setReferenceTypeAdapter(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage).getDecorated());
 
         // register DICOM type adapters
         this.vitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new AttributeFormatTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Code.class, new CodeTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(Device.class, new DeviceReferenceByNameTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Issuer.class, new IssuerTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new ValueSelectorTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Property.class, new PropertyTypeAdapter().getDecorated());

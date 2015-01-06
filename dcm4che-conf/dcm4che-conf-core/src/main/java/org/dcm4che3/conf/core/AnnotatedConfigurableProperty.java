@@ -128,7 +128,8 @@ public class AnnotatedConfigurableProperty {
 
     /**
      * get type of generic/component for collection/Array, Value type for map
-     * @return
+     * Just copies other annotation parameters.
+     * @return null if not a collection/map
      */
     public AnnotatedConfigurableProperty getPseudoPropertyForCollectionElement() {
 

@@ -61,10 +61,16 @@ public @interface ConfigurableProperty {
 
     /**
      * Specifies that the annotated field/property is a collection, elements of which are stored as references
-     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/device1")
+     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
      * @return
      */
     boolean collectionOfReferences() default false;
+
+    /**
+     * Specifies that the annotated field/property is a reference
+     * @return
+     */
+    boolean isReference() default false;
 
     /**
      * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings

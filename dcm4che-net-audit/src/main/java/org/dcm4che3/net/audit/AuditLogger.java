@@ -157,8 +157,7 @@ public class AuditLogger extends DeviceExtension {
     };
     private static volatile AuditLogger defaultLogger;
 
-    @LDAP(storedAsReference = true)
-    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference")
+    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference", isReference = true)
     private Device auditRecordRepositoryDevice;
 
     @ConfigurableProperty(

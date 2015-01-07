@@ -64,6 +64,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FileCache {
 
+    public enum Algorithm { FIFO, LRU };
+    
     private static final Logger LOG = LoggerFactory.getLogger(FileCache.class);
     private static final Charset UTF_8 = Charset.forName("UTF-8");
 
@@ -75,7 +77,7 @@ public class FileCache {
     private SimpleDateFormat journalFileNamePattern =
             new SimpleDateFormat("yyyyMMdd/HHmmss.SSS");
     private int journalFileSize = 100;
-    private boolean leastRecentlyUsed;
+    private Algorithm cacheAlgorithm = Algorithm.FIFO;
     private int currentJournalFileSize = -1;
     private final AtomicBoolean freeIsRunning = new AtomicBoolean();
 
@@ -163,18 +165,28 @@ public class FileCache {
         return files;
     }
 
-    public boolean isLeastRecentlyUsed() {
-        return leastRecentlyUsed;
+    public Algorithm getCacheAlgorithm() {
+        return cacheAlgorithm;
     }
 
-    public void setLeastRecentlyUsed(boolean leastRecentlyUsed) {
-        this.leastRecentlyUsed = leastRecentlyUsed;
+    public void setCacheAlgorithm(Algorithm cacheAlgorithm) {
+        this.cacheAlgorithm = cacheAlgorithm;
     }
 
     @Override 
     public String toString() {
         return "FileCache[cacheDir=" + fileCacheRootDirectory
                 + ", journalDir=" + journalRootDirectory + "]";
+    }
+
+    public boolean access(Path path) throws IOException {
+        if (!Files.exists(path))
+            return false;
+
+        if (cacheAlgorithm == Algorithm.LRU)
+            register(path);
+
+        return true;
     }
 
     public synchronized void register(Path path) throws IOException {
@@ -198,7 +210,7 @@ public class FileCache {
         Files.write(journalFile, Collections.singleton(entry), UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         currentJournalFileSize = size + 1;
-        if (leastRecentlyUsed) {
+        if (cacheAlgorithm == Algorithm.LRU) {
             try {
                 LOG.debug("{}: update modification time of - {}", this, path);
                 Files.setLastModifiedTime(path, Files.getLastModifiedTime(journalFile));
@@ -291,7 +303,7 @@ public class FileCache {
                     LOG.debug("{}: {} already deleted");
                     continue;
                 }
-                if (leastRecentlyUsed) {
+                if (cacheAlgorithm == Algorithm.LRU) {
                     try {
                         if (Files.getLastModifiedTime(path)
                                 .compareTo(lastModifiedTime) > 0)  {

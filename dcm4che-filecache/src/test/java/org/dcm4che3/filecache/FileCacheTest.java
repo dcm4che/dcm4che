@@ -135,7 +135,7 @@ public class FileCacheTest {
     }
 
     @Test
-    public void testFree() throws Exception {
+    public void testFreeFIFO() throws Exception {
         registerFiles(DELAY);
         assertEquals(FREED, fileCache.free(FREED));
         assertNotExists(DELETED);
@@ -144,7 +144,7 @@ public class FileCacheTest {
 
     @Test
     public void testFreeLRU() throws Exception {
-        fileCache.setLeastRecentlyUsed(true);
+        fileCache.setCacheAlgorithm(FileCache.Algorithm.LRU);
         registerFiles(DELAY_LRU);
         assertEquals(FREED_LRU, fileCache.free(FREED));
         assertNotExists(DELETED_LRU);

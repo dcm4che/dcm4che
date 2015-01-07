@@ -65,8 +65,8 @@ public class FileCacheTest {
     private static final String[] FILES1 = { "a", b_c};
     private static final String[] FILES2 = { "d", "e" };
     private static final String[] FILES3 = { "f", "a" };
-    private static final String[] DELETED = { "a", "b_c", "b" };
-    private static final String[] DELETED_LRU = { "b_c", "b", "d", "e" };
+    private static final String[] DELETED = { "a", b_c, "b" };
+    private static final String[] DELETED_LRU = { b_c, "b", "d", "e" };
     private static final String[] NOT_DELETED = { "d", "e", "f" };
     private static final String[] NOT_DELETED_LRU = FILES3;
     private static final Path CACHE_ROOT_DIR = Paths.get("target", "filecache");

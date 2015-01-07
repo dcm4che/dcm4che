@@ -169,7 +169,8 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             childPropertyMetadata.put("title", propertyAnnotation.label());
             childPropertyMetadata.put("description", propertyAnnotation.description());
             // TODO: default value should be converted to proper type
-            childPropertyMetadata.put("default", propertyAnnotation.defaultValue());
+            if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
+                childPropertyMetadata.put("default", propertyAnnotation.defaultValue());
 
             // also merge in the metadata from this child itself
             ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(configurableChildProperty);

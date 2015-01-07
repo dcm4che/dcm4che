@@ -49,6 +49,7 @@ import org.dcm4che3.conf.core.adapters.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.conf.core.adapters.ReflectiveAdapter;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -142,6 +143,10 @@ public class BeanVitalizer {
         // first check for a custom adapter
         ConfigTypeAdapter typeAdapter = customConfigTypeAdapters.get(clazz);
         if (typeAdapter != null) return typeAdapter;
+
+        // check if it is a reference
+        if (property.getAnnotation(ConfigurableProperty.class).isReference())
+            return getReferenceTypeAdapter();
 
         // delegate to default otherwise
         return lookupDefaultTypeAdapter(clazz);

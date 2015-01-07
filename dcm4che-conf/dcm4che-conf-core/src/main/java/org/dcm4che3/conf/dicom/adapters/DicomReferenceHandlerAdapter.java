@@ -46,6 +46,8 @@ import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.adapters.DefaultReferenceAdapter;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.util.PathPattern;
+import org.dcm4che3.conf.dicom.DicomPath;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 
@@ -64,19 +66,31 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
         // Connection of a device. Get the device (it will grab the current one from threadLocal), and get the connection from there
         if (Connection.class.isAssignableFrom(property.getRawClass())) {
 
-            List<Map<String, Object>> props = ConfigNodeUtil.parseReference(configNode);
-
             try {
+                String deviceName = null;
+                try {
+                    PathPattern.PathParser parser = DicomPath.ConnectionByCnRef.parse(configNode);
+                    deviceName = parser.getParam("deviceName");
+                } catch (IllegalArgumentException e) {
+                    //noop
+                }
 
-                String deviceName = (String) props.get(2).get("dicomDeviceName");
-                if (deviceName == null) deviceName = (String) props.get(2).get("$name");
+                try {
+                    PathPattern.PathParser parser = DicomPath.ConnectionByHostPortRef.parse(configNode);
+                    deviceName = parser.getParam("deviceName");
+                } catch (IllegalArgumentException e) {
+                    //noop
+                }
 
+                try {
+                    PathPattern.PathParser parser = DicomPath.ConnectionByHostRef.parse(configNode);
+                    deviceName = parser.getParam("deviceName");
+                } catch (IllegalArgumentException e) {
+                    //noop
+                }
 
-                boolean valid = props.get(0).get("$name").equals("dicomConfigurationRoot") &&
-                        props.get(1).get("$name").equals("dicomDevicesRoot") &&
-                        deviceName != null &&
-                        props.get(3).get("$name").equals("dicomConnection");
-                if (!valid) throw new RuntimeException("Path is invalid");
+                if (deviceName == null) throw new IllegalArgumentException();
+
 
                 Device device = vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
                 Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer);
@@ -86,27 +100,56 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
             } catch (Exception e) {
                 throw new ConfigurationException("Cannot load referenced connection (" + configNode + ")", e);
             }
+        } else if (Device.class.isAssignableFrom(property.getRawClass())) {
+            try {
+
+                PathPattern.PathParser parser = DicomPath.DeviceByNameRef.parse(configNode);
+                String deviceName = parser.getParam("deviceName");
+
+                return (T) vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
+            } catch (Exception e) {
+                throw new ConfigurationException("Cannot load referenced device (" + configNode + ")", e);
+            }
         }
+
         return super.fromConfigNode(configNode, property, vitalizer);
     }
 
     @Override
     public String toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
-        // Reference connection of connection's device
-        if (Connection.class.isAssignableFrom(property.getRawClass())) {
-            Connection conn = (Connection) object;
+        try {
+            // Reference connection of connection's device
+            if (Connection.class.isAssignableFrom(property.getRawClass())) {
 
-            String predicate;
-            if (conn.getCommonName() != null)
-                predicate = "[cn='" + ConfigNodeUtil.escapeApos(conn.getCommonName()) + "']";
-            else if (conn.isServer())
-                predicate = "[dicomHostname='" + ConfigNodeUtil.escapeApos(conn.getHostname()) + "' and dicomPort='" + conn.getPort() + "']";
-            else
-                predicate = "[dicomHostname='" + ConfigNodeUtil.escapeApos(conn.getHostname()) + "']";
+                Connection conn = (Connection) object;
+                String deviceName = conn.getDevice().getDeviceName();
 
-            return "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='" + ConfigNodeUtil.escapeApos(conn.getDevice().getDeviceName()) + "']/dicomConnection" + predicate;
+                if (conn.getCommonName() != null)
+
+                    return DicomPath.ConnectionByCnRef.
+                            set("deviceName", deviceName).
+                            set("cn", conn.getCommonName()).path();
+                else if (conn.isServer())
+                    return DicomPath.ConnectionByHostPortRef.
+                            set("deviceName", deviceName).
+                            set("hostName", conn.getHostname()).
+                            set("port", String.valueOf(conn.getPort())).path();
+                else
+                    return DicomPath.ConnectionByHostRef.
+                            set("deviceName", deviceName).
+                            set("hostName", conn.getHostname()).path();
+            } else if (Device.class.isAssignableFrom(property.getRawClass())) {
+
+                String deviceName = ((Device) object).getDeviceName();
+                return DicomPath.DeviceByNameRef.
+                        set("deviceName", deviceName).path();
+
+            }
+        } catch (Exception e) {
+            throw new ConfigurationException("Cannot create a reference for "+object, e);
         }
+
         return super.toConfigNode(object, property, vitalizer);
     }
 }

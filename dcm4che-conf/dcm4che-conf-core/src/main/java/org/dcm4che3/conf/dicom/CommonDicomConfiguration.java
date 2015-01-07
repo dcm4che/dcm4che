@@ -77,14 +77,12 @@ public class CommonDicomConfiguration implements DicomConfiguration {
     private final Collection<Class<? extends DeviceExtension>> deviceExtensionClasses;
     private final Collection<Class<? extends AEExtension>> aeExtensionClasses;
 
-
     /**
      * Needed for avoiding infinite loops when dealing with extensions containing circular references
      * e.g., one device extension references another device which has an extension that references the former device.
      * Devices that have been created but not fully loaded are added to this threadlocal. See findDevice.
      */
     private ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
-
 
     public CommonDicomConfiguration(Configuration config) {
         this.config = config;
@@ -93,6 +91,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
     }
 
+
     public CommonDicomConfiguration(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses) {
         this.config = configurationStorage;
         this.vitalizer = new BeanVitalizer();
@@ -100,12 +99,11 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         this.aeExtensionClasses = aeExtensionClasses;
 
         // register reference handler
-        this.vitalizer.setReferenceTypeAdapter(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage));
+        this.vitalizer.setReferenceTypeAdapter(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage).getDecorated());
 
         // register DICOM type adapters
         this.vitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new AttributeFormatTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Code.class, new CodeTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(Device.class, new DeviceReferenceByNameTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Issuer.class, new IssuerTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new ValueSelectorTypeAdapter().getDecorated());
         this.vitalizer.registerCustomConfigTypeAdapter(Property.class, new PropertyTypeAdapter().getDecorated());
@@ -130,10 +128,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         }
     }
 
-    public Configuration getConfigurationStorage() {
-        return config;
-    }
-
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
@@ -153,13 +147,13 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         return true;
     }
 
-
     @LDAP(objectClasses = "hl7UniqueApplicationName", distinguishingField = "hl7ApplicationName")
     @ConfigurableClass
     static class HL7UniqueAppRegistryItem {
 
         @ConfigurableProperty(name = "hl7ApplicationName")
         String name;
+
 
         public HL7UniqueAppRegistryItem() {
         }
@@ -171,16 +165,15 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         public void setName(String name) {
             this.name = name;
         }
+
     }
 
     @LDAP(objectClasses = "dicomUniqueAETitle", distinguishingField = "dicomAETitle")
     @ConfigurableClass
     public static class AETitleItem {
-
         public AETitleItem(String aeTitle) {
             this.aeTitle = aeTitle;
         }
-
 
         @ConfigurableProperty(name = "dicomAETitle")
         String aeTitle;
@@ -188,6 +181,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         public String getAeTitle() {
             return aeTitle;
         }
+
 
         public void setAeTitle(String aeTitle) {
             this.aeTitle = aeTitle;
@@ -220,7 +214,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         @ConfigurableProperty(name = "hl7UniqueApplicationNamesRegistryRoot")
         Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry;
 
-
     }
 
     @Override
@@ -236,6 +229,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         return true;
 
     }
+
 
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
@@ -284,7 +278,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         try {
 
             return loadDevice(name, deviceCache);
-        } catch (ConfigurationException e) {
+        } catch (Exception e) {
             throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
         } finally {
             // if this loadDevice call initialized the cache, then clean it up
@@ -383,7 +377,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         merge(device);
     }
 
-
     @Override
     public void merge(Device device) throws ConfigurationException {
 
@@ -433,6 +426,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         config.removeNode(deviceRef(name));
     }
 
+
     @Override
     public String deviceRef(String name) {
         return DicomPath.DeviceByName.set("deviceName", name).path();
@@ -463,7 +457,6 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         config.refreshNode(DicomPath.ConfigRoot.path());
     }
 
-
     @Override
     public <T> T getDicomConfigurationExtension(Class<T> clazz) {
         try {
@@ -471,6 +464,15 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Cannot find a configuration extension for class " + clazz.getName());
         }
+    }
+
+    public BeanVitalizer getVitalizer() {
+        return vitalizer;
+    }
+
+
+    public Configuration getConfigurationStorage() {
+        return config;
     }
 }
 

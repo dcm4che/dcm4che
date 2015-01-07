@@ -63,6 +63,14 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
+      <outputDirectory>/bundles/org/dcm4che/filecache/main</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-filecache</include>
+      </includes>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
       <outputDirectory>/bundles/org/dcm4che/hl7/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-hl7</include>

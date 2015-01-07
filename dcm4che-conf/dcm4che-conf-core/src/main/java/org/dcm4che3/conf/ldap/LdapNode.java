@@ -215,6 +215,15 @@ public class LdapNode {
                 continue;
             }
 
+
+            // reference
+            if (property.getAnnotation(ConfigurableProperty.class).isReference()) {
+                String ref = LdapConfigUtils.refToLdapDN(propertyConfigNode.toString(), getLdapConfigurationStorage());
+                getAttributes().put(LdapConfigUtils.getLDAPPropertyName(property), ref);
+                continue;
+            }
+
+
             // regular attribute
             if (propertyConfigNode instanceof Boolean)
                 getAttributes().put(LdapConfigUtils.getLDAPPropertyName(property), (Boolean) propertyConfigNode ? "TRUE" : "FALSE");

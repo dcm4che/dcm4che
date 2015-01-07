@@ -42,6 +42,7 @@ package org.dcm4che3.conf.core.adapters;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -65,8 +66,12 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
+        ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
         Map<K, V> map = new LinkedHashMap<K, V>();
 
@@ -87,8 +92,12 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
+        ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
         Map<String, Object> configNode = new LinkedHashMap<String, Object>();
 

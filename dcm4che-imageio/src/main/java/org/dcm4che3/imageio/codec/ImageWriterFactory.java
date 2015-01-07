@@ -287,7 +287,7 @@ public class ImageWriterFactory implements Serializable {
                         ImageWriter writer = writerspi.createWriterInstance();
 
                         if (param.className == null
-                                || param.className.equals(writer.getClass()))
+                                || param.className.equals(writer.getClass().getName()))
                             return writer;
                     }
                 } while (iter.hasNext());

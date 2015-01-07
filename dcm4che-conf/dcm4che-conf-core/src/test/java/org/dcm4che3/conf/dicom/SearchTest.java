@@ -75,7 +75,7 @@ public class SearchTest {
         Iterator search = storage.search(DicomPath.DeviceNameByAEName.set("aeName", "DCM4CHEE").path());
         Assert.assertEquals("dcm4chee-arc", search.next());
 
-        // arc device is there
+        // mppsscp device is there
         search = storage.search(DicomPath.DeviceNameByAEName.set("aeName", "MPPSSCP").path());
         Assert.assertEquals("mppsscp", search.next());
 

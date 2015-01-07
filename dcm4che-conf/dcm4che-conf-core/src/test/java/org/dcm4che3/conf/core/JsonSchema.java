@@ -37,35 +37,44 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.dicom.adapters;
+package org.dcm4che3.conf.core;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
+import org.dcm4che3.conf.core.adapters.ConfigTypeAdapter;
+import org.dcm4che3.conf.dicom.CommonDicomConfigurationWithHL7;
+import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
+import org.junit.Test;
 
-public class DeviceReferenceByNameTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Device> {
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
-    public DeviceReferenceByNameTypeAdapter() {
-        super("string");
-        metadata.put("class", "Device");
-    }
+/**
+ * @author Roman K
+ */
+public class JsonSchema {
 
-    @Override
-    public Device fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    @Test
+    public void testSchema() throws ConfigurationException {
+
+        BeanVitalizer beanVitalizer = new BeanVitalizer();
+
+        CommonDicomConfigurationWithHL7 configuration = SimpleStorageTest.createCommonDicomConfiguration();
+        BeanVitalizer vitalizer = configuration.getVitalizer();
+
+        AnnotatedConfigurableProperty property = new AnnotatedConfigurableProperty(ApplicationEntity.class);
+        ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
+        Map schema = adapter.getSchema(property, vitalizer);
+
+        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return vitalizer.getContext(DicomConfiguration.class).findDevice(configNode);
-        } catch (NullPointerException e) {
-            throw new ConfigurationException("Cannot dereference DICOM Device without DicomConfiguration context", e);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(System.out, (Object) schema);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
         }
-    }
 
-    @Override
-    public String toConfigNode(Device object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-        return object.getDeviceName();
-    }
 
+    }
 }

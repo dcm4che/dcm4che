@@ -38,12 +38,11 @@
 
 package org.dcm4che3.conf.api;
 
+import org.dcm4che3.net.*;
+
 import java.io.Closeable;
 import java.security.cert.X509Certificate;
-
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DeviceInfo;
+import java.util.Collection;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -98,4 +97,8 @@ public interface DicomConfiguration extends Closeable {
     void sync() throws ConfigurationException;
 
     <T> T getDicomConfigurationExtension(Class<T> clazz);
+
+    Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions();
+
+    Collection<Class<? extends AEExtension>> getRegisteredAEExtensions();
 }

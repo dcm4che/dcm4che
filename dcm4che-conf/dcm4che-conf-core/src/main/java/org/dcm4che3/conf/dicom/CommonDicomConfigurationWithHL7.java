@@ -124,6 +124,11 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     }
 
     @Override
+    public Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions() {
+        return Collections.unmodifiableCollection(hl7ApplicationExtensionClasses);
+    }
+
+    @Override
     protected Device loadDevice(String name, Map<String, Device> deviceCache) throws ConfigurationException {
 
         Device device = super.loadDevice(name, deviceCache);
@@ -188,5 +193,42 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
                set("hl7AppName", hl7AppName).
                set("extensionName", hl7ApplicationExtensionClass.getSimpleName())
                .path();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T getDicomConfigurationExtension(Class<T> clazz) {
+        // workaround for Weld, if we just return 'this' - it will replace it with a proxy
+        if (clazz.equals(HL7Configuration.class)) {
+            return (T) new HL7Configuration() {
+                @Override
+                public boolean registerHL7Application(String name) throws ConfigurationException {
+                    return CommonDicomConfigurationWithHL7.this.registerHL7Application(name);
+                }
+
+                @Override
+                public void unregisterHL7Application(String name) throws ConfigurationException {
+                    CommonDicomConfigurationWithHL7.this.unregisterHL7Application(name);
+                }
+
+                @Override
+                public HL7Application findHL7Application(String name) throws ConfigurationException {
+                    return CommonDicomConfigurationWithHL7.this.findHL7Application(name);
+                }
+
+                @Override
+                public String[] listRegisteredHL7ApplicationNames() throws ConfigurationException {
+                    return CommonDicomConfigurationWithHL7.this.listRegisteredHL7ApplicationNames();
+                }
+
+                @Override
+                public Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions() {
+                    return CommonDicomConfigurationWithHL7.this.getRegisteredHL7ApplicationExtensions();
+                }
+            };
+        }
+
+        return super.getDicomConfigurationExtension(clazz);
     }
 }

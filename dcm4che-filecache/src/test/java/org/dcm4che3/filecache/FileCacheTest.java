@@ -48,9 +48,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -63,18 +61,20 @@ import org.junit.Test;
 public class FileCacheTest {
 
     private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private static final String[] FILES1 = { "a", "b/c" };
+    private static final String b_c = Paths.get("b", "c").toString();
+    private static final String[] FILES1 = { "a", b_c};
     private static final String[] FILES2 = { "d", "e" };
     private static final String[] FILES3 = { "f", "a" };
-    private static final String[] DELETED = { "a", "b/c", "b" };
-    private static final String[] DELETED_LRU = { "b/c", "b", "d", "e" };
+    private static final String[] DELETED = { "a", "b_c", "b" };
+    private static final String[] DELETED_LRU = { "b_c", "b", "d", "e" };
     private static final String[] NOT_DELETED = { "d", "e", "f" };
     private static final String[] NOT_DELETED_LRU = FILES3;
+    private static final Path CACHE_ROOT_DIR = Paths.get("target", "filecache");
+    private static final Path JOURNAL_ROOT_DIR = Paths.get("target", "journaldir");
+    private static final String JOURNAL_FILE_NAME_PATTERN = "20150107/HHmmss.SSS";
     private static final int FILE_SIZE = 1000;
     private static final long FREED = FILE_SIZE * 2;
     private static final long FREED_LRU = FILE_SIZE * 3;
-    private static final Path CACHE_ROOT_DIR = Paths.get("target/filecache");
-    private static final Path JOURNAL_ROOT_DIR = Paths.get("target/journaldir");
     private static final long DELAY = 1L;
     private static final long DELAY_LRU = 1000L;
 
@@ -84,6 +84,7 @@ public class FileCacheTest {
     public void setUp() throws Exception {
         fileCache.setFileCacheRootDirectory(CACHE_ROOT_DIR);
         fileCache.setJournalRootDirectory(JOURNAL_ROOT_DIR);
+        fileCache.setJournalFileNamePattern(JOURNAL_FILE_NAME_PATTERN);
         fileCache.setJournalFileSize(2);
         fileCache.clear();
     }
@@ -94,8 +95,7 @@ public class FileCacheTest {
         assertEquals(Arrays.asList(FILES3), 
                 Files.readAllLines(fileCache.getJournalFile(), UTF_8));
         try (DirectoryStream<Path> dir = Files.newDirectoryStream(
-                fileCache.getJournalDirectory().resolve(
-                        new SimpleDateFormat("yyyyMMdd").format(new Date())))) {
+                fileCache.getJournalDirectory().resolve("20150107"))) {
             Iterator<Path> iter = dir.iterator();
             assertTrue(iter.hasNext());
             Path path1 = iter.next();

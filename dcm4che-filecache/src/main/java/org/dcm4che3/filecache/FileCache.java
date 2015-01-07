@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,7 +73,7 @@ public class FileCache {
     private String orphanedFileName = "orphaned";
     private String journalDirectoryName = "journal.d";
     private SimpleDateFormat journalFileNamePattern =
-            new SimpleDateFormat("yyyyMMDDHHmmss");
+            new SimpleDateFormat("yyyyMMdd/HHmmss.SSS");
     private int journalFileSize = 100;
     private boolean leastRecentlyUsed;
     private int currentJournalFileSize = -1;
@@ -187,13 +186,12 @@ public class FileCache {
         if (size < 0)
             size = countLines(journalFile);
         if (size >= journalFileSize) {
-            FileTime journalFileTime = Files.getLastModifiedTime(journalFile);
             Path dir = getJournalDirectory();
-            Path target = dir.resolve(journalFileNamePattern.format(
-                    new Date( journalFileTime.toMillis())));
+            Path target = dir.resolve(
+                    journalFileNamePattern.format(new Date()));
             LOG.debug("{}: journalFileSize[{}] exeeded, move {} to {}", 
                     this, journalFileSize, journalFile, target);
-            Files.createDirectories(dir);
+            Files.createDirectories(target.getParent());
             Files.move(journalFile, target);
             size = 0;
         }
@@ -219,23 +217,35 @@ public class FileCache {
         }
 
         try {
-            long freed = 0L;
-            SortedSet<PathFileTime> journalFiles = listOldJournalFiles();
-            for (PathFileTime journalFile : journalFiles) {
-                try {
-                    freed += free(journalFile);
-                    if (freed >= size)
-                        break;
-                } catch (IOException e) {
-                    LOG.warn("{}: failed deleting files referenced by journal - {}",
-                            this, journalFile.path);
-                }
-            }
+            long freed = free(getJournalDirectory(), size);
             LOG.info("{}: freed {} bytes", this, freed);
             return freed;
         } finally {
             freeIsRunning.set(false);
         }
+    }
+
+    private long free(Path dir, long size) throws IOException {
+        long remaining = size;
+        for (Path file : listFiles(dir)) {
+            if (Files.isDirectory(file)) {
+                remaining -= free(file, remaining);
+            } else {
+                remaining -= free(file);
+            }
+            if (remaining <= 0)
+                break;
+        }
+        return size - remaining;
+    }
+
+    private Collection<Path> listFiles(Path dir) throws IOException {
+        TreeSet<Path> files = new TreeSet<Path>();
+        try (DirectoryStream<Path> dirPath = Files.newDirectoryStream(dir)) {
+            for (Path path : dirPath)
+                files.add(path);
+        }
+        return files;
     }
 
     public void clear() throws IOException {
@@ -267,24 +277,13 @@ public class FileCache {
         }
     }
 
-    private SortedSet<PathFileTime> listOldJournalFiles() throws IOException {
-        TreeSet<PathFileTime> files = new TreeSet<PathFileTime>();
-        Path dir = getJournalDirectory();
-        if (Files.isDirectory(dir))
-            try (DirectoryStream<Path> dirPath = Files.newDirectoryStream(dir)) {
-                for (Path path : dirPath) {
-                    files.add(new PathFileTime(path, Files.getLastModifiedTime(path)));
-                }
-            }
-        return files;
-    }
-
-    private long free(PathFileTime journalFile) throws IOException {
+    private long free(Path journalFile) throws IOException {
         LOG.debug("{}: deleting files referenced by journal - {}",
-                this, journalFile.path);
+                this, journalFile);
         long freed = 0L;
+        FileTime lastModifiedTime = Files.getLastModifiedTime(journalFile);
         try (BufferedReader r = Files.newBufferedReader(
-                journalFile.path, UTF_8)) {
+                journalFile, UTF_8)) {
             String fileName;
             while ((fileName = r.readLine()) != null) {
                 Path path = fileCacheRootDirectory.resolve(fileName);
@@ -295,7 +294,7 @@ public class FileCache {
                 if (leastRecentlyUsed) {
                     try {
                         if (Files.getLastModifiedTime(path)
-                                .compareTo(journalFile.time) > 0)  {
+                                .compareTo(lastModifiedTime) > 0)  {
                             LOG.debug("{}: {} recently accessed - do not delete",
                                     this, path);
                             continue;
@@ -325,13 +324,13 @@ public class FileCache {
             }
         }
         try {
-            LOG.debug("{}: delete journal - {}", this, journalFile.path);
-            Files.delete(journalFile.path);
+            LOG.debug("{}: delete journal - {}", this, journalFile);
+            Files.delete(journalFile);
         } catch (IOException e) {
-            LOG.warn("{}: failed to delete journal - {}", this, journalFile.path, e);
+            LOG.warn("{}: failed to delete journal - {}", this, journalFile, e);
         }
         LOG.debug("{}: deleted files referenced by journal - {} - freed {} bytes",
-                this, journalFile.path, freed);
+                this, journalFile, freed);
         return freed;
     }
 
@@ -345,23 +344,6 @@ public class FileCache {
             } catch (IOException e) {
                 LOG.warn("{}: failed to purge empty directory {}", this, path, e);
             }
-    }
-
-    private static final class PathFileTime implements Comparable<PathFileTime> {
-
-        final Path path;
-        final FileTime time;
-
-        PathFileTime(Path path, FileTime time) {
-            this.path = path;
-            this.time = time;
-        }
-
-        @Override
-        public int compareTo(PathFileTime o) {
-            return time.compareTo(o.time);
-        }
-
     }
 
 }

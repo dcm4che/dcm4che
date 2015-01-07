@@ -48,7 +48,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -61,7 +63,6 @@ import org.junit.Test;
 public class FileCacheTest {
 
     private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private static final byte[] BYTES = { 'b', 'y', 't', 'e', 's' };
     private static final String[] FILES1 = { "a", "b/c" };
     private static final String[] FILES2 = { "d", "e" };
     private static final String[] FILES3 = { "f", "a" };
@@ -69,12 +70,14 @@ public class FileCacheTest {
     private static final String[] DELETED_LRU = { "b/c", "b", "d", "e" };
     private static final String[] NOT_DELETED = { "d", "e", "f" };
     private static final String[] NOT_DELETED_LRU = FILES3;
-    private static final long FREED = BYTES.length * 2;
-    private static final long FREED_LRU = BYTES.length * 3;
+    private static final int FILE_SIZE = 1000;
+    private static final long FREED = FILE_SIZE * 2;
+    private static final long FREED_LRU = FILE_SIZE * 3;
     private static final Path CACHE_ROOT_DIR = Paths.get("target/filecache");
     private static final Path JOURNAL_ROOT_DIR = Paths.get("target/journaldir");
-    private static final long DELAY = 1000L;
-    
+    private static final long DELAY = 1L;
+    private static final long DELAY_LRU = 1000L;
+
     private FileCache fileCache = new FileCache();
 
     @Before
@@ -87,35 +90,35 @@ public class FileCacheTest {
 
     @Test
     public void testRegister() throws Exception {
-        registerFiles();
+        registerFiles(DELAY);
         assertEquals(Arrays.asList(FILES3), 
                 Files.readAllLines(fileCache.getJournalFile(), UTF_8));
-        try (DirectoryStream<Path> dir =
-                Files.newDirectoryStream(fileCache.getJournalDirectory())) {
+        try (DirectoryStream<Path> dir = Files.newDirectoryStream(
+                fileCache.getJournalDirectory().resolve(
+                        new SimpleDateFormat("yyyyMMdd").format(new Date())))) {
             Iterator<Path> iter = dir.iterator();
             assertTrue(iter.hasNext());
             Path path1 = iter.next();
             assertTrue(iter.hasNext());
             Path path2 = iter.next();
             assertFalse(iter.hasNext());
-            if (Files.getLastModifiedTime(path1)
-                    .compareTo(Files.getLastModifiedTime(path2)) > 0) {
+            if (path1.compareTo(path2) > 0) {
                 Path tmp = path1;
                 path1 = path2;
                 path2 = tmp;
             }
-            assertEquals(Arrays.asList(FILES1) , Files.readAllLines(path1, UTF_8));
-            assertEquals(Arrays.asList(FILES2) , Files.readAllLines(path2, UTF_8));
+            assertEquals(Arrays.asList(FILES1), Files.readAllLines(path1, UTF_8));
+            assertEquals(Arrays.asList(FILES2), Files.readAllLines(path2, UTF_8));
         }
     }
 
-    private void registerFiles() throws Exception {
+    private void registerFiles(long delay) throws Exception {
         for (String file : FILES1)
             fileCache.register(createFile(file));
-        Thread.sleep(DELAY);
+        Thread.sleep(delay);
         for (String file : FILES2)
             fileCache.register(createFile(file));
-        Thread.sleep(DELAY);
+        Thread.sleep(delay);
         for (String file : FILES3)
             fileCache.register(createFile(file));
     }
@@ -123,7 +126,7 @@ public class FileCacheTest {
     private Path createFile(String file) throws IOException {
         Path path = toPath(file);
         Files.createDirectories(path.getParent());
-        Files.write(path, BYTES);
+        Files.write(path, new byte[FILE_SIZE]);
         return path;
     }
 
@@ -133,7 +136,7 @@ public class FileCacheTest {
 
     @Test
     public void testFree() throws Exception {
-        registerFiles();
+        registerFiles(DELAY);
         assertEquals(FREED, fileCache.free(FREED));
         assertNotExists(DELETED);
         assertExists(NOT_DELETED);
@@ -142,7 +145,7 @@ public class FileCacheTest {
     @Test
     public void testFreeLRU() throws Exception {
         fileCache.setLeastRecentlyUsed(true);
-        registerFiles();
+        registerFiles(DELAY_LRU);
         assertEquals(FREED_LRU, fileCache.free(FREED));
         assertNotExists(DELETED_LRU);
         assertExists(NOT_DELETED_LRU);

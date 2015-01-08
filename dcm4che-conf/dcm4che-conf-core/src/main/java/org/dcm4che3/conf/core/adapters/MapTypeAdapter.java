@@ -125,7 +125,11 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        ConfigTypeAdapter<V, Object> valueAdapter;
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
         // fill in key and value metadata
         keyMetadata.putAll(keyAdapter.getSchema(keyPseudoProperty, vitalizer));

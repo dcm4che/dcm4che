@@ -43,7 +43,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,7 +60,6 @@ import org.junit.Test;
  */
 public class FileCacheTest {
 
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final String b_c = Paths.get("b", "c").toString();
     private static final String[] FILES1 = { "a", b_c};
     private static final String[] FILES2 = { "d", "e" };
@@ -93,7 +92,7 @@ public class FileCacheTest {
     public void testRegister() throws Exception {
         registerFiles(DELAY);
         assertEquals(Arrays.asList(FILES3), 
-                Files.readAllLines(fileCache.getJournalFile(), UTF_8));
+                Files.readAllLines(fileCache.getJournalFile(), StandardCharsets.UTF_8));
         try (DirectoryStream<Path> dir =
                 Files.newDirectoryStream(fileCache.getJournalDirectory())) {
             Iterator<Path> iter = dir.iterator();
@@ -107,8 +106,10 @@ public class FileCacheTest {
                 path1 = path2;
                 path2 = tmp;
             }
-            assertEquals(Arrays.asList(FILES1), Files.readAllLines(path1, UTF_8));
-            assertEquals(Arrays.asList(FILES2), Files.readAllLines(path2, UTF_8));
+            assertEquals(Arrays.asList(FILES1),
+                    Files.readAllLines(path1, StandardCharsets.UTF_8));
+            assertEquals(Arrays.asList(FILES2),
+                    Files.readAllLines(path2, StandardCharsets.UTF_8));
         }
     }
 

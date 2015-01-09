@@ -71,7 +71,7 @@ public class FileCacheTest {
     private static final String[] NOT_DELETED_LRU = FILES3;
     private static final Path CACHE_ROOT_DIR = Paths.get("target", "filecache");
     private static final Path JOURNAL_ROOT_DIR = Paths.get("target", "journaldir");
-    private static final String JOURNAL_FILE_NAME_PATTERN = "20150107/HHmmss.SSS";
+    private static final String JOURNAL_FILE_NAME_PATTERN = "HHmmss.SSS";
     private static final int FILE_SIZE = 1000;
     private static final long FREED = FILE_SIZE * 2;
     private static final long FREED_LRU = FILE_SIZE * 3;
@@ -85,7 +85,7 @@ public class FileCacheTest {
         fileCache.setFileCacheRootDirectory(CACHE_ROOT_DIR);
         fileCache.setJournalRootDirectory(JOURNAL_ROOT_DIR);
         fileCache.setJournalFileNamePattern(JOURNAL_FILE_NAME_PATTERN);
-        fileCache.setJournalFileSize(2);
+        fileCache.setJournalMaxEntries(2);
         fileCache.clear();
     }
 
@@ -94,8 +94,8 @@ public class FileCacheTest {
         registerFiles(DELAY);
         assertEquals(Arrays.asList(FILES3), 
                 Files.readAllLines(fileCache.getJournalFile(), UTF_8));
-        try (DirectoryStream<Path> dir = Files.newDirectoryStream(
-                fileCache.getJournalDirectory().resolve("20150107"))) {
+        try (DirectoryStream<Path> dir =
+                Files.newDirectoryStream(fileCache.getJournalDirectory())) {
             Iterator<Path> iter = dir.iterator();
             assertTrue(iter.hasNext());
             Path path1 = iter.next();
@@ -135,7 +135,7 @@ public class FileCacheTest {
     }
 
     @Test
-    public void testFreeFIFO() throws Exception {
+    public void testFree() throws Exception {
         registerFiles(DELAY);
         assertEquals(FREED, fileCache.free(FREED));
         assertNotExists(DELETED);
@@ -144,7 +144,7 @@ public class FileCacheTest {
 
     @Test
     public void testFreeLRU() throws Exception {
-        fileCache.setCacheAlgorithm(FileCache.Algorithm.LRU);
+        fileCache.setLeastRecentlyUsed(true);
         registerFiles(DELAY_LRU);
         assertEquals(FREED_LRU, fileCache.free(FREED));
         assertNotExists(DELETED_LRU);

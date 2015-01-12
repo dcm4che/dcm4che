@@ -43,14 +43,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -62,19 +60,20 @@ import org.junit.Test;
  */
 public class FileCacheTest {
 
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private static final String[] FILES1 = { "a", "b/c" };
+    private static final String b_c = Paths.get("b", "c").toString();
+    private static final String[] FILES1 = { "a", b_c};
     private static final String[] FILES2 = { "d", "e" };
     private static final String[] FILES3 = { "f", "a" };
-    private static final String[] DELETED = { "a", "b/c", "b" };
-    private static final String[] DELETED_LRU = { "b/c", "b", "d", "e" };
+    private static final String[] DELETED = { "a", b_c, "b" };
+    private static final String[] DELETED_LRU = { b_c, "b", "d", "e" };
     private static final String[] NOT_DELETED = { "d", "e", "f" };
     private static final String[] NOT_DELETED_LRU = FILES3;
+    private static final Path CACHE_ROOT_DIR = Paths.get("target", "filecache");
+    private static final Path JOURNAL_ROOT_DIR = Paths.get("target", "journaldir");
+    private static final String JOURNAL_FILE_NAME_PATTERN = "HHmmss.SSS";
     private static final int FILE_SIZE = 1000;
     private static final long FREED = FILE_SIZE * 2;
     private static final long FREED_LRU = FILE_SIZE * 3;
-    private static final Path CACHE_ROOT_DIR = Paths.get("target/filecache");
-    private static final Path JOURNAL_ROOT_DIR = Paths.get("target/journaldir");
     private static final long DELAY = 1L;
     private static final long DELAY_LRU = 1000L;
 
@@ -84,7 +83,8 @@ public class FileCacheTest {
     public void setUp() throws Exception {
         fileCache.setFileCacheRootDirectory(CACHE_ROOT_DIR);
         fileCache.setJournalRootDirectory(JOURNAL_ROOT_DIR);
-        fileCache.setJournalFileSize(2);
+        fileCache.setJournalFileNamePattern(JOURNAL_FILE_NAME_PATTERN);
+        fileCache.setJournalMaxEntries(2);
         fileCache.clear();
     }
 
@@ -92,10 +92,9 @@ public class FileCacheTest {
     public void testRegister() throws Exception {
         registerFiles(DELAY);
         assertEquals(Arrays.asList(FILES3), 
-                Files.readAllLines(fileCache.getJournalFile(), UTF_8));
-        try (DirectoryStream<Path> dir = Files.newDirectoryStream(
-                fileCache.getJournalDirectory().resolve(
-                        new SimpleDateFormat("yyyyMMdd").format(new Date())))) {
+                Files.readAllLines(fileCache.getJournalFile(), StandardCharsets.UTF_8));
+        try (DirectoryStream<Path> dir =
+                Files.newDirectoryStream(fileCache.getJournalDirectory())) {
             Iterator<Path> iter = dir.iterator();
             assertTrue(iter.hasNext());
             Path path1 = iter.next();
@@ -107,8 +106,10 @@ public class FileCacheTest {
                 path1 = path2;
                 path2 = tmp;
             }
-            assertEquals(Arrays.asList(FILES1), Files.readAllLines(path1, UTF_8));
-            assertEquals(Arrays.asList(FILES2), Files.readAllLines(path2, UTF_8));
+            assertEquals(Arrays.asList(FILES1),
+                    Files.readAllLines(path1, StandardCharsets.UTF_8));
+            assertEquals(Arrays.asList(FILES2),
+                    Files.readAllLines(path2, StandardCharsets.UTF_8));
         }
     }
 

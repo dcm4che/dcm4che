@@ -80,4 +80,12 @@ public class DefaultReferenceAdapter<T> extends DefaultConfigTypeAdapters.Common
         throw new ConfigurationUnserializableException("No information about where to look for the reference");
     }
 
+
+    @Override
+    public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        Map<String, Object> schema = new HashMap<String, Object>();
+        schema.putAll(super.getSchema(property, vitalizer));
+        schema.put("referencedClass", property.getRawClass().getSimpleName());
+        return schema;
+    }
 }

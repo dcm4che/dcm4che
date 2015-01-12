@@ -46,8 +46,10 @@ import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.ConfigurationManager;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -56,6 +58,8 @@ import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
 import org.dcm4che3.net.*;
+import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
@@ -67,7 +71,7 @@ import java.util.*;
 /**
  * @author Roman K
  */
-public class CommonDicomConfiguration implements DicomConfiguration {
+public class CommonDicomConfiguration implements DicomConfiguration, ConfigurationManager {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CommonDicomConfiguration.class);
@@ -239,6 +243,8 @@ public class CommonDicomConfiguration implements DicomConfiguration {
     @Override
     public ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException {
 
+        if (aet == null) throw new IllegalArgumentException("Requested AE's title cannot be null");
+
         Iterator search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
 
         try {
@@ -258,6 +264,7 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
     @Override
     public Device findDevice(String name) throws ConfigurationException {
+        if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
         // get the device cache for this loading phase
         Map<String, Device> deviceCache = currentlyLoadedDevicesLocal.get();
@@ -277,9 +284,16 @@ public class CommonDicomConfiguration implements DicomConfiguration {
 
         try {
 
-            return loadDevice(name, deviceCache);
-        } catch (Exception e) {
-            throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
+            Device device;
+            try {
+                device = loadDevice(name, deviceCache);
+            } catch (Exception e) {
+                throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
+            }
+
+            if (device==null) throw new ConfigurationNotFoundException("Device "+name+" not found");
+            return device;
+
         } finally {
             // if this loadDevice call initialized the cache, then clean it up
             if (doCleanUpCache) currentlyLoadedDevicesLocal.remove();
@@ -466,13 +480,36 @@ public class CommonDicomConfiguration implements DicomConfiguration {
         }
     }
 
+    @Override
+    public Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions() {
+        return Collections.unmodifiableCollection(deviceExtensionClasses);
+    }
+
+    @Override
+    public Collection<Class<? extends AEExtension>> getRegisteredAEExtensions() {
+        return Collections.unmodifiableCollection(aeExtensionClasses);
+    }
+
+    @Override
     public BeanVitalizer getVitalizer() {
         return vitalizer;
     }
 
 
+    @Override
     public Configuration getConfigurationStorage() {
         return config;
+    }
+
+    @Override
+    public List<Class> getExtensionClasses() {
+
+        List<Class> list= new ArrayList<Class>();
+
+        list.addAll(deviceExtensionClasses);
+        list.addAll(aeExtensionClasses);
+
+        return list;
     }
 }
 

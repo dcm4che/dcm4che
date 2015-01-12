@@ -145,7 +145,7 @@ public class BeanVitalizer {
         if (typeAdapter != null) return typeAdapter;
 
         // check if it is a reference
-        if (property.getAnnotation(ConfigurableProperty.class).isReference())
+        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.getAnnotation(ConfigurableProperty.class).isReference())
             return getReferenceTypeAdapter();
 
         // delegate to default otherwise

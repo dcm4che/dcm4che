@@ -46,6 +46,7 @@ import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -209,12 +210,10 @@ public class DefaultConfigTypeAdapters {
             if (configNode == null)
                 return null;
             try {
-                ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
-                ConfigurableProperty.EnumRepresentation howToRepresent = anno == null ? ConfigurableProperty.EnumRepresentation.STRING : anno.enumRepresentation();
+                ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
                 switch (howToRepresent) {
                     case ORDINAL:
-                        Method valuesMethod = ((Class) property.getType()).getMethod("values");
-                        Enum[] vals = (Enum[]) valuesMethod.invoke(null);
+                        Enum[] vals = getEnumValues(property);
                         return vals[(Integer)configNode];
                     default:
                     case STRING:
@@ -227,16 +226,22 @@ public class DefaultConfigTypeAdapters {
             }
         }
 
+        private ConfigurableProperty.EnumRepresentation getEnumRepresentation(AnnotatedConfigurableProperty property) {
+            ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
+            return anno == null ? ConfigurableProperty.EnumRepresentation.STRING : anno.enumRepresentation();
+        }
+
+        private Enum[] getEnumValues(AnnotatedConfigurableProperty property) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            Method valuesMethod = ((Class) property.getType()).getMethod("values");
+            return (Enum[]) valuesMethod.invoke(null);
+        }
+
         @Override
         public Object toConfigNode(Enum<?> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
 
             if (object == null) return null;
 
-            ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
-            ConfigurableProperty.EnumRepresentation howToRepresent;
-            if (anno != null) howToRepresent = anno.enumRepresentation();
-            else
-                howToRepresent = ConfigurableProperty.EnumRepresentation.STRING;
+            ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
 
             switch (howToRepresent) {
                 case ORDINAL:
@@ -249,10 +254,22 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            Map<String, Object> metadata = new HashMap<String, Object>();
-            metadata.put("type", "enum");
-            //TODO!!! options, ordinal/string
+            try {
+                Map<String, Object> metadata = new HashMap<String, Object>();
+                metadata.put("type", "enum");
+                metadata.put("class", property.getRawClass().getSimpleName());
+
+                List<String> vals = new ArrayList<String>();
+                for (Enum anEnum : getEnumValues(property)) vals.add(anEnum.toString());
+                metadata.put("enum", vals);
+
+                ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
+                metadata.put("enumRepresentation", howToRepresent.toString());
+
             return metadata;
+            } catch (Exception e) {
+                throw new ConfigurationException("Schema export for enum property "+property.getAnnotatedName()+" failed");
+            }
         }
 
         @Override

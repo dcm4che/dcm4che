@@ -74,9 +74,9 @@ public class FileCache {
     private String journalDirectoryName = "journal.d";
     private SimpleDateFormat journalFileNamePattern =
             new SimpleDateFormat("yyyyMMdd/HHmmss.SSS");
-    private int journalFileSize = 100;
+    private int journalMaxEntries = 100;
     private boolean leastRecentlyUsed;
-    private int currentJournalFileSize = -1;
+    private int currentJournalNumEntries = -1;
     private final AtomicBoolean freeIsRunning = new AtomicBoolean();
 
     public Path getFileCacheRootDirectory() {
@@ -127,12 +127,12 @@ public class FileCache {
         this.journalFileNamePattern = new SimpleDateFormat(pattern);
     }
 
-    public int getJournalFileSize() {
-        return journalFileSize;
+    public int getJournalMaxEntries() {
+        return journalMaxEntries;
     }
 
-    public void setJournalFileSize(int journalFileSize) {
-        this.journalFileSize = journalFileSize;
+    public void setJournalMaxEntries(int journalMaxEntries) {
+        this.journalMaxEntries = journalMaxEntries;
     }
 
     public String getOrphanedFileName() {
@@ -182,22 +182,16 @@ public class FileCache {
         Files.createDirectories(journalRootDirectory);
         Path journalFile = getJournalFile();
         String entry = fileCacheRootDirectory.relativize(path).toString();
-        int size = currentJournalFileSize;
-        if (size < 0)
-            size = countLines(journalFile);
-        if (size >= journalFileSize) {
-            Path dir = getJournalDirectory();
-            Path target = dir.resolve(
-                    journalFileNamePattern.format(new Date()));
-            LOG.debug("{}: journalFileSize[{}] exeeded, move {} to {}", 
-                    this, journalFileSize, journalFile, target);
-            Files.createDirectories(target.getParent());
-            Files.move(journalFile, target);
-            size = 0;
+        int numEntries = currentJournalNumEntries;
+        if (numEntries < 0)
+            numEntries = countLines(journalFile);
+        if (numEntries >= journalMaxEntries) {
+            moveJournalFile(journalFile);
+            numEntries = 0;
         }
         Files.write(journalFile, Collections.singleton(entry), UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        currentJournalFileSize = size + 1;
+        currentJournalNumEntries = numEntries + 1;
         if (leastRecentlyUsed) {
             try {
                 LOG.debug("{}: update modification time of - {}", this, path);
@@ -207,6 +201,25 @@ public class FileCache {
             }
         }
         LOG.debug("{}: registered - {}", this, path);
+    }
+
+    private void moveJournalFile(Path journalFile) throws IOException {
+        Path target = getJournalDirectory().resolve(
+                journalFileNamePattern.format(new Date()));
+        LOG.debug("{}: maximal number of journal entries [{}] exeeded, move {} to {}", 
+                this, journalMaxEntries, journalFile, target);
+        Files.createDirectories(target.getParent());
+        Files.move(journalFile, target);
+    }
+
+    public boolean access(Path path) throws IOException {
+        if (!Files.exists(path))
+            return false;
+
+        if (leastRecentlyUsed)
+            register(path);
+
+        return true;
     }
 
     public long free(long size) throws IOException {
@@ -309,7 +322,7 @@ public class FileCache {
                     long fileSize = Files.size(path);
                     Files.delete(path);
                     freed += fileSize;
-                    purgeEmptyDirectories(path);
+                    purgeEmptyDirectories(path.getParent(), fileCacheRootDirectory);
                 } catch (IOException e) {
                     LOG.warn("{}: failed to delete - {}", this, path, e);
                     try {
@@ -326,6 +339,7 @@ public class FileCache {
         try {
             LOG.debug("{}: delete journal - {}", this, journalFile);
             Files.delete(journalFile);
+            purgeEmptyDirectories(journalFile.getParent(), getJournalDirectory());
         } catch (IOException e) {
             LOG.warn("{}: failed to delete journal - {}", this, journalFile, e);
         }
@@ -334,15 +348,17 @@ public class FileCache {
         return freed;
     }
 
-    private void purgeEmptyDirectories(Path path) {
-        while (!(path = path.getParent()).equals(fileCacheRootDirectory))
+    private void purgeEmptyDirectories(Path dir, Path root) {
+        while (!dir.equals(root))
             try {
-                Files.delete(path);
-                LOG.debug("{}: purged empty directory - {}", this, path);
+                Files.delete(dir);
+                LOG.debug("{}: purged empty directory - {}", this, dir);
+                dir = dir.getParent();
             } catch (DirectoryNotEmptyException e) {
                 return;
             } catch (IOException e) {
-                LOG.warn("{}: failed to purge empty directory {}", this, path, e);
+                LOG.warn("{}: failed to purge empty directory {}", this, dir, e);
+                return;
             }
     }
 

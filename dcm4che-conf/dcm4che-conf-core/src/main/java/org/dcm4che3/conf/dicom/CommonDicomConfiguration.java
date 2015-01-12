@@ -243,6 +243,8 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
     @Override
     public ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException {
 
+        if (aet == null) throw new IllegalArgumentException("Requested AE's title cannot be null");
+
         Iterator search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
 
         try {
@@ -262,6 +264,7 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
 
     @Override
     public Device findDevice(String name) throws ConfigurationException {
+        if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
         // get the device cache for this loading phase
         Map<String, Device> deviceCache = currentlyLoadedDevicesLocal.get();

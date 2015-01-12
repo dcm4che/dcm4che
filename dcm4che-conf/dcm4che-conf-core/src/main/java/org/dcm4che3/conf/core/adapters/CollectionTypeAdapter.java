@@ -50,13 +50,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * For now only supports primitive serialized representation, so no ConfigClass'ed classes as elements
- *
- * @param <T,ST>
  * @author Roman K
  */
-//TODO: transform to collectiontypeadpater
-//TODO: handle 'reference' and pass it deeper
 public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAdapter<T, T> {
 
     private Class clazz;
@@ -84,8 +79,6 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
     @Override
     public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
-        if (configNode == null) return null;
-
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 
         ConfigTypeAdapter elementAdapter;
@@ -104,8 +97,6 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
 
     @Override
     public T toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-
-        if (object == null) return null;
 
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 

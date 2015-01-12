@@ -47,15 +47,14 @@ import org.dcm4che3.conf.core.api.LDAP;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman K
  */
 @LDAP
 public class AnnotatedConfigurableProperty {
+
     private Map<Type, Annotation> annotations = new HashMap<Type, Annotation>();
     private Type type;
     private String name;
@@ -143,6 +142,7 @@ public class AnnotatedConfigurableProperty {
             return null;
         //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
+        // TODO: only specific params shold be cloned...
         AnnotatedConfigurableProperty clone = clone();
         clone.setType(type);
         return clone;
@@ -208,5 +208,12 @@ public class AnnotatedConfigurableProperty {
         return Map.class.isAssignableFrom(getRawClass()) &&
                 !getAnnotation(ConfigurableProperty.class).collectionOfReferences() &&
                 getPseudoPropertyForGenericsParamater(1).isConfObject();
+    }
+
+    public List<ConfigurableProperty.Tag> getTags() {
+        if (getAnnotation(ConfigurableProperty.class)==null)
+            return new ArrayList<ConfigurableProperty.Tag>();
+
+        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
     }
 }

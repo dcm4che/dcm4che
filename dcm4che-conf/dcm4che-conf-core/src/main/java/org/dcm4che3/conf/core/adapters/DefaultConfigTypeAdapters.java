@@ -207,14 +207,13 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Enum<?> fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            if (configNode == null)
-                return null;
+
             try {
                 ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
                 switch (howToRepresent) {
                     case ORDINAL:
                         Enum[] vals = getEnumValues(property);
-                        return vals[(Integer)configNode];
+                        return vals[(Integer) configNode];
                     default:
                     case STRING:
                         Method valueOfMethod = ((Class) property.getType()).getMethod("valueOf", String.class);
@@ -238,8 +237,6 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Object toConfigNode(Enum<?> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-
-            if (object == null) return null;
 
             ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
 
@@ -266,9 +263,9 @@ public class DefaultConfigTypeAdapters {
                 ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
                 metadata.put("enumRepresentation", howToRepresent.toString());
 
-            return metadata;
+                return metadata;
             } catch (Exception e) {
-                throw new ConfigurationException("Schema export for enum property "+property.getAnnotatedName()+" failed");
+                throw new ConfigurationException("Schema export for enum property " + property.getAnnotatedName() + " failed");
             }
         }
 
@@ -297,6 +294,7 @@ public class DefaultConfigTypeAdapters {
         }
     }
 
+
     public static Map<Class, ConfigTypeAdapter> defaultTypeAdapters;
 
     static {
@@ -318,15 +316,15 @@ public class DefaultConfigTypeAdapters {
         defaultTypeAdapters.put(Double.class, doubleAdapter);
         defaultTypeAdapters.put(Float.class, doubleAdapter);
 
-        defaultTypeAdapters.put(Map.class, new MapTypeAdapter());
-        defaultTypeAdapters.put(Set.class, new CollectionTypeAdapter<Set>(LinkedHashSet.class));
-        defaultTypeAdapters.put(EnumSet.class, new CollectionTypeAdapter<Set>(HashSet.class));
-        defaultTypeAdapters.put(List.class, new CollectionTypeAdapter<List>(ArrayList.class));
-        defaultTypeAdapters.put(Collection.class, new CollectionTypeAdapter<List>(ArrayList.class));
-        defaultTypeAdapters.put(Enum.class, new EnumTypeAdapter());
+        defaultTypeAdapters.put(Map.class, new NullToNullDecorator(new MapTypeAdapter()));
+        defaultTypeAdapters.put(Set.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(LinkedHashSet.class)));
+        defaultTypeAdapters.put(EnumSet.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(HashSet.class)));
+        defaultTypeAdapters.put(List.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
+        defaultTypeAdapters.put(Collection.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
+        defaultTypeAdapters.put(Enum.class, new NullToNullDecorator(new EnumTypeAdapter()));
 
-        defaultTypeAdapters.put(TimeZone.class, new TimeZoneTypeAdapter());
-        defaultTypeAdapters.put(TimeZone.class, new TimeUnitTypeAdapter());
+        defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeZoneTypeAdapter()));
+        defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeUnitTypeAdapter()));
 
     }
 

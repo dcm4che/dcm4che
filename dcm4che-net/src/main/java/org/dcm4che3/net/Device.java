@@ -65,6 +65,7 @@ import javax.net.ssl.TrustManager;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -88,7 +89,7 @@ public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
-    @ConfigurableProperty(name = "dicomDeviceName")
+    @ConfigurableProperty(name = "dicomDeviceName", tags = Tag.PRIMARY)
     private String deviceName;
 
     @ConfigurableProperty(name = "dicomDescription")
@@ -202,11 +203,19 @@ public class Device implements Serializable {
 
 
     @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name="dicomConnection", label = "Connections")
+    @ConfigurableProperty(
+            name="dicomConnection",
+            label = "Connections",
+            tags = Tag.PRIMARY
+    )
     private final List<Connection> connections = new ArrayList<Connection>();
 
     @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name="dicomNetworkAE", label = "Application Entities")
+    @ConfigurableProperty(
+            name="dicomNetworkAE",
+            label = "Application Entities",
+            tags = Tag.PRIMARY
+    )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new LinkedHashMap<String, ApplicationEntity>();
 

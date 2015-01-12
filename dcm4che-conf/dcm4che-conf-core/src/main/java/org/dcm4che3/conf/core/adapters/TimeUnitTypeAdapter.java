@@ -55,12 +55,12 @@ public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
 
     @Override
     public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        return (configNode == null ? null : TimeUnit.valueOf(configNode));
+        return TimeUnit.valueOf(configNode);
     }
 
     @Override
     public String toConfigNode(TimeUnit object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-        return (object == null ? null : object.toString());
+        return object.toString();
     }
 
 }

@@ -175,6 +175,9 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             if (!configurableChildProperty.getTags().isEmpty())
                 childPropertyMetadata.put("tags", configurableChildProperty.getTags());
 
+
+            childPropertyMetadata.put("uiGroup",propertyAnnotation.group());
+
             // also merge in the metadata from this child itself
             ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(configurableChildProperty);
             Map<String, Object> childMetaData = adapter.getSchema(configurableChildProperty, vitalizer);

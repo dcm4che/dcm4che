@@ -205,16 +205,14 @@ public class Device implements Serializable {
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(
             name="dicomConnection",
-            label = "Connections",
-            tags = Tag.PRIMARY
+            label = "Connections"
     )
     private final List<Connection> connections = new ArrayList<Connection>();
 
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(
             name="dicomNetworkAE",
-            label = "Application Entities",
-            tags = Tag.PRIMARY
+            label = "Application Entities"
     )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new LinkedHashMap<String, ApplicationEntity>();

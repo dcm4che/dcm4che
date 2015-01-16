@@ -64,6 +64,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.SafeClose;
@@ -119,10 +120,10 @@ public class Connection implements Serializable {
 
     private Device device;
 
-    @ConfigurableProperty(name = "cn")
+    @ConfigurableProperty(name = "cn", label = "Name", tags = Tag.PRIMARY)
     private String commonName;
 
-    @ConfigurableProperty(name = "dicomHostname")
+    @ConfigurableProperty(name = "dicomHostname", label = "Hostname", tags = Tag.PRIMARY)
     private String hostname;
 
     @ConfigurableProperty(name = "dcmBindAddress")
@@ -134,7 +135,11 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dcmHTTPProxy")
     private String httpProxy;
 
-    @ConfigurableProperty(name = "dicomPort", defaultValue = "-1")
+    @ConfigurableProperty(
+            name = "dicomPort",
+            defaultValue = "-1",
+            label = "Port",
+            tags = Tag.PRIMARY)
     private int port = NOT_LISTENING;
 
     @ConfigurableProperty(name = "dcmTCPBacklog", defaultValue = "50")
@@ -204,7 +209,12 @@ public class Connection implements Serializable {
     private Boolean connectionInstalled;
 
 
-    @ConfigurableProperty(name = "dcmProtocol", defaultValue = "DICOM")
+    @ConfigurableProperty(
+            name = "dcmProtocol",
+            defaultValue = "DICOM",
+            label = "Protocol",
+            tags = Tag.PRIMARY
+    )
     private Protocol protocol = Protocol.DICOM;
 
     private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =

@@ -50,6 +50,7 @@ import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.ConfigurationManager;
+import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -103,19 +104,19 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
         this.aeExtensionClasses = aeExtensionClasses;
 
         // register reference handler
-        this.vitalizer.setReferenceTypeAdapter(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage).getDecorated());
+        this.vitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage)));
 
         // register DICOM type adapters
-        this.vitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new AttributeFormatTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(Code.class, new CodeTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(Issuer.class, new IssuerTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new ValueSelectorTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(Property.class, new PropertyTypeAdapter().getDecorated());
+        this.vitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new NullToNullDecorator(new AttributeFormatTypeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(Code.class, new NullToNullDecorator(new CodeTypeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(Issuer.class, new NullToNullDecorator(new IssuerTypeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new NullToNullDecorator(new ValueSelectorTypeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(Property.class, new NullToNullDecorator(new PropertyTypeAdapter()));
 
         // register audit log type adapters
-        this.vitalizer.registerCustomConfigTypeAdapter(EventTypeCode.class, new AuditSimpleTypeAdapters.EventTypeCodeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(EventID.class, new AuditSimpleTypeAdapters.EventIDTypeAdapter().getDecorated());
-        this.vitalizer.registerCustomConfigTypeAdapter(RoleIDCode.class, new AuditSimpleTypeAdapters.RoleIDCodeTypeAdapter().getDecorated());
+        this.vitalizer.registerCustomConfigTypeAdapter(EventTypeCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventTypeCodeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(EventID.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventIDTypeAdapter()));
+        this.vitalizer.registerCustomConfigTypeAdapter(RoleIDCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.RoleIDCodeTypeAdapter()));
 
         // register DicomConfiguration context
         this.vitalizer.registerContext(DicomConfiguration.class, this);

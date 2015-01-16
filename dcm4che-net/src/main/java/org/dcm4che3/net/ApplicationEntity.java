@@ -46,6 +46,7 @@ import java.util.*;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.AAbort;
@@ -83,7 +84,7 @@ public class ApplicationEntity implements Serializable {
 
     private Device device;
 
-    @ConfigurableProperty(name="dicomAETitle")
+    @ConfigurableProperty(name="dicomAETitle" , tags = Tag.PRIMARY)
     private String AETitle;
 
     @ConfigurableProperty(name="dicomDescription")
@@ -112,7 +113,7 @@ public class ApplicationEntity implements Serializable {
             new LinkedHashSet<String>();
 
     // Connections are dereferenced by DicomConfiguration
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true)
+    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true, tags = Tag.PRIMARY)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
     /**
@@ -120,7 +121,8 @@ public class ApplicationEntity implements Serializable {
      */
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(  name = "dcmTransferCapability",
-                            description = "DICOM Transfer Capabilities")
+                            description = "DICOM Transfer Capabilities",
+                            tags = Tag.PRIMARY)
     private Collection<TransferCapability> transferCapabilities;
 
     // populated/collected by transferCapabilities' setter/getter

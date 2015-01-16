@@ -71,7 +71,7 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
 
         byte[] b = new byte[256];
         iis.mark();
-        iis.readFully(b);
+        readAvailable(b);
         iis.reset();
 
         JPEGLSCodingParam param = patchJPEGLS.createJPEGLSCodingParam(b);
@@ -82,6 +82,17 @@ public class PatchJPEGLSImageInputStream extends ImageInputStreamImpl {
         }
     }
 
+
+    private int readAvailable(byte[] b) throws IOException {
+        int nbytes;
+        int off = 0;
+        int len = b.length;
+        while (len > 0 && (nbytes = iis.read(b, off, len)) > 0) {
+            off += nbytes;
+            len -= nbytes;
+        }
+        return off;
+    }
 
     public void close() throws IOException {
         super.close();

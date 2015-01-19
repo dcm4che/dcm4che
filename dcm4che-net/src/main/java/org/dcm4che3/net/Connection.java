@@ -105,12 +105,18 @@ public class Connection implements Serializable {
 
     public static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
-    public static final int NO_TIMEOUT = 0;
+    public static final String NO_TIMEOUT_STR = "0";
+    public static final int NO_TIMEOUT = Integer.valueOf(NO_TIMEOUT_STR);
+
     public static final int SYNCHRONOUS_MODE = 1;
     public static final int NOT_LISTENING = -1;
     public static final int DEF_BACKLOG = 50;
     public static final int DEF_SOCKETDELAY = 50;
-    public static final int DEF_BUFFERSIZE = 0;
+
+    public static final String DEF_BUFFERSIZE_STR = "0";
+    public static final int DEF_BUFFERSIZE = Integer.valueOf(DEF_BUFFERSIZE_STR);
+
+
     public static final int DEF_MAX_PDU_LENGTH = 16378;
     // to fit into SunJSSE TLS Application Data Length 16408
 
@@ -145,34 +151,34 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dcmTCPBacklog", defaultValue = "50")
     private int backlog = DEF_BACKLOG;
 
-    @ConfigurableProperty(name = "dcmTCPConnectTimeout")
+    @ConfigurableProperty(name = "dcmTCPConnectTimeout", defaultValue = NO_TIMEOUT_STR)
     private int connectTimeout;
 
-    @ConfigurableProperty(name = "dcmAARQTimeout")
+    @ConfigurableProperty(name = "dcmAARQTimeout", defaultValue = NO_TIMEOUT_STR)
     private int requestTimeout;
 
-    @ConfigurableProperty(name = "dcmAAACTimeout")
+    @ConfigurableProperty(name = "dcmAAACTimeout", defaultValue = NO_TIMEOUT_STR)
     private int acceptTimeout;
 
-    @ConfigurableProperty(name = "dcmARRPTimeout")
+    @ConfigurableProperty(name = "dcmARRPTimeout", defaultValue = NO_TIMEOUT_STR)
     private int releaseTimeout;
 
-    @ConfigurableProperty(name = "dcmResponseTimeout")
+    @ConfigurableProperty(name = "dcmResponseTimeout", defaultValue = NO_TIMEOUT_STR)
     private int responseTimeout;
 
-    @ConfigurableProperty(name = "dcmRetrieveTimeout")
+    @ConfigurableProperty(name = "dcmRetrieveTimeout", defaultValue = NO_TIMEOUT_STR)
     private int retrieveTimeout;
 
-    @ConfigurableProperty(name = "dcmIdleTimeout")
+    @ConfigurableProperty(name = "dcmIdleTimeout", defaultValue = NO_TIMEOUT_STR)
     private int idleTimeout;
 
     @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
 
-    @ConfigurableProperty(name = "dcmTCPSendBufferSize")
+    @ConfigurableProperty(name = "dcmTCPSendBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int sendBufferSize;
 
-    @ConfigurableProperty(name = "dcmTCPReceiveBufferSize")
+    @ConfigurableProperty(name = "dcmTCPReceiveBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int receiveBufferSize;
 
     @ConfigurableProperty(name = "dcmSendPDULength", defaultValue = "16378")

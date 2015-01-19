@@ -124,7 +124,7 @@ public class TestDicomImageReader {
     private void testReadRasterFromInput(Object input, int imageIndex)
             throws IOException {
         reader.setInput(input);
-        reader.readRaster(imageIndex, reader.getDefaultReadParam());
+        reader.readRaster(imageIndex, null);
     }
 
 }

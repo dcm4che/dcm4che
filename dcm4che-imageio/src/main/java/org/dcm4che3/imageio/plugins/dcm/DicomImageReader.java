@@ -302,8 +302,12 @@ public class DicomImageReader extends ImageReader {
 
     private ImageReadParam decompressParam(ImageReadParam param) {
         ImageReadParam decompressParam = decompressor.getDefaultReadParam();
-        ImageTypeSpecifier imageType = param.getDestinationType();
-        BufferedImage dest = param.getDestination();
+        ImageTypeSpecifier imageType = null;
+        BufferedImage dest = null;
+        if (param != null) {
+            imageType = param.getDestinationType();
+            dest = param.getDestination();
+        }
         if (rle && imageType == null && dest == null)
             imageType = createImageType(bitsStored, dataType, true);
         decompressParam.setDestinationType(imageType);

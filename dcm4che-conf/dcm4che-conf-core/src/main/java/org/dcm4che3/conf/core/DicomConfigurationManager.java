@@ -39,16 +39,22 @@
  */
 package org.dcm4che3.conf.core;
 
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.net.Device;
+
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Roman K
  */
-public interface ConfigurationManager {
+public interface DicomConfigurationManager {
 
     BeanVitalizer getVitalizer();
 
     Configuration getConfigurationStorage();
 
     List<Class> getExtensionClasses();
+
+    Device vitalizeDevice(String deviceName, Map<String, Object> configuratioNode) throws ConfigurationException;
 }

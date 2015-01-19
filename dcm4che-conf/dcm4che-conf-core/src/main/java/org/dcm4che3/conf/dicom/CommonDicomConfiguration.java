@@ -46,7 +46,6 @@ import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.ConfigurationManager;
@@ -54,13 +53,12 @@ import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
 import org.dcm4che3.net.*;
-import org.dcm4che3.net.hl7.HL7Application;
-import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
@@ -282,12 +280,12 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
         if (deviceCache.containsKey(name))
             return deviceCache.get(name);
 
-
         try {
 
             Device device;
             try {
-                device = loadDevice(name, deviceCache);
+                Object deviceConfigurationNode = config.getConfigurationNode(deviceRef(name), Device.class);
+                device = vitalizeDevice(name, deviceCache, deviceConfigurationNode);
             } catch (Exception e) {
                 throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
             }
@@ -301,24 +299,22 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
         }
     }
 
-    protected Device loadDevice(String name, Map<String, Device> deviceCache) throws ConfigurationException {
-        Object configurationNode = config.getConfigurationNode(deviceRef(name), Device.class);
-        if (configurationNode == null) return null;
+    protected Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
+        if (deviceConfigurationNode == null) return null;
 
         Device device = new Device();
         deviceCache.put(name, device);
 
-        vitalizer.configureInstance(device, (Map<String, Object>) configurationNode, Device.class);
+        vitalizer.configureInstance(device, (Map<String, Object>) deviceConfigurationNode, Device.class);
 
         // add device extensions
         for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
 
             String deviceExtensionPath = DicomPath.DeviceExtension.
-                    set("deviceName", name).
                     set("extensionName", deviceExtensionClass.getSimpleName()).
                     path();
 
-            Map<String, Object> deviceExtensionNode = (Map<String, Object>) config.getConfigurationNode(deviceExtensionPath, deviceExtensionClass);
+            Map<String, Object> deviceExtensionNode = (Map<String, Object>) ConfigNodeUtil.getNode(deviceConfigurationNode, deviceExtensionPath);
             if (deviceExtensionNode != null) {
                 DeviceExtension ext = vitalizer.newInstance(deviceExtensionClass);
                 // add extension before vitalizing it, so the device field is accessible for use in setters
@@ -334,12 +330,11 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
             for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses) {
 
                 String aeExtPath = DicomPath.AEExtension.
-                        set("deviceName", name).
                         set("aeName", aeTitle).
                         set("extensionName", aeExtensionClass.getSimpleName()).
                         path();
 
-                Object aeExtNode = config.getConfigurationNode(aeExtPath, aeExtensionClass);
+                Object aeExtNode = (Map<String, Object>) ConfigNodeUtil.getNode(deviceConfigurationNode, aeExtPath);
                 if (aeExtNode != null) {
                     AEExtension ext = vitalizer.newInstance(aeExtensionClass);
                     // add extension before vitalizing it, so the device field is accessible for use in setters
@@ -394,11 +389,14 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
 
     @Override
     public void merge(Device device) throws ConfigurationException {
+        final Map<String, Object> deviceConfigNode = createDeviceConfigNode(device);
+        config.persistNode(deviceRef(device.getDeviceName()), deviceConfigNode, Device.class);
+    }
 
-        // persist device
+    protected Map<String, Object> createDeviceConfigNode(Device device) throws ConfigurationException {
+
         final Map<String, Object> deviceConfigNode = vitalizer.createConfigNodeFromInstance(device, Device.class);
 
-        config.persistNode(deviceRef(device.getDeviceName()), deviceConfigNode, Device.class);
 
         // persist AEExtensions
         for (Map.Entry<String, ApplicationEntity> entry : device.getApplicationEntitiesMap().entrySet()) {
@@ -411,12 +409,11 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
                 Map<String, Object> aeExtNode = vitalizer.createConfigNodeFromInstance(aeExtension, aeExtensionClass);
 
                 String aeExtensionPath = DicomPath.AEExtension.
-                        set("deviceName", device.getDeviceName()).
                         set("aeName", ae.getAETitle()).
                         set("extensionName", aeExtensionClass.getSimpleName()).
                         path();
 
-                config.persistNode(aeExtensionPath, aeExtNode, aeExtensionClass);
+                ConfigNodeUtil.replaceNode(deviceConfigNode, aeExtensionPath, aeExtNode);
             }
         }
 
@@ -425,15 +422,13 @@ public class CommonDicomConfiguration implements DicomConfiguration, Configurati
             final DeviceExtension deviceExtension = device.getDeviceExtension(deviceExtensionClass);
             final String extensionPath =
                     DicomPath.DeviceExtension.
-                            set("deviceName", device.getDeviceName()).
                             set("extensionName", deviceExtensionClass.getSimpleName()).
                             path();
 
-            if (deviceExtension == null)
-                config.removeNode(extensionPath);
-            else
-                config.persistNode(extensionPath, vitalizer.createConfigNodeFromInstance(deviceExtension, deviceExtensionClass), deviceExtensionClass);
+            if (deviceExtension != null)
+                ConfigNodeUtil.replaceNode(deviceConfigNode, extensionPath, vitalizer.createConfigNodeFromInstance(deviceExtension, deviceExtensionClass));
         }
+        return deviceConfigNode;
     }
 
     @Override

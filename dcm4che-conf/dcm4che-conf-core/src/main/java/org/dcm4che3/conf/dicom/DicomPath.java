@@ -82,9 +82,9 @@ public enum DicomPath {
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
         PATHS.put(/*************/DeviceByName, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
-        PATHS.put(/**************/AEExtension, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']/dicomNetworkAE[@name='{aeName}']/aeExtensions/{extensionName}");
-        PATHS.put(/**********/DeviceExtension, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']/deviceExtensions/{extensionName}");
-        PATHS.put(/**********/HL7AppExtension, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']/deviceExtensions/HL7DeviceExtension/hl7Apps[@name='{hl7AppName}']/hl7AppExtensions/{extensionName}");
+        PATHS.put(/**************/AEExtension, "/dicomNetworkAE[@name='{aeName}']/aeExtensions/{extensionName}");
+        PATHS.put(/**********/DeviceExtension, "/deviceExtensions/{extensionName}");
+        PATHS.put(/**********/HL7AppExtension, "/deviceExtensions/HL7DeviceExtension/hl7Apps[@name='{hl7AppName}']/hl7AppExtensions/{extensionName}");
         PATHS.put(/**********/UniqueAETByName, "/dicomConfigurationRoot/dicomUniqueAETitlesRegistryRoot[@name='{aeName}']");
         PATHS.put(/*******/UniqueHL7AppByName, "/dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot[@name='{hl7AppName}']");
 

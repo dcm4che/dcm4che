@@ -46,6 +46,8 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -56,6 +58,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
@@ -95,6 +98,8 @@ public class DicomImageReader extends ImageReader {
 
     private ImageInputStream iis;
 
+    private Attributes ds;
+
     private DicomMetaData metadata;
 
     private int frames;
@@ -103,15 +108,17 @@ public class DicomImageReader extends ImageReader {
 
     private int height;
 
-    private DicomInputStream dis;
-
     private BulkData pixeldata;
 
     private final VR.Holder pixeldataVR = new VR.Holder();
 
     private Fragments pixeldataFragments;
 
+    private File pixeldataFile;
+
     private ImageReader decompressor;
+
+    private boolean rle;
 
     private PatchJPEGLS patchJpegLS;
 
@@ -138,7 +145,15 @@ public class DicomImageReader extends ImageReader {
             boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
         resetInternalState();
-        iis = (ImageInputStream) input;
+        if (input instanceof DicomMetaData) {
+            setMetadata((DicomMetaData) input);
+            if (pixeldata != null)
+                pixeldataFile = pixeldata.getFile();
+            else if (pixeldataFragments != null && pixeldataFragments.size() > 1)
+                pixeldataFile = ((BulkData) pixeldataFragments.get(1)).getFile();
+        } else {
+            iis = (ImageInputStream) input;
+        }
     }
 
     @Override
@@ -169,17 +184,18 @@ public class DicomImageReader extends ImageReader {
         checkIndex(frameIndex);
 
         if (decompressor == null)
-            createImageType(bitsStored, dataType, banded);
+            return createImageType(bitsStored, dataType, banded);
         
-        if (isRLELossless())
-            createImageType(bitsStored, dataType, true);
+        if (rle)
+            return createImageType(bitsStored, dataType, true);
         
-        decompressor.setInput(iisOfFrame(0));
-        return decompressor.getRawImageType(0);
-    }
-
-    private boolean isRLELossless() {
-        return dis.getTransferSyntax().equals(UID.RLELossless);
+        openiis();
+        try {
+            decompressor.setInput(iisOfFrame(0));
+            return decompressor.getRawImageType(0);
+        } finally {
+            closeiis();
+        }
     }
 
     @Override
@@ -193,14 +209,31 @@ public class DicomImageReader extends ImageReader {
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
         else if (decompressor == null)
             imageType = createImageType(bitsStored, dataType, banded);
-        else if (isRLELossless())
+        else if (rle)
             imageType = createImageType(bitsStored, dataType, true);
         else {
-            decompressor.setInput(iisOfFrame(0));
-            return decompressor.getImageTypes(0);
+            openiis();
+            try {
+                decompressor.setInput(iisOfFrame(0));
+                return decompressor.getImageTypes(0);
+            } finally {
+                closeiis();
+            }
         }
 
         return Collections.singletonList(imageType).iterator();
+    }
+
+    private void openiis() throws IOException {
+        if (pixeldataFile != null && iis == null)
+            iis = new FileImageInputStream(pixeldataFile);
+    }
+
+    private void closeiis() throws IOException {
+        if (pixeldataFile != null && iis != null) {
+            iis.close();
+            iis = null;
+        }
     }
 
     @Override
@@ -230,40 +263,48 @@ public class DicomImageReader extends ImageReader {
         readMetadata();
         checkIndex(frameIndex);
 
-        if (decompressor != null) {
-            decompressor.setInput(iisOfFrame(frameIndex));
-
-            if (LOG.isDebugEnabled())
-                LOG.debug("Start decompressing frame #" + (frameIndex + 1));
-            Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
-                    ? decompressor.readRaster(0, decompressParam(param))
-                    : decompressor.read(0, decompressParam(param)).getRaster();
-            if (LOG.isDebugEnabled())
-                LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+        openiis();
+        try {
+            if (decompressor != null) {
+                decompressor.setInput(iisOfFrame(frameIndex));
+    
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+                Raster wr = pmi.decompress() == pmi && decompressor.canReadRaster()
+                        ? decompressor.readRaster(0, decompressParam(param))
+                        : decompressor.read(0, decompressParam(param)).getRaster();
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+                return wr;
+            }
+            iis.setByteOrder(ds.bigEndian()
+                    ? ByteOrder.BIG_ENDIAN
+                    : ByteOrder.LITTLE_ENDIAN);
+            iis.seek(pixeldata.offset + frameIndex * frameLength);
+            WritableRaster wr = Raster.createWritableRaster(
+                    createSampleModel(dataType, banded), null);
+            DataBuffer buf = wr.getDataBuffer();
+            if (buf instanceof DataBufferByte) {
+                byte[][] data = ((DataBufferByte) buf).getBankData();
+                for (byte[] bs : data)
+                    iis.readFully(bs);
+                if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+                    ByteUtils.swapShorts(data);
+            } else {
+                short[] data = ((DataBufferUShort) buf).getData();
+                iis.readFully(data, 0, data.length);
+            }
             return wr;
+        } finally {
+            closeiis();
         }
-        iis.seek(pixeldata.offset + frameIndex * frameLength);
-        WritableRaster wr = Raster.createWritableRaster(
-                createSampleModel(dataType, banded), null);
-        DataBuffer buf = wr.getDataBuffer();
-        if (buf instanceof DataBufferByte) {
-            byte[][] data = ((DataBufferByte) buf).getBankData();
-            for (byte[] bs : data)
-                iis.readFully(bs);
-            if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
-                ByteUtils.swapShorts(data);
-        } else {
-            short[] data = ((DataBufferUShort) buf).getData();
-            iis.readFully(data, 0, data.length);
-        }
-        return wr;
     }
 
     private ImageReadParam decompressParam(ImageReadParam param) {
         ImageReadParam decompressParam = decompressor.getDefaultReadParam();
         ImageTypeSpecifier imageType = param.getDestinationType();
         BufferedImage dest = param.getDestination();
-        if (isRLELossless() && imageType == null && dest == null)
+        if (rle && imageType == null && dest == null)
             imageType = createImageType(bitsStored, dataType, true);
         decompressParam.setDestinationType(imageType);
         decompressParam.setDestination(dest);
@@ -278,16 +319,21 @@ public class DicomImageReader extends ImageReader {
 
         WritableRaster raster;
         if (decompressor != null) {
-            decompressor.setInput(iisOfFrame(frameIndex));
-            if (LOG.isDebugEnabled())
-                LOG.debug("Start decompressing frame #" + (frameIndex + 1));
-            BufferedImage bi = decompressor.read(0, decompressParam(param));
-            if (LOG.isDebugEnabled())
-                LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
-            if (samples > 1)
-                return bi;
-            
-            raster = bi.getRaster();
+            openiis();
+            try {
+                decompressor.setInput(iisOfFrame(frameIndex));
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Start decompressing frame #" + (frameIndex + 1));
+                BufferedImage bi = decompressor.read(0, decompressParam(param));
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Finished decompressing frame #" + (frameIndex + 1));
+                if (samples > 1)
+                    return bi;
+                
+                raster = bi.getRaster();
+            } finally {
+                closeiis();
+            }
         } else
             raster = (WritableRaster) readRaster(frameIndex, param);
 
@@ -465,13 +511,19 @@ public class DicomImageReader extends ImageReader {
         if (iis == null)
             throw new IllegalStateException("Input not set");
 
-        dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
+        @SuppressWarnings("resource")
+        DicomInputStream dis = new DicomInputStream(new ImageInputStreamAdapter(iis));
         dis.setIncludeBulkData(IncludeBulkData.URI);
         dis.setBulkDataDescriptor(BulkDataDescriptor.PIXELDATA);
         dis.setURI("java:iis"); // avoid copy of pixeldata to temporary file
         Attributes fmi = dis.readFileMetaInformation();
         Attributes ds = dis.readDataset(-1, -1);
-        metadata = new DicomMetaData(fmi, ds);
+        setMetadata(new DicomMetaData(fmi, ds));
+    }
+
+    private void setMetadata(DicomMetaData metadata) {
+        this.metadata = metadata;
+        this.ds = metadata.getAttributes();
         Object pixeldata = ds.getValue(Tag.PixelData, pixeldataVR );
         if (pixeldata != null) {
             frames = ds.getInt(Tag.NumberOfFrames, 1);
@@ -486,17 +538,19 @@ public class DicomImageReader extends ImageReader {
             pmi = PhotometricInterpretation.fromString(
                     ds.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
             if (pixeldata instanceof BulkData) {
-                iis.setByteOrder(ds.bigEndian() 
-                        ? ByteOrder.BIG_ENDIAN
-                        : ByteOrder.LITTLE_ENDIAN);
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
                 this.pixeldata = (BulkData) pixeldata;
             } else {
-                String tsuid = dis.getTransferSyntax();
+                Attributes fmi = metadata.getFileMetaInformation();
+                if (fmi == null)
+                    throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");
+                
+                String tsuid = fmi.getString(Tag.TransferSyntaxUID);
                 ImageReaderParam param =
                         ImageReaderFactory.getImageReaderParam(tsuid);
                 if (param == null)
-                    throw new IOException("Unsupported Transfer Syntax: " + tsuid);
+                    throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
+                this.rle = tsuid.equals(UID.RLELossless);
                 this.decompressor = ImageReaderFactory.getImageReader(param);
                 this.patchJpegLS = param.patchJPEGLS;
                 this.pixeldataFragments = (Fragments) pixeldata;
@@ -520,7 +574,8 @@ public class DicomImageReader extends ImageReader {
 
     private void resetInternalState() {
         metadata = null;
-        dis = null;
+        ds = null;
+        pixeldataFile = null;
         frames = 0;
         width = 0;
         height = 0;
@@ -536,7 +591,7 @@ public class DicomImageReader extends ImageReader {
 
     private void checkIndex(int frameIndex) {
         if (frames == 0)
-            throw new InternalError("Missing Pixel Data");
+            throw new IllegalStateException("Missing Pixel Data");
         
         if (frameIndex < 0 || frameIndex >= frames)
             throw new IndexOutOfBoundsException("imageIndex: " + frameIndex);

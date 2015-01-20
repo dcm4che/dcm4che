@@ -11,6 +11,8 @@ import org.junit.Test;
 
 public class AttributeCoercionsTest {
 
+    private static final String DEVICE = "DEVICE_A";
+    private static final String[] DEVICES = { DEVICE };
     private static final String URI = "file:///a.xsl";
 
     @Test
@@ -20,6 +22,7 @@ public class AttributeCoercionsTest {
                 new String[]{UID.CTImageStorage}, 
                 C_STORE_RQ, SCP,
                 new String[]{"AET1"},
+                DEVICES,
                 URI);
         AttributeCoercion anyFromAET2 = new AttributeCoercion(
                 "Coerce any from AET2",
@@ -27,11 +30,13 @@ public class AttributeCoercionsTest {
                 C_STORE_RQ,
                 SCP,
                 new String[]{"AET2"},
+                DEVICES,
                 URI);
         AttributeCoercion mrFromAny = new AttributeCoercion(
                 "Coerce MR from any",
                 new String[]{UID.MRImageStorage},
                 C_STORE_RQ, SCP,
+                null,
                 null,
                 URI);
         AttributeCoercion any = new AttributeCoercion(
@@ -40,6 +45,7 @@ public class AttributeCoercionsTest {
                 C_STORE_RQ,
                 SCP,
                 null,
+                null,
                 URI);
         AttributeCoercions acs = new AttributeCoercions();
         acs.add(any);
@@ -47,15 +53,15 @@ public class AttributeCoercionsTest {
         acs.add(anyFromAET2);
         acs.add(mrFromAny);
         assertSame(ctFromAET1, acs.findAttributeCoercion(
-                UID.CTImageStorage, C_STORE_RQ, SCP, "AET1"));
+                UID.CTImageStorage, C_STORE_RQ, SCP, "AET1", DEVICE));
         assertSame(anyFromAET2, acs.findAttributeCoercion(
-                UID.CTImageStorage, C_STORE_RQ, SCP, "AET2"));
+                UID.CTImageStorage, C_STORE_RQ, SCP, "AET2", DEVICE));
         assertSame(mrFromAny, acs.findAttributeCoercion(
-                UID.MRImageStorage, C_STORE_RQ, SCP, "AET1"));
+                UID.MRImageStorage, C_STORE_RQ, SCP, "AET1", DEVICE));
         assertSame(anyFromAET2, acs.findAttributeCoercion(
-                UID.MRImageStorage, C_STORE_RQ, SCP, "AET2"));
+                UID.MRImageStorage, C_STORE_RQ, SCP, "AET2", DEVICE));
         assertSame(any, acs.findAttributeCoercion(
-                UID.CTImageStorage, C_STORE_RQ, SCP, "AET3"));
+                UID.CTImageStorage, C_STORE_RQ, SCP, "AET3", DEVICE));
     }
 
 

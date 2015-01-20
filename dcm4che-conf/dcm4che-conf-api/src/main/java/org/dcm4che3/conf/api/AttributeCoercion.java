@@ -45,7 +45,6 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.TransferCapability.Role;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.UIDUtils;
@@ -75,7 +74,8 @@ public class AttributeCoercion
     }
 
     public AttributeCoercion(String commonName, String[] sopClasses,
-            Dimse dimse, Role role, String[] aeTitles, String uri) {
+            Dimse dimse, Role role, String[] aeTitles, String[] deviceNames,
+            String uri) {
         if (commonName == null)
             throw new NullPointerException("commonName");
         if (commonName.isEmpty())
@@ -86,7 +86,8 @@ public class AttributeCoercion
                 StringUtils.maskNull(sopClasses),
                 dimse,
                 role,
-                StringUtils.maskNull(aeTitles));
+                StringUtils.maskNull(aeTitles),
+                StringUtils.maskNull(deviceNames));
         this.uri = uri;
     }
 
@@ -136,8 +137,8 @@ public class AttributeCoercion
     }
 
     public boolean matchesCondition(String sopClass, Dimse dimse, Role role,
-            String aeTitle) {
-        return condition.matches(sopClass, dimse, role, aeTitle);
+            String aeTitle, String deviceName) {
+        return condition.matches(sopClass, dimse, role, aeTitle, deviceName);
     }
 
     @Override
@@ -162,6 +163,8 @@ public class AttributeCoercion
                 Arrays.toString(condition.sopClasses));
         StringUtils.appendLine(sb, indent2, "aets: ",
                 Arrays.toString(condition.aeTitles));
+        StringUtils.appendLine(sb, indent2, "devs: ",
+                Arrays.toString(condition.deviceNames));
         StringUtils.appendLine(sb, indent2, "uri: ", uri);
         return sb.append(indent).append(']');
     }
@@ -203,6 +206,9 @@ public class AttributeCoercion
         @ConfigurableProperty(name = "dicomTransferRole")
         Role role;
 
+        @ConfigurableProperty(name = "dcmDeviceName")
+        String[] deviceNames;
+
         @ConfigurableProperty(name = "dcmAETitle")
         String[] aeTitles;
 
@@ -212,7 +218,7 @@ public class AttributeCoercion
         }
 
         public Condition(String[] sopClasses, Dimse dimse, Role role,
-                String[] aeTitles) {
+                String[] aeTitles, String[] deviceNames) {
             if (dimse == null)
                 throw new NullPointerException("dimse");
             if (role == null)
@@ -222,11 +228,13 @@ public class AttributeCoercion
             this.dimse = dimse;
             this.role = role;
             this.aeTitles = aeTitles;
+            this.deviceNames = deviceNames;
             calcWeight();
         }
 
         public void calcWeight() {
-            this.weight = (aeTitles.length != 0 ? 2 : 0)
+            this.weight = (aeTitles.length != 0 ? 4 : 0)
+                    + (deviceNames.length != 0 ? 2 : 0)
                     + (sopClasses.length != 0 ? 1 : 0);
 
         }
@@ -235,7 +243,7 @@ public class AttributeCoercion
             return sopClasses;
         }
 
-        public void setSopClasses(String[] sopClasses) {
+        public void setSopClasses(String... sopClasses) {
             this.sopClasses = sopClasses;
         }
 
@@ -255,11 +263,19 @@ public class AttributeCoercion
             this.role = role;
         }
 
+        public String[] getDeviceNames() {
+            return deviceNames;
+        }
+
+        public void setDeviceNames(String... deviceNames) {
+            this.deviceNames = deviceNames;
+        }
+
         public String[] getAeTitles() {
             return aeTitles;
         }
 
-        public void setAeTitles(String[] aeTitles) {
+        public void setAeTitles(String... aeTitles) {
             this.aeTitles = aeTitles;
         }
 
@@ -269,9 +285,10 @@ public class AttributeCoercion
         }
 
         public boolean matches(String sopClass, Dimse dimse, Role role,
-                String aeTitle) {
+                String aeTitle, String deviceName) {
             return this.dimse == dimse
                     && this.role == role
+                    && isEmptyOrContains(this.deviceNames, deviceName)
                     && isEmptyOrContains(this.aeTitles, aeTitle)
                     && isEmptyOrContains(this.sopClasses, sopClass);
         }

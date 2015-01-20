@@ -38,12 +38,6 @@
 
 package org.dcm4che3.net.hl7;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.util.*;
-
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -54,6 +48,12 @@ import org.dcm4che3.net.CompatibleConnection;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.IncompatibleConnectionException;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.util.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -66,24 +66,36 @@ public class HL7Application implements Serializable {
 
     private Device device;
 
-    @ConfigurableProperty(name = "hl7ApplicationName")
+    @ConfigurableProperty(name = "hl7ApplicationName",
+            label = "HL7 application name",
+            description = "HL7 Application and Facility name (Application^Facility)"
+    )
     private String applicationName;
 
-    @ConfigurableProperty(name = "hl7DefaultCharacterSet")
+    @ConfigurableProperty(name = "hl7DefaultCharacterSet",
+            label = "Default character set",
+            description = "Character Set used to decode received messages if not specified by MSH-18, ASCII if absent")
     private String HL7DefaultCharacterSet;
 
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean hl7Installed;
 
-    @ConfigurableProperty(name = "hl7AcceptedSendingApplication")
+    @ConfigurableProperty(name = "hl7AcceptedSendingApplication",
+            label = "Accepted applications",
+            description = "Application^Facility name of accepted Sending Application(s); any if absent")
     private Set<String> acceptedSendingApplicationsSet =
             new LinkedHashSet<String>();
 
-    @ConfigurableProperty(name = "hl7AcceptedMessageType")
+    @ConfigurableProperty(name = "hl7AcceptedMessageType",
+            label = "Accepted message types",
+            description = "Message Type(s) (MessageType^TriggerEvent) of accepted messages")
     private Set<String> acceptedMessageTypesSet =
             new LinkedHashSet<String>();
 
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true)
+    @ConfigurableProperty(name = "dicomNetworkConnectionReference",
+            label = "Connections",
+            description = "Which connections are used by this HL7 application",
+            collectionOfReferences = true)
     private List<Connection> conns = new ArrayList<Connection>(1);
 
     private Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions =

@@ -89,7 +89,7 @@ public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
-    @ConfigurableProperty(name = "dicomDeviceName", tags = Tag.PRIMARY)
+    @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
 
     @ConfigurableProperty(name = "dicomDescription")

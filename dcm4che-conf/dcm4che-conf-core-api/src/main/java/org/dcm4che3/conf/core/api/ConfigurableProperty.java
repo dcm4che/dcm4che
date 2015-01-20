@@ -121,6 +121,12 @@ public @interface ConfigurableProperty {
     }
 
     /**
+     * Ordering of properties for GUI. The larger the number, the lower in the list the property will be displayed.
+     * @return
+     */
+    int order() default 0;
+
+    /**
      * Name of the group this property belong to
      */
     String group() default "Other";

@@ -48,6 +48,7 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -160,14 +161,25 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         classMetaDataWrapper.put("type", "object");
         classMetaDataWrapper.put("class", clazz.getSimpleName());
 
+        // find out if we need to include uiOrder metadata
+        boolean includeOrder = false;
+        for (AnnotatedConfigurableProperty configurableChildProperty : ConfigIterators.getAllConfigurableFieldsAndSetterParameters(clazz))
+            if (configurableChildProperty.getAnnotation(ConfigurableProperty.class).order() != 0) includeOrder = true;
+
+
+        // populate properties
         for (AnnotatedConfigurableProperty configurableChildProperty : ConfigIterators.getAllConfigurableFieldsAndSetterParameters(clazz)) {
 
             ConfigurableProperty propertyAnnotation = configurableChildProperty.getAnnotation(ConfigurableProperty.class);
 
-            Map<String, Object> childPropertyMetadata = new HashMap<String, Object>();
+            Map<String, Object> childPropertyMetadata = new LinkedHashMap<String, Object>();
             classMetaData.put(configurableChildProperty.getAnnotatedName(), childPropertyMetadata);
-            childPropertyMetadata.put("title", propertyAnnotation.label());
-            childPropertyMetadata.put("description", propertyAnnotation.description());
+
+            if (!propertyAnnotation.label().equals(""))
+                childPropertyMetadata.put("title", propertyAnnotation.label());
+
+            if (!propertyAnnotation.description().equals(""))
+                childPropertyMetadata.put("description", propertyAnnotation.description());
 
             if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
                 childPropertyMetadata.put("default", propertyAnnotation.defaultValue());
@@ -175,6 +187,8 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             if (!configurableChildProperty.getTags().isEmpty())
                 childPropertyMetadata.put("tags", configurableChildProperty.getTags());
 
+            if (includeOrder)
+                childPropertyMetadata.put("uiOrder",propertyAnnotation.order());
 
             childPropertyMetadata.put("uiGroup",propertyAnnotation.group());
 

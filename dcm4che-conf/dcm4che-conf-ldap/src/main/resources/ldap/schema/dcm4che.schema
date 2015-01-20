@@ -312,13 +312,18 @@ attributetype ( 1.2.40.0.13.1.15.0.3.60 NAME 'dcmClientBindAddress'
 attributetype ( 1.2.40.0.13.1.15.0.3.61 NAME 'dcmImageType'
   DESC 'DICOM Image Type (0008,0008) Attribute'
   EQUALITY caseExactMatch
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )    
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
 attributetype ( 1.2.840.10008.15.0.3.62 NAME 'dcmDeviceName'
    DESC 'The unique name for the device'
    EQUALITY caseIgnoreMatch
    SUBSTR caseIgnoreSubstringsMatch
    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributetype ( 1.2.40.0.13.1.15.0.3.63 NAME 'dcmModality'
+  DESC 'DICOM attribute Modality (0008,0060)'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
 attributetype ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'

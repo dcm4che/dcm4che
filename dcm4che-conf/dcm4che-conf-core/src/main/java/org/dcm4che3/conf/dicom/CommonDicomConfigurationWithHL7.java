@@ -132,6 +132,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     @Override
     protected Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
         Device device = super.vitalizeDevice(name, deviceCache, deviceConfigurationNode);
+        if (device == null) return null;
 
         // add exts
         HL7DeviceExtension hl7DeviceExtension = device.getDeviceExtension(HL7DeviceExtension.class);

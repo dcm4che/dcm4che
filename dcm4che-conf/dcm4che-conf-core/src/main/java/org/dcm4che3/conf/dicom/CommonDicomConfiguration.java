@@ -48,7 +48,6 @@ import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.core.DicomConfigurationManager;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -70,7 +69,7 @@ import java.util.*;
 /**
  * @author Roman K
  */
-public class CommonDicomConfiguration implements DicomConfiguration, DicomConfigurationManager {
+public class CommonDicomConfiguration implements DicomConfigurationManager {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CommonDicomConfiguration.class);

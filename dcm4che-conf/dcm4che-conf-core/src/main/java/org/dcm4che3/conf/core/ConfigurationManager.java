@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * @author Roman K
  */
-public interface DicomConfigurationManager {
+public interface ConfigurationManager {
 
     BeanVitalizer getVitalizer();
 
@@ -56,5 +56,4 @@ public interface DicomConfigurationManager {
 
     List<Class> getExtensionClasses();
 
-    Device vitalizeDevice(String deviceName, Map<String, Object> configuratioNode) throws ConfigurationException;
 }

@@ -53,6 +53,8 @@ import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import java.util.*;
 
 public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration implements HL7Configuration {
+
+
     public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses, Collection<Class<? extends HL7ApplicationExtension>> hl7ApplicationExtensionClasses) {
         super(configurationStorage, deviceExtensionClasses, aeExtensionClasses);
         this.hl7ApplicationExtensionClasses = hl7ApplicationExtensionClasses;

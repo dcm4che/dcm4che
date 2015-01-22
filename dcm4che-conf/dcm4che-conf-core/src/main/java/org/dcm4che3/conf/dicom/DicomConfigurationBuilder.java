@@ -191,12 +191,12 @@ public class DicomConfigurationBuilder {
         }
 
         if (isCached || Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
-            configurationStorage = new CachedRootNodeConfiguration(configurationStorage);
+            configurationStorage = new CachedRootNodeConfiguration(configurationStorage, props);
 
         return configurationStorage;
     }
 
-    private static String getPropertyWithNotice(Hashtable<?, ?> props,
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
                                                 String key, String defval) {
         return getPropertyWithNotice(props, key, defval, "", false);
     }

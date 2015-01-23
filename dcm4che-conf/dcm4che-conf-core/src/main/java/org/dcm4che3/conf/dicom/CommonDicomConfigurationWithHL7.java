@@ -171,7 +171,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
 
         Map<String, Object> deviceConfigNode = super.createDeviceConfigNode(device);
 
-        // add exts
+        // add hl7 extensions
         HL7DeviceExtension hl7DeviceExtension = device.getDeviceExtension(HL7DeviceExtension.class);
         if (hl7DeviceExtension == null) return deviceConfigNode;
 

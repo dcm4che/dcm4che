@@ -409,7 +409,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
         final Map<String, Object> deviceConfigNode = vitalizer.createConfigNodeFromInstance(device, Device.class);
 
 
-        // persist AEExtensions
+        // populate AEExtensions
         for (Map.Entry<String, ApplicationEntity> entry : device.getApplicationEntitiesMap().entrySet()) {
 
             ApplicationEntity ae = entry.getValue();
@@ -428,7 +428,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
             }
         }
 
-        // persist DeviceExtensions
+        // populate DeviceExtensions
         for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
             final DeviceExtension deviceExtension = device.getDeviceExtension(deviceExtensionClass);
             final String extensionPath =

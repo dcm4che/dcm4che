@@ -50,7 +50,8 @@ import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import java.util.*;
 
 /**
- *
+ * When persisting, optionally filters out the properties that have values equal to defaults.
+ * When loading, sets properties to default values where there was no value saved.
  */
 public class DefaultsFilterDecorator extends DelegatingConfiguration {
 

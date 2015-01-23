@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Roman K
+ * Triggers the tree traverse further for deviceExtensions,aeExtensions and hl7AppExtensions when applying/filtering defaults
  */
 public class DicomDefaultsFilterDecorator extends DefaultsFilterDecorator {
     public static final Logger log = LoggerFactory.getLogger(DicomDefaultsFilterDecorator.class);

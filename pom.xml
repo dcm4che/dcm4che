@@ -41,7 +41,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
-  <version>3.3.6-SNAPSHOT</version>
+  <version>3.3.6-ASB2</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
   <description>dcm4che DICOM toolkit and utilities</description>
@@ -72,6 +72,7 @@
     <connection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</connection>
     <developerConnection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</developerConnection>
     <url>http://github.com/dcm4che/dcm4che</url>
+    <tag>3.3.6-ASB2</tag>
   </scm>
   <issueManagement>
     <system>JIRA</system>

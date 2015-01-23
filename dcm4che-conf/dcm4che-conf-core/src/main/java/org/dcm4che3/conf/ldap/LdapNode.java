@@ -269,7 +269,7 @@ public class LdapNode {
             for (Map.Entry<String, Map<String, Object>> ext : extensions.entrySet()) {
                 Class<?> extClass = null;
                 try {
-                    extClass = LdapConfigUtils.getExtensionClassBySimpleName(getLdapConfigurationStorage(), ext.getKey());
+                    extClass = ConfigIterators.getExtensionClassBySimpleName(ext.getKey(), getLdapConfigurationStorage().getAllExtensionClasses());
                 } catch (Exception e) {
                     throw new ConfigurationException("Cannot find extension class " + ext.getKey(), e);
                 }

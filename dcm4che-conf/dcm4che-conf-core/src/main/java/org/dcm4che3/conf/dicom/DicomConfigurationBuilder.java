@@ -40,7 +40,7 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.core.normalization.DefaultsFilterDecorator;
+import org.dcm4che3.conf.dicom.filters.DicomDefaultsFilterDecorator;
 import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.ldap.LdapConfigurationStorage;
@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -123,7 +124,16 @@ public class DicomConfigurationBuilder {
 
     public CommonDicomConfigurationWithHL7 build() throws ConfigurationException {
 
-        Configuration configurationStorage = createConfigurationStorage();
+        List<Class<?>> allExtensions = new ArrayList<Class<?>>();
+        for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses)
+            allExtensions.add(hl7ApplicationExtensionClass);
+        for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses)
+            allExtensions.add(aeExtensionClass);
+        for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses)
+            allExtensions.add(deviceExtensionClass);
+
+
+        Configuration configurationStorage = createConfigurationStorage(allExtensions);
         if (configurationStorage == null) return null;
 
         LOG.info("Dcm4che configuration device extensions: {}", deviceExtensionClasses);
@@ -131,14 +141,14 @@ public class DicomConfigurationBuilder {
         LOG.info("Dcm4che configuration HL7 extensions: {}", hl7ApplicationExtensionClasses);
 
         return new CommonDicomConfigurationWithHL7(
-                new DefaultsFilterDecorator(configurationStorage),
+                new DicomDefaultsFilterDecorator(configurationStorage, allExtensions, props),
                 deviceExtensionClasses,
                 aeExtensionClasses,
                 hl7ApplicationExtensionClasses
         );
     }
 
-    private Configuration createConfigurationStorage() throws ConfigurationException {
+    private Configuration createConfigurationStorage(List<Class<?>> allExtensions) throws ConfigurationException {
 
         // if configurationStorage is already set - skip the storage init
         if (configurationStorage == null) {
@@ -172,14 +182,8 @@ public class DicomConfigurationBuilder {
                         ldapProps = ldapStringProps;
                     }
 
-                    LdapConfigurationStorage ldapConfigurationStorage = new LdapConfigurationStorage(ldapProps);
 
-                    for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses)
-                        ldapConfigurationStorage.addExtensionClass(hl7ApplicationExtensionClass);
-                    for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses)
-                        ldapConfigurationStorage.addExtensionClass(aeExtensionClass);
-                    for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses)
-                        ldapConfigurationStorage.addExtensionClass(deviceExtensionClass);
+                    LdapConfigurationStorage ldapConfigurationStorage = new LdapConfigurationStorage(ldapProps, allExtensions);
 
                     configurationStorage = ldapConfigurationStorage;
 

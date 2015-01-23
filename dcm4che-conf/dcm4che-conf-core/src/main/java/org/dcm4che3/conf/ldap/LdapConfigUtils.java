@@ -249,7 +249,7 @@ public class LdapConfigUtils {
                             extName = pathItem.get("$name").toString();
                         }
 
-                        currentClass = getExtensionClassBySimpleName(ldapStorage, extName);
+                        currentClass = ConfigIterators.getExtensionClassBySimpleName(extName, ldapStorage.getAllExtensionClasses());
 
                         LDAP ldapanno = (LDAP) currentClass.getAnnotation(LDAP.class);
                         if (ldapanno == null || !ldapanno.noContainerNode()) {
@@ -371,17 +371,6 @@ public class LdapConfigUtils {
     private static String escapeStringFromLdap(Object value) {
 
         return escapeApos(value.toString()).replace("\\,", ",");
-    }
-
-    static Class<?> getExtensionClassBySimpleName(LdapConfigurationStorage configurationStorage, String extensionSimpleName) throws ClassNotFoundException {
-
-        List<Class<?>> extensionClasses = configurationStorage.getAllExtensionClasses();
-
-        for (Class<?> aClass : extensionClasses) {
-            if (aClass.getSimpleName().equals(extensionSimpleName)) return aClass;
-        }
-
-        throw new ClassNotFoundException();
     }
 
     public static String getSubDn(String dn, AnnotatedConfigurableProperty property) throws ConfigurationException {

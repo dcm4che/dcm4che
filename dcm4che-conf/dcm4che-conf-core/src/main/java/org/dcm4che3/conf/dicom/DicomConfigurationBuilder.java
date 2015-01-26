@@ -71,7 +71,8 @@ public class DicomConfigurationBuilder {
             aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
     private final Collection<Class<? extends HL7ApplicationExtension>>
             hl7ApplicationExtensionClasses = new ArrayList<Class<? extends HL7ApplicationExtension>>();
-    private boolean isCached = false;
+    private Boolean cache;
+    private Boolean filterDefaults;
     private Hashtable<?, ?> ldapProps = null;
     private Configuration configurationStorage = null;
 
@@ -117,8 +118,13 @@ public class DicomConfigurationBuilder {
         return this;
     }
 
-    public DicomConfigurationBuilder cache() {
-        isCached = true;
+    public DicomConfigurationBuilder cache(boolean cache) {
+        this.cache = cache;
+        return this;
+    }
+
+    public DicomConfigurationBuilder filterDefaults(boolean filterDefaults) {
+        this.filterDefaults = filterDefaults;
         return this;
     }
 
@@ -141,7 +147,7 @@ public class DicomConfigurationBuilder {
         LOG.info("Dcm4che configuration HL7 extensions: {}", hl7ApplicationExtensionClasses);
 
         return new CommonDicomConfigurationWithHL7(
-                new DicomDefaultsFilterDecorator(configurationStorage, allExtensions, props),
+                configurationStorage,
                 deviceExtensionClasses,
                 aeExtensionClasses,
                 hl7ApplicationExtensionClasses
@@ -194,8 +200,13 @@ public class DicomConfigurationBuilder {
             }
         }
 
-        if (isCached || Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
+        if (cache != null ? cache
+                : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
             configurationStorage = new CachedRootNodeConfiguration(configurationStorage, props);
+
+        if (filterDefaults != null ? filterDefaults
+                : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.filterDefaults", "false")))
+            configurationStorage = new DicomDefaultsFilterDecorator(configurationStorage, allExtensions);
 
         return configurationStorage;
     }
@@ -248,8 +259,6 @@ public class DicomConfigurationBuilder {
         DicomConfigurationBuilder dicomConfigurationBuilder = new DicomConfigurationBuilder(props);
         dicomConfigurationBuilder.setLdapProps(ldapProps);
         return dicomConfigurationBuilder;
-
-
     }
 
 }

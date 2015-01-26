@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * @author Roman K

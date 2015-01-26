@@ -49,7 +49,6 @@ import org.dcm4che3.net.hl7.HL7Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +60,9 @@ public class DicomDefaultsFilterDecorator extends DefaultsFilterDecorator {
 
     private List<Class<?>> allExtensionClasses;
 
-    public DicomDefaultsFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses, Hashtable<?, ?> props) {
+    public DicomDefaultsFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses) {
 
-        super(delegate, props);
+        super(delegate);
         this.allExtensionClasses = allExtensionClasses;
     }
 

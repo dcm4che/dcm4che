@@ -45,7 +45,6 @@ import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigIterators;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 
 import java.util.*;
 
@@ -55,11 +54,8 @@ import java.util.*;
  */
 public class DefaultsFilterDecorator extends DelegatingConfiguration {
 
-    private Boolean doFilterDefaults;
-
-    public DefaultsFilterDecorator(Configuration delegate, Hashtable<?, ?> props) {
+    public DefaultsFilterDecorator(Configuration delegate) {
         super(delegate);
-        doFilterDefaults = Boolean.valueOf(DicomConfigurationBuilder.getPropertyWithNotice(props, "org.dcm4che.conf.filterDefaults", "false"));
     }
 
     @Override
@@ -79,7 +75,7 @@ public class DefaultsFilterDecorator extends DelegatingConfiguration {
         };
 
         // filter out defaults
-        if (configurableClass != null && doFilterDefaults)
+        if (configurableClass != null)
             traverseTree(configNode,configurableClass,filterDefaults);
 
         super.persistNode(path, configNode, configurableClass);

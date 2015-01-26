@@ -72,7 +72,7 @@ public class DicomConfigurationBuilder {
     private final Collection<Class<? extends HL7ApplicationExtension>>
             hl7ApplicationExtensionClasses = new ArrayList<Class<? extends HL7ApplicationExtension>>();
     private Boolean cache;
-    private Boolean filterDefaults;
+    private Boolean persistDefaults;
     private Hashtable<?, ?> ldapProps = null;
     private Configuration configurationStorage = null;
 
@@ -123,8 +123,8 @@ public class DicomConfigurationBuilder {
         return this;
     }
 
-    public DicomConfigurationBuilder filterDefaults(boolean filterDefaults) {
-        this.filterDefaults = filterDefaults;
+    public DicomConfigurationBuilder persistDefaults(boolean persistDefaults) {
+        this.persistDefaults = persistDefaults;
         return this;
     }
 
@@ -204,9 +204,10 @@ public class DicomConfigurationBuilder {
                 : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
             configurationStorage = new CachedRootNodeConfiguration(configurationStorage, props);
 
-        if (filterDefaults != null ? filterDefaults
-                : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.filterDefaults", "false")))
-            configurationStorage = new DicomDefaultsFilterDecorator(configurationStorage, allExtensions);
+        configurationStorage = new DicomDefaultsFilterDecorator(configurationStorage, allExtensions,
+                persistDefaults != null
+                    ? persistDefaults
+                    : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "true")));
 
         return configurationStorage;
     }

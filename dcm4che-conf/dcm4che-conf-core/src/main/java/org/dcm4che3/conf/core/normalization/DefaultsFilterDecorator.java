@@ -49,13 +49,15 @@ import org.dcm4che3.conf.core.util.ConfigIterators;
 import java.util.*;
 
 /**
- * When persisting, optionally filters out the properties that have values equal to defaults.
- * When loading, sets properties to default values where there was no value saved.
+ *
  */
 public class DefaultsFilterDecorator extends DelegatingConfiguration {
 
-    public DefaultsFilterDecorator(Configuration delegate) {
+    private boolean persistDefaults;
+
+    public DefaultsFilterDecorator(Configuration delegate, boolean persistDefaults) {
         super(delegate);
+        this.persistDefaults = persistDefaults;
     }
 
     @Override
@@ -75,7 +77,7 @@ public class DefaultsFilterDecorator extends DelegatingConfiguration {
         };
 
         // filter out defaults
-        if (configurableClass != null)
+        if (configurableClass != null && !persistDefaults)
             traverseTree(configNode,configurableClass,filterDefaults);
 
         super.persistNode(path, configNode, configurableClass);

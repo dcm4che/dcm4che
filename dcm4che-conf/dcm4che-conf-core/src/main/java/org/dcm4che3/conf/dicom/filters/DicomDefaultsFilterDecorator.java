@@ -60,9 +60,9 @@ public class DicomDefaultsFilterDecorator extends DefaultsFilterDecorator {
 
     private List<Class<?>> allExtensionClasses;
 
-    public DicomDefaultsFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses) {
+    public DicomDefaultsFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses, boolean persistDefaults) {
 
-        super(delegate);
+        super(delegate, persistDefaults);
         this.allExtensionClasses = allExtensionClasses;
     }
 

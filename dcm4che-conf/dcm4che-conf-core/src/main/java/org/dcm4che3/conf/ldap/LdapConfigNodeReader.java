@@ -66,16 +66,25 @@ import java.util.Map;
 public class LdapConfigNodeReader {
     static Object readNode(LdapConfigurationStorage ldapConfigurationStorage, String dn, Class configurableClass) throws ConfigurationException, NamingException {
         ArrayList<String> objectClasses = LdapConfigUtils.extractObjectClasses(configurableClass);
-        boolean isAnyContents = false;
 
         Attributes attributes;
         try {
             attributes = ldapConfigurationStorage.getLdapCtx().getAttributes(dn);
         } catch (NameNotFoundException noname) {
-            // when multiple nested properties have noContainerNode=true, it could happen that
-            // attributes = null;
+            // node is not there at all
             return null;
         }
+
+        boolean isAnyContents = false;
+
+        // if corresponding LDAP node has any of the configClass'es object classes - then make sure we don't return the node as null
+        // this, e.g., safeguards a case when an object is there but has all values set to defaults which were filtered out
+        NamingEnumeration<?> nodeObjectClasses = attributes.get("objectClass").getAll();
+        while (nodeObjectClasses.hasMore()) {
+            String oClass = (String) nodeObjectClasses.next();
+            if (objectClasses.contains(oClass)) isAnyContents = true;
+        }
+
 
         Map<String, Object> configNode = new HashMap<String, Object>();
         for (AnnotatedConfigurableProperty property : ConfigIterators.getAllConfigurableFieldsAndSetterParameters(configurableClass)) {

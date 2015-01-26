@@ -57,6 +57,7 @@
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmdir</module>
+	<module>dcm4che-tool-dcmdict</module>
     <module>dcm4che-tool-dcmqrscp</module>
     <module>dcm4che-tool-dcmvalidate</module>
     <module>dcm4che-tool-emf2sf</module>

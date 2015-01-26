@@ -90,6 +90,10 @@ public abstract class ElementDictionary {
         return privateCreator;
     }
 
+    public Class<?> getTagClass() {
+        return tagClass;
+    }
+
     public abstract VR vrOf(int tag);
 
     public abstract String keywordOf(int tag);

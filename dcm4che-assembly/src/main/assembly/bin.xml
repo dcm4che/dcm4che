@@ -110,6 +110,7 @@
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
+        <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
@@ -150,6 +151,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
         <!-- TODO fix configuration load
         <include>org.dcm4che.tool:dcm4che-tool-probetc</include> -->
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
@@ -160,6 +162,7 @@
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:javax.json</include>
+        <include>org.jboss.resteasy:jaxrs-api</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

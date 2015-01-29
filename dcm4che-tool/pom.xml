@@ -87,6 +87,7 @@
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
 	<module>dcm4che-tool-qidors</module>
+	<module>dcm4che-tool-wadors</module>
     <!-- TODO: fix configuration load
     <module>dcm4che-tool-probetc</module> -->
     <module>dcm4che-tool-prefs2xml</module>

@@ -1,6 +1,6 @@
 #!/bin/sh
 # -------------------------------------------------------------------------
-# stowrs client  Launcher
+# dcmdict client  Launcher
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.dcmdict.DcmDict

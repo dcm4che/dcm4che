@@ -72,7 +72,7 @@ import org.dcm4che3.data.Value;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
-import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
+import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 import org.slf4j.Logger;
@@ -281,8 +281,8 @@ public class Decompressor {
     @SuppressWarnings("resource")
     protected BufferedImage decompressFrame(ImageInputStream iis, int index)
             throws IOException {
-        SegmentedInputImageStream siis =
-                new SegmentedInputImageStream(iis, pixeldataFragments, index);
+        SegmentedImageInputStream siis =
+                new SegmentedImageInputStream(iis, pixeldataFragments, index);
         decompressor.setInput(patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
                 : siis);
@@ -304,7 +304,7 @@ public class Decompressor {
                 * (DataBuffer.getDataTypeSize(db.getDataType()) >>> 3);
     }
 
-    private static void writeTo(Raster raster, OutputStream out) throws IOException {
+    static void writeTo(Raster raster, OutputStream out) throws IOException {
         SampleModel sm = raster.getSampleModel();
         DataBuffer db = raster.getDataBuffer();
         switch (db.getDataType()) {

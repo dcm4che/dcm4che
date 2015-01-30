@@ -79,7 +79,7 @@ import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.ImageInputStreamAdapter;
-import org.dcm4che3.imageio.stream.SegmentedInputImageStream;
+import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -382,7 +382,7 @@ public class DicomImageReader extends ImageReader {
     @SuppressWarnings("resource")
     private ImageInputStreamImpl iisOfFrame(int frameIndex)
             throws IOException {
-        SegmentedInputImageStream siis = new SegmentedInputImageStream(
+        SegmentedImageInputStream siis = new SegmentedImageInputStream(
                 iis, pixeldataFragments, frameIndex);
         return patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)

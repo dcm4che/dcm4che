@@ -114,6 +114,13 @@ public class Attributes implements Serializable {
         init(initialCapacity);
     }
 
+    public void clear() {
+        size = 0;
+        Arrays.fill(tags, 0);
+        Arrays.fill(vrs, null);
+        Arrays.fill(values, null);
+    }
+
     private void init(int initialCapacity) {
         this.tags = new int[initialCapacity];
         this.vrs = new VR[initialCapacity];

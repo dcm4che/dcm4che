@@ -39,27 +39,31 @@
 package org.dcm4che3.imageio.stream;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.util.ByteUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class SegmentedInputImageStream extends ImageInputStreamImpl {
+public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
     private final ImageInputStream stream;
-    private final long[] segmentPositionsList;
-    private final int[] segmentLengths;
+    private long[] segmentPositionsList;
+    private int[] segmentLengths;
     private int curSegment;
     private long curSegmentEnd;
+    private byte[] header = new byte[8];
 
-    public SegmentedInputImageStream(ImageInputStream stream,
-            Fragments pixeldataFragments, int frameIndex) throws IOException {
+    public SegmentedImageInputStream(ImageInputStream stream,
+                                     Fragments pixeldataFragments, int frameIndex) throws IOException {
         long[] offsets = new long[pixeldataFragments.size()-(frameIndex+1)];
         int[] length = new int[offsets.length];
         for (int i = 0; i < length.length; i++) {
@@ -73,13 +77,25 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         seek(0);
     }
 
-    public SegmentedInputImageStream(ImageInputStream stream,
-            long[] segmentPositionsList, int[] segmentLengths)
+    public SegmentedImageInputStream(ImageInputStream stream,
+                                     long[] segmentPositionsList, int[] segmentLengths)
                     throws IOException {
         this.stream = stream;
         this.segmentPositionsList = segmentPositionsList.clone();
         this.segmentLengths = segmentLengths.clone();
         seek(0);
+    }
+
+    public SegmentedImageInputStream(ImageInputStream stream, long pos, int len) throws IOException {
+        this.stream = stream;
+        this.segmentPositionsList = new long[]{ pos };
+        this.segmentLengths = new int[]{ len };
+        seek(0);
+    }
+
+    public long getLastSegmentEnd() {
+        int i = segmentPositionsList.length - 1;
+        return segmentPositionsList[i] + segmentLengths[i];
     }
 
     private int offsetOf(int segment) {
@@ -125,11 +141,26 @@ public class SegmentedInputImageStream extends ImageInputStreamImpl {
         if (streamPos < curSegmentEnd)
             return true;
 
-        if (curSegment >= segmentPositionsList.length)
-            return false;
-        
+        if (curSegment+1 >= segmentPositionsList.length) {
+            stream.mark();
+            stream.readFully(header);
+            stream.reset();
+            if (ByteUtils.bytesToTagLE(header, 0) != Tag.Item)
+                return false;
+
+            addSegment(getLastSegmentEnd() + 8, ByteUtils.bytesToIntLE(header, 4));
+        }
+
         seek(offsetOf(curSegment+1));
         return true;
+    }
+
+    private void addSegment(long pos, int len) {
+        int i = segmentPositionsList.length;
+        segmentPositionsList = Arrays.copyOf(segmentPositionsList, i + 1);
+        segmentLengths = Arrays.copyOf(segmentLengths, i+1);
+        segmentPositionsList[i] = pos;
+        segmentLengths[i] = len;
     }
 
     @Override

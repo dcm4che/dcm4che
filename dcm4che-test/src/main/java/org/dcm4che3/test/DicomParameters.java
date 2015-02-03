@@ -3,9 +3,10 @@ package org.dcm4che3.test;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DicomParameters {
-
+	
     /**
      * Application Entity title of the destination
      *

@@ -152,6 +152,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
         <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadouri</include>
         <!-- TODO fix configuration load
         <include>org.dcm4che.tool:dcm4che-tool-probetc</include> -->
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>

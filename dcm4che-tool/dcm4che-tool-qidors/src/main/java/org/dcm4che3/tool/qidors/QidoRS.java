@@ -43,8 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
@@ -234,7 +236,7 @@ public class QidoRS{
             }
             
             System.out.print(response);
-        } catch (ParseException e) {
+        } catch (Exception e) {
             LOG.error("qidors: " + e.getMessage());
             System.err.println(rb.getString("try"));
             System.exit(2);
@@ -243,7 +245,8 @@ public class QidoRS{
 
 
     private static String sendRequest(final QidoRS main) throws IOException {
-        URL newUrl = new URL(main.getUrl());
+        
+        URL newUrl = new URL(addRequestParameters(main, main.getUrl()));
         
         HttpURLConnection connection = (HttpURLConnection) newUrl
                 .openConnection();
@@ -258,7 +261,14 @@ public class QidoRS{
         
         connection.setRequestProperty("charset", "utf-8");
         
-        addRequestParameters(main, connection);
+        if(main.isJSON) {
+            connection.setRequestProperty("Accept", "application/json");
+        }
+        
+        if(main.getRequestTimeOut()!=null) {
+            connection.setConnectTimeout(Integer.valueOf(main.getRequestTimeOut()));
+            connection.setReadTimeout(Integer.valueOf(main.getRequestTimeOut()));
+        }
         
         connection.setUseCaches(false);
         
@@ -278,44 +288,43 @@ public class QidoRS{
 
     }
 
-    private static void addRequestParameters(final QidoRS main,
-            HttpURLConnection connection) {
+    private static String addRequestParameters(final QidoRS main, String url) {
         
         if(main.includeField!=null) {
             for(String field : main.getIncludeField())
-            connection.setRequestProperty("includefield", field);
+            url=addParam(url,"includefield",field);
         }
         else {
-            connection.setRequestProperty("includefield", "all");
+            url=addParam(url,"includefield","all");
         }
         
-        if(main.isJSON) {
-            connection.setRequestProperty("Accept", "application/json");
-        }
-        
-        if(main.getRequestTimeOut()!=null) {
-            connection.setConnectTimeout(Integer.valueOf(main.getRequestTimeOut()));
-            connection.setReadTimeout(Integer.valueOf(main.getRequestTimeOut()));
-        }
         
         if(main.getQuery() != null) {
             for(String queryKey : main.getQuery().keySet())
-                connection.setRequestProperty(queryKey,main.getQuery().get(queryKey));
+                url=addParam(url,queryKey,main.getQuery().get(queryKey));
         }
         
         if(main.isFuzzy())
-            connection.setRequestProperty("fuzzymatching", "true");
+            url=addParam(url,"fuzzymatching","true");
         
         if(main.isTimezone())
-            connection.setRequestProperty("timezoneadjustment", "true");
+            url=addParam(url,"timezoneadjustment","true");
         
         if(main.getLimit()!=null) {
-            connection.setRequestProperty("limit", main.getLimit());
+            url=addParam(url,"limit",main.getLimit());
         }
         
         if(main.getOffset() != null) {
-            connection.setRequestProperty("offset", main.getOffset());
+            url=addParam(url,"offset",main.getOffset());
         }
+        return url;
+    }
+    private static String addParam(String url, String key, String field) {
+
+        if(url.contains("?"))
+                return url+="&"+key+"="+field;
+        else
+            return url+="?"+key+"="+field;
         
     }
     private enum ParserType {

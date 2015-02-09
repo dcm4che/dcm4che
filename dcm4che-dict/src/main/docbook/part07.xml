@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="5.0" xml:id="PS3.7" label="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2014c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2015a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2014</year>
+      <year>2015</year>
       <holder>NEMA</holder>
     </copyright>
   </info>
@@ -106,7 +106,16 @@
     <title>Normative References</title>
   
   <para>The following Standards contain provisions that, through reference in this text, constitute provisions of this Standard. At the time of publication, the editions indicated were valid. All Standards are subject to revision, and parties to agreements based on this Standard are encouraged to investigate the possibilities of applying the most recent editions of the Standards indicated below.</para>
-  <para>ISO/IEC Directives, 1989 Part 3 - Drafting and presentation of International Standards</para>
+  <bibliography>
+    <biblioentry xml:id="biblio_ISODirectives3">
+      <abbrev>ISO/IEC Directives, Part 3</abbrev>
+      <author>
+        <orgname>ISO/IEC</orgname>
+      </author>
+      <date>1989</date>
+      <title>Drafting and presentation of International Standards</title>
+    </biblioentry>
+  </bibliography>
   <para>ISO 7498-1, Information Processing Systems - Open Systems Interconnection - Basic Reference Model</para>
   <para>ISO/TR 8509, Information Processing Systems - Open Systems Interconnection - Service Conventions</para>
   <para>ISO 8649, Information Processing Systems - Open Systems Interconnection - Service Definition for the Association Control Service Element</para>
@@ -474,8 +483,8 @@
   <para>Command Element Tag: An ordered pair of 16-bit unsigned integers representing the Group Number followed by Element Number.</para>
   <para>Value Length: A 32-bit unsigned integer representing the explicit Length as the number of bytes (even) that make up the Value. It does not include the length of the Command Element Tag or Value Length fields.</para>
   <para>Value Field: An even number of bytes containing the Value(s) of the Command Element.</para>
-  <para>The command type of Value(s) stored in this field is specified by the Command Element's Value Representation (VR). The VR for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template: Annex %n"/>. The VR of Command Elements shall agree with those specified in the Command Dictionary. The VR definitions are defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/></para>
-  <para>The Value Multiplicity (VM) specifies how many Values with the VR can be placed in the Value Field. If the VM is greater than one, multiple Values shall be delimited within the Value Field as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. The VM for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template: Annex %n"/>.</para>
+  <para>The command type of Value(s) stored in this field is specified by the Command Element's Value Representation (VR). The VR for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template:Annex %n"/>. The VR of Command Elements shall agree with those specified in the Command Dictionary. The VR definitions are defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/></para>
+  <para>The Value Multiplicity (VM) specifies how many Values with the VR can be placed in the Value Field. If the VM is greater than one, multiple Values shall be delimited within the Value Field as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. The VM for a given Command Element can be determined using the Command Dictionary in <xref linkend="chapter_E" xrefstyle="template:Annex %n"/>.</para>
   <note>
     <orderedlist numeration="arabic">
       <listitem>
@@ -614,7 +623,7 @@
 </orderedlist>
   <para>In the synchronous mode, the invoking DIMSE-service-user, on an established Association, requires a response from the performing DIMSE-service-user before invoking another operation or notification.</para>
   <para>In the asynchronous mode, the invoking DIMSE-service-user, on an established Association, may continue to invoke further operations or notifications to the performing DIMSE-service-user without awaiting a response. In the asynchronous mode, the performing DIMSE-service-user may respond to the operations or notifications in a different order than they were received.</para>
-  <para>The mode selection (synchronous or asynchronous) is determined at Association establishment time. The synchronous mode serves as the default mode and shall be supported by all DIMSE-service-users. The asynchronous mode is optional and the maximum number of outstanding operations/notifications is negotiated during Association establishment. This negotiation is accomplished by Application Association Information as defined in <xref linkend="chapter_D" xrefstyle="template: Annex %n"/>.</para>
+  <para>The mode selection (synchronous or asynchronous) is determined at Association establishment time. The synchronous mode serves as the default mode and shall be supported by all DIMSE-service-users. The asynchronous mode is optional and the maximum number of outstanding operations/notifications is negotiated during Association establishment. This negotiation is accomplished by Application Association Information as defined in <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="7.4" status="2" xml:id="sect_7.4">
     <title>Association Services</title>
@@ -637,13 +646,13 @@
 </itemizedlist>
   <para>The A-RELEASE and A-ABORT Services defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/> shall be used for the termination of an Association.</para>
   <note>
-    <para>The rules defining how the Association Services are used by a DIMSE-service-user are defined in <xref linkend="chapter_D" xrefstyle="template: Annex %n"/>.</para>
+    <para>The rules defining how the Association Services are used by a DIMSE-service-user are defined in <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </note>
   <section label="7.4.1" status="3" xml:id="sect_7.4.1">
     <title>Association Establishment</title>
   
   <para>The A-ASSOCIATE Service is invoked by a DIMSE-service-user to establish an Association with a peer DIMSE-service-user. Association establishment is always the first phase of DICOM Message Exchange.</para>
-  <para>The initiating DIMSE-service-user and the responding DIMSE-service-user shall include Application Association Information on the request and response primitive respectively. The meaning of this parameter is Application Context specific. For more information on the use of the Application Association Information, see <xref linkend="chapter_D" xrefstyle="template: Annex %n"/>.</para>
+  <para>The initiating DIMSE-service-user and the responding DIMSE-service-user shall include Application Association Information on the request and response primitive respectively. The meaning of this parameter is Application Context specific. For more information on the use of the Application Association Information, see <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="7.4.2" status="3" xml:id="sect_7.4.2">
     <title>Association Release</title>
@@ -1129,7 +1138,7 @@
   <para>This Section provides an overview of the DIMSE protocol machine. The DIMSE protocol machine defines the procedures and the encoding rules necessary to construct Messages used to exchange command requests and responses between peer DIMSE-service-users (e.g., two DICOM Application Entities). The relationship between Messages and the different types of service primitives is shown in <xref linkend="figure_7-1" xrefstyle="select: label"/>.</para>
   <para>The DIMSE protocol machine accepts DIMSE-service-user request and response service primitives and constructs Messages defined by the procedures defined in 9.3 and 10.3. The DIMSE protocol machine accepts Messages and passes them to the DIMSE-service-user by the means of indication and confirmation service primitives.</para>
   <para>Procedures define the rules for the transfer of Messages that convey command requests and responses. These rules define interpretation of the various fields in the command part of the Message. They do not define what an invoking DIMSE-service-user should do with the information (the Data Set part of the Message) it requested nor how a performing DIMSE-service-user should process the operation.</para>
-  <para>Messages may be fragmented. The fragmentation of Messages exchanged between peer DICOM Application Entities and the P-DATA service used to exchange these Message fragments are defined in <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>.</para>
+  <para>Messages may be fragmented. The fragmentation of Messages exchanged between peer DICOM Application Entities and the P-DATA service used to exchange these Message fragments are defined in <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>.</para>
   <note>
     <para>These Message fragments are called Application Protocol Data Units (APDUs) by the OSI construct.</para>
   </note>
@@ -1140,7 +1149,7 @@
     <title>Association Protocol</title>
   
   <para>The establishment of an Association involves two DIMSE-service-users, one that is the Association-requester and one that is the Association-acceptor. A DIMSE-service-user may initiate an Association establishment by using the A-ASSOCIATE service described in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>.</para>
-  <para>Included in the parameters of the A-ASSOCIATE service is the Application Context that specifies, among other things, the rules required for the coordination of initialization information corresponding to different DICOM Application Entities. The Application Contexts permitted for DIMSE are specified in <xref linkend="chapter_A" xrefstyle="template: Annex %n"/>.</para>
+  <para>Included in the parameters of the A-ASSOCIATE service is the Application Context that specifies, among other things, the rules required for the coordination of initialization information corresponding to different DICOM Application Entities. The Application Contexts permitted for DIMSE are specified in <xref linkend="chapter_A" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="8.3" status="2" xml:id="sect_8.3">
     <title>Conformance</title>
@@ -2750,7 +2759,7 @@
 <section label="9.3.1.2" status="4" xml:id="sect_9.3.1.2">
     <title>C-STORE-RSP</title>
   
-  <para>The C-STORE-RSP Message contains fields as defined in <xref linkend="table_9.3-2" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/> of the DICOM Standard. Fields are required as specified in the C-STORE service definition unless otherwise noted in <xref linkend="table_9.3-2" xrefstyle="select: label"/>. Fields not specified in the C-STORE service definition but present in <xref linkend="table_9.3-2" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para>The C-STORE-RSP Message contains fields as defined in <xref linkend="table_9.3-2" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/> of the DICOM Standard. Fields are required as specified in the C-STORE service definition unless otherwise noted in <xref linkend="table_9.3-2" xrefstyle="select: label"/>. Fields not specified in the C-STORE service definition but present in <xref linkend="table_9.3-2" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-2" rules="all" xml:id="table_9.3-2">
     <caption>C-STORE-RSP Message Fields</caption>
     <thead>
@@ -2884,7 +2893,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -2930,7 +2939,7 @@
 </listitem>
 </itemizedlist>
   <para>On receipt of a Message conveying a C-STORE-RSP the DIMSE-C protocol machine shall issue a C-STORE confirmation primitive to the invoking DIMSE-service-user, thus completing the C-STORE procedure.</para>
-  <para>The performing DIMSE-service-user may return a C-STORE-RSP with the status of Failed or Refused before the complete C-STORE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-STORE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-STORE-RQ Message has been completely transmitted if it has not received a Failed or Refused C-STORE-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return a C-STORE-RSP with the status of Failed or Refused before the complete C-STORE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-STORE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-STORE-RQ Message has been completely transmitted if it has not received a Failed or Refused C-STORE-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -3108,7 +3117,7 @@
 <section label="9.3.2.2" status="4" xml:id="sect_9.3.2.2">
     <title>C-FIND-RSP</title>
   
-  <para>The C-FIND-RSP Message contains fields as defined in <xref linkend="table_9.3-4" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-FIND service definition unless otherwise noted in <xref linkend="table_9.3-4" xrefstyle="select: label"/>. Fields not specified in the C-FIND service definition but present in <xref linkend="table_9.3-4" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para>The C-FIND-RSP Message contains fields as defined in <xref linkend="table_9.3-4" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-FIND service definition unless otherwise noted in <xref linkend="table_9.3-4" xrefstyle="select: label"/>. Fields not specified in the C-FIND service definition but present in <xref linkend="table_9.3-4" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-4" rules="all" xml:id="table_9.3-4">
     <caption>C-FIND-RSP Message Fields</caption>
     <thead>
@@ -3241,7 +3250,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3425,7 +3434,7 @@
   <note>
     <para>The C-FIND procedures can be canceled at any time by the invoking DIMSE-service-user. This is accomplished by the invoking DIMSE-service-user issuing a C-CANCEL request primitive.</para>
   </note>
-  <para>The performing DIMSE-service-user may return a C-FIND-RSP with the status of Failed or Refused before the complete C-FIND-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-FIND-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-FIND-RQ Message has been completely transmitted if it has not received a Failed or Refused C-FIND-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return a C-FIND-RSP with the status of Failed or Refused before the complete C-FIND-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-FIND-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-FIND-RQ Message has been completely transmitted if it has not received a Failed or Refused C-FIND-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -3603,7 +3612,7 @@
 <section label="9.3.3.2" status="4" xml:id="sect_9.3.3.2">
     <title>C-GET-RSP</title>
   
-  <para>The C-GET-RSP Message contains fields as defined in <xref linkend="table_9.3-7" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-GET service definition unless otherwise noted in <xref linkend="table_9.3-7" xrefstyle="select: label"/>. Fields not specified in the C-GET service definition but present in <xref linkend="table_9.3-7" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para>The C-GET-RSP Message contains fields as defined in <xref linkend="table_9.3-7" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-GET service definition unless otherwise noted in <xref linkend="table_9.3-7" xrefstyle="select: label"/>. Fields not specified in the C-GET service definition but present in <xref linkend="table_9.3-7" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-7" rules="all" xml:id="table_9.3-7">
     <caption>C-GET-RSP Message Fields</caption>
     <thead>
@@ -3736,7 +3745,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -3994,7 +4003,7 @@
   <note>
     <para>The C-GET procedures can be canceled at any time by the invoking DIMSE-service-user. This is accomplished by the invoking DIMSE-service-user issuing a C-CANCEL request primitive.</para>
   </note>
-  <para>The performing DIMSE-service-user may return a C-GET-RSP with the status of Failed or Refused before the complete C-GET-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-GET-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-GET-RQ Message has been completely transmitted if it has not received a Failed or Refused C-GET-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return a C-GET-RSP with the status of Failed or Refused before the complete C-GET-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-GET-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-GET-RQ Message has been completely transmitted if it has not received a Failed or Refused C-GET-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -4189,7 +4198,7 @@
 <section label="9.3.4.2" status="4" xml:id="sect_9.3.4.2">
     <title>C-MOVE-RSP</title>
   
-  <para>The C-MOVE-RSP Message contains fields as defined in <xref linkend="table_9.3-10" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-MOVE service definition unless otherwise noted in <xref linkend="table_9.3-10" xrefstyle="select: label"/>. Fields not specified in the C-MOVE service definition but present in <xref linkend="table_9.3-10" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para>The C-MOVE-RSP Message contains fields as defined in <xref linkend="table_9.3-10" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-MOVE service definition unless otherwise noted in <xref linkend="table_9.3-10" xrefstyle="select: label"/>. Fields not specified in the C-MOVE service definition but present in <xref linkend="table_9.3-10" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-10" rules="all" xml:id="table_9.3-10">
     <caption>C-MOVE-RSP Message Fields</caption>
     <thead>
@@ -4322,7 +4331,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -4577,7 +4586,7 @@
   <note>
     <para>The C-MOVE procedures can be canceled at any time by the invoking DIMSE-service-user. This shall be accomplished by the invoking DIMSE-service-user issuing a C-CANCEL request primitive.</para>
   </note>
-  <para>The performing DIMSE-service-user may return a C-MOVE-RSP with the status of Failed or Refused before the complete C-MOVE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-MOVE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-MOVE-RQ Message has been completely transmitted if it has not received a Failed or Refused C-MOVE-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return a C-MOVE-RSP with the status of Failed or Refused before the complete C-MOVE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused C-MOVE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before a C-MOVE-RQ Message has been completely transmitted if it has not received a Failed or Refused C-MOVE-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -4715,7 +4724,7 @@
 <section label="9.3.5.2" status="4" xml:id="sect_9.3.5.2">
     <title>C-ECHO-RSP</title>
   
-  <para>The C-ECHO-RSP Message contains fields as defined in <xref linkend="table_9.3-13" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-ECHO service definition unless otherwise noted in <xref linkend="table_9.3-13" xrefstyle="select: label"/>. Fields not specified in the C-ECHO service definition but present in <xref linkend="table_9.3-13" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
+  <para>The C-ECHO-RSP Message contains fields as defined in <xref linkend="table_9.3-13" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the C-ECHO service definition unless otherwise noted in <xref linkend="table_9.3-13" xrefstyle="select: label"/>. Fields not specified in the C-ECHO service definition but present in <xref linkend="table_9.3-13" xrefstyle="select: label"/> are required by the DIMSE-C protocol.</para>
     <table frame="box" label="9.3-13" rules="all" xml:id="table_9.3-13">
     <caption>C-ECHO-RSP Message Fields</caption>
     <thead>
@@ -6544,7 +6553,7 @@
 <section label="10.3.1.2" status="4" xml:id="sect_10.3.1.2">
     <title>N-EVENT-REPORT-RSP</title>
   
-  <para>The N-EVENT-REPORT-RSP Message contains fields as defined in <xref linkend="table_10.3-2" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-EVENT-REPORT service definition unless otherwise noted in <xref linkend="table_10.3-2" xrefstyle="select: label"/>. Fields not specified in the N-EVENT-REPORT service definition but present in <xref linkend="table_10.3-2" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-EVENT-REPORT-RSP Message contains fields as defined in <xref linkend="table_10.3-2" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-EVENT-REPORT service definition unless otherwise noted in <xref linkend="table_10.3-2" xrefstyle="select: label"/>. Fields not specified in the N-EVENT-REPORT service definition but present in <xref linkend="table_10.3-2" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-2" rules="all" xml:id="table_10.3-2">
     <caption>N-EVENT-REPORT-RSP Message Fields</caption>
     <thead>
@@ -6677,7 +6686,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -6768,7 +6777,7 @@
 </listitem>
 </itemizedlist>
   <para>On receipt of a Message conveying an N-EVENT-REPORT-RSP the DIMSE-N protocol machine shall issue an N-EVENT-REPORT confirmation primitive to the invoking DIMSE-service-user, thus completing the notification procedure.</para>
-  <para>The performing DIMSE-service-user may return an N-EVENT-REPORT-RSP with the status of Failed or Refused before the complete N-EVENT-REPORT-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-EVENT-REPORT-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-EVENT-REPORT-RQ Message has been completely transmitted if it has not received a Failed or Refused N-EVENT-REPORT-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return an N-EVENT-REPORT-RSP with the status of Failed or Refused before the complete N-EVENT-REPORT-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-EVENT-REPORT-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-EVENT-REPORT-RQ Message has been completely transmitted if it has not received a Failed or Refused N-EVENT-REPORT-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -6940,7 +6949,7 @@
 <section label="10.3.2.2" status="4" xml:id="sect_10.3.2.2">
     <title>N-GET-RSP</title>
   
-  <para>The N-GET-RSP Message contains fields as defined in <xref linkend="table_10.3-4" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-GET service definition unless otherwise noted in <xref linkend="table_10.3-4" xrefstyle="select: label"/>. Fields not specified in the N-GET service definition but present in <xref linkend="table_10.3-4" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-GET-RSP Message contains fields as defined in <xref linkend="table_10.3-4" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-GET service definition unless otherwise noted in <xref linkend="table_10.3-4" xrefstyle="select: label"/>. Fields not specified in the N-GET service definition but present in <xref linkend="table_10.3-4" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-4" rules="all" xml:id="table_10.3-4">
     <caption>N-GET-RSP Message Fields</caption>
     <thead>
@@ -7073,7 +7082,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -7310,7 +7319,7 @@
 <section label="10.3.3.2" status="4" xml:id="sect_10.3.3.2">
     <title>N-SET-RSP</title>
   
-  <para>The N-SET-RSP Message contains all fields as defined in <xref linkend="table_10.3-6" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-SET service definition unless otherwise noted. Fields not specified in the N-SET service definition but present in <xref linkend="table_10.3-6" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-SET-RSP Message contains all fields as defined in <xref linkend="table_10.3-6" xrefstyle="select: label"/> and in <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-SET service definition unless otherwise noted. Fields not specified in the N-SET service definition but present in <xref linkend="table_10.3-6" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-6" rules="all" xml:id="table_10.3-6">
     <caption>N-SET-RSP Message Fields</caption>
     <thead>
@@ -7443,7 +7452,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -7509,7 +7518,7 @@
 </listitem>
 </itemizedlist>
   <para>On receipt of a Message conveying an N-SET-RSP the DIMSE-N protocol machine shall issue an N-SET confirmation primitive to the invoking DIMSE-service-user, thus completing the N-SET procedure.</para>
-  <para>The performing DIMSE-service-user may return an N-SET-RSP with the status of Failed or Refused before the complete N-SET-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-SET-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-SET-RQ Message has been completely transmitted if it has not received a Failed or Refused N-SET-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return an N-SET-RSP with the status of Failed or Refused before the complete N-SET-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-SET-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-SET-RQ Message has been completely transmitted if it has not received a Failed or Refused N-SET-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -7708,7 +7717,7 @@
 <section label="10.3.4.2" status="4" xml:id="sect_10.3.4.2">
     <title>N-ACTION-RSP</title>
   
-  <para>The N-ACTION-RSP Message contains fields as defined in <xref linkend="table_10.3-8" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-ACTION service definition unless otherwise noted in <xref linkend="table_10.3-8" xrefstyle="select: label"/>. Fields not specified in the N-ACTION service definition but present in <xref linkend="table_10.3-8" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-ACTION-RSP Message contains fields as defined in <xref linkend="table_10.3-8" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-ACTION service definition unless otherwise noted in <xref linkend="table_10.3-8" xrefstyle="select: label"/>. Fields not specified in the N-ACTION service definition but present in <xref linkend="table_10.3-8" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-8" rules="all" xml:id="table_10.3-8">
     <caption>N-ACTION-RSP Message Fields</caption>
     <thead>
@@ -7841,7 +7850,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -7934,7 +7943,7 @@
 </listitem>
 </itemizedlist>
   <para>On receipt of a Message conveying an N-ACTION-RSP the DIMSE-N protocol machine shall issue an N-ACTION confirmation primitive to the invoking DIMSE-service-user, thus completing the N-ACTION procedure.</para>
-  <para>The performing DIMSE-service-user may return an N-ACTION-RSP with the status of Failed or Refused before the complete N-ACTION-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-ACTION-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-ACTION-RQ Message has been completely transmitted if it has not received a Failed or Refused N-ACTION-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return an N-ACTION-RSP with the status of Failed or Refused before the complete N-ACTION-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-ACTION-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-ACTION-RQ Message has been completely transmitted if it has not received a Failed or Refused N-ACTION-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -8109,7 +8118,7 @@
 <section label="10.3.5.2" status="4" xml:id="sect_10.3.5.2">
     <title>N-CREATE-RSP</title>
   
-  <para>The N-CREATE-RSP Message contains fields as defined in <xref linkend="table_10.3-10" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-CREATE service definition unless otherwise noted in Table10.3-10. Fields not specified in the N-CREATE service definition but present in <xref linkend="table_10.3-10" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-CREATE-RSP Message contains fields as defined in <xref linkend="table_10.3-10" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-CREATE service definition unless otherwise noted in Table10.3-10. Fields not specified in the N-CREATE service definition but present in <xref linkend="table_10.3-10" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-10" rules="all" xml:id="table_10.3-10">
     <caption>N-CREATE-RSP Message Fields</caption>
     <thead>
@@ -8242,7 +8251,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -8308,7 +8317,7 @@
 </listitem>
 </itemizedlist>
   <para>On receipt of a Message conveying an N-CREATE-RSP the DIMSE-N protocol machine shall issue an N-CREATE confirmation primitive to the invoking DIMSE-service-user, thus completing the N-CREATE procedure.</para>
-  <para>The performing DIMSE-service-user may return an N-CREATE-RSP with the status of Failed or Refused before the complete N-CREATE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-CREATE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template: Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-CREATE-RQ Message has been completely transmitted if it has not received a Failed or Refused N-CREATE-RSP to that request.</para>
+  <para>The performing DIMSE-service-user may return an N-CREATE-RSP with the status of Failed or Refused before the complete N-CREATE-RQ request Message has been completely transmitted by the invoking DIMSE-service-user (this is called an early failed response). Upon receipt of this Failed or Refused N-CREATE-RSP the invoking DIMSE-service-user may terminate the Message before it is completely sent (i.e., set the Last Fragment bit to 1 in a Data PDV for this Message, see <xref linkend="chapter_F" xrefstyle="template:Annex %n"/>). Following this, it may invoke another operation or notification. It is a protocol violation for an invoking DIMSE-service-user to set the Last Fragment bit to 1 before an N-CREATE-RQ Message has been completely transmitted if it has not received a Failed or Refused N-CREATE-RSP to that request.</para>
   <note>
     <para>When an Association is operating in asynchronous mode, it is possible for an invoking DIMSE-service-user to transmit several Messages before a response. Therefore, while sending a Message it may receive a response to a previously transmitted Message. In this case this response is not an early failed response because the related Message has already been sent.</para>
   </note>
@@ -8463,7 +8472,7 @@
 <section label="10.3.6.2" status="4" xml:id="sect_10.3.6.2">
     <title>N-DELETE-RSP</title>
   
-  <para>The N-DELETE-RSP Message contains fields as defined in <xref linkend="table_10.3-12" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-DELETE service definition unless otherwise noted in <xref linkend="table_10.3-12" xrefstyle="select: label"/>. Fields not specified in the N-DELETE service definition but present in <xref linkend="table_10.3-12" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
+  <para>The N-DELETE-RSP Message contains fields as defined in <xref linkend="table_10.3-12" xrefstyle="select: label"/> and <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>. Each field shall conform to DICOM encoding and Value Representation as defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>. Fields are required as specified in the N-DELETE service definition unless otherwise noted in <xref linkend="table_10.3-12" xrefstyle="select: label"/>. Fields not specified in the N-DELETE service definition but present in <xref linkend="table_10.3-12" xrefstyle="select: label"/> are required by the DIMSE-N protocol.</para>
     <table frame="box" label="10.3-12" rules="all" xml:id="table_10.3-12">
     <caption>N-DELETE-RSP Message Fields</caption>
     <thead>
@@ -8596,7 +8605,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template: Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
+        <para>The value of this field depends upon the status type. <xref linkend="chapter_C" xrefstyle="template:Annex %n"/> defines the encoding of the status types defined in the service definition.</para>
       </td>
     </tr>
     <tr valign="top">
@@ -8680,7 +8689,7 @@
     <title>Association Initialization for DICOM Application Entity</title>
   
   <para>The establishment of an Association involves two DICOM AEs, one that is the Association-requester and one that is the Association-acceptor.</para>
-  <para>A DICOM AE shall initiate an Association establishment by using the A-ASSOCIATE request service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>. It shall provide the Application Association Information as defined by <xref linkend="chapter_D" xrefstyle="template: Annex %n"/>.</para>
+  <para>A DICOM AE shall initiate an Association establishment by using the A-ASSOCIATE request service defined in <olink targetdoc="PS3.8" targetptr="PS3.8" xrefstyle="select: labelnumber"/>. It shall provide the Application Association Information as defined by <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="A.4" status="2" xml:id="sect_A.4">
     <title>Operation/Notification for DICOM Application Entity</title>
@@ -8699,7 +8708,7 @@
   <note>
     <para>The synchronous/asynchronous mode is defined within the scope of one Application Entity and not within the scope of the association between two Application Entities. The communication mode on the association may be bi-directional if agreed upon during association negotiation (i.e., both operation and notifications are simultaneously supported, etc.). Following is an example of synchronous mode, DICOM AE A may send an operation request to DICOM AE B and DICOM AE B may send a notification request to DICOM AE A before responding to the operation request from AE A. This is considered as synchronous mode because each AE has only one outstanding operation or notification.</para>
   </note>
-  <para>The mode selected (synchronous or asynchronous) is determined at Association establishment time. The synchronous mode serves as the default mode and shall be supported by all DICOM AEs. The asynchronous mode is optional and the maximum number of outstanding operations or notifications is negotiated during Association establishment. This negotiation is accomplished by the Asynchronous Operations Window sub-item structure as defined in <xref linkend="chapter_D" xrefstyle="template: Annex %n"/>.</para>
+  <para>The mode selected (synchronous or asynchronous) is determined at Association establishment time. The synchronous mode serves as the default mode and shall be supported by all DICOM AEs. The asynchronous mode is optional and the maximum number of outstanding operations or notifications is negotiated during Association establishment. This negotiation is accomplished by the Asynchronous Operations Window sub-item structure as defined in <xref linkend="chapter_D" xrefstyle="template:Annex %n"/>.</para>
   </section>
 <section label="A.5" status="2" xml:id="sect_A.5">
     <title>Association Release for DICOM AE</title>
@@ -11367,7 +11376,7 @@
   <para>An Application Context explicitly defines the set of Application Service Elements, related options and any other information necessary for the inter-working of DICOM AEs on an Association.</para>
   <para>The Application Context provides the highest level of negotiation, therefore, a very high level definition. Only one Application Context shall be offered per Association. DICOM specifies a single Application Context Name that defines the DICOM Application Context (applicable for this Standard and potentially later versions).</para>
   <note>
-    <para>For complete specification see <xref linkend="chapter_A" xrefstyle="template: Annex %n"/>.</para>
+    <para>For complete specification see <xref linkend="chapter_A" xrefstyle="template:Annex %n"/>.</para>
   </note>
   </section>
 <section label="D.3.2" status="3" xml:id="sect_D.3.2">
@@ -13193,7 +13202,7 @@
         <para>1</para>
       </td>
       <td align="left" colspan="1" rowspan="1">
-        <para>Confirmation status of the operation. See <xref linkend="chapter_C" xrefstyle="template: Annex %n"/>.</para>
+        <para>Confirmation status of the operation. See <xref linkend="chapter_C" xrefstyle="template:Annex %n"/>.</para>
       </td>
     </tr>
     <tr valign="top">

@@ -101,13 +101,22 @@ public class StorageOptions implements Serializable {
         }
     };
 
-    @ConfigurableProperty(name="dcmStorageConformance", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
+    @ConfigurableProperty(name="dcmStorageConformance",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "3"
+    )
     private LevelOfSupport levelOfSupport;
 
-    @ConfigurableProperty(name="dcmDigitalSignatureSupport", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
+    @ConfigurableProperty(name="dcmDigitalSignatureSupport",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "0"
+    )
     private DigitalSignatureSupport digitalSignatureSupport;
 
-    @ConfigurableProperty(name="dcmDataElementCoercion", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
+    @ConfigurableProperty(name="dcmDataElementCoercion",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "2"
+    )
     private ElementCoercion elementCoercion;
 
     public StorageOptions() {

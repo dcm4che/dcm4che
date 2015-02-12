@@ -2254,23 +2254,6 @@ public class Attributes implements Serializable {
         }
     }
     
-    public static void main(String[] args) {
-        Attributes a = new Attributes();
-        Attributes b = new Attributes();
-        
-        a.setString(0x20011001,VR.LO,"Some Prop Attr");
-        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
-        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
-        
-        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
-        a.setString(0x20010010,VR.LO,"Philips Imaging");
-        
-        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
-        b.setString(Tag.PatientID, VR.LO, "4");
-        b.setString(0x20010010,VR.LO,"Philips Imagingz");
-        b.setString(0x20011001,VR.LO,"Some Prop Attr");
-        System.out.print(a.diff(b, true));
-    }
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])

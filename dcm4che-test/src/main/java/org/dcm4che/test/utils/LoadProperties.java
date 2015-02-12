@@ -36,75 +36,42 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.storescu.test;
+package org.dcm4che.test.utils;
 
-import java.util.ArrayList;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Properties;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * @author Hesham elbadawi <bsdreko@gmail.com>
+ *
  */
-public class StoreResult implements TestResult {
+public class LoadProperties {
 
-
-    private String testDescription;
-    private String fileName;
-    private long size;
-    private long time;
-    private int filesSent;
-    private int warnings;    
-    private int failures;
-    private ArrayList<Attributes> cStoreRSPAttributes;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesSent
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
-        super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.size = size;
-        this.time = time;
-        this.filesSent = filesSent;
-        this.warnings = warnings;
-        this.failures = failures;
-        this.cStoreRSPAttributes = cmdRSP;
-    }
+    private static Properties props = null;
     
-    public String getTestDescription() {
-        return testDescription;
+    public static Properties load(Class resourceClass) throws IOException
+    {
+        if (props == null)
+        {
+            props = new Properties();
+            String fileURL = System.getProperty("configFileURL");
+            
+            if (fileURL != null && fileURL.length()>0)
+            {
+                //load passed file
+                props.load(new FileInputStream(new URL(fileURL).getFile()));
+            }
+            else
+            {
+                //load defaults
+                URL defaultConfig = resourceClass.getResource("/defaultConfig.properties");
+                props.load(new FileInputStream(new File(defaultConfig.getFile())));
+            }
+        }
+        
+        return props;
     }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getSize() {
-        return size;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesSent() {
-        return filesSent;
-    }
-    public int getWarnings() {
-        return warnings;
-    }
-    public int getFailures() {
-        return failures;
-    }
-
-    public ArrayList<Attributes> getcStoreRSPAttributes() {
-        return cStoreRSPAttributes;
-    }
-
 }

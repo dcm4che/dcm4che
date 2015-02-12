@@ -36,75 +36,63 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.storescu.test;
+package org.dcm4che.test.utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
+import org.junit.Assert;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class StoreResult implements TestResult {
+public class AssertionUtils extends Assert{
 
-
-    private String testDescription;
-    private String fileName;
-    private long size;
-    private long time;
-    private int filesSent;
-    private int warnings;    
-    private int failures;
-    private ArrayList<Attributes> cStoreRSPAttributes;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesSent
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
-        super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.size = size;
-        this.time = time;
-        this.filesSent = filesSent;
-        this.warnings = warnings;
-        this.failures = failures;
-        this.cStoreRSPAttributes = cmdRSP;
-    }
-    
-    public String getTestDescription() {
-        return testDescription;
-    }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getSize() {
-        return size;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesSent() {
-        return filesSent;
-    }
-    public int getWarnings() {
-        return warnings;
-    }
-    public int getFailures() {
-        return failures;
+    public static void assertContainsAttrs(List<Attributes> list, Attributes testAttrs) {
+        for(int tag : testAttrs.tags()) {
+            if(contains(list, tag, testAttrs.getString(tag)))
+                continue;
+            fail("Attributes provided do not contain " + testAttrs.getString(tag));
+        }
     }
 
-    public ArrayList<Attributes> getcStoreRSPAttributes() {
-        return cStoreRSPAttributes;
+    private static boolean contains(List<Attributes> list, int tag, String val) {
+        boolean contains = false;
+        for(Attributes attrs : list) {
+            if(attrs.contains(tag) && attrs.getString(tag).equalsIgnoreCase(val)) {
+                contains=true;
+            }
+        }
+        return contains;
+    }
+    public static void assertContainsAttrsWithinSequence(List<Attributes> list, Attributes testAttrs, int sequenceTag) {
+        
+        for(int tag : testAttrs.tags()) {
+            if(contains(filterForSequence(list, sequenceTag), tag, testAttrs.getString(tag)))
+                continue;
+            fail("Attributes provided do not contain " + testAttrs.getString(tag));
+        }
+    }
+    private static List<Attributes> filterForSequence(List<Attributes> list,
+            int sequenceTag) {
+        ArrayList<Attributes> filtered = new ArrayList<Attributes>();
+        for(Attributes attrs : list) {
+            if(!attrs.contains(sequenceTag)) {
+                continue;
+            }
+            else {
+                filtered.addAll(attrs.getSequence(sequenceTag));
+            }
+        }
+        return filtered;
     }
 
+    public boolean isEquivalent(Attributes attrs, Attributes testAttrs) {
+        return attrs.equals(testAttrs);
+        }
+
+//    public Attributes getMissingAttributes(Attributes attrs, Attributes testAttrs) {
+//        
+//    }
 }

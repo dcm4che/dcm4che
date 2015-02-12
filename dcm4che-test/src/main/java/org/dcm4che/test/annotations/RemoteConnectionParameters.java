@@ -36,75 +36,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.storescu.test;
+package org.dcm4che.test.annotations;
 
-import java.util.ArrayList;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class StoreResult implements TestResult {
 
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RemoteConnectionParameters {
 
-    private String testDescription;
-    private String fileName;
-    private long size;
-    private long time;
-    private int filesSent;
-    private int warnings;    
-    private int failures;
-    private ArrayList<Attributes> cStoreRSPAttributes;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesSent
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
-        super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.size = size;
-        this.time = time;
-        this.filesSent = filesSent;
-        this.warnings = warnings;
-        this.failures = failures;
-        this.cStoreRSPAttributes = cmdRSP;
-    }
-    
-    public String getTestDescription() {
-        return testDescription;
-    }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getSize() {
-        return size;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesSent() {
-        return filesSent;
-    }
-    public int getWarnings() {
-        return warnings;
-    }
-    public int getFailures() {
-        return failures;
-    }
-
-    public ArrayList<Attributes> getcStoreRSPAttributes() {
-        return cStoreRSPAttributes;
-    }
-
+    public String hostName() default "localhost";
+    public int port() default 11112;
+    public String url() default "http://localhost:8080/dcm4chee-arc";
 }

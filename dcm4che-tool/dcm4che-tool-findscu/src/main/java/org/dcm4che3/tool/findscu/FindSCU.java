@@ -123,8 +123,8 @@ public class FindSCU {
         ResourceBundle.getBundle("org.dcm4che3.tool.findscu.messages");
     private static SAXTransformerFactory saxtf;
 
-    private final Device device = new Device("findscu");
-    private final ApplicationEntity ae = new ApplicationEntity("FINDSCU");
+    private Device device = new Device("findscu");
+    private ApplicationEntity ae = new ApplicationEntity("FINDSCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
@@ -154,7 +154,11 @@ public class FindSCU {
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
     }
+    public FindSCU(ApplicationEntity appEntity) throws IOException {
+        this.ae = appEntity;
+        this.device = this.ae.getDevice();
 
+    }
     public final void setPriority(int priority) {
         this.priority = priority;
     }
@@ -446,7 +450,7 @@ public class FindSCU {
 
     public void open() throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     public void close() throws IOException, InterruptedException {

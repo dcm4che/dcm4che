@@ -38,17 +38,23 @@
 
 package org.dcm4che3.tool.findscu.test;
 
+import java.util.List;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.tool.common.test.TestResult;
+
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- *
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class QueryResult {
+public class QueryResult implements TestResult{
 
     private String testDescription;
     private int expectedResult = Integer.MIN_VALUE;
     private int numMatches;
     private long time;
     private long timeFirst;
+    private List<Attributes> queryResponse;
     /**
      * @param testDescription
      * @param expectedResult
@@ -57,14 +63,16 @@ public class QueryResult {
      * @param timeFirst
      */
     public QueryResult(String testDescription, int expectedResult,
-            int numMatches, long time, long timeFirst) {
+            int numMatches, long time, long timeFirst, List<Attributes> data) {
         super();
         this.testDescription = testDescription;
         this.expectedResult = expectedResult;
         this.numMatches = numMatches;
         this.time = time;
         this.timeFirst = timeFirst;
+        this.setQueryResponse(data);
     }
+    
     public String getTestDescription() {
         return testDescription;
     }
@@ -94,5 +102,11 @@ public class QueryResult {
     }
     public void setTimeFirst(long timeFirst) {
         this.timeFirst = timeFirst;
+    }
+    public List<Attributes> getQueryResponse() {
+        return queryResponse;
+    }
+    private void setQueryResponse(List<Attributes> data) {
+        this.queryResponse = data;
     }
  }

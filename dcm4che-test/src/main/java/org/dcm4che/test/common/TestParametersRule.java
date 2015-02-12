@@ -35,76 +35,60 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.test.common;
 
-package org.dcm4che3.tool.storescu.test;
-
-import java.util.ArrayList;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import org.dcm4che.test.annotations.TestConfig;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
+ * @author Roman K
  */
-public class StoreResult implements TestResult {
+
+public class TestParametersRule implements TestRule {
 
 
-    private String testDescription;
-    private String fileName;
-    private long size;
-    private long time;
-    private int filesSent;
-    private int warnings;    
-    private int failures;
-    private ArrayList<Attributes> cStoreRSPAttributes;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesSent
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
-        super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.size = size;
-        this.time = time;
-        this.filesSent = filesSent;
-        this.warnings = warnings;
-        this.failures = failures;
-        this.cStoreRSPAttributes = cmdRSP;
+    private BasicTest parametrizedTest;
+
+    public TestParametersRule(BasicTest basicTest) {
+        this.parametrizedTest = basicTest;
+    }
+
+    @Override
+    public Statement apply(final Statement base, final Description description) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                Method method = description.getTestClass().getMethod(description.getMethodName());
+                for(Annotation anno: method.getAnnotations()) {
+                    Class annoType = anno.annotationType();
+                    getInstance().addParam(annoType.getSimpleName(),method.getAnnotation(annoType));
+                }
+                TestConfig cnf = description.getTestClass().getAnnotation(TestConfig.class);
+                getInstance().addParam("configfile",cnf);
+                
+                Method initMethod = null;
+                    Method[] methods = description.getTestClass().getMethods();
+                    for (Method m : methods) {
+                        // Test any other things about it beyond the name...
+                        if (m.getName().equals("init") ) {
+                            initMethod=m;
+                        }
+                    }
+                    getInstance().init((Class<? extends BasicTest>) description.getTestClass());
+                
+                base.evaluate();
+            }
+        };
+    }
+
+    public BasicTest getInstance() {
+        return this.parametrizedTest;
     }
     
-    public String getTestDescription() {
-        return testDescription;
-    }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getSize() {
-        return size;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesSent() {
-        return filesSent;
-    }
-    public int getWarnings() {
-        return warnings;
-    }
-    public int getFailures() {
-        return failures;
-    }
-
-    public ArrayList<Attributes> getcStoreRSPAttributes() {
-        return cStoreRSPAttributes;
-    }
-
 }
+

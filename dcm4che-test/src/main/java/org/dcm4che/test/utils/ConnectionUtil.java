@@ -36,75 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.storescu.test;
+package org.dcm4che.test.utils;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.GeneralSecurityException;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.IncompatibleConnectionException;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * @author Hesham elbadawi <bsdreko@gmail.com>
+ *
  */
-public class StoreResult implements TestResult {
+public class ConnectionUtil {
 
+    public static boolean isAlive(Connection conn)
+    {
+        boolean alive = false;
+        
+        try {
 
-    private String testDescription;
-    private String fileName;
-    private long size;
-    private long time;
-    private int filesSent;
-    private int warnings;    
-    private int failures;
-    private ArrayList<Attributes> cStoreRSPAttributes;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesSent
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
-        super();
-        this.testDescription = testDescription;
-        this.fileName = fileName;
-        this.size = size;
-        this.time = time;
-        this.filesSent = filesSent;
-        this.warnings = warnings;
-        this.failures = failures;
-        this.cStoreRSPAttributes = cmdRSP;
+            Device device = new Device("scu");
+            
+            Connection local = new Connection();
+            device.addConnection(local);
+            device.setInstalled(true);
+
+            local.setAcceptTimeout(5000);
+            
+            alive = (local.connect(conn) != null);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IncompatibleConnectionException e) {
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        }
+        
+        return alive;
     }
     
-    public String getTestDescription() {
-        return testDescription;
-    }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getSize() {
-        return size;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesSent() {
-        return filesSent;
-    }
-    public int getWarnings() {
-        return warnings;
-    }
-    public int getFailures() {
-        return failures;
-    }
-
-    public ArrayList<Attributes> getcStoreRSPAttributes() {
-        return cStoreRSPAttributes;
-    }
-
 }

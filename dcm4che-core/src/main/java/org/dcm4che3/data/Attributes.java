@@ -2198,6 +2198,79 @@ public class Attributes implements Serializable {
         return true;
    }
 
+    public Attributes diff(Attributes b, boolean both) {
+        Object[] otherValues = b.values;
+        Attributes inAnotInB = new Attributes();
+        Attributes inBnotInA = new Attributes();
+        Attributes diffBoth = new Attributes();
+        for(int indexOfTag = 0;indexOfTag < tags.length && tags[indexOfTag]!=0; indexOfTag++) {
+            if(TagUtils.isPrivateGroup(tags[indexOfTag])) {
+                if(TagUtils.isPrivateCreator(tags[indexOfTag])) {
+                    //treat as a normal tag with normal compare
+                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
+                }
+                else {
+                    //check if private creator is in b
+                    int privateCreatorTag = TagUtils.creatorTagOf(tags[indexOfTag]);
+                    Object o=getValue(privateCreatorTag);
+                    Object o1=b.values[b.indexOf(privateCreatorTag)];
+                    if(b.contains(privateCreatorTag) && o1.equals(o))
+                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
+                    else
+                        inAnotInB.set(tags[indexOfTag],vrs[indexOfTag],values[indexOfTag]);
+                }
+                System.out.println((String)values[indexOfTag]+indexOfTag);
+            }
+            else {
+                System.out.println((String)values[indexOfTag]+indexOfTag);
+                diffAttr(b, otherValues, inAnotInB, indexOfTag);
+            }
+        }
+        
+        inBnotInA.addAll(filterOutPrivateCreator(inAnotInB,b));
+        if(both) {
+        diffBoth.addAll(inAnotInB);
+        diffBoth.addAll(inBnotInA);
+        }
+            return both?diffBoth:inAnotInB;
+    }
+
+    private Attributes filterOutPrivateCreator(Attributes inAnotInB, Attributes b) {
+        for(int tag : b.tags)
+            if(!inAnotInB.contains(tag) && TagUtils.isPrivateCreator(tag))
+                b.remove(tag);
+        return b;
+    }
+
+    private void diffAttr(Attributes b, Object[] otherValues,
+            Attributes inAnotInB, int indexOfTag) {
+        if(!(b.contains(tags[indexOfTag]) && otherValues[b.indexOf(tags[indexOfTag])].equals(values[indexOfTag]))) {
+            //add to diff in a not in b
+            inAnotInB.set(tags[indexOfTag], vrs[indexOfTag], values[indexOfTag]);
+        }
+        else {
+            if(!TagUtils.isPrivateCreator(tags[indexOfTag]))
+            b.remove(tags[indexOfTag]);
+        }
+    }
+    
+    public static void main(String[] args) {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(0x20011001,VR.LO,"Some Prop Attr");
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        a.setString(0x20010010,VR.LO,"Philips Imaging");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        b.setString(Tag.PatientID, VR.LO, "4");
+        b.setString(0x20010010,VR.LO,"Philips Imagingz");
+        b.setString(0x20011001,VR.LO,"Some Prop Attr");
+        System.out.print(a.diff(b, true));
+    }
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])

@@ -57,14 +57,15 @@ class ImageParams {
     private final int rows;
     private final int cols;
     private final int samples;
-    private final PhotometricInterpretation pmi;
+    private final int pixelRepresentation;
     private final int bitsAllocated;
     private final int bitsStored;
-    private final boolean banded;
-    private final boolean signed;
     private final int frames;
     private final int frameLength;
     private final int length;
+
+    private PhotometricInterpretation pmi;
+    private int planarConfiguration;
 
     public ImageParams(Attributes attrs) {
         this.rows = attrs.getInt(Tag.Rows, 0);
@@ -74,62 +75,81 @@ class ImageParams {
                 attrs.getString(Tag.PhotometricInterpretation, "MONOCHROME2"));
         this.bitsAllocated = attrs.getInt(Tag.BitsAllocated, 8);
         this.bitsStored = attrs.getInt(Tag.BitsStored, bitsAllocated);
-        this.banded = attrs.getInt(Tag.PlanarConfiguration, 0) != 0;
-        this.signed = attrs.getInt(Tag.PixelRepresentation, 0) != 0;
+        this.planarConfiguration = attrs.getInt(Tag.PlanarConfiguration, 0);
+        this.pixelRepresentation = attrs.getInt(Tag.PixelRepresentation, 0);
         this.frames = attrs.getInt(Tag.NumberOfFrames, 1);
         this.frameLength = rows * cols * samples * (bitsAllocated >>> 3);
         this.length = frameLength * frames;
     }
 
-    public void decompress(Attributes attrs, TransferSyntaxType tstype) {
-        if (samples > 1) {
-            attrs.setString(Tag.PhotometricInterpretation, VR.CS,
-                    pmi.decompress().toString());
-            attrs.setInt(Tag.PlanarConfiguration, VR.US,
-                    tstype.getPlanarConfiguration());
-        }
+    public int getRows() {
+        return rows;
+    }
+
+    public int getColumns() {
+        return cols;
+    }
+
+    public int getSamples() {
+        return samples;
+    }
+
+    public int getBitsAllocated() {
+        return bitsAllocated;
+    }
+
+    public int getBitsStored() {
+        return bitsStored;
+    }
+
+    public int getFrameLength() {
+        return frameLength;
     }
 
     public int getLength() {
         return length;
     }
 
-    public BufferedImage createBufferedImage() {
-        int dataType = bitsAllocated > 8
-                ? (signed ? DataBuffer.TYPE_SHORT : DataBuffer.TYPE_USHORT)
-                : DataBuffer.TYPE_BYTE;
-        ComponentColorModel cm = samples == 1
-                ? new ComponentColorModel(
-                ColorSpace.getInstance(ColorSpace.CS_GRAY),
-                new int[] { bitsStored },
-                false, // hasAlpha
-                false, // isAlphaPremultiplied,
-                Transparency.OPAQUE,
-                dataType)
-                :  new ComponentColorModel(
-                ColorSpace.getInstance(ColorSpace.CS_sRGB),
-                new int[] { bitsStored, bitsStored, bitsStored },
-                false, // hasAlpha
-                false, // isAlphaPremultiplied,
-                Transparency.OPAQUE,
-                dataType);
-
-        SampleModel sm = banded
-                ? new BandedSampleModel(dataType, cols, rows, samples)
-                : new PixelInterleavedSampleModel(dataType, cols, rows,
-                samples, cols * samples, bandOffsets());
-        WritableRaster raster = Raster.createWritableRaster(sm, null);
-        return new BufferedImage(cm, raster, false, null);
+    public PhotometricInterpretation getPhotometricInterpretation() {
+        return pmi;
     }
 
-    private int[] bandOffsets() {
-        int[] offsets = new int[samples];
-        for (int i = 0; i < samples; i++)
-            offsets[i] = i;
-        return offsets;
+    public int getEncodedLength() {
+        return (length + 1) & ~1;
+    }
+
+    public boolean paddingNull() {
+        return (length & 1) != 0;
+    }
+
+    public boolean isBanded() {
+        return planarConfiguration != 0;
+    }
+
+    public boolean isSigned() {
+        return pixelRepresentation != 0;
     }
 
     public int getFrames() {
         return frames;
     }
+
+    public void decompress(Attributes attrs, TransferSyntaxType tstype) {
+        if (samples > 1) {
+            pmi = pmi.decompress();
+            planarConfiguration = tstype.getPlanarConfiguration();
+            attrs.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
+            attrs.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
+        }
+    }
+
+    public void compress(Attributes attrs, TransferSyntaxType tstype) {
+        if (samples > 1) {
+            pmi = tstype.compress(pmi);
+            planarConfiguration = tstype.getPlanarConfiguration();
+            attrs.setString(Tag.PhotometricInterpretation, VR.CS, pmi.toString());
+            attrs.setInt(Tag.PlanarConfiguration, VR.US, planarConfiguration);
+        }
+    }
+
 }

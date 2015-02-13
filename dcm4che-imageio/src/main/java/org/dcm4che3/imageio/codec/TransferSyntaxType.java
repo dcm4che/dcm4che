@@ -41,6 +41,7 @@ package org.dcm4che3.imageio.codec;
 import java.util.HashMap;
 
 import org.dcm4che3.data.UID;
+import org.dcm4che3.image.PhotometricInterpretation;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -56,15 +57,48 @@ public enum TransferSyntaxType {
     JPEG_BASELINE {
         @Override
         public int getMaxBitsStored() { return 8; }
+
+        @Override
+        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+            return pmi == PhotometricInterpretation.RGB
+                    ? PhotometricInterpretation.YBR_FULL_422
+                    : pmi;
+        }
+
     },
     JPEG_EXTENDED {
         @Override
         public int getMaxBitsStored() { return 12; }
+
+        @Override
+        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+            return pmi == PhotometricInterpretation.RGB
+                    ? PhotometricInterpretation.YBR_FULL_422
+                    : pmi;
+        }
     },
     JPEG_LOSSLESS,
     JPEG_2000 {
         @Override
         public boolean canEncodeSigned() { return true; }
+
+        @Override
+        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+            return pmi == PhotometricInterpretation.RGB
+                    ? PhotometricInterpretation.YBR_ICT
+                    : pmi;
+        }
+    },
+    JPEG_2000_LOSSLESS {
+        @Override
+        public boolean canEncodeSigned() { return true; }
+
+        @Override
+        public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+            return pmi == PhotometricInterpretation.RGB
+                    ? PhotometricInterpretation.YBR_RCT
+                    : pmi;
+        }
     },
     RLE {
         @Override
@@ -97,6 +131,10 @@ public enum TransferSyntaxType {
         return 16;
     }
 
+    public PhotometricInterpretation compress(PhotometricInterpretation pmi) {
+        return pmi;
+    }
+
     private static final HashMap<String, TransferSyntaxType> map =
             new HashMap<String, TransferSyntaxType>();
     static {
@@ -110,9 +148,9 @@ public enum TransferSyntaxType {
         map.put(UID.JPEGLossless, JPEG_LOSSLESS);
         map.put(UID.JPEGLSLossless, JPEG_LOSSLESS);
         map.put(UID.JPEGLSLossyNearLossless, JPEG_LOSSLESS);
-        map.put(UID.JPEG2000LosslessOnly, JPEG_2000);
+        map.put(UID.JPEG2000LosslessOnly, JPEG_2000_LOSSLESS);
         map.put(UID.JPEG2000, JPEG_2000);
-        map.put(UID.JPEG2000Part2MultiComponentLosslessOnly, JPEG_2000);
+        map.put(UID.JPEG2000Part2MultiComponentLosslessOnly, JPEG_2000_LOSSLESS);
         map.put(UID.JPEG2000Part2MultiComponent, JPEG_2000);
         map.put(UID.JPIPReferenced, JPIP);
         map.put(UID.JPIPReferencedDeflate, JPIP);

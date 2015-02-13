@@ -61,84 +61,104 @@ import java.io.IOException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jan 2015.
  */
-public class StreamDecompressor {
+public class StreamDecompressor implements CoerceAttributes {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamDecompressor.class);
 
-    private final DicomInputStream in;
-    private final DicomOutputStream out;
-    private final String tsuid;
-    private final Attributes dataset;
-    private final TransferSyntaxType tsType;
-    private final ImageReader decompressor;
-    private final PatchJPEGLS patchJPEGLS;
+    protected final DicomInputStream in;
+    protected final DicomOutputStream out;
+    protected final String tsuid;
+    protected final TransferSyntaxType tsType;
+    protected final Attributes dataset;
+    protected ImageReader decompressor;
+    protected PatchJPEGLS patchJPEGLS;
+    protected boolean pixeldataProcessed;
+    protected CoerceAttributes coerceAttributes = this;
 
     public StreamDecompressor(DicomInputStream in, String tsuid, DicomOutputStream out) {
         this.in = in;
         this.out = out;
         this.tsuid = tsuid;
-        this.dataset = new Attributes(in.bigEndian(), 64);
         this.tsType = TransferSyntaxType.forUID(tsuid);
         if (tsType == null)
             throw new IllegalArgumentException("Unknown Transfer Syntax: " + tsuid);
         if (tsType.isPixeldataEncapsulated()) {
             ImageReaderFactory.ImageReaderParam param = ImageReaderFactory.getImageReaderParam(tsuid);
-            if (param == null) {
+            if (param == null)
                 throw new IllegalArgumentException("Unsupported Transfer Syntax: " + tsuid);
-            }
             this.decompressor = ImageReaderFactory.getImageReader(param);
-            this.patchJPEGLS = param.getPatchJPEGLS();
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
-        } else {
-            this.decompressor = null;
-            this.patchJPEGLS = null;
+            this.patchJPEGLS = param.getPatchJPEGLS();
         }
+        this.dataset = new Attributes(in.bigEndian(), 64);
+    }
+
+    public CoerceAttributes getCoerceAttributes() {
+        return coerceAttributes;
+    }
+
+    public void setCoerceAttributes(CoerceAttributes coerceAttributes) {
+        if (coerceAttributes == null)
+            throw new NullPointerException();
+
+        this.coerceAttributes = coerceAttributes;
+    }
+
+    @Override
+    public Attributes coerce(Attributes attrs) {
+        return attrs;
     }
 
     public boolean decompress() throws IOException {
         in.setDicomInputHandler(handler);
         in.readAttributes(dataset, -1, -1);
-        dataset.writeTo(out);
-        if (decompressor != null)
-            decompressor.dispose();
-        return decompressor != null;
+        (pixeldataProcessed ? dataset : coerceAttributes.coerce(dataset)).writeTo(out);
+        return pixeldataProcessed && decompressor != null;
     }
 
-    private void onPixelData(DicomInputStream dis, Attributes attrs) throws IOException {
+    public void dispose() {
+        if (decompressor != null)
+            decompressor.dispose();
+    }
+
+    protected void onPixelData(DicomInputStream dis, Attributes attrs) throws IOException {
         int tag = dis.tag();
         VR vr = dis.vr();
         int len = dis.length();
         if (len == -1) {
-            if (decompressor == null)
+            if (!tsType.isPixeldataEncapsulated()) {
                 throw new IOException("Unexpected encapsulated Pixel Data");
-            ImageParams imageParams = new ImageParams(attrs);
+            }
+            BufferedImage bi = null;
+            ImageParams imageParams = new ImageParams(dataset);
             imageParams.decompress(attrs, tsType);
-            attrs.writeTo(out);
+            if (tsType == TransferSyntaxType.RLE)
+                bi = BufferedImageUtils.createBufferedImage(imageParams, null);
+            coerceAttributes.coerce(attrs).writeTo(out);
             attrs.clear();
-            int length = imageParams.getLength();
-            out.writeHeader(Tag.PixelData, VR.OW, (length + 1) & ~1);
-            decompressFrames(dis, imageParams);
-            if ((length & 1) != 0)
+            out.writeHeader(Tag.PixelData, VR.OW, imageParams.getEncodedLength());
+            decompressFrames(dis, imageParams, bi);
+            if (imageParams.paddingNull())
                 out.write(0);
         } else {
-            if (decompressor != null) {
+            if (tsType.isPixeldataEncapsulated())
                 throw new IOException("Pixel Data not encapsulated");
-            }
-            attrs.writeTo(out);
+            coerceAttributes.coerce(attrs).writeTo(out);
             attrs.clear();
             out.writeHeader(tag, vr, len);
             StreamUtils.copy(dis, out, len);
         }
+        pixeldataProcessed = true;
     }
 
-    private void decompressFrames(DicomInputStream dis, ImageParams params) throws IOException {
+    protected void decompressFrames(DicomInputStream dis, ImageParams imageParams, BufferedImage bi)
+            throws IOException {
         dis.readHeader();
         dis.skipFully(dis.length());
         long pos = dis.getPosition();
         MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(dis);
         byte[] header = new byte[8];
-        BufferedImage bi = tsType == TransferSyntaxType.RLE ? params.createBufferedImage() : null;
-        for (int i = 0; i < params.getFrames(); i++) {
+        for (int i = 0; i < imageParams.getFrames(); i++) {
             iis.readFully(header);
             SegmentedImageInputStream siis =
                     new SegmentedImageInputStream(iis, iis.getStreamPosition(), ByteUtils.bytesToIntLE(header, 4));
@@ -155,11 +175,15 @@ public class StreamDecompressor {
             long end = System.currentTimeMillis();
             if (LOG.isDebugEnabled())
                 LOG.debug("Decompressed frame #{} 1:{} in {} ms",
-                        i + 1, (float) Decompressor.sizeOf(bi) / siis.getStreamPosition(), end - start );
-            Decompressor.writeTo(bi.getRaster(), out);
+                        i + 1, (float) BufferedImageUtils.sizeOf(bi) / siis.getStreamPosition(), end - start );
+            writeFrame(bi);
         }
         iis.readFully(header);
         dis.setPosition(pos + iis.getStreamPosition());
+    }
+
+    protected void writeFrame(BufferedImage bi) throws IOException {
+        BufferedImageUtils.writeTo(bi, out);
     }
 
     private final DicomInputHandler handler = new DicomInputHandler() {

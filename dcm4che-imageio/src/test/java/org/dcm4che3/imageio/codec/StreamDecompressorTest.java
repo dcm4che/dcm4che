@@ -39,8 +39,7 @@
 
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.*;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.SafeClose;
@@ -60,17 +59,21 @@ public class StreamDecompressorTest {
         File outFile = new File("target", srcFile.getName());
         DicomInputStream dis = null;
         DicomOutputStream dos = null;
+        StreamDecompressor decompressor = null;
         try {
             dis = new DicomInputStream(srcFile);
             dos = new DicomOutputStream(outFile);
             Attributes fmi = dis.readFileMetaInformation();
-            dos.writeFileMetaInformation(fmi);
             String tsuid = fmi.getString(Tag.TransferSyntaxUID);
-            StreamDecompressor decompressor = new StreamDecompressor(dis, tsuid, dos);
+            fmi.setString(Tag.TransferSyntaxUID, VR.UI, UID.ExplicitVRLittleEndian);
+            dos.writeFileMetaInformation(fmi);
+            decompressor = new StreamDecompressor(dis, tsuid, dos);
             decompressor.decompress();
         } finally {
             SafeClose.close(dis);
             SafeClose.close(dos);
+            if (decompressor != null)
+                decompressor.dispose();
         }
         Attributes ds;
         try {
@@ -80,5 +83,13 @@ public class StreamDecompressorTest {
         } finally {
             SafeClose.close(dis);
         }
+        int rows = ds.getInt(Tag.Rows, 0);
+        int cols = ds.getInt(Tag.Columns, 0);
+        int samples = ds.getInt(Tag.SamplesPerPixel, 0);
+        int allocated = ds.getInt(Tag.BitsAllocated, 0);
+        int frames = ds.getInt(Tag.NumberOfFrames, 0);
+        int length = rows * cols * samples * (allocated >>> 3) * frames;
+        BulkData pixelData = (BulkData) ds.getValue(Tag.PixelData);
+        assertEquals((length + 1) & ~1, pixelData.length);
     }
 }

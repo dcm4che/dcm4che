@@ -98,7 +98,7 @@ public class TestToolFactory {
                 file = new File("tmp");
                 
                 Files.copy(TestToolFactory.class.getClassLoader()
-                        .getResourceAsStream(defaultParams.getProperty("configfile"))
+                        .getResourceAsStream("defaultConfig.json")
                         , file.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 file.deleteOnExit();
             } catch (IOException e) {

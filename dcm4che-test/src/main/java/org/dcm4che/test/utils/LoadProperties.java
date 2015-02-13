@@ -62,7 +62,7 @@ public class LoadProperties {
             if (fileURL != null && fileURL.length()>0)
             {
                 //load passed file
-                props.load(new FileInputStream(new URL(fileURL).getFile()));
+                props.load(new FileInputStream(new File(fileURL)));
             }
             else
             {

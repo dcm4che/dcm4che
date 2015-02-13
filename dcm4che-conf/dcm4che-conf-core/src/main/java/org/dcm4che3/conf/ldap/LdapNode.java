@@ -190,10 +190,9 @@ public class LdapNode {
                 LDAP ldapAnno = property.getAnnotation(LDAP.class);
                 if (ldapAnno != null && ldapAnno.booleanBasedEnumStorageOptions().length > 0) {
                     int i = 0;
-                    for (String enumStorageOption : ldapAnno.booleanBasedEnumStorageOptions()) {
-                        getAttributes().put(enumStorageOption, collection.contains(i) ? "TRUE" : "FALSE");
-                        i++;
-                    }
+                    for (String enumStorageOption : ldapAnno.booleanBasedEnumStorageOptions())
+                        if (collection.contains(i++))
+                            getAttributes().put(enumStorageOption, "TRUE");
                     continue;
                 }
 

@@ -49,7 +49,7 @@ import org.dcm4che3.net.pdu.ExtendedNegotiation;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@LDAP(objectClasses = "dcmTransferCapability")
+@LDAP
 @ConfigurableClass
 public class StorageOptions implements Serializable {
 

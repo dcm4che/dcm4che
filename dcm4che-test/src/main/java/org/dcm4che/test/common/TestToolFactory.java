@@ -65,8 +65,6 @@ import org.slf4j.LoggerFactory;
  */
 
 public class TestToolFactory {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TestToolFactory.class);
     
     public enum TestToolType {
         StoreTool,
@@ -95,9 +93,10 @@ public class TestToolFactory {
                 file = new File(((TestConfig)test.getParams().get("configfile")).configFile());
         }
         else {
-            
+            System.out.println("Loading default parameters "+ defaultParams.toString());
             try {
                 file = new File("tmp");
+                
                 Files.copy(TestToolFactory.class.getClassLoader()
                         .getResourceAsStream(defaultParams.getProperty("configfile"))
                         , file.toPath(), StandardCopyOption.REPLACE_EXISTING);

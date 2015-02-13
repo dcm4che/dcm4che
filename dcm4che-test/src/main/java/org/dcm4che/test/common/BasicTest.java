@@ -85,6 +85,7 @@ public abstract class BasicTest {
     public void init(Class<? extends BasicTest> clazz){
         try {
             setDefaultProperties(LoadProperties.load(clazz.getClass()));
+            System.out.println("Loaded default properties file successfully "+ clazz.getClass().getName());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -62,6 +62,7 @@ public class LoadProperties {
             if (fileURL != null && fileURL.length()>0)
             {
                 //load passed file
+                System.out.println("Loaded property configFileURL " + fileURL);
                 props.load(new FileInputStream(new File(fileURL)));
             }
             else

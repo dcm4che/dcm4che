@@ -130,7 +130,8 @@ public class DefaultConfigTypeAdapters {
         public T normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
             try {
                 if (metadata.get("type").equals("integer")) {
-
+                    if (configNode == null)
+                        throw new ConfigurationException("No value found for integer property without default");
                     if (configNode.getClass().equals(String.class))
                         return (T) Integer.valueOf((String) configNode);
                     else if (configNode.getClass().equals(Integer.class))
@@ -138,6 +139,9 @@ public class DefaultConfigTypeAdapters {
                     else
                         throw new ClassCastException();
                 } else if (metadata.get("type").equals("boolean")) {
+                    if (configNode == null && property.getType().equals(boolean.class))
+                        throw new ConfigurationException("No value found for boolean property without default");
+
                     // special handling for Boolean's null
                     if (configNode == null || configNode.equals("null")) return null;
 
@@ -149,6 +153,8 @@ public class DefaultConfigTypeAdapters {
                         throw new ClassCastException();
 
                 } else if (metadata.get("type").equals("number")) {
+                    if (configNode == null)
+                        throw new ConfigurationException("No value found for number property without default");
                     if (configNode.getClass().equals(String.class))
                         return (T) Double.valueOf((String) configNode);
                     else if (configNode.getClass().equals(Double.class) ||
@@ -157,6 +163,8 @@ public class DefaultConfigTypeAdapters {
                     else
                         throw new ClassCastException();
                 } else return (T) configNode;
+            } catch (ConfigurationException ce) {
+                throw ce;
             } catch (Exception e) {
                 throw new ConfigurationException("Cannot parse node " + configNode, e);
             }

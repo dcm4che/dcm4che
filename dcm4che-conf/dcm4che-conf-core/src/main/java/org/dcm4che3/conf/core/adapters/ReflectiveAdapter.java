@@ -100,7 +100,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, vitalizer);
                 PropertyUtils.setSimpleProperty(confObj, fieldProperty.getName(), fieldValue);
             } catch (Exception e) {
-                throw new ConfigurationException("Error while reading configuration field '" + fieldProperty.getName() + "' in class " + clazz.getSimpleName(), e);
+                throw new ConfigurationException("Error while reading configuration property '" + fieldProperty.getAnnotatedName() + "' (field "+fieldProperty.getName()+") in class " + clazz.getSimpleName(), e);
             }
 
         // iterate over setters

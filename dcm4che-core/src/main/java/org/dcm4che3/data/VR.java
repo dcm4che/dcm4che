@@ -70,9 +70,11 @@ public enum VR {
     SS(0x5353, 8, 0, BinaryValueType.SHORT, false),
     ST(0x5354, 8, ' ', StringValueType.TEXT, false),
     TM(0x544d, 8, ' ', StringValueType.TM, false),
+    UC(0x5543, 12, ' ', StringValueType.STRING, false),
     UI(0x5549, 8, 0, StringValueType.ASCII, false),
     UL(0x554c, 8, 0, BinaryValueType.INT, false),
     UN(0x554e, 12, 0, BinaryValueType.BYTE, true),
+    UR(0x5552, 12, ' ', StringValueType.UR, false),
     US(0x5553, 8, 0, BinaryValueType.USHORT, false),
     UT(0x5554, 12, ' ', StringValueType.TEXT, false);
 
@@ -117,9 +119,11 @@ public enum VR {
         VALUE_OF[0x5353 - 0x4145] = SS;
         VALUE_OF[0x5354 - 0x4145] = ST;
         VALUE_OF[0x544d - 0x4145] = TM;
+        VALUE_OF[0x5543 - 0x4145] = UC;
         VALUE_OF[0x5549 - 0x4145] = UI;
         VALUE_OF[0x554c - 0x4145] = UL;
         VALUE_OF[0x554e - 0x4145] = UN;
+        VALUE_OF[0x5552 - 0x4145] = UR;
         VALUE_OF[0x5553 - 0x4145] = US;
         VALUE_OF[0x5554 - 0x4145] = UT;
     }

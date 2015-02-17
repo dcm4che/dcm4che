@@ -144,11 +144,12 @@ public class StandardElementDictionary extends ElementDictionary {
     </xsl:apply-templates>
     <xsl:apply-templates select="//el[@vr='ST']"/>
     <xsl:apply-templates select="//el[@vr='TM']"/>
+    <xsl:apply-templates select="//el[@vr='UC']"/>
     <xsl:apply-templates select="//el[@vr='UI']"/>
     <xsl:apply-templates select="//el[@vr='UL']"/>
+    <xsl:apply-templates select="//el[@vr='UR']"/>
     <xsl:apply-templates select="//el[@vr='US']"/>
     <xsl:apply-templates select="//el[@vr='UT']"/>
-    <xsl:apply-templates select="//el[@keyword!='' and @vr='']"/>
 <xsl:text>
         }
         return VR.UN;
@@ -166,18 +167,10 @@ public class StandardElementDictionary extends ElementDictionary {
       <xsl:text>:</xsl:text>
     </xsl:if>
     <xsl:if test="position()=last()">
-      <xsl:choose>
-        <xsl:when test="$vr=''">
-          <xsl:text>
-            return null;</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>
-            return VR.</xsl:text>
-          <xsl:value-of select="$vr"/>
-          <xsl:text>;</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:text>
+           return VR.</xsl:text>
+      <xsl:value-of select="$vr"/>
+      <xsl:text>;</xsl:text>
     </xsl:if>
   </xsl:template>
 </xsl:stylesheet>

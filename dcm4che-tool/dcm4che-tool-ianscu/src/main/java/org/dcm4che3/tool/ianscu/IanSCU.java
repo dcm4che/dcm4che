@@ -89,7 +89,9 @@ public class IanSCU {
     private String availability = "ONLINE";
     private String retrieveAET;
     private String retrieveURI;
+    private String retrieveURL;
     private String retrieveUID;
+
     private HashMap<String,Attributes> map = new HashMap<String,Attributes>();
     private Association as;
 
@@ -131,6 +133,10 @@ public class IanSCU {
 
     public String getRetrieveAET() {
         return retrieveAET != null ? retrieveAET : ae.getAETitle();
+    }
+
+    public void setRetrieveURL(String retrieveURL) {
+        this.retrieveURL = retrieveURL;
     }
 
     public void setRetrieveURI(String retrieveURI) {
@@ -244,6 +250,12 @@ public class IanSCU {
         opts.addOption(OptionBuilder
                 .hasArg()
                 .withArgName("uri")
+                .withDescription(rb.getString("retrieve-url"))
+                .withLongOpt("retrieve-url")
+                .create());
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("uri")
                 .withDescription(rb.getString("retrieve-uri"))
                 .withLongOpt("retrieve-uri")
                 .create());
@@ -275,6 +287,7 @@ public class IanSCU {
         main.setAvailability(cl.getOptionValue("availability", "ONLINE"));
         main.setRetrieveAET(cl.getOptionValue("retrieve-aet"));
         main.setRetrieveURI(cl.getOptionValue("retrieve-uri"));
+        main.setRetrieveURL(cl.getOptionValue("retrieve-url"));
         main.setRetrieveUID(cl.getOptionValue("retrieve-uid"));
     }
 
@@ -349,8 +362,10 @@ public class IanSCU {
                 inst.getString(Tag.SOPClassUID));
         refSOP.setString(Tag.ReferencedSOPInstanceUID, VR.UI,
                 inst.getString(Tag.SOPInstanceUID));
+        if (retrieveURL != null)
+            refSOP.setString(Tag.RetrieveURL, VR.UR, retrieveURL);
         if (retrieveURI != null)
-            refSOP.setString(Tag.RetrieveURI, VR.UT, retrieveURI);
+            refSOP.setString(Tag.RetrieveURI, VR.UR, retrieveURI);
         if (retrieveUID != null)
             refSOP.setString(Tag.RetrieveLocationUID, VR.UI, retrieveUID);
         refSOPSeq.add(refSOP);

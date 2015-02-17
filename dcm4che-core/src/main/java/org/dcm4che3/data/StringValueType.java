@@ -77,6 +77,13 @@ enum StringValueType implements ValueType {
             return StringUtils.trimTrailing(s);
         }
     },
+    UR(null, null) {
+
+        @Override
+        protected Object splitAndTrim(String s) {
+            return StringUtils.trimTrailing(s);
+        }
+    },
     DA("\\", TemporalType.DA),
     DT("\\", TemporalType.DT),
     TM("\\", TemporalType.TM),

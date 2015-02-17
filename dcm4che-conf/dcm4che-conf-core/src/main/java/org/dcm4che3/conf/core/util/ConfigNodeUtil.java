@@ -60,7 +60,7 @@ public class ConfigNodeUtil {
             @Override
             public boolean createObject(JXPathContext context, Pointer pointer, Object parent, String name, int index) {
                 if (parent instanceof Map) {
-                    ((Map<String, Object>) parent).put(name, new HashMap<String, Object>());
+                    ((Map<String, Object>) parent).put(name, new TreeMap<String, Object>());
                     return true;
                 }
                 return false;

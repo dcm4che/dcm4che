@@ -171,7 +171,7 @@ public class ImageWriterFactory implements Serializable {
         label = "Image Writers",
         description = "Image writers by transfer syntaxes"
     )
-    private Map<String, ImageWriterParam> map = new LinkedHashMap<String, ImageWriterParam>();
+    private Map<String, ImageWriterParam> map = new TreeMap<String, ImageWriterParam>();
 
     private static String nullify(String s) {
         return s == null || s.isEmpty() || s.equals("*") ? null : s;

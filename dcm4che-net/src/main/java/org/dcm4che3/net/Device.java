@@ -43,17 +43,8 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -215,7 +206,7 @@ public class Device implements Serializable {
             label = "Application Entities"
     )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
-            new LinkedHashMap<String, ApplicationEntity>();
+            new TreeMap<String, ApplicationEntity>();
 
     private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();

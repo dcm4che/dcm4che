@@ -126,12 +126,12 @@ public class ApplicationEntity implements Serializable {
     private Collection<TransferCapability> transferCapabilities;
 
     // populated/collected by transferCapabilities' setter/getter
-    private final HashMap<String, TransferCapability> scuTCs =
-            new LinkedHashMap<String, TransferCapability>();
+    private final Map<String, TransferCapability> scuTCs =
+            new TreeMap<String, TransferCapability>();
 
     // populated/collected by transferCapabilities' setter/getter
-    private final HashMap<String, TransferCapability> scpTCs =
-            new LinkedHashMap<String, TransferCapability>();
+    private final Map<String, TransferCapability> scpTCs =
+            new TreeMap<String, TransferCapability>();
 
     private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
             new HashMap<Class<? extends AEExtension>,AEExtension>();
@@ -557,7 +557,7 @@ public class ApplicationEntity implements Serializable {
         return scu ? tcscp : tcscu;
     }
 
-    private TransferCapability getTC(HashMap<String, TransferCapability> tcs,
+    private TransferCapability getTC(Map<String, TransferCapability> tcs,
             String asuid, AAssociateRQ rq) {
         TransferCapability tc = tcs.get(asuid);
         if (tc != null)

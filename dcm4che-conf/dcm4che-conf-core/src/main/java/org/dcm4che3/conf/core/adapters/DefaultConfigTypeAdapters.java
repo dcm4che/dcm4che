@@ -335,7 +335,7 @@ public class DefaultConfigTypeAdapters {
 
         defaultTypeAdapters.put(Map.class, new NullToNullDecorator(new MapTypeAdapter()));
         defaultTypeAdapters.put(Set.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(LinkedHashSet.class)));
-        defaultTypeAdapters.put(EnumSet.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(HashSet.class)));
+        defaultTypeAdapters.put(EnumSet.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(LinkedHashSet.class)));
         defaultTypeAdapters.put(List.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
         defaultTypeAdapters.put(Collection.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
         defaultTypeAdapters.put(Enum.class, new NullToNullDecorator(new EnumTypeAdapter()));

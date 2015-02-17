@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * Map<br>
@@ -71,7 +72,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
-        Map<K, V> map = new LinkedHashMap<K, V>();
+        Map<K, V> map = new TreeMap<K, V>();
 
         for (Entry<String, Object> e : configNode.entrySet()) {
             map.put(keyAdapter.fromConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
@@ -95,7 +96,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
-        Map<String, Object> configNode = new LinkedHashMap<String, Object>();
+        Map<String, Object> configNode = new TreeMap<String, Object>();
 
         for (Entry<K, V> e : object.entrySet()) {
             configNode.put(keyAdapter.toConfigNode(e.getKey(), keyPseudoProperty, vitalizer),

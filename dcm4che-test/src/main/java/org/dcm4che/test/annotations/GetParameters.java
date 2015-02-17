@@ -36,41 +36,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.test.utils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
+package org.dcm4che.test.annotations;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- *
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class LoadProperties {
 
-    private static Properties props = null;
-    
-    public static Properties load(Class resourceClass) throws IOException
-    {
-        if (props == null)
-        {
-            props = new Properties();
-            String fileURL = System.getProperty("configFileURL");
-            
-            if (fileURL != null && fileURL.length()>0)
-            {
-                //load passed file
-                System.out.println("Loaded property configFileURL " + fileURL);
-                props.load(new FileInputStream(new File(fileURL)));
-            }
-            else
-            {
-                throw new IOException("A default configuration property configFileURL must be defined");
-            }
-        }
-        
-        return props;
-    }
+
+public @interface GetParameters {
+    public String aeTitle();
+    public String retrieveDir();
+    public String sourceAETitle() default "STORESCU";
+    public String sourceDevice() default "storescu";
 }

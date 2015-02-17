@@ -51,7 +51,7 @@ public @interface QueryParameters {
 
     public String aeTitle();
 
-    public String sourceDevice() default "findscu";
+    public String sourceDevice() ;
 
-    public String sourceAETitle() default "FINDSCU"; 
+    public String sourceAETitle() ; 
 }

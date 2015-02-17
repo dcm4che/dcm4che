@@ -36,15 +36,21 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.findscu.test;
+package org.dcm4che3.tool.getscu.test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,142 +66,122 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.QueryOption;
-import org.dcm4che3.net.Status;
+import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.findscu.FindSCU;
-import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
+import org.dcm4che3.tool.getscu.GetSCU;
+import org.dcm4che3.tool.getscu.GetSCU.InformationModel;
+import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * @author Hesham elbadawi <bsdreko@gmail.com>
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
-public class QueryTool implements TestTool {
+public class RetrieveTool implements TestTool{
 
     private String host;
     private int port;
     private String aeTitle;
     private Device device;
     private String sourceAETitle;
+    private File retrieveDir;
+    private int numResponses;
+    private int numSuccess;
+    private int numFailed;
+    private int expectedMatches = Integer.MIN_VALUE;
+    private long timeFirst=0;
+    private Attributes retrieveatts = new Attributes();
+    
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     
-    private int numMatches;
-
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
-    private Attributes queryatts = new Attributes();
-    private int expectedMatches = Integer.MIN_VALUE;
-    
-    private long timeFirst=0;
-
     /**
-     * @param host
-     * @param port
-     * @param aeTitle
+     * @param testName
+     * @param testDescription
+     * @param fileName
      */
-    public QueryTool(String host, int port, String aeTitle, Device device, String sourceAETitle) {
+    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle) {
         super();
         this.host = host;
         this.port = port;
         this.aeTitle = aeTitle;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
+        this.retrieveDir = retrieveDir;
     }
 
-    public void queryfuzzy(String testDescription) throws IOException,
-    InterruptedException, IncompatibleConnectionException,
-    GeneralSecurityException {
-        query(testDescription,true);
-    }
-
-    public void query(String testDescription) throws IOException,
-    InterruptedException, IncompatibleConnectionException,
-    GeneralSecurityException {
-        query(testDescription,false);
-    }
-
-    
-    private void query(String testDescription, boolean fuzzy) throws IOException,
-            InterruptedException, IncompatibleConnectionException,
-            GeneralSecurityException {
-        
+    public void retrieve(String testDescription) throws IOException, InterruptedException,
+            IncompatibleConnectionException, GeneralSecurityException,
+            FileNotFoundException, IOException {
+        //setup device and connection
         Connection conn = new Connection();
         device.addConnection(conn);
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
-        FindSCU main = new FindSCU(ae);
-        main.getAAssociateRQ().setCalledAET(aeTitle);
-        main.getRemoteConnection().setHostname(host);
-        main.getRemoteConnection().setPort(port);
+        final GetSCU retrievescu = new GetSCU(ae);
+        retrievescu.getAAssociateRQ().setCalledAET(aeTitle);
+        retrievescu.getRemoteConnection().setHostname(host);
+        retrievescu.getRemoteConnection().setPort(port);
+        retrievescu.setStorageDirectory(retrieveDir);
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        // add retrieve attrs
+
+
+        // create executor
+        ExecutorService executorService = Executors.newCachedThreadPool();
         ScheduledExecutorService scheduledExecutorService = Executors
                 .newSingleThreadScheduledExecutor();
-        main.getDevice().setExecutor(executorService);
-        main.getDevice().setScheduledExecutor(scheduledExecutorService);
+        retrievescu.getDevice().setExecutor(executorService);
+        retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
+        retrievescu.getDevice().bindConnections();
 
-        EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
-        if (fuzzy) queryOptions.add(QueryOption.FUZZY);
+        retrievescu.setInformationModel(InformationModel.StudyRoot,
+                IVR_LE_FIRST, false);
+        configureServiceClass(retrievescu);
+
+        retrievescu.getKeys().addAll(retrieveatts);
         
-        main.setInformationModel(InformationModel.StudyRoot, IVR_LE_FIRST,queryOptions);
-
-        main.getKeys().addAll(queryatts);
-
         long timeStart = System.currentTimeMillis();
 
+        // open, send and wait for response
         try {
-
-            main.open();
-            main.query(getDimseRSPHandler(main.getAssociation().nextMessageID()));
-
+            retrievescu.open();
+            retrievescu.retrieve(getDimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
         } finally {
-            main.close(); // is waiting for all the responsens to be complete
+            retrievescu.close();
             executorService.shutdown();
             scheduledExecutorService.shutdown();
-
         }
 
         long timeEnd = System.currentTimeMillis();
-
-        validateMatches(testDescription);
-
-        init(new QueryResult(testDescription, expectedMatches, numMatches,
-                (timeEnd - timeStart), (timeFirst-timeStart), response ));
-    }
-
-    private void validateMatches(String testDescription) {
+        
         if (this.expectedMatches >= 0)
-            assertTrue("test[" + testDescription
+            assertTrue("test[" + testDescription 
                     + "] not returned expected result:" + this.expectedMatches
-                    + " but:" + numMatches, numMatches == this.expectedMatches);
+                    + " but:" + numResponses, numResponses == this.expectedMatches);
+        
+        assertTrue("test[" + testDescription
+                    + "] had failed responses:"+ numFailed, numFailed==0);
+        
+        init(new RetrieveResult(testDescription, expectedMatches, numResponses,
+                numSuccess, numFailed,
+                (timeEnd - timeStart), (timeFirst-timeStart), response));
     }
-
-    public void addQueryTag(int tag, String value) throws Exception {
-        VR vr = ElementDictionary.vrOf(tag, null);
-        queryatts.setString(tag, vr, value);
+    
+    public void addTag(int tag, String value) throws Exception {
+        VR vr = ElementDictionary.vrOf(tag, null); 
+        retrieveatts.setString(tag, vr, value);
     }
-
-    public void clearQueryKeys() {
-        this.queryatts = new Attributes();
+    
+    public void setExpectedMatches(int expectedResult) {
+        this.expectedMatches = expectedResult;
     }
-    public void addAll(Attributes attrs) {
-        queryatts.addAll(attrs);
-    }
-
-    public void addReturnTag(int tag) throws Exception {
-        VR vr = ElementDictionary.vrOf(tag, null);
-        queryatts.setNull(tag, vr);
-    }
-
-    public void setExpectedMatches(int matches) {
-        this.expectedMatches = matches;
-    }
-
+    
     private DimseRSPHandler getDimseRSPHandler(int messageID) {
 
         DimseRSPHandler rspHandler = new DimseRSPHandler(messageID) {
@@ -204,21 +190,47 @@ public class QueryTool implements TestTool {
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
-                onCFindResponse(cmd, data);
+                onCGetResponse(cmd, data);
             }
         };
 
         return rspHandler;
     }
 
-    protected void onCFindResponse(Attributes cmd, Attributes data) {
-        if (numMatches==0) timeFirst = System.currentTimeMillis();
+    protected void onCGetResponse(Attributes cmd, Attributes data) {
+        if (numResponses==0) timeFirst = System.currentTimeMillis();
         int status = cmd.getInt(Tag.Status, -1);
-        if (Status.isPending(status)) {
-            response.add(data);
-            ++numMatches;
+        if (status == 0XFF00 || status == 0)
+            ++numSuccess;
+        else
+            ++numFailed;
+        response.add(data);
+        ++numResponses;
+    }
+
+    private static void configureServiceClass(GetSCU main)
+            throws FileNotFoundException, IOException {
+
+        URL defaultConfig = main.getClass().getResource(
+                "/retrieve/store-tcs.properties");
+        Properties props = new Properties();
+        props.load(new FileInputStream(new File(defaultConfig.getFile())));
+
+        Set<Entry<Object, Object>> entrySet = props.entrySet();
+        for (Entry<Object, Object> entry : entrySet)
+            configureStorageSOPClass(main, (String) entry.getKey(),
+                    (String) entry.getValue());
+    }
+
+    private static void configureStorageSOPClass(GetSCU main, String cuid,
+            String tsuids0) {
+        String[] tsuids1 = StringUtils.split(tsuids0, ';');
+        for (String tsuids2 : tsuids1) {
+            main.addOfferedStorageSOPClass(CLIUtils.toUID(cuid),
+                    CLIUtils.toUID(tsuids2));
         }
     }
+
     @Override
     public void init(TestResult result) {
         this.result = result;
@@ -229,7 +241,4 @@ public class QueryTool implements TestTool {
         return this.result;
     }
 
-    public void setAeTitle(String aeTitle) {
-        this.aeTitle = aeTitle;
-    }
 }

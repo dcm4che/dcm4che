@@ -36,41 +36,80 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che.test.utils;
+package org.dcm4che3.tool.getscu.test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
+import java.util.List;
+import org.dcm4che3.tool.common.test.TestResult;
+
+import org.dcm4che3.data.Attributes;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- *
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
-public class LoadProperties {
+public class RetrieveResult implements TestResult{
 
-    private static Properties props = null;
-    
-    public static Properties load(Class resourceClass) throws IOException
-    {
-        if (props == null)
-        {
-            props = new Properties();
-            String fileURL = System.getProperty("configFileURL");
-            
-            if (fileURL != null && fileURL.length()>0)
-            {
-                //load passed file
-                System.out.println("Loaded property configFileURL " + fileURL);
-                props.load(new FileInputStream(new File(fileURL)));
-            }
-            else
-            {
-                throw new IOException("A default configuration property configFileURL must be defined");
-            }
-        }
-        
-        return props;
+    private String testDescription;
+    private int expectedResult = Integer.MIN_VALUE;
+    private int numResponses;
+    private int numSuccess;
+    private int numFail;
+    private long time;
+    private long timeFirst;
+    private List<Attributes> queryResponse;
+
+    /**
+     * @param testDescription
+     * @param expectedResult
+     * @param numMatches
+     * @param numSuccess
+     * @param numFail
+     * @param time
+     * @param timeFirst
+     */
+    public RetrieveResult(String testDescription, int expectedResult,
+            int numResponses, int numSuccess, int numFail, long time,
+            long timeFirst, List<Attributes> response) {
+        super();
+        this.testDescription = testDescription;
+        this.expectedResult = expectedResult;
+        this.numResponses = numResponses;
+        this.numSuccess = numSuccess;
+        this.numFail = numFail;
+        this.time = time;
+        this.timeFirst = timeFirst;
+        this.queryResponse = response;
+    }
+
+    public String getTestDescription() {
+        return testDescription;
+    }
+
+    public int getExpectedResult() {
+        return expectedResult;
+    }
+
+    public int getNumResponses() {
+        return numResponses;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public long getTimeFirst() {
+        return timeFirst;
+    }
+
+    public int getNumSuccess() {
+        return numSuccess;
+    }
+
+    public int getNumFail() {
+        return numFail;
+    }
+
+    public List<Attributes> getQueryResponse() {
+        return queryResponse;
     }
 }

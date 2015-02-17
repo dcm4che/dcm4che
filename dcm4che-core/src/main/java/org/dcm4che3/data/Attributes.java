@@ -2219,10 +2219,8 @@ public class Attributes implements Serializable {
                     else
                         inAnotInB.set(tags[indexOfTag],vrs[indexOfTag],values[indexOfTag]);
                 }
-                System.out.println((String)values[indexOfTag]+indexOfTag);
             }
             else {
-                System.out.println((String)values[indexOfTag]+indexOfTag);
                 diffAttr(b, otherValues, inAnotInB, indexOfTag);
             }
         }

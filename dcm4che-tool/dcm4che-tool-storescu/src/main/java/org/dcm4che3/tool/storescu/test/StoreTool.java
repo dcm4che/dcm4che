@@ -208,4 +208,8 @@ public class StoreTool implements TestTool {
         return this.result;
     }
 
+    public void setbaseDir(String dir) {
+        this.baseDirectory = new File (dir);
+    }
+
 }

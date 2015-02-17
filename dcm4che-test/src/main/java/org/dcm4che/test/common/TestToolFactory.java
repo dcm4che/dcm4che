@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
+import org.dcm4che.test.annotations.GetParameters;
 import org.dcm4che.test.annotations.MppsParameters;
 import org.dcm4che.test.annotations.QueryParameters;
 import org.dcm4che.test.annotations.RemoteConnectionParameters;
@@ -55,6 +56,7 @@ import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.dcm4che3.net.Device; 
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.findscu.test.QueryTool;
+import org.dcm4che3.tool.getscu.test.RetrieveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.slf4j.Logger;
@@ -85,15 +87,13 @@ public class TestToolFactory {
         TestTool tool = null;
         
         //Load default parameters
-         Properties defaultParams = BasicTest.getDefaultProperties();
-         
+         Properties defaultParams = test.getDefaultProperties();
         //Load config file if parametrized else load default config
         File file = null;
         if(test.getParams().get("configfile")!=null) {
                 file = new File(((TestConfig)test.getParams().get("configfile")).configFile());
         }
         else {
-            System.out.println("Loading default parameters "+ defaultParams.toString());
             try {
                 file = new File("tmp");
                 
@@ -123,6 +123,8 @@ public class TestToolFactory {
                     String aeTitle=null,sourceDevice=null, sourceAETitle=null;
                     Device device = null;
                     File baseDir = null;
+                    File retrieveDir = null;
+
         switch (type) {
         case StoreTool:
                 StoreParameters storeParams = (StoreParameters) test.getParams().get("StoreParameters");
@@ -175,11 +177,30 @@ public class TestToolFactory {
             } 
             tool = new MppsTool(host, port, aeTitle, baseDir, device, sourceAETitle);
             break;
+        case GetTool:
+            GetParameters getParams = (GetParameters) test.getParams().get("GetParameters");
+            aeTitle = getParams != null && getParams.aeTitle()!=null? getParams.aeTitle() 
+                    : defaultParams.getProperty("retrieve.aetitle");
+            retrieveDir = getParams != null && getParams.retrieveDir()!=null? new File(getParams.retrieveDir())
+            :new File(defaultParams.getProperty("retrieve.directory"));
+            sourceDevice = getParams != null?getParams.sourceDevice():"getscu";
+            sourceAETitle = getParams != null?getParams.sourceAETitle():"GETSCU";
+            device = null;
+            try {
+                device = getDicomConfiguration().findDevice(sourceDevice);    
+            } catch (ConfigurationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } 
+            tool = new RetrieveTool(host, port, aeTitle, retrieveDir, device, sourceAETitle);
+            break;
         default:
             break;
         }
         return tool;
     }
+
+    
     
     public static DicomConfiguration getDicomConfiguration() {
         return config;

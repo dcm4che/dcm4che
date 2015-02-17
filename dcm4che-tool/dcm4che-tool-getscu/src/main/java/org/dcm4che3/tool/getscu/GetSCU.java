@@ -118,7 +118,7 @@ public class GetSCU {
         Tag.SeriesInstanceUID
     };
 
-    private final Device device = new Device("getscu");
+    private Device device = new Device("getscu");
     private final ApplicationEntity ae;
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -163,6 +163,11 @@ public class GetSCU {
         device.setDimseRQHandler(createServiceRegistry());
     }
     
+    public GetSCU(ApplicationEntity appEntity) {
+        this.ae = appEntity;
+        this.device = this.ae.getDevice();
+    }
+
     public ApplicationEntity getApplicationEntity() {
         return ae;
     }

@@ -64,7 +64,7 @@ public abstract class BasicTest {
     @Rule
     public TestParametersRule rule = new TestParametersRule(this);
 
-    private static Properties defaultProperties;
+    private Properties defaultProperties;
 
     private static Map<String, Annotation> params = new HashMap<String, Annotation>();
 
@@ -72,10 +72,10 @@ public abstract class BasicTest {
         return params;
     }
 
-    public static void setDefaultProperties(Properties props) {
+    public void setDefaultProperties(Properties props) {
         defaultProperties = props;
     }
-    public static Properties getDefaultProperties() {
+    public Properties getDefaultProperties() {
         return defaultProperties;
     }
     protected void addParam( String key, Annotation anno) {
@@ -84,8 +84,7 @@ public abstract class BasicTest {
     
     public void init(Class<? extends BasicTest> clazz){
         try {
-            setDefaultProperties(LoadProperties.load(clazz.getClass()));
-            System.out.println("Loaded default properties file successfully "+ clazz.getClass().getName());
+            this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,10 +110,29 @@ public abstract class BasicTest {
         return storeTool.getResult();
     }
     
+    public TestResult storeResource(String description, String fileName) {
+        StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
+        storeTool.setbaseDir("target/test-classes/");
+        try {
+            storeTool.store(description, fileName);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IncompatibleConnectionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return storeTool.getResult();
+    }   
     public TestResult query(String description, Attributes keys, boolean fuzzy) {
         QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.FindTool, this);
         queryTool.addAll(keys);
-        
             try {
                 if(fuzzy)
                     queryTool.queryfuzzy(description);

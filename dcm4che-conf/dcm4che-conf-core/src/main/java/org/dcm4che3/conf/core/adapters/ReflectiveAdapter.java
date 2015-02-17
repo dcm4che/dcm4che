@@ -50,6 +50,7 @@ import org.dcm4che3.conf.core.util.ConfigIterators;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Reflective adapter that handles classes with ConfigurableClass annotations.<br/>
@@ -130,7 +131,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         Class<T> clazz = (Class<T>) object.getClass();
 
-        Map<String, Object> configNode = new HashMap<String, Object>();
+        Map<String, Object> configNode = new TreeMap<String, Object>();
 
         // get data from all the configurable fields
         for (AnnotatedConfigurableProperty fieldProperty : ConfigIterators.getAllConfigurableFields(clazz)) {

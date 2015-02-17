@@ -207,7 +207,7 @@ public class DicomConfigurationBuilder {
         configurationStorage = new DicomDefaultsFilterDecorator(configurationStorage, allExtensions,
                 persistDefaults != null
                     ? persistDefaults
-                    : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "true")));
+                    : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "false")));
 
         return configurationStorage;
     }

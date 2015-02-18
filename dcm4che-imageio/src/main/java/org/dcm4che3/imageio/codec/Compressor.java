@@ -140,8 +140,6 @@ public class Compressor extends Decompressor implements Closeable {
 
         this.compressParam = compressor.getDefaultWriteParam();
         int count = 0;
-        int maxPixelValueError = -1;
-        int avgPixelValueBlockSize = 1;
         for (Property property : cat(param.getImageWriteParams(), params)) {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
@@ -158,10 +156,10 @@ public class Compressor extends Decompressor implements Closeable {
 
         if (maxPixelValueError >= 0) {
             ImageReaderFactory.ImageReaderParam readerParam =
-                    ImageReaderFactory.getImageReaderParam(tsuid);
+                    ImageReaderFactory.getImageReaderParam(compressTsuid);
             if (readerParam == null)
                 throw new UnsupportedOperationException(
-                        "Unsupported Transfer Syntax: " + tsuid);
+                        "Unsupported Transfer Syntax: " + compressTsuid);
 
             this.verifier = ImageReaderFactory.getImageReader(readerParam);
             this.verifyParam = verifier.getDefaultReadParam();

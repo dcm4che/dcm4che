@@ -89,6 +89,7 @@
 	<module>dcm4che-tool-qidors</module>
 	<module>dcm4che-tool-wadors</module>
 	<module>dcm4che-tool-wadouri</module>
+	<module>dcm4che-tool-dcmgen</module>
     <!-- TODO: fix configuration load
     <module>dcm4che-tool-probetc</module> -->
     <module>dcm4che-tool-prefs2xml</module>

@@ -337,9 +337,8 @@ public class StoreSCU {
             storescu.enableSOPClassRelationshipExtNeg(true);
             Properties p = new Properties();
             CLIUtils.loadProperties(
-                    cl.hasOption("rel-sop-classes") ? cl
-                            .getOptionValue("rel-ext-neg")
-                            : "resource:rel-sop-classes.properties", p);
+                    cl.getOptionValue("rel-sop-classes", "resource:rel-sop-classes.properties"),
+                    p);
             storescu.relSOPClasses.init(p);
         }
     }

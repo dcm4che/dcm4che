@@ -196,7 +196,7 @@ public class DcmGen{
                     File outFile = new File(parent,iuid+".dcm");
                     dout = new DicomOutputStream(outFile);
                     dout.writeDataset(fmi, seedAttrs);
-                    generatedFiles.add(outFile.getPath());
+                    generatedFiles.add(outFile.getAbsolutePath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

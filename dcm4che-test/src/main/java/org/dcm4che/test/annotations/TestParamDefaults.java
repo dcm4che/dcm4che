@@ -35,7 +35,6 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
 package org.dcm4che.test.annotations;
 
 import java.lang.annotation.Retention;
@@ -44,10 +43,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
+
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DcmGenParameters {
-    public int instanceCount() default  1;
-    public int seriesCount() default  1;
-    public String outputDir();
-    public String seedFile();
+public @interface TestParamDefaults {
+    public String propertiesFile();
 }

@@ -39,7 +39,9 @@ package org.dcm4che.test.common;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
 import org.dcm4che.test.annotations.TestConfig;
+import org.dcm4che.test.annotations.TestParamDefaults;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -70,7 +72,8 @@ public class TestParametersRule implements TestRule {
                 }
                 TestConfig cnf = description.getTestClass().getAnnotation(TestConfig.class);
                 getInstance().addParam("configfile",cnf);
-                
+                TestParamDefaults props = description.getTestClass().getAnnotation(TestParamDefaults.class);
+                getInstance().addParam("defaultParams", props);
                 Method initMethod = null;
                     Method[] methods = description.getTestClass().getMethods();
                     for (Method m : methods) {

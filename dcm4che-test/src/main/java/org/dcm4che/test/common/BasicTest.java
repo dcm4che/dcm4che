@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
 import org.dcm4che.test.utils.LoadProperties;
 import org.dcm4che3.data.Attributes;
@@ -88,6 +89,11 @@ public abstract class BasicTest {
     
     public void init(Class<? extends BasicTest> clazz){
         try {
+            if(this.getParams().containsKey("defaultParams") 
+                    && this.getParams().get("defaultParams") != null)
+                System.setProperty("configFileURL", ((TestParamDefaults)
+                        this.getParams().get("defaultParams")).propertiesFile());
+            
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
         } catch (IOException e) {
             e.printStackTrace();

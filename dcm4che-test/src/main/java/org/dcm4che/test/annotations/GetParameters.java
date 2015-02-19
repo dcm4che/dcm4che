@@ -38,11 +38,14 @@
 
 package org.dcm4che.test.annotations;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 
-
+@Retention(RetentionPolicy.RUNTIME)
 public @interface GetParameters {
     public String aeTitle();
     public String retrieveDir();

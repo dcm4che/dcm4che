@@ -123,6 +123,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
 		<include>org.dcm4che.tool:dcm4che-tool-dcmdict</include>
+		<include>org.dcm4che.tool:dcm4che-tool-dcmgen</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>

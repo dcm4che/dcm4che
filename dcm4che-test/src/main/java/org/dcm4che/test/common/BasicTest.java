@@ -38,10 +38,12 @@
 package org.dcm4che.test.common;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -50,6 +52,8 @@ import org.dcm4che.test.utils.LoadProperties;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.tool.common.test.TestResult;
+import org.dcm4che3.tool.dcmgen.test.DcmGenResult;
+import org.dcm4che3.tool.dcmgen.test.DcmGenTool;
 import org.dcm4che3.tool.findscu.test.QueryTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
@@ -112,7 +116,8 @@ public abstract class BasicTest {
     
     public TestResult storeResource(String description, String fileName) {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
-        storeTool.setbaseDir("target/test-classes/");
+        File f = new File(fileName);
+        storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
         try {
             storeTool.store(description, fileName);
         } catch (IOException e) {
@@ -172,5 +177,39 @@ public abstract class BasicTest {
             e.printStackTrace();
         }
         return mppsTool.getResult();
+    }
+
+    public TestResult storeResources(String description, DcmGenResult result) {
+        StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
+        
+        try {
+            for(String fileName : result.getGeneratedResults()) {
+                File f = new File(fileName);
+                storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
+                storeTool.store(description, fileName);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IncompatibleConnectionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return storeTool.getResult();
+    }
+
+    public TestResult generateAndSend(String description, Attributes overrideAttributes) {
+        DcmGenTool dcmGenTool = (DcmGenTool) TestToolFactory.createToolForTest(TestToolType.DcmGenTool, this);
+        TestResult storeResult;
+        dcmGenTool.generateFiles(description, overrideAttributes);
+        DcmGenResult result = (DcmGenResult) dcmGenTool.getResult();
+        storeResult = storeResources(description, result);
+        return storeResult;
     }
 }

@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
+import org.dcm4che.test.annotations.DcmGenParameters;
 import org.dcm4che.test.annotations.GetParameters;
 import org.dcm4che.test.annotations.MppsParameters;
 import org.dcm4che.test.annotations.QueryParameters;
@@ -55,6 +56,7 @@ import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.dcm4che3.net.Device; 
 import org.dcm4che3.tool.common.test.TestTool;
+import org.dcm4che3.tool.dcmgen.test.DcmGenTool;
 import org.dcm4che3.tool.findscu.test.QueryTool;
 import org.dcm4che3.tool.getscu.test.RetrieveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
@@ -79,7 +81,8 @@ public class TestToolFactory {
         QidoTool,
         WadoURITool,
         WadoRSTool,
-        DCMQRSCPTool
+        DCMQRSCPTool,
+        DcmGenTool
     }
     private static DicomConfiguration config;
     
@@ -193,6 +196,14 @@ public class TestToolFactory {
                 e.printStackTrace();
             } 
             tool = new RetrieveTool(host, port, aeTitle, retrieveDir, device, sourceAETitle);
+            break;
+        case DcmGenTool:
+            DcmGenParameters genParams = (DcmGenParameters) test.getParams().get("DcmGenParameters");
+            File seedFile = new File(genParams.seedFile());
+            File outputDir = new File(genParams.outputDir());
+            int instanceCnt = genParams.instanceCount();
+            int seriesCnt = genParams.seriesCount();
+            tool = new DcmGenTool(instanceCnt, seriesCnt, outputDir, seedFile);
             break;
         default:
             break;

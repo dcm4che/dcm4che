@@ -272,8 +272,8 @@ public class DefaultConfigTypeAdapters {
                     metadata.put("enum", enumStringValues);
                 } else if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.ORDINAL)) {
                     // for ordinal representation - create array of ints with appropriate length, and add a clarifying array with names
-                    List<String> vals = new ArrayList<String>();
-                    for (int i = 0; i < getEnumValues(property).length; i++) vals.add(String.valueOf(i));
+                    List<Integer> vals = new ArrayList<Integer>();
+                    for (int i = 0; i<getEnumValues(property).length;i++) vals.add(i);
                     metadata.put("enum", vals);
                     metadata.put("enumStrValues", enumStringValues);
                 }

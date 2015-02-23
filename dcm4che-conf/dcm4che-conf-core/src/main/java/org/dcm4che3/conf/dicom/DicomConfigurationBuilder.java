@@ -40,7 +40,7 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.dicom.filters.DicomDefaultsFilterDecorator;
+import org.dcm4che3.conf.dicom.filters.DicomDefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.ldap.LdapConfigurationStorage;
@@ -204,7 +204,7 @@ public class DicomConfigurationBuilder {
                 : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
             configurationStorage = new CachedRootNodeConfiguration(configurationStorage, props);
 
-        configurationStorage = new DicomDefaultsFilterDecorator(configurationStorage, allExtensions,
+        configurationStorage = new DicomDefaultsAndNullFilterDecorator(configurationStorage, allExtensions,
                 persistDefaults != null
                     ? persistDefaults
                     : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "false")));

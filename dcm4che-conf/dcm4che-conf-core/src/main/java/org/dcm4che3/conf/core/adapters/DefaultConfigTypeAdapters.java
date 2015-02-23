@@ -43,6 +43,7 @@ import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
@@ -261,7 +262,18 @@ public class DefaultConfigTypeAdapters {
         public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
             try {
                 Map<String, Object> metadata = new HashMap<String, Object>();
-                metadata.put("type", "enum");
+
+                // if there is no default, then this enum supports null
+                if (property.getAnnotation(ConfigurableProperty.class).defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                    ArrayList<String> types = new ArrayList<String>();
+                    types.add("enum");
+                    types.add("null");
+                    metadata.put("type", types);
+                } else
+                    metadata.put("type", "enum");
+
+
+
                 metadata.put("class", property.getRawClass().getSimpleName());
 
                 ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);

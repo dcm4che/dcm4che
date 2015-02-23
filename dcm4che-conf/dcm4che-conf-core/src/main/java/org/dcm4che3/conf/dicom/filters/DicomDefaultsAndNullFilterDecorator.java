@@ -41,7 +41,7 @@ package org.dcm4che3.conf.dicom.filters;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.core.normalization.DefaultsFilterDecorator;
+import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
@@ -55,12 +55,12 @@ import java.util.Map;
 /**
  * Triggers the tree traverse further for deviceExtensions,aeExtensions and hl7AppExtensions when applying/filtering defaults
  */
-public class DicomDefaultsFilterDecorator extends DefaultsFilterDecorator {
-    public static final Logger log = LoggerFactory.getLogger(DicomDefaultsFilterDecorator.class);
+public class DicomDefaultsAndNullFilterDecorator extends DefaultsAndNullFilterDecorator {
+    public static final Logger log = LoggerFactory.getLogger(DicomDefaultsAndNullFilterDecorator.class);
 
     private List<Class<?>> allExtensionClasses;
 
-    public DicomDefaultsFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses, boolean persistDefaults) {
+    public DicomDefaultsAndNullFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses, boolean persistDefaults) {
 
         super(delegate, persistDefaults);
         this.allExtensionClasses = allExtensionClasses;

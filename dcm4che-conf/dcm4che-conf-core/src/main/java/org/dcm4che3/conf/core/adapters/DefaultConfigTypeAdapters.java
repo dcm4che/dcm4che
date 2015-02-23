@@ -266,6 +266,7 @@ public class DefaultConfigTypeAdapters {
 
                 ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
                 List<String> enumStringValues = new ArrayList<String>();
+
                 for (Enum anEnum : getEnumValues(property)) enumStringValues.add(anEnum.toString());
 
                 if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.STRING)) {
@@ -273,6 +274,7 @@ public class DefaultConfigTypeAdapters {
                 } else if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.ORDINAL)) {
                     // for ordinal representation - create array of ints with appropriate length, and add a clarifying array with names
                     List<Integer> vals = new ArrayList<Integer>();
+
                     for (int i = 0; i<getEnumValues(property).length;i++) vals.add(i);
                     metadata.put("enum", vals);
                     metadata.put("enumStrValues", enumStringValues);
@@ -288,8 +290,8 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Object normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            //TODO: validate ?
-            if (configNode == null) return null;//throw new ConfigurationException("null not allowed for enum");
+
+            if (configNode == null) return null;
             switch (property.getAnnotation(ConfigurableProperty.class).enumRepresentation()) {
                 case ORDINAL:
                     try {

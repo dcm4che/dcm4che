@@ -41,6 +41,7 @@ package org.dcm4che3.conf.core.normalization;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
@@ -54,6 +55,7 @@ import java.util.*;
 public class DefaultsFilterDecorator extends DelegatingConfiguration {
 
     private boolean persistDefaults;
+    private BeanVitalizer dummyVitalizer = new BeanVitalizer();
 
     public DefaultsFilterDecorator(Configuration delegate, boolean persistDefaults) {
         super(delegate);
@@ -94,8 +96,10 @@ public class DefaultsFilterDecorator extends DelegatingConfiguration {
                 // if no value for this property, see if there is default and set it
                 if (!containerNode.containsKey(property.getAnnotatedName())) {
                     String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
-                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE))
-                        containerNode.put(property.getAnnotatedName(), defaultValue);
+                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                        Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
+                        containerNode.put(property.getAnnotatedName(), normalized);
+                    }
 
                     return true;
                 }

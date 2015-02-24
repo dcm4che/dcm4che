@@ -39,7 +39,6 @@
 package org.dcm4che.test.utils;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.security.GeneralSecurityException;
 
 import org.dcm4che3.net.Connection;

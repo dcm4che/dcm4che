@@ -91,7 +91,7 @@ public abstract class BasicTest {
         try {
             if(this.getParams().containsKey("defaultParams") 
                     && this.getParams().get("defaultParams") != null)
-                System.setProperty("configFileURL", ((TestParamDefaults)
+                System.setProperty("defaultParams", ((TestParamDefaults)
                         this.getParams().get("defaultParams")).propertiesFile());
             
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));

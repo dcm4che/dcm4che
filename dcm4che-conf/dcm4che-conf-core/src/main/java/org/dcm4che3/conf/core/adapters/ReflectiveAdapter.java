@@ -173,6 +173,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
             ConfigurableProperty propertyAnnotation = configurableChildProperty.getAnnotation(ConfigurableProperty.class);
 
+            ConfigTypeAdapter childAdapter = vitalizer.lookupTypeAdapter(configurableChildProperty);
             Map<String, Object> childPropertyMetadata = new LinkedHashMap<String, Object>();
             classMetaData.put(configurableChildProperty.getAnnotatedName(), childPropertyMetadata);
 
@@ -181,10 +182,12 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
             if (!propertyAnnotation.description().equals(""))
                 childPropertyMetadata.put("description", propertyAnnotation.description());
-
-            if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
-                childPropertyMetadata.put("default", propertyAnnotation.defaultValue());
-
+            try {
+                if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
+                    childPropertyMetadata.put("default", childAdapter.normalize(propertyAnnotation.defaultValue(), configurableChildProperty, vitalizer));
+            } catch (ClassCastException e) {
+                childPropertyMetadata.put("default", 0);
+            }
             if (!configurableChildProperty.getTags().isEmpty())
                 childPropertyMetadata.put("tags", configurableChildProperty.getTags());
 
@@ -194,8 +197,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
             childPropertyMetadata.put("uiGroup",propertyAnnotation.group());
 
             // also merge in the metadata from this child itself
-            ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(configurableChildProperty);
-            Map<String, Object> childMetaData = adapter.getSchema(configurableChildProperty, vitalizer);
+            Map<String, Object> childMetaData = childAdapter.getSchema(configurableChildProperty, vitalizer);
             if (childMetaData != null) childPropertyMetadata.putAll(childMetaData);
         }
 

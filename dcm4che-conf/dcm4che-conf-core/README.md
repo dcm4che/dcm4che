@@ -25,7 +25,12 @@ As a configuration provider developer
 - DO NOT make a custom representation for configurable classes, it will break things. Use references instead.
 
 
-
 As a UI developer
 -----------------
 Rely on JSON-schema
+
+
+
+Notes
+-----
+All the objects/maps in json are represented by TreeMap, so the order is kept consistent.

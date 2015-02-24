@@ -44,13 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
-import org.dcm4che.test.annotations.DcmGenParameters;
-import org.dcm4che.test.annotations.GetParameters;
-import org.dcm4che.test.annotations.MppsParameters;
-import org.dcm4che.test.annotations.QueryParameters;
-import org.dcm4che.test.annotations.RemoteConnectionParameters;
-import org.dcm4che.test.annotations.StoreParameters;
-import org.dcm4che.test.annotations.TestConfig;
+import org.dcm4che.test.annotations.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
@@ -60,6 +54,7 @@ import org.dcm4che3.tool.dcmgen.test.DcmGenTool;
 import org.dcm4che3.tool.findscu.test.QueryTool;
 import org.dcm4che3.tool.getscu.test.RetrieveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
+import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +122,7 @@ public class TestToolFactory {
                     Device device = null;
                     File baseDir = null;
                     File retrieveDir = null;
+                    File stgCmtStorageDirectory = null;
 
         switch (type) {
         case StoreTool:
@@ -204,6 +200,28 @@ public class TestToolFactory {
             int instanceCnt = genParams.instanceCount();
             int seriesCnt = genParams.seriesCount();
             tool = new DcmGenTool(instanceCnt, seriesCnt, outputDir, seedFile);
+            break;
+        case StorageCommitmentTool:
+            StgCmtParameters stgcmtParams = (StgCmtParameters) test.getParams().get("StgCmtParameters");
+            aeTitle = stgcmtParams != null && stgcmtParams.aeTitle() != null? stgcmtParams.aeTitle()
+                    :defaultParams.getProperty("stgcmt.aetitle");
+            baseDir = stgcmtParams != null && stgcmtParams.baseDirectory()!=null? new File(stgcmtParams.baseDirectory())
+                    :new File(defaultParams.getProperty("stgcmt.directory"));
+            stgCmtStorageDirectory =  stgcmtParams != null && stgcmtParams.storageDirectory()!=null?
+                    new File(stgcmtParams.storageDirectory())
+                    :new File(defaultParams.getProperty("stgcmt.storedirectory"));
+            sourceDevice = stgcmtParams != null? stgcmtParams.sourceDevice():"stgcmtscu";
+            sourceAETitle = stgcmtParams != null? stgcmtParams.sourceAETitle():"STGCMTSCU";
+            device = null;
+            try {
+                device = getDicomConfiguration().findDevice(sourceDevice);
+            } catch (ConfigurationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            int stgCmtBindPort = device.getConnections().get(0).getPort();
+
+            tool = new StgCmtTool(host,port,stgCmtBindPort,aeTitle,baseDir,stgCmtStorageDirectory,device,sourceAETitle);
             break;
         default:
             break;

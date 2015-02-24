@@ -98,11 +98,7 @@ public class RetrieveTool implements TestTool{
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
-    /**
-     * @param testName
-     * @param testDescription
-     * @param fileName
-     */
+
     public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle) {
         super();
         this.host = host;

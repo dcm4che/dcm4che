@@ -96,7 +96,7 @@ public class GetSCU {
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
-        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
+        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, "IMAGE"),
         HangingProtocol(UID.HangingProtocolInformationModelGET, null),
         ColorPalette(UID.ColorPaletteInformationModelGET, null);
 

@@ -628,13 +628,20 @@ public class ApplicationEntity implements Serializable {
 
     public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
             throws IncompatibleConnectionException {
+        CompatibleConnection cc = null;
         for (Connection remoteConn : remote.connections)
             if (remoteConn.isInstalled() && remoteConn.isServer())
                 for (Connection conn : connections)
-                    if (conn.isInstalled() && conn.isCompatible(remoteConn))
-                        return new CompatibleConnection(conn, remoteConn);
-        throw new IncompatibleConnectionException(
-                "No compatible connection to " + remote + " available on " + this);
+                    if (conn.isInstalled() && conn.isCompatible(remoteConn)) {
+                        if (cc == null
+                                || conn.isTls()
+                                || conn.getProtocol() == Connection.Protocol.SYSLOG_TLS)
+                            cc = new CompatibleConnection(conn, remoteConn);
+                    }
+        if (cc == null)
+            throw new IncompatibleConnectionException(
+                    "No compatible connection to " + remote + " available on " + this);
+        return cc;
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)

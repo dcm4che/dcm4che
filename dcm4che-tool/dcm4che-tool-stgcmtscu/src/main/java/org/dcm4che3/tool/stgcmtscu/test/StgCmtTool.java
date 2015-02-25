@@ -187,6 +187,10 @@ public class StgCmtTool implements TestTool {
         device.addApplicationEntity(ae);
         ae.addConnection(bound);
 
+        for(Connection conn: device.getConnections())
+            if(!conn.getCommonName().equalsIgnoreCase(bound.getCommonName()))
+                device.removeConnection(conn);
+        
         this.stgCmtSCU = new StgCmtSCU(ae, stgcmtResultHandler);
 
         // configure
@@ -196,6 +200,9 @@ public class StgCmtTool implements TestTool {
         stgCmtSCU.getAAssociateRQ().setCalledAET(aeTitle);
         stgCmtSCU.getRemoteConnection().setHostname(host);
         stgCmtSCU.getRemoteConnection().setPort(port);
+        //ensure secure connection
+        stgCmtSCU.getRemoteConnection().setTlsCipherSuites(bound.getTlsCipherSuites());
+        stgCmtSCU.getRemoteConnection().setTlsProtocols(bound.getTlsProtocols());
         stgCmtSCU.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
         stgCmtSCU.setAttributes(new Attributes());
         stgCmtSCU.setStorageDirectory(storageDirectory);

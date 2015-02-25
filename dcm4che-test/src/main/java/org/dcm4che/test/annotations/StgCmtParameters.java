@@ -37,12 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che.test.annotations;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
+@Retention(RetentionPolicy.RUNTIME)
 public @interface StgCmtParameters {
-    public String host();
-    public int port() ;
     public String aeTitle();
     public String baseDirectory();
     public String storageDirectory();

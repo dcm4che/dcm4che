@@ -83,6 +83,7 @@ public class RetrieveTool implements TestTool{
     private int port;
     private String aeTitle;
     private Device device;
+    private Connection conn;
     private String sourceAETitle;
     private File retrieveDir;
     private int numResponses;
@@ -99,7 +100,7 @@ public class RetrieveTool implements TestTool{
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
 
-    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle) {
+    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -107,14 +108,13 @@ public class RetrieveTool implements TestTool{
         this.device = device;
         this.sourceAETitle = sourceAETitle;
         this.retrieveDir = retrieveDir;
+        this.conn = conn;
     }
 
     public void retrieve(String testDescription) throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException,
             FileNotFoundException, IOException {
         //setup device and connection
-        Connection conn = new Connection();
-        device.addConnection(conn);
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
@@ -123,6 +123,9 @@ public class RetrieveTool implements TestTool{
         retrievescu.getAAssociateRQ().setCalledAET(aeTitle);
         retrievescu.getRemoteConnection().setHostname(host);
         retrievescu.getRemoteConnection().setPort(port);
+      //ensure secure connection
+        retrievescu.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
+        retrievescu.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         retrievescu.setStorageDirectory(retrieveDir);
 
         // add retrieve attrs

@@ -72,9 +72,10 @@ public class StoreTool implements TestTool {
 
     private String host;
     private int port;
-    String aeTitle;
-    File baseDirectory;
-    Device device;
+    private String aeTitle;
+    private File baseDirectory;
+    private Device device;
+    private Connection conn;
     private String sourceAETitle;
     
     private long totalSize;
@@ -90,8 +91,9 @@ public class StoreTool implements TestTool {
      * @param aeTitle
      * @param baseDirectory
      * @param device 
+     * @param conn 
      */
-    public StoreTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle) {
+    public StoreTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -99,6 +101,7 @@ public class StoreTool implements TestTool {
         this.baseDirectory = baseDirectory;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
+        this.conn = conn;
     }
 
     public void store(String testDescription, String fileName)
@@ -112,10 +115,7 @@ public class StoreTool implements TestTool {
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),
                 file.exists());
-
         
-        Connection conn = new Connection();
-        device.addConnection(conn);
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
@@ -145,6 +145,9 @@ public class StoreTool implements TestTool {
         main.getAAssociateRQ().setCalledAET(aeTitle);
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
+        //ensure secure connection
+        main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
+        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         main.setAttributes(new Attributes());
         // scan
         main.scanFiles(Arrays.asList(file.getAbsolutePath()), false);

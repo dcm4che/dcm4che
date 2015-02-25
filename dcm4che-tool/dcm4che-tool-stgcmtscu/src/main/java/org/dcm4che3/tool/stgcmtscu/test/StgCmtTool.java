@@ -54,7 +54,9 @@ import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.stgcmtscu.StgCmtSCU;
 import org.dcm4che3.util.SafeClose;
 import org.junit.Assert;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
@@ -70,8 +72,6 @@ public class StgCmtTool implements TestTool {
     private String host;
 
     private int port;
-
-    private int bindPort;
 
     private File baseDirectory;
 
@@ -96,17 +96,19 @@ public class StgCmtTool implements TestTool {
     Connection bound;
 
 
-    public StgCmtTool(String host, int port,int bindPort, String aeTitle, File baseDir,File storageDirectory, Device device, String sourceAETitle) {
+    public StgCmtTool(String host, int port, String aeTitle,
+            File baseDir,File storageDirectory, Device device,
+            String sourceAETitle, Connection conn) {
         this.host = host;
         this.port = port;
-        this.bindPort = bindPort;
         this.aeTitle = aeTitle;
         this.baseDirectory = baseDir;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
         this.storageDirectory = storageDirectory;
-        this.bound = device.connectionWithEqualsRDN(new Connection("dicom",""));
+        this.bound = conn;
     }
+
     private final DicomService stgcmtResultHandler =
             new AbstractDicomService(UID.StorageCommitmentPushModelSOPClass) {
 
@@ -155,7 +157,8 @@ public class StgCmtTool implements TestTool {
                                 UID.ExplicitVRLittleEndian),
                         data);
             } catch (IOException e) {
-                System.out.println(as + ": Failed to store Storage Commitment Result:" + e);
+                //System.out.println(as + ": Failed to store Storage Commitment Result:" + e);
+                if(!(e instanceof FileNotFoundException))
                 throw new DicomServiceException(Status.ProcessingFailure, e);
             } finally {
                 SafeClose.close(out);
@@ -165,10 +168,9 @@ public class StgCmtTool implements TestTool {
     }
 
     private void setFailsandSuccess(Attributes data) {
-        Sequence refSeq = data.getSequence(Tag.ReferencedSOPSequence);
-        success = refSeq.size();
-        Sequence failSeq = data.getSequence(Tag.FailedSOPSequence);
-        fails = failSeq.size();
+        success = data.getSequence(Tag.ReferencedSOPSequence).size();
+        if(data.contains(Tag.FailedSOPSequence))
+        fails = data.getSequence(Tag.FailedSOPSequence).size();
     }
 
     public void stgcmt(String description, String fileName) throws InterruptedException, IOException, GeneralSecurityException, IncompatibleConnectionException {

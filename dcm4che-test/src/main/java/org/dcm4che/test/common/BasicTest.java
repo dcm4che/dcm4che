@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -86,7 +85,9 @@ public abstract class BasicTest {
     protected void addParam( String key, Annotation anno) {
         params.put(key, anno);
     }
-    
+    protected void clearParams() {
+        params.clear();
+    }
     public void init(Class<? extends BasicTest> clazz){
         try {
             if(this.getParams().containsKey("defaultParams") 

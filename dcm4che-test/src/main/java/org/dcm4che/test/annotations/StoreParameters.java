@@ -51,4 +51,5 @@ public @interface StoreParameters {
     public String baseDirectory();
     public String sourceAETitle() default "STORESCU";
     public String sourceDevice() default "storescu";
+    public String connection() default "dicom";
 }

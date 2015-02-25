@@ -48,4 +48,5 @@ public @interface StgCmtParameters {
     public String storageDirectory();
     public String sourceDevice() default "stgcmtscu";
     public String sourceAETitle() default "STGCMTSCU";
+    public String connection() default "dicom"; //bound connection
 }

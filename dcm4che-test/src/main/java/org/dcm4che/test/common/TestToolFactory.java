@@ -48,6 +48,7 @@ import org.dcm4che.test.annotations.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device; 
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.dcmgen.test.DcmGenTool;
@@ -120,6 +121,7 @@ public class TestToolFactory {
             //create tool
                     String aeTitle=null,sourceDevice=null, sourceAETitle=null;
                     Device device = null;
+                    Connection conn = null;
                     File baseDir = null;
                     File retrieveDir = null;
                     File stgCmtStorageDirectory = null;
@@ -135,13 +137,16 @@ public class TestToolFactory {
                 sourceAETitle = storeParams!=null?storeParams.sourceAETitle():"STORESCU";
 
                 try {
-                    device = getDicomConfiguration().findDevice(sourceDevice);    
+                    device = getDicomConfiguration().findDevice(sourceDevice);
+                    conn = device.connectionWithEqualsRDN(new Connection(
+                            (String) (storeParams != null && storeParams.connection() != null?
+                                    storeParams.connection():defaultParams.get("store.connection")), ""));
                 } catch (ConfigurationException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                } 
+                }
                 tool = new StoreTool(host,port,aeTitle,baseDir,
-                        device == null ? new Device(sourceDevice):device,sourceAETitle);
+                        device == null ? new Device(sourceDevice):device,sourceAETitle, conn);
             break;
 
         case FindTool:
@@ -152,12 +157,15 @@ public class TestToolFactory {
                 sourceAETitle = queryParams!=null?queryParams.sourceAETitle():"FINDSCU";
                 device = null;
                 try {
-                    device = getDicomConfiguration().findDevice(sourceDevice);    
+                    device = getDicomConfiguration().findDevice(sourceDevice);
+                    conn = device.connectionWithEqualsRDN(new Connection(
+                            (String) (queryParams != null && queryParams.connection() != null?
+                                    queryParams.connection():defaultParams.get("query.connection")), ""));
                 } catch (ConfigurationException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                } 
-                tool = new QueryTool(host, port, aeTitle, device, sourceAETitle);
+                }
+                tool = new QueryTool(host, port, aeTitle, device, sourceAETitle, conn);
             break;
         case MppsTool:
             MppsParameters mppsParams = (MppsParameters) test.getParams().get("MppsParameters");
@@ -169,12 +177,15 @@ public class TestToolFactory {
             sourceAETitle = mppsParams != null?mppsParams.sourceAETitle():"MPPSSCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);    
+                device = getDicomConfiguration().findDevice(sourceDevice);
+                conn = device.connectionWithEqualsRDN(new Connection(
+                        (String) (mppsParams != null && mppsParams.connection() != null?
+                                mppsParams.connection():defaultParams.get("mpps.connection")), ""));
             } catch (ConfigurationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } 
-            tool = new MppsTool(host, port, aeTitle, baseDir, device, sourceAETitle);
+            }
+            tool = new MppsTool(host, port, aeTitle, baseDir, device, sourceAETitle, conn);
             break;
         case GetTool:
             GetParameters getParams = (GetParameters) test.getParams().get("GetParameters");
@@ -186,12 +197,15 @@ public class TestToolFactory {
             sourceAETitle = getParams != null?getParams.sourceAETitle():"GETSCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);    
+                device = getDicomConfiguration().findDevice(sourceDevice);
+                conn = device.connectionWithEqualsRDN(new Connection(
+                        (String) (getParams != null && getParams.connection() != null?
+                                getParams.connection():defaultParams.get("retrieve.connection")), ""));
             } catch (ConfigurationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } 
-            tool = new RetrieveTool(host, port, aeTitle, retrieveDir, device, sourceAETitle);
+            }
+            tool = new RetrieveTool(host, port, aeTitle, retrieveDir, device, sourceAETitle, conn);
             break;
         case DcmGenTool:
             DcmGenParameters genParams = (DcmGenParameters) test.getParams().get("DcmGenParameters");
@@ -215,13 +229,15 @@ public class TestToolFactory {
             device = null;
             try {
                 device = getDicomConfiguration().findDevice(sourceDevice);
+                conn = device.connectionWithEqualsRDN(new Connection(
+                        (String) (stgcmtParams != null && stgcmtParams.connection() != null?
+                                stgcmtParams.connection():defaultParams.get("stgcmt.connection")), ""));
             } catch (ConfigurationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            int stgCmtBindPort = device.getConnections().get(0).getPort();
-
-            tool = new StgCmtTool(host,port,stgCmtBindPort,aeTitle,baseDir,stgCmtStorageDirectory,device,sourceAETitle);
+            
+            tool = new StgCmtTool(host,port,aeTitle,baseDir,stgCmtStorageDirectory,device,sourceAETitle, conn);
             break;
         default:
             break;

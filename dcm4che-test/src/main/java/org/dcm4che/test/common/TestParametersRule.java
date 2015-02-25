@@ -66,6 +66,7 @@ public class TestParametersRule implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 Method method = description.getTestClass().getMethod(description.getMethodName());
+                getInstance().clearParams();
                 for(Annotation anno: method.getAnnotations()) {
                     Class annoType = anno.annotationType();
                     getInstance().addParam(annoType.getSimpleName(),method.getAnnotation(annoType));

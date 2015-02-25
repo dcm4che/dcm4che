@@ -56,4 +56,6 @@ public @interface MppsParameters {
     public String sourceDevice() default "mppsscu";
 
     public String sourceAETitle() default "MPPSSCU"; 
+
+    public String connection() default "dicom";
 }

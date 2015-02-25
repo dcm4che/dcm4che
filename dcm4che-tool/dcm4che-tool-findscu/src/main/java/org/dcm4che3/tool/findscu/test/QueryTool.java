@@ -77,6 +77,7 @@ public class QueryTool implements TestTool {
     private int port;
     private String aeTitle;
     private Device device;
+    private Connection conn;
     private String sourceAETitle;
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
@@ -95,14 +96,16 @@ public class QueryTool implements TestTool {
      * @param host
      * @param port
      * @param aeTitle
+     * @param conn 
      */
-    public QueryTool(String host, int port, String aeTitle, Device device, String sourceAETitle) {
+    public QueryTool(String host, int port, String aeTitle, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
         this.aeTitle = aeTitle;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
+        this.conn = conn;
     }
 
     public void queryfuzzy(String testDescription) throws IOException,
@@ -122,8 +125,6 @@ public class QueryTool implements TestTool {
             InterruptedException, IncompatibleConnectionException,
             GeneralSecurityException {
         
-        Connection conn = new Connection();
-        device.addConnection(conn);
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
@@ -132,7 +133,9 @@ public class QueryTool implements TestTool {
         main.getAAssociateRQ().setCalledAET(aeTitle);
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
-
+        //ensure secure connection
+        main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
+        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         ScheduledExecutorService scheduledExecutorService = Executors
                 .newSingleThreadScheduledExecutor();

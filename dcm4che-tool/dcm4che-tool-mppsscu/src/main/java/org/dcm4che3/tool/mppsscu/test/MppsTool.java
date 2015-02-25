@@ -73,10 +73,11 @@ public class MppsTool implements TestTool{
 
     private String host;
     private int port;
-    String aeTitle;
+    private String aeTitle;
     private Device device;
+    private Connection conn;
     private String sourceAETitle;
-    File baseDirectory;
+    private File baseDirectory;
 
     private int nCreateSent;  
     private int nCreateWarnings;    
@@ -91,8 +92,9 @@ public class MppsTool implements TestTool{
      * @param port
      * @param aeTitle
      * @param baseDirectory
+     * @param conn 
      */
-    public MppsTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle) {
+    public MppsTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -100,36 +102,32 @@ public class MppsTool implements TestTool{
         this.baseDirectory = baseDirectory;
         this.sourceAETitle = sourceAETitle;
         this.device = device;
+        this.conn = conn;
     }
 
     public void mppsscu(String testDescription, String fileName) throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-
+        
         long t1, t2, t3;
-
+        
         File file = new File(baseDirectory, fileName);
-
+        
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),
                 file.exists());
-
-        Connection conn = new Connection();
-        device.addConnection(conn);
+        
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
-
-
+        
         final MppsSCU main = new MppsSCU(ae);
         
         main.setRspHandlerFactory(new MppsSCU.RSPHandlerFactory() {
-
+            
             @Override
             public DimseRSPHandler createDimseRSPHandlerForNCreate(final MppsSCU.MppsWithIUID mppsWithUID) {
-
                 return new DimseRSPHandler(0) {
-
                     @Override
                     public void onDimseRSP(Association as, Attributes cmd,
                             Attributes data) {
@@ -170,6 +168,9 @@ public class MppsTool implements TestTool{
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
         main.setTransferSyntaxes(new String[]{UID.ImplicitVRLittleEndian, UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired});
+      //ensure secure connection
+        main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
+        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         main.setAttributes(new Attributes());
 
         // scan

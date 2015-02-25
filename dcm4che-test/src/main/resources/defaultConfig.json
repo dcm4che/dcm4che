@@ -76,14 +76,14 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 11113
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2763
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -125,14 +125,14 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 11114
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2765
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -170,14 +170,14 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 11115
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2766
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -215,14 +215,14 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 11116
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2767
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -258,14 +258,14 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 11117
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2768
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -309,13 +309,13 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         } ],
         "dicomRelatedDeviceReference" : [ ],
         "dicomInstitutionCode" : [ "(111.1111, 99DCM4CHEE, \"Site A\")" ]
@@ -358,13 +358,13 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         } ],
         "dicomRelatedDeviceReference" : [ ],
         "dicomInstitutionCode" : [ ]
@@ -407,13 +407,13 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         } ],
         "dicomRelatedDeviceReference" : [ ],
         "dicomInstitutionCode" : [ ]
@@ -456,13 +456,13 @@
           "dicomTLSCipherSuite" : [ ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         }, {
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "dicom-tls",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         } ],
         "dicomRelatedDeviceReference" : [ ],
         "dicomInstitutionCode" : [ ]
@@ -534,7 +534,7 @@
           "dcmProtocol" : "HL7",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "hl7",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 2576
         }, {
           "dcmBlacklistedHostname" : [ ],
@@ -542,7 +542,7 @@
           "dcmProtocol" : "HL7",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "hl7-tls",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 12576
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -583,7 +583,7 @@
           "dcmProtocol" : "SYSLOG_UDP",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "audit-udp",
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dicomPort" : 514
         } ],
         "dicomRelatedDeviceReference" : [ ],
@@ -3680,7 +3680,7 @@
         "dicomInstitutionAddress" : [ ],
         "dicomConnection" : [ {
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dcmMaxOpsInvoked" : 0,
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ ],
@@ -3690,7 +3690,7 @@
           "dicomPort" : 11112
         }, {
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dcmMaxOpsInvoked" : 0,
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
@@ -3701,7 +3701,7 @@
         }, {
           "dcmProtocol" : "HL7",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ ],
           "cn" : "hl7",
@@ -3710,7 +3710,7 @@
         }, {
           "dcmProtocol" : "HL7",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
-          "dicomHostname" : "localhost",
+          "dicomHostname" : "0.0.0.0",
           "dcmBlacklistedHostname" : [ ],
           "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
           "cn" : "hl7-tls",
@@ -3722,7 +3722,7 @@
           "dcmProtocol" : "SYSLOG_UDP",
           "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
           "cn" : "audit-udp",
-          "dicomHostname" : "localhost"
+          "dicomHostname" : "0.0.0.0"
         } ],
         "dicomRelatedDeviceReference" : [ ],
         "dicomManufacturer" : "dcm4che.org",

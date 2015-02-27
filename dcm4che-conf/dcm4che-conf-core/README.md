@@ -7,7 +7,7 @@ Features
 2. Framework allows to load these objects for you from a pre-configured storage (Ldap, json, preferences) and to save it back.
 3. Configuration UI is auto-generated based on the annotations (they can include description, validation rules, etc)
 
-As a user-developer
+As a component developer who needs to make things configurable
 --------------------
 - Use `@ConfigurableClass` and `@ConfigurableProperty` annotations to mark configuration classes (think of an analogy to JPA's Entities and Fields).
     A property can be

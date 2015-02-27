@@ -1660,6 +1660,10 @@ public class Attributes implements Serializable {
         return cs;
     }
 
+    public boolean containsTimezoneOffsetFromUTC() {
+        return containsTimezoneOffsetFromUTC;
+    }
+
     public void setDefaultTimeZone(TimeZone tz) {
         ensureModifiable();
         defaultTimeZone = tz;

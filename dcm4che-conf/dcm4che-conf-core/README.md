@@ -29,7 +29,7 @@
 
 
 ### As a UI developer
------------------
+
 See [https://github.com/dcm4che/dcm4chee-conf-web](https://github.com/dcm4che/dcm4chee-conf-web)
 
 Rely on JSON-schema

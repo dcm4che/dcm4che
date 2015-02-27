@@ -1368,6 +1368,7 @@ public class Attributes implements Serializable {
         String[] darange = splitRange(da);
         String[] tmrange = splitRange(tm);
         DatePrecision precision = new DatePrecision();
+        TimeZone tz = getTimeZone();
         return new DateRange(
                 darange[0] == null ? null
                         : VR.DT.toDate(tmrange[0] == null

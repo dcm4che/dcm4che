@@ -42,9 +42,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -54,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
@@ -66,18 +70,21 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.mime.MultipartInputStream;
 import org.dcm4che3.mime.MultipartParser;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.ws.rs.MediaTypes;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -86,6 +93,9 @@ import org.slf4j.LoggerFactory;
 
 public class WadoRS {
 
+    protected enum Naming {
+        UID, CONTENT_ID, DEFAULT;
+    }
     private static final Logger LOG = LoggerFactory.getLogger(WadoRS.class);
 
     private static byte[] copyHolder;
@@ -101,6 +111,8 @@ public class WadoRS {
 
     private File outDir;
 
+    private boolean appendContentID = false;
+    
     private File xsltFile;
 
     private String outFileName;
@@ -108,6 +120,8 @@ public class WadoRS {
     private String requestTimeOut;
 
     private boolean xmlIndent = false;
+
+    private Naming naming = Naming.DEFAULT;
 
     private boolean xmlIncludeKeyword = true;
 
@@ -118,6 +132,10 @@ public class WadoRS {
     private String url;
 
     private ResponseWriter writerType;
+
+    private int partIndex = 0;
+
+    private boolean dumpHeader = false;
 
     public WadoRS() {
     }
@@ -147,9 +165,11 @@ public class WadoRS {
         opts.addOption(OptionBuilder.withLongOpt("out-dir").hasArg()
                 .withArgName("directory")
                 .withDescription(rb.getString("out-dir")).create());
-        opts.addOption(OptionBuilder.withLongOpt("out-file").hasArg()
-                .withArgName("name").withDescription(rb.getString("out-file"))
-                .create());
+        opts.addOption(OptionBuilder.withLongOpt("naming").hasArg(true)
+                .withArgName("namingType")
+                .withDescription(rb.getString("naming")).create());
+        opts.addOption(OptionBuilder.withLongOpt("dump-headers").hasArg(false)
+                .withDescription(rb.getString("dump-headers")).create());
         opts.addOption(OptionBuilder.withLongOpt("xsl").hasArg()
                 .withArgName("xsl-file").withDescription(rb.getString("xsl"))
                 .create("x"));
@@ -191,6 +211,11 @@ public class WadoRS {
                 System.err.println(rb.getString("try"));
                 System.exit(2);
             }
+            if(cl.hasOption("naming"))
+                main.setNaming(WadoRS.Naming.valueOf(cl.getOptionValue("naming")));
+            if(cl.hasOption("dump-headers"))
+                main.dumpHeader = true;
+            
             main.setUrl(cl.getArgs()[0]);
 
             if (main.getUrl().contains("metadata"))
@@ -243,16 +268,18 @@ public class WadoRS {
         String response = "Server responded with "
                 + connection.getResponseCode() + " - "
                 + connection.getResponseMessage();
-
+        dumpHeader(main, connection.getHeaderFields());
         InputStream in = connection.getInputStream();
         if (connection.getHeaderField("content-type").contains(
                 "application/json")) {
-            Files.copy(in, new File(main.outDir, main.outFileName
-                    + "- metadata [JSON].json").toPath(),
+            if(main.dumpHeader)
+                writeHeader(connection.getHeaderFields(), new File(main.outDir,"out.json"+"-head"));
+            
+            Files.copy(in, new File(main.outDir,"out.json").toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
         } else {
             try {
-                File spool = new File("Spool");
+                File spool = new File(main.outDir,"Spool");
                 Files.copy(in, spool.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
                 String boundary;
@@ -288,7 +315,7 @@ public class WadoRS {
                                     mediaType = contentType;
 
                                 // change file suffix
-                                if (frame != null)
+                                if (frame != null && main.naming.equals(Naming.UID))
                                     outFileName += " - Frame [" + frame + "]";
                                 else if (main.isMetadata)
                                     outFileName += " - metadata ["
@@ -313,17 +340,7 @@ public class WadoRS {
 
                                 }
                                 try {
-                                    main.writerType.readBody(
-                                            mediaType.split("/")[1]
-                                                    .contains("+") ? outFileName
-                                                    + "."
-                                                    + mediaType.split("/")[1]
-                                                            .split("\\+")[1]
-                                                    : outFileName
-                                                            + "."
-                                                            + mediaType
-                                                                    .split("/")[1],
-                                            main, in);
+                                    main.writerType.readBody(main, in, headerParams);
                                 } catch (Exception e) {
                                     System.out
                                             .println("Error parsing media type to determine extension"
@@ -332,6 +349,8 @@ public class WadoRS {
                             }
 
                             private boolean isBulkMediaType(String mediaType) {
+                                if(mediaType.contains("octet-stream"))
+                                    return true;
                                 for (Field field : MediaTypes.class.getFields()) {
                                     try {
                                         if (field.getType()
@@ -347,9 +366,11 @@ public class WadoRS {
                                                         + e);
                                     }
                                 }
+                                
                                 return false;
                             }
                         });
+                fin.close();
                 spool.delete();
             } catch (Exception e) {
                 System.out.println("Error parsing Server response - " + e);
@@ -359,6 +380,24 @@ public class WadoRS {
 
         return response;
 
+    }
+
+    private static void dumpHeader(WadoRS main,
+            Map<String, List<String>> headerFields) throws FileNotFoundException {
+        File f = new File(main.outDir, "request-head");
+        writeHeader(headerFields, f);
+    }
+
+    private static void writeHeader(Map<String, List<String>> headerFields,
+            File f) throws FileNotFoundException {
+        PrintWriter writer = new PrintWriter(f);
+        for(String key : headerFields.keySet()) {
+            if(key != null)
+            writer.print(key+":\t");
+            writer.print(headerFields.get(key));
+            writer.println();
+        }
+        writer.close();
     }
 
     private static String[] compileAcceptHeader(String[] acceptTypes) {
@@ -382,48 +421,45 @@ public class WadoRS {
     private enum ResponseWriter {
         XML {
             @Override
-            boolean readBody(String filename, WadoRS wadors, InputStream in)
+            boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws Exception {
-                File tmp = new File("xml-part-spool");
+
                 TransformerHandler th = getTransformerHandler(wadors);
                 th.getTransformer().setOutputProperty(OutputKeys.INDENT,
                         wadors.xmlIndent ? "yes" : "no");
-                th.setResult(new StreamResult(tmp));
                 // here the sax parser would actually close the input stream
                 // immediately
                 InputStream is = cloneStream(in);
+                
                 Attributes attrs = SAXReader.parse(is);
                 SAXWriter saxWriter = new SAXWriter(th);
+                String fileName = null ;
+                File outputDirectory;
+                if(wadors.useDefaultNaming()) {
+                    fileName= ""+wadors.getNextPartIndex();
+                    outputDirectory = wadors.getOutDir();
+                }
+                else if(wadors.getNaming().equals(WadoRS.Naming.UID)) {
+                    fileName = attrs.getString(Tag.SOPInstanceUID);
+                    if(fileName == null) {
+                        fileName= ""+wadors.getNextPartIndex();
+                        LOG.info("Unable to decide SopInstanceUID, using part counter");
+                    }
+                    outputDirectory = ensureDirs(wadors, attrs);
+                }
+                else {
+                    fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
+                    fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
+                    outputDirectory = wadors.getOutDir();
+                }
+                File out = new File(outputDirectory, wadors.naming.equals(WadoRS.Naming.UID)?fileName+".xml":fileName);
+                th.setResult(new StreamResult(out));
                 saxWriter.setIncludeKeyword(wadors.xmlIncludeKeyword);
                 saxWriter.write(attrs);
-                File out = new File(wadors.outDir, "part - "
-                        + attrs.getString(Tag.SOPInstanceUID) + " - "
-                        + filename);
-                Files.copy(tmp.toPath(), out.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING);
-                tmp.delete();
-                return true;
-
-            }
-
-            private InputStream cloneStream(InputStream inputStream) {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try {
-                    byte[] buf = new byte[4096];
-
-                    // inputStream is your original stream.
-                    for (int n; 0 < (n = inputStream.read(buf));) {
-                        baos.write(buf, 0, n);
-                    }
-                    baos.close();
-                    copyHolder = baos.toByteArray();
-                } catch (Exception e) {
-                    System.out
-                            .println("wadors : Error copying the stream " + e);
+                if(wadors.dumpHeader) {
+                    writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                 }
-                // This is the new stream that you can pass it to other code and
-                // use its data.
-                return new ByteArrayInputStream(copyHolder);
+                return true;
             }
 
             private TransformerHandler getTransformerHandler(WadoRS main)
@@ -451,40 +487,108 @@ public class WadoRS {
         },
         DICOM {
             @Override
-            boolean readBody(String filename, WadoRS wadors, InputStream in)
+            boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws IOException {
-                Files.copy(
-                        in,
-                        new File(wadors.outDir, filename
-                                .replace("dicom", "dcm")).toPath(),
-                        StandardCopyOption.REPLACE_EXISTING);
+                //InputStream is = cloneStream(in);
+                Attributes attrs;
+                File out = null;
+                DicomInputStream dis = new DicomInputStream(in);
+                Attributes fmi = dis.readFileMetaInformation();
+                    attrs = dis.readDataset(-1, -1);
+                    
+                    String fileName = null ;
+                    File outputDirectory;
+                    if(wadors.useDefaultNaming()) {
+                        fileName= ""+wadors.getNextPartIndex();
+                        outputDirectory = wadors.getOutDir();
+                    }
+                    else if(wadors.getNaming().equals(WadoRS.Naming.UID)) {
+                        fileName = attrs.getString(Tag.SOPInstanceUID);
+                        if(fileName == null) {
+                            fileName= ""+wadors.getNextPartIndex();
+                            LOG.info("Unable to decide SopInstanceUID, using part counter");
+                        }
+                        outputDirectory = ensureDirs(wadors, attrs);
+                    }
+                    else {
+                        fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
+                        fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
+                        outputDirectory = wadors.getOutDir();
+                    }
+                    out = new File(outputDirectory, wadors.naming.equals(WadoRS.Naming.UID)?fileName+".dcm":fileName);
+                    DicomOutputStream os = new DicomOutputStream(out);
+                    os.writeDataset(fmi, attrs);
+                    os.close();
+                    if(wadors.dumpHeader) {
+                        writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                    }
                 return true;
             }
         },
         BULK {
             @Override
-            boolean readBody(String filename, WadoRS wadors, InputStream in)
+            boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws IOException {
-                File f;
-
-                if (wadors.getUrl().contains("instances"))
-                    f = new File(wadors.outDir, " Instance["
-                            + wadors.getUrl().split("instances/")[1] + "]");
-                else
-                    f = new File(wadors.outDir, " Instance[undefined]");
-
-                if (!f.exists())
-                    f.mkdir();
-
-                Files.copy(in, new File(f, filename).toPath(),
+                String fileName = null ;
+                File outputDirectory;
+                if(wadors.useDefaultNaming()) {
+                    fileName= ""+wadors.getNextPartIndex();
+                    outputDirectory = wadors.getOutDir();
+                }
+                else {
+                    fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
+                    fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
+                    outputDirectory = wadors.getOutDir();
+                }
+                File out = new File(outputDirectory,fileName + ".blk");
+                Files.copy(in,out.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
+                if(wadors.dumpHeader) {
+                    writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                }
                 return true;
             }
         };
 
-        abstract boolean readBody(String filename, WadoRS wadors, InputStream in)
+        abstract boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                 throws IOException, Exception;
 
+        protected File ensureDirs(WadoRS wadors, Attributes attrs) {
+            String url = wadors.getUrl();
+            String seriesuid,studyuid;
+            File parentDir = wadors.getOutDir();
+                studyuid = url.split("studies/")[1].split("/")[0];
+            if(url.contains("series")) {
+                seriesuid = url.split("series/")[1].split("/")[0];
+            }
+            else {
+                seriesuid = attrs.getString(Tag.SeriesInstanceUID);
+            }
+            File outDir = new File(new File(parentDir,studyuid), seriesuid);
+            if(!outDir.exists())
+                outDir.mkdirs();
+            return outDir;
+        }
+
+        private static InputStream cloneStream(InputStream inputStream) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                byte[] buf = new byte[4096];
+
+                // inputStream is your original stream.
+                for (int n; 0 < (n = inputStream.read(buf));) {
+                    baos.write(buf, 0, n);
+                }
+                baos.close();
+                copyHolder = baos.toByteArray();
+            } catch (Exception e) {
+                System.out
+                        .println("wadors : Error copying the stream " + e);
+            }
+            // This is the new stream that you can pass it to other code and
+            // use its data.
+            return new ByteArrayInputStream(copyHolder);
+        }
     }
 
     public File getOutDir() {
@@ -552,4 +656,19 @@ public class WadoRS {
         this.acceptTypes = acceptTypes;
     }
 
+    public Naming getNaming() {
+        return naming;
+    }
+
+    public void setNaming(Naming naming) {
+        this.naming = naming;
+    }
+
+    public boolean useDefaultNaming() {
+        return this.naming == Naming.DEFAULT ? true : false;
+    }
+
+    public int getNextPartIndex() {
+        return ++this.partIndex;
+    }
 }

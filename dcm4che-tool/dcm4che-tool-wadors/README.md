@@ -18,10 +18,17 @@
                                               files with file names
                                               specified by option --out-file
                                               will be stored.
-        --out-file <name>                     specifies name of the files
-                                              written to the directory 
-                                              specified by out-dir
-                                              (default: wadoResponse).
+        --naming  <namingType>               Specifies the naming of the files
+                                             (parts), can be one of two values 
+                                             (UID or CONTENT_ID), if UID then
+                                              output file names (parts) 
+                                              should have SopInstanceUIDs.
+                                              If CONTENT_ID then the content-id
+                                              of the part in the multipart response
+                                              will be used,default is a counter.
+        --dump-headers                        Specifies whether to dumprequest header
+                                              and response header for each multipart
+                                              (if applicable) 
      -V,--version                             output version information and
                                               exit
      -x,--xsl <xsl-file>                      Provide XSL file to apply 

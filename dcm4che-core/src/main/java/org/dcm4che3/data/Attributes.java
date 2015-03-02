@@ -1457,6 +1457,7 @@ public class Attributes implements Serializable {
         TimeZone tz = DateUtils.timeZone(utcOffset);
         updateTimezone(getTimeZone(), tz);
         setString(Tag.TimezoneOffsetFromUTC, VR.SH, utcOffset);
+        this.tz = tz;
     }
 
     /**
@@ -1480,10 +1481,13 @@ public class Attributes implements Serializable {
             setString(Tag.TimezoneOffsetFromUTC, VR.SH,
                     DateUtils.formatTimezoneOffsetFromUTC(tz));
         }
-        this.tz=null;
+        this.tz = tz;
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {
+        if (from.hasSameRules(to))
+            return;
+
         for (int i = 0; i < size; i++) {
             Object val = values[i];
             if (val instanceof Sequence) {
@@ -1492,7 +1496,9 @@ public class Attributes implements Serializable {
                     item.updateTimezone(item.getTimeZone(), to);
                     item.remove(Tag.TimezoneOffsetFromUTC);
                 }
-            } else if (vrs[i] == VR.TM || vrs[i] == VR.DT)
+            } else if (vrs[i] == VR.TM && tags[i] != Tag.PatientBirthTime
+                    || vrs[i] == VR.DT && tags[i] != Tag.ContextGroupVersion
+                                       && tags[i] != Tag.ContextGroupLocalVersion)
                 updateTimezone(from, to, i);
         }
     }

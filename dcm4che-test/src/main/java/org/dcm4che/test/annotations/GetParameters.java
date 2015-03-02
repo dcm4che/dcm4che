@@ -49,7 +49,8 @@ import java.lang.annotation.RetentionPolicy;
 public @interface GetParameters {
     public String aeTitle();
     public String retrieveDir();
-    public String sourceAETitle() default "STORESCU";
-    public String sourceDevice() default "storescu";
+    public String retrieveLevel() default "STUDY";
+    public String sourceAETitle() default "GETSCU";
+    public String sourceDevice() default "getscu";
     public String connection() default "dicom";
 }

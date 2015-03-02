@@ -75,9 +75,9 @@ import org.dcm4che3.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class MoveSCU extends Device {
+public class MoveSCU {
 
-    private static enum InformationModel {
+    public static enum InformationModel {
         PatientRoot(UID.PatientRootQueryRetrieveInformationModelMOVE, "STUDY"),
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelMOVE, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelMOVERetired, "STUDY"),
@@ -92,6 +92,10 @@ public class MoveSCU extends Device {
             this.cuid = cuid;
             this.level = level;
        }
+        public String getCuid() {
+            return cuid;
+        }
+
     }
 
     private static ResourceBundle rb =
@@ -103,10 +107,11 @@ public class MoveSCU extends Device {
         Tag.SeriesInstanceUID
     };
 
-    private final ApplicationEntity ae = new ApplicationEntity("MOVESCU");
+    private ApplicationEntity ae = new ApplicationEntity("MOVESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
     private final AAssociateRQ rq = new AAssociateRQ();
+    private Device device;
     private int priority;
     private String destination;
     private InformationModel model;
@@ -115,10 +120,15 @@ public class MoveSCU extends Device {
     private Association as;
 
     public MoveSCU() throws IOException {
-        super("movescu");
-        addConnection(conn);
-        addApplicationEntity(ae);
+        this.device = new Device("movescu");
+        this.device.addConnection(conn);
+        this.device.addApplicationEntity(ae);
         ae.addConnection(conn);
+    }
+
+    public MoveSCU(ApplicationEntity ae) {
+        this.ae = ae;
+        this.device = ae.getDevice();
     }
 
     public final void setPriority(int priority) {
@@ -135,6 +145,29 @@ public class MoveSCU extends Device {
            addLevel(model.level);
     }
 
+    public ApplicationEntity getApplicationEntity() {
+        return ae;
+    }
+
+    public Connection getRemoteConnection() {
+        return remote;
+    }
+    
+    public AAssociateRQ getAAssociateRQ() {
+        return rq;
+    }
+    
+    public Association getAssociation() {
+        return as;
+    }
+
+    public Device getDevice() {
+        return device;
+    }    
+    
+    public Attributes getKeys() {
+        return keys;
+    }
     public void addLevel(String s) {
         keys.setString(Tag.QueryRetrieveLevel, VR.CS, s);
     }
@@ -232,8 +265,8 @@ public class MoveSCU extends Device {
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
                     Executors.newSingleThreadScheduledExecutor();
-            main.setExecutor(executorService);
-            main.setScheduledExecutor(scheduledExecutorService);
+            main.device.setExecutor(executorService);
+            main.device.setScheduledExecutor(scheduledExecutorService);
             try {
                 main.open();
                 List<String> argList = cl.getArgList();
@@ -295,7 +328,7 @@ public class MoveSCU extends Device {
 
     public void open() throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     public void close() throws IOException, InterruptedException {
@@ -334,4 +367,14 @@ public class MoveSCU extends Device {
         as.cmove(model.cuid, priority, keys, null, destination, rspHandler);
     }
 
+    public void retrieve(Attributes keys, DimseRSPHandler handler) throws IOException, InterruptedException {
+       as.cmove(model.cuid, priority, keys, null, destination, handler);
+   }
+
+    public void setLevel(InformationModel mdl) {
+        this.model = mdl;
+        if(mdl.level.equalsIgnoreCase("IMAGE")) {
+            this.rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, new byte[]{1}));
+        }
+    }
 }

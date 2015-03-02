@@ -36,74 +36,21 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.getscu.test;
+package org.dcm4che.test.annotations;
 
-import java.util.List;
-import org.dcm4che3.tool.common.test.TestResult;
-
-import org.dcm4che3.data.Attributes;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class RetrieveResult implements TestResult{
 
-    private String testDescription;
-    private int expectedResult = Integer.MIN_VALUE;
-    private int numResponses;
-    private int numSuccess;
-    private int numFail;
-    private long time;
-    private List<Attributes> queryResponse;
-
-    /**
-     * @param testDescription
-     * @param expectedResult
-     * @param numMatches
-     * @param numSuccess
-     * @param numFail
-     * @param time
-     * @param timeFirst
-     */
-    public RetrieveResult(String testDescription, int expectedResult,
-            int numResponses, int numSuccess, int numFail, long time,
-            List<Attributes> response) {
-        super();
-        this.testDescription = testDescription;
-        this.expectedResult = expectedResult;
-        this.numResponses = numResponses;
-        this.numSuccess = numSuccess;
-        this.numFail = numFail;
-        this.time = time;
-        this.queryResponse = response;
-    }
-
-    public String getTestDescription() {
-        return testDescription;
-    }
-
-    public int getExpectedResult() {
-        return expectedResult;
-    }
-
-    public int getNumResponses() {
-        return numResponses;
-    }
-
-    public long getTime() {
-        return time;
-    }
-
-    public int getNumSuccess() {
-        return numSuccess;
-    }
-
-    public int getNumFail() {
-        return numFail;
-    }
-
-    public List<Attributes> getQueryResponse() {
-        return queryResponse;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MoveParameters {
+    public String aeTitle();
+    public String retrieveLevel() default "STUDY";
+    public String destAEtitle();
+    public String sourceAETitle() default "MOVESCU";
+    public String sourceDevice() default "movescu";
+    public String connection() default "dicom";
 }

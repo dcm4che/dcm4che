@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.getscu.test;
+package org.dcm4che3.tool.movescu.test;
 
 import java.util.List;
 import org.dcm4che3.tool.common.test.TestResult;
@@ -44,30 +44,21 @@ import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.data.Attributes;
 
 /**
- * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
-public class RetrieveResult implements TestResult{
+public class MoveResult implements TestResult{
 
     private String testDescription;
     private int expectedResult = Integer.MIN_VALUE;
     private int numResponses;
     private int numSuccess;
     private int numFail;
+    private int numWarning;
     private long time;
     private List<Attributes> queryResponse;
 
-    /**
-     * @param testDescription
-     * @param expectedResult
-     * @param numMatches
-     * @param numSuccess
-     * @param numFail
-     * @param time
-     * @param timeFirst
-     */
-    public RetrieveResult(String testDescription, int expectedResult,
-            int numResponses, int numSuccess, int numFail, long time,
+    public MoveResult(String testDescription, int expectedResult,
+            int numResponses, int numSuccess, int numFail, int numWarning, long time,
             List<Attributes> response) {
         super();
         this.testDescription = testDescription;
@@ -75,6 +66,7 @@ public class RetrieveResult implements TestResult{
         this.numResponses = numResponses;
         this.numSuccess = numSuccess;
         this.numFail = numFail;
+        this.numWarning = numWarning;
         this.time = time;
         this.queryResponse = response;
     }
@@ -105,5 +97,9 @@ public class RetrieveResult implements TestResult{
 
     public List<Attributes> getQueryResponse() {
         return queryResponse;
+    }
+
+    public int getNumWarning() {
+        return numWarning;
     }
 }

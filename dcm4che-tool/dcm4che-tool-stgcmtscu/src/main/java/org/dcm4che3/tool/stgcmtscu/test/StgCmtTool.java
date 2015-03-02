@@ -60,6 +60,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -187,9 +188,11 @@ public class StgCmtTool implements TestTool {
         device.addApplicationEntity(ae);
         ae.addConnection(bound);
 
-        for(Connection conn: device.getConnections())
-            if(!conn.getCommonName().equalsIgnoreCase(bound.getCommonName()))
-                device.removeConnection(conn);
+        for(Iterator<Connection> iterator=device.getConnections().iterator(); iterator.hasNext();) {
+            Connection next = iterator.next();
+            if(!next.getCommonName().equalsIgnoreCase(bound.getCommonName()))
+                iterator.remove();
+        }
         
         this.stgCmtSCU = new StgCmtSCU(ae, stgcmtResultHandler);
 

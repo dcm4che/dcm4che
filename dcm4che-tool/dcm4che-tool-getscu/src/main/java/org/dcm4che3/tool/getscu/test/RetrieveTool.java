@@ -60,17 +60,27 @@ import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.pdu.ExtendedNegotiation;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.service.BasicCStoreSCP;
+import org.dcm4che3.net.service.DicomService;
+import org.dcm4che3.net.service.DicomServiceException;
+import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.getscu.GetSCU;
 import org.dcm4che3.tool.getscu.GetSCU.InformationModel;
+import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -86,21 +96,21 @@ public class RetrieveTool implements TestTool{
     private Connection conn;
     private String sourceAETitle;
     private File retrieveDir;
-    private int numResponses;
+    private int numCStores;
     private int numSuccess;
     private int numFailed;
     private int expectedMatches = Integer.MIN_VALUE;
-    private long timeFirst=0;
     private Attributes retrieveatts = new Attributes();
     
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
+    private String retrieveLevel;
     
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
 
-    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle, Connection conn) {
+    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle,String retrieveLevel, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -108,6 +118,7 @@ public class RetrieveTool implements TestTool{
         this.device = device;
         this.sourceAETitle = sourceAETitle;
         this.retrieveDir = retrieveDir;
+        this.retrieveLevel = retrieveLevel;
         this.conn = conn;
     }
 
@@ -127,7 +138,8 @@ public class RetrieveTool implements TestTool{
         retrievescu.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
         retrievescu.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         retrievescu.setStorageDirectory(retrieveDir);
-
+        registerSCPservice(device, retrieveDir);
+        
         // add retrieve attrs
 
 
@@ -138,11 +150,14 @@ public class RetrieveTool implements TestTool{
         retrievescu.getDevice().setExecutor(executorService);
         retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
         retrievescu.getDevice().bindConnections();
-
         retrievescu.setInformationModel(InformationModel.StudyRoot,
                 IVR_LE_FIRST, false);
+        retrievescu.addLevel(retrieveLevel);
+        if (retrieveLevel.equalsIgnoreCase("IMAGE")) {
+            retrievescu.getAAssociateRQ()
+            .addExtendedNegotiation(new ExtendedNegotiation(InformationModel.StudyRoot.getCuid(), new byte[]{1}));
+        }
         configureServiceClass(retrievescu);
-
         retrievescu.getKeys().addAll(retrieveatts);
         
         long timeStart = System.currentTimeMillis();
@@ -162,14 +177,14 @@ public class RetrieveTool implements TestTool{
         if (this.expectedMatches >= 0)
             assertTrue("test[" + testDescription 
                     + "] not returned expected result:" + this.expectedMatches
-                    + " but:" + numResponses, numResponses == this.expectedMatches);
+                    + " but:" + numCStores, numCStores == this.expectedMatches);
         
         assertTrue("test[" + testDescription
                     + "] had failed responses:"+ numFailed, numFailed==0);
         
-        init(new RetrieveResult(testDescription, expectedMatches, numResponses,
+        init(new RetrieveResult(testDescription, expectedMatches, numCStores,
                 numSuccess, numFailed,
-                (timeEnd - timeStart), (timeFirst-timeStart), response));
+                (timeEnd - timeStart), response));
     }
     
     public void addTag(int tag, String value) throws Exception {
@@ -189,22 +204,56 @@ public class RetrieveTool implements TestTool{
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
-                onCGetResponse(cmd, data);
             }
         };
 
         return rspHandler;
     }
 
-    protected void onCGetResponse(Attributes cmd, Attributes data) {
-        if (numResponses==0) timeFirst = System.currentTimeMillis();
+    private void registerSCPservice(Device device, final File storeDir) {
+            DicomServiceRegistry serviceReg = new DicomServiceRegistry();
+            serviceReg.addDicomService( new BasicCStoreSCP("*") {
+
+                @Override
+                protected void store(Association as, PresentationContext pc, Attributes rq,
+                        PDVInputStream data, Attributes rsp) throws DicomServiceException {
+
+                    if (storeDir == null)
+                        return;
+
+                    String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+                    String cuid = rq.getString(Tag.AffectedSOPClassUID);
+                    String tsuid = pc.getTransferSyntax();
+                    File file = new File(storeDir, iuid );
+                    try {
+                        GetSCU.storeTo(as, as.createFileMetaInformation(iuid, cuid, tsuid),
+                                data, file);
+                    } catch (Exception e) {
+                        throw new DicomServiceException(Status.ProcessingFailure, e);
+                    }
+                    //check returned result
+                    try{
+                    DicomInputStream din = new DicomInputStream(file);
+                    Attributes attrs = din.readDataset(-1, -1);
+                    din.close();
+                    onCStoreReq(rq,attrs);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            device.setDimseRQHandler(serviceReg);
+    }
+
+    protected void onCStoreReq(Attributes cmd, Attributes data) {
         int status = cmd.getInt(Tag.Status, -1);
-        if (status == 0XFF00 || status == 0)
+        if (data != null && !data.isEmpty())
             ++numSuccess;
         else
             ++numFailed;
         response.add(data);
-        ++numResponses;
+        ++numCStores;
     }
 
     private static void configureServiceClass(GetSCU main)

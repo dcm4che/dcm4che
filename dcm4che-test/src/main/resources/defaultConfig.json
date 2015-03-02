@@ -484,7 +484,19 @@
         "dicomVendorData" : [ ],
         "dicomPrimaryDeviceType" : [ ],
         "dicomInstitutionAddress" : [ ],
-        "dicomConnection" : [ ],
+        "dicomConnection" : [{
+          "dcmBlacklistedHostname" : [ ],
+          "dicomTLSCipherSuite" : [ ],
+          "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
+          "cn" : "dicom",
+          "dicomHostname" : "0.0.0.0"
+        }, {
+          "dcmBlacklistedHostname" : [ ],
+          "dicomTLSCipherSuite" : [ "TLS_RSA_WITH_AES_128_CBC_SHA", "SSL_RSA_WITH_3DES_EDE_CBC_SHA" ],
+          "dcmTLSProtocol" : [ "TLSv1", "SSLv3" ],
+          "cn" : "dicom-tls",
+          "dicomHostname" : "0.0.0.0"
+        }],
         "dicomRelatedDeviceReference" : [ ],
         "dicomInstitutionCode" : [ ]
       },

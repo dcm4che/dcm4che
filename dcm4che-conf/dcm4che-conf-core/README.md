@@ -16,6 +16,8 @@
     - a collection, map of configurable objects
     - a reference, collection of references
 
+- A configurable property should not be related to volatile operational data, i.e., it should be something that changes not so often, a rule of thumb is one hour - if you expect that a property could generally change more often - choose a different way of storing it.
+
 - Keep field/property declarations right:e.g., use `List` not `ArrayList`, put the right generic parameters, i.e., `List<ApplicationEntity>`
 - Correctly named getters and setters MUST be provided for all configurable properties.
 

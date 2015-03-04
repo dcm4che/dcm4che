@@ -49,16 +49,7 @@
     </parent>
     <artifactId>dcm4che-conf-core</artifactId>
     <name>dcm4che-conf-core</name>
-    <packaging>bundle</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.dcm4che</groupId>
@@ -118,12 +109,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.spec</groupId>
-            <artifactId>jboss-javaee-all-6.0</artifactId>
-            <version>3.0.2.Final</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>de.danielbechler</groupId>
             <artifactId>java-object-diff</artifactId>

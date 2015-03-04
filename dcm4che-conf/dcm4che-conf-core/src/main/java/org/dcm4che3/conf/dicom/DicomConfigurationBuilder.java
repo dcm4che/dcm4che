@@ -38,13 +38,9 @@
 
 package org.dcm4che3.conf.dicom;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Hashtable;
-
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
-import org.dcm4che3.conf.core.normalization.DefaultsFilterDecorator;
+import org.dcm4che3.conf.dicom.filters.DicomDefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.ldap.LdapConfigurationStorage;
@@ -54,178 +50,216 @@ import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.List;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public class DicomConfigurationBuilder {
 
-    private static class Ldap extends DicomConfigurationBuilder {
-
-        private final LdapConfigurationStorage ldapConfigurationStorage;
-
-        public Ldap(LdapConfigurationStorage ldapConfigurationStorage) {
-            super(ldapConfigurationStorage);
-            this.ldapConfigurationStorage = ldapConfigurationStorage;
-        }
-
-        @Override
-        public <T extends DeviceExtension> DicomConfigurationBuilder registerDeviceExtension(
-                Class<T> clazz) {
-            ldapConfigurationStorage.addExtensionClass(clazz);
-            return super.registerDeviceExtension(clazz);
-        }
-
-        @Override
-        public <T extends AEExtension> DicomConfigurationBuilder registerAEExtension(
-                Class<T> clazz) {
-            ldapConfigurationStorage.addExtensionClass(clazz);
-            return super.registerAEExtension(clazz);
-        }
-
-        @Override
-        public <T extends HL7ApplicationExtension> DicomConfigurationBuilder registerHL7ApplicationExtension(
-                Class<T> clazz) {
-            ldapConfigurationStorage.addExtensionClass(clazz);
-            return super.registerHL7ApplicationExtension(clazz);
-        }
-
-    }
+    private Hashtable<?, ?> props;
 
     private static Logger LOG = LoggerFactory
             .getLogger(DicomConfigurationBuilder.class);
 
-    private final Collection<Class<? extends DeviceExtension>> 
-        deviceExtensionClasses = new ArrayList<Class<? extends DeviceExtension>>();
+    private final Collection<Class<? extends DeviceExtension>>
+            deviceExtensionClasses = new ArrayList<Class<? extends DeviceExtension>>();
     private final Collection<Class<? extends AEExtension>>
-        aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
+            aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
     private final Collection<Class<? extends HL7ApplicationExtension>>
-        hl7ApplicationExtensionClasses = new ArrayList<Class<? extends HL7ApplicationExtension>>();
-    private Configuration configurationStorage;
+            hl7ApplicationExtensionClasses = new ArrayList<Class<? extends HL7ApplicationExtension>>();
+    private Boolean cache;
+    private Boolean persistDefaults;
+    private Hashtable<?, ?> ldapProps = null;
+    private Configuration configurationStorage = null;
+
+    private void setLdapProps(Hashtable<?, ?> ldapProps) {
+        this.ldapProps = ldapProps;
+    }
+
+    public DicomConfigurationBuilder() {
+        this.props = new Hashtable<Object, Object>();
+    }
+
+    public DicomConfigurationBuilder(Hashtable<?, ?> props) {
+        this.props = props;
+    }
 
     private enum ConfigType {
         JSON_FILE,
-        PREFERENCES,
-        LDAP
+        LDAP,
+        CUSTOM;
     }
 
-    private DicomConfigurationBuilder(Configuration configurationStorage) {
-        this.configurationStorage = configurationStorage;
+    public DicomConfigurationBuilder registerCustomConfigurationStorage(Configuration storage) {
+        configurationStorage = storage;
+        return this;
     }
 
-    public static DicomConfigurationBuilder newConfigurationBuilder(Hashtable<?,?> props)
-            throws ConfigurationException {
-        DicomConfigurationBuilder builder;
-        String configType = getPropertyWithNotice(props,
-                "org.dcm4che.conf.storage", "json_file", 
-                " Possible values: 'json_file', 'ldap'.");
-        switch(ConfigType.valueOf(configType.toUpperCase().trim())) {
-        case JSON_FILE:
-            builder = newJsonConfigurationBuilder(getPropertyWithNotice(props,
-                "org.dcm4che.conf.filename", "../standalone/configuration/sample-config.json"));
-            break;
-        case LDAP:
-            Hashtable<String,String> ldapProps = new Hashtable<String, String>();
-            ldapProps.put("java.naming.provider.url",
-                    getPropertyWithNotice(props,
-                            "org.dcm4che.conf.ldap.url", 
-                            "ldap://localhost:389/dc=example,dc=com"));
-            ldapProps.put("java.naming.security.principal",
-                    getPropertyWithNotice(props,
-                            "org.dcm4che.conf.ldap.principal",
-                            "cn=Directory Manager"));
-            ldapProps.put("java.naming.security.credentials",
-                    getPasswordWithNotice(props, 
-                            "org.dcm4che.conf.ldap.credentials", "1"));
-            ldapProps.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
-            ldapProps.put("java.naming.ldap.attributes.binary", "dicomVendorData");
-            builder = newLdapConfigurationBuilder(ldapProps);
-            break;
-        case PREFERENCES:
-        default:
-            throw new RuntimeException("Not implemented");
-        }
-        boolean cached = Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.configuration.cached", "true"));
-        return cached ? builder.cache() : builder;
-
-    }
-
-    public static DicomConfigurationBuilder newJsonConfigurationBuilder(String fileName) {
-        return new DicomConfigurationBuilder(
-                new SingleJsonFileConfigurationStorage(fileName));
-    }
-
-    public static DicomConfigurationBuilder newLdapConfigurationBuilder(Hashtable<?,?> ldapProps)
-            throws ConfigurationException {
-        return new DicomConfigurationBuilder.Ldap(
-                new LdapConfigurationStorage(ldapProps));
-        
-    }
 
     public <T extends DeviceExtension> DicomConfigurationBuilder registerDeviceExtension(
             Class<T> clazz) {
         deviceExtensionClasses.add(clazz);
         return this;
     }
- 
+
     public <T extends AEExtension> DicomConfigurationBuilder registerAEExtension(
             Class<T> clazz) {
         aeExtensionClasses.add(clazz);
         return this;
     }
- 
+
     public <T extends HL7ApplicationExtension> DicomConfigurationBuilder registerHL7ApplicationExtension(
             Class<T> clazz) {
         hl7ApplicationExtensionClasses.add(clazz);
         return this;
     }
- 
-    public DicomConfigurationBuilder cache() {
-        if (!(configurationStorage instanceof CachedRootNodeConfiguration))
-            configurationStorage = new CachedRootNodeConfiguration(configurationStorage);
+
+    public DicomConfigurationBuilder cache(boolean cache) {
+        this.cache = cache;
         return this;
     }
 
-    public CommonDicomConfigurationWithHL7 build() {
+    public DicomConfigurationBuilder persistDefaults(boolean persistDefaults) {
+        this.persistDefaults = persistDefaults;
+        return this;
+    }
+
+    public CommonDicomConfigurationWithHL7 build() throws ConfigurationException {
+
+        List<Class<?>> allExtensions = new ArrayList<Class<?>>();
+        for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses)
+            allExtensions.add(hl7ApplicationExtensionClass);
+        for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses)
+            allExtensions.add(aeExtensionClass);
+        for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses)
+            allExtensions.add(deviceExtensionClass);
+
+
+        Configuration configurationStorage = createConfigurationStorage(allExtensions);
+        if (configurationStorage == null) return null;
+
         LOG.info("Dcm4che configuration device extensions: {}", deviceExtensionClasses);
         LOG.info("Dcm4che configuration AE extensions: {}", aeExtensionClasses);
         LOG.info("Dcm4che configuration HL7 extensions: {}", hl7ApplicationExtensionClasses);
 
         return new CommonDicomConfigurationWithHL7(
-                new DefaultsFilterDecorator(configurationStorage),
+                configurationStorage,
                 deviceExtensionClasses,
                 aeExtensionClasses,
                 hl7ApplicationExtensionClasses
         );
     }
 
-    private static String getPropertyWithNotice(Hashtable<?, ?> props,
-            String key, String defval) {
+    private Configuration createConfigurationStorage(List<Class<?>> allExtensions) throws ConfigurationException {
+
+        // if configurationStorage is already set - skip the storage init
+        if (configurationStorage == null) {
+            String configType = getPropertyWithNotice(props,
+                    "org.dcm4che.conf.storage", "json_file",
+                    " Possible values: 'json_file', 'ldap'.");
+
+            switch (ConfigType.valueOf(configType.toUpperCase().trim())) {
+                case JSON_FILE:
+                    configurationStorage = new SingleJsonFileConfigurationStorage(getPropertyWithNotice(props,
+                            "org.dcm4che.conf.filename", "../standalone/configuration/sample-config.json"));
+                    break;
+                case LDAP:
+                    // init LDAP props if were not yet inited by the builder
+                    if (ldapProps == null) {
+                        Hashtable<String, String> ldapStringProps = new Hashtable<String, String>();
+                        ldapStringProps.put("java.naming.provider.url",
+                                getPropertyWithNotice(props,
+                                        "org.dcm4che.conf.ldap.url",
+                                        "ldap://localhost:389/dc=example,dc=com"));
+                        ldapStringProps.put("java.naming.security.principal",
+                                getPropertyWithNotice(props,
+                                        "org.dcm4che.conf.ldap.principal",
+                                        "cn=Directory Manager"));
+                        ldapStringProps.put("java.naming.security.credentials",
+                                getPasswordWithNotice(props,
+                                        "org.dcm4che.conf.ldap.credentials", "1"));
+                        ldapStringProps.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
+                        ldapStringProps.put("java.naming.ldap.attributes.binary", "dicomVendorData");
+
+                        ldapProps = ldapStringProps;
+                    }
+
+
+                    LdapConfigurationStorage ldapConfigurationStorage = new LdapConfigurationStorage(ldapProps, allExtensions);
+
+                    configurationStorage = ldapConfigurationStorage;
+
+                    break;
+
+                default:
+                    throw new RuntimeException("Not implemented");
+            }
+        }
+
+        if (cache != null ? cache
+                : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
+            configurationStorage = new CachedRootNodeConfiguration(configurationStorage, props);
+
+        configurationStorage = new DicomDefaultsAndNullFilterDecorator(configurationStorage, allExtensions,
+                persistDefaults != null
+                    ? persistDefaults
+                    : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "false")));
+
+        return configurationStorage;
+    }
+
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                                String key, String defval) {
         return getPropertyWithNotice(props, key, defval, "", false);
     }
 
     private static String getPropertyWithNotice(Hashtable<?, ?> props,
-            String key, String defval, String options) {
+                                                String key, String defval, String options) {
         return getPropertyWithNotice(props, key, defval, options, false);
     }
 
     private static String getPasswordWithNotice(Hashtable<?, ?> props,
-            String key, String defval) {
+                                                String key, String defval) {
         return getPropertyWithNotice(props, key, defval, "", true);
     }
 
     private static String getPropertyWithNotice(Hashtable<?, ?> props,
-            String key, String defval, String options, boolean hide) {
+                                                String key, String defval, String options, boolean hide) {
         String val = (String) props.get(key);
         if (val == null) {
             val = defval;
             LOG.warn("Configuration storage init: system property '{}' not found. "
                     + "Using default value '{}'.{}", key, defval, options);
         } else {
-            LOG.info("Initializing dcm4che configuration storage " + "({} = {})", 
+            LOG.info("Initializing dcm4che configuration storage " + "({} = {})",
                     key, hide ? "***" : val);
         }
         return val;
+    }
+
+    public static DicomConfigurationBuilder newConfigurationBuilder(Hashtable<?, ?> props)
+            throws ConfigurationException {
+        return new DicomConfigurationBuilder(props);
+    }
+
+    public static DicomConfigurationBuilder newJsonConfigurationBuilder(String fileName) {
+        Hashtable<Object, Object> props = new Hashtable<Object, Object>();
+        props.put("org.dcm4che.conf.storage", "json_file");
+        props.put("org.dcm4che.conf.filename", fileName);
+        return new DicomConfigurationBuilder(props);
+    }
+
+    public static DicomConfigurationBuilder newLdapConfigurationBuilder(Hashtable<?, ?> ldapProps)
+            throws ConfigurationException {
+        Hashtable<Object, Object> props = new Hashtable<Object, Object>();
+        props.put("org.dcm4che.conf.storage", "ldap");
+        DicomConfigurationBuilder dicomConfigurationBuilder = new DicomConfigurationBuilder(props);
+        dicomConfigurationBuilder.setLdapProps(ldapProps);
+        return dicomConfigurationBuilder;
     }
 
 }

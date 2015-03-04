@@ -53,13 +53,16 @@ import java.util.Map;
  *
  * @param <T>
  */
-public class DefaultReferenceAdapter<T> implements ConfigTypeAdapter<T, String> {
+public class DefaultReferenceAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<T> {
 
     private BeanVitalizer vitalizer;
     private Configuration config;
 
-
     public DefaultReferenceAdapter(BeanVitalizer vitalizer, Configuration config) {
+        super("string");
+        metadata.put("class", "Reference");
+        //TODO: add regex..
+
         this.vitalizer = vitalizer;
         this.config = config;
     }
@@ -77,17 +80,12 @@ public class DefaultReferenceAdapter<T> implements ConfigTypeAdapter<T, String> 
         throw new ConfigurationUnserializableException("No information about where to look for the reference");
     }
 
-    @Override
-    public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        Map<String, Object> metadata = new HashMap<String, Object>();
-        metadata.put("type", "string");
-        metadata.put("class", "Reference");
-        //TODO: add regex..
-        return metadata;
-    }
 
     @Override
-    public String normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        return (String) configNode;
+    public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        Map<String, Object> schema = new HashMap<String, Object>();
+        schema.putAll(super.getSchema(property, vitalizer));
+        schema.put("referencedClass", property.getRawClass().getSimpleName());
+        return schema;
     }
 }

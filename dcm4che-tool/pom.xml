@@ -57,6 +57,7 @@
     <module>dcm4che-tool-dcm2xml</module>
     <module>dcm4che-tool-dcmdump</module>
     <module>dcm4che-tool-dcmdir</module>
+	<module>dcm4che-tool-dcmdict</module>
     <module>dcm4che-tool-dcmqrscp</module>
     <module>dcm4che-tool-dcmvalidate</module>
     <module>dcm4che-tool-emf2sf</module>
@@ -85,6 +86,10 @@
 	<module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
+	<module>dcm4che-tool-qidors</module>
+	<module>dcm4che-tool-wadors</module>
+	<module>dcm4che-tool-wadouri</module>
+	<module>dcm4che-tool-dcmgen</module>
     <!-- TODO: fix configuration load
     <module>dcm4che-tool-probetc</module> -->
     <module>dcm4che-tool-prefs2xml</module>

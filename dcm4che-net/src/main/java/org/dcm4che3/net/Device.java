@@ -43,17 +43,8 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -65,6 +56,7 @@ import javax.net.ssl.TrustManager;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -88,7 +80,7 @@ public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
-    @ConfigurableProperty(name = "dicomDeviceName")
+    @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
 
     @ConfigurableProperty(name = "dicomDescription")
@@ -202,13 +194,19 @@ public class Device implements Serializable {
 
 
     @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name="dicomConnection", label = "Connections")
+    @ConfigurableProperty(
+            name="dicomConnection",
+            label = "Connections"
+    )
     private final List<Connection> connections = new ArrayList<Connection>();
 
     @LDAP(noContainerNode = true)
-    @ConfigurableProperty(name="dicomNetworkAE", label = "Application Entities")
+    @ConfigurableProperty(
+            name="dicomNetworkAE",
+            label = "Application Entities"
+    )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
-            new LinkedHashMap<String, ApplicationEntity>();
+            new TreeMap<String, ApplicationEntity>();
 
     private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();

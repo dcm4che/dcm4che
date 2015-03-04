@@ -107,7 +107,15 @@ public class AttributeCoercions
     public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac : list)
-            if (ac.matchesCondition(sopClass, dimse, role, aeTitle))
+            if (ac.matchesCondition(sopClass, dimse, role, aeTitle, null))
+                return ac;
+        return null;
+    }
+
+    public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
+            Role role, String aeTitle, String deviceName) {
+        for (AttributeCoercion ac : list)
+            if (ac.matchesCondition(sopClass, dimse, role, aeTitle, deviceName))
                 return ac;
         return null;
     }

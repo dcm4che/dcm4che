@@ -190,10 +190,9 @@ public class LdapNode {
                 LDAP ldapAnno = property.getAnnotation(LDAP.class);
                 if (ldapAnno != null && ldapAnno.booleanBasedEnumStorageOptions().length > 0) {
                     int i = 0;
-                    for (String enumStorageOption : ldapAnno.booleanBasedEnumStorageOptions()) {
-                        getAttributes().put(enumStorageOption, collection.contains(i) ? "TRUE" : "FALSE");
-                        i++;
-                    }
+                    for (String enumStorageOption : ldapAnno.booleanBasedEnumStorageOptions())
+                        if (collection.contains(i++))
+                            getAttributes().put(enumStorageOption, "TRUE");
                     continue;
                 }
 
@@ -214,6 +213,15 @@ public class LdapNode {
                 getAttributes().put(attribute);
                 continue;
             }
+
+
+            // reference
+            if (property.getAnnotation(ConfigurableProperty.class).isReference()) {
+                String ref = LdapConfigUtils.refToLdapDN(propertyConfigNode.toString(), getLdapConfigurationStorage());
+                getAttributes().put(LdapConfigUtils.getLDAPPropertyName(property), ref);
+                continue;
+            }
+
 
             // regular attribute
             if (propertyConfigNode instanceof Boolean)
@@ -260,7 +268,7 @@ public class LdapNode {
             for (Map.Entry<String, Map<String, Object>> ext : extensions.entrySet()) {
                 Class<?> extClass = null;
                 try {
-                    extClass = LdapConfigUtils.getExtensionClassBySimpleName(getLdapConfigurationStorage(), ext.getKey());
+                    extClass = ConfigIterators.getExtensionClassBySimpleName(ext.getKey(), getLdapConfigurationStorage().getAllExtensionClasses());
                 } catch (Exception e) {
                     throw new ConfigurationException("Cannot find extension class " + ext.getKey(), e);
                 }

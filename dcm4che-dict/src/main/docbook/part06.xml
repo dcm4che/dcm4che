@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" xml:id="PS3.6" label="PS3.6" version="5.0">
   <title>PS3.6</title>
-  <subtitle>DICOM PS3.6 2014c - Data Dictionary</subtitle>
+  <subtitle>DICOM PS3.6 2015a - Data Dictionary</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2014</year>
+      <year>2015</year>
       <holder>NEMA</holder>
     </copyright>
   </info>
@@ -1759,6 +1759,86 @@
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0008,0118)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Mapping Resource UID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Mapping&#x200b;Resource&#x200b;UID</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>UI</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0008,0119)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Long Code Value</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Long&#x200b;Code&#x200b;Value</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>UC</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0008,0120)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>URN Code Value</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>URN&#x200b;Code&#x200b;Value</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>UR</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0008,0121)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Equivalent Code Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Equivalent&#x200b;Code&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para></para>
           </td>
         </tr>
         <tr valign="top">
@@ -22769,7 +22849,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22787,7 +22869,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22805,7 +22889,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22823,7 +22909,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22841,7 +22929,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22859,7 +22949,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22877,7 +22969,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22895,7 +22989,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22913,7 +23009,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22931,7 +23029,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22949,7 +23049,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22967,7 +23069,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -22985,7 +23089,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23003,7 +23109,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23021,7 +23129,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23039,7 +23149,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23057,7 +23169,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>3</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23075,7 +23189,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>6</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -23093,7 +23209,9 @@
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
           </td>
-          <td align="center" colspan="1" rowspan="1"/>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
@@ -88246,6 +88364,20 @@
         </tr>
         <tr valign="top">
           <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.8.&#x200b;1.&#x200b;1</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>DICOM Content Mapping Resource</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Mapping Resource</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.16" targetptr="PS3.16" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
             <para>1.2.840.10008.15.0.&#x200b;3.&#x200b;1</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -99060,6 +99192,148 @@
           </td>
           <td align="left" colspan="1" rowspan="1">
             <para><olink targetdoc="PS3.16" targetptr="sect_CID_9000" xrefstyle="select: title"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1011</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.16" targetptr="sect_CID_7600" xrefstyle="select: labelnumber"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.16" targetptr="sect_CID_7600" xrefstyle="select: title"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1012</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.16" targetptr="sect_CID_7601" xrefstyle="select: labelnumber"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.16" targetptr="sect_CID_7601" xrefstyle="select: title"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1013</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7701" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7701" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1014</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7702" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7702" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1015</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7703" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7703" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1016</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7704" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7704" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1017</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7705" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7705" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1018</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7706" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7706" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1019</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7707" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7707" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1020</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7710" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7710" xrefstyle="select: title"/>
+            </para>
           </td>
         </tr>
       </tbody>

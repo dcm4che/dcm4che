@@ -103,12 +103,14 @@
         <include>org.dcm4che:dcm4che-conf-core-api</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-emf</include>
+        <include>org.dcm4che:dcm4che-filecache</include>
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
+        <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
@@ -120,6 +122,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2json</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
+		<include>org.dcm4che.tool:dcm4che-tool-dcmdict</include>
+		<include>org.dcm4che.tool:dcm4che-tool-dcmgen</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
@@ -130,6 +134,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-stowrs</include>
+		<include>org.dcm4che.tool:dcm4che-tool-qidors</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
@@ -147,6 +152,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadouri</include>
         <!-- TODO fix configuration load
         <include>org.dcm4che.tool:dcm4che-tool-probetc</include> -->
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
@@ -157,6 +164,7 @@
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:javax.json</include>
+        <include>org.jboss.resteasy:jaxrs-api</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

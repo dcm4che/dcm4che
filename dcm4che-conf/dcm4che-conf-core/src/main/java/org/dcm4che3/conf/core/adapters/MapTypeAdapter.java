@@ -42,11 +42,13 @@ package org.dcm4che3.conf.core.adapters;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * Map<br>
@@ -60,15 +62,17 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
     @Override
     public Map<K, V> fromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
-        if (configNode == null) return null;
-
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
+        ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
-        Map<K, V> map = new LinkedHashMap<K, V>();
+        Map<K, V> map = new TreeMap<K, V>();
 
         for (Entry<String, Object> e : configNode.entrySet()) {
             map.put(keyAdapter.fromConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
@@ -82,15 +86,17 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
     @Override
     public Map<String, Object> toConfigNode(Map<K, V> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
-        if (object == null) return null;
-
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
+        ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
-        Map<String, Object> configNode = new LinkedHashMap<String, Object>();
+        Map<String, Object> configNode = new TreeMap<String, Object>();
 
         for (Entry<K, V> e : object.entrySet()) {
             configNode.put(keyAdapter.toConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
@@ -116,7 +122,11 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
 
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        ConfigTypeAdapter<V, Object> valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
+        ConfigTypeAdapter<V, Object> valueAdapter;
+        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+            valueAdapter = vitalizer.getReferenceTypeAdapter();
+        else
+            valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
         // fill in key and value metadata
         keyMetadata.putAll(keyAdapter.getSchema(keyPseudoProperty, vitalizer));

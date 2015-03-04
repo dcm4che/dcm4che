@@ -71,6 +71,46 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>org.dcm4che.tool</groupId>
+        <artifactId>dcm4che-tool-storescu</artifactId>
+        <version>${project.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>org.dcm4che.tool</groupId>
+        <artifactId>dcm4che-tool-findscu</artifactId>
+        <version>${project.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>org.dcm4che.tool</groupId>
+        <artifactId>dcm4che-tool-mppsscu</artifactId>
+        <version>${project.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>org.dcm4che.tool</groupId>
+        <artifactId>dcm4che-tool-getscu</artifactId>
+        <version>${project.version}</version>
+        </dependency>
+        <dependency>
+        <groupId>org.dcm4che.tool</groupId>
+        <artifactId>dcm4che-tool-dcmgen</artifactId>
+        <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-stgcmtscu</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-movescu</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -83,4 +123,16 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
+    <build>
+    <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>false</filtering>
+            <includes>
+              <include>*.json</include>
+              <include>*.properties</include>
+            </includes>
+          </resource>
+        </resources>
+    </build>
 </project>

@@ -39,38 +39,55 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by aprvf on 29/09/2014.
+ * @author Roman K
  */
-
 public class CachedRootNodeConfiguration extends DelegatingConfiguration {
+
+    public static final Logger log = LoggerFactory.getLogger(CachedRootNodeConfiguration.class);
 
 
     protected Map<String, Object> configurationRoot = null;
 
     public CachedRootNodeConfiguration(Configuration delegate) {
-        super(delegate);
+        this(delegate, System.getProperties());
     }
 
+    public CachedRootNodeConfiguration(Configuration delegate, Hashtable<?, ?> properties) {
+        super(delegate);
+        staleTimeout = Integer.valueOf(DicomConfigurationBuilder.getPropertyWithNotice(properties, "org.dcm4che.conf.staleTimeout", "30")) * 1000L;
+    }
+
+    long staleTimeout;
+    long fetchTime;
 
     @Override
-    public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
-        if (configurationRoot == null)
+    public synchronized Map<String, Object> getConfigurationRoot() throws ConfigurationException {
+        long now = System.currentTimeMillis();
+
+        if (configurationRoot == null ||
+                (staleTimeout != 0 && now > fetchTime + staleTimeout)) {
+            fetchTime = now;
             configurationRoot = delegate.getConfigurationRoot();
+            log.debug("Configuration cache refreshed");
+        }
         return configurationRoot;
     }
 
     /**
      * Return cached node
-     *
      *
      * @param path
      * @param configurableClass
@@ -78,34 +95,42 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
      * @throws ConfigurationException
      */
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+    public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         return ConfigNodeUtil.getNode(getConfigurationRoot(), path);
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
+    public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+        if (!path.equals("/"))
+            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
+        else
+            configurationRoot = configNode;
         delegate.persistNode(path, configNode, configurableClass);
     }
 
     @Override
-    public void refreshNode(String path) throws ConfigurationException {
-        ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, delegate.getConfigurationNode(path, null));
+    public synchronized void refreshNode(String path) throws ConfigurationException {
+        Map<String, Object> newConfigurationNode = (Map<String, Object>) delegate.getConfigurationNode(path, null);
+        if (path.equals("/"))
+            configurationRoot = newConfigurationNode;
+        else
+            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, newConfigurationNode);
+
     }
 
     @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
+    public synchronized boolean nodeExists(String path) throws ConfigurationException {
         return ConfigNodeUtil.nodeExists(getConfigurationRoot(), path);
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
+    public synchronized void removeNode(String path) throws ConfigurationException {
         delegate.removeNode(path);
         ConfigNodeUtil.removeNode(getConfigurationRoot(), path);
     }
 
     @Override
-    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+    public synchronized Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
     }
 

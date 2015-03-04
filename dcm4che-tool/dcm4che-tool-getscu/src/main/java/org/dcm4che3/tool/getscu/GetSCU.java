@@ -75,6 +75,7 @@ import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.pdu.RoleSelection;
 import org.dcm4che3.net.service.BasicCStoreSCP;
+import org.dcm4che3.net.service.DicomService;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
@@ -96,17 +97,21 @@ public class GetSCU {
         StudyRoot(UID.StudyRootQueryRetrieveInformationModelGET, "STUDY"),
         PatientStudyOnly(UID.PatientStudyOnlyQueryRetrieveInformationModelGETRetired, "STUDY"),
         CompositeInstanceRoot(UID.CompositeInstanceRootRetrieveGET, "IMAGE"),
-        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, null),
+        WithoutBulkData(UID.CompositeInstanceRetrieveWithoutBulkDataGET, "IMAGE"),
         HangingProtocol(UID.HangingProtocolInformationModelGET, null),
         ColorPalette(UID.ColorPaletteInformationModelGET, null);
 
-        final String cuid;
+        private final String cuid;
         final String level;
 
         InformationModel(String cuid, String level) {
             this.cuid = cuid;
             this.level = level;
        }
+
+        public String getCuid() {
+            return cuid;
+        }
     }
 
     private static ResourceBundle rb =
@@ -118,7 +123,7 @@ public class GetSCU {
         Tag.SeriesInstanceUID
     };
 
-    private final Device device = new Device("getscu");
+    private Device device = new Device("getscu");
     private final ApplicationEntity ae;
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -163,6 +168,11 @@ public class GetSCU {
         device.setDimseRQHandler(createServiceRegistry());
     }
     
+    public GetSCU(ApplicationEntity appEntity) {
+        this.ae = appEntity;
+        this.device = this.ae.getDevice();
+    }
+
     public ApplicationEntity getApplicationEntity() {
         return ae;
     }
@@ -187,7 +197,7 @@ public class GetSCU {
         return keys;
     }
     
-    private void storeTo(Association as, Attributes fmi, 
+    public static void storeTo(Association as, Attributes fmi, 
             PDVInputStream data, File file) throws IOException  {
         LOG.info("{}: M-WRITE {}", as, file);
         file.getParentFile().mkdirs();
@@ -220,9 +230,9 @@ public class GetSCU {
     public final void setInformationModel(InformationModel model, String[] tss,
             boolean relational) {
        this.model = model;
-       rq.addPresentationContext(new PresentationContext(1, model.cuid, tss));
+       rq.addPresentationContext(new PresentationContext(1, model.getCuid(), tss));
        if (relational)
-           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, new byte[]{1}));
+           rq.addExtendedNegotiation(new ExtendedNegotiation(model.getCuid(), new byte[]{1}));
        if (model.level != null)
            addLevel(model.level);
     }
@@ -429,7 +439,7 @@ public class GetSCU {
     }
 
     public void open() throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-        as = ae.connect(conn, remote, rq);
+        as = ae.connect(remote, rq);
     }
 
     public void close() throws IOException, InterruptedException {
@@ -473,7 +483,7 @@ public class GetSCU {
     }
     
     private void retrieve(Attributes keys, DimseRSPHandler rspHandler) throws IOException, InterruptedException {
-        as.cget(model.cuid, priority, keys, null, rspHandler);
+        as.cget(model.getCuid(), priority, keys, null, rspHandler);
     }
 
 }

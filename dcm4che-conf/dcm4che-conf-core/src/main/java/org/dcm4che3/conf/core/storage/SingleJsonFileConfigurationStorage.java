@@ -58,6 +58,7 @@ import java.util.Map;
 public class SingleJsonFileConfigurationStorage implements Configuration {
 
     String fileName;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public SingleJsonFileConfigurationStorage(String fileName) {
         this.fileName = fileName;
@@ -71,7 +72,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     @Override
     public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(new File(fileName), Map.class);
         } catch (FileNotFoundException e) {
             return new HashMap<String, Object>();
@@ -104,7 +104,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         } else
             configurationRoot = configNode;
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             File resultFile = new File(fileName);
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(resultFile, (Object) configurationRoot);

@@ -39,11 +39,9 @@
  */
 package org.dcm4che3.conf.core;
 
-import org.apache.commons.jxpath.ri.Parser;
-import org.apache.commons.jxpath.ri.compiler.TreeCompiler;
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.misc.DeepEqualsDiffer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -99,10 +97,52 @@ public class VitalizerTest {
         }
     }
 
+    @ConfigurableClass
+    public static class TestConfigClassWithIssues {
 
+        @ConfigurableProperty(name = "primitivePropThatDoesNotExistInConfig")
+        int unsetProp;
+
+        @ConfigurableProperty(name = "noBool")
+        boolean unsetPropBool;
+
+        @ConfigurableProperty(name = "nullBool")
+        Boolean unsetPropBigBool;
+
+        public int getUnsetProp() {
+            return unsetProp;
+        }
+
+        public void setUnsetProp(int unsetProp) {
+            this.unsetProp = unsetProp;
+        }
+
+        public boolean isUnsetPropBool() {
+            return unsetPropBool;
+        }
+
+        public void setUnsetPropBool(boolean unsetPropBool) {
+            this.unsetPropBool = unsetPropBool;
+        }
+
+        public Boolean getUnsetPropBigBool() {
+            return unsetPropBigBool;
+        }
+
+        public void setUnsetPropBigBool(Boolean unsetPropBigBool) {
+            this.unsetPropBigBool = unsetPropBigBool;
+        }
+    }
+
+    enum MyEnum {
+        OPTION1,OPTION2
+    }
 
     @ConfigurableClass
     public static class TestConfigClass {
+
+        @ConfigurableProperty(defaultValue = "OPTION1")
+        MyEnum myEnum;
 
         @ConfigurableProperty(name = "prop1")
         int prop1;
@@ -129,15 +169,15 @@ public class VitalizerTest {
         TestConfigSubClass subP;
 
         @ConfigurableProperty(name = "subMap")
-        Map<String,String> mapProp;
+        Map<String, String> mapProp;
 
-        @ConfigurableProperty(name="objSubMap")
+        @ConfigurableProperty(name = "objSubMap")
         Map<String, TestConfigSubClass> objMapProp;
 
-        @ConfigurableProperty(name="setProp")
+        @ConfigurableProperty(name = "setProp")
         Set<String> aSet;
 
-        @ConfigurableProperty(name="strArrayProp")
+        @ConfigurableProperty(name = "strArrayProp")
         String[] strArrayProp;
 
         @ConfigurableProperty
@@ -147,8 +187,16 @@ public class VitalizerTest {
         byte[] byteArrayProp;
 
 
-        @ConfigurableProperty(name="intArrayProp")
+        @ConfigurableProperty(name = "intArrayProp")
         int[] intArrayProp;
+
+        public MyEnum getMyEnum() {
+            return myEnum;
+        }
+
+        public void setMyEnum(MyEnum myEnum) {
+            this.myEnum = myEnum;
+        }
 
         public byte[] getByteArrayProp() {
             return byteArrayProp;
@@ -276,7 +324,6 @@ public class VitalizerTest {
     }
 
 
-
     HashMap<String, Object> getTestConfigClassMap() {
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("prop1", 21);
@@ -284,7 +331,7 @@ public class VitalizerTest {
         map.put("boolProp1", false);
         map.put("boolProp2", true);
         map.put("strProp", "a cool str");
-        map.put("byteArrayProp","aGVsbG8=");
+        map.put("byteArrayProp", "aGVsbG8=");
 
         HashMap<String, Object> subClassInst1 = new HashMap<String, Object>();
         subClassInst1.put("prop1", 123);
@@ -331,7 +378,6 @@ public class VitalizerTest {
     }
 
 
-
     @Test
     public void testBackAndForthTestConfigClass() throws ConfigurationException {
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
@@ -364,7 +410,37 @@ public class VitalizerTest {
         Map<String, Object> generatedNode = beanVitalizer.createConfigNodeFromInstance(configuredInstance);
 
         // null value produces no attribute-value record in serialized repr
-        Assert.assertEquals(false, generatedNode.containsKey("nullStrProp") );
+        Assert.assertEquals(false, generatedNode.containsKey("nullStrProp"));
+
+
+        // primitive nulls
+
+        try {
+            TestConfigClassWithIssues testConfigClassWithIssues = beanVitalizer.newConfiguredInstance(new HashMap<String, Object>(), TestConfigClassWithIssues.class);
+            throw new RuntimeException("Should brake!");
+        } catch (ConfigurationException e) {
+            // ok
+        }
+
+        try {
+            HashMap<String, Object> configNode = new HashMap<String, Object>();
+            configNode.put("primitivePropThatDoesNotExistInConfig", 0);
+            TestConfigClassWithIssues testConfigClassWithIssues = beanVitalizer.newConfiguredInstance(configNode, TestConfigClassWithIssues.class);
+            throw new RuntimeException("Should brake!");
+        } catch (ConfigurationException e) {
+            // ok
+        }
+
+        HashMap<String, Object> configNode = new HashMap<String, Object>();
+        configNode.put("primitivePropThatDoesNotExistInConfig", 0);
+        configNode.put("noBool", false);
+        TestConfigClassWithIssues testConfigClassWithIssues = beanVitalizer.newConfiguredInstance(configNode, TestConfigClassWithIssues.class);
+
+
+        // enum nulls
+        Map<String, Object> configNodeFromInstance = new BeanVitalizer().createConfigNodeFromInstance(new TestConfigClass());
+        Assert.assertFalse("null-valued enum is not persisted", configNodeFromInstance.containsKey("myEnum"));
+
 
     }
 
@@ -373,17 +449,11 @@ public class VitalizerTest {
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
         BeanVitalizer beanVitalizer = new BeanVitalizer();
 
-        for (int i=0;i<1000;i++)
-        {
+        for (int i = 0; i < 1000; i++) {
             TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);
             Object generatedNode = beanVitalizer.createConfigNodeFromInstance(configuredInstance);
         }
 
-    }
-
-    @Test
-    public void testParser() {
-        Object expression = Parser.parseExpression("dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='DCM4CHEE']]/dicomName", new TreeCompiler());
     }
 
 }

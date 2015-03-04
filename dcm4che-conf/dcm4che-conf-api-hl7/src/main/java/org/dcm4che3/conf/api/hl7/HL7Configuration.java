@@ -39,7 +39,12 @@
 package org.dcm4che3.conf.api.hl7;
 
 import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7ApplicationExtension;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -54,4 +59,7 @@ public interface HL7Configuration {
     HL7Application findHL7Application(String name) throws ConfigurationException;
 
     String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
+
+    Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions();
+
 }

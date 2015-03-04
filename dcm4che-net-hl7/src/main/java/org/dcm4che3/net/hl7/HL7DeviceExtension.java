@@ -38,11 +38,6 @@
 
 package org.dcm4che3.net.hl7;
 
-import java.net.Socket;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -50,6 +45,11 @@ import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.DeviceExtension;
+
+import java.net.Socket;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -68,7 +68,7 @@ public class HL7DeviceExtension extends DeviceExtension {
 
     @LDAP(noContainerNode = true, distinguishingField = "hl7ApplicationName")
     @ConfigurableProperty(name="hl7Apps", label = "HL7 Applications")
-    private Map<String, HL7Application> hl7apps = new LinkedHashMap<String, HL7Application>();
+    private Map<String, HL7Application> hl7apps = new TreeMap<String, HL7Application>();
 
     private transient HL7MessageListener hl7MessageListener;
 

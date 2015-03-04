@@ -377,7 +377,7 @@ public class DicomInputStream extends FilterInputStream
         StreamUtils.readFully(this, b, off, len);
     }
 
-    public void readHeader() throws IOException {
+    public int readHeader() throws IOException {
         byte[] buf = buffer;
         tagPos = pos; 
         readFully(buf, 0, 8);
@@ -392,7 +392,7 @@ public class DicomInputStream extends FilterInputStream
                 vr = VR.valueOf(ByteUtils.bytesToVR(buf, 4));
                 if (vr.headerLength() == 8) {
                     length = ByteUtils.bytesToUShort(buf, 6, bigEndian);
-                    return;
+                    return tag;
                 }
                 readFully(buf, 4, 4);
             } else {
@@ -400,6 +400,7 @@ public class DicomInputStream extends FilterInputStream
             }
         }
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
+        return tag;
     }
 
     public Attributes readCommand() throws IOException {

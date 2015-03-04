@@ -47,6 +47,7 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.DatePrecision;
 import org.dcm4che3.data.DateRange;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.junit.Test;
@@ -221,14 +222,25 @@ public class AttributesTest {
         Attributes a = new Attributes();
         a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
         a.setDate(Tag.StudyDateAndTime, new Date(0));
+        a.setString(Tag.PatientBirthDate, VR.DA, "19700101");
+        a.setString(Tag.PatientBirthTime, VR.TM, "000000.000");
+        a.setString(Tag.ContextGroupVersion, VR.DT, "19700101");
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("000000.000", a.getString(Tag.StudyTime));
+
         a.setTimezoneOffsetFromUTC("+0100");
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("010000.000", a.getString(Tag.StudyTime));
+        assertEquals("19700101", a.getString(Tag.PatientBirthDate));
+        assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
+        assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
+
         a.setTimezoneOffsetFromUTC("-0100");
         assertEquals("19691231", a.getString(Tag.StudyDate));
         assertEquals("230000.000", a.getString(Tag.StudyTime));
+        assertEquals("19700101", a.getString(Tag.PatientBirthDate));
+        assertEquals("000000.000", a.getString(Tag.PatientBirthTime));
+        assertEquals("19700101", a.getString(Tag.ContextGroupVersion));
     }
 
 
@@ -236,16 +248,19 @@ public class AttributesTest {
     public void testDateRangeSetTimezoneOffsetFromUTC() throws Exception {
         Attributes a = new Attributes();
         a.setDefaultTimeZone(DateUtils.timeZone("+0000"));
-        a.setDateRange(Tag.StudyDateAndTime,
-                new DateRange(new Date(0), new Date(3600000 * 12)));
+        DateRange range = new DateRange(new Date(0), new Date(3600000 * 12));
+        a.setDateRange(Tag.StudyDateAndTime, range);
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("000000.000-120000.000", a.getString(Tag.StudyTime));
+        assertEquals(range, a.getDateRange(Tag.StudyDateAndTime));
         a.setTimezoneOffsetFromUTC("-0100");
         assertEquals("19691231-19700101", a.getString(Tag.StudyDate));
         assertEquals("230000.000-110000.000", a.getString(Tag.StudyTime));
+        assertEquals(range, a.getDateRange(Tag.StudyDateAndTime));
         a.setTimezoneOffsetFromUTC("+0100");
         assertEquals("19700101", a.getString(Tag.StudyDate));
         assertEquals("010000.000-130000.000", a.getString(Tag.StudyTime));
+        assertEquals(range, a.getDateRange(Tag.StudyDateAndTime));
     }
 
     @Test
@@ -265,6 +280,138 @@ public class AttributesTest {
         assertEquals(5, modified.size());
         assertEquals("AccessionNumber", modified.getString(Tag.AccessionNumber));
         assertModified(modified);
+    }
+
+    @Test
+    public void testDiffInAnotInBNoPrivate() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        Attributes diff = a.diff(b, true);
+        assertTrue(diff.getString(Tag.SeriesInstanceUID).equalsIgnoreCase("2"));
+        assertTrue(diff.getString(Tag.SOPInstanceUID).equalsIgnoreCase("3"));
+    }
+
+    @Test
+    public void testDiffInBNotInASamePrivateAttrs() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(0x20011001,VR.LO,"Some Prop Attr");
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        a.setString(0x20010010,VR.LO,"vendor1");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        b.setString(Tag.PatientID, VR.LO, "4");
+        b.setString(0x20010010,VR.LO,"vendor1");
+        b.setString(0x20011001,VR.LO,"Some Prop Attr");
+        Attributes diff = b.diff(a, false);
+        
+        assertTrue(diff.getString(Tag.PatientID).equalsIgnoreCase("4"));
+    }
+
+    @Test
+    public void testDiffInBNotInADifferentPrivateCreator() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(0x20011001,VR.LO,"Some Prop Attr");
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        a.setString(0x20010010,VR.LO,"vendorx");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        b.setString(Tag.PatientID, VR.LO, "4");
+        b.setString(0x20010010,VR.LO,"vendory");
+        b.setString(0x20011001,VR.LO,"Some Prop Attr");
+        Attributes diff = b.diff(a, false);
+        
+        assertTrue(diff.getString(0x20010010).equalsIgnoreCase("vendory"));
+        assertTrue(diff.getString(0x20011001).equalsIgnoreCase("Some Prop Attr"));
+    }
+
+    @Test
+    public void testDiffBothNoPrivate() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        b.setString(Tag.PatientID, VR.LO, "4");
+        
+        Attributes diff = a.diff(b, true);
+        assertTrue(diff.getString(Tag.SeriesInstanceUID).equalsIgnoreCase("2"));
+        assertTrue(diff.getString(Tag.SOPInstanceUID).equalsIgnoreCase("3"));
+        assertTrue(diff.getString(Tag.PatientID).equalsIgnoreCase("4"));
+    }
+
+    @Test
+    public void testDiffBothDifferentPrivateCreator() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+        
+        a.setString(0x20011001,VR.LO,"Some Prop Attr");
+        a.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        a.setString(Tag.SeriesInstanceUID, VR.UI, "2");
+        a.setString(Tag.SOPInstanceUID, VR.UI, "3");
+        a.setString(0x20010010,VR.LO,"vendorx");
+        
+        b.setString(Tag.StudyInstanceUID, VR.UI, "1");
+        b.setString(Tag.PatientID, VR.LO, "4");
+        b.setString(0x20010010,VR.LO,"vendory");
+        b.setString(0x20011001,VR.LO,"Some Prop Attr");
+        Attributes diff = b.diff(a, true);
+        
+        assertTrue(diff.getString(Tag.SeriesInstanceUID).equalsIgnoreCase("2"));
+        assertTrue(diff.getString(Tag.SOPInstanceUID).equalsIgnoreCase("3"));
+        assertTrue(diff.getString(Tag.PatientID).equalsIgnoreCase("4"));
+        assertTrue(diff.getString(0x20010010).equalsIgnoreCase("vendory"));
+        assertTrue(diff.getString(0x20011001).equalsIgnoreCase("Some Prop Attr"));
+        assertTrue(diff.getString(0x20010011).equalsIgnoreCase("vendorx"));
+        assertTrue(diff.getString(0x20011101).equalsIgnoreCase("Some Prop Attr"));
+        
+    }
+
+    @Test
+    public void testAddWithoutBulkData() {
+        Attributes a = new Attributes();
+        Attributes b = new Attributes();
+
+        a.setInt(Tag.BitsAllocated, VR.US, 8);
+        a.setBytes(Tag.PixelData, VR.OW, new byte[1000]);
+
+        Attributes wfItem = new Attributes();
+        wfItem.setString(Tag.WaveformOriginality, VR.CS, "ORIGINAL");
+        wfItem.setBytes(Tag.WaveformData, VR.OB, new byte[1000]);
+
+        Sequence wfSeq = a.newSequence(Tag.WaveformSequence, 1);
+        wfSeq.add(wfItem);
+
+        a.setString("org.dcm4che", 0x99990001, VR.SH, "test");
+
+        b.addWithoutBulkData(a, BulkDataDescriptor.DEFAULT);
+
+        assertEquals(8, b.getInt(Tag.BitsAllocated, 0));
+        assertFalse(b.contains(Tag.PixelData));
+
+        Attributes wfItem2 = b.getNestedDataset(Tag.WaveformSequence);
+        assertNotNull(wfItem2);
+        assertEquals("ORIGINAL", wfItem2.getString(Tag.WaveformOriginality));
+        assertFalse(wfItem2.contains(Tag.WaveformData));
+
+        assertEquals("org.dcm4che", b.getString(0x99990010));
+        assertEquals("test", b.getString(0x99991001));
     }
 
     private void assertModified(Attributes modified) {

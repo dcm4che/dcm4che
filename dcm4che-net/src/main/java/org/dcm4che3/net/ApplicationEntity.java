@@ -46,6 +46,7 @@ import java.util.*;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.AAbort;
@@ -83,7 +84,7 @@ public class ApplicationEntity implements Serializable {
 
     private Device device;
 
-    @ConfigurableProperty(name="dicomAETitle")
+    @ConfigurableProperty(name="dicomAETitle" , tags = Tag.PRIMARY)
     private String AETitle;
 
     @ConfigurableProperty(name="dicomDescription")
@@ -112,7 +113,7 @@ public class ApplicationEntity implements Serializable {
             new LinkedHashSet<String>();
 
     // Connections are dereferenced by DicomConfiguration
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true)
+    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true, tags = Tag.PRIMARY)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
     /**
@@ -120,16 +121,17 @@ public class ApplicationEntity implements Serializable {
      */
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(  name = "dcmTransferCapability",
-                            description = "DICOM Transfer Capabilities")
+                            description = "DICOM Transfer Capabilities",
+                            tags = Tag.PRIMARY)
     private Collection<TransferCapability> transferCapabilities;
 
     // populated/collected by transferCapabilities' setter/getter
-    private final HashMap<String, TransferCapability> scuTCs =
-            new LinkedHashMap<String, TransferCapability>();
+    private final Map<String, TransferCapability> scuTCs =
+            new TreeMap<String, TransferCapability>();
 
     // populated/collected by transferCapabilities' setter/getter
-    private final HashMap<String, TransferCapability> scpTCs =
-            new LinkedHashMap<String, TransferCapability>();
+    private final Map<String, TransferCapability> scpTCs =
+            new TreeMap<String, TransferCapability>();
 
     private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
             new HashMap<Class<? extends AEExtension>,AEExtension>();
@@ -555,7 +557,7 @@ public class ApplicationEntity implements Serializable {
         return scu ? tcscp : tcscu;
     }
 
-    private TransferCapability getTC(HashMap<String, TransferCapability> tcs,
+    private TransferCapability getTC(Map<String, TransferCapability> tcs,
             String asuid, AAssociateRQ rq) {
         TransferCapability tc = tcs.get(asuid);
         if (tc != null)
@@ -626,13 +628,20 @@ public class ApplicationEntity implements Serializable {
 
     public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
             throws IncompatibleConnectionException {
+        CompatibleConnection cc = null;
         for (Connection remoteConn : remote.connections)
             if (remoteConn.isInstalled() && remoteConn.isServer())
                 for (Connection conn : connections)
-                    if (conn.isInstalled() && conn.isCompatible(remoteConn))
-                        return new CompatibleConnection(conn, remoteConn);
-        throw new IncompatibleConnectionException(
-                "No compatible connection to " + remote + " available on " + this);
+                    if (conn.isInstalled() && conn.isCompatible(remoteConn)) {
+                        if (cc == null
+                                || conn.isTls()
+                                || conn.getProtocol() == Connection.Protocol.SYSLOG_TLS)
+                            cc = new CompatibleConnection(conn, remoteConn);
+                    }
+        if (cc == null)
+            throw new IncompatibleConnectionException(
+                    "No compatible connection to " + remote + " available on " + this);
+        return cc;
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)

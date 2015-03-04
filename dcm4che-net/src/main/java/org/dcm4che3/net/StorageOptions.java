@@ -49,7 +49,7 @@ import org.dcm4che3.net.pdu.ExtendedNegotiation;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@LDAP(objectClasses = "dcmTransferCapability")
+@LDAP
 @ConfigurableClass
 public class StorageOptions implements Serializable {
 
@@ -101,14 +101,23 @@ public class StorageOptions implements Serializable {
         }
     };
 
-    @ConfigurableProperty(name="dcmStorageConformance", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
-    private LevelOfSupport levelOfSupport;
+    @ConfigurableProperty(name="dcmStorageConformance",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "3"
+    )
+    private LevelOfSupport levelOfSupport = LevelOfSupport.UNSPECIFIED;
 
-    @ConfigurableProperty(name="dcmDigitalSignatureSupport", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
-    private DigitalSignatureSupport digitalSignatureSupport;
+    @ConfigurableProperty(name="dcmDigitalSignatureSupport",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "0"
+    )
+    private DigitalSignatureSupport digitalSignatureSupport = DigitalSignatureSupport.UNSPECIFIED;
 
-    @ConfigurableProperty(name="dcmDataElementCoercion", enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL )
-    private ElementCoercion elementCoercion;
+    @ConfigurableProperty(name="dcmDataElementCoercion",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "2"
+    )
+    private ElementCoercion elementCoercion = ElementCoercion.UNSPECIFIED;
 
     public StorageOptions() {
         this(LevelOfSupport.UNSPECIFIED, 

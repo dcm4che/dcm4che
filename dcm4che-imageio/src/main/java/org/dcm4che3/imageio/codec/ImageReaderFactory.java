@@ -136,7 +136,7 @@ public class ImageReaderFactory implements Serializable {
             label = "Image Readers",
             description = "Image readers by transfer syntaxes"
     )
-    private Map<String, ImageReaderParam> map = new LinkedHashMap<String, ImageReaderParam>();
+    private Map<String, ImageReaderParam> map = new TreeMap<String, ImageReaderParam>();
 
     public Map<String, ImageReaderParam> getMap() {
         return map;

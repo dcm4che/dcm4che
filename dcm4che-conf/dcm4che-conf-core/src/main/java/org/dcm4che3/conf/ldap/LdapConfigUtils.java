@@ -46,6 +46,8 @@ import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
+import org.dcm4che3.conf.dicom.DicomPath;
+import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 
 import javax.naming.InvalidNameException;
@@ -247,7 +249,7 @@ public class LdapConfigUtils {
                             extName = pathItem.get("$name").toString();
                         }
 
-                        currentClass = getExtensionClassBySimpleName(ldapStorage, extName);
+                        currentClass = ConfigIterators.getExtensionClassBySimpleName(extName, ldapStorage.getAllExtensionClasses());
 
                         LDAP ldapanno = (LDAP) currentClass.getAnnotation(LDAP.class);
                         if (ldapanno == null || !ldapanno.noContainerNode()) {
@@ -276,53 +278,88 @@ public class LdapConfigUtils {
         return objectClasses;
     }
 
+    public static String ldapDnToRef(String dn, AnnotatedConfigurableProperty property,  LdapConfigurationStorage ldapStorage) {
+        if (property.getRawClass().equals(Connection.class))
+            return connectionLdapDnToRef(dn, ldapStorage);
+        else if (property.getRawClass().equals(Device.class))
+            return deviceLdapDnToRef(dn, ldapStorage);
+        else
+            throw new IllegalArgumentException("Cannot convert dn to reference. DN: " + dn);
+    }
 
+    public static String deviceLdapDnToRef(String dn, LdapConfigurationStorage ldapStorage) {
+        try {
+            List<Rdn> rdns = validateDicomDNAndGetRdns(dn, ldapStorage);
+            String deviceName = (String) rdns.get(2).getValue();
+
+            return DicomPath.DeviceByNameRef.set("deviceName", deviceName).path();
+
+        } catch (InvalidNameException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
     public static String connectionLdapDnToRef(String dn, LdapConfigurationStorage ldapStorage) {
         try {
 
-            String baseDN = ldapStorage.getBaseDN();
-            List<Rdn> rdns = LdapConfigUtils.getNonBaseRdns(dn, baseDN);
-
-            if (!rdns.get(0).toString().equals("cn=DICOM Configuration") ||
-                    !rdns.get(1).toString().equals("cn=Devices") ||
-                    !rdns.get(2).getType().equals("dicomDeviceName")
-                    ) throw new IllegalArgumentException("Invalid dn " + dn);
+            List<Rdn> rdns = validateDicomDNAndGetRdns(dn, ldapStorage);
 
             String deviceName = (String) rdns.get(2).getValue();
 
-
             Attributes attributes = rdns.get(3).toAttributes();
-            ArrayList<String> predicates = new ArrayList<String>();
 
             if (attributes.get("cn") != null)
-                predicates.add("cn='" + escapeApos(attributes.get("cn").get().toString()) + "'");
+                return DicomPath.ConnectionByCnRef.
+                        set("deviceName", deviceName).
+                        set("cn", attributes.get("cn").get().toString()).path();
+
+            if (attributes.get("dicomHostname") != null && attributes.get("dicomPort") != null)
+                return DicomPath.ConnectionByHostPortRef.
+                        set("deviceName", deviceName).
+                        set("hostName", attributes.get("dicomHostname").get().toString()).
+                        set("port", attributes.get("dicomPort").get().toString()).path();
 
             if (attributes.get("dicomHostname") != null)
-                predicates.add("dicomHostname='" + attributes.get("dicomHostname").get().toString() + "'");
+                return DicomPath.ConnectionByHostRef.
+                        set("deviceName", deviceName).
+                        set("hostName", attributes.get("dicomHostname").get().toString()).path();
 
-            if (attributes.get("dicomPort") != null)
-                predicates.add("dicomPort='" + attributes.get("dicomPort").get().toString() + "'");
 
-            return "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='" + escapeStringFromLdap(deviceName) + "']/dicomConnection[" + StringUtils.join(predicates, ",") + "]";
-
+            throw new IllegalArgumentException("Connection path is not correct");
         } catch (javax.naming.NamingException e) {
             throw new IllegalArgumentException(e);
         }
 
     }
 
-    private static List<Rdn> getNonBaseRdns(String dn, String baseDN) throws InvalidNameException {
+    private static List<Rdn> validateDicomDNAndGetRdns(String dn, LdapConfigurationStorage ldapStorage) throws InvalidNameException {
+        String baseDN = ldapStorage.getBaseDN();
+        List<Rdn> rdns = LdapConfigUtils.getNonBaseRdns(dn, baseDN);
+
+        if (!rdns.get(0).toString().equals("cn=DICOM Configuration") ||
+                !rdns.get(1).toString().equals("cn=Devices") ||
+                !rdns.get(2).getType().equals("dicomDeviceName")
+                ) throw new IllegalArgumentException("Invalid dn " + dn);
+        return rdns;
+    }
+
+    public static List<Rdn> getNonBaseRdns(String dn, String baseDN) throws InvalidNameException {
         LdapName baseDnName = new LdapName(baseDN);
         LdapName name = new LdapName(dn);
 
         // ffd to the interesting part
         List<Rdn> rdns = new LinkedList<Rdn>(name.getRdns());
+        List<Rdn> baseRdns = baseDnName.getRdns();
+
+        return getNonBaseRdns(rdns, baseRdns);
+    }
+
+    public static List<Rdn> getNonBaseRdns(List<Rdn> rdns, List<Rdn> baseRdns) {
         Iterator<Rdn> nameIter = rdns.iterator();
-        Iterator<Rdn> baseIter = baseDnName.getRdns().iterator();
+        Iterator<Rdn> baseIter = baseRdns.iterator();
         while (baseIter.hasNext() && baseIter.next().equals(nameIter.next()))
             nameIter.remove();
         if (baseIter.hasNext())
-            throw new IllegalArgumentException("Dn " + dn + " does not match base dn " + baseDnName);
+            throw new IllegalArgumentException("Dn " + rdns + " does not match base dn " + baseRdns);
         return rdns;
     }
 
@@ -334,21 +371,6 @@ public class LdapConfigUtils {
     private static String escapeStringFromLdap(Object value) {
 
         return escapeApos(value.toString()).replace("\\,", ",");
-    }
-
-    static String LdapDNToRef(String ldapDn) {
-        return ldapDn;
-    }
-
-    static Class<?> getExtensionClassBySimpleName(LdapConfigurationStorage configurationStorage, String extensionSimpleName) throws ClassNotFoundException {
-
-        List<Class<?>> extensionClasses = configurationStorage.getAllExtensionClasses();
-
-        for (Class<?> aClass : extensionClasses) {
-            if (aClass.getSimpleName().equals(extensionSimpleName)) return aClass;
-        }
-
-        throw new ClassNotFoundException();
     }
 
     public static String getSubDn(String dn, AnnotatedConfigurableProperty property) throws ConfigurationException {

@@ -43,9 +43,11 @@ import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -129,7 +131,8 @@ public class DefaultConfigTypeAdapters {
         public T normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
             try {
                 if (metadata.get("type").equals("integer")) {
-
+                    if (configNode == null)
+                        throw new ConfigurationException("No value found for integer property without default");
                     if (configNode.getClass().equals(String.class))
                         return (T) Integer.valueOf((String) configNode);
                     else if (configNode.getClass().equals(Integer.class))
@@ -137,6 +140,9 @@ public class DefaultConfigTypeAdapters {
                     else
                         throw new ClassCastException();
                 } else if (metadata.get("type").equals("boolean")) {
+                    if (configNode == null && property.getType().equals(boolean.class))
+                        throw new ConfigurationException("No value found for boolean property without default");
+
                     // special handling for Boolean's null
                     if (configNode == null || configNode.equals("null")) return null;
 
@@ -148,6 +154,8 @@ public class DefaultConfigTypeAdapters {
                         throw new ClassCastException();
 
                 } else if (metadata.get("type").equals("number")) {
+                    if (configNode == null)
+                        throw new ConfigurationException("No value found for number property without default");
                     if (configNode.getClass().equals(String.class))
                         return (T) Double.valueOf((String) configNode);
                     else if (configNode.getClass().equals(Double.class) ||
@@ -156,6 +164,8 @@ public class DefaultConfigTypeAdapters {
                     else
                         throw new ClassCastException();
                 } else return (T) configNode;
+            } catch (ConfigurationException ce) {
+                throw ce;
             } catch (Exception e) {
                 throw new ConfigurationException("Cannot parse node " + configNode, e);
             }
@@ -206,16 +216,13 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Enum<?> fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            if (configNode == null)
-                return null;
+
             try {
-                ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
-                ConfigurableProperty.EnumRepresentation howToRepresent = anno == null ? ConfigurableProperty.EnumRepresentation.STRING : anno.enumRepresentation();
+                ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
                 switch (howToRepresent) {
                     case ORDINAL:
-                        Method valuesMethod = ((Class) property.getType()).getMethod("values");
-                        Enum[] vals = (Enum[]) valuesMethod.invoke(null);
-                        return vals[(Integer)configNode];
+                        Enum[] vals = getEnumValues(property);
+                        return vals[(Integer) configNode];
                     default:
                     case STRING:
                         Method valueOfMethod = ((Class) property.getType()).getMethod("valueOf", String.class);
@@ -227,16 +234,20 @@ public class DefaultConfigTypeAdapters {
             }
         }
 
+        private ConfigurableProperty.EnumRepresentation getEnumRepresentation(AnnotatedConfigurableProperty property) {
+            ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
+            return anno == null ? ConfigurableProperty.EnumRepresentation.STRING : anno.enumRepresentation();
+        }
+
+        private Enum[] getEnumValues(AnnotatedConfigurableProperty property) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            Method valuesMethod = ((Class) property.getType()).getMethod("values");
+            return (Enum[]) valuesMethod.invoke(null);
+        }
+
         @Override
         public Object toConfigNode(Enum<?> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
 
-            if (object == null) return null;
-
-            ConfigurableProperty anno = property.getAnnotation(ConfigurableProperty.class);
-            ConfigurableProperty.EnumRepresentation howToRepresent;
-            if (anno != null) howToRepresent = anno.enumRepresentation();
-            else
-                howToRepresent = ConfigurableProperty.EnumRepresentation.STRING;
+            ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
 
             switch (howToRepresent) {
                 case ORDINAL:
@@ -249,16 +260,50 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            Map<String, Object> metadata = new HashMap<String, Object>();
-            metadata.put("type", "enum");
-            //TODO!!! options, ordinal/string
-            return metadata;
+            try {
+                Map<String, Object> metadata = new HashMap<String, Object>();
+
+                // if there is no default, then this enum supports null
+                if (property.getAnnotation(ConfigurableProperty.class).defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                    ArrayList<String> types = new ArrayList<String>();
+                    types.add("enum");
+                    types.add("null");
+                    metadata.put("type", types);
+                } else
+                    metadata.put("type", "enum");
+
+
+
+                metadata.put("class", property.getRawClass().getSimpleName());
+
+                ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);
+                List<String> enumStringValues = new ArrayList<String>();
+
+                for (Enum anEnum : getEnumValues(property)) enumStringValues.add(anEnum.toString());
+
+                if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.STRING)) {
+                    metadata.put("enum", enumStringValues);
+                } else if (howToRepresent.equals(ConfigurableProperty.EnumRepresentation.ORDINAL)) {
+                    // for ordinal representation - create array of ints with appropriate length, and add a clarifying array with names
+                    List<Integer> vals = new ArrayList<Integer>();
+
+                    for (int i = 0; i<getEnumValues(property).length;i++) vals.add(i);
+                    metadata.put("enum", vals);
+                    metadata.put("enumStrValues", enumStringValues);
+                }
+
+                metadata.put("enumRepresentation", howToRepresent.toString());
+
+                return metadata;
+            } catch (Exception e) {
+                throw new ConfigurationException("Schema export for enum property " + property.getAnnotatedName() + " failed");
+            }
         }
 
         @Override
         public Object normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-            //TODO: validate ?
-            if (configNode == null) return null;//throw new ConfigurationException("null not allowed for enum");
+
+            if (configNode == null) return null;
             switch (property.getAnnotation(ConfigurableProperty.class).enumRepresentation()) {
                 case ORDINAL:
                     try {
@@ -279,6 +324,7 @@ public class DefaultConfigTypeAdapters {
             }
         }
     }
+
 
     public static Map<Class, ConfigTypeAdapter> defaultTypeAdapters;
 
@@ -301,15 +347,15 @@ public class DefaultConfigTypeAdapters {
         defaultTypeAdapters.put(Double.class, doubleAdapter);
         defaultTypeAdapters.put(Float.class, doubleAdapter);
 
-        defaultTypeAdapters.put(Map.class, new MapTypeAdapter());
-        defaultTypeAdapters.put(Set.class, new CollectionTypeAdapter<Set>(LinkedHashSet.class));
-        defaultTypeAdapters.put(EnumSet.class, new CollectionTypeAdapter<Set>(HashSet.class));
-        defaultTypeAdapters.put(List.class, new CollectionTypeAdapter<List>(ArrayList.class));
-        defaultTypeAdapters.put(Collection.class, new CollectionTypeAdapter<List>(ArrayList.class));
-        defaultTypeAdapters.put(Enum.class, new EnumTypeAdapter());
+        defaultTypeAdapters.put(Map.class, new NullToNullDecorator(new MapTypeAdapter()));
+        defaultTypeAdapters.put(Set.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(LinkedHashSet.class)));
+        defaultTypeAdapters.put(EnumSet.class, new NullToNullDecorator(new CollectionTypeAdapter<Set>(LinkedHashSet.class)));
+        defaultTypeAdapters.put(List.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
+        defaultTypeAdapters.put(Collection.class, new NullToNullDecorator(new CollectionTypeAdapter<List>(ArrayList.class)));
+        defaultTypeAdapters.put(Enum.class, new NullToNullDecorator(new EnumTypeAdapter()));
 
-        defaultTypeAdapters.put(TimeZone.class, new TimeZoneTypeAdapter());
-        defaultTypeAdapters.put(TimeZone.class, new TimeUnitTypeAdapter());
+        defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeZoneTypeAdapter()));
+        defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeUnitTypeAdapter()));
 
     }
 

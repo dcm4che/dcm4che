@@ -47,21 +47,24 @@ import java.util.Map;
 /**
  * Denotes a configuration source. Can be used by BeanVitalizer that creates POJOs, or configuration administration app that provides UI to edit configuration.
  * <br/> <br/>
+ * The Configuration API operates on a tree data structure, where any subtree is referred to as a configuration node.
+ * A configuration node represents a JSON object. A configuration node is either
  * <ul>
- * Configuration node is either
  * <li> a primitive wrapper/string (Integer, Boolean, Float, String)</li>
  * <li> null</li>
  * <li> a collection of nodes </li>
  * <li> Map&lt;String,Object&gt; where each object is a configuration node (single map can have values of multiple types.</li>
  * </ul>
+ * Formally, if such a node object is serialized into JSON and back without any transformations applied, the resulting object should be deep-equal to the original one.
  * <p/>
- * Clustering?
+ * A <i>path</i> is a valid XPath expression evaluated against the configuration tree. The usage of advanced XPath expressions is strongly discouraged, since it could lead to eager loading of configuration tree.
+ * Examples of paths can be found in o\rg.dcm4che3.conf.dicom.DicomPath. A helper class org.dcm4che3.conf.core.util.PathPattern can be used to safely compose parameterized paths.
  */
 public interface Configuration {
 
     /**
-     * The returned node must not be modified directly (only through persistNode/removeNode).
-     * Thread-safe.
+     * Return the root of the configuration tree.
+     * The returned node should not be modified directly (only through persistNode/removeNode).
      *
      * @return configuration tree
      * @throws ConfigurationException
@@ -69,7 +72,7 @@ public interface Configuration {
     Map<String, Object> getConfigurationRoot() throws ConfigurationException;
 
     /**
-     *
+     * Loads a configuration node under the specified path.
      * @param path A reference to a node
      * @param configurableClass
      * @return configuration node or null, if not found
@@ -78,6 +81,7 @@ public interface Configuration {
     Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException;
 
     /**
+     * UNSTABLE. NOT YET PROPERLY DEFINED. COULD BE RESTRUCTURED IN NEAR FUTURE.
      * Returns the class that was used to persist the node using persistNode
      *
      * @param path
@@ -86,22 +90,22 @@ public interface Configuration {
      */
     Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException;
 
+    /**
+     * Tests if a node under the specified path exists.
+     * @param path
+     * @return
+     * @throws ConfigurationException
+     */
     boolean nodeExists(String path) throws ConfigurationException;
 
     /**
      * Persists the configuration node to the specified path.
      * The path must exist (or at least all nodes but the last one).
      * The property is created/fully overwritten, i.e. if there were any child nodes in the old root that are not present in the new node root, they will be deleted in the new tree.
-     * <br/>
-     * <p><h2>Defaults:</h2>
-     * The property values that are equal to default values are be filtered, i.e. not persisted.
-     * <p/>
-     * </p>
      *
      * @param path              path to the node
      * @param configNode        configuration node to persist
      * @param configurableClass class annotated with ConfigurableClass, ConfigurableProperty annotations that corresponds to this node.
-     *                          This parameter is required e.g., by LDAP backend to provide additional metadata like ObjectClasses and LDAP node hierarchy relations.
      */
     void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException;
 
@@ -115,14 +119,14 @@ public interface Configuration {
     void refreshNode(String path) throws ConfigurationException;
 
     /**
-     * Removes a configuration node with all its children permanently
+     * Removes a configuration node under the specified path with all its children permanently
      *
      * @param path
      */
     void removeNode(String path) throws ConfigurationException;
 
     /**
-     * Returns configNodes
+     * Performs a search on the configuration tree and returns an iterator to configuration nodes that satisfy the search criteria.
      *
      * @param liteXPathExpression Must be absolute path, no double slashes, no @attributes (only [attr=val] or [attr<>val])
      */

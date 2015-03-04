@@ -157,8 +157,11 @@ public class AuditLogger extends DeviceExtension {
     };
     private static volatile AuditLogger defaultLogger;
 
-    @LDAP(storedAsReference = true)
-    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference")
+    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
+            label = "ARR Device",
+            description = "Device which provides the Audit Record Repository to which audit messages are sent",
+            tags = ConfigurableProperty.Tag.PRIMARY,
+            isReference = true)
     private Device auditRecordRepositoryDevice;
 
     @ConfigurableProperty(
@@ -251,7 +254,11 @@ public class AuditLogger extends DeviceExtension {
     private final List<AuditSuppressCriteria> suppressAuditMessageFilters =
             new ArrayList<AuditSuppressCriteria>(0);
 
-    @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true)
+    @ConfigurableProperty(name = "dicomNetworkConnectionReference",
+            label = "Connections",
+            description = "Connections that can be used to send audit messages",
+            tags = ConfigurableProperty.Tag.PRIMARY,
+            collectionOfReferences = true)
     private List<Connection> connections = new ArrayList<Connection>(1);
 
     private transient MessageBuilder builder;

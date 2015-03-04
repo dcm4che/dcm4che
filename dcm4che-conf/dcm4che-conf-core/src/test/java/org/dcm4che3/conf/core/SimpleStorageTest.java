@@ -41,12 +41,17 @@ package org.dcm4che3.conf.core;
 
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.misc.DeepEqualsDiffer;
+import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
+import org.dcm4che3.conf.dicom.CommonDicomConfigurationWithHL7;
+import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,8 +63,28 @@ import java.util.Map;
 @RunWith(JUnit4.class)
 public class SimpleStorageTest {
 
-    public static Configuration getConfigurationStorage() {
-        return new SingleJsonFileConfigurationStorage("target/tst.json");
+    public static Configuration getConfigurationStorage() throws ConfigurationException {
+
+        CommonDicomConfigurationWithHL7 configurationWithHL7 = createCommonDicomConfiguration();
+        return configurationWithHL7.getConfigurationStorage();
+    }
+
+    public static CommonDicomConfigurationWithHL7 createCommonDicomConfiguration() throws ConfigurationException {
+        if (System.getProperty("org.dcm4che.conf.filename") == null)
+            System.setProperty("org.dcm4che.conf.filename", "target/config.json");
+
+
+        DicomConfigurationBuilder builder = DicomConfigurationBuilder.newConfigurationBuilder(System.getProperties());
+        builder.registerDeviceExtension(HL7DeviceExtension.class);
+        return builder.build();
+    }
+
+
+    public static Configuration getMockDicomConfStorage() {
+        URL resource = Thread.currentThread().getContextClassLoader().getResource("mockConfig.json");
+        String path = resource.getPath();
+        SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage(path);
+        return new CachedRootNodeConfiguration(storage);
     }
 
     @Test
@@ -79,8 +104,6 @@ public class SimpleStorageTest {
         p3.put("p2", p2);
 
         xCfg.persistNode("/", p3, null);
-
-        xCfg = getConfigurationStorage();
 
         DeepEqualsDiffer.assertDeepEquals("Stored config node must be equal to the one loaded", p3, xCfg.getConfigurationNode("/", null ));
 
@@ -122,7 +145,7 @@ public class SimpleStorageTest {
 
         Map<String, Object> p1 = new HashMap<String, Object>();
         p1.put("dicomDevicesRoot", p2);
-        p1.put("Unique AE Titles Registry", "I am cool");
+        p1.put("Unique AE Titles Registry", "I am a cool AppEntity");
 
         Map<String, Object> p3 = new HashMap<String, Object>();
         p3.put("dicomConfigurationRoot", p1);

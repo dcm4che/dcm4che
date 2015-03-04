@@ -48,7 +48,9 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Reflective adapter that handles classes with ConfigurableClass annotations.<br/>
@@ -99,7 +101,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, vitalizer);
                 PropertyUtils.setSimpleProperty(confObj, fieldProperty.getName(), fieldValue);
             } catch (Exception e) {
-                throw new ConfigurationException("Error while reading configuration field '" + fieldProperty.getName() + "' in class " + clazz.getSimpleName(), e);
+                throw new ConfigurationException("Error while reading configuration property '" + fieldProperty.getAnnotatedName() + "' (field "+fieldProperty.getName()+") in class " + clazz.getSimpleName(), e);
             }
 
         // iterate over setters
@@ -129,7 +131,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
         Class<T> clazz = (Class<T>) object.getClass();
 
-        Map<String, Object> configNode = new HashMap<String, Object>();
+        Map<String, Object> configNode = new TreeMap<String, Object>();
 
         // get data from all the configurable fields
         for (AnnotatedConfigurableProperty fieldProperty : ConfigIterators.getAllConfigurableFields(clazz)) {
@@ -160,20 +162,42 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         classMetaDataWrapper.put("type", "object");
         classMetaDataWrapper.put("class", clazz.getSimpleName());
 
+        // find out if we need to include uiOrder metadata
+        boolean includeOrder = false;
+        for (AnnotatedConfigurableProperty configurableChildProperty : ConfigIterators.getAllConfigurableFieldsAndSetterParameters(clazz))
+            if (configurableChildProperty.getAnnotation(ConfigurableProperty.class).order() != 0) includeOrder = true;
+
+
+        // populate properties
         for (AnnotatedConfigurableProperty configurableChildProperty : ConfigIterators.getAllConfigurableFieldsAndSetterParameters(clazz)) {
 
             ConfigurableProperty propertyAnnotation = configurableChildProperty.getAnnotation(ConfigurableProperty.class);
 
-            Map<String, Object> childPropertyMetadata = new HashMap<String, Object>();
+            ConfigTypeAdapter childAdapter = vitalizer.lookupTypeAdapter(configurableChildProperty);
+            Map<String, Object> childPropertyMetadata = new LinkedHashMap<String, Object>();
             classMetaData.put(configurableChildProperty.getAnnotatedName(), childPropertyMetadata);
-            childPropertyMetadata.put("title", propertyAnnotation.label());
-            childPropertyMetadata.put("description", propertyAnnotation.description());
-            // TODO: default value should be converted to proper type
-            childPropertyMetadata.put("default", propertyAnnotation.defaultValue());
+
+            if (!propertyAnnotation.label().equals(""))
+                childPropertyMetadata.put("title", propertyAnnotation.label());
+
+            if (!propertyAnnotation.description().equals(""))
+                childPropertyMetadata.put("description", propertyAnnotation.description());
+            try {
+                if (!propertyAnnotation.defaultValue().equals(ConfigurableProperty.NO_DEFAULT_VALUE))
+                    childPropertyMetadata.put("default", childAdapter.normalize(propertyAnnotation.defaultValue(), configurableChildProperty, vitalizer));
+            } catch (ClassCastException e) {
+                childPropertyMetadata.put("default", 0);
+            }
+            if (!configurableChildProperty.getTags().isEmpty())
+                childPropertyMetadata.put("tags", configurableChildProperty.getTags());
+
+            if (includeOrder)
+                childPropertyMetadata.put("uiOrder",propertyAnnotation.order());
+
+            childPropertyMetadata.put("uiGroup",propertyAnnotation.group());
 
             // also merge in the metadata from this child itself
-            ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(configurableChildProperty);
-            Map<String, Object> childMetaData = adapter.getSchema(configurableChildProperty, vitalizer);
+            Map<String, Object> childMetaData = childAdapter.getSchema(configurableChildProperty, vitalizer);
             if (childMetaData != null) childPropertyMetadata.putAll(childMetaData);
         }
 

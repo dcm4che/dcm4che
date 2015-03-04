@@ -38,11 +38,16 @@
 
 package org.dcm4che3.tool.storescu.test;
 
+import java.util.ArrayList;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.tool.common.test.TestResult;
+
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
- *
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class StoreResult {
+public class StoreResult implements TestResult {
 
 
     private String testDescription;
@@ -52,6 +57,7 @@ public class StoreResult {
     private int filesSent;
     private int warnings;    
     private int failures;
+    private ArrayList<Attributes> cStoreRSPAttributes;
     /**
      * @param testDescription
      * @param fileName
@@ -60,9 +66,10 @@ public class StoreResult {
      * @param filesSent
      * @param warnings
      * @param failures
+     * @param cmdRSP 
      */
     public StoreResult(String testDescription, String fileName, long size,
-            long time, int filesSent, int warnings, int failures) {
+            long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
         super();
         this.testDescription = testDescription;
         this.fileName = fileName;
@@ -71,6 +78,7 @@ public class StoreResult {
         this.filesSent = filesSent;
         this.warnings = warnings;
         this.failures = failures;
+        this.cStoreRSPAttributes = cmdRSP;
     }
     
     public String getTestDescription() {
@@ -93,6 +101,10 @@ public class StoreResult {
     }
     public int getFailures() {
         return failures;
+    }
+
+    public ArrayList<Attributes> getcStoreRSPAttributes() {
+        return cStoreRSPAttributes;
     }
 
 }

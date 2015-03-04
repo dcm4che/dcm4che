@@ -54,24 +54,6 @@ import java.util.Objects;
 @Target(ElementType.FIELD)
 public @interface ConfigurableProperty {
 
-    /**
-     * Just a random string very unlikely to be equal to any user-specified default string (java does not allow to use null...)
-     */
-    public static final String NO_DEFAULT_VALUE = " $#!@@#$@!#$%  Default-value-does-not-exist-for-this-property  $#!@@#$@!#$%";
-
-    /**
-     * Specifies that the annotated field/property is a collection, elements of which are stored as references
-     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/device1")
-     * @return
-     */
-    boolean collectionOfReferences() default false;
-
-    /**
-     * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings)
-     * @return
-     */
-    boolean required() default false;
-
     public enum EnumRepresentation {
         ORDINAL,
         STRING
@@ -85,13 +67,6 @@ public @interface ConfigurableProperty {
     String name() default "";
 
     /**
-     * Default for primitives (int, string, boolean). If default is not specified, the property is considered required.
-     * For specifying whether an Object-typed property is not allowed to be null, use @NotNull
-     * @return
-     */
-    String defaultValue() default NO_DEFAULT_VALUE;
-
-    /**
      * Label to show in configuration UIs. If empty empty string (default), the name will be used.
      * @return
      */
@@ -103,5 +78,62 @@ public @interface ConfigurableProperty {
      */
     String description() default "";
 
+    /**
+     * Just a random string very unlikely to be equal to any user-specified default string (java does not allow to use null...)
+     */
+    public static final String NO_DEFAULT_VALUE = " $#!@@#$@!#$%  Default-value-does-not-exist-for-this-property  $#!@@#$@!#$%";
+
+
+    /**
+     * Default for primitives (int, string, boolean). If default is not specified, the property is considered required.
+     * For specifying whether an Object-typed property is not allowed to be null, use @NotNull
+     * @return
+     */
+    String defaultValue() default NO_DEFAULT_VALUE;
+
+    /**
+     * Specifies that the annotated field/property is a collection, elements of which are stored as references
+     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
+     * @return
+     */
+    boolean collectionOfReferences() default false;
+
+    /**
+     * Specifies that the annotated field/property is a reference
+     * @return
+     */
+    boolean isReference() default false;
+
+    /**
+     * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings
+     * @return
+     */
+    boolean required() default false;
+
     EnumRepresentation enumRepresentation() default EnumRepresentation.STRING;
+
+    public enum Tag {
+        /**
+         * Non-required properties could be put into a "advanced..." tab to simplify the view.
+         * This tag indicates that the property is should never be hidden from the user with such technique.
+         */
+        PRIMARY
+    }
+
+    /**
+     * Ordering of properties for GUI. The larger the number, the lower in the list the property will be displayed.
+     * @return
+     */
+    int order() default 0;
+
+    /**
+     * Name of the group this property belong to
+     */
+    String group() default "Other";
+
+    /**
+     * Additional info for the GUI
+     * @return
+     */
+    Tag[] tags() default {};
 }

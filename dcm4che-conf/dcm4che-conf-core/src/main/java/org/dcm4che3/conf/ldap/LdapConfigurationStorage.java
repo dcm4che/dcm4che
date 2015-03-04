@@ -42,11 +42,17 @@ package org.dcm4che3.conf.ldap;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
+import org.dcm4che3.conf.dicom.DicomPath;
 
-import javax.naming.*;
+import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import java.util.*;
 
 
@@ -54,29 +60,26 @@ public class LdapConfigurationStorage implements Configuration {
 
     private final String baseDN;
     private final InitialDirContext ldapCtx;
-    private final List<Class<?>> allExtensionClasses = new ArrayList<Class<?>>();
+    private final List<Class<?>> allExtensionClasses;
 
     public List<Class<?>> getAllExtensionClasses() {
         return allExtensionClasses;
     }
 
-    public LdapConfigurationStorage(Hashtable<?, ?> env)
+    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses)
             throws ConfigurationException {
-         try {
+        this.allExtensionClasses = allExtensionClasses;
+        try {
             Hashtable env_ = (Hashtable) env.clone();
             String e = (String) env.get("java.naming.provider.url");
             int end = e.lastIndexOf('/');
             env_.put("java.naming.provider.url", e.substring(0, end));
             this.baseDN = e.substring(end + 1);
+            //TODO: what happens when LDAP goes down and up again while app is running?
             this.ldapCtx = new InitialDirContext(env_);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
-    }
-
-    public LdapConfigurationStorage addExtensionClass(Class<?> clazz) {
-        allExtensionClasses.add(clazz);
-        return this;
     }
 
     public synchronized void destroySubcontextWithChilds(String name) throws NamingException {
@@ -149,12 +152,25 @@ public class LdapConfigurationStorage implements Configuration {
 
     @Override
     public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        throw new RuntimeException("Not implemented yet");
+        throw new RuntimeException("Not implemented");
     }
 
     @Override
     public boolean nodeExists(String path) throws ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
+
+        String dn = LdapConfigUtils.refToLdapDN(path, this);
+
+        try {
+            Object o = ldapCtx.lookup(new LdapName(dn));
+            if (o == null) return false;
+        } catch (NameNotFoundException nnfe) {
+            return false;
+        } catch (NamingException e) {
+            throw new ConfigurationException(e);
+        }
+
+        return true;
+
     }
 
     @Override
@@ -239,8 +255,7 @@ public class LdapConfigurationStorage implements Configuration {
 
     @Override
     public void refreshNode(String path) throws ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
-
+        // noop, there is no cache
     }
 
     @Override
@@ -261,7 +276,104 @@ public class LdapConfigurationStorage implements Configuration {
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
+
+        DicomPath matchingPathType = null;
+        PathPattern.PathParser parser = null;
+        for (DicomPath pathType : DicomPath.values()) {
+            try {
+                parser = pathType.parse(liteXPathExpression);
+                // if we get here, then the corresponding path has been found
+                matchingPathType = pathType;
+                break;
+            } catch (IllegalArgumentException e) {
+                // not this path, try others
+            }
+        }
+
+        if (parser == null)
+            throw new RuntimeException("Ldap config storage does not support this type of query (" + liteXPathExpression + ")");
+
+
+        String devicesDn = LdapConfigUtils.refToLdapDN("/dicomConfigurationRoot/dicomDevicesRoot", this);
+
+        try {
+            SearchControls ctls;
+            NamingEnumeration<SearchResult> search;
+
+            switch (matchingPathType) {
+
+                case DeviceNameByAEName:
+
+                    String aeName = parser.getParam("aeName");
+
+                    ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                    ctls.setReturningObjFlag(false);
+                    ctls.setCountLimit(1);
+                    search = getLdapCtx().search(devicesDn, "(&(objectclass=dicomNetworkAE)(dicomAETitle=" + Rdn.escapeValue(aeName) + "))", ctls);
+
+                    return createSearchIteratorFromNamingEnumeration(search, 2);
+
+                case AllDeviceNames:
+
+                    ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+                    ctls.setReturningObjFlag(false);
+
+                    search = getLdapCtx().search(devicesDn, "objectclass=dicomDevice", ctls);
+
+                    return createSearchIteratorFromNamingEnumeration(search, 2);
+
+                case AllAETitles:
+
+                    ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                    ctls.setReturningObjFlag(false);
+
+                    search = getLdapCtx().search(devicesDn, "objectclass=dcmNetworkAE", ctls);
+
+                    return createSearchIteratorFromNamingEnumeration(search, 3);
+
+
+                case AllHL7AppNames:
+                    ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                    ctls.setReturningObjFlag(false);
+
+                    search = getLdapCtx().search(devicesDn, "objectclass=hl7Application", ctls);
+
+                    return createSearchIteratorFromNamingEnumeration(search, 3);
+
+
+                case DeviceNameByHL7AppName:
+
+                    String hl7AppName = parser.getParam("hl7AppName");
+
+                    ctls = new SearchControls();
+                    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                    ctls.setReturningObjFlag(false);
+
+                    search = getLdapCtx().search(devicesDn, "(&(objectclass=hl7Application)(hl7ApplicationName=" + Rdn.escapeValue(hl7AppName) + "))", ctls);
+
+                    return createSearchIteratorFromNamingEnumeration(search, 2);
+
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            throw new ConfigurationException("Failed to perform LDAP search for query "+liteXPathExpression,e);
+        }
+
+    }
+
+    private Iterator createSearchIteratorFromNamingEnumeration(NamingEnumeration<SearchResult> search, int valIndex) throws NamingException {
+        List<String> searchRes = new ArrayList<String>();
+        while (search.hasMore()) {
+            String nameInNamespace = search.next().getNameInNamespace();
+            List<Rdn> rdns = LdapConfigUtils.getNonBaseRdns(nameInNamespace, baseDN);
+            searchRes.add((String) rdns.get(valIndex).getValue());
+        }
+        return searchRes.iterator();
     }
 
     public String getBaseDN() {

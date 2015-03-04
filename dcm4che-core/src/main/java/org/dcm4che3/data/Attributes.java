@@ -1518,7 +1518,7 @@ public class Attributes implements Serializable {
             } else
                 values[tmIndex] = updateTimeZoneDT(from, to, (String) tm);
         } else {
-            int daTag = TagUtils.daTagOf(tmTag);
+            int daTag = ElementDictionary.getElementDictionary(privateCreatorOf(tmTag)).daTagOf(tmTag);
             int daIndex = daTag != 0 ? indexOf(daTag) : -1;
             Object da = daIndex >= 0 ? decodeStringValue(daIndex) : Value.NULL;
 

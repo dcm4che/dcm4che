@@ -98,6 +98,14 @@ public abstract class ElementDictionary {
 
     public abstract String keywordOf(int tag);
 
+    public int tmTagOf(int daTag) {
+        return 0;
+    }
+
+    public int daTagOf(int tmTag) {
+        return 0;
+    }
+
     public int tagForKeyword(String keyword) {
         if (tagClass != null)
             try {

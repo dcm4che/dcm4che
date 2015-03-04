@@ -66,7 +66,9 @@ import org.slf4j.LoggerFactory;
  */
 
 public class TestToolFactory {
-    
+    public enum MetadataTypes {
+        JSON, XML;
+    }
     public enum TestToolType {
         StoreTool,
         GetTool,

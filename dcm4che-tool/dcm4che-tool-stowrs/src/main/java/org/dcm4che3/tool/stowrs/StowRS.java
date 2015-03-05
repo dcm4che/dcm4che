@@ -54,10 +54,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -66,6 +69,13 @@ import java.net.URL;
 import java.nio.file.Files;
 
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonReaderFactory;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -131,6 +141,8 @@ public class StowRS {
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
 
+    private static boolean multipleFragments;
+
     public StowRS() {
     }
 
@@ -186,8 +198,39 @@ public class StowRS {
                 if (cl.getOptionValue("t").contains("JSON")) {
                     try {
                         metadata = parseJSON(metadataFile.getPath());
+                        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
+                        JsonObject object = loadJSON(metadataFile);
+                        files = extractBlkDataFiles(object);
+                        boolean combine = false;
+                        if(isMultiFrame(metadata)) {
+                            //multiply frames
+                            if(multipleFragments) {
+                                //multiple fragment - reject
+                                LOG.error("Compressed multiframe multi fragment"
+                                        + " is not supported by stow in the DICOM standard");
+                                return;
+                            }
+                            else {
+                                //no fragments, just bulkdatauri
+                                combine = false;
+                            }
+                        }
+                        else {
+                            //single frame
+                            instance.singleFrameMultipleFragmentsURI = UUID.randomUUID().toString();
+                            replaceFragmentsByUri(doc,instance.singleFrameMultipleFragmentsURI);
+                            LOG.info("Single frame multiple fragments, combining fragments");
+                            combine = true;
+                        }
+                        sendMetaDataAndBulkDataXML(instance, metadata, files, combine);
                     } catch (Exception e) {
-                        LOG.error("error parsing metadata file" + e);
+                        LOG.error("error parsing metadata file");
+                        return;
+                    }
+
+                        LOG.info("teeet");
+                      } catch (Exception e) {
+                        LOG.error("error parsing metadata file");
                         return;
                     }
 
@@ -200,6 +243,8 @@ public class StowRS {
                         metadata.addAll(fmi);
                         ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
                         Document doc = loadXml(metadataFile);
+                        files = extractBlkDataFiles(doc);
+                        boolean combine = false;
                         if(isMultiFrame(metadata)) {
                             //multiply frames
                             if(doc.getElementsByTagName("DataFragment").getLength() > 1) {
@@ -210,19 +255,17 @@ public class StowRS {
                             }
                             else {
                                 //no fragments, just bulkdatauri
-                                files = extractBlkDataFiles(doc);
-                                sendMetaDataAndBulkDataXML(instance, metadata, files, false);
+                                combine = false;
                             }
                         }
                         else {
                             //single frame
                             instance.singleFrameMultipleFragmentsURI = UUID.randomUUID().toString();
-                            files = extractBlkDataFiles(doc);
                             replaceFragmentsByUri(doc,instance.singleFrameMultipleFragmentsURI);
                             LOG.info("Single frame multiple fragments, combining fragments");
-                            sendMetaDataAndBulkDataXML(instance, metadata, files, true);
+                            combine = true;
                         }
-
+                        sendMetaDataAndBulkDataXML(instance, metadata, files, combine);
                     } catch (Exception e) {
                         LOG.error("error parsing metadata file");
                         return;
@@ -269,7 +312,15 @@ public class StowRS {
                 }
         }
     }
-
+    private static void replaceFragmentsByUri(JsonObject doc, String uri) {
+        NodeList list = doc.getElementsByTagName("DicomAttribute");
+        for(int i=0 ; i < list.getLength(); i++) {
+            if(list.item(i).hasAttributes())
+                if(list.item(i).getAttributes().getNamedItem("keyword").getNodeValue().equalsIgnoreCase("PixelData")) {
+                    list.item(i).setNodeValue("<BulkData uri="+uri+"/>");
+                }
+        }
+    }
     private static ArrayList<BulkDataChunk> extractBlkDataFiles(Document doc) throws URISyntaxException {
         ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
         NodeList list = doc.getElementsByTagName("BulkData");
@@ -282,6 +333,36 @@ public class StowRS {
         }
         return files;
     }
+    private static ArrayList<BulkDataChunk> extractBlkDataFiles(JsonObject object) throws URISyntaxException {
+        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
+        for (Entry<String, JsonValue> entry : object.entrySet()) {
+            if(entry.getValue().getValueType().equals(ValueType.OBJECT)){
+                JsonObject entryObject = (JsonObject) entry.getValue();
+                if(entryObject.containsKey("BulkDataURI")) {
+                    String fullUri = entryObject.getString("BulkDataURI");
+                    String offset = fullUri.replaceAll(".*\\?", "").replaceAll("\\&.*", "").replaceAll("offset=", "");
+                    String length = fullUri.replaceAll(".*\\?", "").replaceAll(".*\\&", "").replaceAll("length=", "");
+                    String uri = fullUri.split("\\?")[0];
+                    files.add(new BulkDataChunk(fullUri, uri, offset, length, childOfPixelData(object.getJsonObject("7FE00010"),entryObject)));
+                }
+                else if(entryObject.containsKey("DataFragment")) {
+                    multipleFragments = true;
+                    JsonArray entryArray = (JsonArray) entryObject.get("DataFragment");
+                    for(JsonValue value : entryArray) {
+                        JsonObject valueObject = (JsonObject) value;
+                        if(valueObject.containsKey("BulkDataURI")) {
+                            String fullUri = valueObject.getString("BulkDataURI");
+                            String offset = fullUri.replaceAll(".*\\?", "").replaceAll("\\&.*", "").replaceAll("offset=", "");
+                            String length = fullUri.replaceAll(".*\\?", "").replaceAll(".*\\&", "").replaceAll("length=", "");
+                            String uri = fullUri.split("\\?")[0];
+                            files.add(new BulkDataChunk(fullUri, uri, offset, length, childOfPixelData(object.getJsonObject("7FE00010"),valueObject)));
+                        }
+                    }
+                }
+            }
+        }
+        return files;
+    }
 
     private static boolean childOfPixelData(Node item) {
         if(item.getParentNode().getNodeName().equalsIgnoreCase("DataFragment"))
@@ -289,6 +370,19 @@ public class StowRS {
         return item.getParentNode().getAttributes().getNamedItem("keyword").getNodeValue().equalsIgnoreCase("PixelData")? true : false;
     }
 
+    private static boolean childOfPixelData(JsonObject pixelData, JsonObject item) {
+        if(pixelData == null)
+            return false;
+        if(pixelData.containsKey("DataFragment")) {
+            if(pixelData.getJsonArray("DataFragment").contains(item))
+                return true;
+        }
+        else if(pixelData.containsValue(item)) {
+            return true;
+        }
+        return false;
+    }
+    
     private static Document loadXml(File metadataFile) {
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         try {
@@ -303,6 +397,15 @@ public class StowRS {
         } catch (IOException e) {
             throw new IllegalStateException("Error accessing the XML", e);
         }
+    }
+    private static JsonObject loadJSON(File metadataFile) throws FileNotFoundException {
+        Map<String, Object> config = new HashMap<String, Object>();
+        //if you need pretty printing
+        config.put("javax.json.stream.JsonGenerator.prettyPrinting", Boolean.valueOf(true));
+        JsonReaderFactory readerFactory = Json.createReaderFactory(config);
+        JsonReader reader = readerFactory.createReader(new FileInputStream(metadataFile));
+        JsonObject doc = reader.readObject();
+        return doc;
     }
 
     private static boolean isMultiFrame(Attributes metadata) {
@@ -903,11 +1006,11 @@ public class StowRS {
 
     public static Attributes parseJSON(String fname) throws Exception {
         Attributes attrs = new Attributes();
-        parseJSON(fname, attrs);
+        attrs.addAll(parseJSON(fname, attrs));
         return attrs;
     }
 
-    private static JSONReader parseJSON(String fname, Attributes attrs)
+    private static Attributes parseJSON(String fname, Attributes attrs)
             throws IOException {
         @SuppressWarnings("resource")
         InputStream in = fname.equals("-") ? System.in : new FileInputStream(
@@ -916,7 +1019,8 @@ public class StowRS {
             JSONReader reader = new JSONReader(
                     Json.createParser(new InputStreamReader(in, "UTF-8")));
             reader.readDataset(attrs);
-            return reader;
+            Attributes fmi = reader.getFileMetaInformation();
+            return fmi;
         } finally {
             if (in != System.in)
                 SafeClose.close(in);

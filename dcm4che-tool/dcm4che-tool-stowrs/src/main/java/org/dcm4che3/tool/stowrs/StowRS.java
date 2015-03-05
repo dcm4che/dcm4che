@@ -195,6 +195,7 @@ public class StowRS {
                     metadataFile = generateMetaData(cl);
                     instance.generatedMetadata = true;
                 }
+            }
                 if (cl.getOptionValue("t").contains("JSON")) {
                     try {
                         metadata = parseJSON(metadataFile.getPath());
@@ -218,7 +219,7 @@ public class StowRS {
                         else {
                             //single frame
                             instance.singleFrameMultipleFragmentsURI = UUID.randomUUID().toString();
-                            replaceFragmentsByUri(doc,instance.singleFrameMultipleFragmentsURI);
+                           // replaceFragmentsByUri(doc,instance.singleFrameMultipleFragmentsURI);
                             LOG.info("Single frame multiple fragments, combining fragments");
                             combine = true;
                         }
@@ -227,14 +228,9 @@ public class StowRS {
                         LOG.error("error parsing metadata file");
                         return;
                     }
-
-                        LOG.info("teeet");
-                      } catch (Exception e) {
-                        LOG.error("error parsing metadata file");
-                        return;
-                    }
-
-                } else if (cl.getOptionValue("t").contains("XML")) {
+                }
+                      
+                     else if (cl.getOptionValue("t").contains("XML")) {
 
                     try {
                         ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
@@ -277,8 +273,6 @@ public class StowRS {
                             "Bad Type specified for metadata, specify either XML or JSON");
                 }
 
-
-            }
             if (!cl.hasOption("t")) {
                 List<String> files = cl.getArgList();
                 if (files == null)
@@ -312,15 +306,15 @@ public class StowRS {
                 }
         }
     }
-    private static void replaceFragmentsByUri(JsonObject doc, String uri) {
-        NodeList list = doc.getElementsByTagName("DicomAttribute");
-        for(int i=0 ; i < list.getLength(); i++) {
-            if(list.item(i).hasAttributes())
-                if(list.item(i).getAttributes().getNamedItem("keyword").getNodeValue().equalsIgnoreCase("PixelData")) {
-                    list.item(i).setNodeValue("<BulkData uri="+uri+"/>");
-                }
-        }
-    }
+//    private static void replaceFragmentsByUri(JsonObject doc, String uri) {
+//        NodeList list = doc.getElementsByTagName("DicomAttribute");
+//        for(int i=0 ; i < list.getLength(); i++) {
+//            if(list.item(i).hasAttributes())
+//                if(list.item(i).getAttributes().getNamedItem("keyword").getNodeValue().equalsIgnoreCase("PixelData")) {
+//                    list.item(i).setNodeValue("<BulkData uri="+uri+"/>");
+//                }
+//        }
+//    }
     private static ArrayList<BulkDataChunk> extractBlkDataFiles(Document doc) throws URISyntaxException {
         ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
         NodeList list = doc.getElementsByTagName("BulkData");

@@ -126,6 +126,7 @@ public class VRTest {
         assertEquals(0x4c4f, VR.LO.code());
         assertEquals(0x4c54, VR.LT.code());
         assertEquals(0x4f42, VR.OB.code());
+        assertEquals(0x4f44, VR.OD.code());
         assertEquals(0x4f46, VR.OF.code());
         assertEquals(0x4f57, VR.OW.code());
         assertEquals(0x504e, VR.PN.code());
@@ -135,9 +136,11 @@ public class VRTest {
         assertEquals(0x5353, VR.SS.code());
         assertEquals(0x5354, VR.ST.code());
         assertEquals(0x544d, VR.TM.code());
+        assertEquals(0x5543, VR.UC.code());
         assertEquals(0x5549, VR.UI.code());
         assertEquals(0x554c, VR.UL.code());
         assertEquals(0x554e, VR.UN.code());
+        assertEquals(0x5552, VR.UR.code());
         assertEquals(0x5553, VR.US.code());
         assertEquals(0x5554, VR.UT.code());
     }
@@ -166,9 +169,11 @@ public class VRTest {
         assertEquals(8, VR.SS.headerLength());
         assertEquals(8, VR.ST.headerLength());
         assertEquals(8, VR.TM.headerLength());
+        assertEquals(12, VR.UC.headerLength());
         assertEquals(8, VR.UI.headerLength());
         assertEquals(8, VR.UL.headerLength());
         assertEquals(12, VR.UN.headerLength());
+        assertEquals(12, VR.UR.headerLength());
         assertEquals(8, VR.US.headerLength());
         assertEquals(12, VR.UT.headerLength());
     }
@@ -188,6 +193,7 @@ public class VRTest {
         assertEquals(VR.LO, VR.valueOf(0x4c4f));
         assertEquals(VR.LT, VR.valueOf(0x4c54));
         assertEquals(VR.OB, VR.valueOf(0x4f42));
+        assertEquals(VR.OD, VR.valueOf(0x4f44));
         assertEquals(VR.OF, VR.valueOf(0x4f46));
         assertEquals(VR.OW, VR.valueOf(0x4f57));
         assertEquals(VR.PN, VR.valueOf(0x504e));
@@ -197,9 +203,11 @@ public class VRTest {
         assertEquals(VR.SS, VR.valueOf(0x5353));
         assertEquals(VR.ST, VR.valueOf(0x5354));
         assertEquals(VR.TM, VR.valueOf(0x544d));
+        assertEquals(VR.UC, VR.valueOf(0x5543));
         assertEquals(VR.UI, VR.valueOf(0x5549));
         assertEquals(VR.UL, VR.valueOf(0x554c));
         assertEquals(VR.UN, VR.valueOf(0x554e));
+        assertEquals(VR.UR, VR.valueOf(0x5552));
         assertEquals(VR.US, VR.valueOf(0x5553));
         assertEquals(VR.UT, VR.valueOf(0x5554));
     }
@@ -231,6 +239,7 @@ public class VRTest {
         assertArrayEquals(DOUBLES_AS_FL, (byte[]) VR.FL.toValue(DOUBLES, false));
         assertArrayEquals(DOUBLES_AS_FD, (byte[]) VR.FD.toValue(DOUBLES, false));
         assertArrayEquals(DOUBLES_AS_FL, (byte[]) VR.OF.toValue(DOUBLES, false));
+        assertArrayEquals(DOUBLES_AS_FD, (byte[]) VR.OD.toValue(DOUBLES, false));
     }
 
     @Test(expected=UnsupportedOperationException.class)

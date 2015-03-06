@@ -41,12 +41,10 @@ package org.dcm4che.test.annotations;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import org.dcm4che.test.common.TestToolFactory.MetadataTypes;
 /**
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StowRSParameters {
-    public String metadataFile();
-    public MetadataTypes metadataType();
+    public String url();
 }

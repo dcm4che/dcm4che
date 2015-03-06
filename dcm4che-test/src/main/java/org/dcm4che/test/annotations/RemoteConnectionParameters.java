@@ -51,5 +51,5 @@ public @interface RemoteConnectionParameters {
 
     public String hostName() default "localhost";
     public int port() default 11112;
-    public String url() default "http://localhost:8080/dcm4chee-arc";
+    public String baseURL() default "http://localhost:8080/dcm4chee-arc";
 }

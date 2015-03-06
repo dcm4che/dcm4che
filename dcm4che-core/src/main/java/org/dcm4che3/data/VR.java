@@ -236,19 +236,20 @@ public enum VR {
         this.inlineBinary = inlineBinary;
     }
 
-    private static int indexOf(VR vr) {
-        return vr.code - AE.code;
+    private static int indexOf(int code) {
+        int code1 = code - 0x4141;
+        return (code1 & 0xffffe0e0) == 0 ? ((code1 & 0xff00) >> 3) + (code1 & 0xff) : -1;
     }
 
-    private static final VR[] VALUE_OF = new VR[indexOf(UV)+1];
+    private static final VR[] VALUE_OF = new VR[indexOf(UV.code)+1];
     static {
         for (VR vr : VR.values())
-            VALUE_OF[indexOf(vr)] = vr;
+            VALUE_OF[indexOf(vr.code)] = vr;
     }
 
     public static VR valueOf(int code) {
         try {
-            VR vr = VALUE_OF[code - AE.code];
+            VR vr = VALUE_OF[indexOf(code)];
             if (vr != null)
                 return vr;
         } catch (IndexOutOfBoundsException e) {}

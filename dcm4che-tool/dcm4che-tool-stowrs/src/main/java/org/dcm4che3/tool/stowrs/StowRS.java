@@ -87,11 +87,13 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
+import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.SimpleHTTPResponse;
+import org.dcm4che3.tool.stowrs.test.StowRSResponse;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
@@ -111,7 +113,7 @@ public class StowRS {
     private Attributes keys = new Attributes();
     private static Options opts;
     private String URL;
-    private List<SimpleHTTPResponse> responses = new ArrayList<SimpleHTTPResponse>();
+    private List<StowRSResponse> responses = new ArrayList<StowRSResponse>();
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
 
@@ -164,7 +166,7 @@ public class StowRS {
                     throw new IllegalArgumentException(
                             "No dicom files specified");
                 for (File metadataFile : files) {
-                    instance.sendDicomFile(instance, metadataFile);
+                    instance.addResponse(sendDicomFile(instance, metadataFile));
                     LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
                 }
             }
@@ -273,15 +275,15 @@ public class StowRS {
             }
     }
 
-    public List<SimpleHTTPResponse> getResponses() {
+    public List<StowRSResponse> getResponses() {
         return responses;
     }
 
-    public void addResponse(SimpleHTTPResponse response) {
+    public void addResponse(StowRSResponse response) {
         this.responses.add(response);
     }
 
-    private static SimpleHTTPResponse sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
+    private static StowRSResponse sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
         return doRequestDICOM(instance.URL, f);
 }
 
@@ -475,9 +477,10 @@ public class StowRS {
         LOG.info(instance.keys.toString());
     }
 
-    private static SimpleHTTPResponse sendMetaDataAndBulkData(Boolean xml, StowRS instance,
+    private static StowRSResponse sendMetaDataAndBulkData(Boolean xml, StowRS instance,
             Attributes metadata, ArrayList<BulkDataChunk> files,
             boolean combined) throws IOException {
+        Attributes responseAttrs = new Attributes();
         int rspCode = 0;
         String rspMessage = null;
         String contentTypeBulkData;
@@ -560,6 +563,11 @@ public class StowRS {
                     rspCode = connection.getResponseCode();
                     rspMessage = response;
                     LOG.info("response: " + response);
+                    try {
+                        responseAttrs = SAXReader.parse(connection.getInputStream());
+                    } catch (Exception e) {
+                        LOG.error("Error creating response attributes, {}",e);
+                    }
                     connection.disconnect();
 
                 } catch (IOException e) {
@@ -595,6 +603,11 @@ public class StowRS {
                         rspCode = connection.getResponseCode();
                         rspMessage = response;
                         LOG.info("response: " + response);
+                        try {
+                            responseAttrs = SAXReader.parse(connection.getInputStream());
+                        } catch (Exception e) {
+                            LOG.error("Error creating response attributes, {}",e);
+                        }
                         connection.disconnect();
 
                     } catch (IOException e) {
@@ -627,13 +640,23 @@ public class StowRS {
                 rspCode = connection.getResponseCode();
                 rspMessage = response;
                 LOG.info("response: " + response);
+                try {
+                    responseAttrs = SAXReader.parse(connection.getInputStream());
+                } catch (Exception e) {
+                    LOG.error("Error creating response attributes, {}",e);
+                }
                 connection.disconnect();
 
             } catch (IOException e) {
                 LOG.error("Error writing bulk data");
             }
         }
-        return new SimpleHTTPResponse(rspCode, rspMessage);
+        return new StowRSResponse(rspCode, rspMessage, responseAttrs);
+    }
+
+    private static Attributes getResponseAttributes(HttpURLConnection connection) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     private static MediaType getBulkDataMediaType(Attributes metadata) {
@@ -675,7 +698,8 @@ public class StowRS {
         return true;
     }
 
-    private static SimpleHTTPResponse doRequestDICOM(String url, File f) {
+    private static StowRSResponse doRequestDICOM(String url, File f) {
+        Attributes responseAttrs = new Attributes();
         int rspCode = 0;
         String rspMessage = null;
         try {
@@ -720,12 +744,17 @@ public class StowRS {
             rspCode = connection.getResponseCode();
             rspMessage = connection.getResponseMessage();
             LOG.info("response: " + response);
+            try {
+                responseAttrs = SAXReader.parse(connection.getInputStream());
+            } catch (Exception e) {
+                LOG.error("Error creating response attributes, {}",e);
+            }
             connection.disconnect();
         } catch (IOException e) {
             LOG.error("error writing to http data output stream"
                     + e.getStackTrace().toString());
         }
-        return new SimpleHTTPResponse(rspCode, rspMessage);
+        return new StowRSResponse(rspCode, rspMessage, responseAttrs);
     }
 
     private static Attributes parseJSON(String fname, Attributes attrs)

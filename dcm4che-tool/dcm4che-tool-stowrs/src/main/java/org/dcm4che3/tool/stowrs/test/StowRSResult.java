@@ -51,8 +51,8 @@ public class StowRSResult implements TestResult {
 
     private String testDescription;
     private long time;
-    public List<SimpleHTTPResponse> responses;
-    public StowRSResult(String testDescription, long time, List<SimpleHTTPResponse> rsps) {
+    public List<StowRSResponse> responses;
+    public StowRSResult(String testDescription, long time, List<StowRSResponse> rsps) {
     this.responses = rsps;
     this.time = time;
     this.testDescription = testDescription;
@@ -66,7 +66,7 @@ public class StowRSResult implements TestResult {
         return time;
     }
 
-    public List<SimpleHTTPResponse> getResponses() {
+    public List<StowRSResponse> getResponses() {
         return responses;
     }
 
@@ -78,7 +78,7 @@ public class StowRSResult implements TestResult {
         this.time = time;
     }
 
-    public void setResponses(List<SimpleHTTPResponse> responses) {
+    public void setResponses(List<StowRSResponse> responses) {
         this.responses = responses;
     }
 }

@@ -271,13 +271,13 @@ public class TestToolFactory {
             tool = new MoveTool(host, port, aeTitle, destAEtitle, retrieveLevel, device, sourceAETitle, conn);
             break;
         case StowTool:
-            StowRSParameters stowParams = (StowRSParameters) test.getParams().get("StowParameters");
+            StowRSParameters stowParams = (StowRSParameters) test.getParams().get("StowRSParameters");
             url = stowParams != null && stowParams.url() != null? stowParams.url()
                     :null;
             if(url == null)
                 throw new MissingArgumentException("To create a StowRS Tool a url must be specified"
                         + " in the StowParameters annotation");
-            tool = new StowRSTool(baseURL + url);
+            tool = new StowRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url));
             break;
         default:
             break;

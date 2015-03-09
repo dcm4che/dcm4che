@@ -35,50 +35,28 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.tool.stowrs.test;
-
-import java.util.List;
-
-import org.dcm4che3.tool.common.SimpleHTTPResponse;
-import org.dcm4che3.tool.common.test.TestResult;
+package org.dcm4che3.tool.common;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
  */
 
-public class StowRSResult implements TestResult {
+public class SimpleHTTPResponse {
 
-    private String testDescription;
-    private long time;
-    public List<SimpleHTTPResponse> responses;
-    public StowRSResult(String testDescription, long time, List<SimpleHTTPResponse> rsps) {
-    this.responses = rsps;
-    this.time = time;
-    this.testDescription = testDescription;
+    private int status;
+    private String message;
+    
+    public SimpleHTTPResponse(int status,String message) {
+        this.status = status;
+        this.message = message;
     }
 
-    public String getTestDescription() {
-        return testDescription;
+    public String getMessage() {
+        return message;
     }
-
-    public long getTime() {
-        return time;
+    public int getStatus() {
+        return status;
     }
-
-    public List<SimpleHTTPResponse> getResponses() {
-        return responses;
-    }
-
-    public void setTestDescription(String testDescription) {
-        this.testDescription = testDescription;
-    }
-
-    public void setTime(long time) {
-        this.time = time;
-    }
-
-    public void setResponses(List<SimpleHTTPResponse> responses) {
-        this.responses = responses;
-    }
+    
 }

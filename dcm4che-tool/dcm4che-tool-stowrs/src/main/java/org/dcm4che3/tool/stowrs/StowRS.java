@@ -39,7 +39,6 @@
 package org.dcm4che3.tool.stowrs;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -84,7 +83,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
-
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
@@ -93,6 +91,7 @@ import org.dcm4che3.io.SAXTransformer;
 import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.tool.common.SimpleHTTPResponse;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
@@ -112,7 +111,7 @@ public class StowRS {
     private Attributes keys = new Attributes();
     private static Options opts;
     private String URL;
-    private List<Response> responses;
+    private List<SimpleHTTPResponse> responses = new ArrayList<SimpleHTTPResponse>();
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
 
@@ -158,13 +157,15 @@ public class StowRS {
             stow(instance);
             
             if (mediaType == null) {
-                files = cl.getArgList();
+                for(Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
+                    files.add(new File(iter.next()));
+                }
                 if (files == null)
                     throw new IllegalArgumentException(
                             "No dicom files specified");
                 for (File metadataFile : files) {
                     instance.sendDicomFile(instance, metadataFile);
-                    LOG.info(metadataFile.getPath() + " with size : " + mediaType.length());
+                    LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
                 }
             }
         } catch (Exception e) {
@@ -180,11 +181,18 @@ public class StowRS {
         }
     }
 
-    public static void stow(StowRS instance) {
+    public static void stow(StowRS instance) throws IOException, InterruptedException {
         Attributes metadata = new Attributes();
         Attributes fmi;
         for(File metadataFile : files)
-            if (mediaType.equalsIgnoreCase("JSON")) {
+            if (mediaType == null) {
+                if (files == null)
+                    throw new IllegalArgumentException(
+                            "No dicom files specified");
+                    instance.addResponse(sendDicomFile(instance, metadataFile));
+                    LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
+            }
+        else if (mediaType.equalsIgnoreCase("JSON")) {
                 try {
                     metadata = parseJSON(metadataFile.getPath());
                     String ts = metadata.getString(Tag.TransferSyntaxUID);
@@ -265,16 +273,16 @@ public class StowRS {
             }
     }
 
-    public List<Response> getResponses() {
+    public List<SimpleHTTPResponse> getResponses() {
         return responses;
     }
 
-    public void addResponse(Response response) {
+    public void addResponse(SimpleHTTPResponse response) {
         this.responses.add(response);
     }
 
-    private void sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
-        responses.add(doRequestDICOM(instance.URL, f));
+    private static SimpleHTTPResponse sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
+        return doRequestDICOM(instance.URL, f);
 }
 
     private static MediaType forTransferSyntax(String ts) {
@@ -467,7 +475,7 @@ public class StowRS {
         LOG.info(instance.keys.toString());
     }
 
-    private static Response sendMetaDataAndBulkData(Boolean xml, StowRS instance,
+    private static SimpleHTTPResponse sendMetaDataAndBulkData(Boolean xml, StowRS instance,
             Attributes metadata, ArrayList<BulkDataChunk> files,
             boolean combined) throws IOException {
         int rspCode = 0;
@@ -625,7 +633,7 @@ public class StowRS {
                 LOG.error("Error writing bulk data");
             }
         }
-        return Response.status(rspCode).entity(rspMessage).build();
+        return new SimpleHTTPResponse(rspCode, rspMessage);
     }
 
     private static MediaType getBulkDataMediaType(Attributes metadata) {
@@ -667,7 +675,7 @@ public class StowRS {
         return true;
     }
 
-    private Response doRequestDICOM(String url, File f) {
+    private static SimpleHTTPResponse doRequestDICOM(String url, File f) {
         int rspCode = 0;
         String rspMessage = null;
         try {
@@ -717,7 +725,7 @@ public class StowRS {
             LOG.error("error writing to http data output stream"
                     + e.getStackTrace().toString());
         }
-        return Response.status(rspCode).entity(rspMessage).build();
+        return new SimpleHTTPResponse(rspCode, rspMessage);
     }
 
     private static Attributes parseJSON(String fname, Attributes attrs)

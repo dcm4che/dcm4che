@@ -73,9 +73,13 @@ public abstract class BasicTest {
 
     private Properties defaultProperties;
 
-    private DicomConfiguration remoteConfig;
+    private DicomConfiguration remoteConfig = null;
 
     public DicomConfiguration getRemoteConfig() {
+        if (remoteConfig == null) {
+            String baseURL = getDefaultProperties().getProperty("remoteConn.baseURL")+"/config/data";
+            remoteConfig = RemoteDicomConfigFactory.createRemoteDicomConfiguration(baseURL);
+        }
         return remoteConfig;
     }
 
@@ -106,11 +110,8 @@ public abstract class BasicTest {
             
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
 
-            // remote config
-            remoteConfig = RemoteDicomConfigFactory.createRemoteDicomConfiguration(getDefaultProperties().getProperty("remoteConn.baseURL"));
-
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new TestToolException(e);
         }
     }
 
@@ -118,18 +119,8 @@ public abstract class BasicTest {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         try {
             storeTool.store(description, fileName);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IncompatibleConnectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (GeneralSecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new TestToolException(e);
         }
         return storeTool.getResult();
     }
@@ -140,18 +131,8 @@ public abstract class BasicTest {
         storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
         try {
             storeTool.store(description, fileName);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IncompatibleConnectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (GeneralSecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new TestToolException(e);
         }
         return storeTool.getResult();
     }   
@@ -163,18 +144,8 @@ public abstract class BasicTest {
                     queryTool.queryfuzzy(description);
                 else
                     queryTool.query(description);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IncompatibleConnectionException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (GeneralSecurityException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new TestToolException(e);
             }
         return queryTool.getResult();
     }
@@ -183,18 +154,8 @@ public abstract class BasicTest {
         MppsTool mppsTool = (MppsTool) TestToolFactory.createToolForTest(TestToolType.MppsTool, this);
         try {
             mppsTool.mppsscu(description, fileName);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IncompatibleConnectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (GeneralSecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new TestToolException(e);
         }
         return mppsTool.getResult();
     }
@@ -208,18 +169,8 @@ public abstract class BasicTest {
                 storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
                 storeTool.store(description, fileName);
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IncompatibleConnectionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (GeneralSecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new TestToolException(e);
         }
         return storeTool.getResult();
     }

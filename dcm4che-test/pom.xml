@@ -80,29 +80,29 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-storescu</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-storescu</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-findscu</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-findscu</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-mppsscu</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-mppsscu</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-getscu</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-getscu</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-dcmgen</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-dcmgen</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.dcm4che.tool</groupId>
@@ -115,9 +115,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.dcm4che.tool</groupId>
-        <artifactId>dcm4che-tool-stowrs</artifactId>
-        <version>${project.version}</version>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-stowrs</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -178,15 +178,15 @@
 
     </dependencies>
     <build>
-    <resources>
-          <resource>
-            <directory>src/main/resources</directory>
-            <filtering>false</filtering>
-            <includes>
-              <include>*.json</include>
-              <include>*.properties</include>
-            </includes>
-          </resource>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>*.json</include>
+                    <include>*.properties</include>
+                </includes>
+            </resource>
         </resources>
     </build>
 </project>

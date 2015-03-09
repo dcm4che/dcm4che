@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.cli.MissingArgumentException;
 import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
 import org.dcm4che.test.utils.LoadProperties;
@@ -101,7 +102,7 @@ public abstract class BasicTest {
         }
     }
 
-    public TestResult store(String description, String fileName) {
+    public TestResult store(String description, String fileName) throws MissingArgumentException {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         try {
             storeTool.store(description, fileName);
@@ -121,7 +122,7 @@ public abstract class BasicTest {
         return storeTool.getResult();
     }
     
-    public TestResult storeResource(String description, String fileName) {
+    public TestResult storeResource(String description, String fileName) throws MissingArgumentException {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         File f = new File(fileName);
         storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
@@ -142,7 +143,7 @@ public abstract class BasicTest {
         }
         return storeTool.getResult();
     }   
-    public TestResult query(String description, Attributes keys, boolean fuzzy) {
+    public TestResult query(String description, Attributes keys, boolean fuzzy) throws MissingArgumentException {
         QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.FindTool, this);
         queryTool.addAll(keys);
             try {
@@ -166,7 +167,7 @@ public abstract class BasicTest {
         return queryTool.getResult();
     }
 
-    public TestResult mpps(String description, String fileName) {
+    public TestResult mpps(String description, String fileName) throws MissingArgumentException {
         MppsTool mppsTool = (MppsTool) TestToolFactory.createToolForTest(TestToolType.MppsTool, this);
         try {
             mppsTool.mppsscu(description, fileName);
@@ -186,7 +187,7 @@ public abstract class BasicTest {
         return mppsTool.getResult();
     }
 
-    public TestResult storeResources(String description, DcmGenResult result) {
+    public TestResult storeResources(String description, DcmGenResult result) throws MissingArgumentException {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         
         try {
@@ -211,7 +212,7 @@ public abstract class BasicTest {
         return storeTool.getResult();
     }
 
-    public TestResult generateAndSend(String description, Attributes overrideAttributes) {
+    public TestResult generateAndSend(String description, Attributes overrideAttributes) throws MissingArgumentException {
         DcmGenTool dcmGenTool = (DcmGenTool) TestToolFactory.createToolForTest(TestToolType.DcmGenTool, this);
         TestResult storeResult;
         dcmGenTool.generateFiles(description, overrideAttributes);

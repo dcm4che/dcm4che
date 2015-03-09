@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,21 +35,50 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che3.tool.stowrs.test;
 
-package org.dcm4che.test.annotations;
+import java.util.List;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
+import org.dcm4che3.tool.common.SimpleHTTPResponse;
+import org.dcm4che3.tool.common.test.TestResult;
 
 /**
- * @author Hesham elbadawi <bsdreko@gmail.com>
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * 
  */
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RemoteConnectionParameters {
+public class StowRSResult implements TestResult {
 
-    public String hostName() default "localhost";
-    public int port() default 11112;
-    public String baseURL() default "http://localhost:8080/dcm4chee-arc";
+    private String testDescription;
+    private long time;
+    public List<SimpleHTTPResponse> responses;
+    public StowRSResult(String testDescription, long time, List<SimpleHTTPResponse> rsps) {
+    this.responses = rsps;
+    this.time = time;
+    this.testDescription = testDescription;
+    }
+
+    public String getTestDescription() {
+        return testDescription;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public List<SimpleHTTPResponse> getResponses() {
+        return responses;
+    }
+
+    public void setTestDescription(String testDescription) {
+        this.testDescription = testDescription;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public void setResponses(List<SimpleHTTPResponse> responses) {
+        this.responses = responses;
+    }
 }

@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,21 +35,28 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che.test.annotations;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
+package org.dcm4che3.tool.common;
 
 /**
- * @author Hesham elbadawi <bsdreko@gmail.com>
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * 
  */
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RemoteConnectionParameters {
+public class SimpleHTTPResponse {
 
-    public String hostName() default "localhost";
-    public int port() default 11112;
-    public String baseURL() default "http://localhost:8080/dcm4chee-arc";
+    private int status;
+    private String message;
+    
+    public SimpleHTTPResponse(int status,String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+    public int getStatus() {
+        return status;
+    }
+    
 }

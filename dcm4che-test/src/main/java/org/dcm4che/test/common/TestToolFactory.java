@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
+import org.apache.commons.cli.MissingArgumentException;
 import org.dcm4che.test.annotations.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
@@ -58,6 +59,7 @@ import org.dcm4che3.tool.movescu.test.MoveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
 import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
+import org.dcm4che3.tool.stowrs.test.StowRSTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +68,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class TestToolFactory {
-    
+
     public enum TestToolType {
         StoreTool,
         GetTool,
@@ -83,7 +85,7 @@ public class TestToolFactory {
     }
     private static DicomConfiguration config;
     
-    public static TestTool createToolForTest(TestToolType type, BasicTest test) {
+    public static TestTool createToolForTest(TestToolType type, BasicTest test) throws MissingArgumentException {
         TestTool tool = null;
         
         //Load default parameters
@@ -119,8 +121,12 @@ public class TestToolFactory {
             int port = remoteParams==null?
                     Integer.valueOf(defaultParams.getProperty("remoteConn.port"))
                     :Integer.valueOf(remoteParams.port());
+            String baseURL =  remoteParams==null?
+                    defaultParams.getProperty("remoteConn.url")
+                    :remoteParams.baseURL();
             //create tool
-                    String aeTitle=null, sourceDevice=null, sourceAETitle=null, destAEtitle=null, retrieveLevel=null;
+                    String aeTitle=null, sourceDevice=null, sourceAETitle=null
+                            , destAEtitle=null, retrieveLevel=null,url=null;
                     Device device = null;
                     Connection conn = null;
                     File baseDir = null;
@@ -263,6 +269,15 @@ public class TestToolFactory {
                 e.printStackTrace();
             }
             tool = new MoveTool(host, port, aeTitle, destAEtitle, retrieveLevel, device, sourceAETitle, conn);
+            break;
+        case StowTool:
+            StowRSParameters stowParams = (StowRSParameters) test.getParams().get("StowRSParameters");
+            url = stowParams != null && stowParams.url() != null? stowParams.url()
+                    :null;
+            if(url == null)
+                throw new MissingArgumentException("To create a StowRS Tool a url must be specified"
+                        + " in the StowParameters annotation");
+            tool = new StowRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url));
             break;
         default:
             break;

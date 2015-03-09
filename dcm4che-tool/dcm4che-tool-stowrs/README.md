@@ -1,11 +1,7 @@
-usage: stowrs [options]  -u <stowURL> [<bulkDataFile>..]
+usage: stowrs [options]  -u <stowURL> <file[(s)...]>
 
 Reads metadata from specified files or parameters and send them to a
-stowRS Receiver Attributes can be specified using -m <metadata> or -f file
-or if bulk data is DICOM thenno such attributes are to be specified.
- -f,--file <arg>            specify the file containing the metadata in
-                            JSON or XML, In which case metadata-type
-                            should be specified.
+stowRS service. Supports sending DICOM files or metadata files in JSON or XML.
  -h,--help                  display this help and exit
  -m <[seq/]attr=value>      specify metadata attributes. attr can be
                             specified by keyword or tag value (in hex),
@@ -19,6 +15,24 @@ or if bulk data is DICOM thenno such attributes are to be specified.
  -V,--version               output version information and exit
 -
 Example: stowrs -m PatientName=John^Doe -u
-http://localhost/stow/studies[/{StudyInstanceUID}] img.jpeg
+http://localhost/stow/studies[/{StudyInstanceUID}] img.dcm
 => Send stow request to stowRS Receiver with the attribute given and
-img.jpeg bulkData.
+img.dcm DICOM file while overriding PatientName.
+
+-
+Example: stowrs -m PatientName=John^Doe -u
+http://localhost/stow/studies[/{StudyInstanceUID}] img.dcm
+=> Send stow request to stowRS Receiver with the attribute given and
+img.dcm DICOM file while overriding PatientName.
+
+-
+Example: stowrs -u http://localhost:8080/dcm4chee-arc/stow/DCM4CHEE/studies
+ -t XML -f /somepath/image-metadata.xml
+=> Send stow request to stowRS Receiver as metadata in dicom xml and 
+bulk data referenced in the metadata file.
+
+-
+Example: stowrs -u http://localhost:8080/dcm4chee-arc/stow/DCM4CHEE/studies
+ -t JSON -f /somepath/image-metadata.json
+=> Send stow request to stowRS Receiver as metadata in dicom json and 
+bulk data referenced in the metadata file.

@@ -41,15 +41,10 @@ package org.dcm4che.test.annotations;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-
 /**
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RemoteConnectionParameters {
-
-    public String hostName() default "localhost";
-    public int port() default 11112;
-    public String baseURL() default "http://localhost:8080/dcm4chee-arc";
+public @interface StowRSParameters {
+    public String url();
 }

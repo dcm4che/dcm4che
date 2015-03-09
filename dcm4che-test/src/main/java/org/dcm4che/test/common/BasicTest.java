@@ -50,6 +50,8 @@ import org.apache.commons.cli.MissingArgumentException;
 import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
 import org.dcm4che.test.utils.LoadProperties;
+import org.dcm4che.test.utils.RemoteDicomConfigFactory;
+import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.tool.common.test.TestResult;
@@ -70,6 +72,12 @@ public abstract class BasicTest {
     public TestParametersRule rule = new TestParametersRule(this);
 
     private Properties defaultProperties;
+
+    private DicomConfiguration remoteConfig;
+
+    public DicomConfiguration getRemoteConfig() {
+        return remoteConfig;
+    }
 
     private static Map<String, Annotation> params = new HashMap<String, Annotation>();
 
@@ -97,6 +105,10 @@ public abstract class BasicTest {
                         this.getParams().get("defaultParams")).propertiesFile());
             
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
+
+            // remote config
+            remoteConfig = RemoteDicomConfigFactory.createRemoteDicomConfiguration(getDefaultProperties().getProperty("remoteConn.baseURL"));
+
         } catch (IOException e) {
             e.printStackTrace();
         }

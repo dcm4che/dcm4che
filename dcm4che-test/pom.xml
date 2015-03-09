@@ -49,6 +49,10 @@
     <packaging>jar</packaging>
     <name>dcm4che-test</name>
     <description>dcm4che testing framework</description>
+    <properties>
+        <dcm4chee-arc-conf.version>4.4.0-SNAPSHOT</dcm4chee-arc-conf.version>
+        <dcm4chee-storage-conf.version>2.0.0-SNAPSHOT</dcm4chee-storage-conf.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.dcm4che</groupId>
@@ -127,10 +131,51 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
+        <!-- For remote configuration management -->
         <dependency>
-        <groupId>org.jboss.resteasy</groupId>
-        <artifactId>jaxrs-api</artifactId>
-      </dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <version>3.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson-provider</artifactId>
+            <version>3.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che.dcm4chee-arc</groupId>
+            <artifactId>dcm4chee-arc-conf</artifactId>
+            <version>${dcm4chee-arc-conf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che.dcm4chee-storage</groupId>
+            <artifactId>dcm4chee-storage-conf</artifactId>
+            <version>${dcm4chee-storage-conf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che</groupId>
+            <artifactId>dcm4che-net-audit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che</groupId>
+            <artifactId>dcm4che-net-imageio</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dcm4che</groupId>
+            <artifactId>dcm4che-soundex</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec</groupId>
+            <artifactId>jboss-javaee-6.0</artifactId>
+            <version>3.0.2.Final</version>
+            <type>pom</type>
+        </dependency>
+
+
     </dependencies>
     <build>
     <resources>

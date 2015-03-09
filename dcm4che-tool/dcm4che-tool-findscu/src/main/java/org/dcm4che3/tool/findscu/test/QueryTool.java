@@ -62,6 +62,7 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
+import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.findscu.FindSCU;
@@ -81,12 +82,10 @@ public class QueryTool implements TestTool {
     private String sourceAETitle;
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
-    
+    private String queryLevel;
     private int numMatches;
-
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
-
     private Attributes queryatts = new Attributes();
     private int expectedMatches = Integer.MIN_VALUE;
     
@@ -98,7 +97,7 @@ public class QueryTool implements TestTool {
      * @param aeTitle
      * @param conn 
      */
-    public QueryTool(String host, int port, String aeTitle, Device device, String sourceAETitle, Connection conn) {
+    public QueryTool(String host, int port, String aeTitle, String queryLevel, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -106,6 +105,7 @@ public class QueryTool implements TestTool {
         this.device = device;
         this.sourceAETitle = sourceAETitle;
         this.conn = conn;
+        this.queryLevel = queryLevel;
     }
 
     public void queryfuzzy(String testDescription) throws IOException,
@@ -146,7 +146,11 @@ public class QueryTool implements TestTool {
         if (fuzzy) queryOptions.add(QueryOption.FUZZY);
         
         main.setInformationModel(InformationModel.StudyRoot, IVR_LE_FIRST,queryOptions);
-
+        main.addLevel(queryLevel);
+        if (queryLevel.equalsIgnoreCase("IMAGE")) {
+            main.getAAssociateRQ()
+            .addExtendedNegotiation(new ExtendedNegotiation(InformationModel.StudyRoot.getCuid(), new byte[]{1}));
+        }
         main.getKeys().addAll(queryatts);
 
         long timeStart = System.currentTimeMillis();
@@ -234,5 +238,9 @@ public class QueryTool implements TestTool {
 
     public void setAeTitle(String aeTitle) {
         this.aeTitle = aeTitle;
+    }
+
+    public String getQueryLevel() {
+        return queryLevel;
     }
 }

@@ -117,6 +117,10 @@ public class FindSCU {
                 queryOptions.add(QueryOption.DATETIME);
             }
         }
+
+        public String getCuid() {
+            return cuid;
+        }
     }
 
     private static ResourceBundle rb =

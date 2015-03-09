@@ -56,4 +56,6 @@ public @interface QueryParameters {
     public String sourceAETitle() default "FINDSCU";
 
     public String connection() default "dicom";
+
+    public String queryLevel() default "STUDY";
 }

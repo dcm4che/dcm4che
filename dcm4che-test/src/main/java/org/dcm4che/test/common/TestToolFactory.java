@@ -126,7 +126,7 @@ public class TestToolFactory {
                     :remoteParams.baseURL();
             //create tool
                     String aeTitle=null, sourceDevice=null, sourceAETitle=null
-                            , destAEtitle=null, retrieveLevel=null,url=null;
+                            , destAEtitle=null, retrieveLevel=null,queryLevel=null,url=null;
                     Device device = null;
                     Connection conn = null;
                     File baseDir = null;
@@ -162,6 +162,8 @@ public class TestToolFactory {
                         : defaultParams.getProperty("query.aetitle");
                 sourceDevice = queryParams!=null?queryParams.sourceDevice():"findscu";
                 sourceAETitle = queryParams!=null?queryParams.sourceAETitle():"FINDSCU";
+                queryLevel = queryParams != null && queryParams.queryLevel()!=null? queryParams.queryLevel()
+                        : defaultParams.getProperty("query.level");
                 device = null;
                 try {
                     device = getDicomConfiguration().findDevice(sourceDevice);
@@ -172,7 +174,7 @@ public class TestToolFactory {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                tool = new QueryTool(host, port, aeTitle, device, sourceAETitle, conn);
+                tool = new QueryTool(host, port, aeTitle, queryLevel, device, sourceAETitle, conn);
             break;
         case MppsTool:
             MppsParameters mppsParams = (MppsParameters) test.getParams().get("MppsParameters");

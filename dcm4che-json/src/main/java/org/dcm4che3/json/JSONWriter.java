@@ -212,6 +212,7 @@ public class JSONWriter implements DicomInputHandler {
             writeIntValues(vr, val, bigEndian);
             break;
         case OB:
+        case OD:
         case OF:
         case OW:
         case UN:

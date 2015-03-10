@@ -580,7 +580,7 @@ public class FindSCU {
             return tf.newTransformerHandler();
 
         Templates tpls = xsltTpls;
-        if (tpls == null);
+        if (tpls == null)
             xsltTpls = tpls = tf.newTemplates(new StreamSource(xsltFile));
 
         return tf.newTransformerHandler(tpls);

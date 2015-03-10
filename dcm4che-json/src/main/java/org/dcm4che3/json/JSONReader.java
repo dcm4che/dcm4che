@@ -195,7 +195,9 @@ public class JSONReader {
                 case SH:
                 case ST:
                 case TM:
+                case UC:
                 case UI:
+                case UR:
                 case UT:
                     readStringValues(attrs, tag, vr);
                     break;
@@ -216,6 +218,7 @@ public class JSONReader {
                     readSequence(attrs, tag);
                     break;
                 case OB:
+                case OD:
                 case OF:
                 case OW:
                 case UN:

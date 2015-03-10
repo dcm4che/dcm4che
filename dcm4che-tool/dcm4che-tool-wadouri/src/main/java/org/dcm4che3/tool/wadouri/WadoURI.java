@@ -40,13 +40,11 @@ package org.dcm4che3.tool.wadouri;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
 import java.util.ResourceBundle;
 
 import javax.xml.transform.OutputKeys;
@@ -61,12 +59,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
 import org.dcm4che3.tool.common.CLIUtils;
-
+import org.dcm4che3.tool.wadouri.test.WadoURIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,8 +125,32 @@ public class WadoURI{
     
     private String transferSyntax; 
     
-    public WadoURI() {}
+    private WadoURIResponse response;
     
+    public WadoURI() {}
+
+    public WadoURI(String url, String studyUID, String seriesUID, String objectUID,
+            String contentType, String charset, boolean anonymize,
+            String annotation, int rows, int columns, String regionCoordinates,
+            String windowCenter, String windowWidth, int frameNumber,
+            int imageQuality, String presentationSeriesUID,
+            String presentationUID, String transferSyntax) {
+        setUrl(url);
+        setObjectID(studyUID+":"+seriesUID+":"+objectUID);
+        setContentType(contentType);
+        setCharset(charset);
+        setAnonymize(anonymize);
+        setAnnotation(annotation);
+        setRows(rows);
+        setColumns(columns);
+        setRegionCoordinates(regionCoordinates);
+        setWindowParams(windowCenter+":"+windowWidth);
+        setFrameNumber(frameNumber);
+        setImageQuality(imageQuality);
+        setPresentationStateID(presentationSeriesUID+":"+presentationUID);
+        setTransferSyntax(transferSyntax);
+    }
+
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         options = new Options();
@@ -363,7 +384,63 @@ public class WadoURI{
             return url+="?"+key+"="+field;
         
     }
-    
+
+    public void wado(WadoURI main) throws Exception {
+        URL newUrl = new URL(setWadoRequestQueryParams(main,main.getUrl()));
+        System.out.println(newUrl.toString());
+        HttpURLConnection connection = (HttpURLConnection) newUrl
+                .openConnection();
+        
+        connection.setDoOutput(true);
+        
+        connection.setDoInput(true);
+        
+        connection.setInstanceFollowRedirects(true);
+        
+        connection.setRequestMethod("GET");
+        
+        if(main.getRequestTimeOut() != null) {
+            connection.setConnectTimeout(Integer.valueOf(main.getRequestTimeOut()));
+            connection.setReadTimeout(Integer.valueOf(main.getRequestTimeOut()));
+        }
+        
+        connection.setUseCaches(false);
+        int rspCode = connection.getResponseCode();
+        String rspMessage = connection.getResponseMessage();
+        InputStream in = connection.getInputStream();
+        
+        String contentType = connection.getHeaderField("Content-Type");
+        File f = null;
+        if(contentType.contains("application")) {
+            if(contentType.contains("application/dicom+xml"))
+                f=writeXML(in, main);
+            else if(contentType.contains("application/pdf"))
+                f=writeFile(in, main, ".pdf");
+            else //dicom 
+                f=writeFile(in, main, ".dcm");
+        }
+        else if(contentType.contains("image")) {
+            if(contentType.contains("image/jpeg"))
+                f=writeFile(in, main, ".jpeg");
+            else if(contentType.contains("image/png"))
+                f=writeFile(in, main, ".png");
+            else //gif
+                f=writeFile(in, main, ".gif");
+        }
+        else if(contentType.contains("text")) {
+            if(contentType.contains("text/html")) {
+                f=writeFile(in, main, ".html");
+            }
+            else if(contentType.contains("text/rtf")) {
+                f=writeFile(in, main, ".rtf");
+            }
+            else // text/plain
+                f=writeFile(in, main, ".txt");
+        }
+        this.response = new WadoURIResponse(rspCode, rspMessage, f);
+        connection.disconnect();
+    }
+
     private static String sendRequest(final WadoURI main) throws Exception {
         URL newUrl = new URL(setWadoRequestQueryParams(main,main.getUrl()));
         System.out.println(newUrl.toString());
@@ -443,7 +520,7 @@ public class WadoURI{
         return stf.newTransformerHandler(templates);
     }
     
-    private static void writeXML(InputStream in, WadoURI main) throws Exception {
+    private static File writeXML(InputStream in, WadoURI main) throws Exception {
         
         File out = new File(main.getOutDir(), main.getOutFileName()+".xml");
         TransformerHandler th = getTransformerHandler(main);
@@ -454,15 +531,18 @@ public class WadoURI{
         SAXWriter saxWriter = new SAXWriter(th);
         saxWriter.setIncludeKeyword(main.xmlIncludeKeyword); 
         saxWriter.write(attrs);
+        return out;
     }
 
-    private static void writeFile(InputStream in, WadoURI main, String extension) {
+    private static File writeFile(InputStream in, WadoURI main, String extension) {
+        File file = new File(main.getOutDir(), main.getOutFileName()+extension);
         try {
-            Files.copy(in,new File(main.getOutDir(), main.getOutFileName()+extension)
+            Files.copy(in,file
             .toPath(),StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             System.out.println("wadouri: Error writing results to file "+ e.getMessage());
         }
+        return file;
     }
 
 
@@ -626,6 +706,7 @@ public class WadoURI{
 
 
     public void setAnnotation(String annotation) {
+        if(!annotation.contains("NULL"))
         this.annotation = annotation;
     }
 
@@ -636,6 +717,7 @@ public class WadoURI{
 
 
     public void setRows(int rows) {
+        if(rows > 0)
         this.rows = rows;
     }
 
@@ -646,6 +728,7 @@ public class WadoURI{
 
 
     public void setColumns(int columns) {
+        if(columns > 0)
         this.columns = columns;
     }
 
@@ -656,6 +739,7 @@ public class WadoURI{
 
 
     public void setRegionCoordinates(String regionCoordinates) {
+        if(!regionCoordinates.contains("NULL"))
         this.regionCoordinates = regionCoordinates;
     }
 
@@ -666,6 +750,7 @@ public class WadoURI{
 
 
     public void setWindowParams(String windowParams) {
+        if(!windowParams.contains("NULL"))
         this.windowParams = windowParams;
     }
 
@@ -676,6 +761,7 @@ public class WadoURI{
 
 
     public void setFrameNumber(int frameNumber) {
+        if(frameNumber > 0)
         this.frameNumber = frameNumber;
     }
 
@@ -686,6 +772,7 @@ public class WadoURI{
 
 
     public void setImageQuality(int imageQuality) {
+        if(imageQuality > 0)
         this.imageQuality = imageQuality;
     }
 
@@ -696,6 +783,7 @@ public class WadoURI{
 
 
     public void setPresentationStateID(String presentationStateID) {
+        if(!presentationStateID.contains("NULL"))
         this.presentationStateID = presentationStateID;
     }
 
@@ -706,7 +794,12 @@ public class WadoURI{
 
 
     public void setTransferSyntax(String transferSyntax) {
+        if(!transferSyntax.contains("NULL"))
         this.transferSyntax = transferSyntax;
+    }
+
+    public WadoURIResponse getResponse() {
+        return response;
     }
 
 }

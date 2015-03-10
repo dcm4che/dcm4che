@@ -61,6 +61,7 @@ import org.dcm4che3.tool.qidors.test.QidoRSTool;
 import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.dcm4che3.tool.stowrs.test.StowRSTool;
+import org.dcm4che3.tool.wadouri.test.WadoURITool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +89,36 @@ public class TestToolFactory {
     
     public static TestTool createToolForTest(TestToolType type, BasicTest test) throws MissingArgumentException {
         TestTool tool = null;
-        
+        String aeTitle = null
+                , sourceDevice = null
+                , sourceAETitle = null
+                , destAEtitle = null
+                , retrieveLevel = null
+                , queryLevel = null
+                , url = null
+                , studyUID = null
+                , seriesUID = null
+                , objectUID = null
+                , contentType = null
+                , charset = null
+                , annotation = null
+                , regionCoordinates = null
+                , windowCenter = null
+                , windowWidth = null
+                , presentationSeriesUID = null
+                , presentationUID = null
+                , transferSyntax = null;
+            boolean anonymize;
+            int rows
+            , columns
+            , frameNumber
+            , imageQuality;
+            
+            Device device = null;
+            Connection conn = null;
+            File baseDir = null;
+            File retrieveDir = null;
+            File stgCmtStorageDirectory = null;
         //Load default parameters
          Properties defaultParams = test.getDefaultProperties();
         //Load config file if parametrized else load default config
@@ -125,14 +155,6 @@ public class TestToolFactory {
             String baseURL =  remoteParams==null?
                     defaultParams.getProperty("remoteConn.url")
                     :remoteParams.baseURL();
-            //create tool
-                    String aeTitle=null, sourceDevice=null, sourceAETitle=null
-                            , destAEtitle=null, retrieveLevel=null,queryLevel=null,url=null;
-                    Device device = null;
-                    Connection conn = null;
-                    File baseDir = null;
-                    File retrieveDir = null;
-                    File stgCmtStorageDirectory = null;
 
         switch (type) {
         case StoreTool:
@@ -288,7 +310,7 @@ public class TestToolFactory {
                     :null;
             if(url == null)
                 throw new MissingArgumentException("To create a QidoRS Tool a url must be specified"
-                        + " in the StowParameters annotation");
+                        + " in the QidoParameters annotation");
             String limit = qidoParams != null && !qidoParams.limit()
                     .equalsIgnoreCase("-1")?qidoParams.limit() : null;
             boolean fuzzy = qidoParams !=null && qidoParams.fuzzyMatching()
@@ -302,8 +324,47 @@ public class TestToolFactory {
             tool = new QidoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url),
                     limit, fuzzy, timezone, returnAll, offset);
             break;
-        default:
+        case WadoURITool:
+            WadoURIParameters wadoUriParams = (WadoURIParameters) test.getParams().get("WadoURIParameters");
+            if(wadoUriParams == null)
+                throw new MissingArgumentException("WadoURIParameters annotation"
+                        + " must be used to create a WadoURI tool");
+            url = wadoUriParams != null && wadoUriParams.url() != null? wadoUriParams.url()
+                    :null;
+            studyUID = wadoUriParams != null && wadoUriParams.studyUID() != null
+                    ? wadoUriParams.studyUID():null;
+            seriesUID = wadoUriParams != null && wadoUriParams.seriesUID() != null
+                    ? wadoUriParams.seriesUID():null;
+            objectUID = wadoUriParams != null && wadoUriParams.objectUID() != null
+                    ? wadoUriParams.objectUID():null;
+            contentType = wadoUriParams != null && wadoUriParams.contentType() != null
+                    ? wadoUriParams.contentType():null;
+                    //non-mandatory
+            charset = wadoUriParams.charset();
+            annotation = wadoUriParams.annotation();
+            regionCoordinates = wadoUriParams.regionCoordinates();
+            windowCenter = wadoUriParams.windowCenter();
+            windowWidth = wadoUriParams.windowWidth();
+            presentationSeriesUID = wadoUriParams.presentationSeriesUID();
+            presentationUID = wadoUriParams.presentationUID();
+            transferSyntax = wadoUriParams.transferSyntax();
+            anonymize = wadoUriParams.anonymize();
+            rows = wadoUriParams.rows();
+            columns = wadoUriParams.columns();
+            frameNumber = wadoUriParams.frameNumber();
+            imageQuality = wadoUriParams.imageQuality();
+            retrieveDir = new File(wadoUriParams.retrieveDir());
+            tool = new WadoURITool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url)
+                    ,studyUID, seriesUID, objectUID
+                    , contentType, charset, anonymize
+                    , annotation, rows, columns
+                    , regionCoordinates, windowCenter, windowWidth
+                    , frameNumber, imageQuality, presentationSeriesUID
+                    , presentationUID, transferSyntax, retrieveDir);
             break;
+        default:
+            throw new IllegalArgumentException("Unsupported TestToolType specified"
+                    + ", unable to create tool");
         }
         return tool;
     }

@@ -57,6 +57,7 @@ import org.dcm4che3.tool.findscu.test.QueryTool;
 import org.dcm4che3.tool.getscu.test.RetrieveTool;
 import org.dcm4che3.tool.movescu.test.MoveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
+import org.dcm4che3.tool.qidors.test.QidoRSTool;
 import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.dcm4che3.tool.stowrs.test.StowRSTool;
@@ -280,6 +281,26 @@ public class TestToolFactory {
                 throw new MissingArgumentException("To create a StowRS Tool a url must be specified"
                         + " in the StowParameters annotation");
             tool = new StowRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url));
+            break;
+        case QidoTool:
+            QidoRSParameters qidoParams = (QidoRSParameters) test.getParams().get("QidoRSParameters");
+            url = qidoParams != null && qidoParams.url() != null? qidoParams.url()
+                    :null;
+            if(url == null)
+                throw new MissingArgumentException("To create a QidoRS Tool a url must be specified"
+                        + " in the StowParameters annotation");
+            String limit = qidoParams != null && !qidoParams.limit()
+                    .equalsIgnoreCase("-1")?qidoParams.limit() : null;
+            boolean fuzzy = qidoParams !=null && qidoParams.fuzzyMatching()
+                    ?qidoParams.fuzzyMatching() : false;
+            boolean timezone = qidoParams !=null && qidoParams.timezoneAdjustment()
+                    ?qidoParams.timezoneAdjustment() : false;
+            boolean returnAll = qidoParams !=null && qidoParams.returnAll()
+                    ?qidoParams.returnAll() : true;
+            String offset = qidoParams !=null && !qidoParams.offset().equalsIgnoreCase("0")
+                    ?qidoParams.offset() : "0";
+            tool = new QidoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url),
+                    limit, fuzzy, timezone, returnAll, offset);
             break;
         default:
             break;

@@ -124,7 +124,6 @@ public class QueryTool implements TestTool {
     private void query(String testDescription, boolean fuzzy) throws IOException,
             InterruptedException, IncompatibleConnectionException,
             GeneralSecurityException {
-        
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);

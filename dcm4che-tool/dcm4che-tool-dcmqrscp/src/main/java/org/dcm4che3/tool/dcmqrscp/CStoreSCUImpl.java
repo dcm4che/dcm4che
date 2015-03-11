@@ -36,16 +36,56 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.net.service;
+package org.dcm4che3.tool.dcmqrscp;
 
-import java.util.Observer;
+import java.io.IOException;
+import java.util.List;
 
-import org.dcm4che3.net.CancelRQHandler;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.io.DicomInputStream;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.DataWriter;
+import org.dcm4che3.net.DataWriterAdapter;
+import org.dcm4che3.net.Dimse;
+import org.dcm4che3.net.pdu.PresentationContext;
+import org.dcm4che3.net.service.BasicCStoreSCU;
+import org.dcm4che3.net.service.BasicRetrieveTask;
+import org.dcm4che3.net.service.CStoreSCU;
+import org.dcm4che3.net.service.InstanceLocator;
+import org.dcm4che3.util.SafeClose;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  */
-public interface RetrieveTask extends Runnable, CancelRQHandler, Observer {
+class CStoreSCUImpl<T extends InstanceLocator>  extends BasicCStoreSCU<T> {
 
-}
+    private final boolean withoutBulkData;
+
+    public CStoreSCUImpl(boolean withoutBulkData) {
+        super();
+        this.withoutBulkData = withoutBulkData;
+    }
+
+    @Override
+    protected DataWriter createDataWriter(InstanceLocator inst, String tsuid)
+            throws IOException {
+        Attributes attrs;
+        DicomInputStream in = new DicomInputStream(inst.getFile());
+        try {
+            if (withoutBulkData) {
+                in.setIncludeBulkData(IncludeBulkData.NO);
+                attrs = in.readDataset(-1, Tag.PixelData);
+            } else {
+                in.setIncludeBulkData(IncludeBulkData.URI);
+                attrs = in.readDataset(-1, -1);
+            }
+        } finally {
+            SafeClose.close(in);
+        }
+        return new DataWriterAdapter(attrs);
+    }
+
+ }

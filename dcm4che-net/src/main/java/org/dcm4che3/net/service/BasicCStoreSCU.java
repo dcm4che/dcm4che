@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -65,37 +66,31 @@ import org.slf4j.LoggerFactory;
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  *
  */
-public class BasicCStoreSCU<T extends InstanceLocator> {
+public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
+        implements CStoreSCU<T> {
 
     protected static final Logger LOG = LoggerFactory
             .getLogger(BasicCStoreSCU.class);
 
-    protected final Association storeas;
     protected int status = Status.Success;
-    protected final int priority;
-    protected final List<T> insts;
-    protected final List<T> completed;
-    protected final List<T> warning;
-    protected final List<T> failed;
+    protected int priority = 0;
+    protected int nr_instances;
+    protected List<T> completed = new ArrayList<T>();
+    protected List<T> warning = new ArrayList<T>();
+    protected List<T> failed = new ArrayList<T>();
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
-    public BasicCStoreSCU(List<T> insts,
-            Association storeas, Integer priority) {
-        this.storeas = storeas;
-        this.insts = insts;
-        this.priority = priority != null ? priority : 0;
-        this.completed = new ArrayList<T>(insts.size());
-        this.warning = new ArrayList<T>(insts.size());
-        this.failed = new ArrayList<T>(insts.size());
-    }
-    
     public int getStatus() {
         return status;
     }
 
-    public Association getStoreAssociation() {
-        return storeas;
+    public void changeStatus(int status) {
+        this.status = status;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     public List<T> getCompleted() {
@@ -110,12 +105,31 @@ public class BasicCStoreSCU<T extends InstanceLocator> {
         return failed;
     }
 
-    public BasicCStoreSCUResp store() {
+    public int getRemaining() {
+        return (nr_instances - completed.size() - warning.size() - failed
+                .size());
+    }
+
+    public BasicCStoreSCUResp cstore(List<T> instances, Association storeas,
+            int priority) {
+
+        if (storeas == null)
+            throw new IllegalStateException("null Store Association");
+
+        if (instances == null)
+            throw new IllegalStateException("null Store Instances");
+
+        nr_instances = instances.size();
+
         try {
-            for (Iterator<T> iter = insts.iterator(); iter.hasNext();) {
+            for (Iterator<T> iter = instances.iterator(); iter.hasNext();) {
                 T inst = iter.next();
                 String tsuid;
                 DataWriter dataWriter;
+
+                if (status == Status.Cancel)
+                    break;
+
                 try {
                     tsuid = selectTransferSyntaxFor(storeas, inst);
                     dataWriter = createDataWriter(inst, tsuid);
@@ -175,8 +189,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> {
     protected int cstore(Association storeas, T inst, String tsuid,
             DataWriter dataWriter) throws IOException, InterruptedException {
         int messageID = storeas.nextMessageID();
-        DimseRSPHandler rspHandler = new CStoreRSPHandler(
-                messageID, inst);
+        DimseRSPHandler rspHandler = new CStoreRSPHandler(messageID, inst);
         storeas.cstore(inst.cuid, inst.iuid, priority, dataWriter, tsuid,
                 rspHandler);
         synchronized (outstandingRSPLock) {
@@ -202,15 +215,26 @@ public class BasicCStoreSCU<T extends InstanceLocator> {
                 completed.add(inst);
             else if ((storeStatus & 0xB000) == 0xB000)
                 warning.add(inst);
-            else {
+            else
                 failed.add(inst);
-                if (status == Status.Success)
-                    status = Status.OneOrMoreFailures;
-            }
+
             synchronized (outstandingRSPLock) {
                 if (--outstandingRSP == 0)
                     outstandingRSPLock.notify();
             }
+
+            if ((nr_instances == completed.size() + failed.size()
+                    + warning.size())
+                    && status != Status.Cancel) {
+                if (failed.size() > 0)
+                    status = Status.OneOrMoreFailures;
+                else
+                    status = Status.Success;
+            } else
+                status = Status.Pending;
+
+            setChanged();
+            notifyObservers(); // notify observers of received rsp
         }
 
         @Override
@@ -253,7 +277,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> {
         }
         return rsp;
     }
-    
+
     protected void close() {
     }
 

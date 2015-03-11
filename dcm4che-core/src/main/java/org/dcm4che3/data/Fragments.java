@@ -53,13 +53,25 @@ public class Fragments extends ArrayList<Object> implements Value {
 
     private static final long serialVersionUID = -6667210062541083610L;
 
+    private final String privateCreator;
+    private final int tag;
     private final VR vr;
     private final boolean bigEndian;
 
-    public Fragments(VR vr, boolean bigEndian, int initialCapacity) {
+    public Fragments(String privateCreator, int tag, VR vr, boolean bigEndian, int initialCapacity) {
         super(initialCapacity);
+        this.privateCreator = privateCreator;
+        this.tag = tag;
         this.vr = vr;
         this.bigEndian = bigEndian;
+    }
+
+    public String privateCreator() {
+        return privateCreator;
+    }
+
+    public final int tag() {
+        return tag;
     }
 
     public final VR vr() {

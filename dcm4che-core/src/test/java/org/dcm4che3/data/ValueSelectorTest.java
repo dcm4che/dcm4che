@@ -57,7 +57,7 @@ public class ValueSelectorTest {
     @Test
     public void testToString() {
         ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence);
-        ValueSelector vs = new ValueSelector(Tag.StudyInstanceUID, null, null, 0, ip);
+        ValueSelector vs = new ValueSelector(null, Tag.StudyInstanceUID, null, 0, ip);
         assertEquals(XPATH, vs.toString());
     }
 

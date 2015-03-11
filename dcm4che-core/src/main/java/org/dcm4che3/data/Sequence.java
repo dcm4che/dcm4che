@@ -41,6 +41,7 @@ package org.dcm4che3.data;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ListIterator;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
@@ -54,11 +55,15 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     private static final long serialVersionUID = 7062970085409148066L;
 
     private final Attributes parent;
+    private final String privateCreator;
+    private final int tag;
     private int length = -1;
 
-    Sequence(Attributes parent, int initialCapacity) {
+    Sequence(Attributes parent, String privateCreator, int tag, int initialCapacity) {
         super(initialCapacity);
         this.parent = parent;
+        this.privateCreator = privateCreator;
+        this.tag = tag;
     }
 
     public final Attributes getParent() {
@@ -73,13 +78,22 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     }
 
     @Override
+    public int indexOf(Object o) {
+        ListIterator<Attributes> it = listIterator();
+            while (it.hasNext())
+                if (it.next() == o)
+                    return it.previousIndex();
+        return -1;
+    }
+
+    @Override
     public boolean add(Attributes attrs) {
-        return super.add(attrs.setParent(parent));
+        return super.add(attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override
     public void add(int index, Attributes attrs) {
-        super.add(index, attrs.setParent(parent));
+        super.add(index, attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override
@@ -99,7 +113,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
                     "Item already contained by Sequence");
         }
         for (Attributes attrs : c)
-            attrs.setParent(parent);
+            attrs.setParent(parent, privateCreator, tag);
     }
 
     @Override
@@ -111,19 +125,19 @@ public class Sequence extends ArrayList<Attributes> implements Value {
     @Override
     public void clear() {
         for (Attributes attrs: this)
-            attrs.setParent(null);
+            attrs.setParent(null, null, 0);
         super.clear();
     }
 
     @Override
     public Attributes remove(int index) {
-        return super.remove(index).setParent(null);
+        return super.remove(index).setParent(null, null, 0);
     }
 
     @Override
     public boolean remove(Object o) {
         if (o instanceof Attributes && super.remove(o)) {
-            ((Attributes) o).setParent(null);
+            ((Attributes) o).setParent(null, null, 0);
             return true;
         }
         return false;
@@ -131,7 +145,7 @@ public class Sequence extends ArrayList<Attributes> implements Value {
 
     @Override
     public Attributes set(int index, Attributes attrs) {
-        return super.set(index, attrs.setParent(parent));
+        return super.set(index, attrs.setParent(parent, privateCreator, tag));
     }
 
     @Override

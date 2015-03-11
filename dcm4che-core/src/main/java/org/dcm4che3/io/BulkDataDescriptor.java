@@ -55,8 +55,8 @@ public abstract class BulkDataDescriptor {
     public final static BulkDataDescriptor DEFAULT = new BulkDataDescriptor() {
 
         @Override
-        public boolean isBulkData(List<ItemPointer> itemPointer,
-                String privateCreator, int tag, VR vr, int length) {
+        public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
+                                      ItemPointer... itemPointer) {
             switch (TagUtils.normalizeRepeatingGroup(tag)) {
             case Tag.PixelDataProviderURL:
             case Tag.AudioSampleData:
@@ -65,10 +65,10 @@ public abstract class BulkDataDescriptor {
             case Tag.OverlayData:
             case Tag.EncapsulatedDocument:
             case Tag.PixelData:
-                return itemPointer.isEmpty();
+                return itemPointer.length == 0;
             case Tag.WaveformData:
-                return itemPointer.size() == 1 
-                    && itemPointer.get(0).sequenceTag == Tag.WaveformSequence;
+                return itemPointer.length == 1
+                    && itemPointer[0].sequenceTag == Tag.WaveformSequence;
             }
             return false;
         }
@@ -77,8 +77,8 @@ public abstract class BulkDataDescriptor {
     public final static BulkDataDescriptor PIXELDATA = new BulkDataDescriptor() {
 
         @Override
-        public boolean isBulkData(List<ItemPointer> itemPointer,
-                String privateCreator, int tag, VR vr, int length) {
+        public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
+                                      ItemPointer... itemPointer) {
             return tag == Tag.PixelData;
         }
     };
@@ -87,19 +87,19 @@ public abstract class BulkDataDescriptor {
         return new BulkDataDescriptor() {
 
             @Override
-            public boolean isBulkData(List<ItemPointer> itemPointer,
-                    String privateCreator, int tag, VR vr, int length) {
+            public boolean isBulkData(String privateCreator, int tag, VR vr, int length,
+                                      ItemPointer... itemPointer) {
                 Attributes item = blkAttrs;
                 for (ItemPointer ip : itemPointer) {
                     item = item.getNestedDataset(
                             ip.privateCreator, ip.sequenceTag, ip.itemIndex);
                 }
-                return item.contains(privateCreator, tag);
+                return item != null && item.contains(privateCreator, tag);
             }
         };
     }
 
-    public abstract boolean isBulkData(List<ItemPointer> itemPointer,
-            String privateCreator, int tag, VR vr, int length);
+    public abstract boolean isBulkData(String privateCreator, int tag, VR vr, int length,
+                                       ItemPointer... itemPointer);
 
 }

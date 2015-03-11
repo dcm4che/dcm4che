@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,31 +35,32 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.tool.common;
+package org.dcm4che3.tool.wadors.test;
+
+import java.util.Map;
+
+import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
  */
 
-public class SimpleHTTPResponse {
+public class WadoRSResponse extends SimpleHTTPResponse{
 
-    private int status;
-    private String message;
+    //map of head and body for each part 
+    Map<String, String> retrievedInstances;
+    public WadoRSResponse(int status, String message) {
+        super(status, message);
+    }
     
-    public SimpleHTTPResponse(int status,String message) {
-        this.status = status;
-        this.message = message;
+    public WadoRSResponse(int status, String message,  Map<String, String> instancePaths) {
+        super(status, message);
+        this.retrievedInstances = instancePaths;
     }
 
-    public String getMessage() {
-        return message;
+    public  Map<String, String> getRetrievedInstance() {
+        return retrievedInstances;
     }
-    public int getStatus() {
-        return status;
-    }
-    @Override
-    public String toString() {
-        return "Server responded with "+status + " - " + message;
-    }
+
 }

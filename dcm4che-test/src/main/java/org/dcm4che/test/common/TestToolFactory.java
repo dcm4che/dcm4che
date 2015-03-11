@@ -61,6 +61,8 @@ import org.dcm4che3.tool.qidors.test.QidoRSTool;
 import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.dcm4che3.tool.stowrs.test.StowRSTool;
+import org.dcm4che3.tool.wadors.WadoRS;
+import org.dcm4che3.tool.wadors.test.WadoRSTool;
 import org.dcm4che3.tool.wadouri.test.WadoURITool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -361,6 +363,16 @@ public class TestToolFactory {
                     , regionCoordinates, windowCenter, windowWidth
                     , frameNumber, imageQuality, presentationSeriesUID
                     , presentationUID, transferSyntax, retrieveDir);
+            break;
+        case WadoRSTool:
+            WadoRSParameters wadoRSParams = (WadoRSParameters) test.getParams().get("WadoRSParameters");
+            if(wadoRSParams == null)
+                throw new MissingArgumentException("WadoRSParameters annotation"
+                        + " must be used to create a WadoRS tool");
+            url = wadoRSParams != null && wadoRSParams.url() != null? wadoRSParams.url()
+                    :null;
+            retrieveDir = new File(wadoRSParams.retrieveDir());
+            tool = new WadoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url), retrieveDir);
             break;
         default:
             throw new IllegalArgumentException("Unsupported TestToolType specified"

@@ -37,8 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.tool.wadouri.test;
 
-import java.io.File;
-
 import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
 /**
@@ -48,17 +46,17 @@ import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
 public class WadoURIResponse extends SimpleHTTPResponse{
 
-    File retrievedInstance;
+    String retrievedInstance;
     public WadoURIResponse(int status, String message) {
         super(status, message);
     }
     
-    public WadoURIResponse(int status, String message, File instance) {
+    public WadoURIResponse(int status, String message, String instancePath) {
         super(status, message);
-        this.retrievedInstance = instance;
+        this.retrievedInstance = instancePath;
     }
 
-    public File getRetrievedInstance() {
+    public String getRetrievedInstance() {
         return retrievedInstance;
     }
 

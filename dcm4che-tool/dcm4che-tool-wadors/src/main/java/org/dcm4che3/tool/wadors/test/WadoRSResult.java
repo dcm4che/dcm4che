@@ -35,31 +35,44 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.tool.common;
+package org.dcm4che3.tool.wadors.test;
+
+import org.dcm4che3.tool.common.test.TestResult;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
  */
 
-public class SimpleHTTPResponse {
+public class WadoRSResult implements TestResult {
 
-    private int status;
-    private String message;
-    
-    public SimpleHTTPResponse(int status,String message) {
-        this.status = status;
-        this.message = message;
+    private String testDescription;
+    private long time;
+    private WadoRSResponse response;
+    public WadoRSResult(String testDescription, long time, WadoRSResponse response) {
+    this.response = response;
+    this.time = time;
+    this.testDescription = testDescription;
     }
 
-    public String getMessage() {
-        return message;
+    public String getTestDescription() {
+        return testDescription;
     }
-    public int getStatus() {
-        return status;
+
+    public long getTime() {
+        return time;
     }
-    @Override
-    public String toString() {
-        return "Server responded with "+status + " - " + message;
+
+    public void setTestDescription(String testDescription) {
+        this.testDescription = testDescription;
     }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public WadoRSResponse getResponse() {
+        return response;
+    }
+
 }

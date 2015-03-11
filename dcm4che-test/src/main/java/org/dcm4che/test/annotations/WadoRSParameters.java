@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,31 +35,18 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.tool.common;
+package org.dcm4che.test.annotations;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 
-public class SimpleHTTPResponse {
-
-    private int status;
-    private String message;
-    
-    public SimpleHTTPResponse(int status,String message) {
-        this.status = status;
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-    public int getStatus() {
-        return status;
-    }
-    @Override
-    public String toString() {
-        return "Server responded with "+status + " - " + message;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+public @interface WadoRSParameters {
+    //no defaults
+    public String url();
+    public String retrieveDir();
 }

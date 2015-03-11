@@ -410,7 +410,7 @@ public class WadoURI{
         InputStream in = connection.getInputStream();
         
         String contentType = connection.getHeaderField("Content-Type");
-        File f = null;
+        String f = null;
         if(contentType.contains("application")) {
             if(contentType.contains("application/dicom+xml"))
                 f=writeXML(in, main);
@@ -520,21 +520,21 @@ public class WadoURI{
         return stf.newTransformerHandler(templates);
     }
     
-    private static File writeXML(InputStream in, WadoURI main) throws Exception {
+    private static String writeXML(InputStream in, WadoURI main) throws Exception {
         
-        File out = new File(main.getOutDir(), main.getOutFileName()+".xml");
+        File file = new File(main.getOutDir(), main.getOutFileName()+".xml");
         TransformerHandler th = getTransformerHandler(main);
         th.getTransformer().setOutputProperty(OutputKeys.INDENT,
                 main.xmlIndent ? "yes" : "no");
-        th.setResult(new StreamResult(out));
+        th.setResult(new StreamResult(file));
         Attributes attrs= SAXReader.parse(in);
         SAXWriter saxWriter = new SAXWriter(th);
         saxWriter.setIncludeKeyword(main.xmlIncludeKeyword); 
         saxWriter.write(attrs);
-        return out;
+        return file.getAbsolutePath();
     }
 
-    private static File writeFile(InputStream in, WadoURI main, String extension) {
+    private static String writeFile(InputStream in, WadoURI main, String extension) {
         File file = new File(main.getOutDir(), main.getOutFileName()+extension);
         try {
             Files.copy(in,file
@@ -542,7 +542,7 @@ public class WadoURI{
         } catch (IOException e) {
             System.out.println("wadouri: Error writing results to file "+ e.getMessage());
         }
-        return file;
+        return file.getAbsolutePath();
     }
 
 

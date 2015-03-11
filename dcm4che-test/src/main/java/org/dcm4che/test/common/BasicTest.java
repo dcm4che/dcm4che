@@ -77,7 +77,7 @@ public abstract class BasicTest {
 
     public DicomConfiguration getRemoteConfig() {
         if (remoteConfig == null) {
-            String baseURL = getDefaultProperties().getProperty("remoteConn.baseURL")+"/config/data";
+            String baseURL = getDefaultProperties().getProperty("remoteConn.url")+"/config/data";
             remoteConfig = RemoteDicomConfigFactory.createRemoteDicomConfiguration(baseURL);
         }
         return remoteConfig;

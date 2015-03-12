@@ -120,6 +120,7 @@ public class DicomInputStream extends FilterInputStream
     private final byte[] buffer = new byte[12];
     private ItemPointer[] itemPointers = {};
     private boolean decodeUNWithIVRLE = true;
+    private boolean addBulkDataReferences;
 
     private boolean catBlkFiles;
     private String blkFilePrefix = "blk";
@@ -268,6 +269,14 @@ public class DicomInputStream extends FilterInputStream
 
     public void setDecodeUNWithIVRLE(boolean decodeUNWithIVRLE) {
         this.decodeUNWithIVRLE = decodeUNWithIVRLE;
+    }
+
+    public boolean isAddBulkDataReferences() {
+        return addBulkDataReferences;
+    }
+
+    public void setAddBulkDataReferences(boolean addBulkDataReferences) {
+        this.addBulkDataReferences = addBulkDataReferences;
     }
 
     public final void setFileMetaInformationGroupLength(byte[] val) {
@@ -516,7 +525,16 @@ public class DicomInputStream extends FilterInputStream
             attrs.setValue(tag, vr, BulkData.deserializeFrom(
                     (ObjectInputStream) super.in));
         } else if (includeBulkData == IncludeBulkData.URI && isBulkData(attrs)) {
-            attrs.setValue(tag, vr, createBulkData());
+            BulkData bulkData = createBulkData();
+            attrs.setValue(tag, vr, bulkData);
+            if (addBulkDataReferences) {
+                attrs.getRoot().addBulkDataReference(
+                        attrs.privateCreatorOf(tag),
+                        tag & 0xffff00ff,
+                        vr,
+                        bulkData,
+                        attrs.itemPointers());
+            }
         } else {
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {

@@ -185,6 +185,10 @@ public class Attributes implements Serializable {
         return parent == null;
     }
 
+    public Attributes getRoot() {
+        return isRoot() ? this : parent.getRoot();
+    }
+
     public final int getLevel() {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
@@ -1925,6 +1929,38 @@ public class Attributes implements Serializable {
         }
 
         return oldValue;
+    }
+
+    public void addBulkDataReference(String privateCreator, int tag, VR vr, BulkData bulkData,
+                                ItemPointer... itemPointers) {
+        Sequence seq = ensureSequence(Tag.ReferencedBulkDataSequence, 8);
+        Attributes item = new Attributes(bigEndian, 7);
+        seq.add(item);
+        item.setString(Tag.RetrieveURL, VR.UR, bulkData.uri);
+        item.setInt(Tag.SelectorAttribute, VR.AT, tag);
+        item.setString(Tag.SelectorAttributeVR, VR.CS, vr.name());
+        if (privateCreator != null)
+            item.setString(Tag.SelectorAttributePrivateCreator, VR.LO, privateCreator);
+        if (itemPointers.length > 0) {
+            int[] seqTags = new int[itemPointers.length];
+            int[] itemNumbers = new int[itemPointers.length];
+            String[] privateCreators = null;
+            for (int i = 0; i < itemPointers.length; i++) {
+                ItemPointer ip = itemPointers[i];
+                seqTags[i] = ip.sequenceTag;
+                itemNumbers[i] = ip.itemIndex + 1;
+                if (ip.privateCreator != null) {
+                    if (privateCreators == null)
+                        privateCreators = new String[itemPointers.length];
+                    privateCreators[i] = ip.privateCreator;
+                }
+            }
+            item.setInt(Tag.SelectorSequencePointer, VR.AT, seqTags);
+            if (privateCreators != null)
+                item.setString(Tag.SelectorSequencePointerPrivateCreator, VR.LO, privateCreators);
+            item.setInt(Tag.SelectorSequencePointerItems, VR.IS, itemNumbers);
+        }
+        item.trimToSize();
     }
 
     private Object set(int tag, VR vr, Object value) {

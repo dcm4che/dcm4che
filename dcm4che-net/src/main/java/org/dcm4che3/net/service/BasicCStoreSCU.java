@@ -72,7 +72,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected static final Logger LOG = LoggerFactory
             .getLogger(BasicCStoreSCU.class);
 
-    protected int status = Status.Success;
+    protected int status = Status.Pending;
     protected int priority = 0;
     protected int nr_instances;
     protected List<T> completed = new ArrayList<T>();
@@ -134,7 +134,6 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     tsuid = selectTransferSyntaxFor(storeas, inst);
                     dataWriter = createDataWriter(inst, tsuid);
                 } catch (Exception e) {
-                    status = Status.OneOrMoreFailures;
                     LOG.info("Unable to store {}/{} to {}",
                             UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
                             storeas.getRemoteAET(), e);
@@ -144,7 +143,6 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 try {
                     cstore(storeas, inst, tsuid, dataWriter);
                 } catch (Exception e) {
-                    status = Status.UnableToPerformSubOperations;
                     LOG.warn(
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);
@@ -230,9 +228,8 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                     status = Status.OneOrMoreFailures;
                 else
                     status = Status.Success;
-            } else
-                status = Status.Pending;
-
+            }
+            
             setChanged();
             notifyObservers(); // notify observers of received rsp
         }

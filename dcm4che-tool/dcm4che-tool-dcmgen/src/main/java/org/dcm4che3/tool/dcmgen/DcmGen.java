@@ -140,6 +140,7 @@ public class DcmGen{
         ArrayList<String> generatedFiles = new ArrayList<String>();
         String studyIUID = UIDUtils.createUID();
         Attributes seedAttrs = null;
+        Attributes fmiOld = null;
         Attributes fmi = null;
         if (this.seedFile.getName().endsWith(".xml")) {
             try {
@@ -155,7 +156,8 @@ public class DcmGen{
                 din = new DicomInputStream(this.seedFile);
                 din.setIncludeBulkData(IncludeBulkData.URI);
                 seedAttrs = din.readDataset(-1, -1);
-                fmi = din.getFileMetaInformation();
+                fmiOld = din.readFileMetaInformation();
+                
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -195,6 +197,7 @@ public class DcmGen{
                         parent.mkdirs();
                     File outFile = new File(parent,iuid+".dcm");
                     dout = new DicomOutputStream(outFile);
+                    fmi = seedAttrs.createFileMetaInformation(fmiOld.getString(Tag.TransferSyntaxUID));
                     dout.writeDataset(fmi, seedAttrs);
                     generatedFiles.add(outFile.getAbsolutePath());
                 } catch (IOException e) {

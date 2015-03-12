@@ -42,6 +42,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -109,8 +111,8 @@ public class StoreTool implements TestTool {
             IncompatibleConnectionException, GeneralSecurityException {
 
         long t1, t2;
-
-        File file = new File(baseDirectory, fileName);
+        Path p = Paths.get(fileName);
+        File file = p.isAbsolute()? new File(fileName):new File(baseDirectory, fileName);
 
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),

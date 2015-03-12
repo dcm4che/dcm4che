@@ -36,77 +36,55 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.tool.dcmgen.test;
+package org.dcm4che3.tool.storescp.test;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.tool.common.test.TestResult;
-import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.dcmgen.DcmGen;
 
 /**
- * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
+ * @author Hesham elbadawi <bsdreko@gmail.com>
  */
-public class DcmGenTool implements TestTool {
 
-    private int instanceCount = 1;
+public class StoreSCPResult implements TestResult {
 
-    private int seriesCount = 1;
 
-    private File outputDir;
-
-    private File seedFile;
-
-    private TestResult result;
-
-    public DcmGenTool(int instanceCount,int seriesCount, File outputDir, File seedFile) {
-        super();
-        this.instanceCount = instanceCount;
-        this.seriesCount = seriesCount;
-        this.outputDir = outputDir;
-        this.seedFile = seedFile;
+    private String testDescription;
+    private String fileName;
+    private long time;
+    private int filesReceived;
+    private List<Attributes> cStoreRQAttributes;
+    /**
+     * @param testDescription
+     * @param fileName
+     * @param size
+     * @param time
+     * @param filesReceived
+     * @param warnings
+     * @param failures
+     * @param cmdRSP 
+     */
+    public StoreSCPResult(String testDescription, long time, int filesReceived, List<Attributes> cmdRQ) {
+        this.testDescription = testDescription;
+        this.time = time;
+        this.filesReceived = filesReceived;
+        this.cStoreRQAttributes = cmdRQ;
     }
-
-    public void generateFiles(String testDescription, Attributes override) {
-        DcmGen generator = new DcmGen();
-        generator.setInstanceCount(instanceCount);
-        generator.setSeriesCount(seriesCount);
-        generator.setOutputDir(outputDir);
-        generator.setSeedFile(seedFile);
-        List<String> results = generator.generateDICOM(override==null?new Attributes():override);
-        init(new DcmGenResult(results));
-        assertTrue(results.size() >= 1);
+    public String getTestDescription() {
+        return testDescription;
     }
-
-    @Override
-    public void init(TestResult result) {
-        this.result = result;
+    public String getFileName() {
+        return fileName;
     }
-
-    @Override
-    public TestResult getResult() {
-        return this.result;
+    public long getTime() {
+        return time;
     }
-
-    public int getInstanceCount() {
-        return instanceCount;
+    public int getFilesReceived() {
+        return filesReceived;
     }
-
-    public int getSeriesCount() {
-        return seriesCount;
-    }
-
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    public File getSeedFile() {
-        return seedFile;
+    public List<Attributes> getcStoreRQAttributes() {
+        return cStoreRQAttributes;
     }
 
 }

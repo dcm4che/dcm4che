@@ -35,78 +35,19 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.test.annotations;
 
-package org.dcm4che3.tool.dcmgen.test;
-
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.util.List;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
-import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.dcmgen.DcmGen;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
  */
-public class DcmGenTool implements TestTool {
-
-    private int instanceCount = 1;
-
-    private int seriesCount = 1;
-
-    private File outputDir;
-
-    private File seedFile;
-
-    private TestResult result;
-
-    public DcmGenTool(int instanceCount,int seriesCount, File outputDir, File seedFile) {
-        super();
-        this.instanceCount = instanceCount;
-        this.seriesCount = seriesCount;
-        this.outputDir = outputDir;
-        this.seedFile = seedFile;
-    }
-
-    public void generateFiles(String testDescription, Attributes override) {
-        DcmGen generator = new DcmGen();
-        generator.setInstanceCount(instanceCount);
-        generator.setSeriesCount(seriesCount);
-        generator.setOutputDir(outputDir);
-        generator.setSeedFile(seedFile);
-        List<String> results = generator.generateDICOM(override==null?new Attributes():override);
-        init(new DcmGenResult(results));
-        assertTrue(results.size() >= 1);
-    }
-
-    @Override
-    public void init(TestResult result) {
-        this.result = result;
-    }
-
-    @Override
-    public TestResult getResult() {
-        return this.result;
-    }
-
-    public int getInstanceCount() {
-        return instanceCount;
-    }
-
-    public int getSeriesCount() {
-        return seriesCount;
-    }
-
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    public File getSeedFile() {
-        return seedFile;
-    }
-
+@Retention(RetentionPolicy.RUNTIME)
+public @interface StoreSCPParameters {
+    public String storageDirectory();
+    public String sourceDevice() default "storescp";
+    public String sourceAETitle() default "STORESCP";
+    public String connection() default "dicom"; //bound connection
+    public boolean noStore() default false;
 }

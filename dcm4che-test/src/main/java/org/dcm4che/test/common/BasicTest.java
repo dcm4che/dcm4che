@@ -160,15 +160,12 @@ public abstract class BasicTest {
         return mppsTool.getResult();
     }
 
-    public TestResult storeResources(String description, DcmGenResult result) throws MissingArgumentException {
+    public TestResult storeGenerated(String description, File file) throws MissingArgumentException {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         
         try {
-            for(String fileName : result.getGeneratedResults()) {
-                File f = new File(fileName);
-                storeTool.setbaseDir(f.getParent()==null?"target/test-classes/":f.getParent());
-                storeTool.store(description, fileName);
-            }
+                //get whole study
+                storeTool.store(description, file.getAbsolutePath());
         } catch (Exception e) {
             throw new TestToolException(e);
         }
@@ -180,7 +177,7 @@ public abstract class BasicTest {
         TestResult storeResult;
         dcmGenTool.generateFiles(description, overrideAttributes);
         DcmGenResult result = (DcmGenResult) dcmGenTool.getResult();
-        storeResult = storeResources(description, result);
+        storeResult = storeGenerated(description, dcmGenTool.getOutputDir());
         return storeResult;
     }
 }

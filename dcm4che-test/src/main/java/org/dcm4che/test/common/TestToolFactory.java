@@ -59,6 +59,7 @@ import org.dcm4che3.tool.movescu.test.MoveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
 import org.dcm4che3.tool.qidors.test.QidoRSTool;
 import org.dcm4che3.tool.stgcmtscu.test.StgCmtTool;
+import org.dcm4che3.tool.storescp.test.StoreSCPTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.dcm4che3.tool.stowrs.test.StowRSTool;
 import org.dcm4che3.tool.wadors.WadoRS;
@@ -84,7 +85,7 @@ public class TestToolFactory {
         QidoTool,
         WadoURITool,
         WadoRSTool,
-        DCMQRSCPTool,
+        StoreSCPTool,
         DcmGenTool
     }
     private static DicomConfiguration config;
@@ -121,6 +122,7 @@ public class TestToolFactory {
             File baseDir = null;
             File retrieveDir = null;
             File stgCmtStorageDirectory = null;
+            File storeSCPStorageDirectory = null;
         //Load default parameters
          Properties defaultParams = test.getDefaultProperties();
         //Load config file if parametrized else load default config
@@ -373,6 +375,26 @@ public class TestToolFactory {
                     :null;
             retrieveDir = new File(wadoRSParams.retrieveDir());
             tool = new WadoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url), retrieveDir);
+            break;
+        case StoreSCPTool:
+            StoreSCPParameters storeSCPParams = (StoreSCPParameters) test.getParams().get("StoreSCPParameters");
+            storeSCPStorageDirectory =  storeSCPParams != null && storeSCPParams.storageDirectory()!=null?
+                    new File(storeSCPParams.storageDirectory())
+                    :new File(defaultParams.getProperty("storescp.storedirectory"));
+            sourceDevice = storeSCPParams != null? storeSCPParams.sourceDevice():"storescp";
+            sourceAETitle = storeSCPParams != null? storeSCPParams.sourceAETitle():"STORESCP";
+            boolean noStore = storeSCPParams != null? storeSCPParams.noStore():false;
+            device = null;
+            try {
+                device = getDicomConfiguration().findDevice(sourceDevice);
+                conn = device.connectionWithEqualsRDN(new Connection(
+                        (String) (storeSCPParams != null && storeSCPParams.connection() != null?
+                                storeSCPParams.connection():defaultParams.get("storescp.connection")), ""));
+            } catch (ConfigurationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            tool = new StoreSCPTool(storeSCPStorageDirectory, device, sourceAETitle, conn, noStore);
             break;
         default:
             throw new IllegalArgumentException("Unsupported TestToolType specified"

@@ -195,6 +195,10 @@ public class MoveTool implements TestTool{
         moveAttrs.setString(tag, vr, value);
     }
 
+    public void addAll(Attributes keys) {
+        moveAttrs.addAll(keys);
+    }
+
     public void setExpectedMatches(int expectedResult) {
         this.expectedMatches = expectedResult;
     }

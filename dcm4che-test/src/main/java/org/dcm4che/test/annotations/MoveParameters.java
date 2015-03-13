@@ -47,9 +47,9 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MoveParameters {
-    public String aeTitle();
+    public String aeTitle() default "NULL";
     public String retrieveLevel() default "STUDY";
-    public String destAEtitle();
+    public String destAEtitle() default "NULL";
     public String sourceAETitle() default "MOVESCU";
     public String sourceDevice() default "movescu";
     public String connection() default "dicom";

@@ -40,7 +40,7 @@ package org.dcm4che.test.common;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import org.dcm4che.test.annotations.TestConfig;
+import org.dcm4che.test.annotations.TestLocalConfig;
 import org.dcm4che.test.annotations.TestParamDefaults;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -71,8 +71,8 @@ public class TestParametersRule implements TestRule {
                     Class annoType = anno.annotationType();
                     getInstance().addParam(annoType.getSimpleName(),method.getAnnotation(annoType));
                 }
-                TestConfig cnf = description.getTestClass().getAnnotation(TestConfig.class);
-                getInstance().addParam("configfile",cnf);
+                TestLocalConfig cnf = description.getTestClass().getAnnotation(TestLocalConfig.class);
+                getInstance().addParam("defaultLocalConfig",cnf);
                 TestParamDefaults props = description.getTestClass().getAnnotation(TestParamDefaults.class);
                 getInstance().addParam("defaultParams", props);
                 Method initMethod = null;

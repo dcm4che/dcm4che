@@ -35,62 +35,17 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+package org.dcm4che.test.annotations;
 
-package org.dcm4che3.tool.storescp.test;
-
-import java.util.List;
-
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.tool.common.test.TestResult;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 
-public class StoreSCPResult implements TestResult {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TestLocalConfig {
 
-
-    private String testDescription;
-    private String fileName;
-    private long time;
-    private int filesReceived;
-    private List<Attributes> cStoreRQAttributes;
-    private List<String> sopUIDs;
-    /**
-     * @param testDescription
-     * @param fileName
-     * @param size
-     * @param time
-     * @param filesReceived
-     * @param sopIUIDs 
-     * @param warnings
-     * @param failures
-     * @param cmdRSP 
-     */
-    public StoreSCPResult(String testDescription, long time, int filesReceived, List<Attributes> cmdRQ, List<String> sopIUIDs) {
-        this.testDescription = testDescription;
-        this.time = time;
-        this.filesReceived = filesReceived;
-        this.cStoreRQAttributes = cmdRQ;
-        this.sopUIDs = sopIUIDs;
-    }
-    public String getTestDescription() {
-        return testDescription;
-    }
-    public String getFileName() {
-        return fileName;
-    }
-    public long getTime() {
-        return time;
-    }
-    public int getFilesReceived() {
-        return filesReceived;
-    }
-    public List<Attributes> getcStoreRQAttributes() {
-        return cStoreRQAttributes;
-    }
-    public List<String> getSopUIDs() {
-        return sopUIDs;
-    }
-
+    public String configFile() ;
 }

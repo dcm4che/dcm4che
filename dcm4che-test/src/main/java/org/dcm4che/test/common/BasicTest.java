@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.MissingArgumentException;
+import org.dcm4che.test.annotations.TestLocalConfig;
 import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
 import org.dcm4che.test.utils.LoadProperties;
@@ -58,6 +59,8 @@ import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.dcmgen.test.DcmGenResult;
 import org.dcm4che3.tool.dcmgen.test.DcmGenTool;
 import org.dcm4che3.tool.findscu.test.QueryTool;
+import org.dcm4che3.tool.movescu.test.MoveResult;
+import org.dcm4che3.tool.movescu.test.MoveTool;
 import org.dcm4che3.tool.mppsscu.test.MppsTool;
 import org.dcm4che3.tool.storescu.test.StoreTool;
 import org.junit.Rule;
@@ -72,6 +75,8 @@ public abstract class BasicTest {
     public TestParametersRule rule = new TestParametersRule(this);
 
     private Properties defaultProperties;
+
+    private File defaultLocalConfig;
 
     private DicomConfiguration remoteConfig = null;
 
@@ -107,9 +112,14 @@ public abstract class BasicTest {
                     && this.getParams().get("defaultParams") != null)
                 System.setProperty("defaultParams", ((TestParamDefaults)
                         this.getParams().get("defaultParams")).propertiesFile());
+            if(this.getParams().containsKey("defaultLocalConfig")
+                    && this.getParams().get("defaultLocalConfig") != null)
+                System.setProperty("defaultLocalConfig", ((TestLocalConfig)
+                        this.getParams().get("defaultLocalConfig")).configFile());
             
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
-
+            if(this.defaultLocalConfig!=null)
+            this.setDefaultLocalConfig(new File(System.getProperty("defaultLocalConfig")));
         } catch (IOException e) {
             throw new TestToolException(e);
         }
@@ -136,8 +146,9 @@ public abstract class BasicTest {
         }
         return storeTool.getResult();
     }   
-    public TestResult query(String description, Attributes keys, boolean fuzzy) throws MissingArgumentException {
-        QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.FindTool, this);
+    public TestResult query(String description, Attributes keys, boolean fuzzy, int expectedMatches) throws MissingArgumentException {
+        QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.QueryTool, this);
+        queryTool.setExpectedMatches(expectedMatches);
         queryTool.addAll(keys);
             try {
                 if(fuzzy)
@@ -150,6 +161,18 @@ public abstract class BasicTest {
         return queryTool.getResult();
     }
 
+    public TestResult move(String description, Attributes moveAttrs, int expectedMatches) throws MissingArgumentException {
+        MoveTool tool = (MoveTool) TestToolFactory.createToolForTest(TestToolType.MoveTool, this);
+        tool.setExpectedMatches(expectedMatches);
+        tool.addAll(moveAttrs);
+        try {
+            tool.move(description);
+        } catch (Exception e) {
+            throw new TestToolException(e);
+        }
+        MoveResult result = (MoveResult) tool.getResult();
+        return result;
+    }
     public TestResult mpps(String description, String fileName) throws MissingArgumentException {
         MppsTool mppsTool = (MppsTool) TestToolFactory.createToolForTest(TestToolType.MppsTool, this);
         try {
@@ -179,5 +202,14 @@ public abstract class BasicTest {
         DcmGenResult result = (DcmGenResult) dcmGenTool.getResult();
         storeResult = storeGenerated(description, dcmGenTool.getOutputDir());
         return storeResult;
+    }
+
+    public File getDefaultLocalConfig() {
+        // TODO Auto-generated method stub
+        return this.defaultLocalConfig;
+    }
+
+    public void setDefaultLocalConfig(File defaultLocalConfig) {
+        this.defaultLocalConfig = defaultLocalConfig;
     }
 }

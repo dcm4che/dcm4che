@@ -106,6 +106,8 @@ public class StoreSCPTool implements TestTool {
 
     private String testDescription;
 
+    private List<String> sopIUIDs;
+
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
         @Override
@@ -120,6 +122,7 @@ public class StoreSCPTool implements TestTool {
                 return;
             String cuid = rq.getString(Tag.AffectedSOPClassUID);
             String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
+            addSopUID(iuid);
             String tsuid = pc.getTransferSyntax();
             File file = new File(storageDirectory, iuid);
             try {
@@ -204,7 +207,7 @@ public class StoreSCPTool implements TestTool {
         while(bound.isListening());
         //now return result
 
-        init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList()));
+        init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs));
     }
     private List<Attributes> getCmdRQList() {
         return rqCMDs;
@@ -231,4 +234,9 @@ public class StoreSCPTool implements TestTool {
         return this.result;
     }
 
+    private void addSopUID(String uid) {
+        if(this.sopIUIDs == null)
+            this.sopIUIDs = new ArrayList<String>();
+        this.sopIUIDs.add(uid);
+    }
 }

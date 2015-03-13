@@ -112,6 +112,10 @@ public class StoreTool implements TestTool {
 
         long t1, t2;
         Path p = Paths.get(fileName);
+        if(!p.isAbsolute() && baseDirectory == null)
+            throw new IllegalArgumentException("No base Directory and file"
+                    + " to send is provided as a relative path");
+        
         File file = p.isAbsolute()? new File(fileName):new File(baseDirectory, fileName);
 
         assertTrue(

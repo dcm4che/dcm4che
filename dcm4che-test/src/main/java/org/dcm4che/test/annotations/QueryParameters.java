@@ -49,7 +49,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryParameters {
 
-    public String aeTitle();
+    public String aeTitle() default "NULL";
 
     public String sourceDevice() default "findscu";
 

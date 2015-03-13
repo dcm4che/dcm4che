@@ -78,7 +78,7 @@ public class TestToolFactory {
         StoreTool,
         GetTool,
         MoveTool,
-        FindTool,
+        QueryTool,
         MppsTool,
         StorageCommitmentTool,
         StowTool,
@@ -125,25 +125,25 @@ public class TestToolFactory {
             File storeSCPStorageDirectory = null;
         //Load default parameters
          Properties defaultParams = test.getDefaultProperties();
+         File defaultLocalConfig = test.getDefaultLocalConfig();
         //Load config file if parametrized else load default config
-        File file = null;
-        if(test.getParams().get("configfile")!=null) {
-                file = new File(((TestConfig)test.getParams().get("configfile")).configFile());
+        if(test.getParams().get("defaultLocalConfig")!=null) {
+            defaultLocalConfig = test.getDefaultLocalConfig();
         }
         else {
             try {
-                file = new File("tmp");
+                defaultLocalConfig = Files.createTempFile("tempdefaultconfig", "json").toFile();
                 
                 Files.copy(TestToolFactory.class.getClassLoader()
                         .getResourceAsStream("defaultConfig.json")
-                        , file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                file.deleteOnExit();
+                        , defaultLocalConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                defaultLocalConfig.deleteOnExit();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
             try {
-                config = DicomConfigurationBuilder.newJsonConfigurationBuilder(file.getPath()).build();
+                config = DicomConfigurationBuilder.newJsonConfigurationBuilder(defaultLocalConfig.getPath()).build();
             } catch (ConfigurationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -161,13 +161,22 @@ public class TestToolFactory {
                     :remoteParams.baseURL();
 
         switch (type) {
+
         case StoreTool:
                 StoreParameters storeParams = (StoreParameters) test.getParams().get("StoreParameters");
-                aeTitle = storeParams!=null && storeParams.aeTitle()!=null? storeParams.aeTitle() 
-                        : defaultParams.getProperty("store.aetitle");
-                baseDir = storeParams!=null && storeParams.baseDirectory()!=null? new File(storeParams.baseDirectory())
-                :new File(defaultParams.getProperty("store.directory"));
+                
+                aeTitle = storeParams!=null && !storeParams.aeTitle()
+                        .equalsIgnoreCase("NULL")? storeParams.aeTitle() 
+                        :(defaultParams.getProperty("store.aetitle")!=null
+                        ?defaultParams.getProperty("store.aetitle"):null);
+                        
+                baseDir = storeParams!=null && !storeParams.baseDirectory()
+                        .equalsIgnoreCase("NULL")? new File(storeParams.baseDirectory())
+                        :(defaultParams.getProperty("store.directory")!=null
+                        ?new File(defaultParams.getProperty("store.directory")):null);
+                        
                 sourceDevice = storeParams!=null?storeParams.sourceDevice():"storescu";
+                
                 sourceAETitle = storeParams!=null?storeParams.sourceAETitle():"STORESCU";
 
                 try {
@@ -183,14 +192,24 @@ public class TestToolFactory {
                         device == null ? new Device(sourceDevice):device,sourceAETitle, conn);
             break;
 
-        case FindTool:
+        case QueryTool:
                 QueryParameters queryParams = (QueryParameters) test.getParams().get("QueryParameters");
-                aeTitle = queryParams!=null && queryParams.aeTitle()!=null? queryParams.aeTitle() 
-                        : defaultParams.getProperty("query.aetitle");
+                
+                aeTitle = queryParams!=null && !queryParams.aeTitle()
+                        .equalsIgnoreCase("NULL")? queryParams.aeTitle() 
+                        :(defaultParams.getProperty("query.aetitle")!=null
+                        ?defaultParams.getProperty("query.aetitle"):null);
+                        
+                queryLevel = queryParams!=null && !queryParams.queryLevel()
+                        .equalsIgnoreCase("NULL")? queryParams.queryLevel() 
+                        :(defaultParams.getProperty("query.level")!=null
+                        ?defaultParams.getProperty("query.level"):null);
+                        
                 sourceDevice = queryParams!=null?queryParams.sourceDevice():"findscu";
+                
                 sourceAETitle = queryParams!=null?queryParams.sourceAETitle():"FINDSCU";
-                queryLevel = queryParams != null && queryParams.queryLevel()!=null? queryParams.queryLevel()
-                        : defaultParams.getProperty("query.level");
+                
+                        
                 device = null;
                 try {
                     device = getDicomConfiguration().findDevice(sourceDevice);
@@ -203,6 +222,7 @@ public class TestToolFactory {
                 }
                 tool = new QueryTool(host, port, aeTitle, queryLevel, device, sourceAETitle, conn);
             break;
+
         case MppsTool:
             MppsParameters mppsParams = (MppsParameters) test.getParams().get("MppsParameters");
             aeTitle = mppsParams != null && mppsParams.aeTitle()!=null? mppsParams.aeTitle() 
@@ -277,14 +297,24 @@ public class TestToolFactory {
             
             tool = new StgCmtTool(host,port,aeTitle,baseDir,stgCmtStorageDirectory,device,sourceAETitle, conn);
             break;
+
         case MoveTool:
             MoveParameters moveParams = (MoveParameters) test.getParams().get("MoveParameters");
-            aeTitle = moveParams != null && moveParams.aeTitle() != null? moveParams.aeTitle()
-                    :defaultParams.getProperty("move.aetitle");
-            destAEtitle = moveParams !=null && moveParams.destAEtitle() !=null? moveParams.destAEtitle()
-                    :defaultParams.getProperty("move.destaetitle");
-            retrieveLevel = moveParams != null && moveParams.retrieveLevel()!=null? moveParams.retrieveLevel()
-                    : defaultParams.getProperty("move.level");
+            aeTitle = moveParams!=null && !moveParams.aeTitle()
+                    .equalsIgnoreCase("NULL")? moveParams.aeTitle() 
+                    :(defaultParams.getProperty("move.aetitle")!=null
+                    ?defaultParams.getProperty("move.aetitle"):null);
+                    
+            retrieveLevel = moveParams!=null && !moveParams.retrieveLevel()
+                    .equalsIgnoreCase("NULL")? moveParams.retrieveLevel() 
+                    :(defaultParams.getProperty("move.level")!=null
+                    ?defaultParams.getProperty("move.level"):null);
+
+            destAEtitle = moveParams!=null && !moveParams.destAEtitle()
+                    .equalsIgnoreCase("NULL")? moveParams.destAEtitle()
+                    :(defaultParams.getProperty("move.destaetitle")!=null
+                    ?defaultParams.getProperty("move.destaetitle"):null);
+            
             sourceDevice = moveParams != null? moveParams.sourceDevice():"movescu";
             sourceAETitle = moveParams != null? moveParams.sourceAETitle():"MOVESCU";
             device = null;
@@ -299,6 +329,7 @@ public class TestToolFactory {
             }
             tool = new MoveTool(host, port, aeTitle, destAEtitle, retrieveLevel, device, sourceAETitle, conn);
             break;
+
         case StowTool:
             StowRSParameters stowParams = (StowRSParameters) test.getParams().get("StowRSParameters");
             url = stowParams != null && stowParams.url() != null? stowParams.url()
@@ -376,14 +407,26 @@ public class TestToolFactory {
             retrieveDir = new File(wadoRSParams.retrieveDir());
             tool = new WadoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url), retrieveDir);
             break;
+
         case StoreSCPTool:
-            StoreSCPParameters storeSCPParams = (StoreSCPParameters) test.getParams().get("StoreSCPParameters");
-            storeSCPStorageDirectory =  storeSCPParams != null && storeSCPParams.storageDirectory()!=null?
+            
+            StoreSCPParameters storeSCPParams = (StoreSCPParameters) test.getParams()
+            .get("StoreSCPParameters");
+            
+            storeSCPStorageDirectory =  storeSCPParams != null 
+                    && storeSCPParams.storageDirectory()!=null?
                     new File(storeSCPParams.storageDirectory())
                     :new File(defaultParams.getProperty("storescp.storedirectory"));
-            sourceDevice = storeSCPParams != null? storeSCPParams.sourceDevice():"storescp";
-            sourceAETitle = storeSCPParams != null? storeSCPParams.sourceAETitle():"STORESCP";
-            boolean noStore = storeSCPParams != null? storeSCPParams.noStore():false;
+                    
+            sourceDevice = storeSCPParams != null
+                    ? storeSCPParams.sourceDevice():"storescp";
+                    
+            sourceAETitle = storeSCPParams != null
+                    ? storeSCPParams.sourceAETitle():"STORESCP";
+                    
+            boolean noStore = storeSCPParams != null
+                    ? storeSCPParams.noStore():false;
+                    
             device = null;
             try {
                 device = getDicomConfiguration().findDevice(sourceDevice);
@@ -394,8 +437,10 @@ public class TestToolFactory {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            
             tool = new StoreSCPTool(storeSCPStorageDirectory, device, sourceAETitle, conn, noStore);
             break;
+
         default:
             throw new IllegalArgumentException("Unsupported TestToolType specified"
                     + ", unable to create tool");

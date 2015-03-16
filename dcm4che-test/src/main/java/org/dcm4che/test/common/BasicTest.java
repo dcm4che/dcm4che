@@ -90,7 +90,7 @@ public abstract class BasicTest {
 
     private static Map<String, Annotation> params = new HashMap<String, Annotation>();
 
-    protected Map<String, Annotation> getParams() {
+    public Map<String, Annotation> getParams() {
         return params;
     }
 

@@ -159,6 +159,9 @@ public class TestToolFactory {
             String baseURL =  remoteParams==null?
                     defaultParams.getProperty("remoteConn.url")
                     :remoteParams.baseURL();
+            String webContext = remoteParams==null?
+                    defaultParams.getProperty("remoteConn.webcontext")
+                    :remoteParams.webContext();
 
         switch (type) {
 
@@ -337,7 +340,7 @@ public class TestToolFactory {
             if(url == null)
                 throw new MissingArgumentException("To create a StowRS Tool a url must be specified"
                         + " in the StowParameters annotation");
-            tool = new StowRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url));
+            tool = new StowRSTool(baseURL + "/"+webContext+(url.startsWith("/")? url : "/"+url));
             break;
         case QidoTool:
             QidoRSParameters qidoParams = (QidoRSParameters) test.getParams().get("QidoRSParameters");
@@ -356,7 +359,7 @@ public class TestToolFactory {
                     ?qidoParams.returnAll() : true;
             String offset = qidoParams !=null && !qidoParams.offset().equalsIgnoreCase("0")
                     ?qidoParams.offset() : "0";
-            tool = new QidoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url),
+            tool = new QidoRSTool(baseURL + "/"+webContext+(url.startsWith("/")? url : "/"+url),
                     limit, fuzzy, timezone, returnAll, offset);
             break;
         case WadoURITool:
@@ -389,7 +392,7 @@ public class TestToolFactory {
             frameNumber = wadoUriParams.frameNumber();
             imageQuality = wadoUriParams.imageQuality();
             retrieveDir = new File(wadoUriParams.retrieveDir());
-            tool = new WadoURITool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url)
+            tool = new WadoURITool(baseURL + "/"+webContext+(url.startsWith("/")? url : "/"+url)
                     ,studyUID, seriesUID, objectUID
                     , contentType, charset, anonymize
                     , annotation, rows, columns
@@ -405,7 +408,7 @@ public class TestToolFactory {
             url = wadoRSParams != null && wadoRSParams.url() != null? wadoRSParams.url()
                     :null;
             retrieveDir = new File(wadoRSParams.retrieveDir());
-            tool = new WadoRSTool(baseURL + "/dcm4chee-arc"+(url.startsWith("/")? url : "/"+url), retrieveDir);
+            tool = new WadoRSTool(baseURL + "/"+webContext+(url.startsWith("/")? url : "/"+url), retrieveDir);
             break;
 
         case StoreSCPTool:

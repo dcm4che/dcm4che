@@ -118,8 +118,10 @@ public class StoreSCPTool implements TestTool {
                 t1=System.currentTimeMillis();
                 first = false;
             rsp.setInt(Tag.Status, VR.US, status);
-            if (noStore)
+            if (noStore) {
+                fileReceived++;
                 return;
+            }
             String cuid = rq.getString(Tag.AffectedSOPClassUID);
             String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
             addSopUID(iuid);
@@ -143,10 +145,6 @@ public class StoreSCPTool implements TestTool {
             }
         }
 
-        @Override
-        public void onClose(Association as) {
-            stop();
-        };
     };
 
     public StoreSCPTool( File storageDirectory, Device device,
@@ -193,19 +191,9 @@ public class StoreSCPTool implements TestTool {
 
     public void stop() {
         t2=System.currentTimeMillis();
-        if (bound.isListening()) {
-            try {
-                device.waitForNoOpenConnections();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
             device.unbindConnections();
             ((ExecutorService) device.getExecutor()).shutdown();
             device.getScheduledExecutor().shutdown();
-        }
-        while(bound.isListening());
-        //now return result
 
         init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs));
     }

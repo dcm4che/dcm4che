@@ -90,6 +90,6 @@ public class StreamDecompressorTest {
         int frames = ds.getInt(Tag.NumberOfFrames, 0);
         int length = rows * cols * samples * (allocated >>> 3) * frames;
         BulkData pixelData = (BulkData) ds.getValue(Tag.PixelData);
-        assertEquals((length + 1) & ~1, pixelData.length);
+        assertEquals((length + 1) & ~1, pixelData.length());
     }
 }

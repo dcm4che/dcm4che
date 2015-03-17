@@ -47,8 +47,6 @@ import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.MessageFormat;
-import java.text.ParseException;
 
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
@@ -65,31 +63,23 @@ public class BulkData implements Value {
 
     public final String uri;
     public final String uuid;
-    private final int uriPathEnd;
     public final boolean bigEndian;
-    public final long offset;
-    public final int length;
+    private int uriPathEnd;
+    private long offset;
+    private int length = -1;
+    private long[] offsets;
+    private int[] lengths;
 
     public BulkData(String uuid, String uri, boolean bigEndian) {
-        Object[] parsed = { uri, 0, -1 };
-        int uriPathEnd = 0;
         if (uri != null) {
             if (uuid != null)
                 throw new IllegalArgumentException("uuid and uri are mutually exclusive");
-            try {
-                parsed = new MessageFormat(
-                        "{0}?offset={1,number}&length={2,number}")
-                    .parse(uri);
-            } catch (ParseException e) { }
-            uriPathEnd = ((String) parsed[0]).length();
+            parseURI(uri);
         } else if (uuid == null) {
             throw new IllegalArgumentException("uuid or uri must be not null");
         }
         this.uuid = uuid;
         this.uri = uri;
-        this.uriPathEnd = uriPathEnd;
-        this.offset = ((Number) parsed[1]).longValue();
-        this.length = ((Number) parsed[2]).intValue();
         this.bigEndian = bigEndian;
     }
 
@@ -102,6 +92,180 @@ public class BulkData implements Value {
         this.bigEndian = bigEndian;
     }
 
+    public BulkData(String uri, long[] offsets, int[] lengths, boolean bigEndian) {
+        if (offsets.length == 0)
+            throw new IllegalArgumentException("offsets.length == 0");
+
+        if (offsets.length != lengths.length)
+            throw new IllegalArgumentException(
+                    "offsets.length[" + offsets.length
+                    + "] != lengths.length[" + lengths.length + "]");
+
+        this.uuid = null;
+        this.uriPathEnd = uri.length();
+        this.uri = appendQuery(uri, offsets, lengths);
+        this.offsets = offsets.clone();
+        this.lengths = lengths.clone();
+        this.bigEndian = bigEndian;
+    }
+
+    /**
+     * Returns a {@code BulkData} instance combining all {@code BulkData} instances in {@code bulkDataFragments}.
+     *
+     * @param  bulkDataFragments {@code Fragments} instance with {@code BulkData} instances
+     *         referencing individual fragments
+     * @return a {@code BulkData} instance combining all {@code BulkData} instances in {@code bulkDataFragments}.
+     * @throws ClassCastException if {@code bulkDataFragments} contains {@code byte[]}
+     * @throws IllegalArgumentException if {@code bulkDataFragments} contains URIs referencing different Resources
+     *         or without Query Parameter {@code length}.
+     */
+    public static BulkData fromFragments(Fragments bulkDataFragments) {
+        int size = bulkDataFragments.size();
+        String uri = null;
+        long[] offsets = new long[size];
+        int[] lengths = new int[size];
+        for (int i = 0; i < size; i++) {
+            Object value = bulkDataFragments.get(i);
+            if (value == Value.NULL)
+                continue;
+
+            BulkData bulkdata = (BulkData) value;
+            String uriWithoutQuery = bulkdata.uriWithoutQuery();
+            if (uri == null)
+                uri = uriWithoutQuery;
+            else if (!uri.equals(uriWithoutQuery))
+                throw new IllegalArgumentException("BulkData URIs references different Resources");
+            if (bulkdata.length() == -1)
+                throw new IllegalArgumentException("BulkData Reference with unspecified length");
+            offsets[i] = bulkdata.offset();
+            lengths[i] = bulkdata.length();
+        }
+        return new BulkData(uri, offsets, lengths, false);
+    }
+
+    /**
+     * Returns {@code true}, if the URI of this {@code BulkData} instance specifies offset and length of individual
+     * data fragments by Query Parameters {@code offsets} and {@code lengths} and therefore can be converted
+     * by {@link #toFragments} to a {@code Fragments} instance containing {@code BulkData} instances
+     * referencing individual fragments.
+     *
+     * @return {@code true} if this {@code BulkData} instance can be converted to a {@code Fragments} instance
+     * by {@link #toFragments}
+     */
+    public boolean hasFragments() {
+        return  offsets != null && lengths != null;
+    }
+
+    /**
+     * Returns a {@code Fragments} instance with containing {@code BulkData} instances referencing
+     * individual fragments, referenced by this {@code BulkData} instances.
+     *
+     * @param  privateCreator
+     * @param  tag
+     * @param  vr
+     * @return {@code Fragments} instance with containing {@code BulkData} instances referencing
+     * individual fragments, referenced by this {@code BulkData} instances
+     * @throws UnsupportedOperationException, if the URI {@code BulkData} instance does not specify
+     * offset and length of individual data fragments by Query Parameters {@code offsets} and {@code lengths}
+     */
+    public Fragments toFragments (String privateCreator, int tag, VR vr) {
+        if (offsets == null || lengths == null)
+            throw new UnsupportedOperationException();
+
+        if (offsets.length != lengths.length)
+            throw new IllegalStateException("offsets.length[" + offsets.length
+                    + "] != lengths.length[" + lengths.length + "]");
+
+        Fragments fragments = new Fragments(privateCreator, tag, vr, bigEndian, lengths.length);
+        String uriWithoutQuery = uriWithoutQuery();
+        for (int i = 0; i < lengths.length; i++)
+            fragments.add(lengths[i] == 0
+                    ? Value.NULL
+                    : new BulkData(uriWithoutQuery, offsets[i], lengths[i], bigEndian));
+        return fragments;
+    }
+
+    private void parseURI(String uri) {
+        int index = uri.indexOf('?');
+        if (index == -1) {
+            uriPathEnd = uri.length();
+            return;
+        }
+        uriPathEnd = index;
+        if (uri.startsWith("offset=", index+1))
+            parseURIWithOffset(uri, index+8);
+        else if (uri.startsWith("offsets=", index+1))
+            parseURIWithOffsets(uri, index+9);
+    }
+
+    private void parseURIWithOffset(String uri, int from) {
+        int index = uri.indexOf("&length=");
+        if (index == -1)
+            return;
+
+        try {
+            offset = Long.parseLong(uri.substring(from, index));
+            length = Integer.parseInt(uri.substring(index + 8));
+        } catch (NumberFormatException e) {}
+    }
+
+    private void parseURIWithOffsets(String uri, int from) {
+        int index = uri.indexOf("&lengths=");
+        if (index == -1)
+            return;
+        try {
+            offsets = parseLongs(uri.substring(from, index));
+            lengths = parseInts(uri.substring(index + 9));
+        } catch (NumberFormatException e) {}
+    }
+
+    private static long[] parseLongs(String s) {
+        String[] ss = StringUtils.split(s, ',');
+        long[] longs = new long[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            longs[i] = Long.parseLong(ss[i]);
+        }
+        return longs;
+    }
+
+    private static int[] parseInts(String s) {
+        String[] ss = StringUtils.split(s, ',');
+        int[] ints = new int[ss.length];
+        for (int i = 0; i < ss.length; i++) {
+            ints[i] = Integer.parseInt(ss[i]);
+        }
+        return ints;
+    }
+
+    private String appendQuery(String uri, long[] offsets, int[] lengths) {
+        StringBuilder sb = new StringBuilder(uri);
+        sb.append( "?offsets=");
+        for (long offset : offsets)
+            sb.append(offset).append(',');
+        sb.setLength(sb.length()-1);
+        sb.append("&lengths=");
+        for (int length : lengths)
+            sb.append(length).append(',');
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public long offset() {
+        return offset;
+    }
+
+    public int length() {
+        return length;
+    }
+
+    public long[] offsets() {
+        return offsets;
+    }
+
+    public int[] lengths() {
+        return lengths;
+    }
+
     @Override
     public boolean isEmpty() {
         return length == 0;
@@ -109,15 +273,12 @@ public class BulkData implements Value {
 
     @Override
     public String toString() {
-        return "BulkData[uuid=" + uuid
-                + ", uri=" +  uri 
-                + ", bigEndian=" + bigEndian
-                + "]";
+        return "BulkData[uuid=" + uuid + ", uri=" +  uri + ", bigEndian=" + bigEndian  + "]";
     }
 
     public File getFile() {
         try {
-            return new File(new URI(uriWithoutOffsetAndLength()));
+            return new File(new URI(uriWithoutQuery()));
         } catch (URISyntaxException e) {
             throw new IllegalStateException("uri: " + uri);
         } catch (IllegalArgumentException e) {
@@ -125,7 +286,7 @@ public class BulkData implements Value {
         }
     }
 
-    public String uriWithoutOffsetAndLength() {
+    public String uriWithoutQuery() {
         if (uri == null)
             throw new IllegalStateException("uri: null");
 
@@ -208,4 +369,6 @@ public class BulkData implements Value {
             StringUtils.maskEmpty(ois.readUTF(), null),
             ois.readBoolean());
     }
+
+
 }

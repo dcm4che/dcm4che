@@ -68,8 +68,8 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
         int[] length = new int[offsets.length];
         for (int i = 0; i < length.length; i++) {
             BulkData bulkData = (BulkData) pixeldataFragments.get(i+frameIndex+1);
-            offsets[i] = bulkData.offset;
-            length[i] = bulkData.length;
+            offsets[i] = bulkData.offset();
+            length[i] = bulkData.length();
         }
         this.stream = stream;
         this.segmentPositionsList = offsets;

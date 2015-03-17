@@ -121,19 +121,19 @@ public class JSONWriter implements DicomInputHandler {
             }
             gen.writeEnd();
         } else if (value instanceof Fragments) {
-            gen.writeStartArray("DataFragment");
             Fragments frags = (Fragments) value;
-            for (Object frag : frags) {
-                gen.writeStartObject();
-                if (!(frag instanceof Value && ((Value) frag).isEmpty())) 
-                    if (frag instanceof BulkData)
-                        writeBulkData((BulkData) frag);
-                    else {
+            if (frags.size() > 1 && frags.get(1) instanceof BulkData) {
+                writeBulkData(BulkData.fromFragments(frags));
+            } else {
+                gen.writeStartArray("DataFragment");
+                for (Object frag : frags) {
+                    gen.writeStartObject();
+                    if (!(frag instanceof Value && ((Value) frag).isEmpty()))
                         writeInlineBinary(frags.vr(), (byte[]) frag, bigEndian, true);
-                    }
+                    gen.writeEnd();
+                }
                 gen.writeEnd();
             }
-            gen.writeEnd();
         } else if (value instanceof BulkData) {
             writeBulkData((BulkData) value);
         }
@@ -161,6 +161,9 @@ public class JSONWriter implements DicomInputHandler {
                 dis.readValue(dis, attrs);
                 if (hasItems.removeLast())
                     gen.writeEnd();
+                if (vr != VR.SQ && dis.getIncludeFragmentBulkData() == IncludeBulkData.URI) {
+                    writeBulkData(BulkData.fromFragments((Fragments) attrs.remove(attrs.privateCreatorOf(tag), tag)));
+                }
             } else if (len > 0) {
                 if (dis.getIncludeBulkData() ==  IncludeBulkData.URI
                         && dis.isBulkData(attrs)) {
@@ -317,28 +320,25 @@ public class JSONWriter implements DicomInputHandler {
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         int len = dis.length();
-        if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkDataFragment(frags)) {
-            dis.skipFully(len);
-            return;
+        switch (dis.getIncludeFragmentBulkData()) {
+            case NO:
+                dis.skipFully(len);
+                break;
+            case URI:
+                frags.add(len > 0 ? dis.createBulkData() : null);
+                break;
+            case YES:
+                if (!hasItems.getLast()) {
+                    gen.writeStartArray("DataFragment");
+                    hasItems.removeLast();
+                    hasItems.add(true);
+                }
+
+                gen.writeStartObject();
+                if (len > 0)
+                     writeInlineBinary(frags.vr(), dis.readValue(),  dis.bigEndian(), false);
+                gen.writeEnd();
         }
-        if (!hasItems.getLast()) {
-            gen.writeStartArray("DataFragment");
-            hasItems.removeLast();
-            hasItems.add(true);
-        }
-        
-        gen.writeStartObject();
-        if (len > 0) {
-            if (dis.getIncludeBulkData() == IncludeBulkData.URI
-                    && dis.isBulkDataFragment(frags)) {
-                writeBulkData(dis.createBulkData());
-            } else {
-                writeInlineBinary(frags.vr(), dis.readValue(), 
-                        dis.bigEndian(), false);
-            }
-        }
-        gen.writeEnd();
     }
 
     @Override

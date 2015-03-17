@@ -63,6 +63,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private Attributes fmi;
     private final boolean bigEndian;
+    private final boolean addBulkDataReferences;
     private final LinkedList<Attributes> items = new LinkedList<Attributes>();
     private final LinkedList<Sequence> seqs = new LinkedList<Sequence>();
 
@@ -81,11 +82,16 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private boolean processCharacters;
     private boolean inlineBinary;
 
-    public ContentHandlerAdapter(Attributes attrs) {
+    public ContentHandlerAdapter(Attributes attrs, boolean addBulkDataReferences) {
         if (attrs == null)
             throw new NullPointerException();
         items.add(attrs);
         bigEndian = attrs.bigEndian();
+        this.addBulkDataReferences = addBulkDataReferences;
+    }
+
+    public ContentHandlerAdapter(Attributes attrs) {
+        this(attrs, false);
     }
 
     public Attributes getFileMetaInformation() {
@@ -303,12 +309,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private void endDataFragment() {
-        if (bulkData != null) {
-            dataFragments.add(bulkData);
-            bulkData = null;
-        } else {
-            dataFragments.add(getBytes());
-        }
+        dataFragments.add(getBytes());
     }
 
     private void endDicomAttribute() {
@@ -328,7 +329,10 @@ public class ContentHandlerAdapter extends DefaultHandler {
             attrs = fmi;
         }
         if (bulkData != null) {
-            attrs.setValue(privateCreator, tag, vr, bulkData);
+            attrs.setValue(privateCreator, tag, vr,
+                    bulkData.hasFragments() ? bulkData.toFragments(privateCreator, tag, vr) : bulkData);
+            if (addBulkDataReferences)
+                attrs.getRoot().addBulkDataReference(privateCreator, tag, vr, bulkData, attrs.itemPointers());
             bulkData = null;
         } else if (inlineBinary) {
             attrs.setBytes(privateCreator, tag, vr, getBytes());

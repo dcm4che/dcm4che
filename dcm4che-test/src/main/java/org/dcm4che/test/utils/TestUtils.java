@@ -48,12 +48,17 @@ public class TestUtils {
     }
 
     public static void addDBCustomAttribute(String archiveDeviceName, Entity entity, DicomConfiguration remoteConfig
-            , int tagToAdd, VR vr) throws ConfigurationException {
+            , int tagToAdd, VR vr, int SequenceTag) throws ConfigurationException {
+
         Device dev = remoteConfig.findDevice(archiveDeviceName);
         ArchiveDeviceExtension arcDevExt = dev
                 .getDeviceExtension(ArchiveDeviceExtension.class);
         AttributeFilter filter = arcDevExt.getAttributeFilter(Entity.Instance);
-        filter.setCustomAttribute1(new ValueSelector(null, tagToAdd, vr, 0, new ItemPointer(Tag.ConceptNameCodeSequence)));
+        if(SequenceTag>0) 
+            filter.setCustomAttribute1(new ValueSelector(null, tagToAdd, vr, 0, new ItemPointer(SequenceTag)));
+        else
+            filter.setCustomAttribute1(new ValueSelector(null, tagToAdd, vr, 0));
+        
         remoteConfig.merge(dev);
     }
 
@@ -81,7 +86,7 @@ public class TestUtils {
         return responseCode;
     }
 
-    private static void backupDevice(Device d) throws IOException {
+    public static void backupDevice(Device d) throws IOException {
         Path file = Files.createTempFile("temp"+d.getDeviceName()+"backup", ".dev");
         FileOutputStream fileOut = new FileOutputStream(file.toFile());
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -95,7 +100,7 @@ public class TestUtils {
         backedUpDevices.add(file);
     }
 
-    private static Device readDevice(Path devPath) throws ClassNotFoundException, IOException {
+    public static Device readDevice(Path devPath) throws ClassNotFoundException, IOException {
         FileInputStream fileIn = new FileInputStream(devPath.toFile());
         ObjectInputStream in = new ObjectInputStream(fileIn);
         Device dev;
@@ -106,6 +111,10 @@ public class TestUtils {
             in.close();
         }
         return dev;
+    }
+
+    public static List<Path> getBackedUpDevices() {
+        return backedUpDevices;
     }
 
 }

@@ -1937,7 +1937,7 @@ public class Attributes implements Serializable {
         Attributes item = new Attributes(bigEndian, 7);
         seq.add(item);
         item.setString(Tag.RetrieveURL, VR.UR, bulkData.uri);
-        item.setInt(Tag.SelectorAttribute, VR.AT, tag);
+        item.setInt(Tag.SelectorAttribute, VR.AT, privateCreator != null ? (tag & 0xffff00ff) : tag);
         item.setString(Tag.SelectorAttributeVR, VR.CS, vr.name());
         if (privateCreator != null)
             item.setString(Tag.SelectorAttributePrivateCreator, VR.LO, privateCreator);
@@ -1947,7 +1947,7 @@ public class Attributes implements Serializable {
             String[] privateCreators = null;
             for (int i = 0; i < itemPointers.length; i++) {
                 ItemPointer ip = itemPointers[i];
-                seqTags[i] = ip.sequenceTag;
+                seqTags[i] = ip.privateCreator != null ? (ip.sequenceTag & 0xffff00ff) : ip.sequenceTag;
                 itemNumbers[i] = ip.itemIndex + 1;
                 if (ip.privateCreator != null) {
                     if (privateCreators == null)

@@ -125,29 +125,8 @@ public class TestToolFactory {
             File storeSCPStorageDirectory = null;
         //Load default parameters
          Properties defaultParams = test.getDefaultProperties();
-         File defaultLocalConfig = test.getDefaultLocalConfig();
-        //Load config file if parametrized else load default config
-        if(test.getParams().get("defaultLocalConfig")!=null) {
-            defaultLocalConfig = test.getDefaultLocalConfig();
-        }
-        else {
-            try {
-                defaultLocalConfig = Files.createTempFile("tempdefaultconfig", "json").toFile();
-                
-                Files.copy(TestToolFactory.class.getClassLoader()
-                        .getResourceAsStream("defaultConfig.json")
-                        , defaultLocalConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                defaultLocalConfig.deleteOnExit();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-            try {
-                config = DicomConfigurationBuilder.newJsonConfigurationBuilder(defaultLocalConfig.getPath()).build();
-            } catch (ConfigurationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+
+            config = getDicomConfiguration(test);
             //get remote connection parameters
             RemoteConnectionParameters remoteParams = 
                     (RemoteConnectionParameters) test.getParams().get("RemoteConnectionParameters");
@@ -183,7 +162,7 @@ public class TestToolFactory {
                 sourceAETitle = storeParams!=null?storeParams.sourceAETitle():"STORESCU";
 
                 try {
-                    device = getDicomConfiguration().findDevice(sourceDevice);
+                    device = getDicomConfiguration(test).findDevice(sourceDevice);
                     conn = device.connectionWithEqualsRDN(new Connection(
                             (String) (storeParams != null && storeParams.connection() != null?
                                     storeParams.connection():defaultParams.get("store.connection")), ""));
@@ -215,7 +194,7 @@ public class TestToolFactory {
                         
                 device = null;
                 try {
-                    device = getDicomConfiguration().findDevice(sourceDevice);
+                    device = getDicomConfiguration(test).findDevice(sourceDevice);
                     conn = device.connectionWithEqualsRDN(new Connection(
                             (String) (queryParams != null && queryParams.connection() != null?
                                     queryParams.connection():defaultParams.get("query.connection")), ""));
@@ -236,7 +215,7 @@ public class TestToolFactory {
             sourceAETitle = mppsParams != null?mppsParams.sourceAETitle():"MPPSSCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);
+                device = getDicomConfiguration(test).findDevice(sourceDevice);
                 conn = device.connectionWithEqualsRDN(new Connection(
                         (String) (mppsParams != null && mppsParams.connection() != null?
                                 mppsParams.connection():defaultParams.get("mpps.connection")), ""));
@@ -258,7 +237,7 @@ public class TestToolFactory {
             sourceAETitle = getParams != null?getParams.sourceAETitle():"GETSCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);
+                device = getDicomConfiguration(test).findDevice(sourceDevice);
                 conn = device.connectionWithEqualsRDN(new Connection(
                         (String) (getParams != null && getParams.connection() != null?
                                 getParams.connection():defaultParams.get("retrieve.connection")), ""));
@@ -289,7 +268,7 @@ public class TestToolFactory {
             sourceAETitle = stgcmtParams != null? stgcmtParams.sourceAETitle():"STGCMTSCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);
+                device = getDicomConfiguration(test).findDevice(sourceDevice);
                 conn = device.connectionWithEqualsRDN(new Connection(
                         (String) (stgcmtParams != null && stgcmtParams.connection() != null?
                                 stgcmtParams.connection():defaultParams.get("stgcmt.connection")), ""));
@@ -322,7 +301,7 @@ public class TestToolFactory {
             sourceAETitle = moveParams != null? moveParams.sourceAETitle():"MOVESCU";
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);
+                device = getDicomConfiguration(test).findDevice(sourceDevice);
                 conn = device.connectionWithEqualsRDN(new Connection(
                         (String) (moveParams != null && moveParams.connection() != null?
                                 moveParams.connection():defaultParams.get("move.connection")), ""));
@@ -432,7 +411,7 @@ public class TestToolFactory {
                     
             device = null;
             try {
-                device = getDicomConfiguration().findDevice(sourceDevice);
+                device = getDicomConfiguration(test).findDevice(sourceDevice);
                 conn = device.connectionWithEqualsRDN(new Connection(
                         (String) (storeSCPParams != null && storeSCPParams.connection() != null?
                                 storeSCPParams.connection():defaultParams.get("storescp.connection")), ""));
@@ -453,7 +432,7 @@ public class TestToolFactory {
 
     
     
-    public static DicomConfiguration getDicomConfiguration() {
-        return config;
+    public static DicomConfiguration getDicomConfiguration(BasicTest test) {
+        return config != null? config : test.getLocalConfig();
     }
 }

@@ -361,12 +361,21 @@ public class StowRS {
             String fullUri = list.item(i).getAttributes().item(0)
                     .getNodeValue();
             String offset = fullUri.replaceAll(".*\\?", "")
-                    .replaceAll("\\&.*", "").replaceAll("offset=", "");
+                    .replaceAll("\\&.*", "").replaceAll(list.getLength() == 1?"offset=":"offsets=", "");
+            
             String length = fullUri.replaceAll(".*\\?", "")
-                    .replaceAll(".*\\&", "").replaceAll("length=", "");
+                    .replaceAll(".*\\&", "").replaceAll(list.getLength() == 1?"length=":"lengths=", "");
             String uri = fullUri.split("\\?")[0];
-            files.add(new BulkDataChunk(fullUri, uri, offset, length,
-                    childOfPixelData(list.item(i))));
+            
+            for(int j=0; j<offset.split(",").length; j++) {
+                String len = length.split(",")[j];
+                String ofs = offset.split(",")[j];
+                if(Integer.parseInt(len) > 0) {
+                    files.add(new BulkDataChunk(fullUri, uri, ofs+"", len,
+                            childOfPixelData(list.item(i))));
+                }
+            }
+            
         }
         return files;
     }
@@ -378,40 +387,35 @@ public class StowRS {
             if (entry.getValue().getValueType().equals(ValueType.OBJECT)) {
                 JsonObject entryObject = (JsonObject) entry.getValue();
                 if (entryObject.containsKey("BulkDataURI")) {
+
                     String fullUri = entryObject.getString("BulkDataURI");
+                    
+                    if(fullUri.contains(","))
+                        multipleFragments = true;
+                    
                     String offset = fullUri.replaceAll(".*\\?", "")
-                            .replaceAll("\\&.*", "").replaceAll("offset=", "");
+                            .replaceAll("\\&.*", "").replaceAll(multipleFragments?"offsets=":"offset=", "");
+                    
                     String length = fullUri.replaceAll(".*\\?", "")
-                            .replaceAll(".*\\&", "").replaceAll("length=", "");
+                            .replaceAll(".*\\&", "").replaceAll(multipleFragments?"lengths=":"length=", "");
                     String uri = fullUri.split("\\?")[0];
+                    if(multipleFragments)
+                        for(int j=0; j<offset.split(",").length; j++) {
+                            String len = length.split(",")[j];
+                            String ofs = offset.split(",")[j];
+                            if(Integer.parseInt(len) > 0) {
+                                files.add(new BulkDataChunk(fullUri, uri, ofs, len,
+                                        childOfPixelData(object.getJsonObject("7FE00010"),
+                                                fullUri)));
+                            }
+                        }
+                    else
                     files.add(new BulkDataChunk(fullUri, uri, offset, length,
                             childOfPixelData(object.getJsonObject("7FE00010"),
-                                    entryObject)));
-                } else if (entryObject.containsKey("DataFragment")) {
-                    multipleFragments = true;
-                    JsonArray entryArray = (JsonArray) entryObject
-                            .get("DataFragment");
-                    for (JsonValue value : entryArray) {
-                        JsonObject valueObject = (JsonObject) value;
-                        if (valueObject.containsKey("BulkDataURI")) {
-                            String fullUri = valueObject
-                                    .getString("BulkDataURI");
-                            String offset = fullUri.replaceAll(".*\\?", "")
-                                    .replaceAll("\\&.*", "")
-                                    .replaceAll("offset=", "");
-                            String length = fullUri.replaceAll(".*\\?", "")
-                                    .replaceAll(".*\\&", "")
-                                    .replaceAll("length=", "");
-                            String uri = fullUri.split("\\?")[0];
-                            files.add(new BulkDataChunk(fullUri, uri, offset,
-                                    length, childOfPixelData(
-                                            object.getJsonObject("7FE00010"),
-                                            valueObject)));
-                        }
-                    }
+                                    fullUri)));
+                } 
                 }
             }
-        }
         return files;
     }
 
@@ -423,13 +427,12 @@ public class StowRS {
     }
 
     private static boolean childOfPixelData(JsonObject pixelData,
-            JsonObject item) {
+            String uri) {
         if (pixelData == null)
             return false;
-        if (pixelData.containsKey("DataFragment")) {
-            if (pixelData.getJsonArray("DataFragment").contains(item))
-                return true;
-        } else if (pixelData.containsValue(item)) {
+        else if (pixelData.containsKey("BulkDataURI")) {
+            String pixelDatauri =  pixelData.get("BulkDataURI").toString().replace("\"", "");
+            if(pixelDatauri.equalsIgnoreCase(uri))
             return true;
         }
         return false;

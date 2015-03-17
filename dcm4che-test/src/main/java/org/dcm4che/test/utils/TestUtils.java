@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,18 +20,23 @@ import org.dcm4che.test.common.BasicTest;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.data.ItemPointer;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.ValueSelector;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4chee.archive.conf.ArchiveDeviceExtension;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.conf.Entity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestUtils {
 
     private static List<Path> backedUpDevices = new ArrayList<Path>();
 
+    private static final Logger LOG = LoggerFactory.getLogger(TestUtils.class);
+    
     public static void backUpRemoteConfig( String devName, DicomConfiguration remoteConfig) throws ConfigurationException, IOException {
         Device devBackUP = remoteConfig.findDevice(devName);
         backupDevice(devBackUP);
@@ -40,7 +46,6 @@ public class TestUtils {
         
         for(Path devPath : backedUpDevices) {
             Device dev = readDevice(devPath);
-            ArchiveDeviceExtension ext = dev.getDeviceExtension(ArchiveDeviceExtension.class);
             remoteConfig.merge(dev);
             Files.delete(devPath);
         }
@@ -115,6 +120,35 @@ public class TestUtils {
 
     public static List<Path> getBackedUpDevices() {
         return backedUpDevices;
+    }
+
+    public static void adjustRemoteConfigurationForDestinationSCP(String scpToAdjust, BasicTest test, String connectionToKeep) {
+        DicomConfiguration remote = test.getRemoteConfig();
+        Device scpDevice = null;
+        try {
+            scpDevice = remote.findDevice(scpToAdjust);
+            if(scpDevice == null)
+                throw new ConfigurationException();
+        } catch (ConfigurationException e) {
+            LOG.error("Unable to load scp device from remote configuration", e);
+        }
+        
+        
+        for (Iterator<Connection> iter = scpDevice.getConnections().iterator();iter.hasNext();) {
+            Connection conn = iter.next();
+            if(!conn.getCommonName().equalsIgnoreCase(connectionToKeep)) {
+                for (ApplicationEntity ae : scpDevice.getApplicationEntities()) {
+                    ae.removeConnection(conn);
+                }
+                iter.remove();
+            }
+        }
+
+        try {
+            remote.merge(scpDevice);
+        } catch (ConfigurationException e) {
+            LOG.error("Error merging device in the remote configuration", e);
+        }
     }
 
 }

@@ -41,6 +41,8 @@ package org.dcm4che.test.common;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +54,9 @@ import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
 import org.dcm4che.test.utils.LoadProperties;
 import org.dcm4che.test.utils.RemoteDicomConfigFactory;
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.tool.common.test.TestResult;
@@ -76,7 +80,7 @@ public abstract class BasicTest {
 
     private Properties defaultProperties;
 
-    private File defaultLocalConfig;
+    private DicomConfiguration localConfig;
 
     private DicomConfiguration remoteConfig = null;
 
@@ -118,10 +122,13 @@ public abstract class BasicTest {
                         this.getParams().get("defaultLocalConfig")).configFile());
             
             this.setDefaultProperties(LoadProperties.load(clazz.getClass()));
-            if(this.defaultLocalConfig!=null)
-            this.setDefaultLocalConfig(new File(System.getProperty("defaultLocalConfig")));
+
+            this.setLocalConfig(System.getProperty("defaultLocalConfig"));
         } catch (IOException e) {
             throw new TestToolException(e);
+        } catch (ConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -204,12 +211,27 @@ public abstract class BasicTest {
         return storeResult;
     }
 
-    public File getDefaultLocalConfig() {
-        // TODO Auto-generated method stub
-        return this.defaultLocalConfig;
+    public void setLocalConfig(String defaultLocalConfigSystemProperty) throws ConfigurationException {
+        File LocalConfigFile = null;
+        if(defaultLocalConfigSystemProperty == null) {
+                try {
+                    LocalConfigFile = Files.createTempFile("tempdefaultconfig", "json").toFile();
+                    
+                    Files.copy(TestToolFactory.class.getClassLoader()
+                            .getResourceAsStream("defaultConfig.json")
+                            , LocalConfigFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    LocalConfigFile.deleteOnExit();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        }
+        else {
+            LocalConfigFile = new File (defaultLocalConfigSystemProperty);
+        }
+        this.localConfig = DicomConfigurationBuilder.newJsonConfigurationBuilder(LocalConfigFile.getPath()).build();
     }
 
-    public void setDefaultLocalConfig(File defaultLocalConfig) {
-        this.defaultLocalConfig = defaultLocalConfig;
+    public DicomConfiguration getLocalConfig() {
+        return localConfig;
     }
 }

@@ -108,6 +108,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean bigEndian;
     private boolean explicitVR;
     private IncludeBulkData includeBulkData = IncludeBulkData.YES;
+    private IncludeBulkData includeFragmentBulkData;
     private long pos;
     private long fmiEndPos = -1L;
     private long tagPos;
@@ -122,7 +123,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean decodeUNWithIVRLE = true;
     private boolean addBulkDataReferences;
 
-    private boolean catBlkFiles;
+    private boolean catBlkFiles = true;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
@@ -202,6 +203,10 @@ public class DicomInputStream extends FilterInputStream
         this.includeBulkData = includeBulkData;
     }
 
+    public final IncludeBulkData getIncludeFragmentBulkData() {
+        return includeFragmentBulkData;
+    }
+
     public final BulkDataDescriptor getBulkDataDescriptor() {
         return bulkDataDescriptor;
     }
@@ -248,14 +253,6 @@ public class DicomInputStream extends FilterInputStream
         else
             return Collections.emptyList();
     }
-
-//    public final Attributes getBulkDataAttributes() {
-//        return bulkData;
-//    }
-//
-//    public final void setBulkDataAttributes(Attributes bulkData) {
-//        this.bulkData = bulkData;
-//    }
 
     public final void setDicomInputHandler(DicomInputHandler handler) {
         if (handler == null)
@@ -530,7 +527,7 @@ public class DicomInputStream extends FilterInputStream
             if (addBulkDataReferences) {
                 attrs.getRoot().addBulkDataReference(
                         attrs.privateCreatorOf(tag),
-                        tag & 0xffff00ff,
+                        tag,
                         vr,
                         bulkData,
                         attrs.itemPointers());
@@ -581,14 +578,6 @@ public class DicomInputStream extends FilterInputStream
                 attrs.getPrivateCreator(tag), tag, vr, length, itemPointers);
     }
 
-    public boolean isBulkDataFragment(Fragments frags) {
-        if (tag != Tag.Item)
-            return false;
-        
-        return bulkDataDescriptor.isBulkData(
-                frags.privateCreator(), frags.tag(), frags.vr(), length, itemPointers);
-    }
-
     @Override
     public void readValue(DicomInputStream dis, Sequence seq)
             throws IOException {
@@ -607,14 +596,14 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         checkIsThis(dis);
-        if (includeBulkData == IncludeBulkData.NO && isBulkDataFragment(frags)) {
+        if (includeFragmentBulkData == IncludeBulkData.NO) {
             skipFully(length);
         } else if (length == 0) {
             frags.add(ByteUtils.EMPTY_BYTES);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkData.deserializeFrom((ObjectInputStream) super.in));
-        } else if (includeBulkData == IncludeBulkData.URI && isBulkDataFragment(frags)) {
+        } else if (includeFragmentBulkData == IncludeBulkData.URI) {
             frags.add(createBulkData());
         } else {
             byte[] b = readValue();
@@ -684,6 +673,11 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)
             throws IOException {
+        includeFragmentBulkData =
+                includeBulkData == IncludeBulkData.YES || isBulkData(attrs)
+                        ? includeBulkData 
+                        : IncludeBulkData.YES;
+
         String privateCreator = attrs.getPrivateCreator(fragsTag);
         Fragments frags = new Fragments(privateCreator, fragsTag, vr, attrs.bigEndian(), 10);
         for (int i = 0; true; ++i) {

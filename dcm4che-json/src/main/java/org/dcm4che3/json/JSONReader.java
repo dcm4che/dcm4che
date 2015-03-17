@@ -71,6 +71,7 @@ public class JSONReader {
     }
 
     private final JsonParser parser;
+    private boolean addBulkDataReferences;
     private Attributes fmi;
     private JsonLocation location;
     private Event event;
@@ -82,6 +83,14 @@ public class JSONReader {
 
     public JSONReader(JsonParser parser) {
         this.parser = parser;
+    }
+
+    public boolean isAddBulkDataReferences() {
+        return addBulkDataReferences;
+    }
+
+    public void setAddBulkDataReferences(boolean addBulkDataReferences) {
+        this.addBulkDataReferences = addBulkDataReferences;
     }
 
     public Attributes getFileMetaInformation() {
@@ -229,7 +238,15 @@ public class JSONReader {
             } else if ("InlineBinary".equals(key)) {
                 attrs.setBytes(tag, vr, readInlineBinary());
             } else if ("BulkDataURI".equals(key)) {
-                attrs.setValue(tag, vr, readBulkData(attrs.bigEndian()));
+                BulkData bulkData = readBulkData(attrs.bigEndian());
+                attrs.setValue(tag, vr,
+                        bulkData.hasFragments()
+                                ? bulkData.toFragments(attrs.privateCreatorOf(tag), tag, vr)
+                                : bulkData);
+                if (addBulkDataReferences)
+                    attrs.getRoot().addBulkDataReference(
+                            attrs.privateCreatorOf(tag), tag, vr, bulkData, attrs.itemPointers());
+
             } else if ("DataFragment".equals(key)) {
                 readDataFragment(attrs, tag, vr);
             } else {

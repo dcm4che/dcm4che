@@ -83,7 +83,6 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements
     protected final int priority;
     protected boolean pendingRSP;
     protected int pendingRSPInterval;
-    protected boolean canceled;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -116,10 +115,6 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements
         return rq == Dimse.C_MOVE_RQ;
     }
 
-    public boolean isCanceled() {
-        return canceled;
-    }
-
     public Association getRequestAssociation() {
         return rqas;
     }
@@ -130,7 +125,7 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements
 
     @Override
     public void onCancelRQ(Association as) {
-        canceled = true;
+        storescu.cancel();
     }
 
     @Override
@@ -223,9 +218,6 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements
     public void update(Observable obj, Object arg) {
 
         storescu = (CStoreSCU<T>) obj;
-
-        if (canceled)
-            storescu.changeStatus(Status.Cancel);
 
         if (pendingRSP && storescu.getStatus() == Status.Pending)
             writeRSP(); // sync response

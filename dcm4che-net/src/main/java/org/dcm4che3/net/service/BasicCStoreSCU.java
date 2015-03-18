@@ -40,6 +40,7 @@ package org.dcm4che3.net.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -72,12 +73,12 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected static final Logger LOG = LoggerFactory
             .getLogger(BasicCStoreSCU.class);
 
-    protected int status = Status.Pending;
+    protected volatile int status = Status.Pending;
     protected int priority = 0;
     protected int nr_instances;
-    protected List<T> completed = new ArrayList<T>();
-    protected List<T> warning = new ArrayList<T>();
-    protected List<T> failed = new ArrayList<T>();
+    protected List<T> completed = Collections.synchronizedList(new ArrayList<T>());
+    protected List<T> warning = Collections.synchronizedList(new ArrayList<T>());
+    protected List<T> failed = Collections.synchronizedList(new ArrayList<T>());
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
@@ -85,8 +86,12 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         return status;
     }
 
-    public void changeStatus(int status) {
-        this.status = status;
+    public boolean cancel() {
+        if (status==Status.Pending) {
+            this.status = Status.Cancel;
+            return true;
+        }
+        return false;
     }
 
     public int getPriority() {
@@ -152,6 +157,9 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 }
             }
             waitForOutstandingCStoreRSP(storeas);
+            
+            setFinalStatus();
+            
             return makeRSP(status);
         } finally {
             try {
@@ -162,6 +170,21 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             }
         }
     }
+    
+    private void setFinalStatus() {
+        
+        if (status!=Status.Cancel) {
+            if (failed.size() > 0) {
+                if (failed.size() == nr_instances)
+                    status = Status.UnableToPerformSubOperations;
+                else
+                    status = Status.OneOrMoreFailures;
+            } else {
+                status = Status.Success;
+            }
+        }
+    }
+    
 
     private void waitForOutstandingCStoreRSP(Association storeas) {
         try {
@@ -219,15 +242,6 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             synchronized (outstandingRSPLock) {
                 if (--outstandingRSP == 0)
                     outstandingRSPLock.notify();
-            }
-
-            if ((nr_instances == completed.size() + failed.size()
-                    + warning.size())
-                    && status != Status.Cancel) {
-                if (failed.size() > 0)
-                    status = Status.OneOrMoreFailures;
-                else
-                    status = Status.Success;
             }
             
             setChanged();

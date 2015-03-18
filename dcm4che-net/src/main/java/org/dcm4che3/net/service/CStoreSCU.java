@@ -64,6 +64,6 @@ public interface CStoreSCU<T extends InstanceLocator> {
 
     public abstract BasicCStoreSCUResp cstore(List<T> instances, Association storeas, int priority);
     
-    public abstract void changeStatus(int newStatus);
+    public abstract boolean cancel();
 
 }

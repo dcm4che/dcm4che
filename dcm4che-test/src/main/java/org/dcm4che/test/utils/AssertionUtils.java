@@ -92,8 +92,8 @@ public class AssertionUtils extends Assert{
         return attrs.equals(testAttrs);
         }
 
-    public static boolean assertAttrsContainTagWithValue(Attributes attrs, int tag, String value) {
-        return attrs.contains(tag) && attrs.getString(tag).equalsIgnoreCase(value);
+    public static void assertAttrsContainTagWithValue(Attributes attrs, int tag, String value) {
+        assertTrue(attrs.contains(tag) && attrs.getString(tag).equalsIgnoreCase(value));
     }
     
 }

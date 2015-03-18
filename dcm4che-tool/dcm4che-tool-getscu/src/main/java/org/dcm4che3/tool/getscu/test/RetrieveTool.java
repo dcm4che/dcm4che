@@ -149,7 +149,6 @@ public class RetrieveTool implements TestTool{
                 .newSingleThreadScheduledExecutor();
         retrievescu.getDevice().setExecutor(executorService);
         retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
-        retrievescu.getDevice().bindConnections();
         retrievescu.setInformationModel(InformationModel.StudyRoot,
                 IVR_LE_FIRST, false);
         retrievescu.addLevel(retrieveLevel);

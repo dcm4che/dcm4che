@@ -295,6 +295,7 @@ public class WadoRS {
             bodyPath = f.getAbsolutePath();
             main.retrievedInstances.put(headerPath, bodyPath);
         } else {
+            if(main.dumpHeader)
             main.retrievedInstances.put(dumpHeader(main, connection.getHeaderFields()),"multipart-request-head");
             in = connection.getInputStream();
             try {

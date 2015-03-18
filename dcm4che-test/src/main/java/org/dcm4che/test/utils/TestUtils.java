@@ -1,5 +1,6 @@
 package org.dcm4che.test.utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,20 +12,29 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 import org.dcm4che.test.annotations.RemoteConnectionParameters;
 import org.dcm4che.test.common.BasicTest;
+import org.dcm4che3.conf.api.AttributeCoercion;
+import org.dcm4che3.conf.api.AttributeCoercions;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.ItemPointer;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.ValueSelector;
+import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
+import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.tool.wadouri.test.WadoURIResponse;
+import org.dcm4chee.archive.conf.ArchiveAEExtension;
 import org.dcm4chee.archive.conf.ArchiveDeviceExtension;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.conf.Entity;
@@ -52,6 +62,37 @@ public class TestUtils {
         remoteConfig.sync();
     }
 
+    public static void addCoercionTemplate(AttributeCoercion ac, ApplicationEntity ae, DicomConfiguration remoteConfig) {
+        ArchiveAEExtension aeExt = ae.getAEExtension(ArchiveAEExtension.class);
+        AttributeCoercions coercions = aeExt.getAttributeCoercions();
+        coercions.add(ac);
+        aeExt.setAttributeCoercions(coercions);
+        Device arcDevice = ae.getDevice();
+        try {
+            remoteConfig.merge(arcDevice);
+            remoteConfig.sync();
+        } catch (ConfigurationException e) {
+            LOG.error("Unable to merge and sync device after coercions change, {}", e);
+        }
+    }
+    
+    public static void removeCoercionTemplate(AttributeCoercion ac, ApplicationEntity ae, DicomConfiguration remoteConfig) {
+        ArchiveAEExtension aeExt = ae.getAEExtension(ArchiveAEExtension.class);
+        AttributeCoercions coercions = aeExt.getAttributeCoercions();
+        for(Iterator<AttributeCoercion> iter = coercions.iterator(); iter.hasNext();) {
+            if(ac.getCommonName().equalsIgnoreCase(iter.next().getCommonName()))
+                iter.remove();
+        }
+        aeExt.setAttributeCoercions(coercions);
+        Device arcDevice = ae.getDevice();
+        try {
+            remoteConfig.merge(arcDevice);
+            remoteConfig.sync();
+        } catch (ConfigurationException e) {
+            LOG.error("Unable to merge and sync device after coercions change, {}", e);
+        }
+
+    }
     public static void addDBCustomAttribute(String archiveDeviceName, Entity entity, DicomConfiguration remoteConfig
             , int tagToAdd, VR vr, int SequenceTag) throws ConfigurationException {
 
@@ -148,6 +189,38 @@ public class TestUtils {
             remote.merge(scpDevice);
         } catch (ConfigurationException e) {
             LOG.error("Error merging device in the remote configuration", e);
+        }
+    }
+
+    public static boolean containsSOPClassAndTransferSyntax(String sopClass,
+            Collection<TransferCapability> collection, String transferSyntax) {
+        for (TransferCapability tc : collection) {
+            if (tc.getSopClass().equalsIgnoreCase(sopClass))
+                if (transferSyntax == null)
+                    return true;
+                else
+                    for (String ts : tc.getTransferSyntaxes())
+                        if (ts.equalsIgnoreCase(transferSyntax))
+                            return true;
+        }
+        return false;
+    }
+
+    public static Attributes getWadoURIResponseAttributes(WadoURIResponse resp) {
+        File f = new File(resp.getRetrievedInstance());
+        DicomInputStream din = null;
+        try {
+            din = new DicomInputStream(f);
+            return din.readDataset(-1, Tag.PixelData);
+        } catch (IOException e) {
+            return null;
+        }
+        finally {
+            try {
+                din.close();
+            } catch (IOException e) {
+                LOG.error("Error closing dicom input stream , {}",e);
+            }
         }
     }
 

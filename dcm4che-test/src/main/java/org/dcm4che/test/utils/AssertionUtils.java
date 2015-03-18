@@ -92,7 +92,8 @@ public class AssertionUtils extends Assert{
         return attrs.equals(testAttrs);
         }
 
-//    public Attributes getMissingAttributes(Attributes attrs, Attributes testAttrs) {
-//        
-//    }
+    public static boolean assertAttrsContainTagWithValue(Attributes attrs, int tag, String value) {
+        return attrs.contains(tag) && attrs.getString(tag).equalsIgnoreCase(value);
+    }
+    
 }

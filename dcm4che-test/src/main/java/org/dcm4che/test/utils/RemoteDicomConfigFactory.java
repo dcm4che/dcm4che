@@ -27,7 +27,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,6 +80,13 @@ public class RemoteDicomConfigFactory {
             @Produces(MediaType.APPLICATION_JSON)
             @Consumes(MediaType.APPLICATION_JSON)
             public void modifyDeviceConfig(@Context UriInfo ctx, @PathParam(value = "deviceName") String deviceName, Map<String, Object> config) throws ConfigurationException;
+            
+            
+            @GET
+            @Path("/devices")
+            @Produces(MediaType.APPLICATION_JSON)
+            @Consumes(MediaType.APPLICATION_JSON)
+            public List<Map<String, Object>> list() throws ConfigurationException;
         }
 
         /**
@@ -163,7 +173,14 @@ public class RemoteDicomConfigFactory {
 
         @Override
         public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-            throw new RuntimeException("Not supported");
+            ArrayList<String> listOfDevices = new ArrayList<String>();
+            if(liteXPathExpression.equalsIgnoreCase(DicomPath.AllDeviceNames.path())) {
+                List<Map<String, Object>> tmpMapList = remoteEndpoint.list();
+                for(Map<String,Object> map : tmpMapList){
+                    listOfDevices.add(map.get("deviceName").toString());
+                }
+            }
+            return listOfDevices.iterator();
         }
     }
 

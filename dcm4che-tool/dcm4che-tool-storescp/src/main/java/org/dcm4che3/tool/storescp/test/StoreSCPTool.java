@@ -195,6 +195,9 @@ public class StoreSCPTool implements TestTool {
             ((ExecutorService) device.getExecutor()).shutdown();
             device.getScheduledExecutor().shutdown();
 
+            //very quick fix to block for listening connection
+            while(device.getConnections().get(0).isListening());
+
         init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs));
     }
     private List<Attributes> getCmdRQList() {

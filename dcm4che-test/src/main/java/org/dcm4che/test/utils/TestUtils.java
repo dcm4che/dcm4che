@@ -33,6 +33,8 @@ import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.TransferCapability;
+import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.tool.wadouri.test.WadoURIResponse;
 import org.dcm4chee.archive.conf.ArchiveAEExtension;
 import org.dcm4chee.archive.conf.ArchiveDeviceExtension;
@@ -47,19 +49,26 @@ public class TestUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestUtils.class);
     
-    public static void backUpRemoteConfig( String devName, DicomConfiguration remoteConfig) throws ConfigurationException, IOException {
+    public static void backUpRemoteConfig(DicomConfiguration remoteConfig) throws ConfigurationException, IOException {
+        for(String devName : remoteConfig.listDeviceNames()) {
         Device devBackUP = remoteConfig.findDevice(devName);
         backupDevice(devBackUP);
+        }
     }
 
     public static void rollBackRemoteConfig(DicomConfiguration remoteConfig) throws ConfigurationException, ClassNotFoundException, IOException {
-        
+        try{
         for(Path devPath : backedUpDevices) {
-            Device dev = readDevice(devPath);
-            remoteConfig.merge(dev);
-            Files.delete(devPath);
+            Device backup = readDevice(devPath);
+            Device current = remoteConfig.findDevice(backup.getDeviceName());
+          remoteConfig.removeDevice(current.getDeviceName());
+          remoteConfig.persist(backup);
         }
         remoteConfig.sync();
+        }
+        catch(Exception e) {
+            //NOOP
+        }
     }
 
     public static void addCoercionTemplate(AttributeCoercion ac, ApplicationEntity ae, DicomConfiguration remoteConfig) {
@@ -224,4 +233,16 @@ public class TestUtils {
         }
     }
 
+    public static Device createPixConsumer(String deviceName, String hl7ApplicationName, String host, String port, String connectionName) {
+        Device hl7Dev = new Device(deviceName);
+        HL7DeviceExtension hl7Device = new HL7DeviceExtension();
+        hl7Dev.addDeviceExtension(hl7Device);
+        HL7Application app = new HL7Application(hl7ApplicationName);
+        hl7Device.addHL7Application(app);
+        Connection conn = new Connection(connectionName, host, Integer.parseInt(port));
+        conn.setProtocol(Connection.Protocol.HL7);
+        hl7Dev.addConnection(conn);
+        app.addConnection(conn);
+        return hl7Dev;
+    }
 }

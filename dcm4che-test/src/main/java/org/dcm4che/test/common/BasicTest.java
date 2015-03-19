@@ -155,6 +155,7 @@ public abstract class BasicTest {
     }   
     public TestResult query(String description, Attributes keys, boolean fuzzy, int expectedMatches) throws MissingArgumentException {
         QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.QueryTool, this);
+        if(expectedMatches > -1)
         queryTool.setExpectedMatches(expectedMatches);
         queryTool.addAll(keys);
             try {

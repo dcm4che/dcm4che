@@ -40,6 +40,7 @@ import org.dcm4chee.archive.conf.ArchiveAEExtension;
 import org.dcm4chee.archive.conf.ArchiveDeviceExtension;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.conf.Entity;
+import org.dcm4chee.archive.conf.RetrieveSuppressionCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -244,5 +245,15 @@ public class TestUtils {
         hl7Dev.addConnection(conn);
         app.addConnection(conn);
         return hl7Dev;
+    }
+
+    public static void removeArchiveSuppressionCriteria(String arcDeviceName, String arcAETitle, DicomConfiguration remoteConfig) throws ConfigurationException {
+        Device arcDevice = remoteConfig.findDevice(arcDeviceName);
+        ApplicationEntity ae = arcDevice.getApplicationEntity(arcAETitle);
+        ArchiveAEExtension arcAEExt = ae.getAEExtension(ArchiveAEExtension.class);
+        RetrieveSuppressionCriteria suppress = new RetrieveSuppressionCriteria();
+        suppress.setCheckTransferCapabilities(false);
+        arcAEExt.setRetrieveSuppressionCriteria(suppress);
+        remoteConfig.merge(arcDevice);
     }
 }

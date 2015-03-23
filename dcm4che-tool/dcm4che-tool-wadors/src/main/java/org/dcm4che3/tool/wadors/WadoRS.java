@@ -289,6 +289,9 @@ public class WadoRS {
             in = connection.getInputStream();
             if(main.dumpHeader)
                 headerPath = writeHeader(connection.getHeaderFields(), new File(main.outDir,"out.json"+"-head"));
+            else {
+                headerPath = connection.getHeaderField("content-location");
+            }
             File f = new File(main.outDir,"out.json");
             Files.copy(in, f.toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
@@ -479,6 +482,9 @@ public class WadoRS {
                 if(wadors.dumpHeader) {
                     headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                 }
+                else {
+                    headPath = attrs.getString(Tag.SOPInstanceUID);
+                }
                 bodyPath = out.getAbsolutePath();
                 wadors.retrievedInstances.put(headPath, bodyPath);
                 return true;
@@ -543,6 +549,9 @@ public class WadoRS {
                     if(wadors.dumpHeader) {
                         headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                     }
+                    else {
+                        headPath = attrs.getString(Tag.SOPInstanceUID);
+                    }
                     bodyPath = out.getAbsolutePath();
                     wadors.retrievedInstances.put(headPath, bodyPath);
                 return true;
@@ -567,6 +576,9 @@ public class WadoRS {
                         StandardCopyOption.REPLACE_EXISTING);
                 if(wadors.dumpHeader) {
                     headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                }
+                else {
+                    headPath = fileName;
                 }
                 bodyPath = out.getAbsolutePath();
                 wadors.retrievedInstances.put(headPath, bodyPath);

@@ -38,9 +38,14 @@
 
 package org.dcm4che3.tool.storescp.test;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.common.test.TestResult;
 
 /**
@@ -55,6 +60,7 @@ public class StoreSCPResult implements TestResult {
     private long time;
     private int filesReceived;
     private List<Attributes> cStoreRQAttributes;
+    private List<String> instanceLocations;
     private List<String> sopUIDs;
     /**
      * @param testDescription
@@ -67,8 +73,11 @@ public class StoreSCPResult implements TestResult {
      * @param failures
      * @param cmdRSP 
      */
-    public StoreSCPResult(String testDescription, long time, int filesReceived, List<Attributes> cmdRQ, List<String> sopIUIDs) {
+    public StoreSCPResult(String testDescription, long time, int filesReceived
+            , List<Attributes> cmdRQ, List<String> sopIUIDs
+            , List<String> instanceLocations) {
         this.testDescription = testDescription;
+        this.instanceLocations = instanceLocations;
         this.time = time;
         this.filesReceived = filesReceived;
         this.cStoreRQAttributes = cmdRQ;
@@ -92,5 +101,28 @@ public class StoreSCPResult implements TestResult {
     public List<String> getSopUIDs() {
         return sopUIDs;
     }
-
+    public List<Attributes> getInstanceAttributes() {
+        ArrayList<Attributes> attrs = new ArrayList<Attributes>();
+        DicomInputStream din = null;
+        for(String instancePath : instanceLocations) {
+            File file = new File(instancePath);
+            try{
+                din = new DicomInputStream(file);
+                
+                attrs.add(din.readDataset(-1, Tag.PixelData));
+                
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                try {
+                    din.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return attrs;
+    }
 }

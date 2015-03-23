@@ -102,6 +102,8 @@ public class StoreSCPTool implements TestTool {
 
     private List<Attributes> rqCMDs = new ArrayList<Attributes>();
 
+    private List<String> instanceLocations = new ArrayList<String>();
+
     private static final Logger LOG = LoggerFactory.getLogger(StoreSCPTool.class);
 
     private String testDescription;
@@ -138,6 +140,7 @@ public class StoreSCPTool implements TestTool {
                     SafeClose.close(out);
                     fileReceived++;
                     rqCMDs.add(rq);
+                    instanceLocations.add(file.getAbsolutePath());
                 }
                 
             } catch (Exception e) {
@@ -198,7 +201,7 @@ public class StoreSCPTool implements TestTool {
             //very quick fix to block for listening connection
             while(device.getConnections().get(0).isListening());
 
-        init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs));
+        init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs, this.instanceLocations));
     }
     private List<Attributes> getCmdRQList() {
         return rqCMDs;
@@ -229,5 +232,9 @@ public class StoreSCPTool implements TestTool {
         if(this.sopIUIDs == null)
             this.sopIUIDs = new ArrayList<String>();
         this.sopIUIDs.add(uid);
+    }
+
+    public List<String> getInstanceLocations() {
+        return instanceLocations;
     }
 }

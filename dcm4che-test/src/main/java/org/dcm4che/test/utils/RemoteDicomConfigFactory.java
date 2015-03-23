@@ -5,6 +5,7 @@ import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.BeanVitalizer;
 import org.dcm4che3.conf.core.Configuration;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.dcm4che3.conf.dicom.DicomPath;
@@ -74,6 +75,10 @@ public class RemoteDicomConfigFactory {
             @Produces(MediaType.APPLICATION_JSON)
             public Map<String, Object> getDeviceConfig(@PathParam(value = "deviceName") String deviceName) throws ConfigurationException;
 
+            @DELETE
+            @Path("/device/{deviceName}")
+            @Produces(MediaType.APPLICATION_JSON)
+            public void removeDevice(@PathParam(value = "deviceName") String deviceName) throws ConfigurationException;
 
             @POST
             @Path("/device/{deviceName}")
@@ -168,7 +173,18 @@ public class RemoteDicomConfigFactory {
 
         @Override
         public void removeNode(String path) throws ConfigurationException {
-            throw new RuntimeException("Not supported");
+
+            // if its not a remove device operation - throw an exception
+            PathPattern.PathParser parsedPath = null;
+            try {
+                parsedPath = DicomPath.DeviceByName.parse(path);
+            } catch (Exception e) {
+                throw new RuntimeException("Not supported");
+            }
+
+            remoteEndpoint.removeDevice(parsedPath.getParam("deviceName"));
+
+
         }
 
         @Override

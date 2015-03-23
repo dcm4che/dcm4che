@@ -232,28 +232,124 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int offset, int len)
-            throws SAXException {
-        if (processCharacters)
-            if (inlineBinary)
-                try {
-                    if (carryLen != 0) {
-                        int copy = 4 - carryLen;
-                        System.arraycopy(ch, offset, carry, carryLen, copy);
-                        Base64.decode(carry, 0, 4, bout);
-                        offset += copy;
-                        len -= copy;
-                    }
-                    if ((carryLen = len & 3) != 0) {
-                        len -= carryLen;
-                        System.arraycopy(ch, offset + len, carry, 0, carryLen);
-                    }
-                    Base64.decode(ch, offset, len, bout);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            else
+    public void characters(char[] ch, int offset, int len) throws SAXException {
+        if (processCharacters) {
+            if (inlineBinary) {
+                processBinary(ch, offset, len);
+            } else {
                 sb.append(ch, offset, len);
+            }
+        }
+    }
+
+    /**
+     * Processes Base64-encoded binary data. (See http://www.w3.org/TR/2004/PER-xmlschema-2-20040318/#base64Binary)
+     *
+     * Since the XML schema definition for base64 data consists of quartets of characters, this process copies any
+     * "overflow" characters into a "carry" array of length 4. That is, if the number of characters being copied is 10,
+     * the last 2 characters (since 10 % 4 = 2) will be copied into the carry. When the next set of characters is read,
+     * the carry will be filled out to complete the quartet and then decoded and written to the contained OutputStream.
+     *
+     * Since the carry is only read out on subsequent calls to processBinary, it is possible that some data could be
+     * left unwritten in the carry buffer if the inline binary data is malformed (not a multiple of 4). The
+     * endInlineBinary method throws a SAXException if the carry contains any unwritten characters when the inline
+     * binary element is finished.
+     *
+     * @param   chars   The characters from the XML document, representing Base64-encoded binary data.
+     * @param   offset  The start position in the array
+     * @param   length  The number of characters to read from the array
+     */
+    protected void processBinary(char[] chars, int offset, int length) {
+        // Strip out whitespace and adjust the length to the number of (non-whitespace) characters actually read
+        char[] scrubbed = new char[length];
+        length = scrubWhitespace(chars, offset, scrubbed, 0, length);
+        chars = scrubbed;
+        offset = 0;
+
+        try {
+            if (carryLen != 0) {
+                // Figure out how many characters are needed to fill the carry
+                int copy = 4 - carryLen;
+
+                if (copy > length) {
+                    // Can't fill carry, since we're reading fewer than the number of bytes left
+                    // Read all that we can into the carry
+                    System.arraycopy(chars, offset, carry, carryLen, length);
+
+                    // Adjust the carry length to include the extra characters
+                    carryLen += length;
+
+                    // Return, since we've read everything
+                    return;
+                }
+
+                // Fill out the carry
+                System.arraycopy(chars, offset, carry, carryLen, copy);
+
+                // Copy the carry into the output stream
+                Base64.decode(carry, 0, 4, bout);
+
+                // Adjust the offset and the remaining characters to be read
+                offset += copy;
+                length -= copy;
+            }
+
+            // See if the characters to be read are divisible by 4
+            if ((carryLen = length & 3) != 0) {
+                // Adjust the length by the carry overflow
+                length -= carryLen;
+
+                // Copy the overflow (from the end of the read portion) into the carry
+                System.arraycopy(chars, offset + length, carry, 0, carryLen);
+            }
+
+            // Read the characters into the output stream
+            Base64.decode(chars, offset, length, bout);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Copies the source array to the target, removing any XML whitespace characters
+     * (see http://www.w3.org/TR/2000/WD-xml-2e-20000814#sec-common-syn).
+     *
+     * @param   source          The source character array
+     * @param   sourceOffset    The position in the source array to start copying from
+     * @param   target          The target character array
+     * @param   targetOffset    The position in the target array to start copying to
+     * @param   length          The number of characters to copy
+     * @return                  The total number of characters copied
+     */
+    protected int scrubWhitespace(char[] source, int sourceOffset, char[] target, int targetOffset, int length) {
+        int sourceStart = sourceOffset;
+        int sourceEnd = sourceStart + length;
+        int copiedCount = 0;
+
+        for (int i = sourceStart; i < sourceEnd; i++) {
+            // Check for XML whitespace
+            switch (source[i]) {
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    // Copy everything up to this point
+                    System.arraycopy(source, sourceStart, target, targetOffset + copiedCount, (i - sourceStart));
+
+                    copiedCount += (i - sourceStart);
+                    sourceStart = i + 1; // Move to the character after this (skipping the whitespace character)
+
+                    break;
+                default:
+                    // Do nothing
+            }
+        }
+
+        // Copy everything remaining
+        int finalCopy = sourceEnd - sourceStart;
+        System.arraycopy(source, sourceStart, target, targetOffset + copiedCount, finalCopy);
+
+        return (copiedCount + finalCopy);
     }
 
     @Override
@@ -277,6 +373,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case 'I':
             if (qName.equals("Item"))
                 endItem();
+            else if (qName.equals("InlineBinary"))
+                endInlineBinary();
             break;
         case 'M':
             if (qName.equals("MiddleName"))
@@ -344,6 +442,13 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private void endItem() {
         items.removeLast().trimToSize();
         vr = VR.SQ;
+    }
+
+    private void endInlineBinary() throws SAXException {
+        if (carryLen != 0) {
+            // Attempting to end the inline binary section while we still have leftover characters in the carry
+            throw new SAXException("Inline binary data contained invalid number of characters");
+        }
     }
 
     private void endPersonName() {

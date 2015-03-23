@@ -58,4 +58,8 @@ public @interface QueryParameters {
     public String connection() default "dicom";
 
     public String queryLevel() default "STUDY";
+    
+    public String queryInformationModel() default "StudyRoot";
+    
+    public boolean relational() default false;
 }

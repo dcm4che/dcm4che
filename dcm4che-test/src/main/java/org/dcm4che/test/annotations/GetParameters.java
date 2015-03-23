@@ -47,10 +47,19 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GetParameters {
-    public String aeTitle();
-    public String retrieveDir();
+    public String aeTitle() default "NULL";
+    
+    public String retrieveDir() default "NULL";
+    
     public String retrieveLevel() default "STUDY";
+    
+    public String retrieveInformationModel() default "StudyRoot";
+    
+    public boolean relational() default false;
+    
     public String sourceAETitle() default "GETSCU";
+    
     public String sourceDevice() default "getscu";
+    
     public String connection() default "dicom";
 }

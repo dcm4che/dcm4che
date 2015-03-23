@@ -44,6 +44,7 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.EnumSet;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -69,6 +70,7 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
@@ -232,7 +234,8 @@ public class GetSCU {
        this.model = model;
        rq.addPresentationContext(new PresentationContext(1, model.getCuid(), tss));
        if (relational)
-           rq.addExtendedNegotiation(new ExtendedNegotiation(model.getCuid(), new byte[]{1}));
+           rq.addExtendedNegotiation(new ExtendedNegotiation(model.getCuid(),
+                   QueryOption.toExtendedNegotiationInformation(EnumSet.of(QueryOption.RELATIONAL))));
        if (model.level != null)
            addLevel(model.level);
     }

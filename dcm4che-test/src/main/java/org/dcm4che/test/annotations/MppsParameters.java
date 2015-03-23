@@ -49,9 +49,9 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MppsParameters {
 
-    public String aeTitle();
+    public String aeTitle() default "NULL";
 
-    public String baseDirectory();
+    public String baseDirectory() default "NULL";
 
     public String sourceDevice() default "mppsscu";
 

@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.MissingArgumentException;
+import org.dcm4che.test.annotations.MppsParameters;
 import org.dcm4che.test.annotations.TestLocalConfig;
 import org.dcm4che.test.annotations.TestParamDefaults;
 import org.dcm4che.test.common.TestToolFactory.TestToolType;
@@ -153,16 +154,14 @@ public abstract class BasicTest {
         }
         return storeTool.getResult();
     }   
-    public TestResult query(String description, Attributes keys, boolean fuzzy, int expectedMatches) throws MissingArgumentException {
+    public TestResult query(String description, Attributes keys, boolean fuzzy
+            , boolean datatimeCombine, int expectedMatches) throws MissingArgumentException {
         QueryTool queryTool = (QueryTool) TestToolFactory.createToolForTest(TestToolType.QueryTool, this);
         if(expectedMatches > -1)
         queryTool.setExpectedMatches(expectedMatches);
         queryTool.addAll(keys);
             try {
-                if(fuzzy)
-                    queryTool.queryfuzzy(description);
-                else
-                    queryTool.query(description);
+                    queryTool.query(description,fuzzy,datatimeCombine);
             } catch (Exception e) {
                 throw new TestToolException(e);
             }

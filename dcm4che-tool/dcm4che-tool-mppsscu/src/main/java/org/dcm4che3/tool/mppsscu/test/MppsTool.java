@@ -84,7 +84,8 @@ public class MppsTool implements TestTool{
     private int nCreateFailures;
     private int nSetSent;  
     private int nSetFailures;
-    private ArrayList<Attributes> cmdRSP = new ArrayList<Attributes>();
+    private ArrayList<Attributes> nSetcmdRSP = new ArrayList<Attributes>();
+    private ArrayList<Attributes> nCreatecmdRSP = new ArrayList<Attributes>();
     private TestResult result;
     
     /**
@@ -202,10 +203,11 @@ public class MppsTool implements TestTool{
 
         init(new MppsResult(testDescription, fileName, 
                 nCreateSent, nCreateWarnings, nCreateFailures, 
-                nSetSent, nSetFailures, (t2-t1), (t3-t2), cmdRSP));
+                nSetSent, nSetFailures, (t2-t1), (t3-t2), nCreatecmdRSP, nSetcmdRSP));
     }
 
     private void onNCreateRSP(Attributes cmd) {
+        nCreatecmdRSP.add(cmd);
         int status = cmd.getInt(Tag.Status, -1);
         switch (status) {
         case Status.Success:
@@ -226,7 +228,7 @@ public class MppsTool implements TestTool{
     }
 
     private void onNSetRSP(Attributes cmd) {
-        cmdRSP.add(cmd);
+        nSetcmdRSP.add(cmd);
         int status = cmd.getInt(Tag.Status, -1);
         switch (status) {
         case Status.Success:

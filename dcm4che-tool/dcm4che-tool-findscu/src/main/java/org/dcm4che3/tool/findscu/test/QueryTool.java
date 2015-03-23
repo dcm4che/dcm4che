@@ -83,6 +83,8 @@ public class QueryTool implements TestTool {
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     private String queryLevel;
+    private InformationModel queryModel;
+    private boolean relational;
     private int numMatches;
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
@@ -97,7 +99,8 @@ public class QueryTool implements TestTool {
      * @param aeTitle
      * @param conn 
      */
-    public QueryTool(String host, int port, String aeTitle, String queryLevel, Device device, String sourceAETitle, Connection conn) {
+    public QueryTool(String host, int port, String aeTitle, String queryLevel, String queryModel
+            , boolean relational, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -106,22 +109,19 @@ public class QueryTool implements TestTool {
         this.sourceAETitle = sourceAETitle;
         this.conn = conn;
         this.queryLevel = queryLevel;
+        this.queryModel = queryModel.equalsIgnoreCase("StudyRoot")
+                ?InformationModel.StudyRoot: InformationModel.PatientRoot;
+        this.relational = relational;
     }
 
-    public void queryfuzzy(String testDescription) throws IOException,
+    public void query(String testDescription, boolean fuzzy, boolean dataTimeCombined) throws IOException,
     InterruptedException, IncompatibleConnectionException,
     GeneralSecurityException {
-        query(testDescription,true);
-    }
-
-    public void query(String testDescription) throws IOException,
-    InterruptedException, IncompatibleConnectionException,
-    GeneralSecurityException {
-        query(testDescription,false);
+        doQuery(testDescription, fuzzy, dataTimeCombined);
     }
 
     
-    private void query(String testDescription, boolean fuzzy) throws IOException,
+    private void doQuery(String testDescription, boolean fuzzy, boolean combined) throws IOException,
             InterruptedException, IncompatibleConnectionException,
             GeneralSecurityException {
         device.setInstalled(true);
@@ -144,12 +144,19 @@ public class QueryTool implements TestTool {
         EnumSet<QueryOption> queryOptions = EnumSet.noneOf(QueryOption.class);
         if (fuzzy) queryOptions.add(QueryOption.FUZZY);
         
-        main.setInformationModel(InformationModel.StudyRoot, IVR_LE_FIRST,queryOptions);
+        if (combined) queryOptions.add(QueryOption.DATETIME);
+        
         main.addLevel(queryLevel);
-        if (queryLevel.equalsIgnoreCase("IMAGE")) {
-            main.getAAssociateRQ()
-            .addExtendedNegotiation(new ExtendedNegotiation(InformationModel.StudyRoot.getCuid(), new byte[]{1}));
-        }
+        
+        if(relational)
+            queryOptions.add(QueryOption.RELATIONAL);
+        
+        main.setInformationModel(queryModel, IVR_LE_FIRST,queryOptions);
+
+//        if (relational) {
+//            main.getAAssociateRQ()
+//            .addExtendedNegotiation(new ExtendedNegotiation(queryModel.getCuid(), new byte[]{1}));
+//        }
         main.getKeys().addAll(queryatts);
 
         long timeStart = System.currentTimeMillis();

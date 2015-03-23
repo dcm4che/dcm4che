@@ -45,9 +45,9 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StgCmtParameters {
-    public String aeTitle();
-    public String baseDirectory();
-    public String storageDirectory();
+    public String aeTitle() default "NULL";
+    public String baseDirectory() default "NULL";
+    public String storageDirectory() default "NULL";
     public String sourceDevice() default "stgcmtscu";
     public String sourceAETitle() default "STGCMTSCU";
     public String connection() default "dicom"; //bound connection

@@ -382,8 +382,8 @@ public class DicomImageReader extends ImageReader {
     @SuppressWarnings("resource")
     private ImageInputStreamImpl iisOfFrame(int frameIndex)
             throws IOException {
-        SegmentedImageInputStream siis = new SegmentedImageInputStream(
-                iis, pixeldataFragments, frameIndex);
+        SegmentedImageInputStream siis = SegmentedImageInputStream.ofFrame(
+                iis, pixeldataFragments, frameIndex, frames);
         return patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
                 : siis;

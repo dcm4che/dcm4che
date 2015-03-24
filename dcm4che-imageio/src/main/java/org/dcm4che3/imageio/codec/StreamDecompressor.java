@@ -158,10 +158,11 @@ public class StreamDecompressor implements CoerceAttributes {
         long pos = dis.getPosition();
         MemoryCacheImageInputStream iis = new MemoryCacheImageInputStream(dis);
         byte[] header = new byte[8];
+        boolean singleFrame = imageParams.getFrames() == 1;
         for (int i = 0; i < imageParams.getFrames(); i++) {
             iis.readFully(header);
-            SegmentedImageInputStream siis =
-                    new SegmentedImageInputStream(iis, iis.getStreamPosition(), ByteUtils.bytesToIntLE(header, 4));
+            SegmentedImageInputStream siis = new SegmentedImageInputStream(
+                    iis, iis.getStreamPosition(), ByteUtils.bytesToIntLE(header, 4), singleFrame);
             decompressor.setInput(patchJPEGLS != null
                     ? new PatchJPEGLSImageInputStream(siis, patchJPEGLS)
                     : siis);

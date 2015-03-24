@@ -68,20 +68,20 @@ public class StowRSTool implements TestTool{
         this.url = url;
     }
 
-    public void send(String testDescription, StowMetaDataType metadataType, List<File> files) throws IOException, InterruptedException{
+    public void send(String testDescription, StowMetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException{
         long t1, t2;
-        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url);
+        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
         t1 = System.currentTimeMillis();
         StowRS.stow(stowrs);
         t2 = System.currentTimeMillis();
         init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }
 
-    public void send(String testDescription, StowMetaDataType metadataType, File file) throws IOException, InterruptedException{
+    public void send(String testDescription, StowMetaDataType metadataType, File file, String transferSyntax) throws IOException, InterruptedException{
         ArrayList<File> files = new ArrayList<File>();
         files.add(file);
         long t1, t2;
-        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url);
+        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
         t1 = System.currentTimeMillis();
         StowRS.stow(stowrs);
         t2 = System.currentTimeMillis();

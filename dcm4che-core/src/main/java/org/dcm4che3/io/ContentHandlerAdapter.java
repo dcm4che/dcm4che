@@ -262,8 +262,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private static int removeWhitespaces(char[] ch, int offset, int len) {
         int ws = 0;
-        int srcPos = offset;
-        int destPos = offset;
+        int srcPos = -1;
+        int destPos = -1;
         int copy = 0;
         for (int i = offset, end = offset + len; i < end; i++) {
             switch (ch[i]) {
@@ -275,15 +275,15 @@ public class ContentHandlerAdapter extends DefaultHandler {
                         System.arraycopy(ch, srcPos, ch, destPos, copy);
                         destPos += copy;
                         copy = 0;
+                    } else if (destPos < 0) {
+                        destPos = i;
                     }
-                    ws++;
                     srcPos = i + 1;
+                    ws++;
                     break;
                 default:
                     if (ws > 0)
                         copy++;
-                    else
-                        destPos++;
             }
         }
         if (copy > 0)

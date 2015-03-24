@@ -45,7 +45,10 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StoreSCPParameters {
-    public String storageDirectory() default "./";
+
+    public static String DEFAULT_STORAGE_DIR = "./";
+
+    public String storageDirectory() default DEFAULT_STORAGE_DIR;
     public String sourceDevice() default "storescp";
     public String sourceAETitle() default "STORESCP";
     public String connection() default "dicom"; //bound connection

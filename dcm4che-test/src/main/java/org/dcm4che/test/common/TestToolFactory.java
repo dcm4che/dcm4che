@@ -466,12 +466,14 @@ public class TestToolFactory {
 
             StoreSCPParameters storeSCPParams = (StoreSCPParameters) test.getParams()
             .get("StoreSCPParameters");
-            
-            storeSCPStorageDirectory =  storeSCPParams != null 
-                    && storeSCPParams.storageDirectory()!=null?
-                    new File(storeSCPParams.storageDirectory())
-                    :new File(defaultParams.getProperty("storescp.storedirectory"));
-                    
+
+            // if custom dir is set by annotation, use it, otherwise fallback to property, if even the prop is not there, use constant
+            if (storeSCPParams != null &&
+                    !storeSCPParams.storageDirectory().equals(StoreSCPParameters.DEFAULT_STORAGE_DIR))
+                storeSCPStorageDirectory = new File(storeSCPParams.storageDirectory());
+            else
+                storeSCPStorageDirectory = new File(defaultParams.getProperty("storescp.storedirectory", StoreSCPParameters.DEFAULT_STORAGE_DIR));
+
             sourceDevice = storeSCPParams != null
                     ? storeSCPParams.sourceDevice():"storescp";
                     

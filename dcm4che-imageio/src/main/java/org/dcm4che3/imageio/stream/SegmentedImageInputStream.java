@@ -85,6 +85,10 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
     public static SegmentedImageInputStream ofFrame(ImageInputStream iis, Fragments fragments, int index, int frames)
             throws IOException {
         if (frames > 1) {
+            if (fragments.size() != frames +1)
+                throw new UnsupportedOperationException(
+                        "Number of Fragments [" + fragments.size()
+                                + "] != Number of Frames [" + frames + "] + 1");
             BulkData bulkData = (BulkData) fragments.get(index+1);
             return new SegmentedImageInputStream(iis, bulkData.offset(), bulkData.length(), false);
         }

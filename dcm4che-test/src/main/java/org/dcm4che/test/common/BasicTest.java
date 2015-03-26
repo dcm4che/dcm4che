@@ -211,6 +211,15 @@ public abstract class BasicTest {
         return storeResult;
     }
 
+    public TestResult generateAndSend(String description, Attributes overrideAttributes, File otherSeedFile) throws MissingArgumentException {
+        DcmGenTool dcmGenTool = (DcmGenTool) TestToolFactory.createToolForTest(TestToolType.DcmGenTool, this);
+        TestResult storeResult;
+        dcmGenTool.generateFiles(description, overrideAttributes, otherSeedFile);
+        DcmGenResult result = (DcmGenResult) dcmGenTool.getResult();
+        storeResult = storeGenerated(description, dcmGenTool.getOutputDir());
+        return storeResult;
+    }
+
     public void setLocalConfig(String defaultLocalConfigSystemProperty) throws ConfigurationException {
         File LocalConfigFile = null;
         if(defaultLocalConfigSystemProperty == null) {

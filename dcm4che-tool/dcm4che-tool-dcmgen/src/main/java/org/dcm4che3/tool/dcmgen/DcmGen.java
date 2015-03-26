@@ -167,7 +167,10 @@ public class DcmGen{
                 din.setIncludeBulkData(IncludeBulkData.URI);
                 seedAttrs = din.readDataset(-1, -1);
                 fmiOld = din.readFileMetaInformation();
-                
+                if (fmiOld == null || !fmiOld.containsValue(Tag.TransferSyntaxUID)
+                        || !fmiOld.containsValue(Tag.MediaStorageSOPClassUID)
+                        || !fmiOld.containsValue(Tag.MediaStorageSOPInstanceUID))
+                    fmiOld = seedAttrs.createFileMetaInformation(din.getTransferSyntax());
             }
             catch(Exception e) {
                 e.printStackTrace();

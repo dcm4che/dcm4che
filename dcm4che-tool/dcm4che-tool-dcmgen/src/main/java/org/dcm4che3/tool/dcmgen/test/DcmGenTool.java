@@ -83,6 +83,17 @@ public class DcmGenTool implements TestTool {
         assertTrue(results.size() >= 1);
     }
 
+    public void generateFiles(String testDescription, Attributes override, File seed) {
+        DcmGen generator = new DcmGen();
+        generator.setInstanceCount(instanceCount);
+        generator.setSeriesCount(seriesCount);
+        generator.setOutputDir(outputDir);
+        generator.setSeedFile(seed);
+        List<String> results = generator.generateDICOM(override==null?new Attributes():override);
+        init(new DcmGenResult(results));
+        assertTrue(results.size() >= 1);
+    }
+
     @Override
     public void init(TestResult result) {
         this.result = result;

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-cdi-parent</artifactId>
-    <version>3.3.6-SNAPSHOT</version>
+    <version>3.3.6</version>
   </parent>
   <artifactId>dcm4che-cdi-device</artifactId>
   <dependencies>

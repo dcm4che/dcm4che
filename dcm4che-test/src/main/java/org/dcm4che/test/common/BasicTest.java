@@ -190,12 +190,13 @@ public abstract class BasicTest {
         return mppsTool.getResult();
     }
 
-    public TestResult storeGenerated(String description, File file) throws MissingArgumentException {
+    private TestResult storeGenerated(String description, File file) throws MissingArgumentException {
         StoreTool storeTool = (StoreTool) TestToolFactory.createToolForTest(TestToolType.StoreTool, this);
         
         try {
                 //get whole study
                 storeTool.store(description, file.getAbsolutePath());
+                Files.delete(file.toPath());
         } catch (Exception e) {
             throw new TestToolException(e);
         }

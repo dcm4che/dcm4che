@@ -188,12 +188,6 @@
             <artifactId>dcm4che-soundex</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.spec</groupId>
-            <artifactId>jboss-javaee-6.0</artifactId>
-            <version>3.0.2.Final</version>
-            <type>pom</type>
-        </dependency>
 
 
     </dependencies>

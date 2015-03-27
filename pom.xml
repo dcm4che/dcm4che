@@ -154,7 +154,6 @@
     <module>dcm4che-json</module>
     <module>dcm4che-dict</module>
     <module>dcm4che-js-dict</module>
-    <module>dcm4che-test</module>
   </modules>
   <distributionManagement>
     <repository>

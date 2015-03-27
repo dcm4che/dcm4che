@@ -69,10 +69,8 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.PDVInputStream;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCStoreSCP;
-import org.dcm4che3.net.service.DicomService;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
@@ -147,7 +145,6 @@ public class RetrieveTool implements TestTool{
         registerSCPservice(device, retrieveDir);
         
         // add retrieve attrs
-
 
         // create executor
         ExecutorService executorService = Executors.newCachedThreadPool();

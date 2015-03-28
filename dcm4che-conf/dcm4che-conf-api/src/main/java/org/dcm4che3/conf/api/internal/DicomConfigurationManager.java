@@ -37,8 +37,9 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.api.internal;
 
+import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.net.Device;

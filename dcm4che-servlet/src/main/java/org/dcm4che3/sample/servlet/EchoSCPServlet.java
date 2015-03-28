@@ -46,8 +46,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.api.ExtendedDicomConfiguration;
+import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

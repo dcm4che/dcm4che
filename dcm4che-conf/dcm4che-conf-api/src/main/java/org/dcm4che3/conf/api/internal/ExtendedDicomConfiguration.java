@@ -36,8 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.api.internal;
 
+import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.*;
 
@@ -76,10 +77,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      * @throws ConfigurationException
      */
     DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
-
-    String[] listDeviceNames() throws ConfigurationException;
-
-    String[] listRegisteredAETitles() throws ConfigurationException;
 
     String deviceRef(String name);
 

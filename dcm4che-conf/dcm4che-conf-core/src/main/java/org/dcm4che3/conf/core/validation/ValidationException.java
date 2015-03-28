@@ -39,7 +39,7 @@
  */
 package org.dcm4che3.conf.core.validation;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 
 /**
  * @author Roman K

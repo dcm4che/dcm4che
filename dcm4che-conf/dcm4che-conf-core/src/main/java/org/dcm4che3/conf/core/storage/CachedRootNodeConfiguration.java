@@ -40,8 +40,8 @@
 package org.dcm4che3.conf.core.storage;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;

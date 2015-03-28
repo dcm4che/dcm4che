@@ -17,7 +17,7 @@
  *
  *  The Initial Developer of the Original Code is
  *  Agfa Healthcare.
- *  Portions created by the Initial Developer are Copyright (C) 2014
+ *  Portions created by the Initial Developer are Copyright (C) 2015
  *  the Initial Developer. All Rights Reserved.
  *
  *  Contributor(s):
@@ -37,51 +37,19 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.cdi.conf;
+package org.dcm4che3.conf.api.internal;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
+import org.dcm4che3.net.Device;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
-import org.dcm4che3.net.AEExtension;
-import org.dcm4che3.net.DeviceExtension;
-import org.dcm4che3.net.hl7.HL7ApplicationExtension;
+import java.util.Map;
 
 /**
+ * This interface is for internal use.
  * @author Roman K
  */
-public class CDIDicomConfigurationFactory {
-
-    @Inject
-    Instance<DeviceExtension> deviceExtensions;
-
-    @Inject
-    Instance<AEExtension> aeExtensions;
-
-    @Inject
-    Instance<HL7ApplicationExtension> hl7ApplicationExtensions;
-
-    @Produces
-    @ApplicationScoped
-    public DicomConfiguration getCDIDicomConfiguration()
-            throws ConfigurationException {
-        DicomConfigurationBuilder builder = DicomConfigurationBuilder
-                .newConfigurationBuilder(System.getProperties());
-        for (DeviceExtension ext : deviceExtensions)
-            builder.registerDeviceExtension(ext.getClass());
-        for (AEExtension ext : aeExtensions)
-            builder.registerAEExtension(ext.getClass());
-        for (HL7ApplicationExtension ext : hl7ApplicationExtensions)
-            builder.registerHL7ApplicationExtension(ext.getClass());
-        return builder.build();
-    }
-
-    public void dispose(@Disposes DicomConfiguration conf) {
-        conf.close();
-    }
+public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
+    Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException;
 }

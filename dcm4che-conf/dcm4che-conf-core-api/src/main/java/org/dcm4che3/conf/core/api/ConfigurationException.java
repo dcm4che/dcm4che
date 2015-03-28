@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,67 +36,29 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api;
-
-import org.dcm4che3.conf.core.api.ConfigurationException;
-
-import java.util.HashMap;
+package org.dcm4che3.conf.core.api;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ *
  */
-public abstract class ConfigurationCache<C,T> {
+public class ConfigurationException extends Exception {
 
-    private static final class CacheEntry<T> {
-        final T value;
-        final long fetchTime;
-        CacheEntry(T value, long fetchTime) {
-            this.value = value;
-            this.fetchTime = fetchTime;
-        }
+    private static final long serialVersionUID = 1507953586524535616L;
+
+    public ConfigurationException() {
     }
 
-    private final HashMap<String, CacheEntry<T>> cache =
-            new HashMap<String, CacheEntry<T>>();
-    private final C conf;
-    private long staleTimeout;
-
-    public ConfigurationCache(C conf) {
-        if (conf == null)
-            throw new NullPointerException();
-        this.conf = conf;
+    public ConfigurationException(String message) {
+        super(message);
     }
 
-    public int getStaleTimeout() {
-        return (int) (staleTimeout / 1000);
+    public ConfigurationException(Throwable cause) {
+        super(cause);
     }
 
-    public void setStaleTimeout(int staleTimeout) {
-        this.staleTimeout = staleTimeout * 1000L;
+    public ConfigurationException(String message, Throwable cause) {
+        super(message, cause);
     }
-
-    public void clear() {
-        cache.clear();
-    }
-
-
-    public T get(String key) throws ConfigurationException {
-        long now = System.currentTimeMillis();
-        CacheEntry<T> entry = cache.get(key);
-        if (entry == null 
-                || (staleTimeout != 0 && now > entry.fetchTime + staleTimeout)) {
-            T value = null;
-            try {
-                value = find(conf, key);
-            } catch (ConfigurationNotFoundException e) {
-            }
-            entry = new CacheEntry<T>(value, now);
-            cache.put(key, entry);
-        }
-        return entry.value;
-    }
-
-    protected abstract T find(C conf, String key)
-            throws ConfigurationException;
 
 }

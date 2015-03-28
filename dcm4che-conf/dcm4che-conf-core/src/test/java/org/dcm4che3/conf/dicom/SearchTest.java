@@ -39,10 +39,9 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.SimpleStorageTest;
-import org.dcm4che3.conf.dicom.DicomPath;
 import org.junit.Assert;
 import org.junit.Test;
 

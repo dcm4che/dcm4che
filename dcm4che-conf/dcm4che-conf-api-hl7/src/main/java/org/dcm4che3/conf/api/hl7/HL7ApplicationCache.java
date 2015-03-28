@@ -39,7 +39,7 @@
 package org.dcm4che3.conf.api.hl7;
 
 import org.dcm4che3.conf.api.ConfigurationCache;
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.net.hl7.HL7Application;
 

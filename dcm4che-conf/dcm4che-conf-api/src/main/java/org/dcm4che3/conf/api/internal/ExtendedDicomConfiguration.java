@@ -36,29 +36,61 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.api.internal;
+
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.net.*;
+
+import java.io.Closeable;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 /**
+ * This interface is for internal use. For any vendor/external integration purposes, please use DicomConfiguration.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ConfigurationException extends Exception {
+public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeable {
 
-    private static final long serialVersionUID = 1507953586524535616L;
+    /**
+     * Indicates whether the configuration backend is initialized
+     * @return
+     * @throws ConfigurationException
+     */
+    boolean configurationExists() throws ConfigurationException;
 
-    public ConfigurationException() {
-    }
+    @Deprecated
+    boolean registerAETitle(String aet) throws ConfigurationException;
+    @Deprecated
+    void unregisterAETitle(String aet) throws ConfigurationException;
 
-    public ConfigurationException(String message) {
-        super(message);
-    }
+    /**
+     * Query for Devices with specified attributes.
+     * 
+     * @param keys
+     *            Device attributes which shall match or <code>null</code> to
+     *            get information for all configured Devices
+     * @return array of <code>DeviceInfo</code> objects for configured Devices
+     *         with matching attributes
+     * @throws ConfigurationException
+     */
+    DeviceInfo[] listDeviceInfos(DeviceInfo keys) throws ConfigurationException;
 
-    public ConfigurationException(Throwable cause) {
-        super(cause);
-    }
+    String deviceRef(String name);
 
-    public ConfigurationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    void persistCertificates(String ref, X509Certificate... certs) throws ConfigurationException;
 
+    void removeCertificates(String ref) throws ConfigurationException;
+
+    X509Certificate[] findCertificates(String dn) throws ConfigurationException;
+
+    void close();
+
+    <T> T getDicomConfigurationExtension(Class<T> clazz);
+
+    Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions();
+
+    Collection<Class<? extends AEExtension>> getRegisteredAEExtensions();
 }

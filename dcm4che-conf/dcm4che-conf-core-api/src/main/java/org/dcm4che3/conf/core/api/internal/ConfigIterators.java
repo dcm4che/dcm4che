@@ -37,15 +37,11 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.util;
+package org.dcm4che3.conf.core.api.internal;
 
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -53,10 +49,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
+ * @author Roman K
+ */
 public class ConfigIterators {
-
-    private static Logger LOG = LoggerFactory
-            .getLogger(ConfigIterators.class);
 
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedSetter>> configurableSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedSetter>>());
@@ -236,16 +233,6 @@ public class ConfigIterators {
         }
 
         return currentClassFields;
-    }
-
-    public static void reconfigure(Object source, Object target, Class configurableClass) {
-        for (AnnotatedConfigurableProperty property : getAllConfigurableFields(configurableClass)) {
-            try {
-                PropertyUtils.setSimpleProperty(target, property.getName(), PropertyUtils.getSimpleProperty(source, property.getName()));
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to reconfigure instance of class " + property.getRawClass(), e);
-            }
-        }
     }
 
 }

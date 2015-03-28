@@ -39,12 +39,10 @@
  */
 package org.dcm4che3.conf.dicom.adapters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.adapters.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
-import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.util.Property;
 
 public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Property> {

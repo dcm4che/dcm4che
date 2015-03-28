@@ -45,7 +45,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
- * Marks a field, or a setter parameter of a configuration class to be a persistable configuration property of the bean
+ * Marks a field of a configuration class to be a persistable configuration property of the bean
  *
  * @author Roman K
  * 
@@ -85,8 +85,7 @@ public @interface ConfigurableProperty {
 
 
     /**
-     * Default for primitives (int, string, boolean). If default is not specified, the property is considered required.
-     * For specifying whether an Object-typed property is not allowed to be null, use @NotNull
+     * Default for primitives (int, string, boolean, enum). If default is not specified, the property is considered required.
      * @return
      */
     String defaultValue() default NO_DEFAULT_VALUE;
@@ -99,7 +98,8 @@ public @interface ConfigurableProperty {
     boolean collectionOfReferences() default false;
 
     /**
-     * Specifies that the annotated field/property is a reference
+     * Specifies that the annotated field/property is stored as a reference
+     * (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
      * @return
      */
     boolean isReference() default false;

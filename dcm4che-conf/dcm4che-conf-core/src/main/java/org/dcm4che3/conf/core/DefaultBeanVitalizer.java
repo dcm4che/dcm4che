@@ -43,13 +43,11 @@ package org.dcm4che3.conf.core;
  * @author Roman K
  */
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.adapters.ArrayTypeAdapter;
-import org.dcm4che3.conf.core.adapters.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
 import org.dcm4che3.conf.core.adapters.ReflectiveAdapter;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,20 +56,23 @@ import java.util.Map;
  * Main class that is used to initialize annotated Java objects with settings fetched from a configuration backend.
  * These are mostly low-level access methods that should be used to build the API for configuration functionality of an end product
  */
-public class BeanVitalizer {
+public class DefaultBeanVitalizer implements BeanVitalizer {
 
     private Map<Class, Object> contextMap = new HashMap<Class, Object>();
     private Map<Class, ConfigTypeAdapter> customConfigTypeAdapters = new HashMap<Class, ConfigTypeAdapter>();
     private ConfigTypeAdapter referenceTypeAdapter;
 
+    @Override
     public void setReferenceTypeAdapter(ConfigTypeAdapter referenceTypeAdapter) {
         this.referenceTypeAdapter = referenceTypeAdapter;
     }
 
+    @Override
     public ConfigTypeAdapter getReferenceTypeAdapter() {
         return referenceTypeAdapter;
     }
 
+    @Override
     public <T> T newConfiguredInstance(Map<String, Object> configNode, Class<T> clazz) throws ConfigurationException {
         T instance = newInstance(clazz);
         configureInstance(instance, configNode, clazz);
@@ -86,6 +87,7 @@ public class BeanVitalizer {
      * @return
      * @throws ConfigurationException
      */
+    @Override
     public <T> T newInstance(Class<T> clazz) throws ConfigurationException {
         try {
 
@@ -107,6 +109,7 @@ public class BeanVitalizer {
      * @param configNode
      * @return
      */
+    @Override
     public <T> void configureInstance(T object, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         new ReflectiveAdapter<T>(object).fromConfigNode(configNode, new AnnotatedConfigurableProperty(configurableClass), this);
     }
@@ -118,6 +121,7 @@ public class BeanVitalizer {
      * @param <T>
      * @return
      */
+    @Override
     public <T> Map<String, Object> createConfigNodeFromInstance(T object) throws ConfigurationException {
         return createConfigNodeFromInstance(object, object.getClass());
     }
@@ -130,11 +134,13 @@ public class BeanVitalizer {
      * @param configurableClass
      * @return
      */
+    @Override
     public <T> Map<String, Object> createConfigNodeFromInstance(T object, Class configurableClass) throws ConfigurationException {
         return (Map<String, Object>) lookupDefaultTypeAdapter(configurableClass).toConfigNode(object, new AnnotatedConfigurableProperty(configurableClass), this);
     }
 
 
+    @Override
     @SuppressWarnings("unchecked")
     public ConfigTypeAdapter lookupTypeAdapter(AnnotatedConfigurableProperty property) throws ConfigurationException {
 
@@ -152,6 +158,7 @@ public class BeanVitalizer {
         return lookupDefaultTypeAdapter(clazz);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public ConfigTypeAdapter lookupDefaultTypeAdapter(Class clazz) throws ConfigurationException {
 
@@ -178,10 +185,12 @@ public class BeanVitalizer {
      *
      * @return
      */
+    @Override
     public void registerContext(Class clazz, Object context) {
         this.contextMap.put(clazz, context);
     }
 
+    @Override
     public <T> T getContext(Class<T> clazz) {
         return (T) contextMap.get(clazz);
     }
@@ -192,6 +201,7 @@ public class BeanVitalizer {
      * @param clazz
      * @param typeAdapter
      */
+    @Override
     public void registerCustomConfigTypeAdapter(Class clazz, ConfigTypeAdapter typeAdapter) {
         customConfigTypeAdapters.put(clazz, typeAdapter);
     }

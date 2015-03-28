@@ -39,20 +39,16 @@
  */
 package org.dcm4che3.conf.dicom.adapters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.adapters.DefaultReferenceAdapter;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.DicomPath;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
-
-import java.util.List;
-import java.util.Map;
 
 
 public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> {

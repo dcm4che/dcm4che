@@ -35,7 +35,6 @@
     </dependencies>
   </dependencyManagement>
   <modules>
-    <module>dcm4che-cdi-conf</module>
     <module>dcm4che-cdi-device</module>
     <module>dcm4che-cdi-echo</module>
     <module>dcm4che-cdi-war</module>

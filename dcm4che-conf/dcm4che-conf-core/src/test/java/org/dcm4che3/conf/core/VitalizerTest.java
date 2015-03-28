@@ -39,7 +39,8 @@
  */
 package org.dcm4che3.conf.core;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.misc.DeepEqualsDiffer;
@@ -57,7 +58,7 @@ import java.util.*;
 public class VitalizerTest {
 
     BeanVitalizer getVitalizer() {
-        return new BeanVitalizer();
+        return new DefaultBeanVitalizer();
 
     }
 
@@ -381,7 +382,7 @@ public class VitalizerTest {
     @Test
     public void testBackAndForthTestConfigClass() throws ConfigurationException {
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
-        BeanVitalizer beanVitalizer = new BeanVitalizer();
+        BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
         TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);
         Object generatedNode = beanVitalizer.createConfigNodeFromInstance(configuredInstance);
@@ -400,7 +401,7 @@ public class VitalizerTest {
     public void testNulls() throws ConfigurationException {
 
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
-        BeanVitalizer beanVitalizer = new BeanVitalizer();
+        BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
         TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);
 
@@ -438,7 +439,7 @@ public class VitalizerTest {
 
 
         // enum nulls
-        Map<String, Object> configNodeFromInstance = new BeanVitalizer().createConfigNodeFromInstance(new TestConfigClass());
+        Map<String, Object> configNodeFromInstance = new DefaultBeanVitalizer().createConfigNodeFromInstance(new TestConfigClass());
         Assert.assertFalse("null-valued enum is not persisted", configNodeFromInstance.containsKey("myEnum"));
 
 
@@ -447,7 +448,7 @@ public class VitalizerTest {
     @Test
     public void testPerformance() throws ConfigurationException {
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
-        BeanVitalizer beanVitalizer = new BeanVitalizer();
+        BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
         for (int i = 0; i < 1000; i++) {
             TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);

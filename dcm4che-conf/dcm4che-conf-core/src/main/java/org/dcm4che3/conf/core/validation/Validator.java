@@ -39,7 +39,7 @@
  */
 package org.dcm4che3.conf.core.validation;
 
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 
 /**
  * Created by aprvf on 22/10/2014.

@@ -38,8 +38,8 @@
 
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.dicom.filters.DicomDefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
@@ -102,7 +102,8 @@ public class DicomConfigurationBuilder {
 
     public <T extends DeviceExtension> DicomConfigurationBuilder registerDeviceExtension(
             Class<T> clazz) {
-        deviceExtensionClasses.add(clazz);
+        if (!deviceExtensionClasses.contains(clazz))
+            deviceExtensionClasses.add(clazz);
         return this;
     }
 

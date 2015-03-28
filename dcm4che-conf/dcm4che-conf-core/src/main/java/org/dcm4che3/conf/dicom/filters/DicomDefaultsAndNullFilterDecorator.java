@@ -39,8 +39,8 @@
  */
 package org.dcm4che3.conf.dicom.filters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 import org.dcm4che3.net.ApplicationEntity;

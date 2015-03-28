@@ -41,7 +41,7 @@ package org.dcm4che3.conf.core.util;
 
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.slf4j.Logger;

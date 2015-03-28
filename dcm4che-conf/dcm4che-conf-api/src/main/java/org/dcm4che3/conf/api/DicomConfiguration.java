@@ -38,6 +38,7 @@
 
 package org.dcm4che3.conf.api;
 
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.*;
 
 import java.io.Closeable;

@@ -39,7 +39,8 @@
  */
 package org.dcm4che3.conf.core;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.misc.DeepEqualsDiffer;
 import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;

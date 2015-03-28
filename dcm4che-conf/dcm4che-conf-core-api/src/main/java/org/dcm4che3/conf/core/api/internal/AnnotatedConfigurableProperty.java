@@ -37,11 +37,11 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core;
+package org.dcm4che3.conf.core.api.internal;
 
-import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
@@ -50,6 +50,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
  * @author Roman K
  */
 @LDAP

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.core.api;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

@@ -39,9 +39,9 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.Device;

@@ -39,10 +39,11 @@
  */
 package org.dcm4che3.conf.core.normalization;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigIterators;
@@ -55,7 +56,7 @@ import java.util.*;
 public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
     private boolean persistDefaults;
-    private BeanVitalizer dummyVitalizer = new BeanVitalizer();
+    private BeanVitalizer dummyVitalizer = new DefaultBeanVitalizer();
 
     public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults) {
         super(delegate);

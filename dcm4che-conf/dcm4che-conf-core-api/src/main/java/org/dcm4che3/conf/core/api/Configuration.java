@@ -37,9 +37,7 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core;
-
-import org.dcm4che3.conf.api.ConfigurationException;
+package org.dcm4che3.conf.core.api;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -57,8 +55,8 @@ import java.util.Map;
  * </ul>
  * Formally, if such a node object is serialized into JSON and back without any transformations applied, the resulting object should be deep-equal to the original one.
  * <p/>
- * A <i>path</i> is a valid XPath expression evaluated against the configuration tree. The usage of advanced XPath expressions is strongly discouraged, since it could lead to eager loading of configuration tree.
- * Examples of paths can be found in o\rg.dcm4che3.conf.dicom.DicomPath. A helper class org.dcm4che3.conf.core.util.PathPattern can be used to safely compose parameterized paths.
+ * A <i>path</i> is a valid XPath expression evaluated against the configuration tree. The usage of very advanced XPath expressions is not recommended, since it could lead to eager loading of configuration tree.
+ * Examples of paths can be found in org.dcm4che3.conf.dicom.DicomPath. A helper class org.dcm4che3.conf.core.util.PathPattern can be used to safely compose parameterized paths.
  */
 public interface Configuration {
 

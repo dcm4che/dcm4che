@@ -1,6 +1,6 @@
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.SimpleStorageTest;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;

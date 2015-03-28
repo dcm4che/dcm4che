@@ -40,8 +40,8 @@
 package org.dcm4che3.conf.ldap;
 
 import org.apache.commons.lang.StringUtils;
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.util.ConfigIterators;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;

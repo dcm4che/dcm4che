@@ -37,11 +37,10 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.dicom;
+package org.dcm4che3.conf.api;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.ConfigurationManager;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.net.Device;
 
 import java.util.Map;
@@ -50,5 +49,5 @@ import java.util.Map;
  * @author Roman K
  */
 public interface DicomConfigurationManager extends DicomConfiguration, ConfigurationManager{
-    Device vitalizeDevice(String deviceName, Map<String, Object> configuratioNode) throws ConfigurationException;
+    Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException;
 }

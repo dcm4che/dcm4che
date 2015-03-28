@@ -39,8 +39,8 @@
  */
 package org.dcm4che3.conf.core;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 
 import java.util.Iterator;
 import java.util.Map;

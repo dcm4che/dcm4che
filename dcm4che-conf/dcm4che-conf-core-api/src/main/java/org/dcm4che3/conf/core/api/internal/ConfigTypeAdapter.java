@@ -37,14 +37,16 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.adapters;
+package org.dcm4che3.conf.core.api.internal;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 
 import java.util.Map;
 
+/**
+ * This API shall NOT be considered public/stable, it will be refactored without notice.
+ * @author Roman K
+ */
 public interface ConfigTypeAdapter<T, ST> {
 
 

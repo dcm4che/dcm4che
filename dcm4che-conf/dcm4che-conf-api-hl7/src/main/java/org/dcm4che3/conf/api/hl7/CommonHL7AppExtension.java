@@ -1,6 +1,6 @@
 package org.dcm4che3.conf.api.hl7;
 
-import org.dcm4che3.conf.api.extensions.CommonIterator;
+import org.dcm4che3.conf.api.extensions.ReconfiguringIterator;
 import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 
 /**
@@ -14,7 +14,7 @@ public class CommonHL7AppExtension extends HL7ApplicationExtension{
      * @param clazz Class of the extension
      */
     public void reconfigureReflectively(HL7ApplicationExtension from, Class<? extends HL7ApplicationExtension> clazz) {
-        CommonIterator.reconfigure(this, from, clazz);
+        ReconfiguringIterator.reconfigure(this, from, clazz);
     }
 
     public void reconfigure(HL7ApplicationExtension from) {

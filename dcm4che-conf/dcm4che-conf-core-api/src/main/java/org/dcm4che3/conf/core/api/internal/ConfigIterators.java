@@ -49,6 +49,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
+ * @author Roman K
+ */
 public class ConfigIterators {
 
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());

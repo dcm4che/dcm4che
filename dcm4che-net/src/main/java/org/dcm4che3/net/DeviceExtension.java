@@ -38,6 +38,8 @@
 
 package org.dcm4che3.net;
 
+import org.dcm4che3.conf.core.util.ConfigIterators;
+
 import java.io.Serializable;
 
 /**
@@ -63,5 +65,17 @@ public class DeviceExtension implements Serializable {
 
     public void verifyNotUsed(Connection conn) { }
 
-    public void reconfigure(DeviceExtension from) { }
+    /**
+     * Iterates over all configurable fields and transfers the values using getter/setters from 'from' to this
+     * @param from The extension with new configuration
+     * @param clazz Class of the extension
+     */
+    public void reconfigureReflectively(DeviceExtension from, Class<? extends DeviceExtension> clazz) {
+        ConfigIterators.reconfigure(this, from, clazz);
+    }
+
+    public void reconfigure(DeviceExtension from) {
+        // fallback to default reflective if the extension did not override the method
+        reconfigureReflectively(from,from.getClass());
+    }
 }

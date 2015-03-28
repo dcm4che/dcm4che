@@ -40,7 +40,6 @@ package org.dcm4che3.net;
 
 import java.io.Serializable;
 import java.util.EnumSet;
-import java.util.Set;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;

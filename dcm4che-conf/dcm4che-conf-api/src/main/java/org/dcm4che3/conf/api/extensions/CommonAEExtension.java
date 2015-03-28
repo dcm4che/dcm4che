@@ -3,6 +3,7 @@ package org.dcm4che3.conf.api.extensions;
 import org.dcm4che3.net.AEExtension;
 
 /**
+ * This class shall be extended by vendors/contributors to store extra configuration for an Application Entity.
  * @author Roman K
  */
 public class CommonAEExtension extends AEExtension {

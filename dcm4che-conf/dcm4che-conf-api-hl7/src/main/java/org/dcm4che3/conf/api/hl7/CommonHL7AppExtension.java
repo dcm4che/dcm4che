@@ -4,6 +4,7 @@ import org.dcm4che3.conf.api.extensions.CommonIterator;
 import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 
 /**
+ * This class shall be extended by vendors/contributors to store extra configuration for an HL7 application.
  * @author Roman K
  */
 public class CommonHL7AppExtension extends HL7ApplicationExtension{

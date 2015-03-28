@@ -46,7 +46,7 @@ import org.dcm4che3.conf.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.util.ConfigIterators;
+import org.dcm4che3.conf.core.api.internal.ConfigIterators;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

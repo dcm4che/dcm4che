@@ -42,7 +42,7 @@ package org.dcm4che3.conf.dicom.filters;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
-import org.dcm4che3.conf.core.util.ConfigIterators;
+import org.dcm4che3.conf.core.api.internal.ConfigIterators;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7Application;

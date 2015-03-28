@@ -11,6 +11,6 @@
         <module name="org.apache.commons.beanutils"/>
 
         <module name="org.slf4j"/>
-        <module name="org.dcm4che.conf.core-api"/>
+        <module name="org.dcm4che.conf.core-api" export="true"/>
     </dependencies>
 </module>

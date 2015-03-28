@@ -46,8 +46,9 @@ import org.dcm4che3.net.Device;
 import java.util.Map;
 
 /**
+ * This interface is for internal use.
  * @author Roman K
  */
-public interface DicomConfigurationManager extends DicomConfiguration, ConfigurationManager{
+public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
     Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException;
 }

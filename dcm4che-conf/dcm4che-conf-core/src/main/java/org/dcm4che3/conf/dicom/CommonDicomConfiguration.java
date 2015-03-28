@@ -139,7 +139,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
         return config.nodeExists(DicomPath.ConfigRoot.path());
     }
 
-    @Override
     public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists()) return false;
         config.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), DicomConfigurationRootNode.class);

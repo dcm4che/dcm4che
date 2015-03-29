@@ -13,7 +13,7 @@ public class CommonAEExtension extends AEExtension {
      * @param clazz Class of the extension
      */
     public void reconfigureReflectively(AEExtension from, Class<? extends AEExtension> clazz) {
-        ReconfiguringIterator.reconfigure(this, from, clazz);
+        ReconfiguringIterator.reconfigure(from, this, clazz);
     }
 
     public void reconfigure(AEExtension from) {

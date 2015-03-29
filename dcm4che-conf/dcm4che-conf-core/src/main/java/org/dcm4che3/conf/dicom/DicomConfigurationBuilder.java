@@ -109,12 +109,14 @@ public class DicomConfigurationBuilder {
 
     public <T extends AEExtension> DicomConfigurationBuilder registerAEExtension(
             Class<T> clazz) {
+        if (!aeExtensionClasses.contains(clazz))
         aeExtensionClasses.add(clazz);
         return this;
     }
 
     public <T extends HL7ApplicationExtension> DicomConfigurationBuilder registerHL7ApplicationExtension(
             Class<T> clazz) {
+        if (!hl7ApplicationExtensionClasses.contains(clazz))
         hl7ApplicationExtensionClasses.add(clazz);
         return this;
     }

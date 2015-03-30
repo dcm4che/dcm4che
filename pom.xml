@@ -208,4 +208,18 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <profiles>
+      <profile>
+          <id>csp</id>
+          <properties>
+              <hap-repository.url/>
+          </properties>
+          <distributionManagement>
+              <repository>
+                  <id>hap-repository</id>
+                  <url>${hap-repository.url}</url>
+              </repository>
+          </distributionManagement>
+      </profile>
+  </profiles>
 </project>

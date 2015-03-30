@@ -60,13 +60,6 @@ public interface DicomConfiguration {
     String[] listDeviceNames() throws ConfigurationException;
 
     /**
-     * Returns all AE names from all devices from the configuration backend
-     * @return AE names
-     * @throws ConfigurationException
-     */
-    String[] listRegisteredAETitles() throws ConfigurationException;
-
-    /**
      * Invalidates any present cached state for the configuration storage view of the client.
      * There is no guarantee whether the devices accessed afterwards will be re-loaded lazily or eagerly.
      *

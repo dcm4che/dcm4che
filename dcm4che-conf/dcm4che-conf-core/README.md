@@ -18,7 +18,6 @@
     
       CAUTION: this feature's use should be limited to reduce the referential complexity - the more references are
       introduced, the more complex UI's logic will need to be to handle proper cascading
-
       Currently supported reference targets are `Device`s and `Connection`s within same device.
 
 - A configurable property should not be related to volatile operational data, i.e., it should be something that changes not so often, a rule of thumb is one hour - if you expect that a property could generally change more often - choose a different way of storing it.

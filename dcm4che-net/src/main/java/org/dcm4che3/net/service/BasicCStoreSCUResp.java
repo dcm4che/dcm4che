@@ -48,7 +48,7 @@ public class BasicCStoreSCUResp {
     private int completed;
     private int failed;
     private int warning;
-    private String[] failesUIDs;
+    private String[] failedUIDs;
    
     public int getStatus() {
         return status;
@@ -74,11 +74,11 @@ public class BasicCStoreSCUResp {
     public void setWarning(int warning) {
         this.warning = warning;
     }
-    public String[] getFailesUIDs() {
-        return failesUIDs;
+    public String[] getFailedUIDs() {
+        return failedUIDs;
     }
-    public void setFailesUIDs(String[] failesUIDs) {
-        this.failesUIDs = failesUIDs;
+    public void setFailedUIDs(String[] failedUIDs) {
+        this.failedUIDs = failedUIDs;
     }
     
 }

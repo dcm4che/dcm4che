@@ -284,7 +284,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             String[] iuids = new String[failed.size()];
             for (int i = 0; i < iuids.length; i++)
                 iuids[i] = failed.get(0).iuid;
-            rsp.setFailesUIDs(iuids);
+            rsp.setFailedUIDs(iuids);
         }
         return rsp;
     }

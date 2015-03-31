@@ -29,7 +29,7 @@
 ### As a tools/config provider developer
 
 - Use [ConfigurationManager](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/ConfigurationManager.java) to access the `Configuration` and `BeanVitalizer`. 
-- Use [Configuration](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/Configuration.java) API to load/persist configuration nodes (see Configuration storage init).
+- Use [Configuration](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core-api/src/main/java/org/dcm4che3/conf/core/api/Configuration.java) API to load/persist configuration nodes (see Configuration storage init).
 - Use [BeanVitalizer](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/BeanVitalizer.java) to 'vitalize' objects, i.e. to fill in all the configurable properties of a bean using the loaded JSON configuration node/convert back to JSON node
 - DO NOT make a custom representation for configurable classes, it will break things. Use references instead.
 

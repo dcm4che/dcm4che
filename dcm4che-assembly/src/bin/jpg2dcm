@@ -1,13 +1,9 @@
 #!/bin/sh
-### ====================================================================== ###
-##                                                                          ##
-##  dcm4che2/jpg2dcm  Launch Script                                         ##
-##                                                                          ##
-### ====================================================================== ###
+# -------------------------------------------------------------------------
+# jpg2dcm  Launcher
+# -------------------------------------------------------------------------
 
-### $Id: jpg2dcm 18015 2013-08-27 12:03:33Z gunterze $ ###
-
-MAIN_CLASS=org.dcm4che2.tool.jpg2dcm.Jpg2Dcm
+MAIN_CLASS=org.dcm4che3.tool.jpg2dcm.Jpg2Dcm
 MAIN_JAR=dcm4che-tool-jpg2dcm-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
@@ -41,7 +37,7 @@ else
 fi
 
 # Setup the classpath
-CP="$DCM4CHE_HOME/etc/"
+CP="$DCM4CHE_HOME/etc/jpg2dcm/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-${project.version}.jar"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-${project.version}.jar"

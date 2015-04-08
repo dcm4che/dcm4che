@@ -39,10 +39,10 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 
 import java.util.concurrent.TimeUnit;
 

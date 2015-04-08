@@ -103,7 +103,7 @@ public class RetrieveResult implements TestResult{
         return numFail;
     }
 
-    public List<Attributes> getQueryResponse() {
+    public List<Attributes> getRetrievedInstancesAttributes() {
         return queryResponse;
     }
 }

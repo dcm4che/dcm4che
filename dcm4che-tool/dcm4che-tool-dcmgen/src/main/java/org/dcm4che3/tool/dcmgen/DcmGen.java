@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
@@ -84,10 +85,17 @@ public class DcmGen{
 
     public DcmGen() {}
 
+    @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         options = new Options();
-        options.addOption(null, "override", true, rb.getString("override"));
+        options.addOption(OptionBuilder
+                .hasArgs()
+                .withLongOpt("override")
+                .withArgName("[seq/]attr=value")
+                .withValueSeparator('=')
+                .withDescription(rb.getString("override"))
+                .create());
         CLIUtils.addCommonOptions(options);
         return CLIUtils.parseComandLine(args,options, rb, DcmGen.class);
     }
@@ -100,14 +108,15 @@ public class DcmGen{
             cl = parseComandLine(args);
             Attributes overrideAttrs = new Attributes();
             
-            if(cl.hasOption("override")) {
-                CLIUtils.addAttributes(overrideAttrs, cl.getOptionValues("override"));    
-            }
+
             
             if(cl.getArgList().size()<2) {
                 throw new ParseException("Missing required arguments");
             }
             else {
+                if(cl.hasOption("override")) {
+                    CLIUtils.addAttributes(overrideAttrs, cl.getOptionValues("override"));    
+                }
                 if(cl.getArgs()[0].contains(":"))
                     setCounts(cl, main,true);
                     else
@@ -120,6 +129,7 @@ public class DcmGen{
                     main.seedFile = new File(cl.getArgs()[1]);
                     main.outputDir = new File("./");
                 }
+                
                 else {
                     throw new ParseException("Too many arguments specified");
                 }
@@ -140,6 +150,7 @@ public class DcmGen{
         ArrayList<String> generatedFiles = new ArrayList<String>();
         String studyIUID = UIDUtils.createUID();
         Attributes seedAttrs = null;
+        Attributes fmiOld = null;
         Attributes fmi = null;
         if (this.seedFile.getName().endsWith(".xml")) {
             try {
@@ -155,7 +166,11 @@ public class DcmGen{
                 din = new DicomInputStream(this.seedFile);
                 din.setIncludeBulkData(IncludeBulkData.URI);
                 seedAttrs = din.readDataset(-1, -1);
-                fmi = din.getFileMetaInformation();
+                fmiOld = din.readFileMetaInformation();
+                if (fmiOld == null || !fmiOld.containsValue(Tag.TransferSyntaxUID)
+                        || !fmiOld.containsValue(Tag.MediaStorageSOPClassUID)
+                        || !fmiOld.containsValue(Tag.MediaStorageSOPInstanceUID))
+                    fmiOld = seedAttrs.createFileMetaInformation(din.getTransferSyntax());
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -195,6 +210,7 @@ public class DcmGen{
                         parent.mkdirs();
                     File outFile = new File(parent,iuid+".dcm");
                     dout = new DicomOutputStream(outFile);
+                    fmi = seedAttrs.createFileMetaInformation(fmiOld.getString(Tag.TransferSyntaxUID));
                     dout.writeDataset(fmi, seedAttrs);
                     generatedFiles.add(outFile.getAbsolutePath());
                 } catch (IOException e) {

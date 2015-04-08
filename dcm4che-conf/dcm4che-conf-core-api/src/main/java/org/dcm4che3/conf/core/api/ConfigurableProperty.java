@@ -45,7 +45,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 
 /**
- * Marks a field, or a setter parameter of a configuration class to be a persistable configuration property of the bean
+ * Marks a field of a configuration class to be a persistable configuration property of the bean
  *
  * @author Roman K
  * 
@@ -85,8 +85,7 @@ public @interface ConfigurableProperty {
 
 
     /**
-     * Default for primitives (int, string, boolean). If default is not specified, the property is considered required.
-     * For specifying whether an Object-typed property is not allowed to be null, use @NotNull
+     * Default for primitives (int, string, boolean, enum). If default is not specified, the property is considered required.
      * @return
      */
     String defaultValue() default NO_DEFAULT_VALUE;
@@ -94,13 +93,27 @@ public @interface ConfigurableProperty {
     /**
      * Specifies that the annotated field/property is a collection, elements of which are stored as references
      * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
-     * @return
+     * <br/><br/>
+     * <b>Caution</b>: this feature's use should be limited to reduce the referential complexity - the more references are
+     * introduced, the more complex UI's logic will need to be to handle proper cascading
+     *
+     * <br/><br/>
+     * Currently supported reference targets are <b>Devices</b> and <b>Connections</b> within same device.
+     *
      */
     boolean collectionOfReferences() default false;
 
     /**
-     * Specifies that the annotated field/property is a reference
-     * @return
+     * Specifies that the annotated field/property is stored as a reference
+     * (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
+     *
+     * <br/><br/>
+     * <b>Caution</b>: this feature's use should be limited to reduce the referential complexity - the more references are
+     * introduced, the more complex UI's logic will need to be to handle proper cascading
+     *
+     * <br/><br/>
+     * Currently supported reference targets are <b>Devices</b> and <b>Connections</b> within same device.
+     *
      */
     boolean isReference() default false;
 
@@ -115,7 +128,7 @@ public @interface ConfigurableProperty {
     public enum Tag {
         /**
          * Non-required properties could be put into a "advanced..." tab to simplify the view.
-         * This tag indicates that the property is should never be hidden from the user with such technique.
+         * This tag indicates that the property should never be hidden from the user with such technique.
          */
         PRIMARY
     }

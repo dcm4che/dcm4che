@@ -43,7 +43,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -53,11 +52,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
@@ -76,15 +75,14 @@ import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.mime.MultipartInputStream;
 import org.dcm4che3.mime.MultipartParser;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.tool.common.SimpleHTTPResponse;
+import org.dcm4che3.tool.wadors.test.WadoRSResponse;
 import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -93,7 +91,7 @@ import org.xml.sax.SAXException;
 
 public class WadoRS {
 
-    protected enum Naming {
+    public enum Naming {
         UID, CONTENT_ID, DEFAULT;
     }
     private static final Logger LOG = LoggerFactory.getLogger(WadoRS.class);
@@ -137,7 +135,16 @@ public class WadoRS {
 
     private boolean dumpHeader = false;
 
+    private  Map<String, String> retrievedInstances = new HashMap<String, String>();;
+
+    private WadoRSResponse response;
+
     public WadoRS() {
+    }
+
+    public WadoRS(String url, File retrieveDir) {
+        this.outDir = retrieveDir;
+        this.url = url;
     }
 
     @SuppressWarnings("static-access")
@@ -222,7 +229,7 @@ public class WadoRS {
                 main.isMetadata = true;
             String response = null;
             try {
-                response = sendRequest(main);
+                response = sendRequest(main).toString();
             } catch (IOException e) {
                 System.out.print("Error sending request {}" + e);
             }
@@ -235,7 +242,13 @@ public class WadoRS {
         }
     }
 
-    private static String sendRequest(final WadoRS main) throws IOException {
+    public void wadors(WadoRS main) throws IOException {
+        if(main.url.contains("metadata"))
+            main.isMetadata=true;
+        sendRequest(main);
+    }
+
+    private static SimpleHTTPResponse sendRequest(final WadoRS main) throws IOException {
         URL newUrl = new URL(main.getUrl());
 
         HttpURLConnection connection = (HttpURLConnection) newUrl
@@ -265,19 +278,29 @@ public class WadoRS {
 
         connection.setUseCaches(false);
 
-        String response = "Server responded with "
-                + connection.getResponseCode() + " - "
-                + connection.getResponseMessage();
-        dumpHeader(main, connection.getHeaderFields());
-        InputStream in = connection.getInputStream();
+        int responseCode = connection.getResponseCode();
+        String reponseMessage = connection.getResponseMessage();
+        
+        
+        InputStream in = null;
         if (connection.getHeaderField("content-type").contains(
                 "application/json")) {
+            String headerPath = null, bodyPath;
+            in = connection.getInputStream();
             if(main.dumpHeader)
-                writeHeader(connection.getHeaderFields(), new File(main.outDir,"out.json"+"-head"));
-            
-            Files.copy(in, new File(main.outDir,"out.json").toPath(),
+                headerPath = writeHeader(connection.getHeaderFields(), new File(main.outDir,"out.json"+"-head"));
+            else {
+                headerPath = connection.getHeaderField("content-location");
+            }
+            File f = new File(main.outDir,"out.json");
+            Files.copy(in, f.toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
+            bodyPath = f.getAbsolutePath();
+            main.retrievedInstances.put(headerPath, bodyPath);
         } else {
+            if(main.dumpHeader)
+            main.retrievedInstances.put(dumpHeader(main, connection.getHeaderFields()),"multipart-request-head");
+            in = connection.getInputStream();
             try {
                 File spool = new File(main.outDir,"Spool");
                 Files.copy(in, spool.toPath(),
@@ -378,17 +401,18 @@ public class WadoRS {
         }
         connection.disconnect();
 
-        return response;
+        main.response = new WadoRSResponse(responseCode, reponseMessage, main.retrievedInstances);
+        return new SimpleHTTPResponse(responseCode, reponseMessage);
 
     }
 
-    private static void dumpHeader(WadoRS main,
+    private static String dumpHeader(WadoRS main,
             Map<String, List<String>> headerFields) throws FileNotFoundException {
         File f = new File(main.outDir, "request-head");
-        writeHeader(headerFields, f);
+        return writeHeader(headerFields, f);
     }
 
-    private static void writeHeader(Map<String, List<String>> headerFields,
+    private static String writeHeader(Map<String, List<String>> headerFields,
             File f) throws FileNotFoundException {
         PrintWriter writer = new PrintWriter(f);
         for(String key : headerFields.keySet()) {
@@ -398,6 +422,7 @@ public class WadoRS {
             writer.println();
         }
         writer.close();
+        return f.getAbsolutePath();
     }
 
     private static String[] compileAcceptHeader(String[] acceptTypes) {
@@ -423,7 +448,7 @@ public class WadoRS {
             @Override
             boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws Exception {
-
+                String headPath = null, bodyPath;
                 TransformerHandler th = getTransformerHandler(wadors);
                 th.getTransformer().setOutputProperty(OutputKeys.INDENT,
                         wadors.xmlIndent ? "yes" : "no");
@@ -434,10 +459,9 @@ public class WadoRS {
                 Attributes attrs = SAXReader.parse(is);
                 SAXWriter saxWriter = new SAXWriter(th);
                 String fileName = null ;
-                File outputDirectory;
+                File outputDirectory = wadors.getOutDir();;
                 if(wadors.useDefaultNaming()) {
                     fileName= ""+wadors.getNextPartIndex();
-                    outputDirectory = wadors.getOutDir();
                 }
                 else if(wadors.getNaming().equals(WadoRS.Naming.UID)) {
                     fileName = attrs.getString(Tag.SOPInstanceUID);
@@ -450,15 +474,19 @@ public class WadoRS {
                 else {
                     fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
                     fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
-                    outputDirectory = wadors.getOutDir();
                 }
                 File out = new File(outputDirectory, wadors.naming.equals(WadoRS.Naming.UID)?fileName+".xml":fileName);
                 th.setResult(new StreamResult(out));
                 saxWriter.setIncludeKeyword(wadors.xmlIncludeKeyword);
                 saxWriter.write(attrs);
                 if(wadors.dumpHeader) {
-                    writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                    headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                 }
+                else {
+                    headPath = attrs.getString(Tag.SOPInstanceUID);
+                }
+                bodyPath = out.getAbsolutePath();
+                wadors.retrievedInstances.put(headPath, bodyPath);
                 return true;
             }
 
@@ -490,6 +518,7 @@ public class WadoRS {
             boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws IOException {
                 //InputStream is = cloneStream(in);
+                String headPath = null, bodyPath;
                 Attributes attrs;
                 File out = null;
                 DicomInputStream dis = new DicomInputStream(in);
@@ -497,10 +526,9 @@ public class WadoRS {
                     attrs = dis.readDataset(-1, -1);
                     
                     String fileName = null ;
-                    File outputDirectory;
+                    File outputDirectory = wadors.getOutDir();;
                     if(wadors.useDefaultNaming()) {
                         fileName= ""+wadors.getNextPartIndex();
-                        outputDirectory = wadors.getOutDir();
                     }
                     else if(wadors.getNaming().equals(WadoRS.Naming.UID)) {
                         fileName = attrs.getString(Tag.SOPInstanceUID);
@@ -513,15 +541,19 @@ public class WadoRS {
                     else {
                         fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
                         fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
-                        outputDirectory = wadors.getOutDir();
                     }
                     out = new File(outputDirectory, wadors.naming.equals(WadoRS.Naming.UID)?fileName+".dcm":fileName);
                     DicomOutputStream os = new DicomOutputStream(out);
                     os.writeDataset(fmi, attrs);
                     os.close();
                     if(wadors.dumpHeader) {
-                        writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                        headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                     }
+                    else {
+                        headPath = attrs.getString(Tag.SOPInstanceUID);
+                    }
+                    bodyPath = out.getAbsolutePath();
+                    wadors.retrievedInstances.put(headPath, bodyPath);
                 return true;
             }
         },
@@ -529,23 +561,27 @@ public class WadoRS {
             @Override
             boolean readBody(WadoRS wadors, InputStream in, Map<String, List<String>> headerParams)
                     throws IOException {
+                String headPath = null, bodyPath;
                 String fileName = null ;
-                File outputDirectory;
+                File outputDirectory = wadors.getOutDir();
                 if(wadors.useDefaultNaming()) {
                     fileName= ""+wadors.getNextPartIndex();
-                    outputDirectory = wadors.getOutDir();
                 }
                 else {
                     fileName = headerParams.get("content-id").get(0).replaceAll("[^\\d.-]", "");
                     fileName = fileName.endsWith("-")? fileName.substring(0, fileName.length()-2):fileName;
-                    outputDirectory = wadors.getOutDir();
                 }
                 File out = new File(outputDirectory,fileName + ".blk");
                 Files.copy(in,out.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
                 if(wadors.dumpHeader) {
-                    writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
+                    headPath = writeHeader(headerParams, new File(out.getAbsolutePath()+"-head"));
                 }
+                else {
+                    headPath = fileName;
+                }
+                bodyPath = out.getAbsolutePath();
+                wadors.retrievedInstances.put(headPath, bodyPath);
                 return true;
             }
         };
@@ -670,5 +706,17 @@ public class WadoRS {
 
     public int getNextPartIndex() {
         return ++this.partIndex;
+    }
+
+    public Map<String, String> getRetrievedInstances() {
+        return retrievedInstances;
+    }
+
+    public WadoRSResponse getResponse() {
+        return response;
+    }
+
+    public void setDumpHeaders(boolean b) {
+        this.dumpHeader = b;
     }
 }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>3.3.6-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-cdi-parent</artifactId>
   <packaging>pom</packaging>
@@ -35,7 +35,6 @@
     </dependencies>
   </dependencyManagement>
   <modules>
-    <module>dcm4che-cdi-conf</module>
     <module>dcm4che-cdi-device</module>
     <module>dcm4che-cdi-echo</module>
     <module>dcm4che-cdi-war</module>

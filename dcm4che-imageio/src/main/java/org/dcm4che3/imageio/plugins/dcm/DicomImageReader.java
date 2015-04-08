@@ -280,7 +280,7 @@ public class DicomImageReader extends ImageReader {
             iis.setByteOrder(ds.bigEndian()
                     ? ByteOrder.BIG_ENDIAN
                     : ByteOrder.LITTLE_ENDIAN);
-            iis.seek(pixeldata.offset + frameIndex * frameLength);
+            iis.seek(pixeldata.offset() + frameIndex * frameLength);
             WritableRaster wr = Raster.createWritableRaster(
                     createSampleModel(dataType, banded), null);
             DataBuffer buf = wr.getDataBuffer();
@@ -382,8 +382,8 @@ public class DicomImageReader extends ImageReader {
     @SuppressWarnings("resource")
     private ImageInputStreamImpl iisOfFrame(int frameIndex)
             throws IOException {
-        SegmentedImageInputStream siis = new SegmentedImageInputStream(
-                iis, pixeldataFragments, frameIndex);
+        SegmentedImageInputStream siis = SegmentedImageInputStream.ofFrame(
+                iis, pixeldataFragments, frameIndex, frames);
         return patchJpegLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJpegLS)
                 : siis;

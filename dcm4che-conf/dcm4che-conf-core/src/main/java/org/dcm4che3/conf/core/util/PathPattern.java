@@ -147,6 +147,8 @@ public class PathPattern {
         public PathCreator set(String paramName, String value) {
             if (!res.contains(paramName))
                 throw new IllegalArgumentException("No parameter " + paramName + " in path " + res);
+            if (value == null)
+                throw new IllegalArgumentException("Attempted to set parameter " + paramName + " to NULL in path " + res);
             res = res.replace("{" + paramName + "}", value.replace("'", "&apos;"));
             return this;
         }

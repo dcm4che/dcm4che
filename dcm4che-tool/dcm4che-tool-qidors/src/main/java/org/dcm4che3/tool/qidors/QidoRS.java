@@ -43,16 +43,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.json.Json;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
@@ -66,11 +68,17 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.Sequence;
 import org.dcm4che3.io.SAXReader;
 import org.dcm4che3.io.SAXWriter;
+import org.dcm4che3.json.JSONReader;
+import org.dcm4che3.json.JSONReader.Callback;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -120,8 +128,35 @@ public class QidoRS{
     
     private ParserType parserType;
     
+    private Attributes queryAttrs;
+
+    private Attributes returnAttrs;
+
+    private boolean returnAll;
+    
+    private boolean runningModeTest;
+
+    private List<Attributes> responseAttrs = new ArrayList<Attributes>();
+
+    private long timeFirst;
+
+    private int numMatches = 0;
+
     public QidoRS() {}
 
+    public QidoRS(boolean fuzzy, boolean timezone, boolean returnAll,
+            String limit, String offset, Attributes queryAttrs, Attributes returnAttrs, String mediaType, String url) {
+        this.returnAttrs = returnAttrs;
+        this.url = url;
+        this.queryAttrs = queryAttrs;
+        this.isJSON = mediaType.equalsIgnoreCase("JSON");
+        this.fuzzy = fuzzy;
+        this.timezone = timezone;
+        this.returnAll = returnAll;
+        this.limit = limit;
+        this.offset = offset;
+    }
+    
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
@@ -230,7 +265,7 @@ public class QidoRS{
             
             String response = null;
             try {
-               response = sendRequest(main);
+               response = qido(main,true);
             } catch (IOException e) {
                 System.out.print("Error during request {}"+e);
             }
@@ -243,12 +278,17 @@ public class QidoRS{
         }
     }
 
-
-    private static String sendRequest(final QidoRS main) throws IOException {
+public static String qido(QidoRS main, boolean cli) throws IOException {
+    URL newUrl;
+    if(cli)
+        newUrl = new URL(addRequestParametersCLI(main, main.getUrl()));
+    else
+        newUrl = new URL(addRequestParameters(main, main.getUrl()));
+    return sendRequest(newUrl, main);
+}
+    private static String sendRequest(URL url, final QidoRS main) throws IOException {
         
-        URL newUrl = new URL(addRequestParameters(main, main.getUrl()));
-        
-        HttpURLConnection connection = (HttpURLConnection) newUrl
+        HttpURLConnection connection = (HttpURLConnection) url
                 .openConnection();
         
         connection.setDoOutput(true);
@@ -288,7 +328,7 @@ public class QidoRS{
 
     }
 
-    private static String addRequestParameters(final QidoRS main, String url) {
+    private static String addRequestParametersCLI(final QidoRS main, String url) {
         
         if(main.includeField!=null) {
             for(String field : main.getIncludeField())
@@ -319,6 +359,88 @@ public class QidoRS{
         }
         return url;
     }
+
+    private static String addRequestParameters(final QidoRS main, String url) {
+        
+        ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
+
+        if(!main.returnAll)
+            for(int i=0; i< main.returnAttrs.tags().length;i++) {
+                int tag = main.returnAttrs.tags()[i];
+                if(main.returnAttrs.getValue(tag) == null)
+                    url=addParam(url,"includefield",keyWordOf(main, dict, tag, main.returnAttrs));
+            }
+
+        if(main.getQueryAttrs() != null) {
+            for(int i=0; i< main.queryAttrs.tags().length;i++) {
+                int tag = main.queryAttrs.tags()[i];
+                String keyword ;
+                keyword = keyWordOf(main, dict, tag, main.queryAttrs);
+                if(main.queryAttrs.getSequence(tag) != null) {
+                    //is a sequence
+                    setSequenceQueryAttrs(main,url,main.queryAttrs.getSequence(tag), keyword);
+                }
+                else {
+                        url=addParam(url,
+                               keyword, (String) main.queryAttrs.getValue(tag));
+                }
+                
+            }
+        }
+        
+        if(main.isFuzzy())
+            url=addParam(url,"fuzzymatching","true");
+        
+        if(main.isTimezone())
+            url=addParam(url,"timezoneadjustment","true");
+        
+        if(main.getLimit()!=null) {
+            url=addParam(url,"limit",main.getLimit());
+        }
+        
+        if(main.getOffset() != null) {
+            url=addParam(url,"offset",main.getOffset());
+        }
+        if(main.isJSON)
+            main.parserType = ParserType.JSON;
+        else
+            main.parserType = ParserType.XML;
+        return url;
+    }
+
+    protected static String keyWordOf(final QidoRS main,
+            ElementDictionary dict, int tag, Attributes attrs) {
+        String keyword;
+        if(attrs.getPrivateCreator(tag) != null)  {
+            keyword = ElementDictionary.keywordOf(tag, attrs.getPrivateCreator(tag));
+        }
+        else {
+            keyword = dict.keywordOf(tag);
+        }
+        return keyword;
+    }
+
+    private static void setSequenceQueryAttrs(QidoRS main, String url, Sequence sequence, String seqKeyWork) {
+        ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
+        for(Attributes item : sequence) {
+            for(int i=0; i < item.tags().length; i++) {
+                int tag = item.tags()[i];
+                if(item.getSequence(tag) == null) {
+                    url+=(url.endsWith(".")?"":(url.contains("?")?"&":"?"))
+                            +keyWordOf(main, dict, tag, main.queryAttrs)
+                            +"="+(String) main.queryAttrs.getValue(tag);
+                }
+                else {
+                    url+=(url.endsWith(".")?"":(url.contains("?")?"&":"?"))
+                            +keyWordOf(main, dict, tag, main.queryAttrs)+".";
+                    setSequenceQueryAttrs(main,url,main.queryAttrs.getSequence(tag)
+                            , keyWordOf(main, dict, tag, main.queryAttrs));
+                }
+            }
+            
+        }
+    }
+
     private static String addParam(String url, String key, String field) {
 
         if(url.contains("?"))
@@ -343,6 +465,13 @@ public class QidoRS{
                 String[] parts = full.split(boundary);
                 
                 for(int i=0;i<parts.length-1;i++) {
+                    if(qidors.isRunningModeTest()) {
+                        if(qidors.getTimeFirst() == 0)
+                            qidors.setTimeFirst(System.currentTimeMillis());
+                        qidors.responseAttrs.add(SAXReader.parse(new ByteArrayInputStream(removeHeader(parts[i]).getBytes())));
+                        qidors.numMatches++;
+                    }
+                    else {
                     File out = new File(qidors.outDir, "part - "+(i+1)+" - "+qidors.outFileName);
                     TransformerHandler th = getTransformerHandler(qidors);
                     th.getTransformer().setOutputProperty(OutputKeys.INDENT,
@@ -352,6 +481,7 @@ public class QidoRS{
                     SAXWriter saxWriter = new SAXWriter(th);
                     saxWriter.setIncludeKeyword(qidors.xmlIncludeKeyword); 
                     saxWriter.write(attrs);
+                    }
                 }
                 
                 reader.close();
@@ -394,9 +524,32 @@ public class QidoRS{
         },
         JSON {
             @Override
-            boolean readBody(QidoRS qidors, InputStream in) throws IOException {
+            boolean readBody(final QidoRS qidors, InputStream in) 
+                    throws IOException, ParserConfigurationException, SAXException {
+                if(qidors.isRunningModeTest()) {
+                    try {
+                        JSONReader reader = new JSONReader(
+                                Json.createParser(new InputStreamReader(in, "UTF-8")));
+                        reader.readDatasets(new Callback() {
+                            @Override
+                            public void onDataset(Attributes fmi, Attributes dataset) {
+                                if(qidors.getTimeFirst() == 0)
+                                    qidors.setTimeFirst(System.currentTimeMillis());
+                                qidors.responseAttrs.add(dataset);
+                                qidors.numMatches++;
+                            }
+                        });
+
+                    } finally {
+                        if (in != System.in)
+                            SafeClose.close(in);
+                    }
+                    
+                }
+                else {
                 Files.copy(in, new File(qidors.outDir, qidors.outFileName).toPath()
                         , StandardCopyOption.REPLACE_EXISTING);
+                }
                 return true;
             }
         };
@@ -467,6 +620,14 @@ public class QidoRS{
         return isJSON;
     }
 
+    public boolean isRunningModeTest() {
+        return runningModeTest;
+    }
+
+    public void setRunningModeTest(boolean runningModeTest) {
+        this.runningModeTest = runningModeTest;
+    }
+
     public void setJSON(boolean isJSON) {
         this.isJSON = isJSON;
     }
@@ -519,5 +680,34 @@ public class QidoRS{
     public void setOffset(String offset) {
         this.offset = offset;
     }
+
+    public Attributes getQueryAttrs() {
+        return queryAttrs;
+    }
+
+    public void setQueryAttrs(Attributes queryAttrs) {
+        this.queryAttrs = queryAttrs;
+    }
+
+    public long getTimeFirst() {
+        return timeFirst;
+    }
+
+    public void setTimeFirst(long timeFirst) {
+        this.timeFirst = timeFirst;
+    }
+
+    public int getNumMatches() {
+        return numMatches;
+    }
+
+    public List<Attributes> getResponseAttrs() {
+        return responseAttrs;
+    }
+
+    public Attributes getReturnAttrs() {
+        return returnAttrs;
+    }
+
 
 }

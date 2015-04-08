@@ -56,6 +56,7 @@ import org.dcm4che3.util.ByteUtils;
 public class SegmentedImageInputStream extends ImageInputStreamImpl {
 
     private final ImageInputStream stream;
+    private final boolean autoExtend;
     private long[] segmentPositionsList;
     private int[] segmentLengths;
     private int curSegment;
@@ -63,34 +64,43 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
     private byte[] header = new byte[8];
 
     public SegmentedImageInputStream(ImageInputStream stream,
-                                     Fragments pixeldataFragments, int frameIndex) throws IOException {
-        long[] offsets = new long[pixeldataFragments.size()-(frameIndex+1)];
-        int[] length = new int[offsets.length];
-        for (int i = 0; i < length.length; i++) {
-            BulkData bulkData = (BulkData) pixeldataFragments.get(i+frameIndex+1);
-            offsets[i] = bulkData.offset;
-            length[i] = bulkData.length;
-        }
-        this.stream = stream;
-        this.segmentPositionsList = offsets;
-        this.segmentLengths = length;
-        seek(0);
-    }
-
-    public SegmentedImageInputStream(ImageInputStream stream,
                                      long[] segmentPositionsList, int[] segmentLengths)
                     throws IOException {
         this.stream = stream;
         this.segmentPositionsList = segmentPositionsList.clone();
         this.segmentLengths = segmentLengths.clone();
+        this.autoExtend = false;
         seek(0);
     }
 
-    public SegmentedImageInputStream(ImageInputStream stream, long pos, int len) throws IOException {
+    public SegmentedImageInputStream(ImageInputStream stream, long pos, int len, boolean autoExtend)
+            throws IOException {
         this.stream = stream;
         this.segmentPositionsList = new long[]{ pos };
         this.segmentLengths = new int[]{ len };
+        this.autoExtend = autoExtend;
         seek(0);
+    }
+
+    public static SegmentedImageInputStream ofFrame(ImageInputStream iis, Fragments fragments, int index, int frames)
+            throws IOException {
+        if (frames > 1) {
+            if (fragments.size() != frames +1)
+                throw new UnsupportedOperationException(
+                        "Number of Fragments [" + fragments.size()
+                                + "] != Number of Frames [" + frames + "] + 1");
+            BulkData bulkData = (BulkData) fragments.get(index+1);
+            return new SegmentedImageInputStream(iis, bulkData.offset(), bulkData.length(), false);
+        }
+        int n = fragments.size() - 1;
+        long[] offsets = new long[n];
+        int[] lengths = new int[n];
+        for (int i = 0; i < n; i++) {
+            BulkData bulkData = (BulkData) fragments.get(i+1);
+            offsets[i] = bulkData.offset();
+            lengths[i] = bulkData.length();
+        }
+        return new SegmentedImageInputStream(iis, offsets, lengths);
     }
 
     public long getLastSegmentEnd() {
@@ -142,6 +152,9 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
             return true;
 
         if (curSegment+1 >= segmentPositionsList.length) {
+            if (!autoExtend)
+                return false;
+
             stream.mark();
             stream.readFully(header);
             stream.reset();
@@ -176,5 +189,4 @@ public class SegmentedImageInputStream extends ImageInputStreamImpl {
         }
         return nbytes;
     }
-
 }

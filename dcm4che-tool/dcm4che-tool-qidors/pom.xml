@@ -29,7 +29,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>3.3.6-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-tool-qidors</artifactId>
   <name>dcm4che-tool-qido</name>
@@ -51,6 +51,13 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-json</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>

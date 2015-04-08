@@ -95,7 +95,7 @@ public class MoveResult implements TestResult{
         return numFail;
     }
 
-    public List<Attributes> getQueryResponse() {
+    public List<Attributes> getMoveResponse() {
         return queryResponse;
     }
 

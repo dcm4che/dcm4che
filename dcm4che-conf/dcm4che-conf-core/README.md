@@ -15,6 +15,11 @@
     - another configurable object
     - a collection, map of configurable objects
     - a reference, collection of references
+    
+      CAUTION: this feature's use should be limited to reduce the referential complexity - the more references are
+      introduced, the more complex UI's logic will need to be to handle proper cascading
+
+      Currently supported reference targets are `Device`s and `Connection`s within same device.
 
 - A configurable property should not be related to volatile operational data, i.e., it should be something that changes not so often, a rule of thumb is one hour - if you expect that a property could generally change more often - choose a different way of storing it.
 
@@ -25,7 +30,7 @@
 ### As a tools/config provider developer
 
 - Use [ConfigurationManager](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/ConfigurationManager.java) to access the `Configuration` and `BeanVitalizer`. 
-- Use [Configuration](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/Configuration.java) API to load/persist configuration nodes (see Configuration storage init).
+- Use [Configuration](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core-api/src/main/java/org/dcm4che3/conf/core/api/Configuration.java) API to load/persist configuration nodes (see Configuration storage init).
 - Use [BeanVitalizer](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-conf/dcm4che-conf-core/src/main/java/org/dcm4che3/conf/core/BeanVitalizer.java) to 'vitalize' objects, i.e. to fill in all the configurable properties of a bean using the loaded JSON configuration node/convert back to JSON node
 - DO NOT make a custom representation for configurable classes, it will break things. Use references instead.
 

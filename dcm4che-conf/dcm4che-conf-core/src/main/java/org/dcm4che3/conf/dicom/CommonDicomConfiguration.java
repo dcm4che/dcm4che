@@ -42,16 +42,14 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.Configuration;
+import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
@@ -96,7 +94,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
 
     public CommonDicomConfiguration(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses) {
         this.config = configurationStorage;
-        this.vitalizer = new BeanVitalizer();
+        this.vitalizer = new DefaultBeanVitalizer();
         this.deviceExtensionClasses = deviceExtensionClasses;
         this.aeExtensionClasses = aeExtensionClasses;
 
@@ -142,7 +140,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
         return config.nodeExists(DicomPath.ConfigRoot.path());
     }
 
-    @Override
     public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists()) return false;
         config.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), DicomConfigurationRootNode.class);
@@ -216,6 +213,29 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
         @ConfigurableProperty(name = "hl7UniqueApplicationNamesRegistryRoot")
         Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry;
 
+        public Map<String, Device> getDevices() {
+            return devices;
+        }
+
+        public void setDevices(Map<String, Device> devices) {
+            this.devices = devices;
+        }
+
+        public Map<String, AETitleItem> getUniqueAETitleRegistry() {
+            return uniqueAETitleRegistry;
+        }
+
+        public void setUniqueAETitleRegistry(Map<String, AETitleItem> uniqueAETitleRegistry) {
+            this.uniqueAETitleRegistry = uniqueAETitleRegistry;
+        }
+
+        public Map<String, HL7UniqueAppRegistryItem> getHl7UniqueApplicationNamesRegistry() {
+            return hl7UniqueApplicationNamesRegistry;
+        }
+
+        public void setHl7UniqueApplicationNamesRegistry(Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry) {
+            this.hl7UniqueApplicationNamesRegistry = hl7UniqueApplicationNamesRegistry;
+        }
     }
 
     @Override
@@ -299,12 +319,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
     }
 
     @Override
-    public Device vitalizeDevice(String deviceName, Map<String, Object> configuratioNode) throws ConfigurationException {
+    public Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException {
 
         HashMap<String, Device> deviceCache = new HashMap<String, Device>();
         currentlyLoadedDevicesLocal.set(deviceCache);
         try {
-            return vitalizeDevice(deviceName,deviceCache, configuratioNode);
+            return vitalizeDevice(deviceName,deviceCache, configurationNode);
         } finally {
             currentlyLoadedDevicesLocal.remove();
         }

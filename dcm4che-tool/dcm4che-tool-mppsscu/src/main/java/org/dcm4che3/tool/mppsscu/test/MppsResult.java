@@ -38,7 +38,7 @@
 
 package org.dcm4che3.tool.mppsscu.test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.tool.common.test.TestResult;
@@ -61,7 +61,8 @@ public class MppsResult implements TestResult{
     
     private long createtime;
     private long settime;
-    private ArrayList<Attributes> nsetResponse;
+    private List<Attributes> nsetResponse;
+    private List<Attributes> ncreateResponse;
     /**
      * @param testDescription
      * @param fileName
@@ -75,7 +76,7 @@ public class MppsResult implements TestResult{
      */
     public MppsResult(String testDescription, String fileName, int nCreateSent,
             int nCreateWarnings, int nCreateFailures, int nSetSent,
-            int nSetFailures, long createtime, long settime, ArrayList<Attributes> cmdRSP) {
+            int nSetFailures, long createtime, long settime, List<Attributes> nCreatecmdRSP, List<Attributes> nSetcmdRSP) {
         super();
         this.testDescription = testDescription;
         this.fileName = fileName;
@@ -86,7 +87,8 @@ public class MppsResult implements TestResult{
         this.nSetFailures = nSetFailures;
         this.createtime = createtime;
         this.settime = settime;
-        this.nsetResponse = cmdRSP;
+        this.nsetResponse = nSetcmdRSP;
+        this.ncreateResponse = nCreatecmdRSP;
     }
     public String getTestDescription() {
         return testDescription;
@@ -115,12 +117,12 @@ public class MppsResult implements TestResult{
     public long getSettime() {
         return settime;
     }
-    public ArrayList<Attributes> getNsetResponse() {
+    public List<Attributes> getNsetResponse() {
         return nsetResponse;
     }
-    public void setNsetResponse(ArrayList<Attributes> nsetResponse) {
-        this.nsetResponse = nsetResponse;
-    }
 
+    public List<Attributes> getNcreateResponse() {
+        return ncreateResponse;
+    }
 
 }

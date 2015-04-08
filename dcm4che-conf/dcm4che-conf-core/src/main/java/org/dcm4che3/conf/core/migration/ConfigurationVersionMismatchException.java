@@ -39,7 +39,7 @@
  */
 package org.dcm4che3.conf.core.migration;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 
 /**
  * Created by aprvf on 17/10/2014.

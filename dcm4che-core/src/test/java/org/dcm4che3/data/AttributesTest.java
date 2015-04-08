@@ -414,6 +414,30 @@ public class AttributesTest {
         assertEquals("test", b.getString(0x99991001));
     }
 
+    @Test
+    public void testItemPointer() {
+        Attributes a = new Attributes(1);
+        Attributes b = new Attributes(1);
+        Attributes c = new Attributes(1);
+        Attributes d = new Attributes(1);
+        Sequence seq1 = a.newSequence(Tag.ContentSequence, 2);
+        Sequence seq2 = b.newSequence("DCM4CHE", 0x99990010, 1);
+        seq1.add(b);
+        seq1.add(c);
+        seq2.add(d);
+        ItemPointer[] ipa = {};
+        ItemPointer[] ipb = { new ItemPointer(Tag.ContentSequence) };
+        ItemPointer[] ipc = { new ItemPointer(Tag.ContentSequence, 1) };
+        ItemPointer[] ipd = {
+                new ItemPointer(Tag.ContentSequence),
+                new ItemPointer("DCM4CHE", 0x99990010)
+        };
+        assertArrayEquals(ipa, a.itemPointers());
+        assertArrayEquals(ipb, b.itemPointers());
+        assertArrayEquals(ipc, c.itemPointers());
+        assertArrayEquals(ipd, d.itemPointers());
+    }
+
     private void assertModified(Attributes modified) {
         assertEquals("PatientID", modified.getString(Tag.PatientID));
         Attributes modOtherPID = modified.getNestedDataset(Tag.OtherPatientIDsSequence);

@@ -45,8 +45,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.BulkDataDescriptor;
@@ -65,6 +63,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Attributes implements Serializable {
 
+
+
     public interface Visitor {
         boolean visit(Attributes attrs, int tag, VR vr, Object value)
                 throws Exception;
@@ -77,6 +77,8 @@ public class Attributes implements Serializable {
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
     private transient Attributes parent;
+    private transient String parentSequencePrivateCreator;
+    private transient int parentSequenceTag;
     private transient int[] tags;
     private transient VR[] vrs;
     private transient Object[] values;
@@ -183,6 +185,10 @@ public class Attributes implements Serializable {
         return parent == null;
     }
 
+    public Attributes getRoot() {
+        return isRoot() ? this : parent.getRoot();
+    }
+
     public final int getLevel() {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
@@ -195,11 +201,19 @@ public class Attributes implements Serializable {
         return parent;
     }
 
+    public String getParentSequencePrivateCreator() {
+        return parentSequencePrivateCreator;
+    }
+
+    public int getParentSequenceTag() {
+        return parentSequenceTag;
+    }
+
     public final int getLength() {
         return length;
     }
 
-    Attributes setParent(Attributes parent) {
+    Attributes setParent(Attributes parent, String parentSequencePrivateCreator, int parentSequenceTag) {
         if (parent != null) {
             if (parent.bigEndian != bigEndian)
                 throw new IllegalArgumentException(
@@ -213,6 +227,8 @@ public class Attributes implements Serializable {
                 tz = null;
         }
         this.parent = parent;
+        this.parentSequencePrivateCreator = parentSequencePrivateCreator;
+        this.parentSequenceTag = parentSequenceTag;
         return this;
     }
 
@@ -230,6 +246,31 @@ public class Attributes implements Serializable {
 
     public final int size() {
         return size;
+    }
+
+    public ItemPointer[] itemPointers() {
+        return itemPointers(0);
+    }
+
+    private ItemPointer[] itemPointers(int n) {
+        if (parent == null)
+            return new ItemPointer[n];
+
+        ItemPointer[] itemPointers = parent.itemPointers(n + 1);
+        itemPointers[itemPointers.length - n - 1] =
+                new ItemPointer(parentSequencePrivateCreator, parentSequenceTag, itemIndex());
+        return itemPointers;
+    }
+
+    public int itemIndex() {
+        if (parent == null)
+            return -1;
+
+        Sequence seq = parent.getSequence(parentSequencePrivateCreator, parentSequenceTag);
+        if (seq == null)
+            return -1;
+
+        return seq.indexOf(this);
     }
 
     public int[] tags() {
@@ -581,7 +622,7 @@ public class Attributes implements Serializable {
         
         Object value = values[index];
         if (value == Value.NULL)
-            return (Sequence) (values[index] = new Sequence(this, 0));
+            return (Sequence) (values[index] = new Sequence(this, privateCreator, tag, 0));
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
@@ -1518,7 +1559,7 @@ public class Attributes implements Serializable {
             } else
                 values[tmIndex] = updateTimeZoneDT(from, to, (String) tm);
         } else {
-            int daTag = TagUtils.daTagOf(tmTag);
+            int daTag = ElementDictionary.getElementDictionary(privateCreatorOf(tmTag)).daTagOf(tmTag);
             int daIndex = daTag != 0 ? indexOf(daTag) : -1;
             Object da = daIndex >= 0 ? decodeStringValue(daIndex) : Value.NULL;
 
@@ -1823,7 +1864,7 @@ public class Attributes implements Serializable {
     }
 
     public Sequence newSequence(String privateCreator, int tag, int initialCapacity) {
-        Sequence seq = new Sequence(this, initialCapacity);
+        Sequence seq = new Sequence(this, privateCreator, tag, initialCapacity);
         set(privateCreator, tag, VR.SQ, seq);
         return seq;
     }
@@ -1845,9 +1886,9 @@ public class Attributes implements Serializable {
             if (oldValue instanceof Sequence)
                 seq = (Sequence) oldValue;
             else
-                values[index] = seq = new Sequence(this, initialCapacity);
+                values[index] = seq = new Sequence(this, privateCreator, tag, initialCapacity);
         } else {
-            seq = new Sequence(this, initialCapacity);
+            seq = new Sequence(this, privateCreator, tag, initialCapacity);
             insert(-index-1, tag, VR.SQ, seq);
         }
         return seq;
@@ -1860,7 +1901,7 @@ public class Attributes implements Serializable {
 
     public Fragments newFragments(String privateCreator, int tag, VR vr,
             int initialCapacity) {
-        Fragments frags = new Fragments(vr, bigEndian, initialCapacity);
+        Fragments frags = new Fragments(privateCreator, tag, vr, bigEndian, initialCapacity);
         set(privateCreator, tag, vr, frags);
         return frags;
     }
@@ -1888,6 +1929,38 @@ public class Attributes implements Serializable {
         }
 
         return oldValue;
+    }
+
+    public void addBulkDataReference(String privateCreator, int tag, VR vr, BulkData bulkData,
+                                ItemPointer... itemPointers) {
+        Sequence seq = ensureSequence(Tag.ReferencedBulkDataSequence, 8);
+        Attributes item = new Attributes(bigEndian, 7);
+        seq.add(item);
+        item.setString(Tag.RetrieveURL, VR.UR, bulkData.uri);
+        item.setInt(Tag.SelectorAttribute, VR.AT, privateCreator != null ? (tag & 0xffff00ff) : tag);
+        item.setString(Tag.SelectorAttributeVR, VR.CS, vr.name());
+        if (privateCreator != null)
+            item.setString(Tag.SelectorAttributePrivateCreator, VR.LO, privateCreator);
+        if (itemPointers.length > 0) {
+            int[] seqTags = new int[itemPointers.length];
+            int[] itemNumbers = new int[itemPointers.length];
+            String[] privateCreators = null;
+            for (int i = 0; i < itemPointers.length; i++) {
+                ItemPointer ip = itemPointers[i];
+                seqTags[i] = ip.privateCreator != null ? (ip.sequenceTag & 0xffff00ff) : ip.sequenceTag;
+                itemNumbers[i] = ip.itemIndex + 1;
+                if (ip.privateCreator != null) {
+                    if (privateCreators == null)
+                        privateCreators = new String[itemPointers.length];
+                    privateCreators[i] = ip.privateCreator;
+                }
+            }
+            item.setInt(Tag.SelectorSequencePointer, VR.AT, seqTags);
+            if (privateCreators != null)
+                item.setString(Tag.SelectorSequencePointerPrivateCreator, VR.LO, privateCreators);
+            item.setInt(Tag.SelectorSequencePointerItems, VR.IS, itemNumbers);
+        }
+        item.trimToSize();
     }
 
     private Object set(int tag, VR vr, Object value) {
@@ -1951,11 +2024,6 @@ public class Attributes implements Serializable {
     }
 
     public boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor) {
-        return addWithoutBulkData(other, descriptor, new ArrayList<ItemPointer>());
-    }
-
-    private boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor,
-                                       List<ItemPointer> itemPointer) {
         final boolean toggleEndian = bigEndian != other.bigEndian;
         final int[] tags = other.tags;
         final VR[] srcVRs = other.vrs;
@@ -1964,6 +2032,7 @@ public class Attributes implements Serializable {
         int numAdd = 0;
         String privateCreator = null;
         int creatorTag = 0;
+        ItemPointer[] itemPointer = itemPointers();
         for (int i = 0; i < otherSize; i++) {
             int tag = tags[i];
             VR vr = srcVRs[i];
@@ -1992,12 +2061,12 @@ public class Attributes implements Serializable {
             int vallen = (value instanceof byte[])
                     ? ((byte[])value).length
                     : -1;
-            if (descriptor.isBulkData(itemPointer, privateCreator, tag, vr, vallen))
+            if (descriptor.isBulkData(privateCreator, tag, vr, vallen, itemPointer))
                 continue;
 
             if (value instanceof Sequence) {
                 Sequence src = (Sequence) value;
-                setWithoutBulkData(privateCreator, tag, src, descriptor, itemPointer);
+                setWithoutBulkData(privateCreator, tag, src, descriptor);
             } else if (value instanceof Fragments) {
                 set(privateCreator, tag, (Fragments) value);
             } else {
@@ -2010,14 +2079,12 @@ public class Attributes implements Serializable {
     }
 
     private void setWithoutBulkData(String privateCreator, int tag, Sequence seq,
-                                    BulkDataDescriptor descriptor, List<ItemPointer> itemPointer) {
+                                    BulkDataDescriptor descriptor) {
         Sequence newSequence = newSequence(privateCreator, tag, seq.size());
         for (Attributes item : seq) {
-            itemPointer.add(new ItemPointer(tag, privateCreator, newSequence.size()));
             Attributes newItem = new Attributes(bigEndian, item.size());
-            newItem.addWithoutBulkData(item, descriptor, itemPointer);
             newSequence.add(newItem);
-            itemPointer.remove(itemPointer.size()-1);
+            newItem.addWithoutBulkData(item, descriptor);
         }
     }
 

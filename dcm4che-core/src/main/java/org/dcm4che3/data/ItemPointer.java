@@ -52,20 +52,43 @@ public class ItemPointer implements Serializable {
     public final int itemIndex;
 
     public ItemPointer(int sequenceTag) {
-        this(sequenceTag, null, 0);
+        this(null, sequenceTag, 0);
     }
 
     public ItemPointer(int sequenceTag, int itemIndex) {
-        this(sequenceTag, null, itemIndex);
+        this(null, sequenceTag, itemIndex);
     }
 
-    public ItemPointer(int sequenceTag, String privateCreator) {
-        this(sequenceTag, privateCreator, 0);
+    public ItemPointer(String privateCreator, int sequenceTag) {
+        this(privateCreator, sequenceTag, 0);
     }
 
-    public ItemPointer(int sequenceTag, String privateCreator, int itemIndex) {
+    public ItemPointer(String privateCreator, int sequenceTag, int itemIndex) {
         this.sequenceTag = sequenceTag;
         this.privateCreator = privateCreator;
         this.itemIndex = itemIndex;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ItemPointer that = (ItemPointer) o;
+
+        if (itemIndex != that.itemIndex) return false;
+        if (sequenceTag != that.sequenceTag) return false;
+        if (privateCreator != null ? !privateCreator.equals(that.privateCreator) : that.privateCreator != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = sequenceTag;
+        result = 31 * result + (privateCreator != null ? privateCreator.hashCode() : 0);
+        result = 31 * result + itemIndex;
+        return result;
     }
 }

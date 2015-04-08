@@ -39,6 +39,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:template name="dataelementsEx">
+      <el tag="FFF8FFF8" keyword="ReferencedBulkDataSequence" vr="SQ" vm="1">Referenced Bulk Data Sequence</el>
   </xsl:template>
 
 </xsl:stylesheet>

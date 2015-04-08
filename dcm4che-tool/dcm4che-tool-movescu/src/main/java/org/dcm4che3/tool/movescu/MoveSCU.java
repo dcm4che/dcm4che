@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -64,6 +65,7 @@ import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -140,7 +142,8 @@ public class MoveSCU {
        this.model = model;
        rq.addPresentationContext(new PresentationContext(1, model.cuid, tss));
        if (relational)
-           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, new byte[]{1}));
+           rq.addExtendedNegotiation(new ExtendedNegotiation(model.cuid, 
+                   QueryOption.toExtendedNegotiationInformation(EnumSet.of(QueryOption.RELATIONAL))));
        if (model.level != null)
            addLevel(model.level);
     }

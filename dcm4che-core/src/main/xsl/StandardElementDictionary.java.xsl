@@ -101,6 +101,184 @@ public class StandardElementDictionary extends ElementDictionary {
     }
 
     @Override
+    public int tmTagOf(int daTag) {
+        switch (daTag) {
+        case Tag.InstanceCreationDate:
+            return Tag.InstanceCreationTime;
+        case Tag.StudyDate:
+            return Tag.StudyTime;
+        case Tag.SeriesDate:
+            return Tag.SeriesTime;
+        case Tag.AcquisitionDate:
+            return Tag.AcquisitionTime;
+        case Tag.ContentDate:
+            return Tag.ContentTime;
+        case Tag.OverlayDate:
+            return Tag.OverlayTime;
+        case Tag.CurveDate:
+            return Tag.CurveTime;
+        case Tag.PatientBirthDate:
+            return Tag.PatientBirthTime;
+        case Tag.DateOfSecondaryCapture:
+            return Tag.TimeOfSecondaryCapture;
+        case Tag.DateOfLastCalibration:
+            return Tag.TimeOfLastCalibration;
+        case Tag.DateOfLastDetectorCalibration:
+            return Tag.TimeOfLastDetectorCalibration;
+        case Tag.ModifiedImageDate:
+            return Tag.ModifiedImageTime;
+        case Tag.StudyVerifiedDate:
+            return Tag.StudyVerifiedTime;
+        case Tag.StudyReadDate:
+            return Tag.StudyReadTime;
+        case Tag.ScheduledStudyStartDate:
+            return Tag.ScheduledStudyStartTime;
+        case Tag.ScheduledStudyStopDate:
+            return Tag.ScheduledStudyStopTime;
+        case Tag.StudyArrivalDate:
+            return Tag.StudyArrivalTime;
+        case Tag.StudyCompletionDate:
+            return Tag.StudyCompletionTime;
+        case Tag.ScheduledAdmissionDate:
+            return Tag.ScheduledAdmissionTime;
+        case Tag.ScheduledDischargeDate:
+            return Tag.ScheduledDischargeTime;
+        case Tag.AdmittingDate:
+            return Tag.AdmittingTime;
+        case Tag.DischargeDate:
+            return Tag.DischargeTime;
+        case Tag.ScheduledProcedureStepStartDate:
+            return Tag.ScheduledProcedureStepStartTime;
+        case Tag.ScheduledProcedureStepEndDate:
+            return Tag.ScheduledProcedureStepEndTime;
+        case Tag.PerformedProcedureStepStartDate:
+            return Tag.PerformedProcedureStepStartTime;
+        case Tag.PerformedProcedureStepEndDate:
+            return Tag.PerformedProcedureStepEndTime;
+        case Tag.IssueDateOfImagingServiceRequest:
+            return Tag.IssueTimeOfImagingServiceRequest;
+        case Tag.Date:
+            return Tag.Time;
+        case Tag.PresentationCreationDate:
+            return Tag.PresentationCreationTime;
+        case Tag.CreationDate:
+            return Tag.CreationTime;
+        case Tag.StructureSetDate:
+            return Tag.StructureSetTime;
+        case Tag.TreatmentControlPointDate:
+            return Tag.TreatmentControlPointTime;
+        case Tag.SafePositionExitDate:
+            return Tag.SafePositionExitTime;
+        case Tag.SafePositionReturnDate:
+            return Tag.SafePositionReturnTime;
+        case Tag.TreatmentDate:
+            return Tag.TreatmentTime;
+        case Tag.RTPlanDate:
+            return Tag.RTPlanTime;
+        case Tag.SourceStrengthReferenceDate:
+            return Tag.SourceStrengthReferenceTime;
+        case Tag.ReviewDate:
+            return Tag.ReviewTime;
+        case Tag.InterpretationRecordedDate:
+            return Tag.InterpretationRecordedTime;
+        case Tag.InterpretationTranscriptionDate:
+            return Tag.InterpretationTranscriptionTime;
+        case Tag.InterpretationApprovalDate:
+            return Tag.InterpretationApprovalTime;
+        }
+        return 0;
+    }
+
+    @Override
+    public int daTagOf(int tmTag) {
+        switch (tmTag) {
+        case Tag.InstanceCreationTime:
+            return Tag.InstanceCreationDate;
+        case Tag.StudyTime:
+            return Tag.StudyDate;
+        case Tag.SeriesTime:
+            return Tag.SeriesDate;
+        case Tag.AcquisitionTime:
+            return Tag.AcquisitionDate;
+        case Tag.ContentTime:
+            return Tag.ContentDate;
+        case Tag.OverlayTime:
+            return Tag.OverlayDate;
+        case Tag.CurveTime:
+            return Tag.CurveDate;
+        case Tag.PatientBirthTime:
+            return Tag.PatientBirthDate;
+        case Tag.TimeOfSecondaryCapture:
+            return Tag.TimeOfSecondaryCapture;
+        case Tag.TimeOfLastCalibration:
+            return Tag.TimeOfLastCalibration;
+        case Tag.TimeOfLastDetectorCalibration:
+            return Tag.TimeOfLastDetectorCalibration;
+        case Tag.ModifiedImageTime:
+            return Tag.ModifiedImageDate;
+        case Tag.StudyVerifiedTime:
+            return Tag.StudyVerifiedDate;
+        case Tag.StudyReadTime:
+            return Tag.StudyReadDate;
+        case Tag.ScheduledStudyStartTime:
+            return Tag.ScheduledStudyStartDate;
+        case Tag.ScheduledStudyStopTime:
+            return Tag.ScheduledStudyStopDate;
+        case Tag.StudyArrivalTime:
+            return Tag.StudyArrivalDate;
+        case Tag.StudyCompletionTime:
+            return Tag.StudyCompletionDate;
+        case Tag.ScheduledAdmissionTime:
+            return Tag.ScheduledAdmissionDate;
+        case Tag.ScheduledDischargeTime:
+            return Tag.ScheduledDischargeDate;
+        case Tag.AdmittingTime:
+            return Tag.AdmittingDate;
+        case Tag.DischargeTime:
+            return Tag.DischargeDate;
+        case Tag.ScheduledProcedureStepStartTime:
+            return Tag.ScheduledProcedureStepStartDate;
+        case Tag.ScheduledProcedureStepEndTime:
+            return Tag.ScheduledProcedureStepEndDate;
+        case Tag.PerformedProcedureStepStartTime:
+            return Tag.PerformedProcedureStepStartDate;
+        case Tag.PerformedProcedureStepEndTime:
+            return Tag.PerformedProcedureStepEndDate;
+        case Tag.IssueDateOfImagingServiceRequest:
+            return Tag.IssueTimeOfImagingServiceRequest;
+        case Tag.Time:
+            return Tag.Date;
+        case Tag.PresentationCreationTime:
+            return Tag.PresentationCreationDate;
+        case Tag.CreationTime:
+            return Tag.CreationDate;
+        case Tag.StructureSetTime:
+            return Tag.StructureSetDate;
+        case Tag.TreatmentControlPointTime:
+            return Tag.TreatmentControlPointDate;
+        case Tag.SafePositionExitTime:
+            return Tag.SafePositionExitDate;
+        case Tag.SafePositionReturnTime:
+            return Tag.SafePositionReturnDate;
+        case Tag.TreatmentTime:
+            return Tag.TreatmentDate;
+        case Tag.RTPlanTime:
+            return Tag.RTPlanDate;
+        case Tag.SourceStrengthReferenceTime:
+            return Tag.SourceStrengthReferenceDate;
+        case Tag.ReviewTime:
+            return Tag.ReviewDate;
+        case Tag.InterpretationRecordedTime:
+            return Tag.InterpretationRecordedDate;
+        case Tag.InterpretationTranscriptionTime:
+            return Tag.InterpretationTranscriptionDate;
+        case Tag.InterpretationApprovalTime:
+            return Tag.InterpretationApprovalDate;
+        }
+        return 0;
+    }
+
+    @Override
     public VR vrOf(int tag) {
         if ((tag &amp; 0x0000FFFF) == 0)
             return VR.UL;
@@ -114,7 +292,7 @@ public class StandardElementDictionary extends ElementDictionary {
         int tmp = tag &amp; 0xFFE00000;
         if (tmp == 0x50000000 || tmp == 0x60000000)
             tag &amp;= 0xFFE0FFFF;
-        else if ((tag &amp; 0xFF000000) == 0x7F000000 
+        else if ((tag &amp; 0xFF000000) == 0x7F000000
                 &amp;&amp; (tag &amp; 0xFFFF0000) != 0x7FE00000)
             tag &amp;= 0xFF00FFFF;
         switch (tag) {</xsl:text>
@@ -131,6 +309,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@vr='LO']"/>
     <xsl:apply-templates select="//el[@vr='LT']"/>
     <xsl:apply-templates select="//el[@vr='OB']"/>
+    <xsl:apply-templates select="//el[@vr='OD']"/>
     <xsl:apply-templates select="//el[@vr='OF']"/>
     <xsl:apply-templates select="//el[contains(@vr,'OW')]">
         <xsl:with-param name="vr">OW</xsl:with-param>
@@ -139,7 +318,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@vr='SH']"/>
     <xsl:apply-templates select="//el[@vr='SL']"/>
     <xsl:apply-templates select="//el[@vr='SQ']"/>
-    <xsl:apply-templates select="//el[@vr='SS' or @vr='US|SS']">
+    <xsl:apply-templates select="//el[contains(@vr,'SS') and not(contains(@vr,'OW'))]">
         <xsl:with-param name="vr">SS</xsl:with-param>
     </xsl:apply-templates>
     <xsl:apply-templates select="//el[@vr='ST']"/>

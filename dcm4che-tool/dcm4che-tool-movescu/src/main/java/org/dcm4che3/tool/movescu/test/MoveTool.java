@@ -77,6 +77,8 @@ public class MoveTool implements TestTool{
     private String aeTitle;
     private String destAEtitle;
     private String retrieveLevel;
+    private InformationModel retrieveInformationModel;
+    private boolean relational;
     private Device device;
     private Connection conn;
     private String sourceAETitle;
@@ -95,13 +97,17 @@ public class MoveTool implements TestTool{
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
 
-    public MoveTool(String host, int port, String aeTitle ,String destAEtitle, String retrieveLevel , Device device, String sourceAETitle, Connection conn) {
+    public MoveTool(String host, int port, String aeTitle ,String destAEtitle, String retrieveLevel
+            , String informationModel, boolean relational , Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
         this.aeTitle = aeTitle;
         this.destAEtitle = destAEtitle;
         this.retrieveLevel = retrieveLevel;
+        this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot")
+                ?InformationModel.StudyRoot: InformationModel.PatientRoot;
+        this.relational = relational;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
         this.conn = conn;
@@ -132,13 +138,11 @@ public class MoveTool implements TestTool{
                     Executors.newSingleThreadScheduledExecutor();
             main.getDevice().setExecutor(executorService);
             main.getDevice().setScheduledExecutor(scheduledExecutorService);
-            main.setInformationModel(InformationModel.StudyRoot,
-                    IVR_LE_FIRST, false);
             main.addLevel(retrieveLevel);
-            if (retrieveLevel.equalsIgnoreCase("IMAGE")) {
-                main.getAAssociateRQ()
-                .addExtendedNegotiation(new ExtendedNegotiation(InformationModel.StudyRoot.getCuid(), new byte[]{1}));
-            }
+            main.setInformationModel(retrieveInformationModel,
+                    IVR_LE_FIRST, relational);
+            
+
             long timeStart = System.currentTimeMillis();
             try {
                 main.open();
@@ -188,11 +192,16 @@ public class MoveTool implements TestTool{
             numWarning = cmd.getInt(Tag.NumberOfWarningSuboperations,0);
             numResponses = numSuccess + numFailed + numWarning;
         }
+        response.add(cmd);
     }
 
     public void addTag(int tag, String value) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null); 
         moveAttrs.setString(tag, vr, value);
+    }
+
+    public void addAll(Attributes keys) {
+        moveAttrs.addAll(keys);
     }
 
     public void setExpectedMatches(int expectedResult) {

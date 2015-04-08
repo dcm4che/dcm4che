@@ -69,10 +69,8 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.PDVInputStream;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCStoreSCP;
-import org.dcm4che3.net.service.DicomService;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
@@ -105,12 +103,15 @@ public class RetrieveTool implements TestTool{
     private List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     private String retrieveLevel;
+    private InformationModel retrieveInformationModel;
+    private boolean relational;
     
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
 
-    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle,String retrieveLevel, Connection conn) {
+    public RetrieveTool(String host, int port, String aeTitle, File retrieveDir, Device device, String sourceAETitle,String retrieveLevel
+            , String informationModel, boolean relational, Connection conn) {
         super();
         this.host = host;
         this.port = port;
@@ -119,6 +120,9 @@ public class RetrieveTool implements TestTool{
         this.sourceAETitle = sourceAETitle;
         this.retrieveDir = retrieveDir;
         this.retrieveLevel = retrieveLevel;
+        this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot")
+                ? InformationModel.StudyRoot : InformationModel.PatientRoot;
+        this.relational = relational;
         this.conn = conn;
     }
 
@@ -142,21 +146,15 @@ public class RetrieveTool implements TestTool{
         
         // add retrieve attrs
 
-
         // create executor
         ExecutorService executorService = Executors.newCachedThreadPool();
         ScheduledExecutorService scheduledExecutorService = Executors
                 .newSingleThreadScheduledExecutor();
         retrievescu.getDevice().setExecutor(executorService);
         retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
-        retrievescu.getDevice().bindConnections();
-        retrievescu.setInformationModel(InformationModel.StudyRoot,
-                IVR_LE_FIRST, false);
+        retrievescu.setInformationModel(retrieveInformationModel,
+                IVR_LE_FIRST, relational);
         retrievescu.addLevel(retrieveLevel);
-        if (retrieveLevel.equalsIgnoreCase("IMAGE")) {
-            retrievescu.getAAssociateRQ()
-            .addExtendedNegotiation(new ExtendedNegotiation(InformationModel.StudyRoot.getCuid(), new byte[]{1}));
-        }
         configureServiceClass(retrievescu);
         retrievescu.getKeys().addAll(retrieveatts);
         
@@ -186,12 +184,16 @@ public class RetrieveTool implements TestTool{
                 numSuccess, numFailed,
                 (timeEnd - timeStart), response));
     }
-    
+
     public void addTag(int tag, String value) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null); 
         retrieveatts.setString(tag, vr, value);
     }
-    
+
+    public void clearTags() {
+        retrieveatts.clear();
+    }
+
     public void setExpectedMatches(int expectedResult) {
         this.expectedMatches = expectedResult;
     }

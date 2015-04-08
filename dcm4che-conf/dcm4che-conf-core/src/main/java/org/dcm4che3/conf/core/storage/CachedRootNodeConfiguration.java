@@ -39,14 +39,16 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.Configuration;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -96,7 +98,15 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
      */
     @Override
     public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return ConfigNodeUtil.getNode(getConfigurationRoot(), path);
+        Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
+
+        // clone
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.treeToValue(objectMapper.valueToTree(node), Map.class);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        }
     }
 
     @Override

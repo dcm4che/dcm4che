@@ -205,8 +205,8 @@ public class Decompressor {
     @SuppressWarnings("resource")
     protected BufferedImage decompressFrame(ImageInputStream iis, int index)
             throws IOException {
-        SegmentedImageInputStream siis =
-                new SegmentedImageInputStream(iis, pixeldataFragments, index);
+        SegmentedImageInputStream siis = SegmentedImageInputStream.ofFrame(
+                iis, pixeldataFragments, index, imageParams.getFrames());
         decompressor.setInput(patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(siis, patchJPEGLS)
                 : siis);

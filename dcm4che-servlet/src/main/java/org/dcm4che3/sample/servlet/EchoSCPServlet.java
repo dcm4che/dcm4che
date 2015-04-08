@@ -46,7 +46,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -59,13 +59,14 @@ public class EchoSCPServlet extends HttpServlet {
 
     private EchoSCP echoSCP;
 
-    private DicomConfiguration dicomConfig;
+    private ExtendedDicomConfiguration dicomConfig;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
-            dicomConfig = (DicomConfiguration) Class.forName(
+            //TODO: How will this work with the new config?
+            dicomConfig = (ExtendedDicomConfiguration) Class.forName(
                     config.getInitParameter("dicomConfigurationClass"), false,
                     Thread.currentThread().getContextClassLoader()).newInstance();
             echoSCP = new EchoSCP(dicomConfig,

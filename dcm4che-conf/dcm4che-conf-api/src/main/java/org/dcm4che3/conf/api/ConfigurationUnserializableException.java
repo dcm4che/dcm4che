@@ -1,5 +1,7 @@
 package org.dcm4che3.conf.api;
 
+import org.dcm4che3.conf.core.api.ConfigurationException;
+
 /**
  * Thrown when the serialized configuration representation cannot be retrieved from a configured POJO.
  */

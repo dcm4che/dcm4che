@@ -108,6 +108,7 @@ public class DicomInputStream extends FilterInputStream
     private boolean bigEndian;
     private boolean explicitVR;
     private IncludeBulkData includeBulkData = IncludeBulkData.YES;
+    private IncludeBulkData includeFragmentBulkData;
     private long pos;
     private long fmiEndPos = -1L;
     private long tagPos;
@@ -118,10 +119,11 @@ public class DicomInputStream extends FilterInputStream
     private DicomInputHandler handler = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
-    private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
+    private ItemPointer[] itemPointers = {};
     private boolean decodeUNWithIVRLE = true;
+    private boolean addBulkDataReferences;
 
-    private boolean catBlkFiles;
+    private boolean catBlkFiles = true;
     private String blkFilePrefix = "blk";
     private String blkFileSuffix;
     private File blkDirectory;
@@ -201,6 +203,10 @@ public class DicomInputStream extends FilterInputStream
         this.includeBulkData = includeBulkData;
     }
 
+    public final IncludeBulkData getIncludeFragmentBulkData() {
+        return includeFragmentBulkData;
+    }
+
     public final BulkDataDescriptor getBulkDataDescriptor() {
         return bulkDataDescriptor;
     }
@@ -248,14 +254,6 @@ public class DicomInputStream extends FilterInputStream
             return Collections.emptyList();
     }
 
-//    public final Attributes getBulkDataAttributes() {
-//        return bulkData;
-//    }
-//
-//    public final void setBulkDataAttributes(Attributes bulkData) {
-//        this.bulkData = bulkData;
-//    }
-
     public final void setDicomInputHandler(DicomInputHandler handler) {
         if (handler == null)
             throw new NullPointerException("handler");
@@ -268,6 +266,14 @@ public class DicomInputStream extends FilterInputStream
 
     public void setDecodeUNWithIVRLE(boolean decodeUNWithIVRLE) {
         this.decodeUNWithIVRLE = decodeUNWithIVRLE;
+    }
+
+    public boolean isAddBulkDataReferences() {
+        return addBulkDataReferences;
+    }
+
+    public void setAddBulkDataReferences(boolean addBulkDataReferences) {
+        this.addBulkDataReferences = addBulkDataReferences;
     }
 
     public final void setFileMetaInformationGroupLength(byte[] val) {
@@ -284,7 +290,7 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public final int level() {
-        return itemPointers.size();
+        return itemPointers.length;
     }
 
     public final int tag() {
@@ -458,6 +464,8 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, int stopTag)
             throws IOException {
+        ItemPointer[] prevItemPointers = itemPointers;
+        itemPointers = attrs.itemPointers();
         boolean undeflen = len == -1;
         boolean hasStopTag = stopTag != -1;
         long endPos =  pos + (len & 0xffffffffL);
@@ -494,6 +502,7 @@ public class DicomInputStream extends FilterInputStream
             } else
                 skipAttribute(UNEXPECTED_ATTRIBUTE);
         }
+        itemPointers = prevItemPointers;
     }
 
     @Override
@@ -513,7 +522,16 @@ public class DicomInputStream extends FilterInputStream
             attrs.setValue(tag, vr, BulkData.deserializeFrom(
                     (ObjectInputStream) super.in));
         } else if (includeBulkData == IncludeBulkData.URI && isBulkData(attrs)) {
-            attrs.setValue(tag, vr, createBulkData());
+            BulkData bulkData = createBulkData();
+            attrs.setValue(tag, vr, bulkData);
+            if (addBulkDataReferences) {
+                attrs.getRoot().addBulkDataReference(
+                        attrs.privateCreatorOf(tag),
+                        tag,
+                        vr,
+                        bulkData,
+                        attrs.itemPointers());
+            }
         } else {
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
@@ -556,18 +574,8 @@ public class DicomInputStream extends FilterInputStream
     }
 
     public boolean isBulkData(Attributes attrs) {
-        return bulkDataDescriptor.isBulkData(itemPointers,
-                attrs.getPrivateCreator(tag), tag, vr, length);
-    }
-
-    public boolean isBulkDataFragment(Fragments frags) {
-        if (tag != Tag.Item)
-            return false;
-        
-        int last = itemPointers.size() - 1;
-        ItemPointer ip = itemPointers.get(last);
-        return bulkDataDescriptor.isBulkData(itemPointers.subList(0, last),
-                ip.privateCreator, ip.sequenceTag, frags.vr(), length);
+        return bulkDataDescriptor.isBulkData(
+                attrs.getPrivateCreator(tag), tag, vr, length, itemPointers);
     }
 
     @Override
@@ -588,14 +596,14 @@ public class DicomInputStream extends FilterInputStream
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         checkIsThis(dis);
-        if (includeBulkData == IncludeBulkData.NO && isBulkDataFragment(frags)) {
+        if (includeFragmentBulkData == IncludeBulkData.NO) {
             skipFully(length);
         } else if (length == 0) {
             frags.add(ByteUtils.EMPTY_BYTES);
         } else if (length == BulkData.MAGIC_LEN
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkData.deserializeFrom((ObjectInputStream) super.in));
-        } else if (includeBulkData == IncludeBulkData.URI && isBulkDataFragment(frags)) {
+        } else if (includeFragmentBulkData == IncludeBulkData.URI) {
             frags.add(createBulkData());
         } else {
             byte[] b = readValue();
@@ -637,9 +645,7 @@ public class DicomInputStream extends FilterInputStream
         for (int i = 0; undefLen || pos < endPos; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                addItemPointer(sqtag, privateCreator, i);
                 handler.readValue(this, seq);
-                removeItemPointer();
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
@@ -651,16 +657,6 @@ public class DicomInputStream extends FilterInputStream
             attrs.setNull(sqtag, VR.SQ);
         else
             seq.trimToSize();
-    }
-
-    private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {
-        if (itemPointers == null)
-            itemPointers = new ArrayList<ItemPointer>(8);
-        itemPointers.add(new ItemPointer(sqtag, privateCreator, itemIndex));
-    }
-
-    private void removeItemPointer() {
-        itemPointers.remove(itemPointers.size()-1);
     }
 
     public Attributes readItem() throws IOException {
@@ -677,14 +673,17 @@ public class DicomInputStream extends FilterInputStream
 
     private void readFragments(Attributes attrs, int fragsTag, VR vr)
             throws IOException {
-        Fragments frags = new Fragments(vr, attrs.bigEndian(), 10);
+        includeFragmentBulkData =
+                includeBulkData == IncludeBulkData.YES || isBulkData(attrs)
+                        ? includeBulkData 
+                        : IncludeBulkData.YES;
+
         String privateCreator = attrs.getPrivateCreator(fragsTag);
+        Fragments frags = new Fragments(privateCreator, fragsTag, vr, attrs.bigEndian(), 10);
         for (int i = 0; true; ++i) {
             readHeader();
             if (tag == Tag.Item) {
-                addItemPointer(fragsTag, privateCreator, i);
                 handler.readValue(this, frags);
-                removeItemPointer();
             } else if (tag == Tag.SequenceDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);

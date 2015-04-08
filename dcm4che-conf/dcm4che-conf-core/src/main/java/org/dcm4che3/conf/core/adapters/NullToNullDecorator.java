@@ -39,9 +39,10 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 
 import java.util.Map;
 
@@ -54,7 +55,7 @@ import java.util.Map;
  * @param <T>
  * @param <ST>
  */
-public class NullToNullDecorator<T, ST> implements ConfigTypeAdapter<T, ST>{
+public class NullToNullDecorator<T, ST> implements ConfigTypeAdapter<T, ST> {
 
     private final ConfigTypeAdapter<T,ST> configTypeAdapter ;
 

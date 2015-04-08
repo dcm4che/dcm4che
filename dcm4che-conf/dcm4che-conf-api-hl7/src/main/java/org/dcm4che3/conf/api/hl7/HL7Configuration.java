@@ -38,13 +38,11 @@
 
 package org.dcm4che3.conf.api.hl7;
 
-import org.dcm4che3.conf.api.ConfigurationException;
-import org.dcm4che3.net.DeviceExtension;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7ApplicationExtension;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

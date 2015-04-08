@@ -39,11 +39,11 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
-import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.BeanVitalizer;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
@@ -63,7 +63,7 @@ public class DefaultConfigTypeAdapters {
      * @param property
      * @param vitalizer
      * @return
-     * @throws org.dcm4che3.conf.api.ConfigurationException
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
     public static Object delegateGetChildFromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         // determine node name and get the property

@@ -43,11 +43,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Code;
-import org.dcm4che3.data.IOD;
-import org.dcm4che3.data.ValidationResult;
 import org.dcm4che3.io.DicomInputStream;
 import org.junit.Test;
 

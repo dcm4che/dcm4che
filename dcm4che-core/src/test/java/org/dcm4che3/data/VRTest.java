@@ -41,11 +41,6 @@ package org.dcm4che3.data;
 
 import static org.junit.Assert.*;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.SpecificCharacterSet;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.junit.Test;
 

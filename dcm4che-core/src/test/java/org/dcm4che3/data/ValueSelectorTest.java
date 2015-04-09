@@ -40,10 +40,6 @@ package org.dcm4che3.data;
 
 import static org.junit.Assert.*;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.ItemPointer;
-import org.dcm4che3.data.ValueSelector;
-import org.dcm4che3.dict.siemens.SiemensCSAHeader;
 import org.junit.Test;
 
 /**

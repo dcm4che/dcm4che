@@ -3,8 +3,6 @@ package org.dcm4che3.media;
 import static org.junit.Assert.assertEquals;
 
 import org.dcm4che3.data.UID;
-import org.dcm4che3.media.RecordFactory;
-import org.dcm4che3.media.RecordType;
 import org.junit.Test;
 
 /**

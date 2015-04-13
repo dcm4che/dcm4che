@@ -60,7 +60,6 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
-import org.xml.sax.SAXException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -95,7 +94,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     private void writeAttribute(int tag, VR vr, Object value,
-            SpecificCharacterSet cs, Attributes attrs) throws SAXException {
+            SpecificCharacterSet cs, Attributes attrs) {
         if (TagUtils.isGroupLength(tag))
             return;
 
@@ -109,8 +108,7 @@ public class JSONWriter implements DicomInputHandler {
         gen.writeEnd();
     }
 
-    private void writeValue(Value value, boolean bigEndian)
-            throws SAXException {
+    private void writeValue(Value value, boolean bigEndian) {
         if (value.isEmpty())
             return;
 

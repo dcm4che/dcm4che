@@ -70,6 +70,7 @@ public class WadoURITool implements TestTool{
     private String presentationSeriesUID;
     private String presentationUID;
     private String transferSyntax;
+    private boolean overlays;
     private File retrieveDir;
     private TestResult result;
 
@@ -106,12 +107,21 @@ public class WadoURITool implements TestTool{
     }
 
     public void wadoURI(String testDescription) throws Exception {
+        wado(testDescription, false);
+    }
+
+    public void wadoURI(String testDescription, boolean enableOverlays) throws Exception {
+        wado(testDescription, enableOverlays);
+    }
+
+    private void wado(String testDescription, boolean enableOverlays) throws Exception {
         long t1, t2;
         WadoURI wadouri = new WadoURI(this.url, this.studyUID,this.seriesUID,this.objectUID,
                 this.contentType,this.charset,this.anonymize,this.annotation
                 ,this.rows,this.columns,this.regionCoordinates,this.windowCenter,
                 this.windowWidth,this.frameNumber,this.imageQuality,this.presentationSeriesUID,
                 this.presentationUID,this.transferSyntax);
+        wadouri.setOverlays(enableOverlays);
         wadouri.setOutDir(this.retrieveDir);
         wadouri.setOutFileName(this.objectUID);
         t1 = System.currentTimeMillis();
@@ -119,7 +129,6 @@ public class WadoURITool implements TestTool{
         t2 = System.currentTimeMillis();
         init(new WadoURIResult(testDescription, t2-t1, wadouri.getResponse()));
     }
-
     @Override
     public void init(TestResult result) {
         this.result = result;

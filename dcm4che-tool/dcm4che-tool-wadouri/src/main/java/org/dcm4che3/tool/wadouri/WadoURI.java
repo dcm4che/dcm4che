@@ -136,7 +136,7 @@ public class WadoURI{
             String annotation, int rows, int columns, String regionCoordinates,
             String windowCenter, String windowWidth, int frameNumber,
             int imageQuality, String presentationSeriesUID,
-            String presentationUID, String transferSyntax, boolean overlays) {
+            String presentationUID, String transferSyntax) {
         setUrl(url);
         setObjectID(studyUID+":"+seriesUID+":"+objectUID);
         setContentType(contentType);
@@ -151,7 +151,6 @@ public class WadoURI{
         setImageQuality(imageQuality);
         setPresentationStateID(presentationSeriesUID+":"+presentationUID);
         setTransferSyntax(transferSyntax);
-        setOverlays(overlays);
     }
 
     private static CommandLine parseComandLine(String[] args)

@@ -125,6 +125,8 @@ public class WadoURI{
     
     private String transferSyntax; 
     
+    private boolean overlays;
+
     private WadoURIResponse response;
     
     public WadoURI() {}
@@ -134,7 +136,7 @@ public class WadoURI{
             String annotation, int rows, int columns, String regionCoordinates,
             String windowCenter, String windowWidth, int frameNumber,
             int imageQuality, String presentationSeriesUID,
-            String presentationUID, String transferSyntax) {
+            String presentationUID, String transferSyntax, boolean overlays) {
         setUrl(url);
         setObjectID(studyUID+":"+seriesUID+":"+objectUID);
         setContentType(contentType);
@@ -149,6 +151,7 @@ public class WadoURI{
         setImageQuality(imageQuality);
         setPresentationStateID(presentationSeriesUID+":"+presentationUID);
         setTransferSyntax(transferSyntax);
+        setOverlays(overlays);
     }
 
     private static CommandLine parseComandLine(String[] args)
@@ -596,7 +599,9 @@ public class WadoURI{
         if(main.getContentType().matches("application/dicom")
                 && main.getTransferSyntax() != null)
             url = addParam(url, "transferSyntax", main.getTransferSyntax());
-            
+        
+        url = addParam(url, "overlays", main.isOverlays()? "true": "false");
+        
         return url;
     }
 
@@ -796,6 +801,14 @@ public class WadoURI{
     public void setTransferSyntax(String transferSyntax) {
         if(!transferSyntax.contains("NULL"))
         this.transferSyntax = transferSyntax;
+    }
+
+    public boolean isOverlays() {
+        return overlays;
+    }
+
+    public void setOverlays(boolean overlays) {
+        this.overlays = overlays;
     }
 
     public WadoURIResponse getResponse() {

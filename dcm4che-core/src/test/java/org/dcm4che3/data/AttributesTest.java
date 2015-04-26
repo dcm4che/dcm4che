@@ -42,11 +42,6 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.DatePrecision;
-import org.dcm4che3.data.DateRange;
-import org.dcm4che3.data.VR;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;

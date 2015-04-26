@@ -41,7 +41,6 @@ package org.dcm4che3.net.service;
 import java.util.List;
 
 import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Status;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>

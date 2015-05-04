@@ -39,6 +39,7 @@ package org.dcm4che3.tool.qc;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
@@ -66,6 +67,7 @@ import org.dcm4che3.data.IDWithIssuer;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.tool.qc.test.QCResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +100,7 @@ public class QC {
     private ArrayList<String> rrUIDs;
 
     public QC() {
-        
+
     }
 
     public QC(String url, Code qcRejectionCode, QCOperation operation,
@@ -115,67 +117,75 @@ public class QC {
 
             cl = parseComandLine(args);
             @SuppressWarnings("unchecked")
-            ArrayList<String> arguments = (ArrayList<String>) cl.getArgList();
-            if(arguments.size() != 4)
-                throw new MissingArgumentException("Missing required arguments");
-            String parsedURL = arguments.get(0);
-            String operation = arguments.get(1);
-            String targetStudyUID = arguments.get(2);
-            String codeComponents = arguments.get(3);
-            QC qc = new QC(parsedURL,toCode(codeComponents), QCOperation
-                    .valueOf(operation.toUpperCase()), targetStudyUID);
+            String parsedURL = (String) cl.getArgList().get(0);
+            String operation = (String) cl.getArgList().get(1);
+            String targetStudyUID = (String) cl.getArgList().get(2);
+            String codeComponents = getRemainingArgs(cl, 3);
             
-            if(qc.operation == QCOperation.UPDATE)
-            if(!cl.hasOption("update-scope"))
-                throw new MissingArgumentException("Missing required argument"
-                        + " update scope for update operation");
-            else
-                qc.setUpdateScope(QCUpdateScope.valueOf(cl.getOptionValue(
-                        "update-scope")));
-            if(cl.hasOption("overridetargetstudy"))
+            QC qc = new QC(parsedURL, toCode(codeComponents),
+                    QCOperation.valueOf(operation.toUpperCase()),
+                    targetStudyUID);
+            if (qc.operation == QCOperation.UPDATE)
+                if (!cl.hasOption("update-scope"))
+                    throw new MissingArgumentException(
+                            "Missing required argument"
+                                    + " update scope for update operation");
+                else
+                    qc.setUpdateScope(QCUpdateScope.valueOf(cl
+                            .getOptionValue("update-scope")));
+            if (cl.hasOption("overridetargetstudy"))
                 qc.targetStudyAttrs = getAttributes(cl, "overridetargetstudy");
-            if(cl.hasOption("overridetargetseries"))
-                qc.setTargetSeriesAttrs(getAttributes(cl
-                        , "overridetargetSeries"));
-            if(cl.hasOption("updatedata"))
+            if (cl.hasOption("overridetargetseries"))
+                qc.setTargetSeriesAttrs(getAttributes(cl,
+                        "overridetargetSeries"));
+            if (cl.hasOption("updatedata"))
                 qc.setUpdateAttrs(getAttributes(cl, "updatedata"));
-            if(cl.hasOption("pid"))
+            if (cl.hasOption("pid"))
                 qc.setPid(toIDWithIssuer(cl.getOptionValue("pid")));
-            if(cl.hasOption("move-uids"))
-                qc.setMoveUIDs(toUIDS(cl.getOptionValue("move-uids")));
-            if(cl.hasOption("clone-uids"))
-                qc.setCloneUIDs(toUIDS(cl.getOptionValue("clone-uids")));
-            if(cl.hasOption("restore-reject-uids"))
-                qc.setRrUIDs(toUIDS(cl.getOptionValue("restore-reject-uids")));
-            if(cl.hasOption("merge-uids"))
-                qc.setMergeUIDs(toUIDS(cl.getOptionValue("merge-uids")));
-            if(cl.hasOption("delete-object") 
+            if (cl.hasOption("moveuids"))
+                qc.setMoveUIDs(toUIDS(cl.getOptionValue("moveuids")));
+            if (cl.hasOption("cloneuids"))
+                qc.setCloneUIDs(toUIDS(cl.getOptionValue("cloneuids")));
+            if (cl.hasOption("restorerejectuids"))
+                qc.setRrUIDs(toUIDS(cl.getOptionValue("restorerejectuids")));
+            if (cl.hasOption("mergeuids"))
+                qc.setMergeUIDs(toUIDS(cl.getOptionValue("mergeuids")));
+            if (cl.hasOption("deleteobject")
                     && qc.getOperation() == QCOperation.DELETE)
-                qc.setDeleteParams(cl.getOptionValue("delete-object"));
+                qc.setDeleteParams(cl.getOptionValue("deleteobject"));
 
-            performOperation(qc);
-        } catch (Exception e) {
-            if (!cl.hasOption("u")) {
-                LOG.error("stowrs: missing required option -u");
-                LOG.error("Try 'stowrs --help' for more information.");
-                System.exit(2);
-            } else {
-                LOG.error("Error: \n");
-                e.printStackTrace();
-            }
-
+            QCResult result = performOperation("Standard CLI tool Call", qc);
+            printResult(result);
+        } catch (ParseException e) {
+            System.err.println("qc: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
         }
     }
 
-    private static void performOperation(QC qc) {
-        if(qc.getOperation() != QCOperation.DELETE) {
-        JsonObject qcMessage =  initQCObject(qc);
-        System.out.println(qcMessage.toString());
-            sendRequest(qc, qcMessage);
+    private static void printResult(QCResult result) {
+        System.out.println("Server Responsed ["+result.getResponseCode()+"]"+": \n"
+                + " with the following message: \n"+ result.getResponseMessage());
+    }
+
+    private static String getRemainingArgs(CommandLine cl, int startIndex) {
+        String str = "";
+        for(int i=startIndex; i< cl.getArgList().size();i++) {
+            str += cl.getArgList().get(i);
+            if(i <cl.getArgList().size()-1)
+                str += " ";
         }
-        else {
-            if(checkDelete(qc))
-            sendDeleteRequest(qc);
+        return str;
+    }
+
+    public static QCResult performOperation(String opDescription, QC qc) {
+        if (qc.getOperation() != QCOperation.DELETE) {
+            JsonObject qcMessage = initQCObject(qc);
+            System.out.println(qcMessage.toString());
+            return sendRequest(opDescription, qc, qcMessage);
+        } else {
+            if (checkDelete(qc))
+                return sendDeleteRequest(opDescription, qc);
             else
                 throw new IllegalArgumentException("Delete object "
                         + "incorrectly specified");
@@ -184,105 +194,118 @@ public class QC {
 
     private static boolean checkDelete(QC qc) {
         String[] components = qc.getDeleteParams().split(":");
-        int idx=0;
-        for(String str : components) {
-            switch(idx) {
-            case 0: qc.setStudyToDelete(str);break;
-            case 1: qc.setSeriesToDelete(str);break;
-            case 2:qc.setInstanceToDelete(str);break;
-                default:
-                    return false;
+        int idx = 0;
+        for (String str : components) {
+            switch (idx) {
+            case 0:
+                qc.setStudyToDelete(str);
+                break;
+            case 1:
+                qc.setSeriesToDelete(str);
+                break;
+            case 2:
+                qc.setInstanceToDelete(str);
+                break;
+            default:
+                return false;
             }
             idx++;
         }
         return true;
     }
 
-    private static void sendDeleteRequest(QC qc) {
+    private static QCResult sendDeleteRequest(String desc, QC qc) {
         HttpURLConnection connection = null;
+        String bfr = "";
+        QCResult result = null;
         try {
-        URL url = new URL(adjustDeleteURL(qc));
-       connection = (HttpURLConnection) url
-                .openConnection();
+            URL url = new URL(adjustDeleteURL(qc));
+            connection = (HttpURLConnection) url.openConnection();
 
-        connection.setDoOutput(true);
+            connection.setDoOutput(true);
 
-        connection.setDoInput(true);
+            connection.setDoInput(true);
 
-        connection.setInstanceFollowRedirects(false);
+            connection.setInstanceFollowRedirects(false);
 
-        connection.setRequestMethod("DELETE");
+            connection.setRequestMethod("DELETE");
 
-        int responseCode = connection.getResponseCode();
-        if(responseCode == 200) {
-            InputStream in = connection.getInputStream();
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                InputStream in = connection.getInputStream();
 
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
-        while(rdr.ready())
-        System.out.println(rdr.readLine());
+                BufferedReader rdr = new BufferedReader(new InputStreamReader(
+                        in));
+
+                while (rdr.ready())
+                    bfr += rdr.readLine();
+            }
+            result = new QCResult(desc, bfr, responseCode);
+            return result;
+        } catch (Exception e) {
+            System.out.println("Error preparing request or "
+                    + "parsing Server response - " + e);
         }
-        } 
-        catch (Exception e) {
-        System.out.println("Error preparing request or "
-                + "parsing Server response - "+e);
-    }
-        
+        return result;
+
     }
 
     private static String adjustDeleteURL(QC qc) {
         String url = qc.getUrl();
-        url+="/delete/studies/"+qc.getStudyToDelete();
-        if(qc.getSeriesToDelete() != null)
-            url+="/series/"+qc.getSeriesToDelete();
-        if(qc.getInstanceToDelete() != null)
-            url+="/instances/"+qc.getInstanceToDelete();
+        url += "/delete/studies/" + qc.getStudyToDelete();
+        if (qc.getSeriesToDelete() != null)
+            url += "/series/" + qc.getSeriesToDelete();
+        if (qc.getInstanceToDelete() != null)
+            url += "/instances/" + qc.getInstanceToDelete();
         return url;
     }
 
-    private static void sendRequest(QC qc, JsonObject qcMessage) {
-        
+    private static QCResult sendRequest(String desc, QC qc, JsonObject qcMessage) {
+
         HttpURLConnection connection = null;
+        String bfr = "";
+        QCResult result = null;
         try {
-        URL url = new URL(qc.getUrl());
-       connection = (HttpURLConnection) url
-                .openConnection();
+            URL url = new URL(qc.getUrl());
+            connection = (HttpURLConnection) url.openConnection();
 
-        connection.setDoOutput(true);
+            connection.setDoOutput(true);
 
-        connection.setDoInput(true);
+            connection.setDoInput(true);
 
-        connection.setInstanceFollowRedirects(false);
+            connection.setInstanceFollowRedirects(false);
 
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type",
-                "application/json");
-        connection.setRequestProperty("charset", "utf-8");
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("charset", "utf-8");
 
-        connection.setRequestProperty("Accept", "application/json");
-        
-        connection.setUseCaches(false);
-        
-        writeMessage(connection, qcMessage);
-        
-        InputStream in = connection.getInputStream();
+            connection.setRequestProperty("Accept", "application/json");
+
+            connection.setUseCaches(false);
+
+            writeMessage(connection, qcMessage);
+
+            InputStream in = connection.getInputStream();
 
             BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
-            while(rdr.ready())
-            System.out.println(rdr.readLine());
+            while (rdr.ready())
+                bfr += rdr.readLine();
+            result = new QCResult(desc, bfr, connection.getResponseCode());
+            return result;
         } catch (Exception e) {
             System.out.println("Error preparing request or "
-                    + "parsing Server response - "+e);
+                    + "parsing Server response - " + e);
         }
         connection.disconnect();
-
+        return result;
     }
 
-    private static void writeMessage(HttpURLConnection connection
-            , JsonObject qcMessage) throws Exception{
+    private static void writeMessage(HttpURLConnection connection,
+            JsonObject qcMessage) throws Exception {
         DataOutputStream wr;
         wr = new DataOutputStream(connection.getOutputStream());
-//        wr.writeBytes("Content-Type: application/json" + " \r\n");
-//        wr.writeBytes("\r\n");
+        // wr.writeBytes("Content-Type: application/json" + " \r\n");
+        // wr.writeBytes("\r\n");
         JsonWriter writer = Json.createWriter(wr);
         writer.writeObject(qcMessage);
         writer.close();
@@ -291,46 +314,55 @@ public class QC {
 
     private static JsonObject initQCObject(QC qc) {
         mergeUIDs(qc);
-        return Json.createObjectBuilder()
-        .add("operation", qc.getOperation().toString())
-        .add("updateScope", QCUpdateScope.NONE.toString())
-        .add("moveSOPUIDs", toArrayBuilder(qc.getMoveUIDs()))
-        .add("cloneSOPUIDs", toArrayBuilder(new ArrayList<String>()))
-        .add("restoreOrRejectUIDs", toArrayBuilder(new ArrayList<String>()))
-        .add("targetStudyUID", qc.getTargetStudyUID())
-        .add("qcRejectionCode", toCodeObject(qc.getQcRejectionCode()))
-        .add("targetSeriesData", toAttributesObject(qc.getTargetSeriesAttrs()))
-        .add("targetStudyData", toAttributesObject(qc.getTargetStudyAttrs()))
-        .add("updateData", toAttributesObject(qc.getUpdateAttrs()))
-        .add("pid", toIDWithIssuerObject(qc.getPid()))
-        .build();
+        JsonObjectBuilder builder = Json
+                .createObjectBuilder()
+                .add("operation", qc.getOperation().toString())
+                .add("updateScope", qc.getUpdateScope() == null?  
+                        QCUpdateScope.NONE.toString() : qc.getUpdateScope().toString())
+                .add("moveSOPUIDs", toArrayBuilder(qc.getMoveUIDs()))
+                .add("cloneSOPUIDs", toArrayBuilder(qc.getCloneUIDs()))
+                .add("restoreOrRejectUIDs",
+                        toArrayBuilder(qc.getRrUIDs()))
+                .add("targetStudyUID", qc.getTargetStudyUID())
+                .add("qcRejectionCode", toCodeObject(qc.getQcRejectionCode()))
+                .add("targetSeriesData",
+                        toAttributesObject(qc.getTargetSeriesAttrs()))
+                .add("targetStudyData",
+                        toAttributesObject(qc.getTargetStudyAttrs()))
+                .add("updateData", toAttributesObject(qc.getUpdateAttrs()));
+        if(qc.getPid() != null)
+                builder.add("pid", toIDWithIssuerObject(qc.getPid()));
+        return builder.build();
     }
 
     protected static void mergeUIDs(QC qc) {
-        if(qc.getOperation() == QCOperation.MERGE) {
-            ArrayList<String> tmpMove = qc.getMoveUIDs();
+        if (qc.getOperation() == QCOperation.MERGE) {
+            ArrayList<String> tmpMove = qc.getMoveUIDs() == null ?
+                    new ArrayList<String>() : qc.getMoveUIDs();
             tmpMove.addAll(qc.getMergeUIDs());
             qc.setMoveUIDs(tmpMove);
         }
     }
 
     private static JsonObject toIDWithIssuerObject(IDWithIssuer pid) {
-        return Json.createObjectBuilder()
-                .add("id", emptyIfNull(pid.getID()))
-                .add("issuer", toIssuerObject(pid.getIssuer()))
-                .build();
+        return Json.createObjectBuilder().add("id", emptyIfNull(pid.getID()))
+                .add("issuer", toIssuerObject(pid.getIssuer())).build();
     }
 
     private static JsonObject toIssuerObject(Issuer issuer) {
-        return Json.createObjectBuilder()
-                .add("localNamespaceEntityID", emptyIfNull(issuer.getLocalNamespaceEntityID()))
-                .add("universalEntityID", emptyIfNull(issuer.getUniversalEntityID()))
-                .add("universalEntityIDType", emptyIfNull(issuer.getUniversalEntityIDType()))
-                .build();
+        JsonObjectBuilder builder=  Json
+                .createObjectBuilder()
+                .add("localNamespaceEntityID",
+                        emptyIfNull(issuer.getLocalNamespaceEntityID()));
+        if(issuer.getUniversalEntityID()!=null)
+                builder.add("universalEntityID",
+                        emptyIfNull(issuer.getUniversalEntityID()))
+                .add("universalEntityIDType",
+                        emptyIfNull(issuer.getUniversalEntityIDType()));
+        return builder.build();
     }
 
-    private static JsonObject toAttributesObject(Attributes 
-            targetSeriesAttrs){
+    private static JsonObject toAttributesObject(Attributes targetSeriesAttrs) {
         StringWriter strWriter = new StringWriter();
         JsonGenerator gen = Json.createGenerator(strWriter);
         JSONWriter writer = new JSONWriter(gen);
@@ -342,14 +374,16 @@ public class QC {
     }
 
     private static JsonObject toCodeObject(Code qcRejectionCode) {
-        JsonObjectBuilder codeBuilder =  Json.createObjectBuilder()
-        .add("codeValue", emptyIfNull(qcRejectionCode.getCodeValue()))
-        .add("codeMeaning", emptyIfNull(qcRejectionCode.getCodeMeaning()))
-        .add("codingSchemeDesignator", emptyIfNull(qcRejectionCode
-                .getCodingSchemeDesignator()));
-        if(qcRejectionCode.getCodingSchemeVersion() != null)
-            codeBuilder.add("codingSchemeVersion"
-                    , qcRejectionCode.getCodingSchemeVersion());
+        JsonObjectBuilder codeBuilder = Json
+                .createObjectBuilder()
+                .add("codeValue", emptyIfNull(qcRejectionCode.getCodeValue()))
+                .add("codeMeaning",
+                        emptyIfNull(qcRejectionCode.getCodeMeaning()))
+                .add("codingSchemeDesignator",
+                        emptyIfNull(qcRejectionCode.getCodingSchemeDesignator()));
+        if (qcRejectionCode.getCodingSchemeVersion() != null)
+            codeBuilder.add("codingSchemeVersion",
+                    qcRejectionCode.getCodingSchemeVersion());
         return codeBuilder.build();
     }
 
@@ -359,14 +393,14 @@ public class QC {
 
     private static JsonArrayBuilder toArrayBuilder(ArrayList<String> moveUIDs) {
         JsonArrayBuilder arr = Json.createArrayBuilder();
-        for(String str : moveUIDs)
+        for (String str : moveUIDs)
             arr.add(str);
         return arr;
     }
 
     private static ArrayList<String> toUIDS(String optionValue) {
         ArrayList<String> uids = new ArrayList<String>();
-        for(String str : optionValue.split(",")) {
+        for (String str : optionValue.split(",")) {
             uids.add(str);
         }
         return uids;
@@ -375,65 +409,69 @@ public class QC {
     private static IDWithIssuer toIDWithIssuer(String optionValue)
             throws MissingArgumentException {
         String[] components = optionValue.split(":");
-        if(components.length < 2)
+        if (components.length < 2)
             throw new MissingArgumentException("Missing issuer information");
-        if(components.length == 2 ) //pid and local entity uid
+        if (components.length == 2) // pid and local entity uid
             return new IDWithIssuer(components[0], components[1]);
-        else if(components.length == 3) //pid with universal entity and type
-            return new IDWithIssuer(components[0], new Issuer(null
-                    , components[1], components[2]));
+        else if (components.length == 3) // pid with universal entity and type
+            return new IDWithIssuer(components[0], new Issuer(null,
+                    components[1], components[2]));
         else
-            return new IDWithIssuer(components[0], new Issuer(components[1]
-                    , components[2], components[3]));
+            return new IDWithIssuer(components[0], new Issuer(components[1],
+                    components[2], components[3]));
     }
 
-    private static Code toCode(String codeComponents) throws MissingArgumentException {
+    private static Code toCode(String codeComponents)
+            throws MissingArgumentException {
         String[] components = codeComponents.split(":");
-        if(components.length < 3)
-            throw new MissingArgumentException(
-                    "Invalid code specified "
+        if (components.length < 3)
+            throw new MissingArgumentException("Invalid code specified "
                     + " code can be specified as codevalue"
                     + ":codeschemedesignator"
                     + ":codemeaning:codeversion where only "
                     + "version is optional");
-        
-        return new Code(components[0],components[1],
-                components[2], components.length == 4 ? components[3] : null);
+
+        return new Code(components[0], components[2], components.length == 4 ? components[3]
+                : null,components[1]);
     }
+
     @SuppressWarnings("static-access")
     private static CommandLine parseComandLine(String[] args)
             throws ParseException {
         opts = new Options();
-        opts.addOption("u", "url", true, rb.getString("url"));
         opts.addOption(OptionBuilder.hasArgs().withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("updatedata"))
-                .create());
+                .create("updatedata"));
         CLIUtils.addCommonOptions(opts);
-        opts.addOption(OptionBuilder.hasArgs()
-                .withArgName("[seq/]attr=value")
+        opts.addOption(OptionBuilder.hasArgs().withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("overridetargetseries"))
-                .create());
+                .create("overridetargetseries"));
         opts.addOption(OptionBuilder.hasArgs().withArgName("[seq/]attr=value")
                 .withValueSeparator('=')
                 .withDescription(rb.getString("overridetargetstudy"))
-                .create());
+                .create("overridetargetstudy"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("clone-uids")).create());
+                .withDescription(rb.getString("cloneuids"))
+                .create("cloneuids"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("move-uids")).create());
+                .withDescription(rb.getString("moveuids")).create("moveuids"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("merge-uids")).create());
+                .withDescription(rb.getString("mergeuids"))
+                .create("mergeuids"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("restore-reject-uids")).create());
+                .withDescription(rb.getString("restorerejectuids"))
+                .create("restorerejectuids"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("pid")).create());
+                .withDescription(rb.getString("pid")).create("pid"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("update-scope"))
-                .withArgName("<STUDY|SERIES|PATIENT|INSTANCE|NONE>").create());
+                .withDescription(rb.getString("updatescope"))
+                .withArgName("<STUDY|SERIES|PATIENT|INSTANCE|NONE>")
+                .create("updatescope"));
         opts.addOption(OptionBuilder.hasArg()
-                .withDescription(rb.getString("delete-object")).create());
+                .withDescription(rb.getString("deleteobject"))
+                .create("deleteobject"));
 
         return CLIUtils.parseComandLine(args, opts, rb, QC.class);
     }
@@ -477,19 +515,19 @@ public class QC {
     }
 
     public ArrayList<String> getMoveUIDs() {
-        return moveUIDs;
+        return moveUIDs == null ? new ArrayList<String>() : moveUIDs;
     }
 
     public ArrayList<String> getCloneUIDs() {
-        return cloneUIDs;
+        return cloneUIDs == null ? new ArrayList<String>() : cloneUIDs;
     }
 
     public ArrayList<String> getMergeUIDs() {
-        return mergeUIDs;
+        return mergeUIDs == null ? new ArrayList<String>() : mergeUIDs;
     }
 
     public ArrayList<String> getRrUIDs() {
-        return rrUIDs;
+        return rrUIDs == null ? new ArrayList<String>() : rrUIDs;
     }
 
     public void setQcRejectionCode(Code qcRejectionCode) {

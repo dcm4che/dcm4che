@@ -37,8 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.tool.qc.test;
 
+import java.util.ArrayList;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Code;
+import org.dcm4che3.data.IDWithIssuer;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
+import org.dcm4che3.tool.qc.QC;
+import org.dcm4che3.tool.qc.QCOperation;
+import org.dcm4che3.tool.qc.QCUpdateScope;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -46,17 +54,68 @@ import org.dcm4che3.tool.common.test.TestTool;
  */
 
 public class QCTool implements TestTool{
-
+	private QC qc;
+    private TestResult result;
+	public QCTool(String url , QCOperation operation
+			, Code code, String targetStudyUID) {
+		qc = new QC(url, code, operation, targetStudyUID);
+	}
+	
     @Override
     public void init(TestResult result) {
-        // TODO Auto-generated method stub
-        
+    	this.result = result;
     }
 
     @Override
     public TestResult getResult() {
-        // TODO Auto-generated method stub
-        return null;
+    	return this.result;
+    }
+    
+    public void merge(String testDescription, 
+            ArrayList<String> mergeUIDs, Attributes targetStudyAttrs, 
+            Attributes targetSeriesAttrs, IDWithIssuer pid) {
+        qc.setMergeUIDs(mergeUIDs);
+        qc.setTargetSeriesAttrs(targetSeriesAttrs);
+        qc.setTargetStudyAttrs(targetStudyAttrs);
+        qc.setPid(pid);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
     }
 
+    public void split(String testDescription, ArrayList<String> moveUIDs,
+            Attributes targetStudyAttrs, Attributes targetSeriesAttrs,
+            IDWithIssuer pid) {
+        qc.setMoveUIDs(moveUIDs);
+        qc.setTargetSeriesAttrs(targetSeriesAttrs);
+        qc.setTargetStudyAttrs(targetStudyAttrs);
+        qc.setPid(pid);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
+
+    public void segment(String testDescription, ArrayList<String> moveUIDs,
+            ArrayList<String> cloneUIDs,Attributes targetStudyAttrs,
+            Attributes targetSeriesAttrs,IDWithIssuer pid) {
+        qc.setMoveUIDs(moveUIDs);
+        qc.setCloneUIDs(cloneUIDs);
+        qc.setTargetSeriesAttrs(targetSeriesAttrs);
+        qc.setTargetStudyAttrs(targetStudyAttrs);
+        qc.setPid(pid);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
+
+    public void updateAttributes(String testDescription, QCUpdateScope updateScope,
+            Attributes updateData) {
+        qc.setUpdateScope(updateScope);
+        qc.setUpdateAttrs(updateData);
+        
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
+    public void delete(String testDescription, String deleteParams) {
+        qc.setDeleteParams(deleteParams);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult); 
+    }
 }

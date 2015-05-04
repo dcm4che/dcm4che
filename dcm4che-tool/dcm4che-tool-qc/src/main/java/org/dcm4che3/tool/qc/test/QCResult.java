@@ -46,4 +46,26 @@ import org.dcm4che3.tool.common.test.TestResult;
 
 public class QCResult implements TestResult {
 
+    private String testDescription;
+    private String responseMessage;
+    private int responseCode;
+
+    public QCResult(String testDesc, String responseMessage, int responseCode) {
+        super();
+        this.testDescription = testDesc;
+        this.responseMessage = responseMessage;
+        this.responseCode = responseCode;
+    }
+
+    public String getResponseMessage() {
+        return responseMessage;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public String getTestDescription() {
+        return testDescription;
+    }
 }

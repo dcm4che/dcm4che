@@ -6,23 +6,24 @@
     Other operations not supported by this tool include patient operations.
     -
     Options:
-        --update-scope <STUDY|SERIES|PATIENT|INSTANCE|NONE>  
+     -u,--url                                 Server url for qc services.
+        --updatescope <STUDY|SERIES|PATIENT|INSTANCE|NONE>  
                                               An update scope for update operations,
                                               used to clarify to which scope the update
                                               data belong possible values include 
                                               STUDY,SERIES,PATIENT, INSTANCE and 
                                               NONE for no update.
-        --move-uids  <uid[, uid, ...]>        if a move operation is specified 
+        --moveuids  <uid[, uid, ...]>        if a move operation is specified 
                                               (SPLIT or SEGMENT) then one or move 
                                               uids are to be specified.
-        --merge-uids  <uid[, uid, ...]>       if a MERGE operation is specified
+        --mergeuids  <uid[, uid, ...]>       if a MERGE operation is specified
                                               then one or merge source stydt 
                                               uids are to be specified.
-        --restore-reject-uids  <uid[, uid, ...]> 
+        --restorerejectuids  <uid[, uid, ...]> 
                                               if a a reject or restore
                                               operation is specified
                                               then one or uids are to be specified.
-        --clone-uids  <uid[, uid, ...]>       if SEGMENT is specified then zero
+        --cloneuids  <uid[, uid, ...]>       if SEGMENT is specified then zero
                                               or move uids are to be specified.
         --overridetargetstudy   <[seq/]attr=value>              
                                               specify override attributes for target
@@ -57,7 +58,7 @@
         --pid  <patientid:localentityid[:universalentityid:universalentityidtype]>
                                               specifies patient id, required for
                                               SEGMENT and SPLIT operations.
-        --delete-object <studyuid[:seriesuid[:instanceuid]]]>
+        --deleteobject <studyuid[:seriesuid[:instanceuid]]]>
                                               specifies the delete object.
      -h,--help                                display this help and exit
      -V,--version                             output version information and

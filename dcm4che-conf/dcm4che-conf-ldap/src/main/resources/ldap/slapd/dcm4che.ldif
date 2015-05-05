@@ -273,6 +273,31 @@ olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.63 NAME 'dcmModality'
   DESC 'DICOM attribute Modality (0008,0060)'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.64 NAME 'dcmWadoRSBaseURL'
+  DESC 'Base URL for WadoRS Service'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.65 NAME 'dcmStowRSBaseURL'
+  DESC 'Base URL for StowRS Service'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.66 NAME 'dcmQidoRSBaseURL'
+  DESC 'Base URL for QidoRS Service'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.67 NAME 'dcmRSCapabilitiesBaseURL'
+  DESC 'Base URL for RS Capabilities Service'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
+olcAttributeTypes: ( 1.2.40.0.13.1.15.0.3.68 NAME 'dcmWadoURIBaseURL'
+  DESC 'Base URL for Wado URI Service'
+  EQUALITY caseExactMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+  SINGLE-VALUE )
 olcAttributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -523,6 +548,15 @@ olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.9 NAME 'dcmAttributeCoercion'
     dcmDeviceName $
     dcmAETitle $
     dcmSOPClass ) )
+olcObjectClasses: ( 1.2.40.0.13.1.15.0.4.10 NAME 'dcmArchiveAEWebServices'
+  DESC 'Extended DICOM Web Services AE Related Configuration'
+  SUP top STRUCTURAL
+  MAY (
+    dcmWadoRSBaseURL $
+    dcmStowRSBaseURL $
+    dcmQidoRSBaseURL $
+    dcmRSCapabilitiesBaseURL $
+    dcmWadoURIBaseURL ) )
 olcObjectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

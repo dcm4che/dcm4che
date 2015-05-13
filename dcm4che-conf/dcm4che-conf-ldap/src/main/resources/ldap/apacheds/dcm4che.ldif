@@ -1272,6 +1272,7 @@ m-oid: 1.2.40.0.13.1.15.0.4.10
 m-name: dcmArchiveAEWebServices
 m-description: Extended DICOM Web Services AE Related Configuration
 m-supObjectClass: top
+m-typeObjectClass: AUXILIARY
 m-may: dcmWadoRSBaseURL
 m-may: dcmStowRSBaseURL
 m-may: dcmQidoRSBaseURL
@@ -1286,6 +1287,7 @@ m-oid: 1.2.40.0.13.1.15.0.4.11
 m-name: dcmExternalArchiveAEExtension
 m-description: Extended DICOM External Archives AE Related Configuration
 m-supObjectClass: top
+m-typeObjectClass: AUXILIARY
 m-may: dcmAEFetchPriority
 
 dn: m-oid=1.2.40.0.13.1.15.1.4.1, ou=objectclasses, cn=dcm4che, ou=schema

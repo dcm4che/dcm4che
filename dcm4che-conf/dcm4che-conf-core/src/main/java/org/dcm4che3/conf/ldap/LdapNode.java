@@ -135,7 +135,7 @@ public class LdapNode {
             if (Map.class.isAssignableFrom(property.getRawClass())) {
                 LdapNode thisParent = makeLdapCollectionNode(property);
                 for (Map.Entry<String, Object> entry : ((Map<String, Object>) propertyConfigNode).entrySet()) {
-                    LdapNode elementNode = thisParent.makeLdapElementNode(property, entry.getKey());
+                    LdapNode elementNode = thisParent.makeLdapElementNode(property, String.valueOf(entry.getKey()));
 
                     // now if it is a conf obj, not primitive or custom representation, go deeper
                     if (property.isMapOfConfObjects() && entry.getValue() instanceof Map) {

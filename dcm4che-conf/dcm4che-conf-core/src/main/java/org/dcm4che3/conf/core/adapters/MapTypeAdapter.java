@@ -50,17 +50,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-/**
- * Map<br>
- * <p/>
- * Key type must have String as serialized representation and must not use field when serializing/deserializing!
- */
-
-public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<String, Object>> {
+public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Object, Object>> {
 
 
     @Override
-    public Map<K, V> fromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public Map<K, V> fromConfigNode(Map<Object, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
@@ -74,9 +68,9 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
 
         Map<K, V> map = new TreeMap<K, V>();
 
-        for (Entry<String, Object> e : configNode.entrySet()) {
-            map.put(keyAdapter.fromConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
-                    valueAdapter.fromConfigNode(e.getValue(), valuePseudoProperty, vitalizer));
+        for (Entry<Object, Object> e : configNode.entrySet()) {
+            map.put(keyAdapter.fromConfigNode(keyAdapter.normalize(e.getKey(), keyPseudoProperty, vitalizer), keyPseudoProperty, vitalizer),
+                    valueAdapter.fromConfigNode(valueAdapter.normalize(e.getValue(),valuePseudoProperty,vitalizer), valuePseudoProperty, vitalizer));
 
         }
 
@@ -84,7 +78,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
     }
 
     @Override
-    public Map<String, Object> toConfigNode(Map<K, V> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public Map<Object, Object> toConfigNode(Map<K, V> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         AnnotatedConfigurableProperty keyPseudoProperty = property.getPseudoPropertyForGenericsParamater(0);
         ConfigTypeAdapter<K, String> keyAdapter = (ConfigTypeAdapter<K, String>) vitalizer.lookupTypeAdapter(keyPseudoProperty);
@@ -96,7 +90,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
 
-        Map<String, Object> configNode = new TreeMap<String, Object>();
+        Map<Object, Object> configNode = new TreeMap<Object, Object>();
 
         for (Entry<K, V> e : object.entrySet()) {
             configNode.put(keyAdapter.toConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
@@ -140,8 +134,8 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<St
     }
 
     @Override
-    public Map<String, Object> normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        if (configNode == null) return new HashMap<String, Object>();
-        return (Map<String, Object>) configNode;
+    public Map<Object, Object> normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        if (configNode == null) return new HashMap<Object, Object>();
+        return (Map<Object, Object>) configNode;
     }
 }

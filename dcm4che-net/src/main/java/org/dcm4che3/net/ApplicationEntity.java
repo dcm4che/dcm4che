@@ -762,4 +762,20 @@ public class ApplicationEntity implements Serializable {
                     + " configured for AE: " + AETitle);
         return aeExt;
     }
-}
+
+    public boolean supportsTransferCapability(
+            TransferCapability transferCapability, boolean onlyAbstractSyntax) {
+        TransferCapability matchingTC = this.getTransferCapabilityFor(
+                transferCapability.getSopClass(), transferCapability.getRole());
+        if (matchingTC == null)
+            return false;
+        else
+            for (String ts : transferCapability.getTransferSyntaxes())
+                if (!matchingTC.containsTransferSyntax(ts) 
+                        && !onlyAbstractSyntax)
+                    return false;
+
+        return true;
+    }
+
+    }

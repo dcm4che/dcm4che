@@ -1315,4 +1315,15 @@ public class Device implements Serializable {
         return devExt;
     }
 
+    public Collection<ApplicationEntity> getAEsSupportingTransferCapability(
+            TransferCapability transferCapability, boolean onlyAbstractSyntax) {
+        ArrayList<ApplicationEntity> aes = new ArrayList<ApplicationEntity>();
+        for (ApplicationEntity ae : this.getApplicationEntities()) {
+            if (ae.supportsTransferCapability(transferCapability,
+                    onlyAbstractSyntax))
+                aes.add(ae);
+        }
+        return aes;
+    }
+
 }

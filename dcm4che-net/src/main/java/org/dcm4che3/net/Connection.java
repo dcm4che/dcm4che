@@ -62,6 +62,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
@@ -71,34 +75,48 @@ import org.slf4j.LoggerFactory;
 /**
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
- * <p>
+ * <p/>
  * The <i>network connection</i> describes one TCP port on one network device.
  * This can be used for a TCP connection over which a DICOM association can be
  * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
  * port number. A network connection may support multiple Network AEs. The
  * Network AE selection takes place during association negotiation based on the
  * called and calling AE-titles.
- * 
- * @author Gunter Zeilinger <gunterze@gmail.com>
  *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  */
+@LDAP(objectClasses = {"dicomNetworkConnection", "dcmNetworkConnection"})
+@ConfigurableClass
 public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
-    public enum Protocol { DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
-        public boolean isTCP() { return this != SYSLOG_UDP; }
-        public boolean isSyslog() { return this == SYSLOG_TLS || this == SYSLOG_UDP; }
+    public enum Protocol {
+        DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
+
+        public boolean isTCP() {
+            return this != SYSLOG_UDP;
+        }
+
+        public boolean isSyslog() {
+            return this == SYSLOG_TLS || this == SYSLOG_UDP;
+        }
     }
 
     public static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
-    public static final int NO_TIMEOUT = 0;
+    public static final String NO_TIMEOUT_STR = "0";
+    public static final int NO_TIMEOUT = Integer.valueOf(NO_TIMEOUT_STR);
+
     public static final int SYNCHRONOUS_MODE = 1;
     public static final int NOT_LISTENING = -1;
     public static final int DEF_BACKLOG = 50;
     public static final int DEF_SOCKETDELAY = 50;
-    public static final int DEF_BUFFERSIZE = 0;
+
+    public static final String DEF_BUFFERSIZE_STR = "0";
+    public static final int DEF_BUFFERSIZE = Integer.valueOf(DEF_BUFFERSIZE_STR);
+
+
     public static final int DEF_MAX_PDU_LENGTH = 16378;
     // to fit into SunJSSE TLS Application Data Length 16408
 
@@ -107,35 +125,104 @@ public class Connection implements Serializable {
     public static final String TLS_RSA_WITH_AES_128_CBC_SHA = "TLS_RSA_WITH_AES_128_CBC_SHA";
 
     private Device device;
+
+    @ConfigurableProperty(name = "cn", label = "Name", tags = Tag.PRIMARY)
     private String commonName;
+
+    @ConfigurableProperty(name = "dicomHostname", label = "Hostname", tags = Tag.PRIMARY)
     private String hostname;
+
+    @ConfigurableProperty(name = "dcmBindAddress")
     private String bindAddress;
+
+    @ConfigurableProperty(name = "dcmClientBindAddress")
     private String clientBindAddress;
+
+    @ConfigurableProperty(name = "dcmHTTPProxy")
     private String httpProxy;
+
+    @ConfigurableProperty(
+            name = "dicomPort",
+            defaultValue = "-1",
+            label = "Port",
+            tags = Tag.PRIMARY)
     private int port = NOT_LISTENING;
+
+    @ConfigurableProperty(name = "dcmTCPBacklog", defaultValue = "50")
     private int backlog = DEF_BACKLOG;
+
+    @ConfigurableProperty(name = "dcmTCPConnectTimeout", defaultValue = NO_TIMEOUT_STR)
     private int connectTimeout;
+
+    @ConfigurableProperty(name = "dcmAARQTimeout", defaultValue = NO_TIMEOUT_STR)
     private int requestTimeout;
+
+    @ConfigurableProperty(name = "dcmAAACTimeout", defaultValue = NO_TIMEOUT_STR)
     private int acceptTimeout;
+
+    @ConfigurableProperty(name = "dcmARRPTimeout", defaultValue = NO_TIMEOUT_STR)
     private int releaseTimeout;
+
+    @ConfigurableProperty(name = "dcmResponseTimeout", defaultValue = NO_TIMEOUT_STR)
     private int responseTimeout;
+
+    @ConfigurableProperty(name = "dcmRetrieveTimeout", defaultValue = NO_TIMEOUT_STR)
     private int retrieveTimeout;
+
+    @ConfigurableProperty(name = "dcmIdleTimeout", defaultValue = NO_TIMEOUT_STR)
     private int idleTimeout;
+
+    @ConfigurableProperty(name = "dcmTCPCloseDelay", defaultValue = "50")
     private int socketCloseDelay = DEF_SOCKETDELAY;
+
+    @ConfigurableProperty(name = "dcmTCPSendBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int sendBufferSize;
+
+    @ConfigurableProperty(name = "dcmTCPReceiveBufferSize", defaultValue = DEF_BUFFERSIZE_STR)
     private int receiveBufferSize;
+
+    @ConfigurableProperty(name = "dcmSendPDULength", defaultValue = "16378")
     private int sendPDULength = DEF_MAX_PDU_LENGTH;
+
+    @ConfigurableProperty(name = "dcmReceivePDULength", defaultValue = "16378")
     private int receivePDULength = DEF_MAX_PDU_LENGTH;
+
+    @ConfigurableProperty(name = "dcmMaxOpsPerformed", defaultValue = "1")
     private int maxOpsPerformed = SYNCHRONOUS_MODE;
+
+    @ConfigurableProperty(name = "dcmMaxOpsInvoked", defaultValue = "1")
     private int maxOpsInvoked = SYNCHRONOUS_MODE;
+
+    @ConfigurableProperty(name = "dcmPackPDV", defaultValue = "true")
     private boolean packPDV = true;
+
+    @ConfigurableProperty(name = "dcmTCPNoDelay", defaultValue = "true")
     private boolean tcpNoDelay = true;
+
+    @ConfigurableProperty(name = "dcmTLSNeedClientAuth", defaultValue = "true")
     private boolean tlsNeedClientAuth = true;
+
+    @ConfigurableProperty(name = "dicomTLSCipherSuite")
     private String[] tlsCipherSuites = {};
-    private String[] tlsProtocols =  { "TLSv1", "SSLv3" };
+
+    @ConfigurableProperty(name = "dcmTLSProtocol")
+    private String[] tlsProtocols = {"TLSv1", "SSLv3"};
+
+    @ConfigurableProperty(name = "dcmBlacklistedHostname")
     private String[] blacklist = {};
-    private Boolean installed;
+
+    @ConfigurableProperty(name = "dicomInstalled")
+    private Boolean connectionInstalled;
+
+
+    @ConfigurableProperty(
+            name = "dcmProtocol",
+            defaultValue = "DICOM",
+            label = "Protocol",
+            tags = Tag.PRIMARY
+    )
     private Protocol protocol = Protocol.DICOM;
+
     private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
     private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
@@ -172,7 +259,7 @@ public class Connection implements Serializable {
 
     public static TCPProtocolHandler unregisterTCPProtocolHandler(
             Protocol protocol) {
-         return tcpHandlers.remove(protocol);
+        return tcpHandlers.remove(protocol);
     }
 
     public static UDPProtocolHandler registerUDPProtocolHandler(
@@ -188,7 +275,7 @@ public class Connection implements Serializable {
     /**
      * Get the <code>Device</code> object that this Network Connection belongs
      * to.
-     * 
+     *
      * @return Device
      */
     public final Device getDevice() {
@@ -198,9 +285,8 @@ public class Connection implements Serializable {
     /**
      * Set the <code>Device</code> object that this Network Connection belongs
      * to.
-     * 
-     * @param device
-     *            The owning <code>Device</code> object.
+     *
+     * @param device The owning <code>Device</code> object.
      */
     final void setDevice(Device device) {
         if (device != null && this.device != null)
@@ -212,7 +298,7 @@ public class Connection implements Serializable {
      * This is the DNS name for this particular connection. This is used to
      * obtain the current IP address for connections. Hostname must be
      * sufficiently qualified to be unambiguous for any client DNS user.
-     * 
+     *
      * @return A String containing the host name.
      */
     public final String getHostname() {
@@ -223,12 +309,11 @@ public class Connection implements Serializable {
      * This is the DNS name for this particular connection. This is used to
      * obtain the current IP address for connections. Hostname must be
      * sufficiently qualified to be unambiguous for any client DNS user.
-     * 
-     * @param hostname
-     *            A String containing the host name.
+     *
+     * @param hostname A String containing the host name.
      */
     public final void setHostname(String hostname) {
-        if (hostname != null 
+        if (hostname != null
                 ? hostname.equals(this.hostname)
                 : this.hostname == null)
             return;
@@ -240,7 +325,7 @@ public class Connection implements Serializable {
     /**
      * Bind address of listening socket or {@code null}. If {@code null}, bind
      * listening socket to {@link #getHostname()}. This is the default.
-     * 
+     *
      * @return Bind address of the connection or {@code null}
      */
     public final String getBindAddress() {
@@ -250,12 +335,11 @@ public class Connection implements Serializable {
     /**
      * Bind address of listening socket or {@code null}. If {@code null}, bind
      * listening socket to {@link #getHostname()}.
-     * 
-     * @param bindAddress
-     *            Bind address of listening socket or {@code null}
+     *
+     * @param bindAddress Bind address of listening socket or {@code null}
      */
     public final void setBindAddress(String bindAddress) {
-        if (bindAddress != null 
+        if (bindAddress != null
                 ? bindAddress.equals(this.bindAddress)
                 : this.bindAddress == null)
             return;
@@ -263,16 +347,15 @@ public class Connection implements Serializable {
         this.bindAddress = bindAddress;
         this.bindAddr = null;
         needRebind();
-   }
+    }
 
     /**
      * Bind address of outgoing connections, {@code "0.0.0.0"} or {@code null}.
      * If {@code "0.0.0.0"} the system pick up any local ip for outgoing
      * connections. If {@code null}, bind outgoing connections to
      * {@link #getHostname()}. This is the default.
-     * 
-     * @param bindAddress
-     *            Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
+     *
+     * @param bindAddress Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
      */
     public String getClientBindAddress() {
         return clientBindAddress;
@@ -283,12 +366,11 @@ public class Connection implements Serializable {
      * If {@code "0.0.0.0"} the system pick up any local ip for outgoing
      * connections. If {@code null}, bind outgoing connections to
      * {@link #getHostname()}.
-     * 
-     * @param bindAddress
-     *            Bind address of outgoing connection or {@code null}
+     *
+     * @param bindAddress Bind address of outgoing connection or {@code null}
      */
     public void setClientBindAddress(String bindAddress) {
-        if (bindAddress != null 
+        if (bindAddress != null
                 ? bindAddress.equals(this.clientBindAddress)
                 : this.clientBindAddress == null)
             return;
@@ -323,7 +405,7 @@ public class Connection implements Serializable {
     /**
      * An arbitrary name for the Network Connections object. Can be a meaningful
      * name or any unique sequence of characters.
-     * 
+     *
      * @return A String containing the name.
      */
     public final String getCommonName() {
@@ -333,9 +415,8 @@ public class Connection implements Serializable {
     /**
      * An arbitrary name for the Network Connections object. Can be a meaningful
      * name or any unique sequence of characters.
-     * 
-     * @param name
-     *            A String containing the name.
+     *
+     * @param name A String containing the name.
      */
     public final void setCommonName(String name) {
         this.commonName = name;
@@ -343,8 +424,8 @@ public class Connection implements Serializable {
 
     /**
      * The TCP port that the AE is listening on or <code>-1</code> for a
-     *          network connection that only initiates associations.
-     * 
+     * network connection that only initiates associations.
+     *
      * @return An int containing the port number or <code>-1</code>.
      */
     public final int getPort() {
@@ -353,12 +434,11 @@ public class Connection implements Serializable {
 
     /**
      * The TCP port that the AE is listening on or <code>0</code> for a
-     *          network connection that only initiates associations.
-     * 
+     * network connection that only initiates associations.
+     * <p/>
      * A valid port value is between 0 and 65535.
-     * 
-     * @param port
-     *            The port number or <code>-1</code>.
+     *
+     * @param port The port number or <code>-1</code>.
      */
     public final void setPort(int port) {
         if (this.port == port)
@@ -414,9 +494,8 @@ public class Connection implements Serializable {
 
     /**
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
-     * 
-     * @param An
-     *            int value containing the milliseconds.
+     *
+     * @param An int value containing the milliseconds.
      */
     public final int getRequestTimeout() {
         return requestTimeout;
@@ -424,9 +503,8 @@ public class Connection implements Serializable {
 
     /**
      * Timeout in ms for receiving A-ASSOCIATE-RQ, 5000 by default
-     * 
-     * @param timeout
-     *            An int value containing the milliseconds.
+     *
+     * @param timeout An int value containing the milliseconds.
      */
     public final void setRequestTimeout(int timeout) {
         if (timeout < 0)
@@ -447,7 +525,7 @@ public class Connection implements Serializable {
 
     /**
      * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
-     * 
+     *
      * @return An int value containing the milliseconds.
      */
     public final int getReleaseTimeout() {
@@ -456,9 +534,8 @@ public class Connection implements Serializable {
 
     /**
      * Timeout in ms for receiving A-RELEASE-RP, 5000 by default.
-     * 
-     * @param timeout
-     *            An int value containing the milliseconds.
+     *
+     * @param timeout An int value containing the milliseconds.
      */
     public final void setReleaseTimeout(int timeout) {
         if (timeout < 0)
@@ -468,7 +545,7 @@ public class Connection implements Serializable {
 
     /**
      * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
-     * 
+     *
      * @return An int value containing the milliseconds.
      */
     public final int getSocketCloseDelay() {
@@ -477,9 +554,8 @@ public class Connection implements Serializable {
 
     /**
      * Delay in ms for Socket close after sending A-ABORT, 50ms by default.
-     * 
-     * @param delay
-     *            An int value containing the milliseconds.
+     *
+     * @param delay An int value containing the milliseconds.
      */
     public final void setSocketCloseDelay(int delay) {
         if (delay < 0)
@@ -515,7 +591,7 @@ public class Connection implements Serializable {
      * The TLS CipherSuites that are supported on this particular connection.
      * TLS CipherSuites shall be described using an RFC-2246 string
      * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
-     * 
+     *
      * @return A String array containing the supported cipher suites
      */
     public String[] getTlsCipherSuites() {
@@ -526,9 +602,8 @@ public class Connection implements Serializable {
      * The TLS CipherSuites that are supported on this particular connection.
      * TLS CipherSuites shall be described using an RFC-2246 string
      * representation (e.g. 'SSL_RSA_WITH_3DES_EDE_CBC_SHA')
-     * 
-     * @param tlsCipherSuite
-     *            A String array containing the supported cipher suites
+     *
+     * @param tlsCipherSuite A String array containing the supported cipher suites
      */
     public void setTlsCipherSuites(String... tlsCipherSuites) {
         if (Arrays.equals(this.tlsCipherSuites, tlsCipherSuites))
@@ -568,7 +643,7 @@ public class Connection implements Serializable {
 
     /**
      * Get the SO_RCVBUF socket value in KB.
-     * 
+     *
      * @return An int value containing the buffer size in KB.
      */
     public final int getReceiveBufferSize() {
@@ -577,9 +652,8 @@ public class Connection implements Serializable {
 
     /**
      * Set the SO_RCVBUF socket option to specified value in KB.
-     * 
-     * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     *
+     * @param bufferSize An int value containing the buffer size in KB.
      */
     public final void setReceiveBufferSize(int size) {
         if (size < 0)
@@ -589,7 +663,7 @@ public class Connection implements Serializable {
 
     /**
      * Get the SO_SNDBUF socket option value in KB,
-     * 
+     *
      * @return An int value containing the buffer size in KB.
      */
     public final int getSendBufferSize() {
@@ -598,9 +672,8 @@ public class Connection implements Serializable {
 
     /**
      * Set the SO_SNDBUF socket option to specified value in KB,
-     * 
-     * @param bufferSize
-     *            An int value containing the buffer size in KB.
+     *
+     * @param bufferSize An int value containing the buffer size in KB.
      */
     public final void setSendBufferSize(int size) {
         if (size < 0)
@@ -651,7 +724,7 @@ public class Connection implements Serializable {
     /**
      * Determine if this network connection is using Nagle's algorithm as part
      * of its network communication.
-     * 
+     *
      * @return boolean True if TCP no delay (disable Nagle's algorithm) is used.
      */
     public final boolean isTcpNoDelay() {
@@ -661,10 +734,9 @@ public class Connection implements Serializable {
     /**
      * Set whether or not this network connection should use Nagle's algorithm
      * as part of its network communication.
-     * 
-     * @param tcpNoDelay
-     *            boolean True if TCP no delay (disable Nagle's algorithm)
-     *            should be used.
+     *
+     * @param tcpNoDelay boolean True if TCP no delay (disable Nagle's algorithm)
+     *                   should be used.
      */
     public final void setTcpNoDelay(boolean tcpNoDelay) {
         this.tcpNoDelay = tcpNoDelay;
@@ -674,34 +746,33 @@ public class Connection implements Serializable {
      * True if the Network Connection is installed on the network. If not
      * present, information about the installed status of the Network Connection
      * is inherited from the device.
-     * 
+     *
      * @return boolean True if the NetworkConnection is installed on the
-     *         network.
+     * network.
      */
     public boolean isInstalled() {
-        return device != null && device.isInstalled() 
-                && (installed == null || installed.booleanValue());
+        return device != null && device.isInstalled()
+                && (connectionInstalled == null || connectionInstalled.booleanValue());
     }
 
-    public Boolean getInstalled() {
-        return installed;
+    public Boolean getConnectionInstalled() {
+        return connectionInstalled;
     }
 
     /**
      * True if the Network Connection is installed on the network. If not
      * present, information about the installed status of the Network Connection
      * is inherited from the device.
-     * 
-     * @param installed
-     *                True if the NetworkConnection is installed on the network.
-     * @throws GeneralSecurityException 
+     *
+     * @param installed True if the NetworkConnection is installed on the network.
+     * @throws GeneralSecurityException
      */
-    public void setInstalled(Boolean installed) {
-        if (this.installed == installed)
+    public void setConnectionInstalled(Boolean installed) {
+        if (this.connectionInstalled == installed)
             return;
 
         boolean prev = isInstalled();
-        this.installed = installed;
+        this.connectionInstalled = installed;
         if (isInstalled() != prev)
             needRebind();
     }
@@ -716,7 +787,7 @@ public class Connection implements Serializable {
      * Useful in an environment that utilizes a load balancer. In the case of a
      * TCP ping from a load balancing switch, we don't want to spin off a new
      * thread and try to negotiate an association.
-     * 
+     *
      * @return Returns the list of IP addresses which should be ignored.
      */
     public final String[] getBlacklist() {
@@ -728,9 +799,8 @@ public class Connection implements Serializable {
      * Useful in an environment that utilizes a load balancer. In the case of a
      * TCP ping from a load balancing switch, we don't want to spin off a new
      * thread and try to negotiate an association.
-     * 
-     * @param blacklist
-     *            the list of IP addresses which should be ignored.
+     *
+     * @param blacklist the list of IP addresses which should be ignored.
      */
     public final void setBlacklist(String[] blacklist) {
         this.blacklist = blacklist;
@@ -745,10 +815,10 @@ public class Connection implements Serializable {
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
         StringUtils.appendLine(sb, indent, "Connection[cn: ", commonName);
-        StringUtils.appendLine(sb, indent2,"host: ", hostname);
-        StringUtils.appendLine(sb, indent2,"port: ", port);
-        StringUtils.appendLine(sb, indent2,"ciphers: ", Arrays.toString(tlsCipherSuites));
-        StringUtils.appendLine(sb, indent2,"installed: ", getInstalled());
+        StringUtils.appendLine(sb, indent2, "host: ", hostname);
+        StringUtils.appendLine(sb, indent2, "port: ", port);
+        StringUtils.appendLine(sb, indent2, "ciphers: ", Arrays.toString(tlsCipherSuites));
+        StringUtils.appendLine(sb, indent2, "installed: ", getConnectionInstalled());
         return sb.append(indent).append(']');
     }
 
@@ -798,7 +868,7 @@ public class Connection implements Serializable {
     private InetAddress hostAddr() throws UnknownHostException {
         if (hostAddr == null && hostname != null)
             hostAddr = InetAddress.getByName(hostname);
-        
+
         return hostAddr;
     }
 
@@ -861,10 +931,9 @@ public class Connection implements Serializable {
     /**
      * Bind this network connection to a TCP port and start a server socket
      * accept loop.
-     * 
-     * @throws IOException
-     *             If there is a problem with the network interaction.
-     * @throws GeneralSecurityException 
+     *
+     * @throws IOException              If there is a problem with the network interaction.
+     * @throws GeneralSecurityException
      */
     public synchronized boolean bind() throws IOException, GeneralSecurityException {
         if (!(isInstalled() && isServer())) {
@@ -990,19 +1059,19 @@ public class Connection implements Serializable {
     }
 
     private void doProxyHandshake(Socket s, String hostname, int port,
-            String userauth, int connectTimeout) throws IOException {
+                                  String userauth, int connectTimeout) throws IOException {
 
         StringBuilder request = new StringBuilder(128);
         request.append("CONNECT ")
-          .append(hostname).append(':').append(port)
-          .append(" HTTP/1.1\r\nHost: ")
-          .append(hostname).append(':').append(port);
+                .append(hostname).append(':').append(port)
+                .append(" HTTP/1.1\r\nHost: ")
+                .append(hostname).append(':').append(port);
         if (userauth != null) {
-           byte[] b = userauth.getBytes("UTF-8");
-           char[] base64 = new char[(b.length + 2) / 3 * 4];
-           Base64.encode(b, 0, b.length, base64, 0);
-           request.append("\r\nProxy-Authorization: basic ")
-               .append(base64);
+            byte[] b = userauth.getBytes("UTF-8");
+            char[] base64 = new char[(b.length + 2) / 3 * 4];
+            Base64.encode(b, 0, b.length, base64, 0);
+            request.append("\r\nProxy-Authorization: basic ")
+                    .append(base64);
         }
         request.append("\r\n\r\n");
         OutputStream out = s.getOutputStream();
@@ -1070,18 +1139,18 @@ public class Connection implements Serializable {
     public boolean isCompatible(Connection remoteConn) {
         if (remoteConn.protocol != protocol)
             return false;
-        
+
         if (!protocol.isTCP())
             return true;
-        
+
         if (!isTls())
             return !remoteConn.isTls();
-        
+
         return hasCommon(remoteConn.tlsProtocols, tlsProtocols)
-            && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
+                && hasCommon(remoteConn.tlsCipherSuites, tlsCipherSuites);
     }
 
-    private boolean hasCommon(String[] ss1,  String[] ss2) {
+    private boolean hasCommon(String[] ss1, String[] ss2) {
         for (String s1 : ss1)
             for (String s2 : ss2)
                 if (s1.equals(s2))
@@ -1097,7 +1166,8 @@ public class Connection implements Serializable {
                 if (s1.equals(s2)) {
                     ss[len++] = s1;
                     break;
-                };
+                }
+        ;
         if (len == ss.length)
             return ss;
 
@@ -1110,9 +1180,9 @@ public class Connection implements Serializable {
         return commonName != null
                 ? commonName.equals(other.commonName)
                 : other.commonName == null
-                    && hostname.equals(other.hostname)
-                    && port == other.port
-                    && protocol == other.protocol;
+                && hostname.equals(other.hostname)
+                && port == other.port
+                && protocol == other.protocol;
     }
 
     void reconfigure(Connection from) {
@@ -1144,7 +1214,7 @@ public class Connection implements Serializable {
         setTlsCipherSuites(from.tlsCipherSuites);
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
-        setInstalled(from.installed);
+        setConnectionInstalled(from.connectionInstalled);
     }
 
 }

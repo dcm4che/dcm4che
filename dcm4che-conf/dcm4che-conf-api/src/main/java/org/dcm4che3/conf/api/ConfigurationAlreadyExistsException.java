@@ -38,6 +38,8 @@
 
 package org.dcm4che3.conf.api;
 
+import org.dcm4che3.conf.core.api.ConfigurationException;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *

@@ -270,10 +270,12 @@ public class MppsSCU {
     private HashMap<String,MppsWithIUID> map = new HashMap<String,MppsWithIUID>();
     private ArrayList<MppsWithIUID> created = new ArrayList<MppsWithIUID>();
     private Association as;
+    private Device device;
 
-    public MppsSCU( ApplicationEntity ae) throws IOException {
+    public MppsSCU(ApplicationEntity ae) throws IOException {
         this.remote = new Connection();
         this.ae = ae;
+        this.device = ae.getDevice();
     }
 
     public Connection getRemoteConnection() {

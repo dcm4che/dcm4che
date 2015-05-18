@@ -47,52 +47,15 @@ import org.dcm4che3.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 enum StringValueType implements ValueType {
-    ASCII("\\", null),
-    STRING("\\", null){
-
-        @Override
-        public boolean useSpecificCharacterSet() {
-            return true;
-        }
-
-        @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return cs;
-        }
-    },
-    TEXT("\n\f\r", null) {
-
-        @Override
-        public boolean useSpecificCharacterSet() {
-            return true;
-        }
-
-        @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return cs;
-        }
-
-        @Override
-        protected Object splitAndTrim(String s) {
-            return StringUtils.trimTrailing(s);
-        }
-    },
-    DA("\\", TemporalType.DA),
-    DT("\\", TemporalType.DT),
-    TM("\\", TemporalType.TM),
-    PN("^=\\", null){
-
-        @Override
-        public boolean useSpecificCharacterSet() {
-            return true;
-        }
-
-        @Override
-        protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-            return cs;
-        }
-    },
-    DS("\\", null) {
+    ASCII(false, true, null, null),
+    STRING(true, true, "\\", null),
+    TEXT(true, false, "\n\f\r", null),
+    UR(false, false, null, null),
+    DA(false, true, null, TemporalType.DA),
+    DT(false, true, null, TemporalType.DT),
+    TM(false, true, null, TemporalType.TM),
+    PN(true, true, "^=\\", null),
+    DS(false, true, null, null) {
 
         @Override
         public byte[] toBytes(Object val, SpecificCharacterSet cs) {
@@ -198,7 +161,7 @@ enum StringValueType implements ValueType {
             return super.prompt(val, bigEndian, cs, maxChars, sb);
         }
     },
-    IS("\\", null) {
+    IS(false, true, null, null) {
 
         @Override
         public boolean isIntValue() {
@@ -278,10 +241,15 @@ enum StringValueType implements ValueType {
         }
     };
 
+    final boolean useSpecificCharacterSet;
+    final boolean multipleValues;
     final String delimiters;
     final TemporalType temporalType; 
 
-    StringValueType(String delimiters, TemporalType temperalType) {
+    StringValueType(boolean useSpecificCharacterSet, boolean multipleValues,
+                    String delimiters, TemporalType temperalType) {
+        this.useSpecificCharacterSet = useSpecificCharacterSet;
+        this.multipleValues = multipleValues;
         this.delimiters = delimiters;
         this.temporalType = temperalType;
    }
@@ -313,11 +281,11 @@ enum StringValueType implements ValueType {
 
     @Override
     public boolean useSpecificCharacterSet() {
-        return false;
+        return useSpecificCharacterSet;
     }
 
-    protected SpecificCharacterSet cs(SpecificCharacterSet cs) {
-        return SpecificCharacterSet.DEFAULT;
+    private SpecificCharacterSet cs(SpecificCharacterSet cs) {
+        return useSpecificCharacterSet ? cs : SpecificCharacterSet.DEFAULT;
     }
 
     @Override
@@ -358,7 +326,8 @@ enum StringValueType implements ValueType {
             SpecificCharacterSet cs) {
 
         if (val instanceof byte[]) {
-            return splitAndTrim(cs(cs).decode((byte[]) val));
+            String s = cs(cs).decode((byte[]) val);
+            return multipleValues ? StringUtils.splitAndTrim(s, '\\') : StringUtils.trimTrailing(s);
         }
 
         if (val instanceof String
@@ -367,10 +336,6 @@ enum StringValueType implements ValueType {
 
         throw new UnsupportedOperationException();
     } 
-
-    protected Object splitAndTrim(String s) {
-        return StringUtils.splitAndTrim(s, '\\');
-    }
 
     @Override
     public int toInt(Object val, boolean bigEndian, int valueIndex,

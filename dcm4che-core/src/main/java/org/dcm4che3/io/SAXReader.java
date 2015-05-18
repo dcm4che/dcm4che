@@ -53,33 +53,53 @@ import org.xml.sax.SAXException;
  */
 public class SAXReader {
 
-    public static Attributes parse(String uri, Attributes attrs)
+    public static Attributes parse(String uri, Attributes attrs, boolean addBulkDataReference)
             throws ParserConfigurationException, SAXException, IOException {
         if (attrs == null)
             attrs = new Attributes();
         SAXParserFactory f = SAXParserFactory.newInstance();
         SAXParser parser = f.newSAXParser();
-        parser.parse(uri, new ContentHandlerAdapter(attrs));
+        parser.parse(uri, new ContentHandlerAdapter(attrs, addBulkDataReference));
         return attrs;
+    }
+
+    public static Attributes parse(InputStream is, Attributes attrs, boolean addBulkDataReference)
+            throws ParserConfigurationException, SAXException, IOException {
+        if (attrs == null)
+            attrs = new Attributes();
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        SAXParser parser = f.newSAXParser();
+        parser.parse(is, new ContentHandlerAdapter(attrs, addBulkDataReference));
+        return attrs;
+    }
+
+    public static Attributes parse(String uri, Attributes attrs)
+            throws ParserConfigurationException, SAXException, IOException {
+        return parse(uri, attrs, false);
     }
 
     public static Attributes parse(InputStream is, Attributes attrs)
             throws ParserConfigurationException, SAXException, IOException {
-        if (attrs == null)
-            attrs = new Attributes();
-        SAXParserFactory f = SAXParserFactory.newInstance();
-        SAXParser parser = f.newSAXParser();
-        parser.parse(is, new ContentHandlerAdapter(attrs));
-        return attrs;
+        return parse(is, attrs, false);
+    }
+
+    public static Attributes parse(String uri, boolean addBulkDataReference)
+            throws ParserConfigurationException, SAXException, IOException {
+        return parse(uri, null, addBulkDataReference);
+    }
+
+    public static Attributes parse(InputStream is, boolean addBulkDataReference)
+            throws ParserConfigurationException, SAXException, IOException {
+        return parse(is, null, addBulkDataReference);
     }
 
     public static Attributes parse(String uri)
             throws ParserConfigurationException, SAXException, IOException {
-        return parse(uri, null);
+        return parse(uri, null, false);
     }
 
     public static Attributes parse(InputStream is)
             throws ParserConfigurationException, SAXException, IOException {
-        return parse(is, null);
+        return parse(is, null, false);
     }
 }

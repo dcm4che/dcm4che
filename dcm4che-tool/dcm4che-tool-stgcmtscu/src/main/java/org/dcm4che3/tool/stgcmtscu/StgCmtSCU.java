@@ -146,6 +146,15 @@ public class StgCmtSCU {
         ae.setDimseRQHandler(serviceRegistry);
     }
 
+    public StgCmtSCU(ApplicationEntity ae, DicomService stgCmtResultHndlr ) throws IOException {
+        this.remote = new Connection();
+        this.ae = ae;
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        serviceRegistry.addDicomService(stgCmtResultHndlr);
+        ae.setDimseRQHandler(serviceRegistry);
+    }
+
     public Connection getRemoteConnection() {
         return remote;
     }
@@ -374,13 +383,13 @@ public class StgCmtSCU {
         waitForOutstandingResults();
     }
 
-    private void addOutstandingResult(String tuid) {
+    public void addOutstandingResult(String tuid) {
         synchronized (outstandingResults ) {
             outstandingResults.add(tuid);
         }
     }
 
-    private void removeOutstandingResult(String tuid) {
+    public void removeOutstandingResult(String tuid) {
         synchronized (outstandingResults ) {
             outstandingResults.remove(tuid);
             outstandingResults.notify();

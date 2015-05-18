@@ -42,7 +42,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.TransferCapability.Role;
 
@@ -50,13 +54,25 @@ import org.dcm4che3.net.TransferCapability.Role;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
+@ConfigurableClass
 public class AttributeCoercions
         implements Iterable<AttributeCoercion>, Serializable {
     
     private static final long serialVersionUID = -1960600890844978686L;
 
-    private final ArrayList<AttributeCoercion> list =
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty(name = "dcmAttributeCoercionList")
+    private List<AttributeCoercion> list =
             new ArrayList<AttributeCoercion>();
+
+    public List<AttributeCoercion> getList() {
+        return list;
+    }
+
+    public void setList(List<AttributeCoercion> list) {
+        this.list.clear();
+        for (AttributeCoercion coercion : list) add(coercion);
+    }
 
     public void add(AttributeCoercion ac) {
         if (findByCommonName(ac.getCommonName()) != null)
@@ -69,7 +85,7 @@ public class AttributeCoercions
     }
 
     public void add(AttributeCoercions acs) {
-         for (AttributeCoercion ac : acs.list)
+        for (AttributeCoercion ac : acs.list)
              add(ac);
     }
 
@@ -91,7 +107,15 @@ public class AttributeCoercions
     public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
             Role role, String aeTitle) {
         for (AttributeCoercion ac : list)
-            if (ac.matchesCondition(sopClass, dimse, role, aeTitle))
+            if (ac.matchesCondition(sopClass, dimse, role, aeTitle, null))
+                return ac;
+        return null;
+    }
+
+    public AttributeCoercion findAttributeCoercion(String sopClass, Dimse dimse,
+            Role role, String aeTitle, String deviceName) {
+        for (AttributeCoercion ac : list)
+            if (ac.matchesCondition(sopClass, dimse, role, aeTitle, deviceName))
                 return ac;
         return null;
     }

@@ -59,7 +59,7 @@ public class ValueSelector implements Serializable {
     public final int valueIndex;
     public final ItemPointer[] itemPointers;
 
-    public ValueSelector(int tag, String privateCreator, VR vr, int index,
+    public ValueSelector(String privateCreator, int tag, VR vr, int index,
             ItemPointer... itemPointers) {
         this.tag = tag;
         this.privateCreator = privateCreator;
@@ -98,8 +98,8 @@ public class ValueSelector implements Serializable {
         int fromIndex = s.lastIndexOf("DicomAttribute");
         try {
             return new ValueSelector(
-                    selectTag(s, fromIndex),
                     selectPrivateCreator(s, fromIndex),
+                    selectTag(s, fromIndex),
                     selectVR(s, fromIndex),
                     selectNumber(s, fromIndex) - 1,
                     itemPointersOf(s, fromIndex));
@@ -135,8 +135,8 @@ public class ValueSelector implements Serializable {
         int fromIndex = 0;
         while (fromIndex < endIndex) {
             list.add(new ItemPointer(
-                    selectTag(s, fromIndex),
                     selectPrivateCreator(s, fromIndex),
+                    selectTag(s, fromIndex),
                     selectNumber(s, fromIndex) - 1));
             fromIndex = s.indexOf("DicomAttribute",
                     fromIndex + MIN_ITEM_POINTER_STR_LEN);

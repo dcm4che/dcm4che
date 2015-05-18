@@ -7,6 +7,7 @@
     <dependencies>
         <module name="org.dcm4che.image" export="true"/>
         <module name="org.dcm4che.imageio-rle" services="export" export="true"/>
+        <module name="org.dcm4che.conf.core-api"/>
         <module name="com.sun.media.imageio" services="export" export="true"/>
         <module name="javax.api"/>
         <module name="org.slf4j"/>

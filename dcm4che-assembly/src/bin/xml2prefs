@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.xml2prefs.Xml2Prefs
-MAIN_JAR=dcm4che-tool-xml2prefs-3.3.4-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-xml2prefs-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 

@@ -3,21 +3,16 @@
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.4-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-conf</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che-conf</name>
   <modules>
+    <module>dcm4che-conf-core</module>
+    <module>dcm4che-conf-core-api</module>
     <module>dcm4che-conf-api</module>
     <module>dcm4che-conf-api-hl7</module>
     <module>dcm4che-conf-ldap</module>
-    <module>dcm4che-conf-ldap-audit</module>
-    <module>dcm4che-conf-ldap-hl7</module>
-    <module>dcm4che-conf-ldap-imageio</module>
-    <module>dcm4che-conf-prefs</module>
-    <module>dcm4che-conf-prefs-audit</module>
-    <module>dcm4che-conf-prefs-hl7</module>
-    <module>dcm4che-conf-prefs-imageio</module>
   </modules>
 </project>

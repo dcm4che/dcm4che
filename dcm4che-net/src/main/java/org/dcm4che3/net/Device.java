@@ -43,17 +43,8 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TimeZone;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -63,6 +54,10 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.util.StringUtils;
@@ -73,57 +68,146 @@ import org.dcm4che3.util.StringUtils;
  * its physical attributes (serial number, manufacturer, etc.), its context
  * (issuer of patient ids used by the device, etc.), as well as its capabilities
  * (TLS-enabled, AE titles used, etc.).
- * 
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
+@LDAP(
+        objectClasses = {"dcmDevice", "dicomDevice"},
+        distinguishingField = "dicomDeviceName")
+@ConfigurableClass
 public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;
 
+    @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
+
+    @ConfigurableProperty(name = "dicomDescription")
     private String description;
+
+    @ConfigurableProperty(name = "dicomManufacturer")
     private String manufacturer;
+
+    @ConfigurableProperty(name = "dicomManufacturerModelName")
     private String manufacturerModelName;
+
+    @ConfigurableProperty(name = "dicomStationName")
     private String stationName;
+
+    @ConfigurableProperty(name = "dicomDeviceSerialNumber")
     private String deviceSerialNumber;
+
+    @ConfigurableProperty(name = "dcmTrustStoreURL")
     private String trustStoreURL;
+
+    @ConfigurableProperty(name = "dcmTrustStoreType")
     private String trustStoreType;
+
+    @ConfigurableProperty(name = "dcmTrustStorePin")
     private String trustStorePin;
+
+    @ConfigurableProperty(name = "dcmTrustStorePinProperty")
     private String trustStorePinProperty;
+
+    @ConfigurableProperty(name = "dcmKeyStoreURL")
     private String keyStoreURL;
+
+    @ConfigurableProperty(name = "dcmKeyStoreType")
     private String keyStoreType;
+
+    @ConfigurableProperty(name = "dcmKeyStorePin")
     private String keyStorePin;
+
+    @ConfigurableProperty(name = "dcmKeyStorePinProperty")
     private String keyStorePinProperty;
+
+    @ConfigurableProperty(name = "dcmKeyStoreKeyPin")
     private String keyStoreKeyPin;
+
+    @ConfigurableProperty(name = "dcmKeyStoreKeyPinProperty")
     private String keyStoreKeyPinProperty;
+
+    @ConfigurableProperty(name = "dicomIssuerOfPatientID")
     private Issuer issuerOfPatientID;
+
+    @ConfigurableProperty(name = "dicomIssuerOfAccessionNumber")
     private Issuer issuerOfAccessionNumber;
+
+    @ConfigurableProperty(name = "dicomOrderPlacerIdentifier")
     private Issuer orderPlacerIdentifier;
+
+    @ConfigurableProperty(name = "dicomOrderFillerIdentifier")
     private Issuer orderFillerIdentifier;
+
+    @ConfigurableProperty(name = "dicomIssuerOfAdmissionID")
     private Issuer issuerOfAdmissionID;
+
+    @ConfigurableProperty(name = "dicomIssuerOfServiceEpisodeID")
     private Issuer issuerOfServiceEpisodeID;
+
+    @ConfigurableProperty(name = "dicomIssuerOfContainerIdentifier")
     private Issuer issuerOfContainerIdentifier;
+
+    @ConfigurableProperty(name = "dicomIssuerOfSpecimenIdentifier")
     private Issuer issuerOfSpecimenIdentifier;
+
+    @ConfigurableProperty(name = "dicomSoftwareVersion")
     private String[] softwareVersions = {};
+
+    @ConfigurableProperty(name = "dicomPrimaryDeviceType")
     private String[] primaryDeviceTypes = {};
+
+    @ConfigurableProperty(name = "dicomInstitutionName")
     private String[] institutionNames = {};
+
+    @ConfigurableProperty(name = "dicomInstitutionCode")
     private Code[] institutionCodes = {};
+
+    @ConfigurableProperty(name = "dicomInstitutionAddress")
     private String[] institutionAddresses = {};
+
+    @ConfigurableProperty(name = "dicomInstitutionDepartmentName")
     private String[] institutionalDepartmentNames = {};
+
+    @ConfigurableProperty(name = "dicomRelatedDeviceReference")
     private String[] relatedDeviceRefs = {};
+
+    @ConfigurableProperty(name = "dicomVendorData")
     private byte[][] vendorData = {};
+
+    @ConfigurableProperty(name = "dcmLimitOpenAssociations")
     private int limitOpenAssociations;
+
+    @ConfigurableProperty(name = "dicomInstalled")
     private boolean installed = true;
+
+    @ConfigurableProperty(name = "dcmTimeZoneOfDevice")
     private TimeZone timeZoneOfDevice;
 
-    private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates = 
+
+    //TODO: finalize and store x509 cretificates !!
+    private final LinkedHashMap<String, X509Certificate[]> authorizedNodeCertificates =
             new LinkedHashMap<String, X509Certificate[]>();
-    private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates = 
+    private final LinkedHashMap<String, X509Certificate[]> thisNodeCertificates =
             new LinkedHashMap<String, X509Certificate[]>();
-    private final List<Connection> conns = new ArrayList<Connection>();
-    private final LinkedHashMap<String, ApplicationEntity> aes = 
-            new LinkedHashMap<String, ApplicationEntity>();
+
+
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty(
+            name="dicomConnection",
+            label = "Connections"
+    )
+    private final List<Connection> connections = new ArrayList<Connection>();
+
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty(
+            name="dicomNetworkAE",
+            label = "Application Entities"
+    )
+    private final Map<String, ApplicationEntity> applicationEntitiesMap =
+            new TreeMap<String, ApplicationEntity>();
+
     private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
@@ -140,9 +224,14 @@ public class Device implements Serializable {
     private transient volatile KeyManager km;
     private transient volatile TrustManager tm;
 
+    public Device() {
+    }
+
     public Device(String name) {
         setDeviceName(name);
     }
+
+
 
     private void checkNotEmpty(String name, String val) {
         if (val != null && val.isEmpty())
@@ -151,7 +240,7 @@ public class Device implements Serializable {
 
     /**
      * Get the name of this device.
-     * 
+     *
      * @return A String containing the device name.
      */
     public final String getDeviceName() {
@@ -160,7 +249,7 @@ public class Device implements Serializable {
 
     /**
      * Set the name of this device.
-     * 
+     *
      * @param name A String containing the device name.
      */
     public final void setDeviceName(String name) {
@@ -170,7 +259,7 @@ public class Device implements Serializable {
 
     /**
      * Get the description of this device.
-     * 
+     *
      * @return A String containing the device description.
      */
     public final String getDescription() {
@@ -179,7 +268,7 @@ public class Device implements Serializable {
 
     /**
      * Set the description of this device.
-     * 
+     *
      * @param description
      *                A String containing the device description.
      */
@@ -189,7 +278,7 @@ public class Device implements Serializable {
 
     /**
      * Get the manufacturer of this device.
-     * 
+     *
      * @return A String containing the device manufacturer.
      */
     public final String getManufacturer() {
@@ -201,7 +290,7 @@ public class Device implements Serializable {
      * <p>
      * This should be the same as the value of Manufacturer (0008,0070) in SOP
      * instances created by this device.
-     * 
+     *
      * @param manufacturer
      *                A String containing the device manufacturer.
      */
@@ -211,7 +300,7 @@ public class Device implements Serializable {
 
     /**
      * Get the manufacturer model name of this device.
-     * 
+     *
      * @return A String containing the device manufacturer model name.
      */
     public final String getManufacturerModelName() {
@@ -223,7 +312,7 @@ public class Device implements Serializable {
      * <p>
      * This should be the same as the value of Manufacturer Model Name
      * (0008,1090) in SOP instances created by this device.
-     * 
+     *
      * @param manufacturerModelName
      *                A String containing the device manufacturer model name.
      */
@@ -233,7 +322,7 @@ public class Device implements Serializable {
 
     /**
      * Get the software versions running on (or implemented by) this device.
-     * 
+     *
      * @return A String array containing the software versions.
      */
     public final String[] getSoftwareVersions() {
@@ -245,8 +334,8 @@ public class Device implements Serializable {
      * <p>
      * This should be the same as the values of Software Versions (0018,1020) in
      * SOP instances created by this device.
-     * 
-     * @param softwareVersion
+     *
+     * @param softwareVersions
      *                A String array containing the software versions.
      */
     public final void setSoftwareVersions(String... softwareVersions) {
@@ -255,7 +344,7 @@ public class Device implements Serializable {
 
     /**
      * Get the station name belonging to this device.
-     * 
+     *
      * @return A String containing the station name.
      */
     public final String getStationName() {
@@ -267,7 +356,7 @@ public class Device implements Serializable {
      * <p>
      * This should be the same as the value of Station Name (0008,1010) in SOP
      * instances created by this device.
-     * 
+     *
      * @param stationName
      *                A String containing the station name.
      */
@@ -277,7 +366,7 @@ public class Device implements Serializable {
 
     /**
      * Get the serial number belonging to this device.
-     * 
+     *
      * @return A String containing the serial number.
      */
     public final String getDeviceSerialNumber() {
@@ -289,7 +378,7 @@ public class Device implements Serializable {
      * <p>
      * This should be the same as the value of Device Serial Number (0018,1000)
      * in SOP instances created by this device.
-     * 
+     *
      * @param deviceSerialNumber
      *                A String containing the serial number.
      */
@@ -299,7 +388,7 @@ public class Device implements Serializable {
 
     /**
      * Get the type codes associated with this device.
-     * 
+     *
      * @return A String array containing the type codes of this device.
      */
     public final String[] getPrimaryDeviceTypes() {
@@ -312,7 +401,7 @@ public class Device implements Serializable {
      * Represents the kind of device and is most applicable for acquisition
      * modalities. Types should be selected from the list of code values
      * (0008,0100) for Context ID 30 in PS3.16 when applicable.
-     * 
+     *
      * @param primaryDeviceTypes
      */
     public void setPrimaryDeviceTypes(String... primaryDeviceTypes) {
@@ -322,7 +411,7 @@ public class Device implements Serializable {
     /**
      * Get the institution name associated with this device; may be the site
      * where it resides or is operating on behalf of.
-     * 
+     *
      * @return A String array containing the institution name values.
      */
     public final String[] getInstitutionNames() {
@@ -335,7 +424,7 @@ public class Device implements Serializable {
      * <p>
      * Should be the same as the value of Institution Name (0008,0080) in SOP
      * Instances created by this device.
-     * 
+     *
      * @param names
      *                A String array containing the institution name values.
      */
@@ -353,7 +442,7 @@ public class Device implements Serializable {
 
     /**
      * Set the address of the institution which operates this device.
-     * 
+     *
      * @return A String array containing the institution address values.
      */
     public final String[] getInstitutionAddresses() {
@@ -365,8 +454,8 @@ public class Device implements Serializable {
      * <p>
      * Should be the same as the value of Institution Address (0008,0081)
      * attribute in SOP Instances created by this device.
-     * 
-     * @param addr
+     *
+     * @param addresses
      *                A String array containing the institution address values.
      */
     public void setInstitutionAddresses(String... addresses) {
@@ -375,7 +464,7 @@ public class Device implements Serializable {
 
     /**
      * Get the department name associated with this device.
-     * 
+     *
      * @return A String array containing the dept. name values.
      */
     public final String[] getInstitutionalDepartmentNames() {
@@ -387,8 +476,8 @@ public class Device implements Serializable {
      * <p>
      * Should be the same as the value of Institutional Department Name
      * (0008,1040) in SOP Instances created by this device.
-     * 
-     * @param name
+     *
+     * @param names
      *                A String array containing the dept. name values.
      */
     public void setInstitutionalDepartmentNames(String... names) {
@@ -638,7 +727,7 @@ public class Device implements Serializable {
 
     /**
      * Get device specific vendor configuration information
-     * 
+     *
      * @return An Object of the device data.
      */
     public final byte[][] getVendorData() {
@@ -647,7 +736,7 @@ public class Device implements Serializable {
 
     /**
      * Set device specific vendor configuration information
-     * 
+     *
      * @param vendorData
      *                An Object of the device data.
      */
@@ -659,7 +748,7 @@ public class Device implements Serializable {
      * Get a boolean to indicate whether this device is presently installed on
      * the network. (This is useful for pre-configuration, mobile vans, and
      * similar situations.)
-     * 
+     *
      * @return A boolean which will be true if this device is installed.
      */
     public final boolean isInstalled() {
@@ -670,12 +759,12 @@ public class Device implements Serializable {
      * Get a boolean to indicate whether this device is presently installed on
      * the network. (This is useful for pre-configuration, mobile vans, and
      * similar situations.)
-     * 
+     *
      * @param installed
      *                A boolean which will be true if this device is installed.
-     * @throws IOException 
-     * @throws GeneralSecurityException 
-     * @throws KeyManagementException 
+     * @throws IOException
+     * @throws GeneralSecurityException
+     * @throws KeyManagementException
      */
     public final void setInstalled(boolean installed) {
         if (this.installed == installed)
@@ -684,7 +773,7 @@ public class Device implements Serializable {
         this.installed = installed;
         needRebindConnections();
     }
-    
+
     public void setTimeZoneOfDevice(TimeZone timeZoneOfDevice) {
         this.timeZoneOfDevice = timeZoneOfDevice;
     }
@@ -693,7 +782,7 @@ public class Device implements Serializable {
     {
 	return timeZoneOfDevice;
     }
-   
+
     public final void setDimseRQHandler(DimseRQHandler dimseRQHandler) {
         this.dimseRQHandler = dimseRQHandler;
     }
@@ -721,30 +810,33 @@ public class Device implements Serializable {
     }
 
     public void bindConnections() throws IOException, GeneralSecurityException {
-        for (Connection con : conns)
+        for (Connection con : connections)
             con.bind();
     }
 
     public void rebindConnections() throws IOException, GeneralSecurityException {
-        for (Connection con : conns)
+        for (Connection con : connections)
             if (con.isRebindNeeded())
                 con.rebind();
     }
 
     private void needRebindConnections()  {
-        for (Connection con : conns)
+        for (Connection con : connections)
             con.needRebind();
      }
 
+
+
     private void needReconfigureTLS()  {
-        for (Connection con : conns)
+        for (Connection con : connections)
             if (con.isTls())
                 con.needRebind();
         sslContext = null;
     }
 
     public void unbindConnections() {
-        for (Connection con : conns)
+        // the needReconfigureTLS method is cool
+        for (Connection con : connections)
             con.unbind();
     }
 
@@ -766,20 +858,20 @@ public class Device implements Serializable {
 
     public void addConnection(Connection conn) {
         conn.setDevice(this);
-        conns.add(conn);
+        connections.add(conn);
         conn.needRebind();
     }
 
     public boolean removeConnection(Connection conn) {
-        for (ApplicationEntity ae : aes.values())
+        for (ApplicationEntity ae : applicationEntitiesMap.values())
             if (ae.getConnections().contains(conn))
-                throw new IllegalStateException(conn + " used by AE: " + 
+                throw new IllegalStateException(conn + " used by AE: " +
                         ae.getAETitle());
 
         for (DeviceExtension ext : extensions.values())
             ext.verifyNotUsed(conn);
 
-        if (!conns.remove(conn))
+        if (!connections.remove(conn))
             return false;
 
         conn.setDevice(null);
@@ -788,21 +880,42 @@ public class Device implements Serializable {
     }
 
     public List<Connection> listConnections() {
-        return Collections.unmodifiableList(conns);
+        return Collections.unmodifiableList(connections);
     }
 
     public Connection connectionWithEqualsRDN(Connection other) {
-        for (Connection conn : conns)
+        for (Connection conn : connections)
             if (conn.equalsRDN(other))
                 return conn;
 
         return null;
     }
 
+    public List<Connection> getConnections() {
+        return connections;
+    }
+
+    public void setConnections(List<Connection> connections) {
+        this.connections.clear();
+        for (Connection connection : connections) addConnection(connection);
+    }
+
+    public void setApplicationEntitiesMap(Map<String, ApplicationEntity> applicationEntitiesMap) {
+        this.applicationEntitiesMap.clear();
+        for (Entry<String, ApplicationEntity> entry : applicationEntitiesMap.entrySet()) {
+            addApplicationEntity(entry.getValue());
+        }
+    }
+
+    public Map<String, ApplicationEntity> getApplicationEntitiesMap() {
+        return applicationEntitiesMap;
+    }
+
+
 
     public void addApplicationEntity(ApplicationEntity ae) {
         ae.setDevice(this);
-        aes.put(ae.getAETitle(), ae);
+        applicationEntitiesMap.put(ae.getAETitle(), ae);
     }
 
     public ApplicationEntity removeApplicationEntity(ApplicationEntity ae) {
@@ -810,7 +923,7 @@ public class Device implements Serializable {
     }
 
     public ApplicationEntity removeApplicationEntity(String aet) {
-        ApplicationEntity ae = aes.remove(aet);
+        ApplicationEntity ae = applicationEntitiesMap.remove(aet);
         if (ae != null)
             ae.setDevice(null);
         return ae;
@@ -874,18 +987,18 @@ public class Device implements Serializable {
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
-        ApplicationEntity ae = aes.get(aet);
+        ApplicationEntity ae = applicationEntitiesMap.get(aet);
         if (ae == null)
-            ae = aes.get("*");
+            ae = applicationEntitiesMap.get("*");
         return ae;
     }
 
     public Collection<String> getApplicationAETitles() {
-        return aes.keySet();
+        return applicationEntitiesMap.keySet();
     }
 
     public Collection<ApplicationEntity> getApplicationEntities() {
-        return aes.values();
+        return applicationEntitiesMap.values();
     }
 
     public final void setKeyManager(KeyManager km) {
@@ -911,7 +1024,7 @@ public class Device implements Serializable {
     private String keyStoreType() {
         if (keyStoreType == null)
             throw new IllegalStateException("keyStoreURL requires keyStoreType");
-            
+
         return keyStoreType;
     }
 
@@ -973,7 +1086,7 @@ public class Device implements Serializable {
     private String trustStoreType() {
         if (trustStoreType == null)
             throw new IllegalStateException("trustStoreURL requires trustStoreType");
-            
+
         return trustStoreType;
     }
 
@@ -1005,7 +1118,7 @@ public class Device implements Serializable {
     private static SSLContext createSSLContext(KeyManager km, TrustManager tm)
             throws GeneralSecurityException {
         SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(km != null ? new KeyManager[]{ km } : null, 
+        ctx.init(km != null ? new KeyManager[]{ km } : null,
                 tm != null ? new TrustManager[]{ tm } : null, null);
         return ctx;
     }
@@ -1056,9 +1169,9 @@ public class Device implements Serializable {
         StringUtils.appendLine(sb, indent, "Device[name: ", deviceName);
         StringUtils.appendLine(sb, indent2,"desc: ", description);
         StringUtils.appendLine(sb, indent2,"installed: ", installed);
-        for (Connection conn : conns)
+        for (Connection conn : connections)
             conn.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
-        for (ApplicationEntity ae : aes.values())
+        for (ApplicationEntity ae : applicationEntitiesMap.values())
             ae.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
         return sb.append(indent).append(']');
     }
@@ -1131,7 +1244,7 @@ public class Device implements Serializable {
      }
 
      private void reconfigureConnections(Device from) {
-         Iterator<Connection> connIter = conns.iterator();
+         Iterator<Connection> connIter = connections.iterator();
          while (connIter.hasNext()) {
              Connection conn = connIter.next();
              if (from.connectionWithEqualsRDN(conn) == null) {
@@ -1140,7 +1253,7 @@ public class Device implements Serializable {
                  conn.unbind();
              }
          }
-         for (Connection src : from.conns) {
+         for (Connection src : from.connections) {
              Connection conn = connectionWithEqualsRDN(src);
              if (conn == null)
                  this.addConnection(conn = new Connection());
@@ -1149,9 +1262,9 @@ public class Device implements Serializable {
     }
 
      private void reconfigureApplicationEntities(Device from) {
-         aes.keySet().retainAll(from.aes.keySet());
-         for (ApplicationEntity src : from.aes.values()) {
-             ApplicationEntity ae = aes.get(src.getAETitle());
+         applicationEntitiesMap.keySet().retainAll(from.applicationEntitiesMap.keySet());
+         for (ApplicationEntity src : from.applicationEntitiesMap.values()) {
+             ApplicationEntity ae = applicationEntitiesMap.get(src.getAETitle());
              if (ae == null)
                  addApplicationEntity(ae = new ApplicationEntity(src.getAETitle()));
              ae.reconfigure(src);
@@ -1200,6 +1313,17 @@ public class Device implements Serializable {
             throw new IllegalStateException("No " + clazz.getName()
                     + " configured for Device: " + deviceName);
         return devExt;
+    }
+
+    public Collection<ApplicationEntity> getAEsSupportingTransferCapability(
+            TransferCapability transferCapability, boolean onlyAbstractSyntax) {
+        ArrayList<ApplicationEntity> aes = new ArrayList<ApplicationEntity>();
+        for (ApplicationEntity ae : this.getApplicationEntities()) {
+            if (ae.supportsTransferCapability(transferCapability,
+                    onlyAbstractSyntax))
+                aes.add(ae);
+        }
+        return aes;
     }
 
 }

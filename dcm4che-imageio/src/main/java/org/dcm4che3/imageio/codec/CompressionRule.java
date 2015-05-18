@@ -41,6 +41,9 @@ package org.dcm4che3.imageio.codec;
 import java.io.Serializable;
 import java.util.EnumSet;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.StringUtils;
@@ -49,28 +52,69 @@ import org.dcm4che3.util.StringUtils;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
+@LDAP(objectClasses = "dcmCompressionRule")
+@ConfigurableClass
 public class CompressionRule
         implements Comparable<CompressionRule>, Serializable {
 
     private static final long serialVersionUID = 2010254518169306864L;
 
-    private final String commonName;
-    private final Condition condition;
-    private final String tsuid;
-    private final Property[] imageWriteParams;
+    @ConfigurableProperty(name = "cn")
+    private String commonName;
+
+    @LDAP(noContainerNode = true)
+    @ConfigurableProperty(name = "condition")
+    private Condition condition;
+
+    @ConfigurableProperty(name = "dicomTransferSyntax")
+    private String tsuid;
+
+    @ConfigurableProperty(name = "dcmImageWriteParam")
+    private Property[] imageWriteParams;
+
+    public CompressionRule() {
+    }
 
     public CompressionRule(String commonName, String[] pmis, int[] bitsStored,
-            int pixelRepresentation, String[] aeTitles, String[] sopClasses,
-            String[] bodyPartExamined, String tsuid, String... params) {
+            int pixelRepresentation, String[] aeTitles, String[] deviceNames,
+            String[] sopClasses, String[] imgTypes, String[] bodyPartExamined,
+            String tsuid, String... params) {
         this.commonName = commonName;
         this.condition = new Condition(pmis, bitsStored, pixelRepresentation,
                 StringUtils.maskNull(aeTitles),
+                StringUtils.maskNull(deviceNames),
                 StringUtils.maskNull(sopClasses),
+                StringUtils.maskNull(imgTypes),
                 StringUtils.maskNull(bodyPartExamined));
         this.tsuid = tsuid;
         this.imageWriteParams = Property.valueOf(params);
     }
- 
+
+    public void setCommonName(String commonName) {
+        this.commonName = commonName;
+    }
+
+    public Condition getCondition() {
+        return condition;
+    }
+
+    public void setCondition(Condition condition) {
+        this.condition = condition;
+        this.condition.calcWeight();
+    }
+
+    public String getTsuid() {
+        return tsuid;
+    }
+
+    public void setTsuid(String tsuid) {
+        this.tsuid = tsuid;
+    }
+
+    public void setImageWriteParams(Property[] imageWriteParams) {
+        this.imageWriteParams = imageWriteParams;
+    }
+
     public final String getCommonName() {
         return commonName;
     }
@@ -108,10 +152,11 @@ public class CompressionRule
     }
 
     public boolean matchesCondition(PhotometricInterpretation pmi, 
-            int bitsStored, int pixelRepresentation, String aeTitle, 
-            String sopClass, String bodyPart) {
+            int bitsStored, int pixelRepresentation, String aeTitle,
+            String deviceName, String sopClass, String[] imgTypes,
+            String bodyPart) {
         return condition.matches(pmi, bitsStored, pixelRepresentation, aeTitle,
-                sopClass, bodyPart);
+                deviceName, sopClass, imgTypes, bodyPart);
     }
 
     @Override
@@ -119,32 +164,133 @@ public class CompressionRule
         return condition.compareTo(o.condition);
     }
 
-    private static class Condition
+    @ConfigurableClass
+    public static class Condition
             implements Comparable<Condition>, Serializable {
 
         private static final long serialVersionUID = -4069284624944470710L;
 
-        final EnumSet<PhotometricInterpretation> pmis;
-        final int bitsStoredMask;
-        final int pixelRepresentation = -1;
-        final String[] aeTitles;
-        final String[] sopClasses;
-        final String[] bodyPartExamined;
-        final int weight;
+        @ConfigurableProperty(name = "dcmPhotometricInterpretation")
+        EnumSet<PhotometricInterpretation> pmis;
+
+        /**
+         * Proxy-property, actually stored in bitsStoredMask, see getter/setter
+         */
+        @ConfigurableProperty(name = "dcmBitsStored")
+        int bitsStoredMaskArray[];
+
+        int bitsStoredMask;
+
+        @ConfigurableProperty(name = "dcmPixelRepresentation",defaultValue = "-1")
+        int pixelRepresentation = -1;
+
+        @ConfigurableProperty(name = "dcmDeviceName")
+        String[] deviceNames;
+
+        @ConfigurableProperty(name = "dcmAETitle")
+        String[] aeTitles;
+
+        @ConfigurableProperty(name = "dcmSOPClass")
+        String[] sopClasses;
+
+        @ConfigurableProperty(name = "dcmImageType")
+        String[] imageType;
+        
+        @ConfigurableProperty(name = "dcmBodyPartExamined")
+        String[] bodyPartExamined;
+
+        int weight;
+
+        public Condition() {
+        }
 
         Condition(String[] pmis, int[] bitsStored, int pixelRepresentation,
-                String[] aeTitles, String[] sopClasses, String[] bodyPartExamined) {
+                String[] aeTitles, String[] deviceNames, String[] sopClasses,
+                String[] imgTypes, String[] bodyPartExamined) {
+            
             this.pmis = EnumSet.noneOf(PhotometricInterpretation.class);
             for (String pmi : pmis)
                 this.pmis.add(PhotometricInterpretation.fromString(pmi));
 
             this.bitsStoredMask = toBitsStoredMask(bitsStored);
+            this.setDeviceNames(deviceNames);
             this.aeTitles = aeTitles;
             this.sopClasses = sopClasses;
+            this.imageType = imgTypes;
             this.bodyPartExamined = bodyPartExamined;
-            this.weight = (aeTitles.length != 0 ? 4 : 0)
-                      + (sopClasses.length != 0 ? 2 : 0)
-                       + (bodyPartExamined.length != 0 ? 1 : 0);
+            calcWeight();
+        }
+
+        public void calcWeight() {
+            this.weight = (aeTitles.length != 0 ? 16 : 0)
+                    + (deviceNames.length != 0 ? 8 : 0)
+                    + (sopClasses.length != 0 ? 4 : 0)
+                    + (bodyPartExamined.length != 0 ? 2 : 0)
+                    + (imageType.length != 0 ? 1 : 0);
+        }
+
+        public EnumSet<PhotometricInterpretation> getPmis() {
+            return pmis;
+        }
+
+        public void setPmis(EnumSet<PhotometricInterpretation> pmis) {
+            this.pmis = pmis;
+        }
+
+        public int getBitsStoredMask() {
+            return bitsStoredMask;
+        }
+
+        public void setBitsStoredMask(int bitsStoredMask) {
+            this.bitsStoredMask = bitsStoredMask;
+        }
+
+        public int getPixelRepresentation() {
+            return pixelRepresentation;
+        }
+
+        public void setPixelRepresentation(int pixelRepresentation) {
+            this.pixelRepresentation = pixelRepresentation;
+        }
+
+        public String[] getDeviceNames() {
+            return deviceNames;
+        }
+
+        public void setDeviceNames(String[] deviceNames) {
+            this.deviceNames = deviceNames;
+        }
+
+        public String[] getAeTitles() {
+            return aeTitles;
+        }
+
+        public void setAeTitles(String[] aeTitles) {
+            this.aeTitles = aeTitles;
+        }
+
+        public String[] getSopClasses() {
+            return sopClasses;
+        }
+
+        public void setSopClasses(String[] sopClasses) {
+            this.sopClasses = sopClasses;
+        }
+        
+        public String[] getImageType() {
+            return imageType;
+        }
+
+        public void setImageType(String[] imageType) {
+            this.imageType = imageType;
+        }
+
+        public String[] getBodyPartExamined() {
+            return bodyPartExamined;
+        }
+
+        public void setBodyPartExamined(String[] bodyPartExamined) {
+            this.bodyPartExamined = bodyPartExamined;
         }
 
         private int toBitsStoredMask(int[] bitsStored) {
@@ -173,6 +319,15 @@ public class CompressionRule
             return bitsStored;
         }
 
+
+        public int[] getBitsStoredMaskArray() {
+            return getBitsStored();
+        }
+
+        public void setBitsStoredMaskArray(int[] bitsStoredMaskArray) {
+            this.bitsStoredMask = toBitsStoredMask(bitsStoredMaskArray);
+        }
+
         @Override
         public int compareTo(Condition o) {
             return o.weight - weight;
@@ -180,12 +335,15 @@ public class CompressionRule
 
         public boolean matches(PhotometricInterpretation pmi, 
                 int bitsStored, int pixelRepresentation, 
-                String aeTitle, String sopClass, String bodyPart) {
+                String aeTitle, String deviceName,
+                String sopClass, String[] imgTypes, String bodyPart) {
             return pmis.contains(pmi)
                     && matchBitStored(bitsStored)
                     && matchPixelRepresentation(pixelRepresentation)
+                    && isEmptyOrContains(this.deviceNames, deviceName)
                     && isEmptyOrContains(this.aeTitles, aeTitle)
                     && isEmptyOrContains(this.sopClasses, sopClass)
+                    && isEmptyOrContains(this.imageType, imgTypes)
                     && isEmptyOrContains(this.bodyPartExamined, bodyPart);
         }
 
@@ -204,6 +362,17 @@ public class CompressionRule
 
             for (int i = 0; i < a.length; i++)
                 if (o.equals(a[i]))
+                    return true;
+
+            return false;
+        }
+        
+        private static boolean isEmptyOrContains(Object[] a1, Object[] a2) {
+            if (a1 == null || a1.length == 0 || a2 == null || a2.length == 0)
+                return true;
+
+            for (int i = 0; i < a2.length; i++)
+                if (isEmptyOrContains(a1, a2[i]))
                     return true;
 
             return false;

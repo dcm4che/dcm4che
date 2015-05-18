@@ -67,11 +67,13 @@
       <outputDirectory>.</outputDirectory>
       <fileMode>0755</fileMode>
       <lineEnding>unix</lineEnding>
+      <filtered>true</filtered>
     </fileSet>
     <fileSet>
       <directory>./src</directory>
       <includes>
         <include>etc/*/*.jks</include>
+        <include>etc/*/*.jpg</include>
         <include>etc/*/*.mpeg</include>
       </includes>
       <outputDirectory>.</outputDirectory>
@@ -85,10 +87,12 @@
       </includes>
       <excludes>
         <exclude>etc/*/*.jks</exclude>
+        <exclude>etc/*/*.jpg</exclude>
         <exclude>etc/*/*.mpeg</exclude>
       </excludes>
       <outputDirectory>.</outputDirectory>
       <lineEnding>dos</lineEnding>
+      <filtered>true</filtered>
     </fileSet>
   </fileSets>
   <dependencySets>
@@ -97,23 +101,18 @@
       <includes>
         <include>org.dcm4che:dcm4che-audit</include>
         <include>org.dcm4che:dcm4che-conf-api</include>
-        <include>org.dcm4che:dcm4che-conf-api-hl7</include>
-        <include>org.dcm4che:dcm4che-conf-ldap</include>
-        <include>org.dcm4che:dcm4che-conf-ldap-audit</include>
-        <include>org.dcm4che:dcm4che-conf-ldap-hl7</include>
-        <include>org.dcm4che:dcm4che-conf-ldap-imageio</include>
-        <include>org.dcm4che:dcm4che-conf-prefs</include>
-        <include>org.dcm4che:dcm4che-conf-prefs-audit</include>
-        <include>org.dcm4che:dcm4che-conf-prefs-hl7</include>
-        <include>org.dcm4che:dcm4che-conf-prefs-imageio</include>
+        <include>org.dcm4che:dcm4che-conf-core</include>
+        <include>org.dcm4che:dcm4che-conf-core-api</include>
         <include>org.dcm4che:dcm4che-core</include>
         <include>org.dcm4che:dcm4che-emf</include>
+        <include>org.dcm4che:dcm4che-filecache</include>
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
+        <include>org.dcm4che:dcm4che-ws-rs</include>
         <include>org.dcm4che:dcm4che-net</include>
         <include>org.dcm4che:dcm4che-net-audit</include>
         <include>org.dcm4che:dcm4che-net-hl7</include>
@@ -125,6 +124,8 @@
         <include>org.dcm4che.tool:dcm4che-tool-dcm2json</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcm2xml</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmdir</include>
+		<include>org.dcm4che.tool:dcm4che-tool-dcmdict</include>
+		<include>org.dcm4che.tool:dcm4che-tool-dcmgen</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmqrscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-dcmvalidate</include>
         <include>org.dcm4che.tool:dcm4che-tool-emf2sf</include>
@@ -135,6 +136,7 @@
         <include>org.dcm4che.tool:dcm4che-tool-hl7rcv</include>
         <include>org.dcm4che.tool:dcm4che-tool-hl7snd</include>
         <include>org.dcm4che.tool:dcm4che-tool-stowrs</include>
+		<include>org.dcm4che.tool:dcm4che-tool-qidors</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscp</include>
         <include>org.dcm4che.tool:dcm4che-tool-ianscu</include>
         <include>org.dcm4che.tool:dcm4che-tool-json2dcm</include>
@@ -152,7 +154,11 @@
         <include>org.dcm4che.tool:dcm4che-tool-xml2dcm</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2hl7</include>
         <include>org.dcm4che.tool:dcm4che-tool-xml2prefs</include>
-        <include>org.dcm4che.tool:dcm4che-tool-probetc</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadors</include>
+        <include>org.dcm4che.tool:dcm4che-tool-wadouri</include>
+        <include>org.dcm4che.tool:dcm4che-tool-qc</include>
+        <!-- TODO fix configuration load
+        <include>org.dcm4che.tool:dcm4che-tool-probetc</include> -->
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
         <include>com.sun.media:jai_imageio</include>
         <include>com.sun.media:clibwrapper_jiio</include>
@@ -161,6 +167,7 @@
         <include>log4j:log4j</include>
         <include>commons-cli:commons-cli</include>
         <include>org.glassfish:javax.json</include>
+        <include>org.jboss.resteasy:jaxrs-api</include>
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>

@@ -78,6 +78,23 @@ public class ByteUtils {
         return (bytes[off + 1] << 8)  + (bytes[off] & 255);
     }
 
+    public static void bytesToShorts(byte[] src, int srcPos, short[] dest, int destPos, int length, boolean bigEndian) {
+        if (bigEndian)
+            bytesToShortsBE(src, srcPos, dest, destPos, length);
+        else
+            bytesToShortsLE(src, srcPos, dest, destPos, length);
+    }
+
+    public static void bytesToShortsBE(byte[] src, int srcPos, short[] dest, int destPos, int length) {
+        for (int i = 0; i < length; i++)
+            dest[destPos+i] = (short) bytesToShortBE(src, srcPos + (i << 1));
+    }
+
+    public static void bytesToShortsLE(byte[] src, int srcPos, short[] dest, int destPos, int length) {
+        for (int i = 0; i < length; i++)
+            dest[destPos+i] = (short) bytesToShortLE(src, srcPos+(i<<1));
+    }
+
     public static int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
         return bigEndian ? bytesToIntBE(bytes, off) : bytesToIntLE(bytes, off);
     }
@@ -274,6 +291,19 @@ public class ByteUtils {
         return bytes;
     }
 
+    public static byte[][] swapShorts(byte bs[][]) {
+        int carry =  0;
+        for (int i = 0; i < bs.length; i++) {
+            byte[] b = bs[i];
+            if (carry != 0)
+                swapLastFirst(bs[i-1], b);
+            int len = b.length - carry;
+            swapShorts(b, carry, len & ~1);
+            carry = len & 1;
+         }
+        return bs;
+    }
+
     public static byte[] swapShorts(byte b[], int off, int len) {
         checkLength(len, 2);
         for (int i = off, n = off + len; i < n; i += 2)
@@ -310,6 +340,13 @@ public class ByteUtils {
         byte t = bytes[a];
         bytes[a] = bytes[b];
         bytes[b] = t;
+    }
+
+    private static void swapLastFirst(byte[] b1, byte[] b2) {
+        int last = b1.length - 1;
+        byte t = b2[0];
+        b2[0] = b1[last];
+        b1[last] = t;
     }
 
 }

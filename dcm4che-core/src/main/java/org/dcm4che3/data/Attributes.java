@@ -42,17 +42,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
+import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
@@ -68,6 +63,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Attributes implements Serializable {
 
+
+
     public interface Visitor {
         boolean visit(Attributes attrs, int tag, VR vr, Object value)
                 throws Exception;
@@ -80,6 +77,8 @@ public class Attributes implements Serializable {
     private static final int TO_STRING_LIMIT = 50;
     private static final int TO_STRING_WIDTH = 78;
     private transient Attributes parent;
+    private transient String parentSequencePrivateCreator;
+    private transient int parentSequenceTag;
     private transient int[] tags;
     private transient VR[] vrs;
     private transient Object[] values;
@@ -112,6 +111,13 @@ public class Attributes implements Serializable {
     public Attributes(boolean bigEndian, int initialCapacity) {
         this.bigEndian = bigEndian;
         init(initialCapacity);
+    }
+
+    public void clear() {
+        size = 0;
+        Arrays.fill(tags, 0);
+        Arrays.fill(vrs, null);
+        Arrays.fill(values, null);
     }
 
     private void init(int initialCapacity) {
@@ -179,6 +185,10 @@ public class Attributes implements Serializable {
         return parent == null;
     }
 
+    public Attributes getRoot() {
+        return isRoot() ? this : parent.getRoot();
+    }
+
     public final int getLevel() {
         return isRoot() ? 0 : 1 + parent.getLevel();
     }
@@ -191,11 +201,19 @@ public class Attributes implements Serializable {
         return parent;
     }
 
+    public String getParentSequencePrivateCreator() {
+        return parentSequencePrivateCreator;
+    }
+
+    public int getParentSequenceTag() {
+        return parentSequenceTag;
+    }
+
     public final int getLength() {
         return length;
     }
 
-    Attributes setParent(Attributes parent) {
+    Attributes setParent(Attributes parent, String parentSequencePrivateCreator, int parentSequenceTag) {
         if (parent != null) {
             if (parent.bigEndian != bigEndian)
                 throw new IllegalArgumentException(
@@ -209,6 +227,8 @@ public class Attributes implements Serializable {
                 tz = null;
         }
         this.parent = parent;
+        this.parentSequencePrivateCreator = parentSequencePrivateCreator;
+        this.parentSequenceTag = parentSequenceTag;
         return this;
     }
 
@@ -226,6 +246,31 @@ public class Attributes implements Serializable {
 
     public final int size() {
         return size;
+    }
+
+    public ItemPointer[] itemPointers() {
+        return itemPointers(0);
+    }
+
+    private ItemPointer[] itemPointers(int n) {
+        if (parent == null)
+            return new ItemPointer[n];
+
+        ItemPointer[] itemPointers = parent.itemPointers(n + 1);
+        itemPointers[itemPointers.length - n - 1] =
+                new ItemPointer(parentSequencePrivateCreator, parentSequenceTag, itemIndex());
+        return itemPointers;
+    }
+
+    public int itemIndex() {
+        if (parent == null)
+            return -1;
+
+        Sequence seq = parent.getSequence(parentSequencePrivateCreator, parentSequenceTag);
+        if (seq == null)
+            return -1;
+
+        return seq.indexOf(this);
     }
 
     public int[] tags() {
@@ -482,7 +527,11 @@ public class Attributes implements Serializable {
             return;
 
         Object value = values[index];
-        if (!(value instanceof byte[] || value == Value.NULL))
+        if (!(value == Value.NULL
+                || value instanceof byte[]
+                || vr.isStringType() 
+                    && (value instanceof String 
+                    || value instanceof String[])))
             throw new IllegalStateException("value instanceof " + value.getClass());
 
         vrs[index] = vr;
@@ -573,7 +622,7 @@ public class Attributes implements Serializable {
         
         Object value = values[index];
         if (value == Value.NULL)
-            return (Sequence) (values[index] = new Sequence(this, 0));
+            return (Sequence) (values[index] = new Sequence(this, privateCreator, tag, 0));
         return value instanceof Sequence ? (Sequence) value : null;
     }
 
@@ -1360,6 +1409,7 @@ public class Attributes implements Serializable {
         String[] darange = splitRange(da);
         String[] tmrange = splitRange(tm);
         DatePrecision precision = new DatePrecision();
+        TimeZone tz = getTimeZone();
         return new DateRange(
                 darange[0] == null ? null
                         : VR.DT.toDate(tmrange[0] == null
@@ -1398,6 +1448,10 @@ public class Attributes implements Serializable {
             cs = SpecificCharacterSet.DEFAULT;
 
         return cs;
+    }
+
+    public boolean containsTimezoneOffsetFromUTC() {
+        return containsTimezoneOffsetFromUTC;
     }
 
     public void setDefaultTimeZone(TimeZone tz) {
@@ -1444,6 +1498,7 @@ public class Attributes implements Serializable {
         TimeZone tz = DateUtils.timeZone(utcOffset);
         updateTimezone(getTimeZone(), tz);
         setString(Tag.TimezoneOffsetFromUTC, VR.SH, utcOffset);
+        this.tz = tz;
     }
 
     /**
@@ -1467,10 +1522,13 @@ public class Attributes implements Serializable {
             setString(Tag.TimezoneOffsetFromUTC, VR.SH,
                     DateUtils.formatTimezoneOffsetFromUTC(tz));
         }
-        this.tz=null;
+        this.tz = tz;
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {
+        if (from.hasSameRules(to))
+            return;
+
         for (int i = 0; i < size; i++) {
             Object val = values[i];
             if (val instanceof Sequence) {
@@ -1479,7 +1537,9 @@ public class Attributes implements Serializable {
                     item.updateTimezone(item.getTimeZone(), to);
                     item.remove(Tag.TimezoneOffsetFromUTC);
                 }
-            } else if (vrs[i] == VR.TM || vrs[i] == VR.DT)
+            } else if (vrs[i] == VR.TM && tags[i] != Tag.PatientBirthTime
+                    || vrs[i] == VR.DT && tags[i] != Tag.ContextGroupVersion
+                                       && tags[i] != Tag.ContextGroupLocalVersion)
                 updateTimezone(from, to, i);
         }
     }
@@ -1499,7 +1559,7 @@ public class Attributes implements Serializable {
             } else
                 values[tmIndex] = updateTimeZoneDT(from, to, (String) tm);
         } else {
-            int daTag = TagUtils.daTagOf(tmTag);
+            int daTag = ElementDictionary.getElementDictionary(privateCreatorOf(tmTag)).daTagOf(tmTag);
             int daIndex = daTag != 0 ? indexOf(daTag) : -1;
             Object da = daIndex >= 0 ? decodeStringValue(daIndex) : Value.NULL;
 
@@ -1804,7 +1864,7 @@ public class Attributes implements Serializable {
     }
 
     public Sequence newSequence(String privateCreator, int tag, int initialCapacity) {
-        Sequence seq = new Sequence(this, initialCapacity);
+        Sequence seq = new Sequence(this, privateCreator, tag, initialCapacity);
         set(privateCreator, tag, VR.SQ, seq);
         return seq;
     }
@@ -1826,9 +1886,9 @@ public class Attributes implements Serializable {
             if (oldValue instanceof Sequence)
                 seq = (Sequence) oldValue;
             else
-                values[index] = seq = new Sequence(this, initialCapacity);
+                values[index] = seq = new Sequence(this, privateCreator, tag, initialCapacity);
         } else {
-            seq = new Sequence(this, initialCapacity);
+            seq = new Sequence(this, privateCreator, tag, initialCapacity);
             insert(-index-1, tag, VR.SQ, seq);
         }
         return seq;
@@ -1841,7 +1901,7 @@ public class Attributes implements Serializable {
 
     public Fragments newFragments(String privateCreator, int tag, VR vr,
             int initialCapacity) {
-        Fragments frags = new Fragments(vr, bigEndian, initialCapacity);
+        Fragments frags = new Fragments(privateCreator, tag, vr, bigEndian, initialCapacity);
         set(privateCreator, tag, vr, frags);
         return frags;
     }
@@ -1869,6 +1929,38 @@ public class Attributes implements Serializable {
         }
 
         return oldValue;
+    }
+
+    public void addBulkDataReference(String privateCreator, int tag, VR vr, BulkData bulkData,
+                                ItemPointer... itemPointers) {
+        Sequence seq = ensureSequence(Tag.ReferencedBulkDataSequence, 8);
+        Attributes item = new Attributes(bigEndian, 7);
+        seq.add(item);
+        item.setString(Tag.RetrieveURL, VR.UR, bulkData.uri);
+        item.setInt(Tag.SelectorAttribute, VR.AT, privateCreator != null ? (tag & 0xffff00ff) : tag);
+        item.setString(Tag.SelectorAttributeVR, VR.CS, vr.name());
+        if (privateCreator != null)
+            item.setString(Tag.SelectorAttributePrivateCreator, VR.LO, privateCreator);
+        if (itemPointers.length > 0) {
+            int[] seqTags = new int[itemPointers.length];
+            int[] itemNumbers = new int[itemPointers.length];
+            String[] privateCreators = null;
+            for (int i = 0; i < itemPointers.length; i++) {
+                ItemPointer ip = itemPointers[i];
+                seqTags[i] = ip.privateCreator != null ? (ip.sequenceTag & 0xffff00ff) : ip.sequenceTag;
+                itemNumbers[i] = ip.itemIndex + 1;
+                if (ip.privateCreator != null) {
+                    if (privateCreators == null)
+                        privateCreators = new String[itemPointers.length];
+                    privateCreators[i] = ip.privateCreator;
+                }
+            }
+            item.setInt(Tag.SelectorSequencePointer, VR.AT, seqTags);
+            if (privateCreators != null)
+                item.setString(Tag.SelectorSequencePointerPrivateCreator, VR.LO, privateCreators);
+            item.setInt(Tag.SelectorSequencePointerItems, VR.IS, itemNumbers);
+        }
+        item.trimToSize();
     }
 
     private Object set(int tag, VR vr, Object value) {
@@ -1915,7 +2007,7 @@ public class Attributes implements Serializable {
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
-        int index = other.indexOf(tag);
+        int index = other.indexOf(privateCreator, tag);
         if (index < 0)
             return false;
         Object value = other.values[index];
@@ -1929,6 +2021,71 @@ public class Attributes implements Serializable {
                     toggleEndian(vr, value, bigEndian != other.bigEndian));
         }
         return true;
+    }
+
+    public boolean addWithoutBulkData(Attributes other, BulkDataDescriptor descriptor) {
+        final boolean toggleEndian = bigEndian != other.bigEndian;
+        final int[] tags = other.tags;
+        final VR[] srcVRs = other.vrs;
+        final Object[] srcValues = other.values;
+        final int otherSize = other.size;
+        int numAdd = 0;
+        String privateCreator = null;
+        int creatorTag = 0;
+        ItemPointer[] itemPointer = itemPointers();
+        for (int i = 0; i < otherSize; i++) {
+            int tag = tags[i];
+            VR vr = srcVRs[i];
+            Object value = srcValues[i];
+            if (TagUtils.isPrivateCreator(tag)) {
+                if (contains(tag))
+                    continue; // do not overwrite private creator IDs
+
+                if (vr == VR.LO) {
+                    value = other.decodeStringValue(i);
+                    if ((value instanceof String)
+                            && creatorTagOf((String) value, tag, false) != -1)
+                        continue; // do not add duplicate private creator ID
+                }
+            }
+            if (TagUtils.isPrivateTag(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    privateCreator = other.privateCreatorOf(tag);
+                }
+            } else {
+                creatorTag = 0;
+                privateCreator = null;
+            }
+            int vallen = (value instanceof byte[])
+                    ? ((byte[])value).length
+                    : -1;
+            if (descriptor.isBulkData(privateCreator, tag, vr, vallen, itemPointer))
+                continue;
+
+            if (value instanceof Sequence) {
+                Sequence src = (Sequence) value;
+                setWithoutBulkData(privateCreator, tag, src, descriptor);
+            } else if (value instanceof Fragments) {
+                set(privateCreator, tag, (Fragments) value);
+            } else {
+                set(privateCreator, tag, vr,
+                        toggleEndian(vr, value, toggleEndian));
+            }
+            numAdd++;
+        }
+        return numAdd != 0;
+    }
+
+    private void setWithoutBulkData(String privateCreator, int tag, Sequence seq,
+                                    BulkDataDescriptor descriptor) {
+        Sequence newSequence = newSequence(privateCreator, tag, seq.size());
+        for (Attributes item : seq) {
+            Attributes newItem = new Attributes(bigEndian, item.size());
+            newSequence.add(newItem);
+            newItem.addWithoutBulkData(item, descriptor);
+        }
     }
 
     /**
@@ -2187,6 +2344,60 @@ public class Attributes implements Serializable {
         return true;
    }
 
+    public Attributes diff(Attributes b, boolean both) {
+        Object[] otherValues = b.values;
+        Attributes inAnotInB = new Attributes();
+        Attributes inBnotInA = new Attributes();
+        Attributes diffBoth = new Attributes();
+        for(int indexOfTag = 0;indexOfTag < tags.length && tags[indexOfTag]!=0; indexOfTag++) {
+            if(TagUtils.isPrivateGroup(tags[indexOfTag])) {
+                if(TagUtils.isPrivateCreator(tags[indexOfTag])) {
+                    //treat as a normal tag with normal compare
+                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
+                }
+                else {
+                    //check if private creator is in b
+                    int privateCreatorTag = TagUtils.creatorTagOf(tags[indexOfTag]);
+                    Object o=getValue(privateCreatorTag);
+                    Object o1=b.values[b.indexOf(privateCreatorTag)];
+                    if(b.contains(privateCreatorTag) && o1.equals(o))
+                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
+                    else
+                        inAnotInB.set(tags[indexOfTag],vrs[indexOfTag],values[indexOfTag]);
+                }
+            }
+            else {
+                diffAttr(b, otherValues, inAnotInB, indexOfTag);
+            }
+        }
+        
+        inBnotInA.addAll(filterOutPrivateCreator(inAnotInB,b));
+        if(both) {
+        diffBoth.addAll(inAnotInB);
+        diffBoth.addAll(inBnotInA);
+        }
+            return both?diffBoth:inAnotInB;
+    }
+
+    private Attributes filterOutPrivateCreator(Attributes inAnotInB, Attributes b) {
+        for(int tag : b.tags)
+            if(!inAnotInB.contains(tag) && TagUtils.isPrivateCreator(tag))
+                b.remove(tag);
+        return b;
+    }
+
+    private void diffAttr(Attributes b, Object[] otherValues,
+            Attributes inAnotInB, int indexOfTag) {
+        if(!(b.contains(tags[indexOfTag]) && otherValues[b.indexOf(tags[indexOfTag])].equals(values[indexOfTag]))) {
+            //add to diff in a not in b
+            inAnotInB.set(tags[indexOfTag], vrs[indexOfTag], values[indexOfTag]);
+        }
+        else {
+            if(!TagUtils.isPrivateCreator(tags[indexOfTag]))
+            b.remove(tags[indexOfTag]);
+        }
+    }
+    
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])

@@ -53,6 +53,7 @@ public class IDWithIssuer {
     public static final IDWithIssuer[] EMPTY = {};
 
     private final String id;
+    private String identifierTypeCode;
     private Issuer issuer;
 
     public IDWithIssuer(String id, Issuer issuer) {
@@ -70,11 +71,21 @@ public class IDWithIssuer {
     public IDWithIssuer(String cx) {
         String[] ss = StringUtils.split(cx, '^');
         this.id = ss[0];
+        this.setIdentifierTypeCode(ss.length > 4 ? ss[4] : null);
         this.setIssuer(ss.length > 3 ? new Issuer(ss[3], '&') : null);
+        
     }
 
     public final String getID() {
         return id;
+    }
+
+    public final String getIdentifierTypeCode() {
+        return identifierTypeCode;
+    }
+
+    public final void setIdentifierTypeCode(String identifierTypeCode) {
+        this.identifierTypeCode = identifierTypeCode;
     }
 
     public final Issuer getIssuer() {
@@ -87,12 +98,23 @@ public class IDWithIssuer {
 
     @Override
     public String toString() {
-        return getIssuer() == null ? id : id + "^^^" + getIssuer().toString('&');
+        if (issuer == null && identifierTypeCode == null)
+            return id;
+        
+        StringBuilder sb = new StringBuilder(id);
+        sb.append("^^^");
+        if (issuer != null)
+            sb.append(issuer.toString('&'));
+        if (identifierTypeCode != null)
+            sb.append('^').append(identifierTypeCode);
+        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int result = id.hashCode();
+        if (identifierTypeCode != null)
+            result += identifierTypeCode.hashCode() * 31;
         if (issuer != null)
             result += issuer.hashCode() * 31;
         return result;
@@ -106,6 +128,9 @@ public class IDWithIssuer {
             return false;
         IDWithIssuer other = (IDWithIssuer) obj;
         return id.equals(other.id) &&
+                (identifierTypeCode == null
+                    ? other.identifierTypeCode == null
+                    : identifierTypeCode.equals(identifierTypeCode)) &&
                 (issuer == null 
                     ? other.issuer == null
                     : issuer.equals(other.issuer));
@@ -123,11 +148,24 @@ public class IDWithIssuer {
             attrs = new Attributes(3);
 
         attrs.setString(Tag.PatientID, VR.LO, id);
-        if (getIssuer() == null) {
+        if (issuer == null && identifierTypeCode == null) {
             return attrs;
         }
 
-        return getIssuer().toIssuerOfPatientID(attrs);
+        if (issuer != null)
+            issuer.toIssuerOfPatientID(attrs);
+
+        if (identifierTypeCode != null) {
+            Attributes item = attrs.getNestedDataset(
+                    Tag.IssuerOfPatientIDQualifiersSequence);
+            if (item == null) {
+                item = new Attributes(1);
+                attrs.newSequence(Tag.IssuerOfPatientIDQualifiersSequence, 1)
+                    .add(item);
+            }
+            item.setString(Tag.IdentifierTypeCode, VR.CS, identifierTypeCode);
+        }
+        return attrs;
     }
 
     public static IDWithIssuer valueOf(Attributes attrs, int idTag,
@@ -145,7 +183,17 @@ public class IDWithIssuer {
         if (id == null)
             return null;
 
-        return new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
+        IDWithIssuer result = 
+                new IDWithIssuer(id, Issuer.fromIssuerOfPatientID(attrs));
+        result.setIdentifierTypeCode(identifierTypeCodeOf(attrs));
+        return result;
+    }
+
+    private static String identifierTypeCodeOf(Attributes attrs) {
+        Attributes qualifiers = attrs.getNestedDataset(Tag.IssuerOfPatientIDQualifiersSequence);
+        return qualifiers != null
+                ? qualifiers.getString(Tag.IdentifierTypeCode)
+                : null;
     }
 
     public static Set<IDWithIssuer> pidsOf(Attributes attrs) {

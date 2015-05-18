@@ -140,7 +140,7 @@ public class SAXWriter implements DicomInputHandler {
 
     private void startDocument() throws SAXException {
         ch.startDocument();
-        startElement("NativeDicomModel", "xml-space", "preserved");
+        startElement("NativeDicomModel", "xml:space", "preserve");
     }
 
     private void endDocument() throws SAXException {
@@ -210,21 +210,21 @@ public class SAXWriter implements DicomInputHandler {
             }
         } else if (value instanceof Fragments) {
             Fragments frags = (Fragments) value;
-            int number = 0;
-            for (Object frag : frags) {
-                ++number;
-                if (frag instanceof Value && ((Value) frag).isEmpty())
-                    continue;
-                startElement("DataFragment", "number", number);
-                if (frag instanceof BulkData)
-                    writeBulkData((BulkData) frag);
-                else {
+            if (frags.size() > 1 && frags.get(1) instanceof BulkData)
+                writeBulkData(BulkData.fromFragments(frags));
+            else {
+                int number = 0;
+                for (Object frag : frags) {
+                    ++number;
+                    if (frag instanceof Value && ((Value) frag).isEmpty())
+                        continue;
+                    startElement("DataFragment", "number", number);
                     byte[] b = (byte[]) frag;
                     if (bigEndian)
                         frags.vr().toggleEndian(b, true);
                     writeInlineBinary(b);
+                    endElement("DataFragment");
                 }
-                endElement("DataFragment");
             }
         } else if (value instanceof BulkData) {
             writeBulkData((BulkData) value);
@@ -251,6 +251,9 @@ public class SAXWriter implements DicomInputHandler {
             startElement("DicomAttribute");
             if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
+                if (vr != VR.SQ && dis.getIncludeFragmentBulkData() == IncludeBulkData.URI) {
+                    writeBulkData(BulkData.fromFragments((Fragments) attrs.remove(privateCreator, tag)));
+                }
             } else if (len > 0) {
                 if (dis.getIncludeBulkData() ==  IncludeBulkData.URI
                         && dis.isBulkData(attrs)) {
@@ -305,27 +308,29 @@ public class SAXWriter implements DicomInputHandler {
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         int len = dis.length();
-        if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkDataFragment(frags)) {
-            dis.skipFully(len);
-        } else try {
-            frags.add(ByteUtils.EMPTY_BYTES); // increment size
-            if (len > 0) {
-                startElement("DataFragment", "number", frags.size());
-                if (dis.getIncludeBulkData() == IncludeBulkData.URI
-                        && dis.isBulkDataFragment(frags)) {
-                    writeBulkData(dis.createBulkData());
-                } else {
+        Object frag = ByteUtils.EMPTY_BYTES;
+        if (len > 0)
+            switch (dis.getIncludeFragmentBulkData()) {
+                case NO:
+                    dis.skipFully(len);
+                    return;
+                case URI:
+                    frag = dis.createBulkData();
+                    break;
+                case YES:
                     byte[] b = dis.readValue();
                     if (dis.bigEndian())
                         frags.vr().toggleEndian(b, false);
-                    writeInlineBinary(b);
-                }
-                endElement("DataFragment");
+                    try {
+                        startElement("DataFragment", "number", frags.size());
+                        writeInlineBinary(b);
+                        endElement("DataFragment");
+                    } catch (SAXException e) {
+                        throw new IOException(e);
+                    }
+                    break;
             }
-        } catch (SAXException e) {
-            throw new IOException(e);
-        }
+        frags.add(frag); // increment size
     }
 
     private void writeValues(VR vr, Object val, boolean bigEndian,
@@ -337,7 +342,7 @@ public class SAXWriter implements DicomInputHandler {
             String s = vr.toString(val, bigEndian, i, null);
             addAttribute("number", Integer.toString(i + 1));
             if (vr == VR.PN) {
-                PersonName pn = new PersonName(s);
+                PersonName pn = new PersonName(s, true);
                 startElement("PersonName");
                 writePNGroup("Alphabetic", pn, PersonName.Group.Alphabetic);
                 writePNGroup("Ideographic", pn, PersonName.Group.Ideographic);

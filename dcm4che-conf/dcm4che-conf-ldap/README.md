@@ -20,3 +20,7 @@ Used/Reserved LDAP UID ranges:
     1.2.40.0.13.1.15.10.4.x    Archive Object Types
     1.2.40.0.13.1.15.20.3.x    XDS Extension Attribute Types
     1.2.40.0.13.1.15.20.4.x    XDS Extension Object Types
+    1.2.40.0.13.1.15.30.3.x    ARR Extension Attribute Types
+    1.2.40.0.13.1.15.30.4.x    ARR Extension Object Types
+    1.2.40.0.13.1.15.40.3.x    Storage Extension Attribute Types
+    1.2.40.0.13.1.15.40.4.x    Storage Extension Object Types

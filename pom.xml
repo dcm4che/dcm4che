@@ -37,26 +37,46 @@
    -
    - ***** END LICENSE BLOCK *****  -->
    
-<project 
-  xmlns="http://maven.apache.org/POM/4.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
+  <version>3.3.7-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
-  <version>3.3.4-SNAPSHOT</version>
   <description>dcm4che DICOM toolkit and utilities</description>
+  <url>http://dcm4che.org</url>
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 1.1</name>
+      <url>https://www.mozilla.org/MPL/1.1/</url>
+    </license>
+    <license>
+      <name>GNU General Public License, version 2</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0-standalone.html</url>
+    </license>
+    <license>
+      <name>GNU Lesser General Public License, version 2.1</name>
+      <url>https://www.gnu.org/licenses/lgpl-2.1-standalone.html</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Gunter Zeilinger</name>
+      <email>gunterze@gmail.com</email>
+      <organization>dcm4che.org</organization>
+      <organizationUrl>http://dcm4che.org</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</connection>
+    <developerConnection>scm:git:ssh://git@ssh.github.com/dcm4che/dcm4che.git</developerConnection>
+    <url>http://github.com/dcm4che/dcm4che</url>
+  </scm>
   <issueManagement>
     <system>JIRA</system>
     <url>http://dcm4che.org/jira</url>
   </issueManagement>
-  <scm>
-    <connection>scm:git:git://github.com/dcm4che/dcm4che.git</connection>
-    <developerConnection>scm:git:git@github.com:dcm4che/dcm4che.git</developerConnection>
-    <url>http://github.com/dcm4che/dcm4che</url>
-  </scm>
   <organization>
     <name>dcm4che.org</name>
     <url>http://dcm4che.org</url>
@@ -72,28 +92,26 @@
         <version>2.2</version>
       </extension>
     </extensions>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>2.5</version>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
           <version>2.4.0</version>
           <configuration>
+            <archive>
+              <manifestEntries>
+                <Revision>${scm.revision}</Revision>
+              </manifestEntries>
+            </archive>
             <instructions>
               <Implementation-Title>${project.name}</Implementation-Title>
               <Implementation-Version>${project.version}</Implementation-Version>
@@ -114,6 +132,7 @@
     <module>dcm4che-core</module>
     <module>dcm4che-emf</module>
     <module>dcm4che-hl7</module>
+    <module>dcm4che-filecache</module>
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
     <module>dcm4che-imageio-rle</module>
@@ -157,6 +176,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>jaxrs-api</artifactId>
+        <version>3.0.4.Final</version>
+      </dependency>
+      <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>1.7.5</version>
@@ -177,6 +201,25 @@
         <artifactId>junit</artifactId>
         <version>4.11</version>
       </dependency>
+      <dependency>
+          <groupId>commons-beanutils</groupId>
+          <artifactId>commons-beanutils</artifactId>
+          <version>1.8.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
+  <profiles>
+      <profile>
+          <id>csp</id>
+          <properties>
+              <hap-repository.url/>
+          </properties>
+          <distributionManagement>
+              <repository>
+                  <id>hap-repository</id>
+                  <url>${hap-repository.url}</url>
+              </repository>
+          </distributionManagement>
+      </profile>
+  </profiles>
 </project>

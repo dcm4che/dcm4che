@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che3.tool.xml2dcm.Xml2Dcm
-set MAIN_JAR=dcm4che-tool-xml2dcm-3.3.4-SNAPSHOT.jar
+set MAIN_JAR=dcm4che-tool-xml2dcm-${project.version}.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -42,8 +42,8 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\xml2dcm\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.3.4-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.5.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar

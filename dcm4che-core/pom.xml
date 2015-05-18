@@ -37,12 +37,11 @@
    -
    - ***** END LICENSE BLOCK *****  -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.4-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>dcm4che-core</artifactId>
@@ -56,9 +55,6 @@
       </resource>
       <resource>
         <directory>target/generated-resources</directory>
-        <excludes>
-          <exclude>xml/**</exclude>
-        </excludes>
       </resource>
     </resources>
     <plugins>
@@ -99,8 +95,7 @@
               <stylesheet>src/main/xsl/Keyword.java.xsl</stylesheet>
               <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>Keyword.java</targetName>
                 </fileMapper>
               </fileMappers>
@@ -113,8 +108,7 @@
               <stylesheet>src/main/xsl/Tag.java.xsl</stylesheet>
               <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>Tag.java</targetName>
                 </fileMapper>
               </fileMappers>
@@ -127,8 +121,7 @@
               <stylesheet>src/main/xsl/StandardElementDictionary.java.xsl</stylesheet>
               <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>StandardElementDictionary.java</targetName>
                 </fileMapper>
               </fileMappers>
@@ -141,8 +134,7 @@
               <stylesheet>src/main/xsl/UIDNames.properties.xsl</stylesheet>
               <outputDir>target/generated-resources/org/dcm4che3/data</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>UIDNames.properties</targetName>
                 </fileMapper>
               </fileMappers>
@@ -155,8 +147,7 @@
               <stylesheet>src/main/xsl/UID.java.xsl</stylesheet>
               <outputDir>target/generated-java/org/dcm4che3/data</outputDir>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>UID.java</targetName>
                 </fileMapper>
               </fileMappers>
@@ -206,20 +197,9 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <versionRange>[1.7,)</versionRange>
-                    <goals>
-                      <goal>add-source</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
+                    <execute>
+                      <runOnConfiguration>true</runOnConfiguration>
+                    </execute>
                   </action>
                 </pluginExecution>
               </pluginExecutions>

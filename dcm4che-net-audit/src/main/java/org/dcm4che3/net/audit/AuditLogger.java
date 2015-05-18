@@ -38,46 +38,11 @@
 
 package org.dcm4che3.net.audit;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-
-import org.dcm4che3.audit.ActiveParticipant;
-import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.AuditSourceIdentification;
-import org.dcm4che3.audit.AuditSourceTypeCode;
-import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -87,10 +52,22 @@ import org.dcm4che3.util.StreamUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.net.*;
+import java.nio.charset.Charset;
+import java.security.GeneralSecurityException;
+import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Michael Backhaus <michael.backhaus@agfa.com>
  */
+@LDAP(objectClasses = "dcmAuditLogger")
+@ConfigurableClass
 public class AuditLogger extends DeviceExtension {
 
     public enum SendStatus {
@@ -143,31 +120,31 @@ public class AuditLogger extends DeviceExtension {
 
     public static final String MESSAGE_ID = "DICOM+RFC3881";
 
-    private static final int[] DIGITS_0X = { 
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    private static final int[] DIGITS_0X = {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     };
-    private static final int[] DIGITS_X0 = { 
-        '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-        '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
-        '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
-        '3', '3', '3', '3', '3', '3', '3', '3', '3', '3',
-        '4', '4', '4', '4', '4', '4', '4', '4', '4', '4',
-        '5', '5', '5', '5', '5', '5', '5', '5', '5', '5',
-        '6', '6', '6', '6', '6', '6', '6', '6', '6', '6',
-        '7', '7', '7', '7', '7', '7', '7', '7', '7', '7',
-        '8', '8', '8', '8', '8', '8', '8', '8', '8', '8',
-        '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
+    private static final int[] DIGITS_X0 = {
+            '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+            '1', '1', '1', '1', '1', '1', '1', '1', '1', '1',
+            '2', '2', '2', '2', '2', '2', '2', '2', '2', '2',
+            '3', '3', '3', '3', '3', '3', '3', '3', '3', '3',
+            '4', '4', '4', '4', '4', '4', '4', '4', '4', '4',
+            '5', '5', '5', '5', '5', '5', '5', '5', '5', '5',
+            '6', '6', '6', '6', '6', '6', '6', '6', '6', '6',
+            '7', '7', '7', '7', '7', '7', '7', '7', '7', '7',
+            '8', '8', '8', '8', '8', '8', '8', '8', '8', '8',
+            '9', '9', '9', '9', '9', '9', '9', '9', '9', '9',
     };
-    private static final byte[] BOM = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+    private static final byte[] BOM = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
     private static final char SYSLOG_VERSION = '1';
     private static final InetAddress localHost = localHost();
     private static final String processID = processID();
@@ -179,33 +156,110 @@ public class AuditLogger extends DeviceExtension {
         }
     };
     private static volatile AuditLogger defaultLogger;
-    
-    private Device arrDevice;
+
+    @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
+            label = "ARR Device",
+            description = "Device which provides the Audit Record Repository to which audit messages are sent",
+            tags = ConfigurableProperty.Tag.PRIMARY,
+            isReference = true)
+    private Device auditRecordRepositoryDevice;
+
+    @ConfigurableProperty(
+            name = "dcmAuditFacility",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "10")
     private Facility facility = Facility.authpriv;
+
+    @ConfigurableProperty(
+            name = "dcmAuditSuccessSeverity",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "5"
+    )
     private Severity successSeverity = Severity.notice;
+
+    @ConfigurableProperty(
+            name = "dcmAuditMinorFailureSeverity",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "4"
+    )
     private Severity minorFailureSeverity = Severity.warning;
+
+    @ConfigurableProperty(
+            name = "dcmAuditSeriousFailureSeverity",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "3"
+    )
     private Severity seriousFailureSeverity = Severity.err;
+
+    @ConfigurableProperty(
+            name = "dcmAuditMajorFailureSeverity",
+            enumRepresentation = ConfigurableProperty.EnumRepresentation.ORDINAL,
+            defaultValue = "2"
+    )
     private Severity majorFailureSeverity = Severity.crit;
+
+
+    @ConfigurableProperty(name = "dcmAuditApplicationName")
     private String applicationName;
+
+    @ConfigurableProperty(name = "dcmAuditSourceID")
     private String auditSourceID;
+
+    @ConfigurableProperty(name = "dcmAuditEnterpriseSiteID")
     private String auditEnterpriseSiteID;
+
+    @ConfigurableProperty(name = "dcmAuditSourceTypeCode")
     private String[] auditSourceTypeCodes = {};
+
+    @ConfigurableProperty(name = "dcmAuditMessageID", defaultValue = MESSAGE_ID)
     private String messageID = MESSAGE_ID;
+
+    @ConfigurableProperty(name = "dcmAuditMessageEncoding", defaultValue = "UTF-8")
     private String encoding = "UTF-8";
+
+    @ConfigurableProperty(name = "dcmAuditMessageSchemaURI", defaultValue =AuditMessages.SCHEMA_URI )
     private String schemaURI = AuditMessages.SCHEMA_URI;
+
+    @ConfigurableProperty(name = "dcmAuditTimestampInUTC", defaultValue = "false")
     private boolean timestampInUTC = false;
+
+    @ConfigurableProperty(name = "dcmAuditMessageBOM", defaultValue = "true")
     private boolean includeBOM = true;
+
+    @ConfigurableProperty(name = "dcmAuditMessageFormatXML", defaultValue = "false")
     private boolean formatXML;
-    private Boolean installed;
-    private Boolean includeInstanceUID = false;
+
+    @ConfigurableProperty(name = "dicomInstalled")
+    private Boolean auditLoggerInstalled;
+
+    @ConfigurableProperty(name = "dcmAuditIncludeInstanceUID")
+    private Boolean doIncludeInstanceUID = false;
+
+    @ConfigurableProperty(name = "dcmAuditLoggerSpoolDirectoryURI")
+    private String spoolDirectoryURI;
+
     private File spoolDirectory;
+
     private String spoolFileNamePrefix = "audit";
-    private String spoolFileNameSuffix= ".log";
+    private String spoolFileNameSuffix = ".log";
+
+    @ConfigurableProperty(name = "dcmAuditLoggerRetryInterval", defaultValue = "0")
     private int retryInterval;
 
-    private final List<AuditSuppressCriteria> suppressAuditMessageFilters = 
+    @LDAP(
+            noContainerNode = true,
+            distinguishingField = "cn"
+    )
+    @ConfigurableProperty(name = "dcmAuditSuppressCriteria")
+    private final List<AuditSuppressCriteria> suppressAuditMessageFilters =
             new ArrayList<AuditSuppressCriteria>(0);
-    private final List<Connection> conns = new ArrayList<Connection>(1);
+
+    @ConfigurableProperty(name = "dicomNetworkConnectionReference",
+            label = "Connections",
+            description = "Connections that can be used to send audit messages",
+            tags = ConfigurableProperty.Tag.PRIMARY,
+            collectionOfReferences = true)
+    private List<Connection> connections = new ArrayList<Connection>(1);
 
     private transient MessageBuilder builder;
     private transient ActiveConnection activeConnection;
@@ -218,22 +272,31 @@ public class AuditLogger extends DeviceExtension {
             return name.startsWith(spoolFileNamePrefix) && name.endsWith(spoolFileNameSuffix);
         }
     };
-    
+
+
+    public List<AuditSuppressCriteria> getSuppressAuditMessageFilters() {
+        return suppressAuditMessageFilters;
+    }
+
+    public void setSuppressAuditMessageFilters(List<AuditSuppressCriteria> suppressAuditMessageFilters) {
+        this.suppressAuditMessageFilters.clear();
+        for (AuditSuppressCriteria filter : suppressAuditMessageFilters) this.suppressAuditMessageFilters.add(filter);
+    }
 
     public final Device getAuditRecordRepositoryDevice() {
-        return arrDevice;
+        return auditRecordRepositoryDevice;
     }
 
     public String getAuditRecordRepositoryDeviceName() {
-        if (arrDevice == null)
+        if (auditRecordRepositoryDevice == null)
             throw new IllegalStateException("AuditRecordRepositoryDevice not initalized");
-        return arrDevice.getDeviceName();
+        return auditRecordRepositoryDevice.getDeviceName();
     }
 
     public void setAuditRecordRepositoryDevice(Device arrDevice) {
         SafeClose.close(activeConnection);
         activeConnection = null;
-        this.arrDevice = arrDevice;
+        this.auditRecordRepositoryDevice = arrDevice;
     }
 
     public final Facility getFacility() {
@@ -334,18 +397,18 @@ public class AuditLogger extends DeviceExtension {
             boolean requestor, RoleIDCode... roleIDs) {
 
         Collection<String> aets = device.getApplicationAETitles();
-        
-        return createActiveParticipant(requestor, 
-                processID(), 
+
+        return createActiveParticipant(requestor,
+                processID(),
                 AuditMessages.alternativeUserIDForAETitle(
                         aets.toArray(new String[aets.size()])),
                 applicationName(),
-                localHost().getHostName(), 
+                localHost().getHostName(),
                 roleIDs);
     }
-    
+
     public ActiveParticipant createActiveParticipant(
-            boolean requestor, 
+            boolean requestor,
             String userID,
             String alternativeUserID,
             String userName,
@@ -357,7 +420,7 @@ public class AuditLogger extends DeviceExtension {
         ap.setUserName(userName);
         ap.setUserIsRequestor(requestor);
         ap.setNetworkAccessPointID(hostName);
-        ap.setNetworkAccessPointTypeCode(AuditMessages.isIP(hostName) 
+        ap.setNetworkAccessPointTypeCode(AuditMessages.isIP(hostName)
                 ? AuditMessages.NetworkAccessPointTypeCode.IPAddress
                 : AuditMessages.NetworkAccessPointTypeCode.MachineName);
         for (RoleIDCode roleID : roleIDs)
@@ -387,10 +450,10 @@ public class AuditLogger extends DeviceExtension {
             } else {
                 AuditSourceTypeCode astc = new AuditSourceTypeCode();
                 astc.setCode(code);
-                asi.getAuditSourceTypeCode().add(astc );
+                asi.getAuditSourceTypeCode().add(astc);
             }
         }
-        return asi ;
+        return asi;
     }
 
     public final String getMessageID() {
@@ -445,36 +508,41 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public boolean isInstalled() {
-        return device != null && device.isInstalled() 
-                && (installed == null || installed.booleanValue());
+        return device != null && device.isInstalled()
+                && (auditLoggerInstalled == null || auditLoggerInstalled.booleanValue());
     }
 
-    public final Boolean getInstalled() {
-        return installed;
+    public final Boolean getAuditLoggerInstalled() {
+        return auditLoggerInstalled;
     }
 
-    public void setInstalled(Boolean installed) {
+    public void setAuditLoggerInstalled(Boolean installed) {
         if (installed != null && installed.booleanValue()
                 && device != null && !device.isInstalled())
             throw new IllegalStateException("owning device not installed");
-        this.installed = installed;
+        this.auditLoggerInstalled = installed;
     }
+
 
     public Boolean isIncludeInstanceUID() {
-        return includeInstanceUID;
+        return doIncludeInstanceUID;
     }
 
-    public void setIncludeInstanceUID(Boolean includeInstanceUID) {
-        this.includeInstanceUID = includeInstanceUID;
+    public Boolean getDoIncludeInstanceUID() {
+        return doIncludeInstanceUID;
+    }
+
+    public void setDoIncludeInstanceUID(Boolean doIncludeInstanceUID) {
+        this.doIncludeInstanceUID = doIncludeInstanceUID;
     }
 
     /**
      * Get spool directory into which messages failed to sent to the record
      * repository are stored for later re-send.
-     * 
-     * @return  The directory in which the messages failed to sent are stored,
-     *          or {@code null} if the default temporary-file directory is to
-     *          be used
+     *
+     * @return The directory in which the messages failed to sent are stored,
+     * or {@code null} if the default temporary-file directory is to
+     * be used
      */
     public File getSpoolDirectory() {
         return spoolDirectory;
@@ -483,7 +551,7 @@ public class AuditLogger extends DeviceExtension {
     /**
      * Set spool directory into which messages failed sent to the record
      * repository are stored for later re-send.
-     * 
+     *
      * @param directory The directory in which the messages failed to sent are
      *                  stored, or {@code null} if the default temporary-file
      *                  directory is to be used
@@ -524,9 +592,8 @@ public class AuditLogger extends DeviceExtension {
      * Get interval in seconds to retry to sent messages which could not be
      * sent to the record repository or {@code 0} if messages failed to sent
      * are not spooled for later re-send.
-     * 
+     *
      * @return interval retry interval in seconds or {@code 0}
-     * 
      * @see #write(Calendar, AuditMessage)
      */
     public int getRetryInterval() {
@@ -537,9 +604,8 @@ public class AuditLogger extends DeviceExtension {
      * Set interval in seconds to retry to sent messages which could not be
      * sent to the record repository or {@code 0} if messages failed to sent
      * are not spooled for later re-send.
-     * 
+     *
      * @param interval retry interval in seconds or {@code 0}
-     * 
      * @see #write(Calendar, AuditMessage)
      */
     public void setRetryInterval(int interval) {
@@ -551,23 +617,29 @@ public class AuditLogger extends DeviceExtension {
             throw new IllegalArgumentException(
                     "Audit Logger does not support protocol " + conn.getProtocol());
         if (device != null && device != conn.getDevice())
-            throw new IllegalStateException(conn + " not contained by " + 
+            throw new IllegalStateException(conn + " not contained by " +
                     device.getDeviceName());
-        conns.add(conn);
+        connections.add(conn);
     }
 
     @Override
     public void verifyNotUsed(Connection conn) {
-        if (conns.contains(conn))
+        if (connections.contains(conn))
             throw new IllegalStateException(conn + " used by Audit Logger");
     }
 
     public boolean removeConnection(Connection conn) {
-        return conns.remove(conn);
+        return connections.remove(conn);
+    }
+
+
+    public void setConnections(List<Connection> connections) {
+        this.connections.clear();
+        for (Connection connection : connections) addConnection(connection);
     }
 
     public List<Connection> getConnections() {
-        return conns;
+        return connections;
     }
 
     public List<AuditSuppressCriteria> getAuditSuppressCriteriaList() {
@@ -596,12 +668,12 @@ public class AuditLogger extends DeviceExtension {
     }
 
     /**
-     * Test if the Event Identification and the Active ActiveParticipant of an 
+     * Test if the Event Identification and the Active ActiveParticipant of an
      * Audit Message matches one of the {@code AuditSuppressCriteria}
-     * 
+     *
      * @param msg Audit Message to test
      * @return {@code true} the specified audit message will be suppressed;
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean isAuditMessageSuppressed(AuditMessage msg) {
         for (AuditSuppressCriteria criteria : suppressAuditMessageFilters) {
@@ -612,7 +684,7 @@ public class AuditLogger extends DeviceExtension {
     }
 
     @Override
-    public void reconfigure(DeviceExtension from)  {
+    public void reconfigure(DeviceExtension from) {
         reconfigure((AuditLogger) from);
     }
 
@@ -636,17 +708,17 @@ public class AuditLogger extends DeviceExtension {
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);
-        setInstalled(from.installed);
-        setAuditRecordRepositoryDevice(from.arrDevice);
+        setAuditLoggerInstalled(from.auditLoggerInstalled);
+        setAuditRecordRepositoryDevice(from.auditRecordRepositoryDevice);
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
-        device.reconfigureConnections(conns, from.conns);
+        device.reconfigureConnections(connections, from.connections);
         closeActiveConnection();
     }
 
     public Calendar timeStamp() {
         return timestampInUTC
-            ? new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.ENGLISH)
-            : new GregorianCalendar(Locale.ENGLISH);
+                ? new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.ENGLISH)
+                : new GregorianCalendar(Locale.ENGLISH);
     }
 
     /**
@@ -658,28 +730,23 @@ public class AuditLogger extends DeviceExtension {
      * method returns {@code false}. If no {@code RetryInterval} is configured,
      * the method throws an {@code IOException) if an I/O error occurs sending
      * the message.
-     * 
+     * <p/>
      * Attention: sending via UDP without getting an I/O error does not ensure
      * that the Audit Record Repository actually received the message!
-     * 
-     * @param timeStamp included in Syslog Header 
-     * @param msg Audit Message
+     *
+     * @param timeStamp included in Syslog Header
+     * @param msg       Audit Message
      * @return {@code SendStatus.SUPPRESSED} if the message was suppressed;
-     *         {@code SendStatus.SENT} if the message was successfully emitted;
-     *         {@code SendStatus.QUEUED} if the message was spooled for later re-send
-     * 
-     * @throws IllegalStateException
-     *         if there is no {@code AuditRecordRepository} associated with
-     *         this {@code AuditLogger}
-     * @throws IncompatibleConnectionException
-     *         if no {@code Connection) of this {@code AuditLogger} is compatible
-     *         with any {@code Connection) of the associated {@code AuditRecordRepository}
-     * @throws GeneralSecurityException
-     *         if the {@link  SSLContext} could not get intialized from configured
-     *         private key and public certificates
-     * @throws IOException
-     *         if an I/O error occurs sending the message to the {@code AuditRecordRepository}
-     *         or on spooling the message to the file system
+     * {@code SendStatus.SENT} if the message was successfully emitted;
+     * {@code SendStatus.QUEUED} if the message was spooled for later re-send
+     * @throws IllegalStateException           if there is no {@code AuditRecordRepository} associated with
+     *                                         this {@code AuditLogger}
+     * @throws IncompatibleConnectionException if no {@code Connection) of this {@code AuditLogger} is compatible
+     *                                         with any {@code Connection) of the associated {@code AuditRecordRepository}
+     * @throws GeneralSecurityException        if the {@link  SSLContext} could not get intialized from configured
+     *                                         private key and public certificates
+     * @throws IOException                     if an I/O error occurs sending the message to the {@code AuditRecordRepository}
+     *                                         or on spooling the message to the file system
      */
     public SendStatus write(Calendar timeStamp, AuditMessage msg)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
@@ -690,9 +757,9 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public SendStatus write(Calendar timeStamp, Severity severity,
-            byte[] data, int off, int len)
+                            byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
-         return sendMessage(
+        return sendMessage(
                 builder().createMessage(timeStamp, severity, data, off, len));
     }
 
@@ -703,7 +770,7 @@ public class AuditLogger extends DeviceExtension {
         return builder;
     }
 
-    private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException, 
+    private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException,
             GeneralSecurityException, IOException {
         if (getNumberOfQueuedMessages() > 0) {
             spoolMessage(msg);
@@ -733,14 +800,15 @@ public class AuditLogger extends DeviceExtension {
 
         LOG.debug("Scheduled retry in {} s", retryInterval);
         retryTimer = getDevice().schedule(
-                new Runnable(){
+                new Runnable() {
                     @Override
                     public void run() {
                         synchronized (AuditLogger.this) {
                             retryTimer = null;
                         }
                         sendQueuedMessages();
-                    }},
+                    }
+                },
                 retryInterval, TimeUnit.SECONDS);
     }
 
@@ -753,7 +821,7 @@ public class AuditLogger extends DeviceExtension {
             f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
             if (spoolDirectory == null)
                 spoolDirectory = f.getParentFile();
-    
+
             LOG.info("Spool audit message to {}", f);
             FileOutputStream out = new FileOutputStream(f);
             try {
@@ -841,7 +909,7 @@ public class AuditLogger extends DeviceExtension {
         }
     }
 
-    public synchronized void waitForNoQueuedMessages(long timeout) 
+    public synchronized void waitForNoQueuedMessages(long timeout)
             throws InterruptedException {
         while (getNumberOfQueuedMessages() > 0)
             wait(timeout);
@@ -865,32 +933,32 @@ public class AuditLogger extends DeviceExtension {
         if (activeConnection != null)
             return activeConnection;
 
-        Device arrDev = this.arrDevice;
-        if (arrDevice == null)
+        Device arrDev = this.auditRecordRepositoryDevice;
+        if (auditRecordRepositoryDevice == null)
             throw new IllegalStateException("No AuditRecordRepositoryDevice initalized");
 
         AuditRecordRepository arr = arrDev.getDeviceExtension(AuditRecordRepository.class);
         if (arr == null)
             throw new IllegalStateException("AuditRecordRepositoryDevice "
-                    + arrDevice.getDeviceName()
+                    + auditRecordRepositoryDevice.getDeviceName()
                     + " does not provide Audit Record Repository");
 
         for (Connection remoteConn : arr.getConnections())
             if (remoteConn.isInstalled() && remoteConn.isServer())
-                for (Connection conn : conns)
+                for (Connection conn : connections)
                     if (conn.isInstalled() && conn.isCompatible(remoteConn)) {
-                        return (this.activeConnection = 
+                        return (this.activeConnection =
                                 conn.getProtocol().isTCP()
-                                ? new TCPConnection(conn, remoteConn)
-                                : new UDPConnection(conn, remoteConn));
-                     }
+                                        ? new TCPConnection(conn, remoteConn)
+                                        : new UDPConnection(conn, remoteConn));
+                    }
         throw new IncompatibleConnectionException(
                 "No compatible connection to " + arr + " available on " + this);
     }
 
 
     public static String processID() {
-        String s =  ManagementFactory.getRuntimeMXBean().getName();
+        String s = ManagementFactory.getRuntimeMXBean().getName();
         int atPos = s.indexOf('@');
         return atPos > 0 ? s.substring(0, atPos)
                 : Integer.toString(new Random().nextInt() & 0x7fffffff);
@@ -908,13 +976,13 @@ public class AuditLogger extends DeviceExtension {
         String eventOutcomeIndicator = msg.getEventIdentification()
                 .getEventOutcomeIndicator();
         if (eventOutcomeIndicator.length() == 1)
-            switch(eventOutcomeIndicator.charAt(0)) {
-            case '0':
-                return successSeverity;
-            case '4':
-                return minorFailureSeverity;
-            case '8':
-                return seriousFailureSeverity;
+            switch (eventOutcomeIndicator.charAt(0)) {
+                case '0':
+                    return successSeverity;
+                case '4':
+                    return minorFailureSeverity;
+                case '8':
+                    return seriousFailureSeverity;
             }
         else if (eventOutcomeIndicator.equals("12"))
             return majorFailureSeverity;
@@ -946,10 +1014,10 @@ public class AuditLogger extends DeviceExtension {
                 assert false : e;
             }
             return new DatagramPacket(buf, 0, count);
-       }
+        }
 
         DatagramPacket createMessage(Calendar timeStamp, Severity severity,
-                byte[] data, int off, int len) {
+                                     byte[] data, int off, int len) {
             try {
                 reset();
                 writeHeader(severity, timeStamp);
@@ -1013,7 +1081,7 @@ public class AuditLogger extends DeviceExtension {
             write('.');
             writeNNN(timeStamp.get(Calendar.MILLISECOND));
             int tzOffset = timeStamp.get(Calendar.ZONE_OFFSET)
-                         + timeStamp.get(Calendar.DST_OFFSET);
+                    + timeStamp.get(Calendar.DST_OFFSET);
             if (tzOffset == 0)
                 write('Z');
             else {
@@ -1068,6 +1136,7 @@ public class AuditLogger extends DeviceExtension {
     private abstract class ActiveConnection implements Closeable {
         final Connection conn;
         final Connection remoteConn;
+
         ActiveConnection(Connection conn, Connection remoteConn) {
             this.conn = conn;
             this.remoteConn = remoteConn;
@@ -1080,6 +1149,7 @@ public class AuditLogger extends DeviceExtension {
 
     private class UDPConnection extends ActiveConnection {
         DatagramSocket ds;
+
         UDPConnection(Connection conn, Connection remoteConn) {
             super(conn, remoteConn);
         }
@@ -1107,7 +1177,7 @@ public class AuditLogger extends DeviceExtension {
 
     }
 
-    private class TCPConnection extends ActiveConnection  {
+    private class TCPConnection extends ActiveConnection {
         Socket sock;
         OutputStream out;
         ScheduledFuture<?> idleTimer;
@@ -1117,7 +1187,7 @@ public class AuditLogger extends DeviceExtension {
         }
 
         void connect() throws IOException,
-            IncompatibleConnectionException, GeneralSecurityException {
+                IncompatibleConnectionException, GeneralSecurityException {
             if (sock == null) {
                 sock = conn.connect(remoteConn);
                 out = sock.getOutputStream();
@@ -1154,9 +1224,9 @@ public class AuditLogger extends DeviceExtension {
         private void startIdleTimer() {
             int idleTimeout = conn.getIdleTimeout();
             if (idleTimeout > 0) {
-                 LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
-                 try {
-                     idleTimer = conn.getDevice().schedule(
+                LOG.debug("Start Idle timeout of {} ms for {}", idleTimeout, sock);
+                try {
+                    idleTimer = conn.getDevice().schedule(
                             new Runnable() {
                                 @Override
                                 public void run() {
@@ -1165,9 +1235,9 @@ public class AuditLogger extends DeviceExtension {
                             },
                             idleTimeout,
                             TimeUnit.MILLISECONDS);
-                 } catch (Exception e) {
-                     LOG.warn("Failed to start Idle timeout", e);
-                 }
+                } catch (Exception e) {
+                    LOG.warn("Failed to start Idle timeout", e);
+                }
             }
         }
 

@@ -1,13 +1,13 @@
 package org.dcm4che3.io;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Sequence;
-import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.junit.Test;
 
@@ -40,6 +40,15 @@ public class DicomInputStreamTest {
     public void testImplicitVR() throws Exception {
         Attributes attrs = readFromResource("OT-PAL-8-face", IncludeBulkData.URI);
         assertEquals(1, attrs.getInt(Tag.SamplesPerPixel, 0));
+        Object pixelData = attrs.getValue(Tag.PixelData);
+        assertNotNull(pixelData);
+        assertTrue(pixelData instanceof BulkData);
+        Attributes item = attrs.getNestedDataset(Tag.ReferencedBulkDataSequence);
+        assertNotNull(item);
+        assertEquals(3, item.size());
+        assertEquals(Tag.PixelData, item.getInt(Tag.SelectorAttribute, 0));
+        assertEquals("OW", item.getString(Tag.SelectorAttributeVR));
+        assertEquals(((BulkData) pixelData).uri, item.getString(Tag.RetrieveURL));
     }
 
     private static Attributes readFromResource(String name, 
@@ -50,6 +59,7 @@ public class DicomInputStreamTest {
                 new File(cl.getResource(name).toURI()));
         try {
             in.setIncludeBulkData(includeBulkData);
+            in.setAddBulkDataReferences(includeBulkData == IncludeBulkData.URI);
             return in.readDataset(-1, -1);
         } finally {
             in.close();

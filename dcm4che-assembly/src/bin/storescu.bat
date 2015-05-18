@@ -7,7 +7,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che3.tool.storescu.StoreSCU
-set MAIN_JAR=dcm4che-tool-storescu-3.3.4-SNAPSHOT.jar
+set MAIN_JAR=dcm4che-tool-storescu-${project.version}.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -42,13 +42,13 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\storescu\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-3.3.4-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar"
-set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar"
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.7.5.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.7.5.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.17.jar
@@ -57,12 +57,12 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\commons-cli-1.2.jar
 rem Setup jai-imageio native library path
 if "%JAVA_LIBRARY_PATH%" == "" set JAVA_LIBRARY_PATH=%DCM4CHE_HOME%\lib\win-i686
 
-set JAVA_OPTS=%JAVA_OPTS% "-Djava.library.path=%JAVA_LIBRARY_PATH%"
+set JAVA_OPTS=%JAVA_OPTS% -Djava.library.path=%JAVA_LIBRARY_PATH%
 
 if not "%IMAGE_READER_FACTORY%" == "" ^
- set JAVA_OPTS=%JAVA_OPTS% "-Dorg.dcm4che3.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%
+ set JAVA_OPTS=%JAVA_OPTS% -Dorg.dcm4che3.imageio.codec.ImageReaderFactory=%IMAGE_READER_FACTORY%
 
 if not "%IMAGE_WRITER_FACTORY%" == "" ^
- set JAVA_OPTS=%JAVA_OPTS% "-Dorg.dcm4che3.imageio.codec.ImageWriterFactory=%IMAGE_WRITER_FACTORY%
+ set JAVA_OPTS=%JAVA_OPTS% -Dorg.dcm4che3.imageio.codec.ImageWriterFactory=%IMAGE_WRITER_FACTORY%
 
 "%JAVA%" %JAVA_OPTS% -cp "%CP%" %MAIN_CLASS% %ARGS%

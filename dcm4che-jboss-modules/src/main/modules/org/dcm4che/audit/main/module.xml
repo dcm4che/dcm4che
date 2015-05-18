@@ -5,6 +5,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.dcm4che.conf.core-api"/>
         <module name="javax.api"/>
         <module name="javax.xml.bind.api"/>
         <module name="org.slf4j"/>

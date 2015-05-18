@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -63,12 +65,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  */
-public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTask {
+public class BasicRetrieveTask<T extends InstanceLocator> implements
+        RetrieveTask {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(BasicRetrieveTask.class);
+    protected static final Logger LOG = LoggerFactory
+            .getLogger(BasicRetrieveTask.class);
 
+    protected final List<T> insts;
     protected final Dimse rq;
     protected final Association rqas;
     protected final Association storeas;
@@ -76,26 +81,17 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
     protected final Attributes rqCmd;
     protected final int msgId;
     protected final int priority;
-    protected int status = Status.Success;
     protected boolean pendingRSP;
     protected int pendingRSPInterval;
-    protected boolean canceled;
-    protected final List<T> insts;
-    protected final List<T> completed;
-    protected final List<T> warning;
-    protected final List<T> failed;
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
+    private CStoreSCU<T> storescu;
     private ScheduledFuture<?> writePendingRSP;
 
-
-    public BasicRetrieveTask(Dimse rq, 
-            Association rqas,
-            PresentationContext pc, 
-            Attributes rqCmd,
-            List<T> insts,
-            Association storeas) {
+    public BasicRetrieveTask(Dimse rq, Association rqas,
+            PresentationContext pc, Attributes rqCmd, List<T> insts,
+            Association storeas, CStoreSCU<T> storescu) {
         this.rq = rq;
         this.rqas = rqas;
         this.storeas = storeas;
@@ -104,9 +100,7 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         this.insts = insts;
         this.msgId = rqCmd.getInt(Tag.MessageID, -1);
         this.priority = rqCmd.getInt(Tag.Priority, 0);
-        this.completed = new ArrayList<T>(insts.size());
-        this.warning = new ArrayList<T>(insts.size());
-        this.failed = new ArrayList<T>(insts.size());
+        this.storescu = storescu;
     }
 
     public void setSendPendingRSP(boolean pendingRSP) {
@@ -121,14 +115,6 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         return rq == Dimse.C_MOVE_RQ;
     }
 
-    public boolean isCanceled() {
-        return canceled;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
     public Association getRequestAssociation() {
         return rqas;
     }
@@ -137,66 +123,23 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         return storeas;
     }
 
-    public List<T> getCompleted() {
-        return completed;
-    }
-
-    public List<T> getWarning() {
-        return warning;
-    }
-
-    public List<T> getFailed() {
-        return failed;
-    }
-
     @Override
     public void onCancelRQ(Association as) {
-        canceled = true;
+        storescu.cancel();
     }
 
     @Override
     public void run() {
         rqas.addCancelRQHandler(msgId, this);
+        ((Observable)storescu).addObserver(this);
         try {
             if (pendingRSPInterval > 0)
-                startWritePendingRSP();
-            for (Iterator<T> iter = insts.iterator(); iter.hasNext();) {
-                T inst = iter.next();
-                if (canceled) {
-                    status = Status.Cancel;
-                    break;
-                }
-                if (pendingRSP)
-                    writePendingRSP();
-                String tsuid;
-                DataWriter dataWriter;
-                try {
-                    tsuid = selectTransferSyntaxFor(storeas, inst);
-                    dataWriter = createDataWriter(inst, tsuid);
-                } catch (Exception e) {
-                    status = Status.OneOrMoreFailures;
-                    LOG.info("{}: Unable to retrieve {}/{} to {}", rqas,
-                            UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
-                            storeas.getRemoteAET(), e);
-                    failed.add(inst);
-                    continue;
-                }
-                try {
-                    cstore(storeas, inst, tsuid, dataWriter);
-                } catch (Exception e) {
-                    status = Status.UnableToPerformSubOperations;
-                    LOG.warn("{}: Unable to perform sub-operation on association to {}",
-                            rqas, storeas.getRemoteAET(), e);
-                    failed.add(inst);
-                    while (iter.hasNext())
-                        failed.add(iter.next());
-                }
-            }
-            waitForOutstandingCStoreRSP(storeas);
+                startWritingAsyncRSP();
+            storescu.cstore(insts, storeas, priority);
             if (isCMove())
                 releaseStoreAssociation(storeas);
-            stopWritePendingRSP();
-            writeRSP(status);
+            stopWritingAsyncRSP();
+            writeRSP(); //last response
         } finally {
             rqas.removeCancelRQHandler(msgId);
             try {
@@ -208,148 +151,76 @@ public class BasicRetrieveTask<T extends InstanceLocator> implements RetrieveTas
         }
     }
 
-    private void startWritePendingRSP() {
-        writePendingRSP = rqas.getApplicationEntity().getDevice()
-                .scheduleAtFixedRate(
-                    new Runnable(){
-                        @Override
-                        public void run() {
-                            BasicRetrieveTask.this.writePendingRSP();
-                        }
-                    },
-                    0, pendingRSPInterval, TimeUnit.SECONDS);
-    }
-
-    private void stopWritePendingRSP() {
-        if (writePendingRSP != null)
-            writePendingRSP.cancel(false);
-    }
-
-    private void waitForOutstandingCStoreRSP(Association storeas) {
-        try {
-            synchronized (outstandingRSPLock) {
-                while (outstandingRSP > 0)
-                    outstandingRSPLock.wait();
-            }
-        } catch (InterruptedException e) {
-            LOG.warn("{}: failed to wait for outstanding RSP on association to {}",
-                    rqas, storeas.getRemoteAET(), e);
-        }
-    }
-
     protected void releaseStoreAssociation(Association storeas) {
         try {
             storeas.release();
         } catch (IOException e) {
-            LOG.warn("{}: failed to release association to {}",
-                    rqas, storeas.getRemoteAET(), e);
+            LOG.warn("{}: failed to release association to {}", rqas,
+                    storeas.getRemoteAET(), e);
         }
     }
 
-    protected void cstore(Association storeas, T inst, String tsuid, 
-            DataWriter dataWriter) throws IOException, InterruptedException {
-        DimseRSPHandler rspHandler =
-                new CStoreRSPHandler(storeas.nextMessageID(), inst);
-        if (isCMove())
-            storeas.cstore(inst.cuid, inst.iuid, priority,
-                    rqas.getRemoteAET(), msgId,
-                    dataWriter, tsuid, rspHandler);
-        else
-            storeas.cstore(inst.cuid, inst.iuid, priority,
-                    dataWriter, tsuid, rspHandler);
-        synchronized (outstandingRSPLock) {
-            outstandingRSP++;
+    private void startWritingAsyncRSP() {
+        writePendingRSP = rqas.getApplicationEntity().getDevice()
+                .scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        BasicRetrieveTask.this.writeRSP(); // async response
+                    }
+                }, 0, pendingRSPInterval, TimeUnit.SECONDS);
+    }
+
+    private void stopWritingAsyncRSP() {
+        if (writePendingRSP != null) {
+            writePendingRSP.cancel(false);
         }
     }
 
-    private final class CStoreRSPHandler extends DimseRSPHandler {
-
-        private final T inst;
-
-        public CStoreRSPHandler(int msgId, T inst) {
-            super(msgId);
-            this.inst = inst;
-        }
-
-        @Override
-        public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
-            super.onDimseRSP(as, cmd, data);
-            int storeStatus = cmd.getInt(Tag.Status, -1);
-            if (storeStatus == Status.Success)
-                completed.add(inst);
-            else if ((storeStatus & 0xB000) == 0xB000)
-                warning.add(inst);
-            else {
-                failed.add(inst);
-                if (status == Status.Success)
-                    status = Status.OneOrMoreFailures;
-            }
-            synchronized (outstandingRSPLock) {
-                if (--outstandingRSP == 0)
-                    outstandingRSPLock.notify();
-            }
-        }
-
-        @Override
-        public void onClose(Association as) {
-            super.onClose(as);
-            synchronized (outstandingRSPLock) {
-                outstandingRSP = 0;
-                outstandingRSPLock.notify();
-            }
-        }
-    }
-
-    protected String selectTransferSyntaxFor(Association storeas, T inst)
-            throws Exception {
-        return inst.tsuid;
-    }
-
-    protected DataWriter createDataWriter(T inst, String tsuid) throws Exception {
-        DicomInputStream in = new DicomInputStream(inst.getFile());
-        in.readFileMetaInformation();
-        return new InputStreamDataWriter(in);
-    }
-
-    public void writePendingRSP() {
-        writeRSP(Status.Pending);
-    }
-
-    private void writeRSP(int status) {
-        Attributes cmd = Commands.mkRSP(rqCmd, status, rq);
-        if (status == Status.Pending || status == Status.Cancel)
-            cmd.setInt(Tag.NumberOfRemainingSuboperations, VR.US, remaining());
-        cmd.setInt(Tag.NumberOfCompletedSuboperations, VR.US, completed.size());
-        cmd.setInt(Tag.NumberOfFailedSuboperations, VR.US, failed.size());
-        cmd.setInt(Tag.NumberOfWarningSuboperations, VR.US, warning.size());
-        Attributes data = null;
-        if (!failed.isEmpty() && status != Status.Pending) {
-            data = new Attributes(1);
-            String[] iuids = new String[failed.size()];
-            for (int i = 0; i < iuids.length; i++) {
-                iuids[i] = failed.get(0).iuid;
-            }
-            data.setString(Tag.FailedSOPInstanceUIDList, VR.UI, iuids);
-        }
-        writeRSP(cmd, data);
-    }
-
-    private void writeRSP(Attributes cmd, Attributes data) {
+    private void writeRSP() {
         try {
+
+            Attributes cmd = Commands.mkRSP(rqCmd, storescu.getStatus(), rq);
+            if (storescu.getStatus() == Status.Pending
+                    || storescu.getStatus() == Status.Cancel)
+                cmd.setInt(Tag.NumberOfRemainingSuboperations, VR.US,
+                        storescu.getRemaining());
+            cmd.setInt(Tag.NumberOfCompletedSuboperations, VR.US, storescu
+                    .getCompleted().size());
+            cmd.setInt(Tag.NumberOfFailedSuboperations, VR.US, storescu
+                    .getFailed().size());
+            cmd.setInt(Tag.NumberOfWarningSuboperations, VR.US, storescu
+                    .getWarning().size());
+            Attributes data = null;
+            if (!storescu.getFailed().isEmpty()
+                    && storescu.getStatus() != Status.Pending) {
+                data = new Attributes(1);
+                String[] iuids = new String[storescu.getFailed().size()];
+                for (int i = 0; i < iuids.length; i++) {
+                    iuids[i] = storescu.getFailed().get(i).iuid;
+                }
+                data.setString(Tag.FailedSOPInstanceUIDList, VR.UI, iuids);
+            }
             rqas.writeDimseRSP(pc, cmd, data);
+
         } catch (IOException e) {
             pendingRSP = false;
-            stopWritePendingRSP();
-            LOG.warn("{}: Unable to send C-GET or C-MOVE RSP on association to {}",
+            stopWritingAsyncRSP();
+            LOG.warn(
+                    "{}: Unable to send C-GET or C-MOVE RSP on association to {}",
                     rqas, rqas.getRemoteAET(), e);
         }
     }
 
-    private int remaining() {
-        return insts.size() - completed.size() - warning.size() - failed.size();
+    protected void close() {
     }
 
-    protected void close() {
+    // notification from cstorescu
+    public void update(Observable obj, Object arg) {
+
+        storescu = (CStoreSCU<T>) obj;
+
+        if (pendingRSP && storescu.getStatus() == Status.Pending)
+            writeRSP(); // sync response
     }
 
 }

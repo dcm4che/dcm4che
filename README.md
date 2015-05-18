@@ -3,7 +3,6 @@ dcm4che-3.x DICOM Toolkit
 Sources: https://github.com/dcm4che/dcm4che  
 Binaries: https://sourceforge.net/projects/dcm4che/files/dcm4che3  
 Issue Tracker: http://www.dcm4che.org/jira/browse/LIB  
-Build Status: [![Build Status](https://travis-ci.org/dcm4che/dcm4che.svg?branch=master)](https://travis-ci.org/dcm4che/dcm4che)
 
 This is a complete rewrite of [dcm4che-2.x](http://www.dcm4che.org/confluence/display/d2/).
 
@@ -26,14 +25,8 @@ Modules
 - dcm4che-conf
   - dcm4che-conf-api
   - dcm4che-conf-api-hl7
-  - dcm4che-conf-ldap
-  - dcm4che-conf-ldap-audit
-  - dcm4che-conf-ldap-hl7
-  - dcm4che-conf-ldap-imageio
-  - dcm4che-conf-prefs
-  - dcm4che-conf-prefs-audit
-  - dcm4che-conf-prefs-hl7
-  - dcm4che-conf-prefs-imageio
+  - dcm4che-conf-core
+  - dcm4che-conf-core-api
 - dcm4che-core
 - dcm4che-emf
 - dcm4che-hl7

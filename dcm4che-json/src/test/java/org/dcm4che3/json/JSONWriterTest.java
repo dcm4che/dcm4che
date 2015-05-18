@@ -83,10 +83,8 @@ public class JSONWriterTest {
             + "\"00280008\":{\"vr\":\"IS\",\"Value\":[1]},"
             + "\"00280009\":{\"vr\":\"AT\",\"Value\":[\"00181063\"]},"
             + "\"60003000\":{\"vr\":\"OW\",\"BulkDataURI\":\"file:/OverlayData\"},"
-            + "\"7FE00010\":{\"vr\":\"OB\",\"DataFragment\":["
-                + "{},"
-                + "{\"BulkDataURI\":\"file:/PixelData\"}"
-            + "]}}";
+            + "\"7FE00010\":{\"vr\":\"OB\",\"BulkDataURI\":\"file:/PixelData?offsets=0,1234&lengths=0,5678\"}"
+            + "}";
 
     @Test
     public void test() {
@@ -106,7 +104,7 @@ public class JSONWriterTest {
         dataset.setValue(Tag.OverlayData, VR.OW, new BulkData(null, "file:/OverlayData", false));
         Fragments frags = dataset.newFragments(Tag.PixelData, VR.OB, 2);
         frags.add(null);
-        frags.add(new BulkData(null, "file:/PixelData", false));
+        frags.add(new BulkData(null, "file:/PixelData?offset=1234&length=5678", false));
         StringWriter writer = new StringWriter();
         JsonGenerator gen = Json.createGenerator(writer);
         new JSONWriter(gen).write(dataset);

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>3.3.4-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
   </parent>
   <artifactId>dcm4che-ws-rs</artifactId>
   <packaging>bundle</packaging>
@@ -26,7 +26,6 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>jaxrs-api</artifactId>
-      <version>3.0.4.Final</version>
     </dependency>
   </dependencies>
 </project>

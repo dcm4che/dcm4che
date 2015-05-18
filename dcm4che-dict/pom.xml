@@ -36,14 +36,12 @@
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
    - ***** END LICENSE BLOCK *****  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>dcm4che-parent</artifactId>
     <groupId>org.dcm4che</groupId>
-    <version>3.3.4-SNAPSHOT</version>
+    <version>3.3.7-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-dict</artifactId>
@@ -78,8 +76,7 @@
               </includes>
               <stylesheet>src/main/xsl/commandelements.xsl</stylesheet>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>commandelements.xml</targetName>
                 </fileMapper>
               </fileMappers>
@@ -91,8 +88,7 @@
               </includes>
               <stylesheet>src/main/xsl/dataelements.xsl</stylesheet>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>dataelements.xml</targetName>
                 </fileMapper>
               </fileMappers>
@@ -104,8 +100,7 @@
               </includes>
               <stylesheet>src/main/xsl/uids.xsl</stylesheet>
               <fileMappers>
-                <fileMapper
-                  implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>uids.xml</targetName>
                 </fileMapper>
               </fileMappers>

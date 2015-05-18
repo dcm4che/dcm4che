@@ -38,12 +38,14 @@
 
 package org.dcm4che3.net.service;
 
+import java.util.Observer;
+
 import org.dcm4che3.net.CancelRQHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public interface RetrieveTask extends Runnable, CancelRQHandler {
+public interface RetrieveTask extends Runnable, CancelRQHandler, Observer {
 
 }

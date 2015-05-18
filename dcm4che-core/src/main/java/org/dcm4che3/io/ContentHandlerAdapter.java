@@ -63,6 +63,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     private Attributes fmi;
     private final boolean bigEndian;
+    private final boolean addBulkDataReferences;
     private final LinkedList<Attributes> items = new LinkedList<Attributes>();
     private final LinkedList<Sequence> seqs = new LinkedList<Sequence>();
 
@@ -81,11 +82,16 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private boolean processCharacters;
     private boolean inlineBinary;
 
-    public ContentHandlerAdapter(Attributes attrs) {
+    public ContentHandlerAdapter(Attributes attrs, boolean addBulkDataReferences) {
         if (attrs == null)
             throw new NullPointerException();
         items.add(attrs);
         bigEndian = attrs.bigEndian();
+        this.addBulkDataReferences = addBulkDataReferences;
+    }
+
+    public ContentHandlerAdapter(Attributes attrs) {
+        this(attrs, false);
     }
 
     public Attributes getFileMetaInformation() {
@@ -231,9 +237,13 @@ public class ContentHandlerAdapter extends DefaultHandler {
         if (processCharacters)
             if (inlineBinary)
                 try {
+                    len = removeWhitespaces(ch, offset, len);
                     if (carryLen != 0) {
-                        int copy = 4 - carryLen;
+                        int copy = Math.min(4 - carryLen, len);
                         System.arraycopy(ch, offset, carry, carryLen, copy);
+                        if ((carryLen += copy) < 4)
+                            return;
+
                         Base64.decode(carry, 0, 4, bout);
                         offset += copy;
                         len -= copy;
@@ -248,6 +258,37 @@ public class ContentHandlerAdapter extends DefaultHandler {
                 }
             else
                 sb.append(ch, offset, len);
+    }
+
+    private static int removeWhitespaces(char[] ch, int offset, int len) {
+        int ws = 0;
+        int srcPos = -1;
+        int destPos = -1;
+        int copy = 0;
+        for (int i = offset, end = offset + len; i < end; i++) {
+            switch (ch[i]) {
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    if (copy > 0) {
+                        System.arraycopy(ch, srcPos, ch, destPos, copy);
+                        destPos += copy;
+                        copy = 0;
+                    } else if (destPos < 0) {
+                        destPos = i;
+                    }
+                    srcPos = i + 1;
+                    ws++;
+                    break;
+                default:
+                    if (ws > 0)
+                        copy++;
+            }
+        }
+        if (copy > 0)
+            System.arraycopy(ch, srcPos, ch, destPos, copy);
+        return len - ws;
     }
 
     @Override
@@ -271,6 +312,8 @@ public class ContentHandlerAdapter extends DefaultHandler {
         case 'I':
             if (qName.equals("Item"))
                 endItem();
+            else if (qName.equals("InlineBinary"))
+                endInlineBinary();
             break;
         case 'M':
             if (qName.equals("MiddleName"))
@@ -303,12 +346,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     private void endDataFragment() {
-        if (bulkData != null) {
-            dataFragments.add(bulkData);
-            bulkData = null;
-        } else {
-            dataFragments.add(getBytes());
-        }
+        dataFragments.add(getBytes());
     }
 
     private void endDicomAttribute() {
@@ -328,7 +366,10 @@ public class ContentHandlerAdapter extends DefaultHandler {
             attrs = fmi;
         }
         if (bulkData != null) {
-            attrs.setValue(privateCreator, tag, vr, bulkData);
+            attrs.setValue(privateCreator, tag, vr,
+                    bulkData.hasFragments() ? bulkData.toFragments(privateCreator, tag, vr) : bulkData);
+            if (addBulkDataReferences)
+                attrs.getRoot().addBulkDataReference(privateCreator, tag, vr, bulkData, attrs.itemPointers());
             bulkData = null;
         } else if (inlineBinary) {
             attrs.setBytes(privateCreator, tag, vr, getBytes());
@@ -340,6 +381,13 @@ public class ContentHandlerAdapter extends DefaultHandler {
     private void endItem() {
         items.removeLast().trimToSize();
         vr = VR.SQ;
+    }
+
+    private void endInlineBinary() throws SAXException {
+        if (carryLen != 0) {
+            // Attempting to end the inline binary section while we still have leftover characters in the carry
+            throw new SAXException("Inline binary data contained invalid number of characters");
+        }
     }
 
     private void endPersonName() {

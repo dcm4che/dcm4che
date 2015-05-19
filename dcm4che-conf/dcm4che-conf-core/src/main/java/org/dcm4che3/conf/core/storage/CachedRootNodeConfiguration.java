@@ -40,9 +40,9 @@
 package org.dcm4che3.conf.core.storage;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.slf4j.Logger;
@@ -99,6 +99,8 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
     @Override
     public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
+
+        if (node == null) return null;
 
         // clone
         ObjectMapper objectMapper = new ObjectMapper();

@@ -64,7 +64,7 @@ public class WebServiceAEExtension extends AEExtension {
     @ConfigurableProperty(name = "dcmStowRSBaseURL")
     private String stowRSBaseURL;
 
-    @ConfigurableProperty(name = "dcmqidoRSBaseURL")
+    @ConfigurableProperty(name = "dcmQidoRSBaseURL")
     private String qidoRSBaseURL;
 
     @ConfigurableProperty(name = "dcmRsCapabilitiesBaseURL")

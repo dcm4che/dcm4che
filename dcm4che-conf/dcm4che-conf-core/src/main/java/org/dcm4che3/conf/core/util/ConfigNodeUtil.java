@@ -39,7 +39,10 @@
  */
 package org.dcm4che3.conf.core.util;
 
-import org.apache.commons.jxpath.*;
+import org.apache.commons.jxpath.AbstractFactory;
+import org.apache.commons.jxpath.JXPathContext;
+import org.apache.commons.jxpath.JXPathNotFoundException;
+import org.apache.commons.jxpath.Pointer;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -86,12 +89,8 @@ public class ConfigNodeUtil {
         return getNode(rootConfigNode, path) != null;
     }
 
-    public static void removeNode(Map<String, Object> configurationRoot, String path) {
-        try {
-            JXPathContext.newContext(configurationRoot).removePath(path);
-        } catch (JXPathException e) {
-            // node didnt exist,.. noop
-        }
+    public static void removeNodes(Map<String, Object> configurationRoot, String path) {
+        JXPathContext.newContext(configurationRoot).removeAll(path);
     }
 
     public static Iterator search(Map<String, Object> configurationRoot, String liteXPathExpression) throws IllegalArgumentException {
@@ -125,7 +124,7 @@ public class ConfigNodeUtil {
     private final static String XPREDICATE = "(" + IDENTIFIER + "=" + VALUE + ")";
     private final static String XPREDICATENAMED = "(" + IDENTIFIER_NAMED + "=" + VALUE_NAMED + ")";
 
-    private final static String XPATHNODE = "/(?<nodename>" + IDENTIFIER + "|\\*)"+"(\\[(?<predicates>" + XPREDICATE + "( and " + XPREDICATE + ")*)\\])?";
+    private final static String XPATHNODE = "/(?<nodename>" + IDENTIFIER + "|\\*)" + "(\\[(?<predicates>" + XPREDICATE + "( and " + XPREDICATE + ")*)\\])?";
     private final static String XPATH = "(" + XPATHNODE + ")*";
 
     public final static Pattern xPathPattern = Pattern.compile(XPATH);
@@ -207,6 +206,6 @@ public class ConfigNodeUtil {
     }
 
     public static String unescapeApos(String value) {
-        return value.replace("&apos;","'");
+        return value.replace("&apos;", "'");
     }
 }

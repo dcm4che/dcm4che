@@ -38,7 +38,7 @@
 
 package org.dcm4che3.net;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -231,6 +231,22 @@ public class TransferCapability implements Serializable {
     @Override
     public String toString() {
         return promptTo(new StringBuilder(512), "").toString();
+    }
+
+    public TransferCapability deepCopy() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            return (TransferCapability) ois.readObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {

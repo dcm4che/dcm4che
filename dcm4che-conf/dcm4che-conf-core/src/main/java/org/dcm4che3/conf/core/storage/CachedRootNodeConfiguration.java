@@ -138,7 +138,7 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
     @Override
     public synchronized void removeNode(String path) throws ConfigurationException {
         delegate.removeNode(path);
-        ConfigNodeUtil.removeNode(getConfigurationRoot(), path);
+        ConfigNodeUtil.removeNodes(getConfigurationRoot(), path);
     }
 
     @Override

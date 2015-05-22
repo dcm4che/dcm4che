@@ -110,4 +110,13 @@ public class WebServiceAEExtension extends AEExtension {
         this.rsCapabilitiesBaseURL = rsCapabilitiesBaseURL;
     }
 
+    @Override
+    public void reconfigure(AEExtension from) {
+        WebServiceAEExtension webServiceAEExtension = (WebServiceAEExtension) from;
+        setQidoRSBaseURL(webServiceAEExtension.getQidoRSBaseURL());
+        setRsCapabilitiesBaseURL(webServiceAEExtension.getRsCapabilitiesBaseURL());
+        setStowRSBaseURL(webServiceAEExtension.getStowRSBaseURL());
+        setWadoRSBaseURL(webServiceAEExtension.getWadoRSBaseURL());
+        setWadoURIBaseURL(webServiceAEExtension.getWadoURIBaseURL());
+    }
 }

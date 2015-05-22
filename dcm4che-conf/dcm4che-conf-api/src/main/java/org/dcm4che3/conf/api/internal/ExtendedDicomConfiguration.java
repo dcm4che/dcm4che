@@ -88,8 +88,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
 
     void close();
 
-    <T> T getDicomConfigurationExtension(Class<T> clazz);
-
     Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions();
 
     Collection<Class<? extends AEExtension>> getRegisteredAEExtensions();

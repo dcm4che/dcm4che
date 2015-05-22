@@ -42,14 +42,15 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
-import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
@@ -67,7 +68,7 @@ import java.util.*;
 /**
  * @author Roman K
  */
-public class CommonDicomConfiguration implements DicomConfigurationManager {
+public class CommonDicomConfiguration implements DicomConfigurationManager, TransferCapabilityConfigExtension {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CommonDicomConfiguration.class);
@@ -309,24 +310,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
                 throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
             }
 
-            if (device==null) throw new ConfigurationNotFoundException("Device "+name+" not found");
+            if (device == null) throw new ConfigurationNotFoundException("Device " + name + " not found");
             return device;
 
         } finally {
             // if this loadDevice call initialized the cache, then clean it up
             if (doCleanUpCache) currentlyLoadedDevicesLocal.remove();
-        }
-    }
-
-    @Override
-    public Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException {
-
-        HashMap<String, Device> deviceCache = new HashMap<String, Device>();
-        currentlyLoadedDevicesLocal.set(deviceCache);
-        try {
-            return vitalizeDevice(deviceName,deviceCache, configurationNode);
-        } finally {
-            currentlyLoadedDevicesLocal.remove();
         }
     }
 
@@ -375,6 +364,9 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
             }
         }
 
+        // perform alternative TC init in case an extension is present
+        new AlternativeTCLoader(this).initGroupBasedTCs(device);
+
         return device;
     }
 
@@ -420,8 +412,8 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
 
     @Override
     public void merge(Device device) throws ConfigurationException {
-        final Map<String, Object> deviceConfigNode = createDeviceConfigNode(device);
-        config.persistNode(deviceRef(device.getDeviceName()), deviceConfigNode, Device.class);
+        Map<String, Object> configNode = createDeviceConfigNode(device);
+        config.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);
     }
 
     protected Map<String, Object> createDeviceConfigNode(Device device) throws ConfigurationException {
@@ -459,6 +451,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
             if (deviceExtension != null)
                 ConfigNodeUtil.replaceNode(deviceConfigNode, extensionPath, vitalizer.createConfigNodeFromInstance(deviceExtension, deviceExtensionClass));
         }
+
+        // wipe out TCs in case an extension is present
+        new AlternativeTCLoader(this).cleanUpTransferCapabilitiesInDeviceNode(device, deviceConfigNode);
+
+
         return deviceConfigNode;
     }
 
@@ -531,12 +528,30 @@ public class CommonDicomConfiguration implements DicomConfigurationManager {
     @Override
     public List<Class> getExtensionClasses() {
 
-        List<Class> list= new ArrayList<Class>();
+        List<Class> list = new ArrayList<Class>();
 
         list.addAll(deviceExtensionClasses);
         list.addAll(aeExtensionClasses);
 
         return list;
+    }
+
+    @Override
+    public void persistTransferCapabilityConfig(TCConfiguration tcConfig) throws ConfigurationException {
+        Map<String, Object> configNode = vitalizer.createConfigNodeFromInstance(tcConfig);
+        config.persistNode(DicomPath.TCGroups.path(), configNode, TCConfiguration.class);
+    }
+
+    @Override
+    public TCConfiguration getTransferCapabilityConfig() throws ConfigurationException {
+        Map<String, Object> configurationNode = (Map<String, Object>) config.getConfigurationNode(DicomPath.TCGroups.path(), TCConfiguration.class);
+
+        if (configurationNode == null)
+            throw new ConfigurationException("Transfer capabilities config extension not found");
+
+        return vitalizer.newConfiguredInstance(
+                configurationNode,
+                TCConfiguration.class);
     }
 }
 

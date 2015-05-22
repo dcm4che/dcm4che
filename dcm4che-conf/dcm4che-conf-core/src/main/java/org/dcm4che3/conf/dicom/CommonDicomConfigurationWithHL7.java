@@ -39,9 +39,9 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.Device;
@@ -82,11 +82,12 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = super.createInitialConfigRootNode();
         rootNode.put("hl7UniqueApplicationNamesRegistryRoot", new HashMap<String, Object>());
+
         return rootNode;
     }
 
     private String getHL7UniqueAppItemPath(String name) {
-        return DicomPath.UniqueHL7AppByName.set("hl7AppName",name).path();
+        return DicomPath.UniqueHL7AppByName.set("hl7AppName", name).path();
     }
 
     @Override
@@ -158,7 +159,7 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
                     hl7ApplicationEntry.getValue().addHL7ApplicationExtension(hl7ApplicationExtension);
                     vitalizer.configureInstance(hl7ApplicationExtension, (Map<String, Object>) configurationNode, hl7ApplicationExtensionClass);
                 } catch (Exception e) {
-                    throw new ConfigurationException("Failed to load HL7 app extension '"+hl7ApplicationExtensionClass.getSimpleName()+"' for hl7app '"+hl7ApplicationEntry.getKey()+"'",e);
+                    throw new ConfigurationException("Failed to load HL7 app extension '" + hl7ApplicationExtensionClass.getSimpleName() + "' for hl7app '" + hl7ApplicationEntry.getKey() + "'", e);
                 }
             }
         }
@@ -190,10 +191,10 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
                             set("extensionName", hl7ApplicationExtensionClass.getSimpleName())
                             .path();
 
-                    ConfigNodeUtil.replaceNode(deviceConfigNode,path,configNode);
+                    ConfigNodeUtil.replaceNode(deviceConfigNode, path, configNode);
 
                 } catch (Exception e) {
-                    throw new ConfigurationException("Failed to save HL7 app extension '"+hl7ApplicationExtensionClass.getSimpleName()+"' for hl7app '"+hl7ApplicationEntry.getKey()+"'",e);
+                    throw new ConfigurationException("Failed to save HL7 app extension '" + hl7ApplicationExtensionClass.getSimpleName() + "' for hl7app '" + hl7ApplicationEntry.getKey() + "'", e);
                 }
             }
         }

@@ -51,5 +51,4 @@ import java.util.Map;
  * @author Roman K
  */
 public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
-    Device vitalizeDevice(String deviceName, Map<String, Object> configurationNode) throws ConfigurationException;
 }

@@ -284,7 +284,8 @@ public class WadoRS {
         
         InputStream in = null;
         if (connection.getHeaderField("content-type").contains(
-                "application/json")) {
+                "application/json") || connection.getHeaderField("content-type").contains(
+                        "application/zip")) {
             String headerPath = null, bodyPath;
             in = connection.getInputStream();
             if(main.dumpHeader)
@@ -292,7 +293,8 @@ public class WadoRS {
             else {
                 headerPath = connection.getHeaderField("content-location");
             }
-            File f = new File(main.outDir,"out.json");
+            File f = new File(main.outDir,connection.getHeaderField("content-type").contains(
+                    "application/json")?"out.json":"out.zip");
             Files.copy(in, f.toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
             bodyPath = f.getAbsolutePath();
@@ -429,7 +431,7 @@ public class WadoRS {
         String[] acceptHeaders = new String[acceptTypes.length];
         for (int i = 0; i < acceptTypes.length; i++) {
             String acceptType = acceptTypes[i];
-            if (acceptType.contains("application/json"))
+            if (acceptType.contains("application/json") || acceptType.contains("application/zip"))
                 acceptHeaders[i] = acceptType;
             else
                 acceptHeaders[i] = "multipart/related; type="

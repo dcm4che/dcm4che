@@ -272,7 +272,7 @@ public class FileCache {
         int lines = 0;
         if (Files.exists(journalFile))
             try (BufferedReader r = Files.newBufferedReader(journalFile, UTF_8)) {
-                while (r.readLine() == null)
+                while (r.readLine() != null)
                     lines ++;
             }
         return lines;

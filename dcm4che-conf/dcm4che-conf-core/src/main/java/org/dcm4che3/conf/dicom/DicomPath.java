@@ -40,7 +40,6 @@
 package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.core.util.PathPattern;
-import org.dcm4che3.net.TCGroupConfigAEExtension;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,7 +99,7 @@ public enum DicomPath {
 
         // Transfer capabilities
         PATHS.put(/*****************/TCGroups, "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities");
-        PATHS.put(AllTCsOfAllAEsWithTCGroupExt, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE[/aeExtensions/" + TCGroupConfigAEExtension.class.getSimpleName() + "]/dcmTransferCapability/*");
+        PATHS.put(AllTCsOfAllAEsWithTCGroupExt, "dicomNetworkAE/*[aeExtensions/TCGroupConfigAEExtension]/dcmTransferCapability");
 
 
         for (Map.Entry<DicomPath, String> entry : PATHS.entrySet()) {

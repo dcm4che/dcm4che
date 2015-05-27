@@ -42,8 +42,8 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.TransferCapability;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * An optional configuration extension that contains the information of which TCs are supported for each TC group.
@@ -55,35 +55,5 @@ public interface TransferCapabilityConfigExtension {
 
     void persistTransferCapabilityConfig(TCConfiguration tcConfig) throws ConfigurationException;
     TCConfiguration getTransferCapabilityConfig() throws ConfigurationException;
-
-    @ConfigurableClass
-    class TCConfiguration {
-
-        @ConfigurableProperty
-        public Map<String, TCGroup> transferCapabilityGroups;
-
-        public Map<String, TCGroup> getTransferCapabilityGroups() {
-            return transferCapabilityGroups;
-        }
-
-        public void setTransferCapabilityGroups(Map<String, TCGroup> transferCapabilityGroups) {
-            this.transferCapabilityGroups = transferCapabilityGroups;
-        }
-    }
-
-    @ConfigurableClass
-    class TCGroup {
-
-        @ConfigurableProperty
-        Collection<TransferCapability> transferCapabilities;
-
-        public Collection<TransferCapability> getTransferCapabilities() {
-            return transferCapabilities;
-        }
-
-        public void setTransferCapabilities(Collection<TransferCapability> transferCapabilities) {
-            this.transferCapabilities = transferCapabilities;
-        }
-    }
 
 }

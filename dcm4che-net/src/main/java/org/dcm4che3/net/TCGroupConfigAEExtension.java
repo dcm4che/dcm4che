@@ -120,7 +120,7 @@ public class TCGroupConfigAEExtension extends AEExtension {
         switch (group) {
             case STORAGE:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, DefaultTransferCapabilities.IMAGE_CUIDS, null, DefaultTransferCapabilities.IMAGE_CUIDS);
+                allTCToList(transferCapabilities, DefaultTransferCapabilities.IMAGE_CUIDS, null, DefaultTransferCapabilities.IMAGE_TSUIDS);
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.VIDEO_CUIDS, null, DefaultTransferCapabilities.VIDEO_TSUIDS);
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.OTHER_CUIDS, null, DefaultTransferCapabilities.OTHER_TSUIDS);
                 allTCToList(transferCapabilities, new String[]{UID.InstanceAvailabilityNotificationSOPClass, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);

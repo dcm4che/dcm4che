@@ -1,6 +1,7 @@
 package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
@@ -19,14 +20,14 @@ import java.util.*;
 public class AlternativeTCLoader {
 
     DicomConfiguration config;
-    private TransferCapabilityConfigExtension.TCConfiguration tcConfig;
+    private TCConfiguration tcConfig;
 
     public AlternativeTCLoader(DicomConfiguration config) {
         this.config = config;
     }
 
 
-    private TransferCapabilityConfigExtension.TCConfiguration getTCConfig() throws ConfigurationException {
+    private TCConfiguration getTCConfig() throws ConfigurationException {
         if (tcConfig == null)
             tcConfig = config.getDicomConfigurationExtension(TransferCapabilityConfigExtension.class).getTransferCapabilityConfig();
         return tcConfig;
@@ -52,8 +53,8 @@ public class AlternativeTCLoader {
     }
 
 
-    private void addTC(ApplicationEntity applicationEntity, TransferCapabilityConfigExtension.TCConfiguration tcConfig, Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry, TransferCapability.Role role) throws ConfigurationException {
-        TransferCapabilityConfigExtension.TCGroup tcGroup = tcConfig.getTransferCapabilityGroups().get(tcGroupRefEntry.getKey());
+    private void addTC(ApplicationEntity applicationEntity, TCConfiguration tcConfig, Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry, TransferCapability.Role role) throws ConfigurationException {
+        TCConfiguration.TCGroup tcGroup = tcConfig.getTransferCapabilityGroups().get(tcGroupRefEntry.getKey());
 
         if (tcGroup == null)
             throw new ConfigurationException("Transfer capability group " + tcGroupRefEntry.getKey() + " not found");
@@ -75,7 +76,7 @@ public class AlternativeTCLoader {
             while (iterator.hasNext())
                 if (tcGroupRefEntry.getValue().getExcludedTransferSyntaxes().contains(iterator.next()))
                     iterator.remove();
-            tcModified.setTransferSyntaxes((String[]) tsList.toArray());
+            tcModified.setTransferSyntaxes((String[]) tsList.toArray(new String[]{}));
 
             applicationEntity.addTransferCapability(tcModified);
         }

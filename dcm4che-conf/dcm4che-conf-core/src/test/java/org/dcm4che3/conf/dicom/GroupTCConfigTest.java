@@ -1,6 +1,7 @@
 package org.dcm4che3.conf.dicom;
 
 
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.core.SimpleStorageTest;
 import org.dcm4che3.conf.core.api.ConfigurationException;
@@ -43,10 +44,12 @@ public class GroupTCConfigTest {
         ae1.addTransferCapability(new TransferCapability("aRegularTC", UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian));
         device.addApplicationEntity(ae1);
 
-        if (config.findDevice("myDevice")!=null)
-            config.merge(device); else
+        try {
+            config.findDevice("myDevice");
+            config.merge(device);
+        } catch (ConfigurationNotFoundException e) {
             config.persist(device);
-
+        }
 
         // load device and check some tcs
         Device loadedDevice = config.findDevice("myDevice");

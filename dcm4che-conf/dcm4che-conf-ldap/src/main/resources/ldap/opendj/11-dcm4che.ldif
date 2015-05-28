@@ -304,6 +304,11 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.69 NAME 'dcmAEFetchPriority'
   EQUALITY  integerMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 
   SINGLE-VALUE )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.70 NAME 'dcmAEPrefersForwarding'
+  DESC 'Forwarding preference for the particular AE acting as an external AE'
+  EQUALITY booleanMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+  SINGLE-VALUE )
 attributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -567,7 +572,8 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.11 NAME 'dcmExternalArchiveAEExtension'
   DESC 'Extended DICOM External Archives AE Related Configuration'
   SUP top AUXILIARY
   MAY (
-    dcmAEFetchPriority ) )
+    dcmAEFetchPriority $
+    dcmAEPrefersForwarding ) )
 objectClasses: ( 1.2.40.0.13.1.15.1.4.1 NAME 'dcmAuditLogger'
   DESC 'Audit Logger related information'
   SUP top STRUCTURAL

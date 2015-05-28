@@ -5,22 +5,17 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-
-        <module name="org.dcm4che.net"/>
+        <module name="org.dcm4che.core"/>
         <module name="org.dcm4che.conf.core-api" export="true"/>
-        <module name="org.dcm4che.conf.api"/>
-        <module name="org.dcm4che.conf.api-hl7"/>
-
-        <!-- TODO: Temporary, until we provide a way to register adapters externally -->
-        <module name="org.dcm4che.audit"/>
 
         <module name="org.slf4j"/>
+
+        <!-- for json config storage -->
+        <module name="org.codehaus.jackson.jackson-mapper-asl" export="true"/>
+
         <module name="org.apache.commons.beanutils"/>
         <module name="org.apache.commons.lang"/>
         <module name="org.apache.commons.jxpath"/>
-        <!-- for json config storage -->
-        <module name="org.codehaus.jackson.jackson-mapper-asl"/>
-                                                                  
+
     </dependencies>
 </module>

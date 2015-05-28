@@ -37,30 +37,24 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.adapters;
+package org.dcm4che3.conf.dicom.misc;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import de.danielbechler.diff.ObjectDifferBuilder;
+import de.danielbechler.diff.node.DiffNode;
+import de.danielbechler.diff.node.Visit;
+import org.junit.Assert;
 
-import java.util.concurrent.TimeUnit;
-
-public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeUnit> {
-
-    public TimeUnitTypeAdapter() {
-        super("string");
-        metadata.put("class", "TimeUnit");
+public class DeepEqualsDiffer {
+    public static void assertDeepEquals(String message, Object expected, Object actual) {
+        DiffNode root = ObjectDifferBuilder.buildDefault().compare(actual, expected);
+        final StringBuilder builder = new StringBuilder("");
+        root.visitChildren(new DiffNode.Visitor() {
+            @Override
+            public void node(DiffNode diffNode, Visit visit) {
+                builder.append(diffNode.getPath().toString() + "\n");
+            }
+        });
+        String diff = builder.toString();
+        Assert.assertTrue(message + " | Difference:\n" + diff, diff.equals(""));
     }
-
-    @Override
-    public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        return TimeUnit.valueOf(configNode);
-    }
-
-    @Override
-    public String toConfigNode(TimeUnit object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-        return object.toString();
-    }
-
 }

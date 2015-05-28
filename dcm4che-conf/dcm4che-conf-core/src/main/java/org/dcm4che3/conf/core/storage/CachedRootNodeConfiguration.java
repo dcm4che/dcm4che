@@ -44,7 +44,6 @@ import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,8 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
 
     public CachedRootNodeConfiguration(Configuration delegate, Hashtable<?, ?> properties) {
         super(delegate);
-        staleTimeout = Integer.valueOf(DicomConfigurationBuilder.getPropertyWithNotice(properties, "org.dcm4che.conf.staleTimeout", "30")) * 1000L;
+        String s = (String) properties.get("org.dcm4che.conf.staleTimeout");
+        staleTimeout = Integer.valueOf(s == null ? "30" : s) * 1000L;
     }
 
     long staleTimeout;

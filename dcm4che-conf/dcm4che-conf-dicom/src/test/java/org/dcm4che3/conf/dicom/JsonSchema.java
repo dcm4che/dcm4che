@@ -37,30 +37,45 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.adapters;
+package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.dicom.CommonDicomConfigurationWithHL7;
+import org.dcm4che3.net.ApplicationEntity;
+import org.junit.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.util.Map;
 
-public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeUnit> {
+/**
+ * @author Roman K
+ */
+public class JsonSchema {
 
-    public TimeUnitTypeAdapter() {
-        super("string");
-        metadata.put("class", "TimeUnit");
+    @Test
+    public void testSchema() throws ConfigurationException {
+
+        BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
+
+        CommonDicomConfigurationWithHL7 configuration = SimpleStorageTest.createCommonDicomConfiguration();
+        BeanVitalizer vitalizer = configuration.getVitalizer();
+
+        AnnotatedConfigurableProperty property = new AnnotatedConfigurableProperty(ApplicationEntity.class);
+        ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
+        Map schema = adapter.getSchema(property, vitalizer);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(System.out, (Object) schema);
+        } catch (IOException e) {
+            throw new ConfigurationException(e);
+        }
+
+
     }
-
-    @Override
-    public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        return TimeUnit.valueOf(configNode);
-    }
-
-    @Override
-    public String toConfigNode(TimeUnit object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-        return object.toString();
-    }
-
 }

@@ -37,29 +37,29 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.adapters;
+package org.dcm4che3.conf.dicom.adapters;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
+import org.dcm4che3.data.Code;
 
-import java.util.concurrent.TimeUnit;
+public class CodeTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<Code> {
 
-public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeUnit> {
-
-    public TimeUnitTypeAdapter() {
+    public CodeTypeAdapter() {
         super("string");
-        metadata.put("class", "TimeUnit");
+        metadata.put("class", "Code");
     }
 
     @Override
-    public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        return TimeUnit.valueOf(configNode);
+    public Code fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        return new Code(configNode);
     }
 
     @Override
-    public String toConfigNode(TimeUnit object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
+    public String toConfigNode(Code object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
         return object.toString();
     }
 

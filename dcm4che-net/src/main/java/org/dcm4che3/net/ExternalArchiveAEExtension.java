@@ -58,12 +58,23 @@ public class ExternalArchiveAEExtension extends AEExtension {
     @ConfigurableProperty(name = "dcmAEFetchPriority")
     private int aeFetchPriority;
 
+    @ConfigurableProperty(name = "dcmAEPrefersForwarding", defaultValue="false")
+    private boolean prefersForwarding = false;
+
     public int getAeFetchPriority() {
         return aeFetchPriority;
     }
 
     public void setAeFetchPriority(int aeFetchPriority) {
         this.aeFetchPriority = aeFetchPriority;
+    }
+
+    public boolean isPrefersForwarding() {
+        return prefersForwarding;
+    }
+
+    public void setPrefersForwarding(boolean prefersForwarding) {
+        this.prefersForwarding = prefersForwarding;
     }
 
 }

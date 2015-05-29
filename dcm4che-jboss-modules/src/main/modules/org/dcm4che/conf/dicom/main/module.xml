@@ -5,6 +5,8 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+
         <module name="org.dcm4che.conf.core" export="true"/>
         <module name="org.dcm4che.net"/>
         <module name="org.dcm4che.conf.api"/>
@@ -14,5 +16,7 @@
         <module name="org.dcm4che.audit"/>
 
         <module name="org.slf4j"/>
+
+        <module name="org.apache.commons.lang"/>
     </dependencies>
 </module>

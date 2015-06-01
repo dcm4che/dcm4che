@@ -9,6 +9,8 @@ import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.TransferCapability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -18,6 +20,10 @@ import java.util.*;
  * @author Roman K
  */
 public class AlternativeTCLoader {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(AlternativeTCLoader.class);
+
 
     DicomConfiguration config;
     private TCConfiguration tcConfig;
@@ -56,8 +62,10 @@ public class AlternativeTCLoader {
     private void addTC(ApplicationEntity applicationEntity, TCConfiguration tcConfig, Map.Entry<String, TCGroupConfigAEExtension.TCGroupDetails> tcGroupRefEntry, TransferCapability.Role role) throws ConfigurationException {
         TCConfiguration.TCGroup tcGroup = tcConfig.getTransferCapabilityGroups().get(tcGroupRefEntry.getKey());
 
-        if (tcGroup == null)
-            throw new ConfigurationException("Transfer capability group " + tcGroupRefEntry.getKey() + " not found");
+        if (tcGroup == null) {
+            log.error("Transfer capability group " + tcGroupRefEntry.getKey() + " not found");
+            return;
+        }
 
         for (TransferCapability tc : tcGroup.getTransferCapabilities()) {
 

@@ -544,7 +544,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         Map<String, Object> configurationNode = (Map<String, Object>) config.getConfigurationNode(DicomPath.TCGroups.path(), TCConfiguration.class);
 
         if (configurationNode == null)
-            throw new ConfigurationException("Transfer capabilities config extension not found");
+            return new TCConfiguration();
 
         return vitalizer.newConfiguredInstance(
                 configurationNode,

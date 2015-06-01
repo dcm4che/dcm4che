@@ -23,7 +23,6 @@ public class MigrationRunner {
             .getLogger(MigrationRunner.class);
 
     public static final String METADATA_ROOT_PATH = "/dicomConfigurationRoot/metadataRoot/versioning";
-    public static final String NO_VERSION = "NO_VERSION";
 
     private Configuration configuration;
     private Collection<MigrationScript> migrationScripts;
@@ -60,7 +59,7 @@ public class MigrationRunner {
             configMetadata = beanVitalizer.newConfiguredInstance((Map<String, Object>) metadataNode, ConfigurationMetadata.class);
         else {
             configMetadata = new ConfigurationMetadata();
-            configMetadata.setVersion(NO_VERSION);
+            configMetadata.setVersion(MigrationScript.NO_VERSION);
         }
         String fromVersion = configMetadata.getVersion();
 

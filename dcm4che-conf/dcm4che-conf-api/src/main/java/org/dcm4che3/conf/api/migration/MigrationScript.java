@@ -5,6 +5,8 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 
 public interface MigrationScript {
+    String NO_VERSION = "NO_VERSION";
+
     void migrate(MigrationContext migrationContext) throws ConfigurationException;
 
     static class MigrationContext {

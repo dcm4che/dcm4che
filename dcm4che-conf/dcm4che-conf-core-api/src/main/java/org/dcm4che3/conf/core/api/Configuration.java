@@ -129,4 +129,11 @@ public interface Configuration {
      * @param liteXPathExpression Must be absolute path, no double slashes, no @attributes (only [attr=val] or [attr<>val])
      */
     Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException;
+
+    /**
+     * Aquire a global pessimistic lock (cluster-aware implementations should ensure that only a single node can aquire the lock at a time)
+     * Subsequent calls from the same transaction should not block.
+     * Should be auto-released on transaction commit/rollback.
+     */
+    void lock();
 }

@@ -95,4 +95,9 @@ public class DelegatingConfiguration implements Configuration {
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return delegate.search(liteXPathExpression);
     }
+
+    @Override
+    public void lock() {
+        delegate.lock();
+    }
 }

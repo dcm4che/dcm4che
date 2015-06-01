@@ -130,4 +130,9 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
     }
+
+    @Override
+    public void lock() {
+        // ostrich
+    }
 }

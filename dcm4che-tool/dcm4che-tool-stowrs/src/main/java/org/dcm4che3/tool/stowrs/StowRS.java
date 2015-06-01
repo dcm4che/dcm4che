@@ -38,8 +38,6 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import javax.ws.rs.core.MediaType;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -48,19 +46,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.UUID;
-import java.util.Map.Entry;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.ResourceBundle;
+import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -69,6 +67,7 @@ import javax.json.JsonReaderFactory;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
+import javax.ws.rs.core.MediaType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -104,7 +103,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
+ * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
 public class StowRS {
     private String singleFrameMultipleFragmentsURI;
@@ -112,14 +111,14 @@ public class StowRS {
     private Attributes keys = new Attributes();
     private static Options opts;
     private String URL;
-    private List<StowRSResponse> responses = new ArrayList<StowRSResponse>();
+    private final List<StowRSResponse> responses = new ArrayList<StowRSResponse>();
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.stowrs.messages");
 
-    private static boolean multipleFragments;
-    private static String mediaType;
-    private static String transferSyntax;
-    private static List<File> files = new ArrayList<File>();
+    private boolean multipleFragments;
+    private String mediaType;
+    private String transferSyntax;
+    private List<File> files = new ArrayList<File>();
     public StowRS() {
     }
 
@@ -127,9 +126,9 @@ public class StowRS {
         this.URL = url;
         this.keys = overrideAttrs;
         transferSyntax = ts;
-        if(!mediaType.equalsIgnoreCase("NO_METADATA_DICOM"))
-        StowRS.mediaType = mediaType;
-        StowRS.files = files;
+        if (!mediaType.equalsIgnoreCase("NO_METADATA_DICOM"))
+            this.mediaType = mediaType;
+        this.files = files;
     }
 
     @SuppressWarnings("unchecked")
@@ -151,28 +150,28 @@ public class StowRS {
                     throw new MissingArgumentException("Missing option required option ts when sending metadata");
                 }
                 else {
-                    setTransferSyntax(cl.getOptionValue("ts"));
+                    instance.setTransferSyntax(cl.getOptionValue("ts"));
                 }
-                mediaType = cl.getOptionValue("t");
+                instance.mediaType = cl.getOptionValue("t");
                 
                 for(Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
-                    files.add(new File(iter.next()));
+                    instance.files.add(new File(iter.next()));
                 }
                 
                 
-                if (files == null)
+                if (instance.files == null)
                     throw new IllegalArgumentException("Missing metadata files");
                 }
-            stow(instance);
+            instance.stow();
             
-            if (mediaType == null) {
+            if (instance.mediaType == null) {
                 for(Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
-                    files.add(new File(iter.next()));
+                    instance.files.add(new File(iter.next()));
                 }
-                if (files == null)
+                if (instance.files == null)
                     throw new IllegalArgumentException(
                             "No dicom files specified");
-                for (File metadataFile : files) {
+                for (File metadataFile : instance.files) {
                     instance.addResponse(sendDicomFile(instance, metadataFile));
                     LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
                 }
@@ -190,18 +189,18 @@ public class StowRS {
         }
     }
 
-    public static void stow(StowRS instance) throws IOException, InterruptedException {
+    public void stow() throws IOException, InterruptedException {
         Attributes metadata = new Attributes();
         Attributes fmi;
-        for(File metadataFile : files)
+        for (File metadataFile : files)
             if (mediaType == null) {
                 if (files == null)
                     throw new IllegalArgumentException(
                             "No dicom files specified");
-                    instance.addResponse(sendDicomFile(instance, metadataFile));
+                addResponse(sendDicomFile(this, metadataFile));
                     LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
             }
-        else if (mediaType.equalsIgnoreCase("JSON")) {
+            else if (mediaType.equalsIgnoreCase("JSON")) {
                 try {
                     metadata = parseJSON(metadataFile.getPath());
                     String ts = transferSyntax;
@@ -224,19 +223,19 @@ public class StowRS {
                     }
                     else {
                         //single frame
-                        instance.singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
+                        singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
                         metadata.setValue(Tag.PixelData, multipleFragments?VR.OB:VR.OW, new BulkData(null
-                                , instance.singleFrameMultipleFragmentsURI, 
+                                , singleFrameMultipleFragmentsURI,
                                 (ts.equalsIgnoreCase("1.2.840.10008.1.2.1.99") || ts.equalsIgnoreCase("1.2.840.10008.1.2.2"))?true : false));
                         combine = true;
                     }
-                   instance.addResponse(sendMetaDataAndBulkData(false, instance, metadata, bulkFiles, combine));
+                    addResponse(sendMetaDataAndBulkData(false, this, metadata, bulkFiles, combine));
                 } catch (Exception e) {
                     LOG.error("error parsing metadata file");
                     return;
                 }
             }
-                 else if (mediaType.equalsIgnoreCase("XML")) {
+            else if (mediaType.equalsIgnoreCase("XML")) {
 
                 try {
                     ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
@@ -263,14 +262,14 @@ public class StowRS {
                     }
                     else {
                         //single frame
-                        instance.singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
+                        singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
                         metadata.setValue(Tag.PixelData, doc.getElementsByTagName("DataFragment").getLength() > 1?VR.OB:VR.OW, new BulkData(null
-                                , instance.singleFrameMultipleFragmentsURI, 
+                                , singleFrameMultipleFragmentsURI,
                                 (ts.equalsIgnoreCase("1.2.840.10008.1.2.1.99") || ts.equalsIgnoreCase("1.2.840.10008.1.2.2"))?true : false));
                         LOG.info("Single frame multiple fragments, combining fragments");
                         combine = true;
                     }
-                    instance.addResponse(sendMetaDataAndBulkData(true, instance, metadata, bulkFiles, combine));
+                    addResponse(sendMetaDataAndBulkData(true, this, metadata, bulkFiles, combine));
                 } catch (Exception e) {
                     LOG.error("error parsing metadata file");
                     return;
@@ -396,7 +395,7 @@ public class StowRS {
         return files;
     }
 
-    private static ArrayList<BulkDataChunk> extractBlkDataFiles(
+    private ArrayList<BulkDataChunk> extractBlkDataFiles(
             JsonObject object) throws URISyntaxException {
         ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
         for (Entry<String, JsonValue> entry : object.entrySet()) {
@@ -522,7 +521,7 @@ public class StowRS {
                 "multipart/related; type="+(xml?"application/dicom+xml":"application/json")+"; boundary="
                         + boundary);
         bulkDataTransferSyntax = "transfer-syntax="
-                + transferSyntax;
+                + instance.transferSyntax;
         MediaType type = getBulkDataMediaType(metadata);
         contentTypeBulkData = type.getSubtype() != null ? type.getType() + "/"
                 + type.getSubtype() : type.getType();
@@ -787,20 +786,20 @@ public class StowRS {
         }
     }
 
-    public static String getTransferSyntax() {
+    public String getTransferSyntax() {
         return transferSyntax;
     }
 
-    public static void setTransferSyntax(String transferSyntax) {
-        StowRS.transferSyntax = transferSyntax;
+    public void setTransferSyntax(String transferSyntax) {
+        this.transferSyntax = transferSyntax;
     }
 }
 
 class BulkDataChunk {
-    private int offset;
-    private int length;
-    private URI fileUrl;
-    private String bulkDataURI;
+    private final int offset;
+    private final int length;
+    private final URI fileUrl;
+    private final String bulkDataURI;
     private boolean isPixelData = false;
 
     public BulkDataChunk(String bulkDataURI, String uri, String offset,

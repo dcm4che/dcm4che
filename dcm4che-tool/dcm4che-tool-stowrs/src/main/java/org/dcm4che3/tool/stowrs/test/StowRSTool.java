@@ -61,8 +61,8 @@ public class StowRSTool implements TestTool{
         JSON, XML, NO_METADATA_DICOM;
     }
     private TestResult result;
-    private String url;
-    private Attributes keys = new Attributes();
+    private final String url;
+    private final Attributes keys = new Attributes();
 
     public StowRSTool(String url) {
         this.url = url;
@@ -72,7 +72,7 @@ public class StowRSTool implements TestTool{
         long t1, t2;
         StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
         t1 = System.currentTimeMillis();
-        StowRS.stow(stowrs);
+        stowrs.stow();
         t2 = System.currentTimeMillis();
         init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }
@@ -83,7 +83,7 @@ public class StowRSTool implements TestTool{
         long t1, t2;
         StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
         t1 = System.currentTimeMillis();
-        StowRS.stow(stowrs);
+        stowrs.stow();
         t2 = System.currentTimeMillis();
         init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }

@@ -38,6 +38,7 @@
 
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.api.DicomConfigurationBuilderAddon;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.dicom.decorators.DicomDefaultsAndNullFilterDecorator;
@@ -71,6 +72,9 @@ public class DicomConfigurationBuilder {
             aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
     private final Collection<Class<? extends HL7ApplicationExtension>>
             hl7ApplicationExtensionClasses = new ArrayList<Class<? extends HL7ApplicationExtension>>();
+
+    private final List<DicomConfigurationBuilderAddon> dicomConfigurationBuilderAddons = new ArrayList<DicomConfigurationBuilderAddon>();
+
     private Boolean cache;
     private Boolean persistDefaults;
     private Hashtable<?, ?> ldapProps = null;
@@ -86,6 +90,10 @@ public class DicomConfigurationBuilder {
 
     public DicomConfigurationBuilder(Hashtable<?, ?> props) {
         this.props = props;
+    }
+
+    public void registerAddon(DicomConfigurationBuilderAddon addon) {
+        dicomConfigurationBuilderAddons.add(addon);
     }
 
     private enum ConfigType {
@@ -133,6 +141,11 @@ public class DicomConfigurationBuilder {
 
     public CommonDicomConfigurationWithHL7 build() throws ConfigurationException {
 
+        // trigger before- hooks
+        for (DicomConfigurationBuilderAddon addon : dicomConfigurationBuilderAddons)
+            addon.beforeBuild(this);
+
+
         List<Class<?>> allExtensions = new ArrayList<Class<?>>();
         for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses)
             allExtensions.add(hl7ApplicationExtensionClass);
@@ -149,12 +162,19 @@ public class DicomConfigurationBuilder {
         LOG.info("Dcm4che configuration AE extensions: {}", aeExtensionClasses);
         LOG.info("Dcm4che configuration HL7 extensions: {}", hl7ApplicationExtensionClasses);
 
-        return new CommonDicomConfigurationWithHL7(
+
+        CommonDicomConfigurationWithHL7 commonDicomConfigurationWithHL7 = new CommonDicomConfigurationWithHL7(
                 configurationStorage,
                 deviceExtensionClasses,
                 aeExtensionClasses,
                 hl7ApplicationExtensionClasses
         );
+
+        // trigger after- hooks
+        for (DicomConfigurationBuilderAddon addon : dicomConfigurationBuilderAddons)
+            addon.afterBuild(commonDicomConfigurationWithHL7);
+
+        return commonDicomConfigurationWithHL7;
     }
 
     private Configuration createConfigurationStorage(List<Class<?>> allExtensions) throws ConfigurationException {

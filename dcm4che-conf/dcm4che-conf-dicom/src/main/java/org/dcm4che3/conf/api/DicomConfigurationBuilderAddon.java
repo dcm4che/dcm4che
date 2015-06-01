@@ -1,5 +1,8 @@
 package org.dcm4che3.conf.api;
 
+import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
 
 /**
@@ -7,12 +10,18 @@ import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
  *
  * This API is UNSTABLE and can be changed without notice, please do not use it without prior consulting.
  */
-public interface DicomConfigurationCustomizer {
+public interface DicomConfigurationBuilderAddon {
 
     /**
      * Should perferm necessary modification to the configuration bootstrap, e.g., set custom storage, add custom extensions.
      * @param builder
      */
-    public void customize(DicomConfigurationBuilder builder);
+    public void beforeBuild(DicomConfigurationBuilder builder);
+
+    /**
+     * Should perform any necessary post-processing
+     * @param manager
+     */
+    public void afterBuild(DicomConfigurationManager manager) throws ConfigurationException;
 
 }

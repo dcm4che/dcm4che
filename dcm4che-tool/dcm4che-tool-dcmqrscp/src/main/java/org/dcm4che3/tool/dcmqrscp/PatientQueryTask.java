@@ -40,8 +40,8 @@ package org.dcm4che3.tool.dcmqrscp;
 
 import java.io.IOException;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.media.DicomDirReader;
 import org.dcm4che3.net.Association;
@@ -79,7 +79,7 @@ class PatientQueryTask extends BasicQueryTask {
     }
 
     @Override
-    protected Attributes adjust(Attributes match) {
+    protected Attributes adjust(Attributes match) throws DicomServiceException {
         Attributes adjust = super.adjust(match);
         adjust.remove(Tag.DirectoryRecordType);
         if (keys.contains(Tag.SOPClassUID))

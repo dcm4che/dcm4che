@@ -41,8 +41,8 @@ package org.dcm4che3.net.service;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Commands;
@@ -122,7 +122,7 @@ public class BasicQueryTask implements QueryTask {
         return false;
     }
 
-    protected Attributes adjust(Attributes match) {
+    protected Attributes adjust(Attributes match) throws DicomServiceException {
         if (match == null)
             return null;
 

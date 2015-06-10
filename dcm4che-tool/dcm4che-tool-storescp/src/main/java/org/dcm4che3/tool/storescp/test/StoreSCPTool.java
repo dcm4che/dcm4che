@@ -38,11 +38,27 @@
 
 package org.dcm4che3.tool.storescp.test;
 
+import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.net.*;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.PDVInputStream;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicCStoreSCP;
@@ -55,22 +71,12 @@ import org.dcm4che3.util.SafeClose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
 public class StoreSCPTool implements TestTool {
 
-    private File storageDirectory;
+    private final File storageDirectory;
 
     String aeTitle;
 
@@ -78,7 +84,7 @@ public class StoreSCPTool implements TestTool {
 
     StoreSCP storeSCP ;
 
-    private String sourceAETitle;
+    private final String sourceAETitle;
 
     private TestResult result;
 
@@ -92,23 +98,21 @@ public class StoreSCPTool implements TestTool {
 
     private boolean first=true;
 
-    private static boolean canClose;
-
-    private transient final Object lock = new Object();
-
-    private boolean noStore;
+    private final boolean noStore;
 
     private int fileReceived=0;
 
-    private List<Attributes> rqCMDs = new ArrayList<Attributes>();
+    private final List<Attributes> rqCMDs = new ArrayList<Attributes>();
 
-    private List<String> instanceLocations = new ArrayList<String>();
+    private final List<String> instanceLocations = new ArrayList<String>();
 
     private static final Logger LOG = LoggerFactory.getLogger(StoreSCPTool.class);
 
     private String testDescription;
 
     private List<String> sopIUIDs;
+
+    private boolean started = false;
 
     private final BasicCStoreSCP cstoreSCP = new BasicCStoreSCP("*") {
 
@@ -159,8 +163,11 @@ public class StoreSCPTool implements TestTool {
         this.noStore = noStore;
     }
 
-    public void start(String testDescription) throws InterruptedException {
-        this.testDescription = testDescription;
+    public void start(String testDescriptionIn) throws InterruptedException {
+
+        started = true;
+
+        this.testDescription = testDescriptionIn;
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.setDimseRQHandler(createServiceRegistry());
         device.addApplicationEntity(ae);
@@ -193,13 +200,25 @@ public class StoreSCPTool implements TestTool {
     }
 
     public void stop() {
-        t2=System.currentTimeMillis();
-            device.unbindConnections();
-            ((ExecutorService) device.getExecutor()).shutdown();
-            device.getScheduledExecutor().shutdown();
 
-            //very quick fix to block for listening connection
-            while(device.getConnections().get(0).isListening());
+        if (!started)
+            return;
+        started = false;
+
+        t2 = System.currentTimeMillis();
+        device.unbindConnections();
+        ((ExecutorService) device.getExecutor()).shutdown();
+        device.getScheduledExecutor().shutdown();
+
+        //very quick fix to block for listening connection
+        while (device.getConnections().get(0).isListening())
+        {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
 
         init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs, this.instanceLocations));
     }
@@ -219,8 +238,8 @@ public class StoreSCPTool implements TestTool {
     }
 
     @Override
-    public void init(TestResult result) {
-        this.result = result;
+    public void init(TestResult resultIn) {
+        this.result = resultIn;
     }
 
     @Override

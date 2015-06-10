@@ -94,6 +94,14 @@
       <lineEnding>dos</lineEnding>
       <filtered>true</filtered>
     </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <includes>
+        <include>etc/*/*</include>
+      </includes>
+      <outputDirectory>.</outputDirectory>
+      <lineEnding>dos</lineEnding>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

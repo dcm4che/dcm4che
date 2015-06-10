@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" xml:id="PS3.6" label="PS3.6" version="5.0">
   <title>PS3.6</title>
-  <subtitle>DICOM PS3.6 2015a - Data Dictionary</subtitle>
+  <subtitle>DICOM PS3.6 2015b - Data Dictionary</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -29993,6 +29993,247 @@
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1512)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Transformation Method Code Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Transformation&#x200b;Method&#x200b;Code&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1513)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Transformation Algorithm Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Transformation&#x200b;Algorithm&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1515)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Ophthalmic Axial Length Method</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Ophthalmic&#x200b;Axial&#x200b;Length&#x200b;Method</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>CS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1517)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Ophthalmic FOV</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Ophthalmic&#x200b;FOV</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1518)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Two Dimensional to Three Dimensional Map Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Two&#x200b;Dimensional&#x200b;To&#x200b;Three&#x200b;Dimensional&#x200b;Map&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1525)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide Field Ophthalmic Photography Quality Rating Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide&#x200b;Field&#x200b;Ophthalmic&#x200b;Photography&#x200b;Quality&#x200b;Rating&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1526)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide Field Ophthalmic Photography Quality Threshold Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide&#x200b;Field&#x200b;Ophthalmic&#x200b;Photography&#x200b;Quality&#x200b;Threshold&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1527)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide Field Ophthalmic Photography  Threshold Quality Rating</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide&#x200b;Field&#x200b;Ophthalmic&#x200b;Photography&#x200b;Threshold&#x200b;Quality&#x200b;Rating</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1528)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>X Coordinates Center Pixel View Angle</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>X&#x200b;Coordinates&#x200b;Center&#x200b;Pixel&#x200b;View&#x200b;Angle</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1529)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Y Coordinates Center Pixel View Angle</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Y&#x200b;Coordinates&#x200b;Center&#x200b;Pixel&#x200b;View&#x200b;Angle</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1530)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Number of Map Points</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Number&#x200b;Of&#x200b;Map&#x200b;Points</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>UL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(0022,1531)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Two Dimensional to Three Dimensional Map Data</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Two&#x200b;Dimensional&#x200b;To&#x200b;Three&#x200b;Dimensional&#x200b;Map&#x200b;Data</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>OF</para>
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
@@ -72904,6 +73145,66 @@
         </tr>
         <tr valign="top">
           <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0131)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Average Beam Dose Point Source to External Contour Surface Distance</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Average&#x200b;Beam&#x200b;Dose&#x200b;Point&#x200b;Source&#x200b;To&#x200b;External&#x200b;Contour&#x200b;Surface&#x200b;Distance</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0132)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Source to External Contour Distance</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Source&#x200b;To&#x200b;External&#x200b;Contour&#x200b;Distance</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0133)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>External Contour Entry Point</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>External&#x200b;Contour&#x200b;Entry&#x200b;Point</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>3</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
             <para>(300A,0134)</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
@@ -76654,6 +76955,166 @@
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>FL</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0440)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Number of Block Slab Items</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Number&#x200b;Of&#x200b;Block&#x200b;Slab&#x200b;Items</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>IS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0441)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block Slab Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block&#x200b;Slab&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0442)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block Slab Thickness</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block&#x200b;Slab&#x200b;Thickness</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>DS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0443)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block Slab Number</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Block&#x200b;Slab&#x200b;Number</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>US</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0450)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device Motion Control Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device&#x200b;Motion&#x200b;Control&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0451)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device Motion Execution Mode</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device&#x200b;Motion&#x200b;Execution&#x200b;Mode</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>CS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0452)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device Motion Observation Mode</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device&#x200b;Motion&#x200b;Observation&#x200b;Mode</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>CS</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>1</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para/>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="center" colspan="1" rowspan="1">
+            <para>(300A,0453)</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device Motion Parameter Code Sequence</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Device&#x200b;Motion&#x200b;Parameter&#x200b;Code&#x200b;Sequence</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para>SQ</para>
           </td>
           <td align="center" colspan="1" rowspan="1">
             <para>1</para>
@@ -86556,6 +87017,34 @@
           </td>
           <td align="left" colspan="1" rowspan="1">
             <para>Ophthalmic Tomography Image Storage</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>SOP Class</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.&#x200b;5.&#x200b;1.&#x200b;4.&#x200b;1.&#x200b;1.77.1.&#x200b;5.&#x200b;5</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide Field Ophthalmic Photography Stereographic Projection Image Storage</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>SOP Class</para>
+          </td>
+          <td align="center" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.4" targetptr="PS3.4" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.&#x200b;5.&#x200b;1.&#x200b;4.&#x200b;1.&#x200b;1.77.1.&#x200b;5.&#x200b;6</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Wide Field Ophthalmic Photography 3D Coordinates Image Storage</para>
           </td>
           <td align="left" colspan="1" rowspan="1">
             <para>SOP Class</para>
@@ -99336,11 +99825,503 @@
             </para>
           </td>
         </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1021</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4025" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4025" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1022</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4026" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4026" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1023</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9401" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9401" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1024</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9402" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9402" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1025</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9403" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_9403" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1026</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7035" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7035" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1027</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7036" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_7036" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1028</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_10050" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_10050" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.6.1.1029</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4245" xrefstyle="select: labelnumber"/>
+            </para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>
+              <olink targetdoc="PS3.16" targetptr="sect_CID_4245" xrefstyle="select: title"/>
+            </para>
+          </td>
+        </tr>
       </tbody>
     </table>
     <note>
       <para>For some Context Group UIDs, no Context Group Name or Identifier is specified; these are "placeholders" that are not assigned but will not be reused.</para>
     </note>
+    <table frame="box" label="A-4" rules="all" xml:id="table_A-4">
+      <caption>Template UID Values</caption>
+      <thead>
+        <tr valign="top">
+          <th align="center" colspan="1" rowspan="1">
+            <para>UID Value</para>
+          </th>
+          <th align="center" colspan="1" rowspan="1">
+            <para>UID Name</para>
+          </th>
+          <th align="center" colspan="1" rowspan="1">
+            <para>UID Type</para>
+          </th>
+          <th align="center" colspan="1" rowspan="1">
+            <para>Part</para>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.1</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_7.1" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Document TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.2</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.2" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.3</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.3" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.4</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.4" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.5</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.6" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.6</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.7" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.7</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.1" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.8</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.5" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.9</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.8" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.10</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.9" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.11</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.10" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.12</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.8.11" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Section TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.13</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.2" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.14</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.4" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.15</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.9" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.16</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.6" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.17</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.7" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.18</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_10.8" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Entry TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.19</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.1.1" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Element Set TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.20</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_8.1" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Element Set TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.21</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_8.2" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Element Set TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.22</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_8.3" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Element Set TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.23</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_9.1.2" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Element Set TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+        <tr valign="top">
+          <td align="left" colspan="1" rowspan="1">
+            <para>1.2.840.10008.9.24</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="sect_7.2" xrefstyle="select: title"/></para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para>Document TemplateID</para>
+          </td>
+          <td align="left" colspan="1" rowspan="1">
+            <para><olink targetdoc="PS3.20" targetptr="PS3.20" xrefstyle="select: labelnumber"/></para>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </chapter>
   <chapter xml:id="chapter_B" label="B" status="1">
     <title>Well-Known Color Palettes (Normative)</title>

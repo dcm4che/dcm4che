@@ -89,7 +89,7 @@
                 <include>uids.xml</include>
               </includes>
               <stylesheet>src/main/xsl/sampleTCFile.xsl</stylesheet>
-              <outputDir>src/etc/probetc</outputDir>
+              <outputDir>${project.build.directory}/etc/probetc</outputDir>
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>sampleTCFile.properties</targetName>

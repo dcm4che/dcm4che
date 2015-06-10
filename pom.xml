@@ -41,7 +41,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.dcm4che</groupId>
   <artifactId>dcm4che-parent</artifactId>
-  <version>3.3.7</version>
+  <version>3.3.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>dcm4che DICOM toolkit and utilities</name>
   <description>dcm4che DICOM toolkit and utilities</description>

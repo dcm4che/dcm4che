@@ -138,4 +138,8 @@ public class WadoURITool implements TestTool{
     public TestResult getResult() {
         return this.result;
     }
+
+    public File getRetrieveDir() {
+        return retrieveDir;
+    }
 }

@@ -38,12 +38,29 @@
 
 package org.dcm4che3.tool.stgcmtscu.test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.net.*;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.AssociationStateException;
+import org.dcm4che3.net.Commands;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.Dimse;
+import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.AbstractDicomService;
 import org.dcm4che3.net.service.DicomService;
@@ -55,28 +72,18 @@ import org.dcm4che3.tool.stgcmtscu.StgCmtSCU;
 import org.dcm4che3.util.SafeClose;
 import org.junit.Assert;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
 public class StgCmtTool implements TestTool {
 
-    private String host;
+    private final String host;
 
-    private int port;
+    private final int port;
 
-    private File baseDirectory;
+    private final File baseDirectory;
 
-    private File storageDirectory;
+    private final File storageDirectory;
 
     String aeTitle;
 
@@ -84,7 +91,7 @@ public class StgCmtTool implements TestTool {
 
     StgCmtSCU stgCmtSCU ;
 
-    private String sourceAETitle;
+    private final String sourceAETitle;
 
     private Attributes nEventReqData = new Attributes();
 
@@ -254,6 +261,10 @@ public class StgCmtTool implements TestTool {
     @Override
     public TestResult getResult() {
         return this.result;
+    }
+
+    public File getStorageDirectory() {
+        return storageDirectory;
     }
 
 }

@@ -43,6 +43,7 @@ import static org.junit.Assert.*;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.ItemPointer;
 import org.dcm4che3.data.ValueSelector;
+import org.dcm4che3.dict.siemens.SiemensCSAHeader;
 import org.junit.Test;
 
 /**
@@ -54,11 +55,22 @@ public class ValueSelectorTest {
             "DicomAttribute[@tag=\"00400275\"]/Item[@number=\"1\"]/"
           + "DicomAttribute[@tag=\"0020000D\"]/Value[@number=\"1\"]";
 
+    private static final String XPATH2 =
+            "DicomAttribute[@tag=\"00290010\" and @privateCreator=\"SIEMENS " +
+                    "CSA HEADER\"]/Value[@number=\"1\"]";
+
     @Test
     public void testToString() {
         ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence);
         ValueSelector vs = new ValueSelector(null, Tag.StudyInstanceUID, null, 0, ip);
         assertEquals(XPATH, vs.toString());
+    }
+
+    @Test
+    public void testPrivateToString() {
+        ValueSelector vs = new ValueSelector(SiemensCSAHeader.PrivateCreator,
+                SiemensCSAHeader.CSAImageHeaderInfo, null, 0);
+        assertEquals(XPATH2, vs.toString());
     }
 
    @Test

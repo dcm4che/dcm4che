@@ -17,6 +17,24 @@ import org.dcm4che3.util.Base64;
  */
 public class CommonProxyManager implements ProxyManager {
 
+	private static String PROVIDER_NAME = "org.dcm4che";
+	private static String VERSION = "1.0";
+	
+	@Override
+	public String getProviderName() {
+		return PROVIDER_NAME;
+	}
+
+	@Override
+	public String getVersion() {
+		return VERSION;
+	}
+
+	
+	public static void main(String[] args) {
+		ProxyService.getInstance().getProxyManager("org.dcm4che", "1.0");
+	}
+	
 	@Override
 	public void doProxyHandshake(Socket s, String hostname, int port,
 			String userauth, int connectTimeout) throws IOException {
@@ -77,5 +95,4 @@ public class CommonProxyManager implements ProxyManager {
             return rsp;
         }
     }
-
 }

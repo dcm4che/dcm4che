@@ -40,7 +40,6 @@ package org.dcm4che3.tool.movescu.test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -61,52 +60,51 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.Priority;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.movescu.MoveSCU.InformationModel;
 import org.dcm4che3.tool.movescu.MoveSCU;
+import org.dcm4che3.tool.movescu.MoveSCU.InformationModel;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
 public class MoveTool implements TestTool{
 
-    private String host;
-    private int port;
-    private String aeTitle;
-    private String destAEtitle;
-    private String retrieveLevel;
-    private InformationModel retrieveInformationModel;
-    private boolean relational;
-    private Device device;
-    private Connection conn;
-    private String sourceAETitle;
+    private final String host;
+    private final int port;
+    private final String aeTitle;
+    private final String destAEtitle;
+    private final String retrieveLevel;
+    private final InformationModel retrieveInformationModel;
+    private final boolean relational;
+    private final Device device;
+    private final Connection conn;
+    private final String sourceAETitle;
+
     private int numResponses;
     private int numSuccess;
     private int numFailed;
     private int numWarning;
     private int expectedMatches = Integer.MIN_VALUE;
     
-    private Attributes moveAttrs = new Attributes();
+    private final Attributes moveAttrs = new Attributes();
     
-    private List<Attributes> response = new ArrayList<Attributes>();
+    private final List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
 
-    public MoveTool(String host, int port, String aeTitle ,String destAEtitle, String retrieveLevel
-            , String informationModel, boolean relational , Device device, String sourceAETitle, Connection conn) {
+    public MoveTool(String host, int port, String aeTitle, String destAEtitle, String retrieveLevel,
+            String informationModel, boolean relational, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
         this.port = port;
         this.aeTitle = aeTitle;
         this.destAEtitle = destAEtitle;
         this.retrieveLevel = retrieveLevel;
-        this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot")
-                ?InformationModel.StudyRoot: InformationModel.PatientRoot;
+        this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot") ? InformationModel.StudyRoot : InformationModel.PatientRoot;
         this.relational = relational;
         this.device = device;
         this.sourceAETitle = sourceAETitle;
@@ -114,59 +112,58 @@ public class MoveTool implements TestTool{
     }
 
     public void move(String testDescription) throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
-            device.setInstalled(true);
-            ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
-            device.addApplicationEntity(ae);
-            ae.addConnection(conn);
-            
-            MoveSCU main = new MoveSCU(ae);
-            
-            main.getAAssociateRQ().setCalledAET(aeTitle);
-            main.getRemoteConnection().setHostname(host);
-            main.getRemoteConnection().setPort(port);
-          //ensure secure connection
-            main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
-            main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
-            
-            main.getKeys().addAll(moveAttrs);
-            main.setPriority(Priority.NORMAL);
-            main.setDestination(destAEtitle);
-            
-            ExecutorService executorService =
-                    Executors.newSingleThreadExecutor();
-            ScheduledExecutorService scheduledExecutorService =
-                    Executors.newSingleThreadScheduledExecutor();
-            main.getDevice().setExecutor(executorService);
-            main.getDevice().setScheduledExecutor(scheduledExecutorService);
-            main.addLevel(retrieveLevel);
-            main.setInformationModel(retrieveInformationModel,
-                    IVR_LE_FIRST, relational);
-            
+        device.setInstalled(true);
+        ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
+        device.addApplicationEntity(ae);
+        ae.addConnection(conn);
 
-            long timeStart = System.currentTimeMillis();
-            try {
-                main.open();
-                    main.retrieve(main.getKeys(),getDimseRSPHandler(main.getAssociation().nextMessageID()));
-            } finally {
-                main.close();
-                executorService.shutdown();
-                scheduledExecutorService.shutdown();
-            }
-            
-            long timeEnd = System.currentTimeMillis();
-            
-            if (this.expectedMatches >= 0)
-                assertTrue("test[" + testDescription 
-                        + "] not returned expected result:" + this.expectedMatches
-                        + " but:" + numResponses, numResponses == this.expectedMatches);
-            
-            //commented since tests could also test failed responses
-//            assertTrue("test[" + testDescription
-//                        + "] had failed responses:"+ numFailed, numFailed==0);
-            
-            init(new MoveResult(testDescription, expectedMatches, numResponses,
-                    numSuccess, numFailed, numWarning,
-                    (timeEnd - timeStart), response));
+        MoveSCU main = new MoveSCU(ae);
+
+        main.getAAssociateRQ().setCalledAET(aeTitle);
+        main.getRemoteConnection().setHostname(host);
+        main.getRemoteConnection().setPort(port);
+
+        // ensure secure connection
+        main.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
+        main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+
+        main.getKeys().addAll(moveAttrs);
+        main.setPriority(Priority.NORMAL);
+        main.setDestination(destAEtitle);
+
+        ExecutorService executorService =
+                Executors.newSingleThreadExecutor();
+        ScheduledExecutorService scheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor();
+        main.getDevice().setExecutor(executorService);
+        main.getDevice().setScheduledExecutor(scheduledExecutorService);
+        main.setInformationModel(retrieveInformationModel, IVR_LE_FIRST, relational);
+        main.addLevel(retrieveLevel);
+
+        long timeStart = System.currentTimeMillis();
+        try {
+            main.open();
+            main.retrieve(main.getKeys(), getDimseRSPHandler(main.getAssociation().nextMessageID()));
+        } finally {
+            main.close();
+            executorService.shutdown();
+            scheduledExecutorService.shutdown();
+        }
+
+        long timeEnd = System.currentTimeMillis();
+
+        if (this.expectedMatches >= 0)
+            assertTrue("test[" + testDescription
+                    + "] not returned expected result:" + this.expectedMatches
+                    + " but:" + numResponses, numResponses == this.expectedMatches);
+
+        // commented since tests could also test failed responses
+        //            assertTrue("test[" + testDescription
+        //                        + "] had failed responses:"+ numFailed, numFailed==0);
+
+        init(new MoveResult(testDescription, expectedMatches, numResponses,
+                numSuccess, numFailed, numWarning,
+                (timeEnd - timeStart), response));
     }
 
     private DimseRSPHandler getDimseRSPHandler(int messageID) {
@@ -209,8 +206,8 @@ public class MoveTool implements TestTool{
     }
 
     @Override
-    public void init(TestResult result) {
-        this.result = result;
+    public void init(TestResult resultIn) {
+        this.result = resultIn;
     }
 
     @Override

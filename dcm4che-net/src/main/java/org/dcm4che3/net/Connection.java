@@ -138,6 +138,12 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dcmHTTPProxy")
     private String httpProxy;
+    
+    @ConfigurableProperty(name = "dcmHTTPProxyProviderName")
+    private String httpProxyProviderName;
+
+    @ConfigurableProperty(name = "dcmHTTPProxyProviderVersion")
+    private String httpProxyProviderVersion;
 
     @ConfigurableProperty(
             name = "dicomPort",
@@ -221,8 +227,8 @@ public class Connection implements Serializable {
     )
     private Protocol protocol = Protocol.DICOM;
 
-    // TODO AP - CONFIG PROXY FOR CONNECTION
-    private ProxyManager proxyManager = ProxyService.getInstance().getDefaultProxyManager();
+    private boolean needUpdateProxyManager = false;
+    private ProxyManager proxyManager = null;
     
 	private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
@@ -396,11 +402,34 @@ public class Connection implements Serializable {
     }
     
     public ProxyManager getProxyManager() {
-		return proxyManager;
+   		updateProxyManager();
+   		if(this.proxyManager == null) {
+   			return ProxyService.getInstance().getDefaultProxyManager();
+   		} else {
+   			return this.proxyManager;
+   		}
 	}
 
+    private void updateProxyManager() {
+    	if(this.needUpdateProxyManager) {
+    		// Get manager from Service with provider name and version
+    		this.proxyManager = ProxyService.getInstance()
+    				.getProxyManager(httpProxyProviderName, httpProxyProviderVersion);
+    		// Proxy Manager updated
+    		this.needUpdateProxyManager = false;
+    	}
+    }
+
 	public void setProxyManager(final ProxyManager proxyManager) {
+		if(proxyManager == null) {
+			this.httpProxyProviderName = "";
+			this.httpProxyProviderVersion = "";
+		} else {
+			this.httpProxyProviderName = proxyManager.getProviderName();
+			this.httpProxyProviderVersion = proxyManager.getVersion();
+		}
 		this.proxyManager = proxyManager;
+		this.needUpdateProxyManager = false;
 	}
 
     boolean isRebindNeeded() {
@@ -468,6 +497,22 @@ public class Connection implements Serializable {
         this.httpProxy = proxy;
     }
 
+    public void setHttpProxyProviderName(final String httpProxyProviderName) {
+    	if(this.httpProxyProviderName == httpProxyProviderName)
+    		return;
+    	
+		this.httpProxyProviderName = httpProxyProviderName;
+		this.needUpdateProxyManager = true;
+	}
+    
+    public void setHttpProxyProviderVersion(String httpProxyProviderVersion) {
+		if(this.httpProxyProviderVersion == httpProxyProviderVersion)
+			return;
+		
+    	this.httpProxyProviderVersion = httpProxyProviderVersion;
+    	this.needUpdateProxyManager = true;
+	}
+    
     public final boolean useHttpProxy() {
         return httpProxy != null;
     }
@@ -1019,7 +1064,7 @@ public class Connection implements Serializable {
                 int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
                 s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
                 try {
-                	proxyManager.doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                	getProxyManager().doProxyHandshake(s, remoteHostname, remotePort, userauth,
                 			connectTimeout);
                 } catch (IOException e) {
                     SafeClose.close(s);
@@ -1165,6 +1210,6 @@ public class Connection implements Serializable {
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
         setConnectionInstalled(from.connectionInstalled);
+        setProxyManager(from.getProxyManager());
     }
-
 }

@@ -18,6 +18,9 @@ import java.util.TreeMap;
  */
 public class ProxyService {
 
+	private static String DEFAULT_PROVIDER_NAME = BasicProxyManager.PROVIDER_NAME;
+	private static String DEFAULT_VERSION = BasicProxyManager.VERSION;
+	
 	// Initialize-on-Demand Holder Class Idiom
 	private static class SingletonHolder {
 		private static ProxyService service = new ProxyService();
@@ -46,10 +49,6 @@ public class ProxyService {
 	
 	public static synchronized ProxyService getInstance() {
 		return SingletonHolder.service;
-//		if(service == null){
-//			service = new ProxyService();
-//		}
-//		return service;
 	}
 	
 	public ProxyManager getProxyManager(final String managerProviderName, final String managerVersion) {
@@ -61,15 +60,31 @@ public class ProxyService {
 				if(managerVersion != null && !managerVersion.isEmpty()) {
 					// Get specific version
 					manager = providerManagers.get(managerVersion);
-				}
-				// If no specified version or unavailable version : get the last available
-				if(manager == null) {
+				} else {
+					// If no specified version : get the last available
 					final List<String> versions = new ArrayList<String>(providerManagers.keySet());
 					Collections.reverse(versions);
 					manager = providerManagers.get(versions.get(0));
 				}
+				return manager;
 			}				
 		}
 		return null;
+	}
+	
+	public ProxyManager getDefaultProxyManager() {
+		return getProxyManager(DEFAULT_PROVIDER_NAME, DEFAULT_VERSION);
+	}
+	
+	public List<String> getAvailableProviders() {
+		return new ArrayList<String>(this.managersModel.keySet());
+	}
+
+	public List<String> getAvailableVersionsFor(final String provider) {
+		final List<String> versions = new ArrayList<String>();
+		if(this.managersModel.containsKey(provider)){
+			versions.addAll(this.managersModel.get(provider).keySet());
+		}
+		return versions;
 	}
 }

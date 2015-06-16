@@ -17,8 +17,8 @@ import org.dcm4che3.util.Base64;
  */
 public class BasicProxyManager implements ProxyManager {
 
-	private static String PROVIDER_NAME = "org.dcm4che";
-	private static String VERSION = "1.0";
+	public static String PROVIDER_NAME = "org.dcm4che.basic";
+	public static String VERSION = "1.0";
 	
 	@Override
 	public String getProviderName() {

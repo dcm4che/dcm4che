@@ -63,8 +63,8 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.net.proxy.BasicProxyManager;
 import org.dcm4che3.net.proxy.ProxyManager;
+import org.dcm4che3.net.proxy.ProxyService;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
@@ -221,7 +221,8 @@ public class Connection implements Serializable {
     )
     private Protocol protocol = Protocol.DICOM;
 
-    private ProxyManager proxyManager = new BasicProxyManager();
+    // TODO AP - CONFIG PROXY FOR CONNECTION
+    private ProxyManager proxyManager = ProxyService.getInstance().getDefaultProxyManager();
     
 	private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);

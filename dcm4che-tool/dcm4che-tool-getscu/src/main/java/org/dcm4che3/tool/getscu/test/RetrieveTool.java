@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -288,6 +289,10 @@ public class RetrieveTool implements TestTool{
     @Override
     public TestResult getResult() {
         return this.result;
+    }
+
+    public Path getRetrieveDir() {
+        return retrieveDir.toPath();
     }
 
 }

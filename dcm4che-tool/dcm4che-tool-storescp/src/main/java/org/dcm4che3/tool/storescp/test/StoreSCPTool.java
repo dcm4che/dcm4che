@@ -40,6 +40,7 @@ package org.dcm4che3.tool.storescp.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -255,5 +256,9 @@ public class StoreSCPTool implements TestTool {
 
     public List<String> getInstanceLocations() {
         return instanceLocations;
+    }
+
+    public Path getStorageDirectory() {
+        return storageDirectory.toPath();
     }
 }

@@ -38,6 +38,7 @@
 
 package org.dcm4che3.data;
 
+import org.dcm4che3.dict.siemens.SiemensCSAHeader;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

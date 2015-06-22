@@ -1,26 +1,30 @@
-package org.dcm4che3.conf.api.migration;
+package org.dcm4che3.conf.api.upgrade;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 
-public interface MigrationScript {
+import java.util.Properties;
+
+public interface UpgradeScript {
     String NO_VERSION = "-NO_VERSION-";
 
-    void migrate(MigrationContext migrationContext) throws ConfigurationException;
+    void upgrade(UpgradeContext upgradeContext) throws ConfigurationException;
 
-    static class MigrationContext {
+    class UpgradeContext {
         private String fromVersion;
         private String toVersion;
+        private Properties properties;
         private Configuration configuration;
         private DicomConfiguration dicomConfiguration;
 
-        public MigrationContext() {
+        public UpgradeContext() {
         }
 
-        public MigrationContext(String fromVersion, String toVersion, Configuration configuration, DicomConfiguration dicomConfiguration) {
+        public UpgradeContext(String fromVersion, String toVersion, Properties properties, Configuration configuration, DicomConfiguration dicomConfiguration) {
             this.fromVersion = fromVersion;
             this.toVersion = toVersion;
+            this.properties = properties;
             this.configuration = configuration;
             this.dicomConfiguration = dicomConfiguration;
         }
@@ -39,6 +43,10 @@ public interface MigrationScript {
 
         public DicomConfiguration getDicomConfiguration() {
             return dicomConfiguration;
+        }
+
+        public Properties getProperties() {
+            return properties;
         }
     }
 }

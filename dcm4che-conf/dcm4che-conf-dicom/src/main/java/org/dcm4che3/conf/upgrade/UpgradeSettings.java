@@ -38,42 +38,56 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.migration;
+package org.dcm4che3.conf.upgrade;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Roman K
  */
 @ConfigurableClass
-public class MigrationSettings {
+public class UpgradeSettings {
 
-    public MigrationSettings() {
+    public UpgradeSettings() {
     }
 
     @ConfigurableProperty
-    String migrateToVersion;
+    String upgradeToVersion;
 
     @ConfigurableProperty(
-            description = "List of classes that implement MigrationScript. Defines which scripts should be run and in which sequence")
-    List<String> migrationScriptsToRun;
+            description = "List of classes that implement UpgradeScript. Defines which scripts should be run and in which sequence")
+    List<String> upgradeScriptsToRun;
 
-    public String getMigrateToVersion() {
-        return migrateToVersion;
+    @ConfigurableProperty(
+            description = "These key/value properties are available to upgrade scripts"
+    )
+    Map<String, String> properties;
+
+    public Map<String, String> getProperties() {
+        return properties;
     }
 
-    public void setMigrateToVersion(String migrateToVersion) {
-        this.migrateToVersion = migrateToVersion;
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
 
-    public List<String> getMigrationScriptsToRun() {
-        return migrationScriptsToRun;
+    public String getUpgradeToVersion() {
+        return upgradeToVersion;
     }
 
-    public void setMigrationScriptsToRun(List<String> migrationScriptsToRun) {
-        this.migrationScriptsToRun = migrationScriptsToRun;
+    public void setUpgradeToVersion(String upgradeToVersion) {
+        this.upgradeToVersion = upgradeToVersion;
+    }
+
+    public List<String> getUpgradeScriptsToRun() {
+        return upgradeScriptsToRun;
+    }
+
+    public void setUpgradeScriptsToRun(List<String> upgradeScriptsToRun) {
+        this.upgradeScriptsToRun = upgradeScriptsToRun;
     }
 }

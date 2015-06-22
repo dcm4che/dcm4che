@@ -38,7 +38,7 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.migration;
+package org.dcm4che3.conf.upgrade;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;

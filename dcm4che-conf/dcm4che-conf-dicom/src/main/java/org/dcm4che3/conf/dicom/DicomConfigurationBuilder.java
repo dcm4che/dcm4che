@@ -48,6 +48,7 @@ import org.dcm4che3.conf.dicom.ldap.LdapConfigurationStorage;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.hl7.HL7ApplicationExtension;
+import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,8 +188,12 @@ public class DicomConfigurationBuilder {
 
             switch (ConfigType.valueOf(configType.toUpperCase().trim())) {
                 case JSON_FILE:
-                    configurationStorage = new SingleJsonFileConfigurationStorage(getPropertyWithNotice(props,
-                            "org.dcm4che.conf.filename", "../standalone/configuration/sample-config.json"));
+                    configurationStorage = new SingleJsonFileConfigurationStorage(
+                            StringUtils.replaceSystemProperties(
+                                    getPropertyWithNotice(
+                                            props,
+                                            "org.dcm4che.conf.filename",
+                                            "${jboss.server.config.dir}/dcm4chee-arc/config.json")));
                     break;
                 case LDAP:
                     // init LDAP props if were not yet inited by the builder

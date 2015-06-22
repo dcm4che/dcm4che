@@ -38,11 +38,11 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.migration;
+package org.dcm4che3.conf.upgrade;
 
 
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.api.migration.MigrationScript;
+import org.dcm4che3.conf.api.upgrade.UpgradeScript;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
@@ -52,43 +52,45 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Roman K
  */
-public class MigrationRunner {
+public class UpgradeRunner {
 
     private static Logger log = LoggerFactory
-            .getLogger(MigrationRunner.class);
+            .getLogger(UpgradeRunner.class);
 
     public static final String METADATA_ROOT_PATH = "/dicomConfigurationRoot/metadataRoot/versioning";
 
     private Configuration configuration;
-    private Collection<MigrationScript> availableMigrationScripts;
+    private Collection<UpgradeScript> availableUpgradeScripts;
     private DicomConfiguration dicomConfiguration;
-    private MigrationSettings migrationSettings;
+    private UpgradeSettings upgradeSettings;
 
-    public MigrationRunner() {
+    public UpgradeRunner() {
     }
 
-    public MigrationRunner(Configuration configuration, Collection<MigrationScript> availableMigrationScripts, DicomConfiguration dicomConfiguration, MigrationSettings migrationSettings) {
+    public UpgradeRunner(Configuration configuration, Collection<UpgradeScript> availableUpgradeScripts, DicomConfiguration dicomConfiguration, UpgradeSettings upgradeSettings) {
         this.configuration = configuration;
-        this.availableMigrationScripts = availableMigrationScripts;
+        this.availableUpgradeScripts = availableUpgradeScripts;
         this.dicomConfiguration = dicomConfiguration;
-        this.migrationSettings = migrationSettings;
+        this.upgradeSettings = upgradeSettings;
     }
 
-    public void migrate() throws ConfigurationException {
-        if (migrationSettings == null) {
-            log.info("Dcm4che configuration init: migration is not configured, no migration will be performed");
+    public void upgrade() throws ConfigurationException {
+        if (upgradeSettings == null) {
+            log.info("Dcm4che configuration init: upgrade is not configured, no upgrade will be performed");
             return;
         }
 
-        String toVersion = migrationSettings.getMigrateToVersion();
+        String toVersion = upgradeSettings.getUpgradeToVersion();
         if (toVersion != null) {
-            log.info("Dcm4che configuration init: migrating configuration to version " + toVersion);
+            log.info("Dcm4che configuration init: upgrading configuration to version " + toVersion);
             migrateToVersion(toVersion);
-        }
+        } else
+            log.warn("Dcm4che configuration init: upgrade version is null");
 
     }
 
@@ -105,24 +107,32 @@ public class MigrationRunner {
             configMetadata = beanVitalizer.newConfiguredInstance((Map<String, Object>) metadataNode, ConfigurationMetadata.class);
         else {
             configMetadata = new ConfigurationMetadata();
-            configMetadata.setVersion(MigrationScript.NO_VERSION);
+            configMetadata.setVersion(UpgradeScript.NO_VERSION);
         }
         String fromVersion = configMetadata.getVersion();
 
         // check if we need to run scripts at all
-        if (fromVersion.compareToIgnoreCase(toVersion) > 0) {
-            log.info("Configuration migration is not needed - configuration version is already " + toVersion);
+        if (fromVersion.compareToIgnoreCase(toVersion) >= 0) {
+            log.info("Skipping configuration upgrade - configuration version is already " + toVersion);
             return configMetadata;
         }
 
-        MigrationScript.MigrationContext migrationContext = new MigrationScript.MigrationContext(fromVersion, toVersion, configuration, dicomConfiguration);
+
+
+        Properties props = new Properties();
+        props.putAll(upgradeSettings.getProperties());
+
+        UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(fromVersion, toVersion, props, configuration, dicomConfiguration);
+
+        log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());
+        log.info("Config upgrade scripts discovered in the deployment: {}", availableUpgradeScripts);
 
         // run all scripts
-        for (String migrationScriptName : migrationSettings.getMigrationScriptsToRun()) {
-            for (MigrationScript script : availableMigrationScripts) {
-                if (script.getClass().getName().equals(migrationScriptName)) {
-                    log.info("Executing migration script " + migrationScriptName.getClass().getName());
-                    script.migrate(migrationContext);
+        for (String upgradeScriptName : upgradeSettings.getUpgradeScriptsToRun()) {
+            for (UpgradeScript script : availableUpgradeScripts) {
+                if (script.getClass().getName().equals(upgradeScriptName)) {
+                    log.info("Executing upgrade script {}", upgradeScriptName);
+                    script.upgrade(upgradeContext);
                 }
             }
         }

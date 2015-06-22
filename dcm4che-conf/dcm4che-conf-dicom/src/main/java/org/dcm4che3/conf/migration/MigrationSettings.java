@@ -38,30 +38,42 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.migration;
 
-import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+
+import java.util.List;
 
 /**
- * Vendors may implement this interface to perform necessary modification to the configuration bootstrap process, e.g., set custom storage, add custom extensions.
- *
- * This API is UNSTABLE and can be changed without notice, please do not use it without prior consulting.
+ * @author Roman K
  */
-public interface DicomConfigurationBuilderAddon {
+@ConfigurableClass
+public class MigrationSettings {
 
-    /**
-     * Should perferm necessary modification to the configuration bootstrap, e.g., set custom storage, add custom extensions.
-     * @param builder
-     */
-    public void beforeBuild(DicomConfigurationBuilder builder);
+    public MigrationSettings() {
+    }
 
-    /**
-     * Should perform any necessary post-processing
-     * @param manager
-     */
-    public void afterBuild(DicomConfigurationManager manager) throws ConfigurationException;
+    @ConfigurableProperty
+    String migrateToVersion;
 
+    @ConfigurableProperty(
+            description = "List of classes that implement MigrationScript. Defines which scripts should be run and in which sequence")
+    List<String> migrationScriptsToRun;
+
+    public String getMigrateToVersion() {
+        return migrateToVersion;
+    }
+
+    public void setMigrateToVersion(String migrateToVersion) {
+        this.migrateToVersion = migrateToVersion;
+    }
+
+    public List<String> getMigrationScriptsToRun() {
+        return migrationScriptsToRun;
+    }
+
+    public void setMigrationScriptsToRun(List<String> migrationScriptsToRun) {
+        this.migrationScriptsToRun = migrationScriptsToRun;
+    }
 }

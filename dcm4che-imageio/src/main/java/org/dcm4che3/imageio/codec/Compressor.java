@@ -142,14 +142,17 @@ public class Compressor extends Decompressor implements Closeable {
         int count = 0;
         for (Property property : cat(param.getImageWriteParams(), params)) {
             String name = property.getName();
-            if (name.equals("maxPixelValueError"))
+            if (name.equals("maxPixelValueError")) {
                 maxPixelValueError = ((Number) property.getValue()).intValue();
-            else if (name.equals("avgPixelValueBlockSize"))
+            } else if (name.equals("avgPixelValueBlockSize")) {
                 avgPixelValueBlockSize = ((Number) property.getValue()).intValue();
-            else {
-                if (count++ == 0)
+            } else if(name.equals("compressionType")) {
+                compressParam.setCompressionType((String)property.getValue());
+            } else {
+                if (count++ == 0) {
                     compressParam.setCompressionMode(
                             ImageWriteParam.MODE_EXPLICIT);
+                }
                 property.setAt(compressParam);
             }
         }

@@ -57,6 +57,8 @@ import org.dcm4che3.util.Property;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -65,6 +67,7 @@ import org.dcm4che3.util.StringUtils;
 @LDAP(objectClasses = "dcmImageWriterFactory")
 @ConfigurableClass
 public class ImageWriterFactory implements Serializable {
+    private static final Logger LOG = LoggerFactory.getLogger(ImageWriterFactory.class);
 
     private static final long serialVersionUID = 6328126996969794374L;
 
@@ -270,37 +273,30 @@ public class ImageWriterFactory implements Serializable {
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
 
-        // ImageWriterSpi are laoded through the java ServiceLoader,
+        // ImageWriterSpi are loaded through the java ServiceLoader,
         // istead of imageio ServiceRegistry
         Iterator<ImageWriterSpi> iter = ServiceLoader
                 .load(ImageWriterSpi.class).iterator();
 
-        try {
+        if (iter != null && iter.hasNext()) {
 
-            if (iter != null && iter.hasNext()) {
-
-                do {
-                    ImageWriterSpi writerspi = iter.next();
-                    if (supportsFormat(writerspi.getFormatNames(),
-                            param.formatName)) {
-
+            do {
+                ImageWriterSpi writerspi = iter.next();
+                if (supportsFormat(writerspi.getFormatNames(), param.formatName)) {
+                    try {
                         ImageWriter writer = writerspi.createWriterInstance();
-
                         if (param.className == null
                                 || param.className.equals(writer.getClass().getName()))
                             return writer;
+                    } catch (IOException e) {
+                        LOG.error("Error instantiating writer for format: " + param.formatName);
                     }
-                } while (iter.hasNext());
-            }
-
-            throw new RuntimeException("No Image Writer for format: "
-                    + param.formatName + " registered");
-
-        } catch (IOException e) {
-            throw new RuntimeException(
-                    "Error instantiating Writer for format: "
-                            + param.formatName);
+                }
+            } while (iter.hasNext());
         }
+
+        throw new RuntimeException("No Image Writer for format: " + param.formatName
+                + " registered");
     }
 
     private static boolean supportsFormat(String[] supportedFormats,

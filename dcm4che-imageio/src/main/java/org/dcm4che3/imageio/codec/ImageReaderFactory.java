@@ -275,32 +275,25 @@ public class ImageReaderFactory implements Serializable {
         Iterator<ImageReaderSpi> iter = ServiceLoader
                 .load(ImageReaderSpi.class).iterator();
 
-        try {
-
-            if (iter != null && iter.hasNext()) {
-
-                do {
-                    ImageReaderSpi readerspi = iter.next();
-                    if (supportsFormat(readerspi.getFormatNames(),
-                            param.formatName)) {
-
+        if (iter != null && iter.hasNext()) {
+            do {
+                ImageReaderSpi readerspi = iter.next();
+                if (supportsFormat(readerspi.getFormatNames(), param.formatName)) {
+                    try {
                         ImageReader reader = readerspi.createReaderInstance();
 
                         if (param.className == null
                                 || param.className.equals(reader.getClass().getName()))
                             return reader;
+                    } catch (IOException e) {
+                        LOG.error("Error instantiating reader for format: " + param.formatName);
                     }
-                } while (iter.hasNext());
-            }
-
-            throw new RuntimeException("No Image Reader for format: "
-                    + param.formatName + " registered");
-
-        } catch (IOException e) {
-            throw new RuntimeException(
-                    "Error instantiating Reader for format: "
-                            + param.formatName);
+                }
+            } while (iter.hasNext());
         }
+
+        throw new RuntimeException("No Image Reader for format: " + param.formatName
+                + " registered");
     }
 
     private static boolean supportsFormat(String[] supportedFormats,

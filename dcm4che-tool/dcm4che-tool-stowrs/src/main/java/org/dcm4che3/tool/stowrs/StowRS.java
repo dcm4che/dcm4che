@@ -758,7 +758,13 @@ public class StowRS {
             rspMessage = connection.getResponseMessage();
             LOG.info("response: " + response);
             try {
-                responseAttrs = SAXReader.parse(connection.getInputStream());
+                InputStream in;
+                if (rspCode < HttpURLConnection.HTTP_BAD_REQUEST) {
+                    in = connection.getInputStream();
+                } else {
+                    in = connection.getErrorStream();
+                }
+                responseAttrs = SAXReader.parse(in);
             } catch (Exception e) {
                 LOG.error("Error creating response attributes, {}",e);
             }

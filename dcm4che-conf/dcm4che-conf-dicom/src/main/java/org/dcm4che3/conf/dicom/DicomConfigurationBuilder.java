@@ -193,7 +193,7 @@ public class DicomConfigurationBuilder {
                                     getPropertyWithNotice(
                                             props,
                                             "org.dcm4che.conf.filename",
-                                            "${jboss.server.config.dir}/dcm4chee-arc/config.json")));
+                                            "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json")));
                     break;
                 case LDAP:
                     // init LDAP props if were not yet inited by the builder

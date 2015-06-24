@@ -23,6 +23,7 @@ public class TCGroupConfigAEExtension extends AEExtension {
         STORAGE,
         PPS,
         QUERY_RETRIEVE,
+        MWL,
         STORAGE_COMMITMENT
     }
 
@@ -131,6 +132,11 @@ public class TCGroupConfigAEExtension extends AEExtension {
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
                 allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), UID.ImplicitVRLittleEndian);
                 allTCToList(transferCapabilities, new String[]{UID.CompositeInstanceRetrieveWithoutBulkDataGET, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                return transferCapabilities;
+
+            case MWL:
+                transferCapabilities = new ArrayList<TransferCapability>();
+                allTCToList(transferCapabilities, new String[]{UID.ModalityWorklistInformationModelFIND, UID.VerificationSOPClass}, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case PPS:

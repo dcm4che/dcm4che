@@ -94,7 +94,8 @@ public class GroupTCConfigTest {
         ApplicationEntity myAE = loadedDevice.getApplicationEntity("myAE");
 
         Assert.assertNotNull(myAE.getTransferCapabilityFor(UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP));
-        Assert.assertNotNull(myAE.getTransferCapabilityFor(UID.ModalityWorklistInformationModelFIND, TransferCapability.Role.SCP));
+        Assert.assertNotNull(myAE.getTransferCapabilityFor(UID.StudyRootQueryRetrieveInformationModelGET, TransferCapability.Role.SCP));
+        Assert.assertNull(myAE.getTransferCapabilityFor(UID.ModalityWorklistInformationModelFIND, TransferCapability.Role.SCP));
         Assert.assertNull(myAE.getTransferCapabilityFor(UID.ComputedRadiographyImageStorage, TransferCapability.Role.SCP));
 
         Assert.assertNull(myAE.getTransferCapabilityFor(UID.ModalityWorklistInformationModelFIND, TransferCapability.Role.SCU));

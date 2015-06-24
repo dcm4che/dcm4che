@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.conf.core">
+    <resources>
+        <resource-root path="dcm4che-conf-core-${version}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.dcm4che.core"/>
+        <module name="org.dcm4che.conf.core-api" export="true"/>
+
+        <module name="org.slf4j"/>
+
+        <!-- for json config storage -->
+        <module name="org.codehaus.jackson.jackson-mapper-asl" export="true"/>
+
+        <module name="org.apache.commons.beanutils"/>
+        <module name="org.apache.commons.lang"/>
+        <module name="org.apache.commons.jxpath"/>
+
+    </dependencies>
+</module>

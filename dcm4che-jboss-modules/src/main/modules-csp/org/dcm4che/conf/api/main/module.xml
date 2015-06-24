@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.conf.api">
+    <resources>
+        <resource-root path="dcm4che-conf-api-${version}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.dcm4che.net" export="true"/>
+
+        <!-- For reconfiguration iterator -->
+        <module name="org.apache.commons.beanutils"/>
+
+        <module name="org.slf4j"/>
+        <module name="org.dcm4che.conf.core-api" export="true"/>
+    </dependencies>
+</module>

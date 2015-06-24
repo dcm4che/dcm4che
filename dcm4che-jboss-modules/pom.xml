@@ -122,20 +122,6 @@
         <version>2.3</version>
         <executions>
           <execution>
-            <id>${project.name}-modules-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <appendAssemblyId>false</appendAssemblyId>
-              <finalName>dcm4che-jboss-modules-${project.version}</finalName>
-              <descriptors>
-                <descriptor>src/main/assembly/modules.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
             <id>${project.name}-bundles-assembly</id>
             <phase>package</phase>
             <goals>
@@ -152,6 +138,67 @@
     </plugins>
   </build>
   <profiles>
+    <!-- Profile to create default JBoss modules -->
+    <profile>
+      <id>jboss-modules-default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.3</version>
+            <executions>
+              <execution>
+                <id>${project.name}-modules-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <finalName>dcm4che-jboss-modules-${project.version}</finalName>
+                  <descriptors>
+                    <descriptor>src/main/assembly/modules.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- Profile to create adapted JBoss modules for CSP build 
+    which might contain modules with adapted dependencies, etc.
+    -->
+    <profile>
+      <id>csp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.3</version>
+            <executions>
+              <execution>
+                <id>${project.name}-modules-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <finalName>dcm4che-jboss-modules-${project.version}</finalName>
+                  <descriptors>
+                    <descriptor>src/main/assembly/modules-csp.xml</descriptor>
+                  </descriptors>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>copy-modules-to-jboss</id>
       <activation>

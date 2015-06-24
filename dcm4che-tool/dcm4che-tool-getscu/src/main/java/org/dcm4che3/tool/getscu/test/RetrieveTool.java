@@ -187,7 +187,7 @@ public class RetrieveTool implements TestTool{
 
     public void addTag(int tag, String... values) {
         VR vr = ElementDictionary.vrOf(tag, null); 
-		retrieveatts.setString(tag, vr, values);
+        retrieveatts.setString(tag, vr, values);
     }
 
     public void clearTags() {

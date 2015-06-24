@@ -163,7 +163,7 @@ public class RetrieveTool implements TestTool{
         // open, send and wait for response
         try {
             retrievescu.open();
-            retrievescu.retrieve(getDimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
+            retrievescu.retrieve(new DimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
         } finally {
             retrievescu.close();
             executorService.shutdown();
@@ -196,20 +196,6 @@ public class RetrieveTool implements TestTool{
 
     public void setExpectedMatches(int expectedResult) {
         this.expectedMatches = expectedResult;
-    }
-    
-    private DimseRSPHandler getDimseRSPHandler(int messageID) {
-
-        DimseRSPHandler rspHandler = new DimseRSPHandler(messageID) {
-
-            @Override
-            public void onDimseRSP(Association as, Attributes cmd,
-                    Attributes data) {
-                super.onDimseRSP(as, cmd, data);
-            }
-        };
-
-        return rspHandler;
     }
 
     private void registerSCPservice(Device device, final File storeDir) {

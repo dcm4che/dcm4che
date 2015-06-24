@@ -45,6 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Schedules an association.abort() on the given association
+ * using the scheduledExecutor assigned to the device of that association.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
@@ -72,6 +75,9 @@ public class Timeout implements Runnable {
         return new Timeout(as, expiredMsg, cancelMsg, timeout);
     }
 
+    /**
+     * Permanently cancels the potential effect of the timeout
+     */
     public void stop() {
         LOG.debug(cancelMsg, as);
         future.cancel(false);

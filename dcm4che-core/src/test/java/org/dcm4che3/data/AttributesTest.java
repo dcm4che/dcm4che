@@ -268,6 +268,26 @@ public class AttributesTest {
     }
 
     @Test
+    public void testGetModified_LIB_363()
+    {
+        // tests the fix for LIB-363
+
+        Attributes original = new Attributes();
+        original.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber");
+        
+        Attributes other = new Attributes();
+        other.setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4");
+        other.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber2");
+
+        Attributes modified = original.getModified(other, null);
+
+        Attributes expected = new Attributes();
+        expected.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber");
+
+        assertEquals(expected, modified);
+    }
+
+    @Test
     public void testGetRemovedOrModified() {
         Attributes original = createOriginal();
         Attributes other = modify(original);

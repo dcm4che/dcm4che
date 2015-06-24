@@ -3163,7 +3163,7 @@ public class Attributes implements Serializable {
             } else if (origValue instanceof Fragments) {
                 result.set(privateCreator, tag, (Fragments) origValue);
             } else {
-                result.set(privateCreator, tag, vrs[i], origValue);
+                result.set(privateCreator, tag, vrs[j], origValue);
             }
         }
         return result;

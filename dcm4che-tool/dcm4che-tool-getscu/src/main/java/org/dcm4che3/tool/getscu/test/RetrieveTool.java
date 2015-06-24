@@ -185,7 +185,7 @@ public class RetrieveTool implements TestTool{
                 (timeEnd - timeStart), response));
     }
 
-	public void addTag(int tag, String... values) throws Exception {
+    public void addTag(int tag, String... values) {
         VR vr = ElementDictionary.vrOf(tag, null); 
 		retrieveatts.setString(tag, vr, values);
     }

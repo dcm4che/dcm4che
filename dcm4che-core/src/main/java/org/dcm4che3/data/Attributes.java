@@ -42,7 +42,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.dcm4che3.data.IOD.DataElement;
@@ -2003,7 +2007,7 @@ public class Attributes implements Serializable {
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, selection, false, false, false, null);
+        return add(other, null, null, 0, 0, selection, false, false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -2178,7 +2182,7 @@ public class Attributes implements Serializable {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
-        final int[] tags = other.tags;
+        final int[] otherTags = other.tags;
         final VR[] srcVRs = other.vrs;
         final Object[] srcValues = other.values;
         final int otherSize = other.size;
@@ -2186,24 +2190,18 @@ public class Attributes implements Serializable {
         String privateCreator = null;
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
-            int tag = tags[i];
+            int tag = otherTags[i];
             VR vr = srcVRs[i];
             Object value = srcValues[i];
             if (TagUtils.isPrivateCreator(tag)) {
-                if (contains(tag))
-                    continue; // do not overwrite private creator IDs
-
-                if (vr == VR.LO) {
-                    value = other.decodeStringValue(i);
-                    if ((value instanceof String)
-                            && creatorTagOf((String) value, tag, false) != -1)
-                        continue; // do not add duplicate private creator ID
-                }
+                continue; // private creators will be automatically added with the private tags
             }
+
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
             if (exclude != null && Arrays.binarySearch(exclude, fromIndex, toIndex, tag) >= 0)
                 continue;
+
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
@@ -2214,6 +2212,10 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+
+            if (selection != null && !selection.contains(privateCreator, tag))
+                continue;
+
             if (merge || update) {
                 int j = indexOf(tag);
                 if (j >= 0) {
@@ -2244,7 +2246,7 @@ public class Attributes implements Serializable {
                 if (value instanceof Sequence) {
                     set(privateCreator, tag, (Sequence) value,
                             selection != null 
-                                ? selection.getNestedDataset(tag)
+                                ? selection.getNestedDataset(privateCreator, tag)
                                 : null);
                 } else if (value instanceof Fragments) {
                     set(privateCreator, tag, (Fragments) value);

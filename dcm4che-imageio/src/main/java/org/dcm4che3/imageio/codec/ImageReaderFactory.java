@@ -38,6 +38,7 @@
 
 package org.dcm4che3.imageio.codec;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -57,7 +58,6 @@ import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,8 +184,14 @@ public class ImageReaderFactory implements Serializable {
             url = new URL(name);
         } catch (MalformedURLException e) {
             url = ResourceLocator.getResourceURL(name, this.getClass());
-            if (url == null)
-                throw new IOException("No such resource: " + name);
+            if (url == null) {
+                File f = new File(name);
+                if(f.exists() && f.isFile()) {
+                    url = f.toURI().toURL();
+                } else {
+                    throw new IOException("No such resource: " + name);
+                }
+            }
         }
         InputStream in = url.openStream();
         try {

@@ -189,7 +189,7 @@ public class StowRS {
         }
     }
 
-    public void stow() throws IOException, InterruptedException {
+    public void stow() {
         Attributes metadata = new Attributes();
         Attributes fmi;
         for (File metadataFile : files)
@@ -289,7 +289,7 @@ public class StowRS {
         this.responses.add(response);
     }
 
-    private static StowRSResponse sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
+    private static StowRSResponse sendDicomFile(StowRS instance, File f) {
         return doRequestDICOM(instance.URL, f);
 }
 

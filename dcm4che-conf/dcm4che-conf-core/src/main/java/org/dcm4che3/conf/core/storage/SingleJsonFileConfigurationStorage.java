@@ -56,11 +56,18 @@ import java.util.Map;
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
-
-    String fileName;
+    private String fileName;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public SingleJsonFileConfigurationStorage() {
+        //NOOP
+    }
+    
     public SingleJsonFileConfigurationStorage(String fileName) {
+        setFileName(fileName);
+    }
+    
+    public void setFileName(String fileName) {
         this.fileName = fileName;
     }
 

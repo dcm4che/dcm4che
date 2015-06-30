@@ -58,24 +58,37 @@ import java.util.*;
 
 public class LdapConfigurationStorage implements Configuration {
 
-    private final String baseDN;
-    private final InitialDirContext ldapCtx;
-    private final List<Class<?>> allExtensionClasses;
+    private String baseDN;
+    private InitialDirContext ldapCtx;
+    private List<Class<?>> allExtensionClasses;
 
     public List<Class<?>> getAllExtensionClasses() {
         return allExtensionClasses;
     }
 
+    public LdapConfigurationStorage() {
+        //NOOP
+    }
+    
     public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses)
             throws ConfigurationException {
+        setEnvironment(env);
+        setExtensions(allExtensionClasses);
+    }
+    
+    public void setExtensions(List<Class<?>> allExtensionClasses) {
         this.allExtensionClasses = allExtensionClasses;
+    }
+    
+    public void setEnvironment(Hashtable<?, ?> env) throws ConfigurationException {
         try {
-            Hashtable env_ = (Hashtable) env.clone();
+            Hashtable<Object, Object> env_ = (Hashtable<Object, Object>) env.clone();
             String e = (String) env.get("java.naming.provider.url");
             int end = e.lastIndexOf('/');
             env_.put("java.naming.provider.url", e.substring(0, end));
             this.baseDN = e.substring(end + 1);
-            //TODO: what happens when LDAP goes down and up again while app is running?
+            // TODO: what happens when LDAP goes down and up again while app is
+            // running?
             this.ldapCtx = new InitialDirContext(env_);
         } catch (Exception e) {
             throw new ConfigurationException(e);

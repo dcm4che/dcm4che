@@ -204,9 +204,8 @@ public class StowRS {
                 try {
                     metadata = parseJSON(metadataFile.getPath());
                     String ts = transferSyntax;
-                    ArrayList<BulkDataChunk> bulkFiles = new ArrayList<BulkDataChunk>();
                     JsonObject object = loadJSON(metadataFile);
-                    bulkFiles = extractBlkDataFiles(object);
+                    List<BulkDataChunk> bulkFiles = extractBlkDataFiles(object);
                     boolean combine = false;
                     if(isMultiFrame(metadata)) {
                         //multiply frames
@@ -243,9 +242,8 @@ public class StowRS {
                     fmi = ch.getFileMetaInformation();
                     metadata.addAll(fmi);
                     String ts = transferSyntax;
-                    ArrayList<BulkDataChunk> bulkFiles = new ArrayList<BulkDataChunk>();
                     Document doc = loadXml(metadataFile);
-                    bulkFiles = extractBlkDataFiles(doc);
+                    List<BulkDataChunk> bulkFiles = extractBlkDataFiles(doc);
                     boolean combine = false;
                     if(isMultiFrame(metadata)) {
                         //multiply frames
@@ -361,9 +359,9 @@ public class StowRS {
         return temp;
     }
 
-    private static ArrayList<BulkDataChunk> extractBlkDataFiles(Document doc)
+    private static List<BulkDataChunk> extractBlkDataFiles(Document doc)
             throws URISyntaxException {
-        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
+        List<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
         NodeList list = doc.getElementsByTagName("BulkData");
         for (int i = 0; i < list.getLength(); i++) {
             String fullUri = list.item(i).getAttributes().item(0)
@@ -395,9 +393,9 @@ public class StowRS {
         return files;
     }
 
-    private ArrayList<BulkDataChunk> extractBlkDataFiles(
+    private List<BulkDataChunk> extractBlkDataFiles(
             JsonObject object) throws URISyntaxException {
-        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
+        List<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
         for (Entry<String, JsonValue> entry : object.entrySet()) {
             if (entry.getValue().getValueType().equals(ValueType.OBJECT)) {
                 JsonObject entryObject = (JsonObject) entry.getValue();
@@ -496,7 +494,7 @@ public class StowRS {
     }
 
     private static StowRSResponse sendMetaDataAndBulkData(Boolean xml, StowRS instance,
-            Attributes metadata, ArrayList<BulkDataChunk> files,
+            Attributes metadata, List<BulkDataChunk> files,
             boolean combined) throws IOException {
         Attributes responseAttrs = new Attributes();
         int rspCode = 0;

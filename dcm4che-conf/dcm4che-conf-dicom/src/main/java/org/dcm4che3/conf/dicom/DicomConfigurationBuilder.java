@@ -188,12 +188,14 @@ public class DicomConfigurationBuilder {
 
             switch (ConfigType.valueOf(configType.toUpperCase().trim())) {
                 case JSON_FILE:
-                    configurationStorage = new SingleJsonFileConfigurationStorage(
+                    SingleJsonFileConfigurationStorage jsonConfigurationStorage = createJsonFileConfigurationStorage();
+                    jsonConfigurationStorage.setFileName(
                             StringUtils.replaceSystemProperties(
                                     getPropertyWithNotice(
                                             props,
                                             "org.dcm4che.conf.filename",
                                             "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json")));
+                    configurationStorage = jsonConfigurationStorage;
                     break;
                 case LDAP:
                     // init LDAP props if were not yet inited by the builder
@@ -217,8 +219,10 @@ public class DicomConfigurationBuilder {
                     }
 
 
-                    LdapConfigurationStorage ldapConfigurationStorage = new LdapConfigurationStorage(ldapProps, allExtensions);
-
+                    LdapConfigurationStorage ldapConfigurationStorage = createLdapConfigurationStorage();
+                    ldapConfigurationStorage.setEnvironment(ldapProps);
+                    ldapConfigurationStorage.setExtensions(allExtensions);
+                    
                     configurationStorage = ldapConfigurationStorage;
 
                     break;
@@ -238,6 +242,14 @@ public class DicomConfigurationBuilder {
                     : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "false")));
 
         return configurationStorage;
+    }
+    
+    protected LdapConfigurationStorage createLdapConfigurationStorage() {
+        return new LdapConfigurationStorage();
+    }
+    
+    protected SingleJsonFileConfigurationStorage createJsonFileConfigurationStorage() {
+        return new SingleJsonFileConfigurationStorage();
     }
 
     public static String getPropertyWithNotice(Hashtable<?, ?> props,

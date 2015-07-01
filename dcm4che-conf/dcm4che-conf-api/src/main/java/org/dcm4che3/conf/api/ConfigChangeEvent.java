@@ -39,6 +39,7 @@
 
 package org.dcm4che3.conf.api;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ import java.util.List;
  * 
  * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
  */
-public interface ConfigChangeEvent {
+public interface ConfigChangeEvent extends Serializable {
 
     static enum CONTEXT {
         CONFIG_INIT, CONFIG_CHANGE

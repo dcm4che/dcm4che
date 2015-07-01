@@ -37,7 +37,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.core.api;
 
 import java.io.Serializable;
 import java.util.List;

@@ -48,25 +48,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman K
  */
-public class CachedRootNodeConfiguration extends DelegatingConfiguration {
-
-    public static final Logger log = LoggerFactory.getLogger(CachedRootNodeConfiguration.class);
+public class CachingConfigurationDecorator extends DelegatingConfiguration {
 
 
-    protected Map<String, Object> configurationRoot = null;
+    public static final Logger log = LoggerFactory.getLogger(CachingConfigurationDecorator.class);
 
-    public CachedRootNodeConfiguration(Configuration delegate) {
+    private Map<String, Object> cachedConfigurationRoot = null;
+
+    public CachingConfigurationDecorator(Configuration delegate) {
         this(delegate, System.getProperties());
     }
 
-    public CachedRootNodeConfiguration(Configuration delegate, Hashtable<?, ?> properties) {
+    public CachingConfigurationDecorator(Configuration delegate, Hashtable<?, ?> properties) {
         super(delegate);
         String s = (String) properties.get("org.dcm4che.conf.staleTimeout");
         staleTimeout = Integer.valueOf(s == null ? "30" : s) * 1000L;
@@ -75,17 +73,22 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
     long staleTimeout;
     long fetchTime;
 
+
     @Override
     public synchronized Map<String, Object> getConfigurationRoot() throws ConfigurationException {
+
         long now = System.currentTimeMillis();
 
-        if (configurationRoot == null ||
+        if (cachedConfigurationRoot == null ||
                 (staleTimeout != 0 && now > fetchTime + staleTimeout)) {
             fetchTime = now;
-            configurationRoot = delegate.getConfigurationRoot();
-            log.debug("Configuration cache refreshed");
+            if (cachedConfigurationRoot == null)
+                log.info("Configuration cache initialized"); else
+                log.debug("Configuration cache refreshed");
+
+            cachedConfigurationRoot = delegate.getConfigurationRoot();
         }
-        return configurationRoot;
+        return cachedConfigurationRoot;
     }
 
     /**
@@ -102,12 +105,20 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
 
         if (node == null) return null;
 
+        try {
+            return deepCloneNode(node);
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private Object deepCloneNode(Object node) {
         // clone
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.treeToValue(objectMapper.valueToTree(node), Map.class);
+            return objectMapper.treeToValue(objectMapper.valueToTree(node), node.getClass());
         } catch (IOException e) {
-            throw new ConfigurationException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -116,15 +127,15 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
         if (!path.equals("/"))
             ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
         else
-            configurationRoot = configNode;
+            cachedConfigurationRoot = configNode;
         delegate.persistNode(path, configNode, configurableClass);
     }
 
     @Override
     public synchronized void refreshNode(String path) throws ConfigurationException {
-        Map<String, Object> newConfigurationNode = (Map<String, Object>) delegate.getConfigurationNode(path, null);
+        Object newConfigurationNode = delegate.getConfigurationNode(path, null);
         if (path.equals("/"))
-            configurationRoot = newConfigurationNode;
+            cachedConfigurationRoot = (Map<String, Object>) newConfigurationNode;
         else
             ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, newConfigurationNode);
 
@@ -143,7 +154,14 @@ public class CachedRootNodeConfiguration extends DelegatingConfiguration {
 
     @Override
     public synchronized Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        return ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
+
+        // fully iterate and make copies of all returned results to ensure the consistency and isolation
+        List l = new ArrayList();
+        final Iterator origIterator = ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
+
+        while (origIterator.hasNext()) l.add(deepCloneNode(origIterator.next()));
+
+        return l.iterator();
     }
 
 }

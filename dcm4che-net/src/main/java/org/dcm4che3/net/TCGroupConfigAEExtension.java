@@ -4,6 +4,7 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.data.UID;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static org.dcm4che3.net.TransferCapability.Role.SCU;
@@ -78,7 +79,7 @@ public class TCGroupConfigAEExtension extends AEExtension {
     }
 
     @ConfigurableClass
-    public static class TCGroupDetails {
+    public static class TCGroupDetails implements Serializable {
 
         public TCGroupDetails() {
         }

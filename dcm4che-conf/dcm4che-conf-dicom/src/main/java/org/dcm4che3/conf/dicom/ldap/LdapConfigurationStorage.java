@@ -39,21 +39,33 @@
  */
 package org.dcm4che3.conf.dicom.ldap;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.conf.core.util.PathPattern;
-import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
-import org.dcm4che3.conf.dicom.DicomPath;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.util.*;
+
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.util.PathPattern;
+import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
+import org.dcm4che3.conf.dicom.DicomPath;
 
 
 public class LdapConfigurationStorage implements Configuration {
@@ -401,4 +413,10 @@ public class LdapConfigurationStorage implements Configuration {
     public InitialDirContext getLdapCtx() {
         return ldapCtx;
     }
+
+    @Override
+    public void runBatch(ConfigBatch batch) {
+        batch.run(this);
+    }
+    
 }

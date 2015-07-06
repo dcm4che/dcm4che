@@ -58,6 +58,7 @@ import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.dcm4che3.conf.core.api.Configuration.ConfigBatch;
 
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -550,5 +551,21 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
                 configurationNode,
                 TCConfiguration.class);
     }
+    
+    @Override
+    public void runBatch(final DicomConfigBatch dicomConfigBatch) {
+        /*
+         * Use the batch support of underlying configuration storage to execute batch
+         */
+        config.runBatch(new ConfigBatch() {
+
+            @Override
+            public void run(Configuration configuration) {
+                dicomConfigBatch.run(CommonDicomConfiguration.this);
+            }
+            
+        });
+    }
+    
 }
 

@@ -136,4 +136,33 @@ public interface Configuration {
      * Should be auto-released on transaction commit/rollback.
      */
     void lock();
+    
+    /**
+     * Provides support for batching configuration changes.
+     * </p>
+     * The method implementation must ensure that the batch-changes are executed within a transaction.
+     * The implementation may decide to run the changes either in 
+     * <ul>
+     * <li>the context of an already existing transaction</li>
+     * <li>the context of a new transaction</li>
+     * </ul>
+     * 
+     * @param batch Configuration batch change to execute
+     */
+    void runBatch(ConfigBatch batch);
+    
+    /**
+     * Defines a configuration batch that allows to execute configuration changes in a bulk-type manner.
+     * 
+     * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
+     */
+    interface ConfigBatch {
+        
+        /**
+         * Executes configuration batch changes on the specified configuration storage.
+         * @param configuration Configuration storage the changes will be applied upon.
+         */
+        public void run(Configuration configuration);
+    }
+ 
 }

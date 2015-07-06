@@ -38,7 +38,12 @@
 
 package org.dcm4che3.data;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -185,6 +190,58 @@ public class AttributesTest {
         a.setString(Tag.PixelSpacing, VR.DS, ".5",".5");
         assertArrayEquals(new double[]{ 0.5, 0.5 }, a.getDoubles(Tag.PixelSpacing), 0);
         assertArrayEquals(new float[]{ 0.5f, 0.5f }, a.getFloats(Tag.PixelSpacing), 0);
+    }
+
+    @Test
+    public void testEqualsBulkData() {
+        Attributes a1 = new Attributes();
+        a1.setValue(Tag.PixelData, VR.OB, new BulkData(null, "file:/PixelData", false));
+        Attributes a2 = new Attributes();
+        a2.setValue(Tag.PixelData, VR.OB, new BulkData(null, "file:/PixelData", false));
+
+        assertTrue(a1.equals(a2));
+        assertTrue(a2.equals(a1));
+    }
+
+    @Test
+    public void testNotEqualsBulkData() {
+        Attributes a1 = new Attributes();
+        a1.setValue(Tag.PixelData, VR.OB, new BulkData(null, "file:/PixelData1", false));
+        Attributes a2 = new Attributes();
+        a2.setValue(Tag.PixelData, VR.OB, new BulkData(null, "file:/PixelData2", false));
+
+        assertFalse(a1.equals(a2));
+        assertFalse(a2.equals(a1));
+    }
+
+    @Test
+    public void testEqualsBulkDataInFragments() {
+        Attributes a1 = new Attributes();
+        Fragments frags1 = a1.newFragments(Tag.PixelData, VR.OB, 2);
+        frags1.add(null);
+        frags1.add(new BulkData(null, "file:/PixelData?offset=1234&length=5678", false));
+        Attributes a2 = new Attributes();
+        Fragments frags2 = a2.newFragments(Tag.PixelData, VR.OB, 2);
+        frags2.add(null);
+        frags2.add(new BulkData(null, "file:/PixelData?offset=1234&length=5678", false));
+
+        assertTrue(a1.equals(a2));
+        assertTrue(a2.equals(a1));
+    }
+
+    @Test
+    public void testNotEqualsBulkDataInFragments() {
+        Attributes a1 = new Attributes();
+        Fragments frags1 = a1.newFragments(Tag.PixelData, VR.OB, 2);
+        frags1.add(null);
+        frags1.add(new BulkData(null, "file:/PixelData?offset=1234&length=5678", false));
+        Attributes a2 = new Attributes();
+        Fragments frags2 = a2.newFragments(Tag.PixelData, VR.OB, 2);
+        frags2.add(null);
+        frags2.add(new BulkData(null, "file:/PixelData?offset=5678&length=1234", false));
+
+        assertFalse(a1.equals(a2));
+        assertFalse(a2.equals(a1));
     }
 
     @Test

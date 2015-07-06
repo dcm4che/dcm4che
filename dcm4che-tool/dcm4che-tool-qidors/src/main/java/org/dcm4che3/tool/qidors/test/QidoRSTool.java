@@ -62,16 +62,16 @@ public class QidoRSTool implements TestTool {
         JSON, XML;
     }
     private TestResult result;
-    private String url;
+    private final String url;
     private Attributes queryAttrs;
     private Attributes returnAttrs;
-    private boolean fuzzy;
-    private boolean timezoneAdjustment;
-    private String limit;
-    private int expectedMatches;
-    private boolean returnAll;
+    private final boolean fuzzy;
+    private final boolean timezoneAdjustment;
+    private final String limit;
+    private int expectedMatches = Integer.MIN_VALUE; // negative value means to not check
+    private final boolean returnAll;
     private int numMatches;
-    private String offset;
+    private final String offset;
 
     public QidoRSTool(String url, String limit, boolean fuzzy, boolean timezone, boolean returnAll, String offset) {
         super();
@@ -84,35 +84,26 @@ public class QidoRSTool implements TestTool {
     }
 
     public void queryJSON(String testDescription) throws IOException,
-    InterruptedException, IncompatibleConnectionException,
-    GeneralSecurityException {
-        QidoRS qidors = new QidoRS(this.isFuzzy(), this.isTimezoneAdjustment()
-                , this.isReturnAll(), this.getLimit(), this.getOffset()
-                , this.getQueryAttrs(), this.getReturnAttrs(), "JSON",this.getUrl());
+            InterruptedException, IncompatibleConnectionException,
+            GeneralSecurityException {
+        query(testDescription, "JSON");
+    }
+
+    public void queryXML(String testDescription) throws IOException,
+            InterruptedException, IncompatibleConnectionException,
+            GeneralSecurityException {
+        query(testDescription, "XML");
+    }
+
+    private void query(String testDescription, String mediaType) throws IOException {
+        QidoRS qidors = new QidoRS(this.isFuzzy(), this.isTimezoneAdjustment(), this.isReturnAll(), this.getLimit(), this.getOffset(), this.getQueryAttrs(), this.getReturnAttrs(), mediaType, this.getUrl());
         qidors.setRunningModeTest(true);
         long t1 = System.currentTimeMillis();
         QidoRS.qido(qidors, false);
         long t2 = System.currentTimeMillis();
         numMatches = qidors.getNumMatches();
         validateMatches(testDescription);
-        init(new QidoRSResult(testDescription, expectedMatches, numMatches
-                , t2-t1, qidors.getTimeFirst()-t1, qidors.getResponseAttrs()));
-        
-    }
-
-    public void queryXML(String testDescription) throws IOException,
-    InterruptedException, IncompatibleConnectionException,
-    GeneralSecurityException {
-        QidoRS qidors = new QidoRS(this.isFuzzy(), this.isTimezoneAdjustment()
-                , this.isReturnAll(), this.getLimit(), this.getOffset()
-                , this.getQueryAttrs(), this.getReturnAttrs(), "XML",this.getUrl());
-        qidors.setRunningModeTest(true);
-        long t1 = System.currentTimeMillis();
-        QidoRS.qido(qidors, false);
-        long t2 = System.currentTimeMillis();
-        numMatches = qidors.getNumMatches();
-        init(new QidoRSResult(testDescription, expectedMatches, numMatches
-                , t2-t1, qidors.getTimeFirst()-t1, qidors.getResponseAttrs()));
+        init(new QidoRSResult(testDescription, expectedMatches, numMatches, t2 - t1, qidors.getTimeFirst() - t1, qidors.getResponseAttrs()));
     }
 
     private void validateMatches(String testDescription) {
@@ -122,7 +113,13 @@ public class QidoRSTool implements TestTool {
                     + " but:" + numMatches, numMatches == this.expectedMatches);
     }
 
-    public void addQueryTag(int tag, String value) throws Exception {
+    /**
+     * Add a field and value that should be queried for ("attributeID=value").
+     * 
+     * @param tag
+     * @param value
+     */
+    public void addQueryTag(int tag, String value) {
         VR vr = ElementDictionary.vrOf(tag, null);
         Attributes attr = this.getQueryAttrs()!=null?this.getQueryAttrs():new Attributes();
         attr.setString(tag, vr, value);
@@ -136,20 +133,39 @@ public class QidoRSTool implements TestTool {
         queryAttrs.addAll(attrs);
     }
 
-    public void addReturnTag(int tag) throws Exception {
+    /**
+     * Add a field that should be included with the responses
+     * ("includefield=attributeID").
+     * 
+     * <p>
+     * If returnAll (QidoRSParameters.returnAll) is set to true, then this will
+     * be ignored (and "includefield=all" will be set instead).
+     * 
+     * <p>
+     * E.g. <code>addReturnTag(Tag.StudyDescription)</code>
+     * 
+     * @param tag
+     */
+    public void addReturnTag(int tag) {
         VR vr = ElementDictionary.vrOf(tag, null);
         Attributes attr = this.getReturnAttrs()!=null?this.getReturnAttrs():new Attributes();
         attr.setNull(tag,vr);
         this.setReturnAttrs(attr);
     }
 
+    /**
+     * If this is set to a non-negative number validation step of the returned
+     * matches will be performed.
+     * 
+     * @param matches
+     */
     public void setExpectedMatches(int matches) {
         this.expectedMatches = matches;
     }
 
     @Override
-    public void init(TestResult result) {
-        this.result = result;
+    public void init(TestResult resultIn) {
+        this.result = resultIn;
     }
 
     @Override

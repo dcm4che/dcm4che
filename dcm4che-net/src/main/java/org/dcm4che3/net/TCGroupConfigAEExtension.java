@@ -130,8 +130,8 @@ public class TCGroupConfigAEExtension extends AEExtension {
 
             case QUERY_RETRIEVE:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
-                allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), DefaultTransferCapabilities.OTHER_TSUIDS);
+                allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), DefaultTransferCapabilities.OTHER_TSUIDS);
                 allTCToList(transferCapabilities, new String[]{UID.CompositeInstanceRetrieveWithoutBulkDataGET, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 

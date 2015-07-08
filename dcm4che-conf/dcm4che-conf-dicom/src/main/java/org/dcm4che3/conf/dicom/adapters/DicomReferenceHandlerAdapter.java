@@ -47,6 +47,7 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.adapters.DefaultReferenceAdapter;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.DicomPath;
+import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 
@@ -106,6 +107,18 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
             } catch (Exception e) {
                 throw new ConfigurationException("Cannot load referenced device (" + configNode + ")", e);
             }
+        } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
+            try {
+
+                PathPattern.PathParser parser = DicomPath.AEByTitleRef.parse(configNode);
+                String aeName = parser.getParam("aeName");
+
+                return (T) vitalizer.getContext(DicomConfiguration.class).findApplicationEntity(aeName);
+            } catch (Exception e) {
+                throw new ConfigurationException("Cannot load referenced AE (" + configNode + ")", e);
+            }
+
+
         }
 
         return super.fromConfigNode(configNode, property, vitalizer);
@@ -140,6 +153,11 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
                 String deviceName = ((Device) object).getDeviceName();
                 return DicomPath.DeviceByNameRef.
                         set("deviceName", deviceName).path();
+
+            } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
+
+                String aeTitle = ((ApplicationEntity) object).getAETitle();
+                return DicomPath.AEByTitleRef.set("aeName", aeTitle).path();
 
             }
         } catch (Exception e) {

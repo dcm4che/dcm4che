@@ -77,6 +77,7 @@ public class SimpleStorageTest {
         DicomConfigurationBuilder builder = DicomConfigurationBuilder.newConfigurationBuilder(System.getProperties());
         builder.registerDeviceExtension(HL7DeviceExtension.class);
         builder.registerAEExtension(TCGroupConfigAEExtension.class);
+        builder.registerDeviceExtension(SomeDeviceExtension.class);
         return builder.build();
     }
 

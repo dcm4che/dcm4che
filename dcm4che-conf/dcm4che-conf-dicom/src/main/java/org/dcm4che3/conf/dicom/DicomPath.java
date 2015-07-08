@@ -68,7 +68,8 @@ public enum DicomPath {
     ConnectionByHostRef,
     ConnectionByHostPortRef,
     TCGroups,
-    AllTCsOfAllAEsWithTCGroupExt;
+    AllTCsOfAllAEsWithTCGroupExt,
+    AEByTitleRef;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -91,6 +92,7 @@ public enum DicomPath {
         PATHS.put(/*******/UniqueHL7AppByName, "/dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot[@name='{hl7AppName}']");
 
         // references (parsable, will be stored this way)
+        PATHS.put(/**************/AEByTitleRef, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE[dicomAETitle='{aeName}']");
         PATHS.put(/**********/DeviceByNameRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']");
         PATHS.put(/********/ConnectionByCnRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[cn='{cn}']");
         PATHS.put(/******/ConnectionByHostRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}']");

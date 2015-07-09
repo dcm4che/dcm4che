@@ -39,6 +39,7 @@
 package org.dcm4che3.conf.api.internal;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.*;
 
@@ -98,4 +99,10 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
     String[] listRegisteredAETitles() throws ConfigurationException;
+
+    void runHybridBatch(DicomConfigHybridBatch hybridBatch);
+
+    interface DicomConfigHybridBatch {
+        void run(DicomConfiguration dicomConfiguration, Configuration configuration) throws ConfigurationException;
+    }
 }

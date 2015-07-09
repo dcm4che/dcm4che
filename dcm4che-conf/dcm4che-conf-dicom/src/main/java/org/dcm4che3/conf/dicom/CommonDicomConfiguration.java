@@ -44,6 +44,7 @@ import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
+import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.*;
@@ -566,6 +567,16 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             
         });
     }
-    
+
+    @Override
+    public void runHybridBatch(final DicomConfigHybridBatch hybridBatch) {
+        config.runBatch(new ConfigBatch() {
+            @Override
+            public void run(Configuration configuration) throws ConfigurationException {
+
+                hybridBatch.run(CommonDicomConfiguration.this, configuration);
+            }
+        });
+    }
 }
 

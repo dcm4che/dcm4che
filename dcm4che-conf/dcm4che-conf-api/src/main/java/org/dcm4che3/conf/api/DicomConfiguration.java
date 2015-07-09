@@ -124,7 +124,7 @@ public interface DicomConfiguration {
      * <li>the context of a new transaction</li>
      * </ul>
      * 
-     * @param batch Configuration batch change to execute
+     * @param dicomConfigBatch Configuration batch change to execute
      */
     void runBatch(DicomConfigBatch dicomConfigBatch);
     
@@ -136,7 +136,7 @@ public interface DicomConfiguration {
     interface DicomConfigBatch {
         /**
          * Executes configuration batch changes on the specified DICOM configuration.
-         * @param configuration DICOM configuration the changes will be applied upon.
+         * @param dicomConfiguration DICOM configuration the changes will be applied upon.
          */
         void run(DicomConfiguration dicomConfiguration);
     }

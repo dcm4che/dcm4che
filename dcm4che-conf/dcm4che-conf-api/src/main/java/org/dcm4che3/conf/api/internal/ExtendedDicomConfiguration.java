@@ -100,9 +100,4 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      */
     String[] listRegisteredAETitles() throws ConfigurationException;
 
-    void runHybridBatch(DicomConfigHybridBatch hybridBatch);
-
-    interface DicomConfigHybridBatch {
-        void run(DicomConfiguration dicomConfiguration, Configuration configuration) throws ConfigurationException;
-    }
 }

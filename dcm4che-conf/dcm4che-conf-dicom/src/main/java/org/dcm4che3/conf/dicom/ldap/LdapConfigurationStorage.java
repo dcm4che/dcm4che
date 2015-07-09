@@ -416,7 +416,7 @@ public class LdapConfigurationStorage implements Configuration {
 
     @Override
     public void runBatch(ConfigBatch batch) {
-        batch.run(this);
+        batch.run();
     }
     
 }

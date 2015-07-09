@@ -136,9 +136,8 @@ public interface DicomConfiguration {
     interface DicomConfigBatch {
         /**
          * Executes configuration batch changes on the specified DICOM configuration.
-         * @param dicomConfiguration DICOM configuration the changes will be applied upon.
          */
-        void run(DicomConfiguration dicomConfiguration);
+        void run();
     }
     
 }

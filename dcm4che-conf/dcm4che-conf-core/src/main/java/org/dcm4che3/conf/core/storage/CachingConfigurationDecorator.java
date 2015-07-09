@@ -124,11 +124,11 @@ public class CachingConfigurationDecorator extends DelegatingConfiguration {
 
     @Override
     public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+        delegate.persistNode(path, configNode, configurableClass);
         if (!path.equals("/"))
             ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
         else
             cachedConfigurationRoot = configNode;
-        delegate.persistNode(path, configNode, configurableClass);
     }
 
     @Override
@@ -164,4 +164,19 @@ public class CachingConfigurationDecorator extends DelegatingConfiguration {
         return l.iterator();
     }
 
+    @Override
+    public synchronized void runBatch(ConfigBatch batch) {
+        try {
+            super.runBatch(batch);
+        }catch (RuntimeException e) {
+            // if something goes wrong during batching - refresh the cache before others are able to read inconsistent data
+            try {
+                refreshNode("/");
+            } catch (ConfigurationException e1) {
+                log.warn("Caught an exception during batch, but was not able to refresh the cache", e1);
+            }
+            throw e;
+        }
+
+    }
 }

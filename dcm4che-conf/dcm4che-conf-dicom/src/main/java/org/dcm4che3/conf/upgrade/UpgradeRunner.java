@@ -43,7 +43,6 @@ package org.dcm4che3.conf.upgrade;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 import org.dcm4che3.conf.api.upgrade.UpgradeScript;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
@@ -79,7 +78,7 @@ public class UpgradeRunner {
         this.upgradeSettings = upgradeSettings;
     }
 
-    public void upgrade() throws ConfigurationException {
+    public void upgrade() {
         if (upgradeSettings == null) {
             log.info("Dcm4che configuration init: upgrade is not configured, no upgrade will be performed");
             return;
@@ -95,59 +94,66 @@ public class UpgradeRunner {
     }
 
 
-    protected void migrateToVersion(final String toVersion) throws ConfigurationException {
-        dicomConfigurationManager.runHybridBatch(new ExtendedDicomConfiguration.DicomConfigHybridBatch() {
+    protected void migrateToVersion(final String toVersion) {
+        dicomConfigurationManager.runBatch(new DicomConfiguration.DicomConfigBatch() {
             @Override
-            public void run(DicomConfiguration dicomConfiguration, Configuration configuration) throws ConfigurationException {
+            public void run() {
 
-                configuration.lock();
+                try {
 
-                BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
+                    Configuration configuration = dicomConfigurationManager.getConfigurationStorage();
+                    configuration.lock();
 
-                Object metadataNode = configuration.getConfigurationNode(METADATA_ROOT_PATH, ConfigurationMetadata.class);
-                ConfigurationMetadata configMetadata = null;
-                if (metadataNode != null)
-                    configMetadata = beanVitalizer.newConfiguredInstance((Map<String, Object>) metadataNode, ConfigurationMetadata.class);
-                else {
-                    configMetadata = new ConfigurationMetadata();
-                    configMetadata.setVersion(UpgradeScript.NO_VERSION);
-                }
-                String fromVersion = configMetadata.getVersion();
+                    BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
-                // check if we need to run scripts at all
-                if (fromVersion.compareToIgnoreCase(toVersion) >= 0) {
-                    log.info("Skipping configuration upgrade - configuration version is already " + toVersion);
-                    return;
-                }
+                    Object metadataNode = configuration.getConfigurationNode(METADATA_ROOT_PATH, ConfigurationMetadata.class);
+                    ConfigurationMetadata configMetadata = null;
+                    if (metadataNode != null)
+                        configMetadata = beanVitalizer.newConfiguredInstance((Map<String, Object>) metadataNode, ConfigurationMetadata.class);
+                    else {
+                        configMetadata = new ConfigurationMetadata();
+                        configMetadata.setVersion(UpgradeScript.NO_VERSION);
+                    }
+                    String fromVersion = configMetadata.getVersion();
 
-
-                Properties props = new Properties();
-                props.putAll(upgradeSettings.getProperties());
-
-                UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(fromVersion, toVersion, props, configuration, dicomConfiguration);
-
-                log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());
-                log.info("Config upgrade scripts discovered in the deployment: {}", availableUpgradeScripts);
-
-                // run all scripts
-                for (String upgradeScriptName : upgradeSettings.getUpgradeScriptsToRun()) {
-
-                    boolean found = false;
-
-                    for (UpgradeScript script : availableUpgradeScripts) {
-                        if (script.getClass().getName().equals(upgradeScriptName)) {
-                            log.info("Executing upgrade script {}", upgradeScriptName);
-                            script.upgrade(upgradeContext);
-                            found = true;
-                        }
+                    // check if we need to run scripts at all
+                    if (fromVersion.compareToIgnoreCase(toVersion) >= 0) {
+                        log.info("Skipping configuration upgrade - configuration version is already " + toVersion);
+                        return;
                     }
 
-                    if (!found) throw new ConfigurationException("Upgrade script "+upgradeScriptName+" not found in the deployment");
-                }
 
-                // update version
-                configMetadata.setVersion(toVersion);
-                configuration.persistNode(METADATA_ROOT_PATH, beanVitalizer.createConfigNodeFromInstance(configMetadata), ConfigurationMetadata.class);
+                    Properties props = new Properties();
+                    props.putAll(upgradeSettings.getProperties());
+
+                    UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(fromVersion, toVersion, props, configuration, dicomConfigurationManager);
+
+                    log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());
+                    log.info("Config upgrade scripts discovered in the deployment: {}", availableUpgradeScripts);
+
+                    // run all scripts
+                    for (String upgradeScriptName : upgradeSettings.getUpgradeScriptsToRun()) {
+
+                        boolean found = false;
+
+                        for (UpgradeScript script : availableUpgradeScripts) {
+                            if (script.getClass().getName().equals(upgradeScriptName)) {
+                                log.info("Executing upgrade script {}", upgradeScriptName);
+                                script.upgrade(upgradeContext);
+                                found = true;
+                            }
+                        }
+
+                        if (!found)
+                            throw new ConfigurationException("Upgrade script " + upgradeScriptName + " not found in the deployment");
+                    }
+
+                    // update version
+                    configMetadata.setVersion(toVersion);
+                    configuration.persistNode(METADATA_ROOT_PATH, beanVitalizer.createConfigNodeFromInstance(configMetadata), ConfigurationMetadata.class);
+                } catch (ConfigurationException e) {
+                    throw new RuntimeException("Error while running the upgrade",e);
+                }
             }
         });
     }

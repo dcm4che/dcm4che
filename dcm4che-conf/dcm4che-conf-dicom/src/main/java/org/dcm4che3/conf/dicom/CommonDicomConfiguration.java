@@ -561,22 +561,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         config.runBatch(new ConfigBatch() {
 
             @Override
-            public void run(Configuration configuration) {
-                dicomConfigBatch.run(CommonDicomConfiguration.this);
+            public void run() {
+                dicomConfigBatch.run();
             }
             
         });
     }
 
-    @Override
-    public void runHybridBatch(final DicomConfigHybridBatch hybridBatch) {
-        config.runBatch(new ConfigBatch() {
-            @Override
-            public void run(Configuration configuration) throws ConfigurationException {
-
-                hybridBatch.run(CommonDicomConfiguration.this, configuration);
-            }
-        });
-    }
 }
 

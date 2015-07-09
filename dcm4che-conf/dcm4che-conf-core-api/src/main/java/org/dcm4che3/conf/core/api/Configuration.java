@@ -160,9 +160,8 @@ public interface Configuration {
         
         /**
          * Executes configuration batch changes on the specified configuration storage.
-         * @param configuration Configuration storage the changes will be applied upon.
          */
-        public void run(Configuration configuration);
+        public void run();
     }
  
 }

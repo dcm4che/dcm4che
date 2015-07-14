@@ -87,6 +87,10 @@ public class ApplicationEntity implements Serializable {
     @ConfigurableProperty(name="dicomAETitle" , tags = Tag.PRIMARY)
     private String AETitle;
 
+    @ConfigurableProperty(name="dcmUUID" , tags = Tag.UUID,
+    description = "An immutable unique identifier")
+    private String uuid = UUID.randomUUID().toString();
+
     @ConfigurableProperty(name="dicomDescription")
     private String description;
 
@@ -151,6 +155,14 @@ public class ApplicationEntity implements Serializable {
         setAETitle(aeTitle);
     }
 
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public void setTransferCapabilities(Collection<TransferCapability> transferCapabilities) {
         scpTCs.clear();
@@ -716,6 +728,7 @@ public class ApplicationEntity implements Serializable {
         setAssociationAcceptor(from.associationAcceptor);
         setAssociationInitiator(from.associationInitiator);
         setAeInstalled(from.aeInstalled);
+        setUuid(from.getUuid());
     }
 
     public Set<String> getAcceptedCallingAETitlesSet() {

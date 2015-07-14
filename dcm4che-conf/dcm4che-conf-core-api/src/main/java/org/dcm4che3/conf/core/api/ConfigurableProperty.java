@@ -130,7 +130,12 @@ public @interface ConfigurableProperty {
          * Non-required properties could be put into a "advanced..." tab to simplify the view.
          * This tag indicates that the property should never be hidden from the user with such technique.
          */
-        PRIMARY
+        PRIMARY,
+
+        /**
+         * Marks the field as identifier
+         */
+        UUID
     }
 
     /**

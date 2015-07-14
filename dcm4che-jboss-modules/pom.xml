@@ -162,8 +162,12 @@
   </build>
   <profiles>
     <!-- Profile to create adapted JBoss modules for CSP build
-    which might contain modules with adapted dependencies, etc.
-    -->
+    which might contain modules with adapted dependencies, etc.-->
+
+    <!--
+
+    Uncomment when pegasus issues are resolved
+
     <profile>
       <id>csp</id>
       <properties>
@@ -172,6 +176,8 @@
         </pegasus.module.dependency>
       </properties>
     </profile>
+    -->
+
     <profile>
       <id>copy-modules-to-jboss</id>
       <activation>

@@ -59,6 +59,22 @@ public interface DicomConfiguration {
     ApplicationEntity findApplicationEntity(String aet) throws ConfigurationException;
 
     /**
+     * Looks up an application entity by UUID
+     * @param uuid UUID
+     * @return
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    ApplicationEntity findApplicationEntityByUUID(String uuid) throws ConfigurationException;
+
+    /**
+     * Looks up a device by UUID
+     * @param uuid UUID
+     * @return
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    Device findDeviceByUUID(String uuid) throws ConfigurationException;
+
+    /**
      * Looks up a device by name
      * @param name device name
      * @return

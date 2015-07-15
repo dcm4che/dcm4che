@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
@@ -83,6 +84,49 @@ public class DicomConfigurationTest {
 
         Assert.assertEquals("The new aet must have 1 connection", 1, deviceLoaded.getApplicationEntity("aet2").getConnections().size());
 
+    }
+
+    @Test
+    public void testSearchByUUID() throws ConfigurationException {
+        CommonDicomConfigurationWithHL7 config = SimpleStorageTest.createCommonDicomConfiguration();
+
+        config.purgeConfiguration();
+
+        Device device = new Device("ABC");
+        ApplicationEntity ae1 = new ApplicationEntity("myAE1");
+        ApplicationEntity ae2 = new ApplicationEntity("myAE2");
+
+
+        String uuid1 = ae1.getUuid();
+        String uuid2 = ae2.getUuid();
+
+        device.addApplicationEntity(ae1);
+        device.addApplicationEntity(ae2);
+        config.persist(device);
+
+        Device device2 = new Device("CDE");
+        ApplicationEntity ae3 = new ApplicationEntity("myAE3");
+
+        String devUUID = device2.getUuid();
+
+        String uuid3 = ae3.getUuid();
+
+        device2.addApplicationEntity(ae3);
+        config.persist(device2);
+
+        Assert.assertEquals("myAE1",config.findApplicationEntityByUUID(uuid1).getAETitle());
+        Assert.assertEquals("myAE2",config.findApplicationEntityByUUID(uuid2).getAETitle());
+        Assert.assertEquals("myAE3",config.findApplicationEntityByUUID(uuid3).getAETitle());
+
+        Assert.assertEquals("CDE", config.findDeviceByUUID(devUUID).getDeviceName());
+
+
+        try {
+            config.findApplicationEntityByUUID("nonexistent");
+            Assert.fail("An AE should have not been found");
+        } catch (ConfigurationNotFoundException e) {
+            // noop
+        }
     }
 
     private Device createDevice(String aeRenameTestDevice) {

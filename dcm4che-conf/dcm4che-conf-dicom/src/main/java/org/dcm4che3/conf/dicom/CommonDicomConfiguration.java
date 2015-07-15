@@ -281,6 +281,45 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
+    public ApplicationEntity findApplicationEntityByUUID(String uuid) throws ConfigurationException {
+
+        if (uuid == null) throw new IllegalArgumentException("Requested AE's uuid cannot be null");
+
+        Iterator search = config.search(DicomPath.DeviceNameByAEUUID.set("aeUUID", uuid).path());
+
+        try {
+            String deviceNameNode = (String) search.next();
+            Device device = findDevice(deviceNameNode);
+
+            ApplicationEntity ae = null;
+            for (Map.Entry<String, ApplicationEntity> applicationEntityEntry : device.getApplicationEntitiesMap().entrySet())
+                if (uuid.equals(applicationEntityEntry.getValue().getUuid())) {
+                    ae = applicationEntityEntry.getValue();
+                    break;
+                }
+            if (ae == null) throw new NoSuchElementException("Unexpected error");
+            return ae;
+
+        } catch (NoSuchElementException e) {
+            throw new ConfigurationNotFoundException("AE with UUID '" + uuid + "' not found", e);
+        }
+    }
+
+    @Override
+    public Device findDeviceByUUID(String uuid) throws ConfigurationException {
+        if (uuid == null) throw new IllegalArgumentException("Requested Device's uuid cannot be null");
+
+        Iterator search = config.search(DicomPath.DeviceNameByUUID.set("deviceUUID", uuid).path());
+
+        try {
+            String deviceNameNode = (String) search.next();
+            return findDevice(deviceNameNode);
+        } catch (NoSuchElementException e) {
+            throw new ConfigurationNotFoundException("Device with UUID '" + uuid + "' not found", e);
+        }
+    }
+
+    @Override
     public Device findDevice(String name) throws ConfigurationException {
         if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
@@ -403,6 +442,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void persist(Device device) throws ConfigurationException {
+        if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         if (config.nodeExists(deviceRef(device.getDeviceName())))
             throw new ConfigurationAlreadyExistsException("Device " + device.getDeviceName() + " already exists");
         // otherwise it is the same as merge
@@ -411,6 +451,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void merge(Device device) throws ConfigurationException {
+        if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         Map<String, Object> configNode = createDeviceConfigNode(device);
         config.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);
     }

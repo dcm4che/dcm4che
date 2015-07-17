@@ -340,7 +340,8 @@ public class SAXWriter implements DicomInputHandler {
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
             String s = vr.toString(val, bigEndian, i, null);
-            addAttribute("number", Integer.toString(i + 1));
+            if (s != null)
+                addAttribute("number", Integer.toString(i + 1));
             if (vr == VR.PN) {
                 PersonName pn = new PersonName(s, true);
                 startElement("PersonName");

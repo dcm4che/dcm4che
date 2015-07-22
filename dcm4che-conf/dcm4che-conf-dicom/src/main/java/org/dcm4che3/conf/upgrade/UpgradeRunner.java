@@ -126,8 +126,6 @@ public class UpgradeRunner {
                     Properties props = new Properties();
                     props.putAll(upgradeSettings.getProperties());
 
-                    UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(fromVersion, toVersion, props, configuration, dicomConfigurationManager);
-
                     log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());
                     log.info("Config upgrade scripts discovered in the deployment: {}", availableUpgradeScripts);
 
@@ -139,6 +137,12 @@ public class UpgradeRunner {
                         for (UpgradeScript script : availableUpgradeScripts) {
                             if (script.getClass().getName().equals(upgradeScriptName)) {
                                 log.info("Executing upgrade script {}", upgradeScriptName);
+                                
+                                @SuppressWarnings("unchecked")
+                                Map<String,Object> scriptConfig = (Map<String,Object>)upgradeSettings.getUpgradeConfig().get(upgradeScriptName);
+                                UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(fromVersion, toVersion, props, 
+                                        scriptConfig, configuration, dicomConfigurationManager);
+                                
                                 script.upgrade(upgradeContext);
                                 found = true;
                             }

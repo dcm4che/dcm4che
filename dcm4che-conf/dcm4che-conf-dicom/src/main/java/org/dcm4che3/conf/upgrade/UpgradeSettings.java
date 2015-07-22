@@ -66,6 +66,8 @@ public class UpgradeSettings {
             description = "These key/value properties are available to upgrade scripts"
     )
     Map<String, String> properties;
+    
+    private Map<String,Object> upgradeConfig;
 
     public Map<String, String> getProperties() {
         return properties;
@@ -73,6 +75,14 @@ public class UpgradeSettings {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
+    }
+    
+    public Map<String, Object> getUpgradeConfig() {
+        return upgradeConfig;
+    }
+
+    public void setUpgradeConfig(Map<String, Object> upgradeConfig) {
+        this.upgradeConfig = upgradeConfig;
     }
 
     public String getUpgradeToVersion() {

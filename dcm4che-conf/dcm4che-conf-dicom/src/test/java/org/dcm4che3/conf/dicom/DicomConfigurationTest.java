@@ -107,7 +107,7 @@ public class DicomConfigurationTest {
         Device device2 = new Device("CDE");
         ApplicationEntity ae3 = new ApplicationEntity("myAE3");
 
-        String devUUID = device2.getUuid();
+//        String devUUID = device2.getUuid();
 
         String uuid3 = ae3.getUuid();
 
@@ -118,7 +118,7 @@ public class DicomConfigurationTest {
         Assert.assertEquals("myAE2",config.findApplicationEntityByUUID(uuid2).getAETitle());
         Assert.assertEquals("myAE3",config.findApplicationEntityByUUID(uuid3).getAETitle());
 
-        Assert.assertEquals("CDE", config.findDeviceByUUID(devUUID).getDeviceName());
+//        Assert.assertEquals("CDE", config.findDeviceByUUID(devUUID).getDeviceName());
 
 
         try {

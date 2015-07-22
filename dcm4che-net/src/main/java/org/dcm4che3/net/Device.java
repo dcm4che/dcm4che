@@ -83,9 +83,10 @@ public class Device implements Serializable {
     @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
 
-    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
-    description = "An immutable unique identifier")
-    private String uuid = UUID.randomUUID().toString();
+    // Will add later on one big bang refactoring
+//    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
+//    description = "An immutable unique identifier")
+//    private String uuid = UUID.randomUUID().toString();
 
     @ConfigurableProperty(name = "dicomDescription")
     private String description;
@@ -235,13 +236,13 @@ public class Device implements Serializable {
         setDeviceName(name);
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+//    public String getUuid() {
+//        return uuid;
+//    }
+//
+//    public void setUuid(String uuid) {
+//        this.uuid = uuid;
+//    }
 
     private void checkNotEmpty(String name, String val) {
         if (val != null && val.isEmpty())
@@ -1199,7 +1200,7 @@ public class Device implements Serializable {
         setManufacturerModelName(from.manufacturerModelName);
         setSoftwareVersions(from.softwareVersions);
         setStationName(from.stationName);
-        setUuid(from.getUuid());
+//        setUuid(from.getUuid());
         setDeviceSerialNumber(from.deviceSerialNumber);
         setTrustStoreURL(from.trustStoreURL);
         setTrustStoreType(from.trustStoreType);

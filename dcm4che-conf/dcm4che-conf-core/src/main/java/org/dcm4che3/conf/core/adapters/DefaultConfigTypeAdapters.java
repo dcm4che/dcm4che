@@ -39,6 +39,8 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
+import static java.lang.String.format;
+
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
@@ -92,8 +94,7 @@ public class DefaultConfigTypeAdapters {
      * write method
      */
     public static class PrimitiveTypeAdapter<T> implements ConfigTypeAdapter<T, T> {
-
-        Map<String, Object> metadata = new HashMap<String, Object>();
+        private final Map<String, Object> metadata = new HashMap<String, Object>();
 
         /**
          * Assign the type for metadata
@@ -125,44 +126,16 @@ public class DefaultConfigTypeAdapters {
             return metadata;
         }
 
-
         @SuppressWarnings("unchecked")
         @Override
         public T normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
             try {
                 if (metadata.get("type").equals("integer")) {
-                    if (configNode == null)
-                        throw new ConfigurationException("No value found for integer property without default");
-                    if (configNode.getClass().equals(String.class))
-                        return (T) Integer.valueOf((String) configNode);
-                    else if (configNode.getClass().equals(Integer.class))
-                        return (T) configNode;
-                    else
-                        throw new ClassCastException();
+                    return normalizeInt(configNode, property);
                 } else if (metadata.get("type").equals("boolean")) {
-                    if (configNode == null && property.getType().equals(boolean.class))
-                        throw new ConfigurationException("No value found for boolean property without default");
-
-                    // special handling for Boolean's null
-                    if (configNode == null || configNode.equals("null")) return null;
-
-                    if (configNode.getClass().equals(String.class))
-                        return (T) Boolean.valueOf((String) configNode);
-                    else if (configNode.getClass().equals(Boolean.class))
-                        return (T) configNode;
-                    else
-                        throw new ClassCastException();
-
+                   return normalizeBoolean(configNode, property);
                 } else if (metadata.get("type").equals("number")) {
-                    if (configNode == null)
-                        throw new ConfigurationException("No value found for number property without default");
-                    if (configNode.getClass().equals(String.class))
-                        return (T) Double.valueOf((String) configNode);
-                    else if (configNode.getClass().equals(Double.class) ||
-                            configNode.getClass().equals(Float.class))
-                        return (T) configNode;
-                    else
-                        throw new ClassCastException();
+                   return normalizeNumber(configNode, property);
                 } else return (T) configNode;
             } catch (ConfigurationException ce) {
                 throw ce;
@@ -170,7 +143,120 @@ public class DefaultConfigTypeAdapters {
                 throw new ConfigurationException("Cannot parse node " + configNode, e);
             }
         }
+        
+        protected T normalizeInt(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            if (configNode == null) {
+                throw new ConfigurationException("No value found for primitive integer property without default");
+            }
+            if (configNode.getClass().equals(String.class)) {
+                return (T) Integer.valueOf((String) configNode);
+            }
+            else if (configNode.getClass().equals(Integer.class)) {
+                return (T) configNode;
+            }
+            else {
+                throw new ClassCastException(format("Cannot convert config node type %s to primitive integer", configNode.getClass().getName()));
+            }
+        }
+        
+        protected T normalizeBoolean(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            if (configNode == null && property.getType().equals(boolean.class)) {
+                throw new ConfigurationException("No value found for primitive boolean property without default");
+            }
+            
+            // special handling for Boolean's null
+            if (configNode == null || configNode.equals("null")) {
+                return null;
+            }
+
+            if (configNode.getClass().equals(String.class)) {
+                return (T) Boolean.valueOf((String) configNode);
+            }
+            else if (configNode.getClass().equals(Boolean.class)) {
+                return (T) configNode;
+            }
+            else {
+                throw new ClassCastException(format("Cannot convert config node type %s to primitive boolean", configNode.getClass().getName()));
+            }
+        }
+        
+        protected T normalizeNumber(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            if (configNode == null) {
+                throw new ConfigurationException("No value found for number property without default");
+            }
+            
+            if (configNode.getClass().equals(String.class)) {
+                return (T) Double.valueOf((String) configNode);
+            }
+            else if (configNode.getClass().equals(Double.class) ||
+                    configNode.getClass().equals(Float.class)) {
+                return (T) configNode;
+            }
+            else {
+                throw new ClassCastException(format("Cannot convert config node type %s to number", configNode.getClass().getName()));
+            }
+        }
+        
     }
+    
+    /**
+     * Extension of primitive type adapter that can handle missing config values for primitive types.
+     * It replaces missing values with either:
+     * <ol>
+     *   <li>Default values found in the annotation
+     *   <li>Java default value for primitive types
+     * </ol>
+     * 
+     * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
+     */
+    public static class NullablePrimitiveTypeAdapter<T> extends PrimitiveTypeAdapter<T> {
+
+        public NullablePrimitiveTypeAdapter(String type) {
+            super(type);
+        }
+
+        @Override
+        public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property,
+                BeanVitalizer vitalizer) throws ConfigurationException {
+            return super.fromConfigNode(configNode, property, vitalizer);
+        }
+
+        @Override
+        protected T normalizeInt(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            // Java default value for int: 0
+            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, new Integer(0));
+            return super.normalizeInt(checkedConfigNode, property);
+        }
+
+        @Override
+        protected T normalizeBoolean(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            // Java default value for boolean: false
+            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, Boolean.FALSE);
+            return super.normalizeBoolean(checkedConfigNode, property);
+        }
+
+        @Override
+        protected T normalizeNumber(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            // use 0.0 as default for other number types
+            Object checkedConfigNode = checkIfNoValueAndSetDefaultOrFallback(configNode, property, new Double(0.0));
+            return super.normalizeNumber(checkedConfigNode, property);
+        }
+        
+        private Object checkIfNoValueAndSetDefaultOrFallback(Object configNode, AnnotatedConfigurableProperty property, Object fallbackDefValue) {
+            if(configNode == null) {
+                String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
+                if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                    return defaultValue;
+                } else {
+                   return fallbackDefValue; 
+                }
+            }
+            
+            return configNode;
+        }
+        
+    }
+
 
     /**
      * Common Read/Write methods for String representation

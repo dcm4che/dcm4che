@@ -510,6 +510,178 @@ public class AttributesTest {
         assertArrayEquals(ipd, d.itemPointers());
     }
 
+    @Test
+    public void testAddSelectedWithSelectionAttributes()
+    {
+        Attributes original = new Attributes();
+        Attributes otherPID = new Attributes();
+        original.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber");
+        original.setNull(Tag.PatientName, VR.PN);
+        original.setString(Tag.PatientID, VR.LO, "PatientID");
+        original.setString(Tag.IssuerOfPatientID, VR.LO, "IssuerOfPatientID");
+        original.newSequence(Tag.OtherPatientIDsSequence, 1).add(otherPID);
+        Sequence requestAttributesSequence = original.newSequence(Tag.RequestAttributesSequence, 2);
+        Attributes rqAttrs1 = new Attributes();
+        rqAttrs1.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID1");
+        rqAttrs1.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID1");
+        Attributes rqAttrs2 = new Attributes();
+        rqAttrs2.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID2");
+        rqAttrs2.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID2");
+        requestAttributesSequence.add(rqAttrs1);
+        requestAttributesSequence.add(rqAttrs2);
+        original.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00990001, VR.LO, "0099xx01B");
+        original.setString("PrivateCreatorB", 0x00990002, VR.LO, "0099xx02B");
+        otherPID.setString(Tag.PatientID, VR.LO, "OtherPatientID");
+        otherPID.setString(Tag.IssuerOfPatientID, VR.LO, "OtherIssuerOfPatientID");
+
+        Attributes selection = new Attributes();
+        selection.setNull(Tag.AccessionNumber, VR.SH);
+        selection.setNull(Tag.PatientName, VR.PN);
+        // select complete other patient id sequence
+        selection.newSequence(Tag.OtherPatientIDsSequence, 0);
+        // sub-selection inside the RequestAttributesSequence
+        Attributes rqAttrsSelection = new Attributes();
+        rqAttrsSelection.setNull(Tag.ScheduledProcedureStepID, VR.LO);
+        selection.newSequence(Tag.RequestAttributesSequence, 1).add(rqAttrsSelection);
+
+        // filter the original with the selection
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection); // THIS is the method we want to test here
+
+        // that is the expected result
+        Attributes filteredExpected = new Attributes();
+        filteredExpected.setString(Tag.AccessionNumber, VR.SH, "AccessionNumber");
+        filteredExpected.setNull(Tag.PatientName, VR.PN);
+        Attributes filteredExpectedOtherPID = new Attributes();
+        filteredExpectedOtherPID.setString(Tag.PatientID, VR.LO, "OtherPatientID");
+        filteredExpectedOtherPID.setString(Tag.IssuerOfPatientID, VR.LO, "OtherIssuerOfPatientID");
+        filteredExpected.newSequence(Tag.OtherPatientIDsSequence, 1).add(filteredExpectedOtherPID);
+        Sequence requestAttributesSequenceFilteredExpected = filteredExpected.newSequence(Tag.RequestAttributesSequence, 2);
+        Attributes rqAttrs1FilteredExpected = new Attributes();
+        rqAttrs1FilteredExpected.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID1");
+        Attributes rqAttrs2FilteredExpected = new Attributes();
+        rqAttrs2FilteredExpected.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID2");
+        requestAttributesSequenceFilteredExpected.add(rqAttrs1FilteredExpected);
+        requestAttributesSequenceFilteredExpected.add(rqAttrs2FilteredExpected);
+
+        assertEquals(filteredExpected, filtered);
+    }
+
+    @Test
+    public void testAddSelectedWithSelectionAttributesInsideSequence()
+    {
+        Attributes original = new Attributes();
+        Sequence requestAttributesSequence = original.newSequence(Tag.RequestAttributesSequence, 2);
+        Attributes rqAttrs1 = new Attributes();
+        rqAttrs1.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID1");
+        rqAttrs1.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID1");
+        Attributes rqAttrs2 = new Attributes();
+        rqAttrs2.setString(Tag.RequestedProcedureID, VR.LO, "RequestedProcedureID2");
+        rqAttrs2.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID2");
+        requestAttributesSequence.add(rqAttrs1);
+        requestAttributesSequence.add(rqAttrs2);
+
+        Attributes selection = new Attributes();
+        // sub-selection inside the RequestAttributesSequence
+        // this test just documents the behavior that for the selection only the first item within a sequence is considered
+        Attributes rqAttrsSelection = new Attributes();
+        rqAttrsSelection.setNull(Tag.ScheduledProcedureStepID, VR.LO);
+        Attributes rqAttrsIgnoredSelection = new Attributes();
+        rqAttrsIgnoredSelection.setNull(Tag.RequestedProcedureID, VR.LO);
+        Sequence requestAttrsSeqSelection = selection.newSequence(Tag.RequestAttributesSequence, 2);
+        requestAttrsSeqSelection.add(rqAttrsSelection);
+        requestAttrsSeqSelection.add(rqAttrsIgnoredSelection); // this one will not be considered for the selection
+
+        // filter the original with the selection
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection); // THIS is the method we want to test here
+
+        // that is the expected result
+        Attributes filteredExpected = new Attributes();
+        Sequence requestAttributesSequenceFilteredExpected = filteredExpected.newSequence(Tag.RequestAttributesSequence, 2);
+        Attributes rqAttrs1FilteredExpected = new Attributes();
+        rqAttrs1FilteredExpected.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID1");
+        Attributes rqAttrs2FilteredExpected = new Attributes();
+        rqAttrs2FilteredExpected.setString(Tag.ScheduledProcedureStepID, VR.LO, "ScheduledProcedureStepID2");
+        requestAttributesSequenceFilteredExpected.add(rqAttrs1FilteredExpected);
+        requestAttributesSequenceFilteredExpected.add(rqAttrs2FilteredExpected);
+
+        assertEquals(filteredExpected, filtered);
+    }
+
+    @Test
+    public void testAddSelectedWithSelectionAttributesPrivateTags()
+    {
+        // tests the fix for LIB-362
+
+        Attributes original = new Attributes();
+        original.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00990001, VR.LO, "0099xx01B");
+
+        Attributes selection = new Attributes();
+        selection.setNull("PrivateCreatorB", 0x00990001, VR.LO);
+
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection); // THIS is the method we want to test here
+
+        // that is the expected result
+        Attributes filteredExpected = new Attributes();
+        filteredExpected.setString("PrivateCreatorB", 0x00990001, VR.LO, "0099xx01B");
+
+        assertEquals(filteredExpected, filtered);
+    }
+
+    @Test
+    public void testAddSelectedWithSelectionAttributesPrivateTags2()
+    {
+        Attributes original = new Attributes();
+        original.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        original.setString("PrivateCreatorB", 0x00990001, VR.LO, "0099xx01B");
+        original.setString("PrivateCreatorC", 0x00990001, VR.LO, "0099xx01C");
+
+        Attributes selection = new Attributes();
+        selection.setNull("PrivateCreatorA", 0x00990001, VR.LO);
+        selection.setNull("PrivateCreatorC", 0x00990001, VR.LO);
+
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection); // THIS is the method we want to test here
+
+        // that is the expected result
+        Attributes filteredExpected = new Attributes();
+        filteredExpected.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        filteredExpected.setString("PrivateCreatorC", 0x00990001, VR.LO, "0099xx01C");
+
+        assertEquals(filteredExpected, filtered);
+    }
+
+    @Test
+    public void testAddSelectedWithSelectionAttributesInsidePrivateSequence()
+    {
+        Attributes original = new Attributes();
+        original.setString("PrivateCreatorA", 0x00990001, VR.LO, "0099xx01A");
+        Sequence privateSeq = original.newSequence("PrivateCreatorB", 0x00990001, 2);
+        privateSeq.add(new Attributes());
+        privateSeq.get(0).setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4");
+        privateSeq.get(0).setString(Tag.SOPClassUID, VR.UI, "4.3.2.1");
+
+        Attributes selection = new Attributes();
+        Sequence privateSeqSelection = selection.newSequence("PrivateCreatorB", 0x00990001, 2);
+        privateSeqSelection.add(new Attributes());
+        privateSeqSelection.get(0).setNull(Tag.SOPInstanceUID, VR.UI);
+
+        Attributes filtered = new Attributes();
+        filtered.addSelected(original, selection); // THIS is the method we want to test here
+
+        // that is the expected result
+        Attributes filteredExpected = new Attributes();
+        Sequence privateSeqExpected = filteredExpected.newSequence("PrivateCreatorB", 0x00990001, 2);
+        privateSeqExpected.add(new Attributes());
+        privateSeqExpected.get(0).setString(Tag.SOPInstanceUID, VR.UI, "1.2.3.4");
+
+        assertEquals(filteredExpected, filtered);
+    }
+
     private void assertModified(Attributes modified) {
         assertEquals("PatientID", modified.getString(Tag.PatientID));
         Attributes modOtherPID = modified.getNestedDataset(Tag.OtherPatientIDsSequence);

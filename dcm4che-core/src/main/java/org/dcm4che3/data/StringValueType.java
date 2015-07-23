@@ -352,7 +352,7 @@ enum StringValueType implements ValueType {
 
         if (val instanceof String[]) {
             String[] ss = (String[]) val;
-            return (valueIndex < ss.length && !ss[valueIndex].isEmpty())
+            return (valueIndex < ss.length && ss[valueIndex] != null && !ss[valueIndex].isEmpty())
                     ? ss[valueIndex]
                     : defVal;
         }

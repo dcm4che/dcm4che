@@ -38,42 +38,26 @@
 
 package org.dcm4che3.data;
 
-import static org.junit.Assert.*;
-
+import org.dcm4che3.dict.siemens.SiemensCSAHeader;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author umberto
  */
 public class ValueSelectorTest {
-
-    private static final String XPATH =
-            "DicomAttribute[@tag=\"00400275\"]/Item[@number=\"1\"]/"
-          + "DicomAttribute[@tag=\"0020000D\"]/Value[@number=\"1\"]";
 
     private static final String XPATH2 =
             "DicomAttribute[@tag=\"00290010\" and @privateCreator=\"SIEMENS " +
                     "CSA HEADER\"]/Value[@number=\"1\"]";
 
     @Test
-    public void testToString() {
-        ItemPointer ip = new ItemPointer(Tag.RequestAttributesSequence);
-        ValueSelector vs = new ValueSelector(null, Tag.StudyInstanceUID, null, 0, ip);
-        assertEquals(XPATH, vs.toString());
-    }
-
-   @Test
-    public void testValueOf() {
-        ValueSelector vs = ValueSelector.valueOf(XPATH);
-        assertEquals(Tag.StudyInstanceUID, vs.tag);
-        assertNull(vs.privateCreator);
-        assertNull(vs.vr);
-        assertEquals(0, vs.valueIndex);
-        assertEquals(1, vs.itemPointers.length);
-        ItemPointer ip = vs.itemPointers[0];
-        assertEquals(Tag.RequestAttributesSequence, ip.sequenceTag);
-        assertNull(ip.privateCreator);
-        assertEquals(0, ip.itemIndex);
+    public void testPrivateToString() {
+        ValueSelector vs = new ValueSelector(SiemensCSAHeader.PrivateCreator,
+                SiemensCSAHeader.CSAImageHeaderInfo, null, 0);
+        assertEquals(XPATH2, vs.toString());
     }
 
 }

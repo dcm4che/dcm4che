@@ -7,5 +7,6 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="org.slf4j"/>
+        <module name="org.dcm4che.dict-private" services="export" export="true"/>
     </dependencies>
 </module>

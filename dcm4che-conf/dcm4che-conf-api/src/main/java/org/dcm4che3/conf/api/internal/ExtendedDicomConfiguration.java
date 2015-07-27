@@ -89,10 +89,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
 
     void close();
 
-    Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions();
-
-    Collection<Class<? extends AEExtension>> getRegisteredAEExtensions();
-
     /**
      * Returns all AE names from all devices from the configuration backend
      * @return AE names

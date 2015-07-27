@@ -67,7 +67,37 @@ public class AnnotatedConfigurableProperty {
         setType(type);
     }
 
+    //////// wrapping annotations, otherwise it gets too unDRY ///////////////
 
+    public boolean isExtensionsProperty() {
+        return getAnnotation(ConfigurableProperty.class).isExtensionsProperty();
+    }
+
+    public boolean isCollectionOfReferences() {
+        return getAnnotation(ConfigurableProperty.class).collectionOfReferences();
+    }
+
+    public boolean isReference() {
+        return getAnnotation(ConfigurableProperty.class).isReference();
+    }
+
+    public List<ConfigurableProperty.Tag> getTags() {
+        if (getAnnotation(ConfigurableProperty.class)==null)
+            return new ArrayList<ConfigurableProperty.Tag>();
+
+        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
+    }
+
+    public String getAnnotatedName() throws ConfigurationException {
+
+        String name = getAnnotation(ConfigurableProperty.class).name();
+        if (!name.equals("")) return name;
+        name = this.name;
+        if (name != null) return name;
+        throw new ConfigurationException("Property name not specified");
+
+    }
+    ////////////////////////////////////////////
 
     public AnnotatedConfigurableProperty clone(){
 
@@ -177,16 +207,6 @@ public class AnnotatedConfigurableProperty {
         return name;
     }
 
-    public String getAnnotatedName() throws ConfigurationException {
-
-        String name = getAnnotation(ConfigurableProperty.class).name();
-        if (!name.equals("")) return name;
-        name = this.name;
-        if (name != null) return name;
-        throw new ConfigurationException("Property name not specified");
-
-    }
-
     @SuppressWarnings("unchecked")
     public <T> T getAnnotation(Class<T> annotationType) {
         T t = (T) annotations.get(annotationType);
@@ -207,14 +227,10 @@ public class AnnotatedConfigurableProperty {
 
     public boolean isMapOfConfObjects() {
         return Map.class.isAssignableFrom(getRawClass()) &&
-                !getAnnotation(ConfigurableProperty.class).collectionOfReferences() &&
-                getPseudoPropertyForGenericsParamater(1).isConfObject();
+                !isCollectionOfReferences() &&
+                getPseudoPropertyForGenericsParamater(1).isConfObject() &&
+                !isExtensionsProperty();
     }
 
-    public List<ConfigurableProperty.Tag> getTags() {
-        if (getAnnotation(ConfigurableProperty.class)==null)
-            return new ArrayList<ConfigurableProperty.Tag>();
 
-        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
-    }
 }

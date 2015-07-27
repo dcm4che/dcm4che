@@ -42,7 +42,6 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.conf.api.hl7.HL7Configuration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DeviceExtension;
@@ -55,9 +54,8 @@ import java.util.*;
 public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration implements HL7Configuration {
 
 
-    public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses, Collection<Class<? extends HL7ApplicationExtension>> hl7ApplicationExtensionClasses) {
-        super(configurationStorage, deviceExtensionClasses, aeExtensionClasses);
-        this.hl7ApplicationExtensionClasses = hl7ApplicationExtensionClasses;
+    public CommonDicomConfigurationWithHL7(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
+        super(configurationStorage, extensionsByClass);
     }
 
     Collection<Class<? extends HL7ApplicationExtension>> hl7ApplicationExtensionClasses;
@@ -127,82 +125,6 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
         return list.toArray(new String[list.size()]);
     }
 
-    @Override
-    public Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions() {
-        return Collections.unmodifiableCollection(hl7ApplicationExtensionClasses);
-    }
-
-    @Override
-    protected Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
-        Device device = super.vitalizeDevice(name, deviceCache, deviceConfigurationNode);
-        if (device == null) return null;
-
-        // add exts
-        HL7DeviceExtension hl7DeviceExtension = device.getDeviceExtension(HL7DeviceExtension.class);
-        if (hl7DeviceExtension == null) return device;
-
-        Map<String, HL7Application> hl7apps = hl7DeviceExtension.getHl7apps();
-
-        for (Map.Entry<String, HL7Application> hl7ApplicationEntry : hl7apps.entrySet()) {
-            for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses) {
-                try {
-                    String path = DicomPath.HL7AppExtension.
-                            set("hl7AppName", hl7ApplicationEntry.getKey()).
-                            set("extensionName", hl7ApplicationExtensionClass.getSimpleName())
-                            .path();
-
-                    Object configurationNode = ConfigNodeUtil.getNode(deviceConfigurationNode, path);
-
-                    if (configurationNode == null) continue;
-                    HL7ApplicationExtension hl7ApplicationExtension = vitalizer.newInstance(hl7ApplicationExtensionClass);
-                    // add extension before vitalizing, so the hl7app field is accessible for use in setters
-                    hl7ApplicationEntry.getValue().addHL7ApplicationExtension(hl7ApplicationExtension);
-                    vitalizer.configureInstance(hl7ApplicationExtension, (Map<String, Object>) configurationNode, hl7ApplicationExtensionClass);
-                } catch (Exception e) {
-                    throw new ConfigurationException("Failed to load HL7 app extension '" + hl7ApplicationExtensionClass.getSimpleName() + "' for hl7app '" + hl7ApplicationEntry.getKey() + "'", e);
-                }
-            }
-        }
-
-        return device;
-    }
-
-    @Override
-    protected Map<String, Object> createDeviceConfigNode(Device device) throws ConfigurationException {
-
-        Map<String, Object> deviceConfigNode = super.createDeviceConfigNode(device);
-
-        // add hl7 extensions
-        HL7DeviceExtension hl7DeviceExtension = device.getDeviceExtension(HL7DeviceExtension.class);
-        if (hl7DeviceExtension == null) return deviceConfigNode;
-
-        Map<String, HL7Application> hl7apps = hl7DeviceExtension.getHl7apps();
-
-        for (Map.Entry<String, HL7Application> hl7ApplicationEntry : hl7apps.entrySet()) {
-            for (Class<? extends HL7ApplicationExtension> hl7ApplicationExtensionClass : hl7ApplicationExtensionClasses) {
-                try {
-                    HL7ApplicationExtension hl7ApplicationExtension = hl7ApplicationEntry.getValue().getHL7ApplicationExtension(hl7ApplicationExtensionClass);
-                    if (hl7ApplicationExtension == null) continue;
-
-                    Map<String, Object> configNode = vitalizer.createConfigNodeFromInstance(hl7ApplicationExtension, hl7ApplicationExtensionClass);
-
-                    String path = DicomPath.HL7AppExtension.
-                            set("hl7AppName", hl7ApplicationEntry.getKey()).
-                            set("extensionName", hl7ApplicationExtensionClass.getSimpleName())
-                            .path();
-
-                    ConfigNodeUtil.replaceNode(deviceConfigNode, path, configNode);
-
-                } catch (Exception e) {
-                    throw new ConfigurationException("Failed to save HL7 app extension '" + hl7ApplicationExtensionClass.getSimpleName() + "' for hl7app '" + hl7ApplicationEntry.getKey() + "'", e);
-                }
-            }
-        }
-
-        return deviceConfigNode;
-    }
-
-
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getDicomConfigurationExtension(Class<T> clazz) {
@@ -227,11 +149,6 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
                 @Override
                 public String[] listRegisteredHL7ApplicationNames() throws ConfigurationException {
                     return CommonDicomConfigurationWithHL7.this.listRegisteredHL7ApplicationNames();
-                }
-
-                @Override
-                public Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions() {
-                    return CommonDicomConfigurationWithHL7.this.getRegisteredHL7ApplicationExtensions();
                 }
             };
         }

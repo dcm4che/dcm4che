@@ -47,20 +47,28 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 /**
  *
  */
+@SuppressWarnings("unchecked")
 public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
+    public static final Logger log = LoggerFactory.getLogger(DefaultsAndNullFilterDecorator.class);
+
+
+    protected List<Class> allExtensionClasses;
     private boolean persistDefaults;
     private BeanVitalizer dummyVitalizer = new DefaultBeanVitalizer();
 
-    public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults) {
+    public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults, List<Class> allExtensionClasses) {
         super(delegate);
         this.persistDefaults = persistDefaults;
+        this.allExtensionClasses = allExtensionClasses;
     }
 
     @Override
@@ -82,7 +90,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
         // filter out defaults
         if (configurableClass != null && !persistDefaults)
-            traverseTree(configNode,configurableClass,filterDefaults);
+            traverseTree(configNode, configurableClass, filterDefaults);
 
         super.persistNode(path, configNode, configurableClass);
     }
@@ -117,11 +125,6 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             traverseTree(node, configurableClass, applyDefaults);
         return node;
     }
-
-
-    public interface EntryFilter {
-        boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
-    };
 
     protected void traverseTree(Object node, Class nodeClass, EntryFilter filter) throws ConfigurationException {
 
@@ -159,17 +162,50 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             // map, where a value generics parameter is a configurable class
             if (property.isMapOfConfObjects()) {
 
-                Map<String, Object> collection = (Map<String, Object>) childNode;
+                try {
+                    Map<String, Object> collection = (Map<String, Object>) childNode;
 
-                for (Object object : collection.values())
-                    traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
+                    for (Object object : collection.values())
+                        traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
+
+                } catch (ClassCastException e) {
+                    log.warn("Map is malformed", e);
+                }
 
                 continue;
             }
 
+            // extensions map
+            if (property.isExtensionsProperty()) {
+
+                try {
+                    Map<String, Object> extensionsMap = (Map<String, Object>) childNode;
+
+                    if (extensionsMap == null) return;
+
+                    for (Map.Entry<String, Object> entry : extensionsMap.entrySet()) {
+                        try {
+                            traverseTree(entry.getValue(), ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter);
+                        } catch (ClassNotFoundException e) {
+                            // noop
+                            log.warn("Extension class {} not found", entry.getKey());
+                        }
+                    }
+
+                } catch (ClassCastException e) {
+                    log.warn("Extensions are malformed", e);
+                }
+
+            }
+
+
         }
     }
 
+
+    public interface EntryFilter {
+        boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
+    }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {

@@ -117,6 +117,15 @@ public @interface ConfigurableProperty {
      */
     boolean isReference() default false;
 
+
+    /**
+     * Enables the extension-by-composition mechanism of the framework for containing class and marks the property as an extension map.
+     * Only may be applied on fields with type Map&lt;Class<? extends T>, T&gt;.
+     * T will be treated as base extension class
+     * @return
+     */
+    boolean isExtensionsProperty() default false;
+
     /**
      * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings
      * @return

@@ -62,7 +62,7 @@ public class ConfigIterators {
 
         List<Class<?>> extensionClasses = allExtensionClasses;
 
-        for (Class<?> aClass : extensionClasses) {
+        for (Class aClass : extensionClasses) {
             if (aClass.getSimpleName().equals(extensionSimpleName)) return aClass;
         }
 

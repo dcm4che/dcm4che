@@ -56,53 +56,10 @@ import java.util.Map;
  * Triggers the tree traverse further for deviceExtensions,aeExtensions and hl7AppExtensions when applying/filtering defaults
  */
 public class DicomDefaultsAndNullFilterDecorator extends DefaultsAndNullFilterDecorator {
-    public static final Logger log = LoggerFactory.getLogger(DicomDefaultsAndNullFilterDecorator.class);
 
-    private List<Class<?>> allExtensionClasses;
+    public DicomDefaultsAndNullFilterDecorator(Configuration delegate, List<Class> allExtensionClasses, boolean persistDefaults) {
 
-    public DicomDefaultsAndNullFilterDecorator(Configuration delegate, List<Class<?>> allExtensionClasses, boolean persistDefaults) {
-
-        super(delegate, persistDefaults);
-        this.allExtensionClasses = allExtensionClasses;
+        super(delegate, persistDefaults, allExtensionClasses);
     }
 
-    @Override
-    protected void traverseTree(Object node, Class nodeClass, EntryFilter filter) throws ConfigurationException {
-        super.traverseTree(node, nodeClass, filter);
-
-        // if because of any reason this is not a map (e.g. a reference or a custom adapter for a configurableclass),
-        // we don't care about defaults
-        if (!(node instanceof Map)) return;
-
-        if (nodeClass.equals(Device.class)) {
-            traverseExtensions(node, "deviceExtensions", filter);
-        } else if (nodeClass.equals(ApplicationEntity.class)) {
-            traverseExtensions(node, "aeExtensions", filter);
-        } else if (nodeClass.equals(HL7Application.class)) {
-            traverseExtensions(node, "hl7AppExtensions", filter);
-        }
-
-    }
-
-    private void traverseExtensions(Object node, String whichExtensions, EntryFilter filter) throws ConfigurationException {
-
-        Map<String, Object> extensions = null;
-        try {
-            extensions = ((Map<String, Map<String, Object>>) node).get(whichExtensions);
-        } catch (ClassCastException e) {
-            log.warn("Extensions are stored in a malformed format");
-        }
-
-        if (extensions == null) return;
-
-        for (Map.Entry<String, Object> entry : extensions.entrySet()) {
-            try {
-                traverseTree(entry.getValue(), ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter);
-            } catch (ClassNotFoundException e) {
-                // noop
-                log.warn("Extension class {} not found", entry.getKey());
-            }
-        }
-
-    }
 }

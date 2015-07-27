@@ -72,9 +72,9 @@ public class LdapConfigurationStorage implements Configuration {
 
     private String baseDN;
     private InitialDirContext ldapCtx;
-    private List<Class<?>> allExtensionClasses;
+    private List<Class> allExtensionClasses;
 
-    public List<Class<?>> getAllExtensionClasses() {
+    public List<Class> getAllExtensionClasses() {
         return allExtensionClasses;
     }
 
@@ -82,13 +82,13 @@ public class LdapConfigurationStorage implements Configuration {
         //NOOP
     }
     
-    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses)
+    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class> allExtensionClasses)
             throws ConfigurationException {
         setEnvironment(env);
         setExtensions(allExtensionClasses);
     }
     
-    public void setExtensions(List<Class<?>> allExtensionClasses) {
+    public void setExtensions(List<Class> allExtensionClasses) {
         this.allExtensionClasses = allExtensionClasses;
     }
     

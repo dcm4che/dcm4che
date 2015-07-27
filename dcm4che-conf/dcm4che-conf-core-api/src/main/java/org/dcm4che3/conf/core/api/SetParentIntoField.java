@@ -38,30 +38,21 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.api;
+package org.dcm4che3.conf.core.api;
 
-import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Vendors may implement this interface to perform necessary modification to the configuration bootstrap process, e.g., set custom storage, add custom extensions.
+ * Use this annotation to mark a property where the parent (the object to which a configuration extension belongs)
+ * is injected during loading (aka on vitalize)
  *
- * This API is UNSTABLE and can be changed without notice, please do not use it without prior consulting.
+ * @author Roman K
  */
-public interface DicomConfigurationBuilderAddon {
-
-    /**
-     * Should perferm necessary modification to the configuration bootstrap, e.g., set custom storage, add custom extensions.
-     * @param builder
-     */
-    public void beforeBuild(DicomConfigurationBuilder builder);
-
-    /**
-     * Should perform any necessary post-processing
-     * @param manager
-     */
-    public void afterBuild(DicomConfigurationManager manager) throws ConfigurationException;
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface SetParentIntoField {
+    String value();
 }

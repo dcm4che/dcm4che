@@ -144,15 +144,6 @@ public class HL7Application implements Serializable {
         if (name.isEmpty())
             throw new IllegalArgumentException("name cannot be empty");
         this.applicationName = name;
-/*      TODO: inspect - commented out since this is done in HL7DeviceExtension.hl7apps setter
-        HL7DeviceExtension ext = device != null
-                ? device.getDeviceExtension(HL7DeviceExtension.class)
-                : null;
-        if (ext != null)
-            ext.removeHL7Application(this.name);
-        this.name = name;
-        if (ext != null)
-            ext.addHL7Application(this);*/
     }
 
     public Set<String> getAcceptedMessageTypesSet() {
@@ -186,8 +177,7 @@ public class HL7Application implements Serializable {
 
     public void setAcceptedSendingApplications(String... names) {
         acceptedSendingApplicationsSet.clear();
-        for (String name : names)
-            acceptedSendingApplicationsSet.add(name);
+        Collections.addAll(acceptedSendingApplicationsSet, names);
     }
 
     public String[] getAcceptedMessageTypes() {
@@ -197,8 +187,7 @@ public class HL7Application implements Serializable {
 
     public void setAcceptedMessageTypes(String... types) {
         acceptedMessageTypesSet.clear();
-        for (String name : types)
-            acceptedMessageTypesSet.add(name);
+        Collections.addAll(acceptedMessageTypesSet, types);
     }
 
     public boolean isInstalled() {

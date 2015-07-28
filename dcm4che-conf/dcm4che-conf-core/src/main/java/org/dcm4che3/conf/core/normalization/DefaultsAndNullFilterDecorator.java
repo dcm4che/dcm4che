@@ -155,6 +155,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
             if (filter.applyFilter(containerNode, property)) continue;
 
+            if (childNode == null) continue;
 
             // if the property is a configclass
             if (property.isConfObject()) {
@@ -195,8 +196,6 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
                 try {
                     Map<String, Object> extensionsMap = (Map<String, Object>) childNode;
-
-                    if (extensionsMap == null) continue;
 
                     for (Map.Entry<String, Object> entry : extensionsMap.entrySet()) {
                         try {

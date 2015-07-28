@@ -81,7 +81,7 @@ public class DeepEquals
     	public boolean deepEquals(Object first, Object second);
     }
     
-    public static Map<Class<?>, CustomDeepEquals> customDeepEquals;
+    public static Map<Class<?>, CustomDeepEquals> customDeepEquals = new HashMap<Class<?>, DeepEquals.CustomDeepEquals>();
     public static DualKey lastDualKey;
     public static String lastClass;
     

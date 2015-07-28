@@ -41,17 +41,16 @@
 package org.dcm4che3.conf.core.adapters;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 import org.dcm4che3.conf.core.api.internal.*;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Roman K
@@ -110,7 +109,7 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Obj
     @Override
     public Map<String, Object> toConfigNode(Map<Class<?>, Object> object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
-        Map<String, Object> extensionsMapNode = new HashMap<String, Object>();
+        Map<String, Object> extensionsMapNode = new TreeMap<String, Object>();
 
         for (Map.Entry<Class<?>, Object> classObjectEntry : object.entrySet()) {
             Object extensionNode = vitalizer.createConfigNodeFromInstance(classObjectEntry.getValue(), classObjectEntry.getKey());

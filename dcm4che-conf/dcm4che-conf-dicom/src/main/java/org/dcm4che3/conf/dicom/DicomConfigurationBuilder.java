@@ -93,7 +93,7 @@ public class DicomConfigurationBuilder {
     }
 
 
-    public void addExtensionForBaseExtension(Class extensionClass, Class baseExtensionClass) {
+    public DicomConfigurationBuilder registerExtensionForBaseExtension(Class extensionClass, Class baseExtensionClass) {
 
         List<Class> extensionClasses = extensionClassesMap.get(baseExtensionClass);
 
@@ -106,23 +106,24 @@ public class DicomConfigurationBuilder {
         if (!extensionClasses.contains(extensionClass))
             extensionClasses.add(extensionClass);
 
+        return this;
     }
 
     public <T extends DeviceExtension> DicomConfigurationBuilder registerDeviceExtension(
             Class<T> clazz) {
-        addExtensionForBaseExtension(clazz, DeviceExtension.class);
+        registerExtensionForBaseExtension(clazz, DeviceExtension.class);
         return this;
     }
 
     public <T extends AEExtension> DicomConfigurationBuilder registerAEExtension(
             Class<T> clazz) {
-        addExtensionForBaseExtension(clazz, AEExtension.class);
+        registerExtensionForBaseExtension(clazz, AEExtension.class);
         return this;
     }
 
     public <T extends HL7ApplicationExtension> DicomConfigurationBuilder registerHL7ApplicationExtension(
             Class<T> clazz) {
-        addExtensionForBaseExtension(clazz, HL7ApplicationExtension.class);
+        registerExtensionForBaseExtension(clazz, HL7ApplicationExtension.class);
         return this;
     }
 

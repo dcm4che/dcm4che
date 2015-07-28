@@ -43,6 +43,7 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.storage.CachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
+import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
 import org.dcm4che3.conf.dicom.misc.DeepEqualsDiffer;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;

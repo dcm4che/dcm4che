@@ -38,27 +38,21 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.dicom;
+package org.dcm4che3.conf.core.api;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.DeviceExtension;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Use this annotation to mark a property where the parent (the object to which a configuration extension belongs)
+ * is injected during loading (aka on vitalize)
+ *
  * @author Roman K
  */
-@ConfigurableClass
-public class SomeDeviceExtension extends DeviceExtension{
-
-    @ConfigurableProperty(isReference = true)
-    private ApplicationEntity referencedEntity;
-
-    public ApplicationEntity getReferencedEntity() {
-        return referencedEntity;
-    }
-
-    public void setReferencedEntity(ApplicationEntity referencedEntity) {
-        this.referencedEntity = referencedEntity;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface SetParentIntoField {
+    String value();
 }

@@ -57,7 +57,7 @@ public class AttributeFormatTypeAdapter extends DefaultConfigTypeAdapters.Common
     }
 
     @Override
-    public AttributesFormat fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public AttributesFormat fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         return AttributesFormat.valueOf(configNode);
     }
 

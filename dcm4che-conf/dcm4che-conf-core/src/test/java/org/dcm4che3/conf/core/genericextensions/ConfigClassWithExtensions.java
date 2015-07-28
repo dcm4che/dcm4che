@@ -1,5 +1,5 @@
 /*
- * **** BEGIN LICENSE BLOCK *****
+ * *** BEGIN LICENSE BLOCK *****
  *  Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  *  The contents of this file are subject to the Mozilla Public License Version
@@ -17,7 +17,7 @@
  *
  *  The Initial Developer of the Original Code is
  *  Agfa Healthcare.
- *  Portions created by the Initial Developer are Copyright (C) 2014
+ *  Portions created by the Initial Developer are Copyright (C) 2015
  *  the Initial Developer. All Rights Reserved.
  *
  *  Contributor(s):
@@ -37,30 +37,37 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.adapters;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
-import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
+package org.dcm4che3.conf.core.genericextensions;
 
-import java.util.TimeZone;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
-public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<TimeZone> {
+import java.util.HashMap;
+import java.util.Map;
 
-    public TimeZoneTypeAdapter() {
-        super("string");
-        metadata.put("class", "TimeZone");
+@ConfigurableClass
+public class ConfigClassWithExtensions {
+
+    @ConfigurableProperty
+    String myProp;
+
+    @ConfigurableProperty(isExtensionsProperty = true)
+    Map<Class<? extends MyClassExtension>, MyClassExtension> extensions = new HashMap<Class<? extends MyClassExtension>, MyClassExtension>();
+
+    public String getMyProp() {
+        return myProp;
     }
 
-    @Override
-    public TimeZone fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
-        return (configNode == null ? null : TimeZone.getTimeZone(configNode));
+    public void setMyProp(String myProp) {
+        this.myProp = myProp;
     }
 
-    @Override
-    public String toConfigNode(TimeZone object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationUnserializableException {
-        return (object == null ? null : object.getID());
+    public Map<Class<? extends MyClassExtension>, MyClassExtension> getExtensions() {
+        return extensions;
     }
 
+    public void setExtensions(Map<Class<? extends MyClassExtension>, MyClassExtension> extensions) {
+        this.extensions = extensions;
+    }
 }

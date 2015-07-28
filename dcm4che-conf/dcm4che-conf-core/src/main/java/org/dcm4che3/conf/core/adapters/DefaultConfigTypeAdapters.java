@@ -64,10 +64,11 @@ public class DefaultConfigTypeAdapters {
      * @param configNode
      * @param property
      * @param vitalizer
+     * @param parent
      * @return
      * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
-    public static Object delegateGetChildFromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public static Object delegateGetChildFromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         // determine node name and get the property
         String nodeName = property.getAnnotatedName();
         Object node = configNode.get(nodeName);
@@ -77,7 +78,7 @@ public class DefaultConfigTypeAdapters {
 
         // normalize
         node = adapter.normalize(node, property, vitalizer);
-        return adapter.fromConfigNode(node, property, vitalizer);
+        return adapter.fromConfigNode(node, property, vitalizer, parent);
     }
 
     public static void delegateChildToConfigNode(Object object, Map<String, Object> parentNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
@@ -109,7 +110,7 @@ public class DefaultConfigTypeAdapters {
         }
 
         @Override
-        public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
             return configNode;
         }
 
@@ -217,8 +218,8 @@ public class DefaultConfigTypeAdapters {
 
         @Override
         public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property,
-                BeanVitalizer vitalizer) throws ConfigurationException {
-            return super.fromConfigNode(configNode, property, vitalizer);
+                                BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+            return super.fromConfigNode(configNode, property, vitalizer, parent);
         }
 
         @Override
@@ -301,7 +302,7 @@ public class DefaultConfigTypeAdapters {
     public static class EnumTypeAdapter implements ConfigTypeAdapter<Enum<?>, Object> {
 
         @Override
-        public Enum<?> fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        public Enum<?> fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
 
             try {
                 ConfigurableProperty.EnumRepresentation howToRepresent = getEnumRepresentation(property);

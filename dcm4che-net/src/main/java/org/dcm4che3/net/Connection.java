@@ -38,30 +38,6 @@
 
 package org.dcm4che3.net;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
@@ -72,10 +48,18 @@ import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.*;
+import java.net.*;
+import java.security.GeneralSecurityException;
+import java.util.*;
+
 /**
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
- * <p/>
+ * <p>
  * The <i>network connection</i> describes one TCP port on one network device.
  * This can be used for a TCP connection over which a DICOM association can be
  * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
@@ -214,6 +198,9 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean connectionInstalled;
 
+    @ConfigurableProperty(name = "connectionExtensions", isExtensionsProperty = true)
+    private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions =
+            new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
 
     @ConfigurableProperty(
             name = "dcmProtocol",
@@ -435,7 +422,7 @@ public class Connection implements Serializable {
     /**
      * The TCP port that the AE is listening on or <code>0</code> for a
      * network connection that only initiates associations.
-     * <p/>
+     * <p>
      * A valid port value is between 0 and 65535.
      *
      * @param port The port number or <code>-1</code>.
@@ -449,6 +436,44 @@ public class Connection implements Serializable {
 
         this.port = port;
         needRebind();
+    }
+
+    public Map<Class<? extends ConnectionExtension>, ConnectionExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions) {
+        this.extensions = extensions;
+    }
+
+    public <T> T getExtension(Class<T> clazz) {
+        return (T) extensions.get(clazz);
+    }
+
+    public void addExtension(ConnectionExtension connectionExtension) {
+        connectionExtension.setConnection(this);
+        extensions.put(connectionExtension.getClass(), connectionExtension);
+    }
+
+
+    private void reconfigureExtensions(Connection from) {
+        for (Iterator<Class<? extends ConnectionExtension>> it =
+             extensions.keySet().iterator(); it.hasNext(); ) {
+            if (!from.extensions.containsKey(it.next()))
+                it.remove();
+        }
+        for (ConnectionExtension src : from.extensions.values()) {
+            Class<? extends ConnectionExtension> clazz = src.getClass();
+            ConnectionExtension ext = extensions.get(clazz);
+            if (ext == null)
+                try {
+                    addExtension(ext = clazz.newInstance());
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to instantiate " + clazz.getName(), e);
+                }
+            ext.reconfigure(src);
+        }
     }
 
     public final String getHttpProxy() {
@@ -1215,6 +1240,8 @@ public class Connection implements Serializable {
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
         setConnectionInstalled(from.connectionInstalled);
+
+        reconfigureExtensions(from);
     }
 
 }

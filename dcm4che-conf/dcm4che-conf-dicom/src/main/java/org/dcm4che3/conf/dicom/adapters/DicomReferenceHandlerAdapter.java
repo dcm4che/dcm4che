@@ -58,7 +58,7 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
     }
 
     @Override
-    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
 
         // Connection of a device. Get the device (it will grab the current one from threadLocal), and get the connection from there
         if (Connection.class.isAssignableFrom(property.getRawClass())) {
@@ -90,7 +90,7 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
 
 
                 Device device = vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
-                Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer);
+                Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer, parent);
 
                 return (T) device.connectionWithEqualsRDN(conn);
 
@@ -121,7 +121,7 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
 
         }
 
-        return super.fromConfigNode(configNode, property, vitalizer);
+        return super.fromConfigNode(configNode, property, vitalizer, parent);
     }
 
     @Override

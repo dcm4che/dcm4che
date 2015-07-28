@@ -54,7 +54,7 @@ public class CodeTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstractTyp
     }
 
     @Override
-    public Code fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public Code fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         return new Code(configNode);
     }
 

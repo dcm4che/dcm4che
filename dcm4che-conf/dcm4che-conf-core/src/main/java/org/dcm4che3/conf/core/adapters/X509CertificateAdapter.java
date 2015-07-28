@@ -61,7 +61,7 @@ public class X509CertificateAdapter implements ConfigTypeAdapter<X509Certificate
     private CertificateFactory certificateFactory;
 
     @Override
-    public X509Certificate fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public X509Certificate fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         try {
             final byte[] base64 = Base64.fromBase64(configNode);
             return (X509Certificate) getX509Factory().generateCertificate(new ByteArrayInputStream(base64));

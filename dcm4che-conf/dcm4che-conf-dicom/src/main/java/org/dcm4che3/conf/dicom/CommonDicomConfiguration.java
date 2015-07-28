@@ -44,12 +44,11 @@ import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
@@ -67,6 +66,7 @@ import java.util.*;
 /**
  * @author Roman K
  */
+@SuppressWarnings("unchecked")
 public class CommonDicomConfiguration implements DicomConfigurationManager, TransferCapabilityConfigExtension {
 
     private static final Logger LOG =
@@ -74,8 +74,26 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     Configuration config;
     BeanVitalizer vitalizer;
-    private final Collection<Class<? extends DeviceExtension>> deviceExtensionClasses;
-    private final Collection<Class<? extends AEExtension>> aeExtensionClasses;
+
+    private Map<Class, List<Class>> extensionsByClass;
+
+    /**
+     * Returns a list of registered extensions for a specified base extension class
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    @Override
+    public <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz) {
+        List<Class> classes = extensionsByClass.get(clazz);
+
+        List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
+
+        if (classes != null)
+            for (Class<?> aClass : classes) list.add((Class<? extends T>) aClass);
+
+        return list;
+    }
 
     /**
      * Needed for avoiding infinite loops when dealing with extensions containing circular references
@@ -84,19 +102,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
      */
     private ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
 
-    public CommonDicomConfiguration(Configuration config) {
-        this.config = config;
-
-        deviceExtensionClasses = new ArrayList<Class<? extends DeviceExtension>>();
-        aeExtensionClasses = new ArrayList<Class<? extends AEExtension>>();
-    }
 
 
-    public CommonDicomConfiguration(Configuration configurationStorage, Collection<Class<? extends DeviceExtension>> deviceExtensionClasses, Collection<Class<? extends AEExtension>> aeExtensionClasses) {
+    public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
         this.config = configurationStorage;
+        this.extensionsByClass = extensionsByClass;
         this.vitalizer = new DefaultBeanVitalizer();
-        this.deviceExtensionClasses = deviceExtensionClasses;
-        this.aeExtensionClasses = aeExtensionClasses;
+
 
         // register reference handler
         this.vitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage)));
@@ -115,6 +127,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         // register DicomConfiguration context
         this.vitalizer.registerContext(DicomConfiguration.class, this);
+        this.vitalizer.registerContext(ConfigurationManager.class, this);
 
 
         // quick init
@@ -365,43 +378,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         vitalizer.configureInstance(device, (Map<String, Object>) deviceConfigurationNode, Device.class);
 
-        // add device extensions
-        for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
-
-            String deviceExtensionPath = DicomPath.DeviceExtension.
-                    set("extensionName", deviceExtensionClass.getSimpleName()).
-                    path();
-
-            Map<String, Object> deviceExtensionNode = (Map<String, Object>) ConfigNodeUtil.getNode(deviceConfigurationNode, deviceExtensionPath);
-            if (deviceExtensionNode != null) {
-                DeviceExtension ext = vitalizer.newInstance(deviceExtensionClass);
-                // add extension before vitalizing it, so the device field is accessible for use in setters
-                device.addDeviceExtension(ext);
-                vitalizer.configureInstance(ext, deviceExtensionNode, deviceExtensionClass);
-            }
-        }
-
-        // add ae extensions
-        for (Map.Entry<String, ApplicationEntity> entry : device.getApplicationEntitiesMap().entrySet()) {
-            String aeTitle = entry.getKey();
-            ApplicationEntity ae = entry.getValue();
-            for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses) {
-
-                String aeExtPath = DicomPath.AEExtension.
-                        set("aeName", aeTitle).
-                        set("extensionName", aeExtensionClass.getSimpleName()).
-                        path();
-
-                Object aeExtNode = (Map<String, Object>) ConfigNodeUtil.getNode(deviceConfigurationNode, aeExtPath);
-                if (aeExtNode != null) {
-                    AEExtension ext = vitalizer.newInstance(aeExtensionClass);
-                    // add extension before vitalizing it, so the device field is accessible for use in setters
-                    ae.addAEExtension(ext);
-                    vitalizer.configureInstance(ext, (Map<String, Object>) aeExtNode, aeExtensionClass);
-                }
-            }
-        }
-
         // perform alternative TC init in case an extension is present
         new AlternativeTCLoader(this).initGroupBasedTCs(device);
 
@@ -460,38 +436,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         final Map<String, Object> deviceConfigNode = vitalizer.createConfigNodeFromInstance(device, Device.class);
 
-
-        // populate AEExtensions
-        for (Map.Entry<String, ApplicationEntity> entry : device.getApplicationEntitiesMap().entrySet()) {
-
-            ApplicationEntity ae = entry.getValue();
-
-            for (Class<? extends AEExtension> aeExtensionClass : aeExtensionClasses) {
-                AEExtension aeExtension = ae.getAEExtension(aeExtensionClass);
-                if (aeExtension == null) continue;
-                Map<String, Object> aeExtNode = vitalizer.createConfigNodeFromInstance(aeExtension, aeExtensionClass);
-
-                String aeExtensionPath = DicomPath.AEExtension.
-                        set("aeName", ae.getAETitle()).
-                        set("extensionName", aeExtensionClass.getSimpleName()).
-                        path();
-
-                ConfigNodeUtil.replaceNode(deviceConfigNode, aeExtensionPath, aeExtNode);
-            }
-        }
-
-        // populate DeviceExtensions
-        for (Class<? extends DeviceExtension> deviceExtensionClass : deviceExtensionClasses) {
-            final DeviceExtension deviceExtension = device.getDeviceExtension(deviceExtensionClass);
-            final String extensionPath =
-                    DicomPath.DeviceExtension.
-                            set("extensionName", deviceExtensionClass.getSimpleName()).
-                            path();
-
-            if (deviceExtension != null)
-                ConfigNodeUtil.replaceNode(deviceConfigNode, extensionPath, vitalizer.createConfigNodeFromInstance(deviceExtension, deviceExtensionClass));
-        }
-
         // wipe out TCs in case an extension is present
         new AlternativeTCLoader(this).cleanUpTransferCapabilitiesInDeviceNode(device, deviceConfigNode);
 
@@ -545,16 +489,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
-    public Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions() {
-        return Collections.unmodifiableCollection(deviceExtensionClasses);
-    }
-
-    @Override
-    public Collection<Class<? extends AEExtension>> getRegisteredAEExtensions() {
-        return Collections.unmodifiableCollection(aeExtensionClasses);
-    }
-
-    @Override
     public BeanVitalizer getVitalizer() {
         return vitalizer;
     }
@@ -563,17 +497,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     @Override
     public Configuration getConfigurationStorage() {
         return config;
-    }
-
-    @Override
-    public List<Class> getExtensionClasses() {
-
-        List<Class> list = new ArrayList<Class>();
-
-        list.addAll(deviceExtensionClasses);
-        list.addAll(aeExtensionClasses);
-
-        return list;
     }
 
     @Override

@@ -56,7 +56,7 @@ public class AuditSimpleTypeAdapters {
         }
 
         @Override
-        public EventTypeCode fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        public EventTypeCode fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
             Code code = new Code(configNode);
 
             EventTypeCode eventTypeCode = new EventTypeCode();
@@ -85,7 +85,7 @@ public class AuditSimpleTypeAdapters {
         }
 
         @Override
-        public EventID fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        public EventID fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
             Code code = new Code(configNode);
 
             EventID eventID = new EventID();
@@ -114,7 +114,7 @@ public class AuditSimpleTypeAdapters {
         }
 
         @Override
-        public RoleIDCode fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+        public RoleIDCode fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
             Code code = new Code(configNode);
 
             RoleIDCode roleIDcode = new RoleIDCode();

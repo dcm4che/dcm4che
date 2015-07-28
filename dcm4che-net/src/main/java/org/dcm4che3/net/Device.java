@@ -213,7 +213,8 @@ public class Device implements Serializable {
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new TreeMap<String, ApplicationEntity>();
 
-    private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
+    @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
+    private Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
@@ -939,6 +940,17 @@ public class Device implements Serializable {
             ae.setDevice(null);
         return ae;
     }
+
+
+    public void setExtensions(Map<Class<? extends DeviceExtension>, DeviceExtension> extensions) {
+        this.extensions = extensions;
+    }
+
+    public Map<Class<? extends DeviceExtension>, DeviceExtension> getExtensions() {
+        return extensions;
+    }
+
+
 
     public void addDeviceExtension(DeviceExtension ext) {
         Class<? extends DeviceExtension> clazz = ext.getClass();

@@ -44,11 +44,16 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
 
+import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
-import javax.imageio.spi.ImageWriterSpi;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -280,45 +285,17 @@ public class ImageWriterFactory implements Serializable {
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
 
-        // ImageWriterSpi are loaded through the java ServiceLoader,
-        // istead of imageio ServiceRegistry
-        Iterator<ImageWriterSpi> iter = ServiceLoader
-                .load(ImageWriterSpi.class).iterator();
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(param.formatName);
 
-        if (iter != null && iter.hasNext()) {
+        while (writers.hasNext()) {
+            ImageWriter writer = writers.next();
 
-            do {
-                ImageWriterSpi writerspi = iter.next();
-                if (supportsFormat(writerspi.getFormatNames(), param.formatName)) {
-                    try {
-                        ImageWriter writer = writerspi.createWriterInstance();
-                        if (param.className == null
-                                || param.className.equals(writer.getClass().getName()))
-                            return writer;
-                    } catch (IOException e) {
-                        LOG.error("Error instantiating writer for format: " + param.formatName);
-                    }
-                }
-            } while (iter.hasNext());
+            if (param.className == null || param.className.equals(writer.getClass().getName())) {
+                return writer;
+            }
         }
 
-        throw new RuntimeException("No Image Writer for format: " + param.formatName
-                + " registered");
+        throw new RuntimeException("No matching Image Writer for format: " + param.formatName + " (Class: " + ((param.className == null) ? "*" : param.className) + ") registered");
     }
 
-    private static boolean supportsFormat(String[] supportedFormats,
-            String format) {
-        boolean supported = false;
-
-        if (format != null && supportedFormats != null) {
-            
-            for (int i = 0; i < supportedFormats.length; i++)
-                if (supportedFormats[i] != null
-                        && supportedFormats[i].trim().equalsIgnoreCase(
-                                format.trim()))
-                    supported = true;
-        }
-        
-        return supported;
-    }
 }

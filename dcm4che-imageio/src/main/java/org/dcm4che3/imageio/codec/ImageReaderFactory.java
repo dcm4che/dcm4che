@@ -44,12 +44,16 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.spi.ImageReaderSpi;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -245,77 +249,17 @@ public class ImageReaderFactory implements Serializable {
 
     public static ImageReader getImageReader(ImageReaderParam param) {
 
-        if (Boolean.parseBoolean(System.getProperty("dcm4che.useImageIOServiceRegistry"))){
-            LOG.debug("getImageReader() - Load imageReader by using ImageIO. Get readers by format name: {}", param.formatName);
-            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(param.formatName);
+        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(param.formatName);
 
-            if (!readers.hasNext()){
-                throw new RuntimeException("No Image Reader for format: " + param.formatName + " registered");
+        while (readers.hasNext()) {
+            ImageReader reader = readers.next();
+
+            if (param.className == null || param.className.equals(reader.getClass().getName())) {
+                return reader;
             }
-
-            ImageReader imageReader = null;
-
-            if (param.className == null){
-                LOG.debug("getImageReader() - no className set. Use first reader in list");
-                imageReader = readers.next();
-            }else{
-                LOG.debug("getImageReader() - className set to \"{}\"", param.className);
-                final ImageReader firstImageReader = readers.next();
-                imageReader = firstImageReader;
-                while (imageReader != null && !imageReader.getClass().getName().equals(param.className)){
-                    imageReader = readers.hasNext() ? readers.next() : null;
-                }
-
-                if (imageReader == null){
-                    LOG.warn("getImageReader() - Preferred reader \"{}\" not found. Use first in list.", param.className);
-                    imageReader = firstImageReader;
-                }
-            }
-
-            LOG.debug("Return found reader: {}", imageReader);
-            return imageReader;
-        }
-        
-        // ImageReaderSpi are loaded through the java ServiceLoader,
-        // instead of ImageIO ServiceRegistry
-        Iterator<ImageReaderSpi> iter = ServiceLoader
-                .load(ImageReaderSpi.class).iterator();
-
-        if (iter != null && iter.hasNext()) {
-            do {
-                ImageReaderSpi readerspi = iter.next();
-                if (supportsFormat(readerspi.getFormatNames(), param.formatName)) {
-                    try {
-                        ImageReader reader = readerspi.createReaderInstance();
-
-                        if (param.className == null
-                                || param.className.equals(reader.getClass().getName()))
-                            return reader;
-                    } catch (IOException e) {
-                        LOG.error("Error instantiating reader for format: " + param.formatName);
-                    }
-                }
-            } while (iter.hasNext());
         }
 
-        throw new RuntimeException("No Image Reader for format: " + param.formatName
-                + " registered");
-    }
-
-    private static boolean supportsFormat(String[] supportedFormats,
-            String format) {
-        boolean supported = false;
-
-        if (format != null && supportedFormats != null) {
-
-            for (int i = 0; i < supportedFormats.length; i++)
-                if (supportedFormats[i] != null
-                        && supportedFormats[i].trim().equalsIgnoreCase(
-                                format.trim()))
-                    supported = true;
-        }
-
-        return supported;
+        throw new RuntimeException("No matching Image Reader for format: " + param.formatName + " (Class: " + ((param.className == null) ? "*" : param.className) + ") registered");
     }
 
 }

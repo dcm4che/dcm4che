@@ -38,27 +38,33 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.dicom;
+package org.dcm4che3.conf.core.genericextensions;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.DeviceExtension;
 
-/**
- * @author Roman K
- */
 @ConfigurableClass
-public class SomeDeviceExtension extends DeviceExtension{
+public class MyClassFirstExtension extends MyClassExtension{
 
-    @ConfigurableProperty(isReference = true)
-    private ApplicationEntity referencedEntity;
+    @ConfigurableProperty
+    private String myFirstParam;
 
-    public ApplicationEntity getReferencedEntity() {
-        return referencedEntity;
+    @ConfigurableProperty
+    private Boolean myFirstBoolParam;
+
+    public String getMyFirstParam() {
+        return myFirstParam;
     }
 
-    public void setReferencedEntity(ApplicationEntity referencedEntity) {
-        this.referencedEntity = referencedEntity;
+    public void setMyFirstParam(String myFirstParam) {
+        this.myFirstParam = myFirstParam;
+    }
+
+    public Boolean getMyFirstBoolParam() {
+        return myFirstBoolParam;
+    }
+
+    public void setMyFirstBoolParam(Boolean myFirstBoolParam) {
+        this.myFirstBoolParam = myFirstBoolParam;
     }
 }

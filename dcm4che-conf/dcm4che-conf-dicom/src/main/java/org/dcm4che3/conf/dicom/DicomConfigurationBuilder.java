@@ -156,9 +156,11 @@ public class DicomConfigurationBuilder {
         for (Class extension : allExtensions) {
             if (!simpleNames.add(extension.getSimpleName()))
                 throw new ConfigurationException(
-                        "Duplicate configuration class extension name '" + extension.getSimpleName()
+                        "Duplicate configuration class extension name '"
+                                + extension.getSimpleName()
                                 + "'. Make sure that simple class names of extensions are unique!");
         }
+
 
         return new CommonDicomConfigurationWithHL7(configurationStorage, extensionClassesMap);
     }

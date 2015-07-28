@@ -58,9 +58,9 @@ public class ConfigIterators {
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedSetter>> configurableSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedSetter>>());
 
-    public static Class<?> getExtensionClassBySimpleName(String extensionSimpleName, List<Class<?>> allExtensionClasses) throws ClassNotFoundException {
+    public static Class<?> getExtensionClassBySimpleName(String extensionSimpleName, List allExtensionClasses) throws ClassNotFoundException {
 
-        List<Class<?>> extensionClasses = allExtensionClasses;
+        List<Class> extensionClasses = allExtensionClasses;
 
         for (Class aClass : extensionClasses) {
             if (aClass.getSimpleName().equals(extensionSimpleName)) return aClass;

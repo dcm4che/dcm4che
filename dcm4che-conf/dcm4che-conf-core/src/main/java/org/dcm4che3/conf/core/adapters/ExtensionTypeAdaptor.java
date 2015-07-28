@@ -50,12 +50,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Roman K
  */
-public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>,Object>, Map<String,Object>>{
+public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Object>, Map<String, Object>> {
 
     public static final Logger log = LoggerFactory.getLogger(ExtensionTypeAdaptor.class);
 
@@ -76,7 +77,8 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>,Obje
             try {
 
                 // figure out current extension class
-                Class<?> extensionClass = ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), vitalizer.getContext(ConfigurationManager.class).getExtensionClassesByBaseClass(extensionBaseClass));
+                List<Class<?>> extensionClasses = vitalizer.getContext(ConfigurationManager.class).getExtensionClassesByBaseClass(extensionBaseClass);
+                Class<?> extensionClass = ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), extensionClasses);
 
                 // create empty extension bean
                 Object extension = vitalizer.newInstance(extensionClass);
@@ -87,7 +89,8 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>,Obje
                     try {
                         PropertyUtils.setSimpleProperty(extension, setParentIntoField.value(), parent);
                     } catch (Exception e) {
-                        throw new ConfigurationException("Could not 'inject' parent object into field specified by 'SetParentIntoField' annotation. Field '"+setParentIntoField.value()+"'",e);
+                        throw new ConfigurationException(
+                                "Could not 'inject' parent object into field specified by 'SetParentIntoField' annotation. Field '" + setParentIntoField.value() + "'", e);
                     }
 
                 // proceed with deserialization

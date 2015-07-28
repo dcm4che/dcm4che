@@ -1,5 +1,5 @@
 /*
- * **** BEGIN LICENSE BLOCK *****
+ * *** BEGIN LICENSE BLOCK *****
  *  Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  *  The contents of this file are subject to the Mozilla Public License Version
@@ -37,29 +37,37 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.dicom.decorators;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
-import org.dcm4che3.conf.core.api.internal.ConfigIterators;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.hl7.HL7Application;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.dcm4che3.conf.core.genericextensions;
 
-import java.util.List;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Triggers the tree traverse further for deviceExtensions,aeExtensions and hl7AppExtensions when applying/filtering defaults
- */
-public class DicomDefaultsAndNullFilterDecorator extends DefaultsAndNullFilterDecorator {
+@ConfigurableClass
+public class ConfigClassWithExtensions {
 
-    public DicomDefaultsAndNullFilterDecorator(Configuration delegate, List<Class> allExtensionClasses, boolean persistDefaults) {
+    @ConfigurableProperty
+    String myProp;
 
-        super(delegate, persistDefaults, allExtensionClasses);
+    @ConfigurableProperty(isExtensionsProperty = true)
+    Map<Class<? extends MyClassExtension>, MyClassExtension> extensions = new HashMap<Class<? extends MyClassExtension>, MyClassExtension>();
+
+    public String getMyProp() {
+        return myProp;
     }
 
+    public void setMyProp(String myProp) {
+        this.myProp = myProp;
+    }
+
+    public Map<Class<? extends MyClassExtension>, MyClassExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<Class<? extends MyClassExtension>, MyClassExtension> extensions) {
+        this.extensions = extensions;
+    }
 }

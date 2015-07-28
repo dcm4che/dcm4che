@@ -99,7 +99,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         // iterate and populate annotated fields
         for (AnnotatedConfigurableProperty fieldProperty : ConfigIterators.getAllConfigurableFields(clazz))
             try {
-                Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, vitalizer, null);
+                Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, vitalizer, confObj);
                 PropertyUtils.setSimpleProperty(confObj, fieldProperty.getName(), fieldValue);
             } catch (Exception e) {
                 throw new ConfigurationException("Error while reading configuration property '" + fieldProperty.getAnnotatedName() + "' (field "+fieldProperty.getName()+") in class " + clazz.getSimpleName(), e);
@@ -112,7 +112,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 Object[] args = new Object[setter.getParameters().size()];
                 int i = 0;
                 for (AnnotatedConfigurableProperty paramProperty : setter.getParameters())
-                    args[i++] = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, paramProperty, vitalizer, null);
+                    args[i++] = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, paramProperty, vitalizer, confObj);
 
                 // invoke setter
                 setter.getMethod().invoke(confObj, args);

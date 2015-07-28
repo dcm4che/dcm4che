@@ -137,7 +137,8 @@ public class ApplicationEntity implements Serializable {
     private final Map<String, TransferCapability> scpTCs =
             new TreeMap<String, TransferCapability>();
 
-    private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
+    @ConfigurableProperty(name = "aeExtensions", isExtensionsProperty = true)
+    private HashMap<Class<? extends AEExtension>,AEExtension> extensions =
             new HashMap<Class<? extends AEExtension>,AEExtension>();
 
     @ConfigurableProperty(name = "dicomAssociationAcceptor")
@@ -155,6 +156,13 @@ public class ApplicationEntity implements Serializable {
         setAETitle(aeTitle);
     }
 
+    public HashMap<Class<? extends AEExtension>, AEExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(HashMap<Class<? extends AEExtension>, AEExtension> extensions) {
+        this.extensions = extensions;
+    }
 
     public String getUuid() {
         return uuid;

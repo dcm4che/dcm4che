@@ -98,6 +98,7 @@ public class HL7Application implements Serializable {
             collectionOfReferences = true)
     private List<Connection> conns = new ArrayList<Connection>(1);
 
+    @ConfigurableProperty(name = "hl7AppExtensions", isExtensionsProperty = true)
     private Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions =
             new HashMap<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension>();
 
@@ -112,6 +113,14 @@ public class HL7Application implements Serializable {
 
     public final Device getDevice() {
         return device;
+    }
+
+    public Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions) {
+        this.extensions = extensions;
     }
 
     void setDevice(Device device) {

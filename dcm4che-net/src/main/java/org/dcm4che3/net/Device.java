@@ -215,7 +215,7 @@ public class Device implements Serializable {
 
     @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
     private Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
-            new TreeMap<Class<? extends DeviceExtension>,DeviceExtension>();
+            new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
     private transient DimseRQHandler dimseRQHandler;

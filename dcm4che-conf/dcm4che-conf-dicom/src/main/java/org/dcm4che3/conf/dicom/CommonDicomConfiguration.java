@@ -85,7 +85,15 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
      */
     @Override
     public <T> List<Class<? extends T>> getExtensionClassesByBaseClass(Class<T> clazz) {
-        return (List<Class<? extends T>>) extensionsByClass;
+        List<Class> classes = extensionsByClass.get(clazz);
+
+        List<Class<? extends T>> list = new ArrayList<Class<? extends T>>();
+
+        //list.addAll((Collection<? extends Class<? extends T>>) classes);
+
+        for (Class<?> aClass : classes) list.add((Class<? extends T>) aClass);
+
+        return list;
     }
 
     /**

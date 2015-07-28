@@ -57,7 +57,7 @@ public class DeviceExtension implements Serializable {
         return device;
     }
 
-    void setDevice(Device device) {
+    public void setDevice(Device device) {
         if (device != null && this.device != null)
             throw new IllegalStateException(
                     "already owned by Device: " + device.getDeviceName());

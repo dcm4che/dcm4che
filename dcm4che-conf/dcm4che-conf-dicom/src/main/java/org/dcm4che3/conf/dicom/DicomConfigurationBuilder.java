@@ -155,6 +155,7 @@ public class DicomConfigurationBuilder {
         HashSet<String> simpleNames = new HashSet<String>();
         for (Class extension : allExtensions) {
             if (!simpleNames.add(extension.getSimpleName()))
+
                 throw new ConfigurationException(
                         "Duplicate configuration class extension name '"
                                 + extension.getSimpleName()

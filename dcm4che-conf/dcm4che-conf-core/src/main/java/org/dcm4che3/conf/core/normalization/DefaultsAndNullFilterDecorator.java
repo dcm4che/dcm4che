@@ -78,13 +78,28 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             @Override
             public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
+                boolean doDelete = false;
+
                 // if the value for a property equals to default, filter it out
-                if (property.getAnnotation(ConfigurableProperty.class).defaultValue().equals(String.valueOf(containerNode.get(property.getAnnotatedName())))
+                if (property.getDefaultValue().equals(String.valueOf(containerNode.get(property.getAnnotatedName())))
                         || containerNode.get(property.getAnnotatedName()) == null) {
-                    containerNode.remove(property.getAnnotatedName());
-                    return true;
+                    doDelete = true;
+                } // if that is an empty extension map or map
+                else if ((property.isExtensionsProperty() || property.isMap())
+                        && containerNode.get(property.getAnnotatedName()) != null
+                        && ((Map) containerNode.get(property.getAnnotatedName())).size() == 0) {
+                    doDelete = true;
+                } // if that is an empty collection or array
+                else if ((property.isCollection() || property.isArray())
+                        && containerNode.get(property.getAnnotatedName()) != null
+                        && ((Collection) containerNode.get(property.getAnnotatedName())).size() == 0) {
+                    doDelete = true;
                 }
-                return false;
+
+                if (doDelete)
+                    containerNode.remove(property.getAnnotatedName());
+
+                return doDelete;
             }
         };
 
@@ -181,7 +196,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                 try {
                     Map<String, Object> extensionsMap = (Map<String, Object>) childNode;
 
-                    if (extensionsMap == null) return;
+                    if (extensionsMap == null) continue;
 
                     for (Map.Entry<String, Object> entry : extensionsMap.entrySet()) {
                         try {

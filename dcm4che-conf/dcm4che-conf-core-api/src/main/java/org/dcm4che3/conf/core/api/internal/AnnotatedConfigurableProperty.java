@@ -45,6 +45,7 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -71,6 +72,10 @@ public class AnnotatedConfigurableProperty {
 
     public boolean isExtensionsProperty() {
         return getAnnotation(ConfigurableProperty.class).isExtensionsProperty();
+    }
+
+    public String getDefaultValue() {
+        return getAnnotation(ConfigurableProperty.class).defaultValue();
     }
 
     public boolean isCollectionOfReferences() {
@@ -190,6 +195,18 @@ public class AnnotatedConfigurableProperty {
         return clazz;
     }
 
+
+    public boolean isMap() {
+        return Map.class.isAssignableFrom(getRawClass());
+    }
+
+    public boolean isCollection() {
+        return Collection.class.isAssignableFrom(getRawClass());
+    }
+
+    public boolean isArray() {
+        return getRawClass().isArray();
+    }
 
     public void setAnnotations(Map<Type, Annotation> annotations) {
         this.annotations = annotations;

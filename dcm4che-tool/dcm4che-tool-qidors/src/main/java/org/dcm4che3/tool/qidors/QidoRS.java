@@ -290,7 +290,7 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
 }
     private static String sendRequest(URL url, final QidoRS main) throws IOException {
         
-        LOG.info("URL: " + url);
+        LOG.info("URL: {}", url);
 
         HttpURLConnection connection = (HttpURLConnection) url
                 .openConnection();

@@ -118,18 +118,26 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             @Override
             public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
+                String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
                 // if no value for this property, see if there is default and set it
-                if (!containerNode.containsKey(property.getAnnotatedName())) {
-                    String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
-                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
-                        Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
-                        containerNode.put(property.getAnnotatedName(), normalized);
-                    } else {
-                        containerNode.put(property.getAnnotatedName(), null);
-                    }
-
+                if (!containerNode.containsKey(property.getAnnotatedName()) && !defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                    Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
+                    containerNode.put(property.getAnnotatedName(), normalized);
                     return true;
                 }
+                // for null map & extension map - create empty obj
+                else if ((property.isExtensionsProperty() || property.isMap()) &&
+                        containerNode.get(property.getAnnotatedName()) == null) {
+                    containerNode.put(property.getAnnotatedName(), new TreeMap());
+                    return true;
+                }
+                // for null arrays/collections map - create empty arr
+                else if ((property.isCollection() || property.isArray())
+                        && containerNode.get(property.getAnnotatedName()) == null) {
+                    containerNode.put(property.getAnnotatedName(), new ArrayList());
+                    return true;
+                }
+
                 return false;
             }
         };

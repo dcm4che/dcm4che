@@ -337,6 +337,7 @@ public class ImageWriterFactory implements Serializable {
             ImageWriter writer = writers.next();
 
             if (param.className == null || param.className.equals(writer.getClass().getName())) {
+                LOG.debug("Using Image Writer {}", writer.getClass());
                 return writer;
             }
         }
@@ -352,7 +353,9 @@ public class ImageWriterFactory implements Serializable {
             return getImageWriter(imageWriterParam);
         } else {
             // not configured mime type, fallback to first ImageIO writer for this mime type
-            return ImageIO.getImageWritersByMIMEType(mimeType).next();
+            ImageWriter writer = ImageIO.getImageWritersByMIMEType(mimeType).next();
+            LOG.debug("Using Image Writer {}", writer.getClass());
+            return writer;
         }
     }
 

@@ -299,6 +299,7 @@ public class ImageReaderFactory implements Serializable {
             ImageReader reader = readers.next();
 
             if (param.className == null || param.className.equals(reader.getClass().getName())) {
+                LOG.debug("Using Image Reader {}", reader.getClass());
                 return reader;
             }
         }
@@ -314,7 +315,9 @@ public class ImageReaderFactory implements Serializable {
             return getImageReader(imageReaderParam);
         } else {
             // not configured mime type, fallback to first ImageIO reader for this mime type
-            return ImageIO.getImageReadersByMIMEType(mimeType).next();
+            ImageReader reader = ImageIO.getImageReadersByMIMEType(mimeType).next();
+            LOG.debug("Using Image Reader {}", reader.getClass());
+            return reader;
         }
     }
 

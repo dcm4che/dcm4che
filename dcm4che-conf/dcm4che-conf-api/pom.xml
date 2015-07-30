@@ -24,12 +24,6 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
-	<!-- for reflective config - get/set config class fields -->
-	<dependency>
-		<groupId>commons-beanutils</groupId>
-		<artifactId>commons-beanutils</artifactId>
-		<version>1.8.3</version>
-	</dependency> 	    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

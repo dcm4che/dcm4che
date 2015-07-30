@@ -82,13 +82,8 @@ public class IODTest {
 
     private static Attributes readDataset(String name)
             throws Exception {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        DicomInputStream in = new DicomInputStream(
-                new File(cl.getResource(name).toURI()));
-        try {
+        try (DicomInputStream in = new DicomInputStream(new File("target/test-data/" + name))) {
             return in.readDataset(-1, -1);
-        } finally {
-            in.close();
         }
     }
 }

@@ -180,8 +180,7 @@ public class DicomOutputStreamTest {
     }
 
     private static String uri(String name) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return cl.getResource(name).toString();
+        return new File("target/test-data/" + name).toURI().toString();
     }
 
     private Attributes requestAttributes() {

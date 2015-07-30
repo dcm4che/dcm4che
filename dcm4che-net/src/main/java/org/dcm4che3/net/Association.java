@@ -175,8 +175,8 @@ public class Association {
         return (T) getProperty(clazz.getName());
     }
 
-    public void setProperty(Object value) {
-        setProperty(value.getClass().getName(), value);
+    public <T> void setProperty(Class<T> clazz, Object value) {
+        setProperty(clazz.getName(), value);
     }
 
     public boolean containsProperty(String key) {

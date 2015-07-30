@@ -38,33 +38,23 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.util.ResourceLocator;
+import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.spi.ImageReaderSpi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.spi.ImageWriterSpi;
-
-import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
-import org.dcm4che3.util.ResourceLocator;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -72,9 +62,9 @@ import org.slf4j.LoggerFactory;
  */
 public class ImageReaderFactory implements Serializable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
-
     private static final long serialVersionUID = -2881173333124498212L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImageReaderFactory.class);
 
     public static class ImageReaderParam implements Serializable {
 
@@ -99,6 +89,7 @@ public class ImageReaderFactory implements Serializable {
     }
 
     private static ImageReaderFactory defaultFactory;
+
     private final HashMap<String, ImageReaderParam> map = new HashMap<String, ImageReaderParam>();
 
     public static ImageReaderFactory getDefault() {
@@ -193,88 +184,57 @@ public class ImageReaderFactory implements Serializable {
     }
 
     public static ImageReader getImageReader(ImageReaderParam param) {
+        return Boolean.getBoolean("org.dcm4che3.imageio.codec.useServiceLoader")
+                ? getImageReaderFromServiceLoader(param)
+                : getImageReaderFromImageIOServiceRegistry(param);
+    }
 
-        if (Boolean.parseBoolean(System.getProperty("dcm4che.useImageIOServiceRegistry"))){
-            LOG.debug("getImageReader() - Load imageReader by using ImageIO. Get readers by format name: {}", param.formatName);
-            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(param.formatName);
+    public static ImageReader getImageReaderFromImageIOServiceRegistry(ImageReaderParam param) {
+        Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName(param.formatName);
+        if (!iter.hasNext())
+            throw new RuntimeException("No Reader for format: " + param.formatName + " registered");
 
-            if (!readers.hasNext()){
-                throw new RuntimeException("No Image Reader for format: " + param.formatName + " registered");
-            }
-
-            ImageReader imageReader = null;
-
-            if (param.className == null){
-                LOG.debug("getImageReader() - no className set. Use first reader in list");
-                imageReader = readers.next();
-            }else{
-                LOG.debug("getImageReader() - className set to \"{}\"", param.className);
-                final ImageReader firstImageReader = readers.next();
-                imageReader = firstImageReader;
-                while (imageReader != null && !imageReader.getClass().getName().equals(param.className)){
-                    imageReader = readers.hasNext() ? readers.next() : null;
-                }
-
-                if (imageReader == null){
-                    LOG.warn("getImageReader() - Preferred reader \"{}\" not found. Use first in list.", param.className);
-                    imageReader = firstImageReader;
+        ImageReader reader = iter.next();
+        if (param.className != null) {
+            while (!param.className.equals(reader.getClass().getName())) {
+                if (iter.hasNext())
+                    reader = iter.next();
+                else {
+                    LOG.warn("No preferred Reader {} for format: {} - use {}",
+                            param.className, param.formatName, reader.getClass().getName());
+                    break;
                 }
             }
-
-            LOG.debug("Return found reader: {}", imageReader);
-            return imageReader;
         }
-        
-        // ImageReaderSpi are loaded through the java ServiceLoader,
-        // instead of ImageIO ServiceRegistry
-        Iterator<ImageReaderSpi> iter = ServiceLoader
-                .load(ImageReaderSpi.class).iterator();
+        return reader;
+    }
 
+    public static ImageReader getImageReaderFromServiceLoader(ImageReaderParam param) {
         try {
-
-            if (iter != null && iter.hasNext()) {
-
-                String className = param.className;
-                if (className == null)
-                    return iter.next().createReaderInstance();
-
-                do {
-                    ImageReaderSpi readerspi = iter.next();
-                    if (supportsFormat(readerspi.getFormatNames(),
-                            param.formatName)) {
-
-                        ImageReader reader = readerspi.createReaderInstance();
-
-                        if (reader.getClass().getName().equals(className))
-                            return reader;
-                    }
-                } while (iter.hasNext());
-            }
-
-            throw new RuntimeException("No Image Reader for format: "
-                    + param.formatName + " registered");
-
+            return getImageReaderSpi(param).createReaderInstance();
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Error instantiating Reader for format: "
-                            + param.formatName);
+            throw new RuntimeException("Error instantiating Reader for format: "  + param.formatName, e);
         }
     }
 
-    private static boolean supportsFormat(String[] supportedFormats,
-            String format) {
-        boolean supported = false;
+    private static ImageReaderSpi getImageReaderSpi(ImageReaderParam param) {
+        Iterator<ImageReaderSpi> iter = new FormatNameFilterIterator<ImageReaderSpi>(
+                ServiceLoader.load(ImageReaderSpi.class).iterator(), param.formatName);
+        if (!iter.hasNext())
+            throw new RuntimeException("No Reader for format: " + param.formatName + " registered");
 
-        if (format != null && supportedFormats != null) {
-
-            for (int i = 0; i < supportedFormats.length; i++)
-                if (supportedFormats[i] != null
-                        && supportedFormats[i].trim().equalsIgnoreCase(
-                                format.trim()))
-                    supported = true;
+        ImageReaderSpi spi = iter.next();
+        if (param.className != null) {
+            while (!param.className.equals(spi.getPluginClassName())) {
+                if (iter.hasNext())
+                    spi = iter.next();
+                else {
+                    LOG.warn("No preferred Reader {} for format: {} - use {}",
+                            param.className, param.formatName, spi.getPluginClassName());
+                    break;
+                }
+            }
         }
-
-        return supported;
+        return spi;
     }
-
 }

@@ -38,31 +38,24 @@
 
 package org.dcm4che3.imageio.codec;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageWriterSpi;
-
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.util.Property;
 import org.dcm4che3.util.ResourceLocator;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.spi.ImageWriterSpi;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -71,6 +64,8 @@ import org.dcm4che3.util.StringUtils;
 public class ImageWriterFactory implements Serializable {
 
     private static final long serialVersionUID = 6328126996969794374L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ImageWriterFactory.class);
 
     public static class ImageWriterParam implements Serializable {
 
@@ -218,56 +213,58 @@ public class ImageWriterFactory implements Serializable {
     }
 
     public static ImageWriter getImageWriter(ImageWriterParam param) {
+        return Boolean.getBoolean("org.dcm4che3.imageio.codec.useServiceLoader")
+                ? getImageWriterFromServiceLoader(param)
+                : getImageWriterFromImageIOServiceRegistry(param);
+    }
 
-        // ImageWriterSpi are laoded through the java ServiceLoader,
-        // istead of imageio ServiceRegistry
-        Iterator<ImageWriterSpi> iter = ServiceLoader
-                .load(ImageWriterSpi.class).iterator();
+    public static ImageWriter getImageWriterFromImageIOServiceRegistry(ImageWriterParam param) {
+        Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName(param.formatName);
+        if (!iter.hasNext())
+            throw new RuntimeException("No Writer for format: " + param.formatName + " registered");
 
-        try {
-
-            if (iter != null && iter.hasNext()) {
-
-                String className = param.className;
-                if (className == null)
-                    return iter.next().createWriterInstance();
-
-                do {
-                    ImageWriterSpi writerspi = iter.next();
-                    if (supportsFormat(writerspi.getFormatNames(),
-                            param.formatName)) {
-
-                        ImageWriter writer = writerspi.createWriterInstance();
-
-                        if (writer.getClass().getName().equals(className))
-                            return writer;
-                    }
-                } while (iter.hasNext());
+        ImageWriter writer = iter.next();
+        if (param.className != null) {
+            while (!param.className.equals(writer.getClass().getName())) {
+                if (iter.hasNext())
+                    writer = iter.next();
+                else {
+                    LOG.warn("No preferred Writer {} for format: {} - use {}",
+                            param.className, param.formatName, writer.getClass().getName());
+                    break;
+                }
             }
+        }
+        return writer;
+    }
 
-            throw new RuntimeException("No Image Writer for format: "
-                    + param.formatName + " registered");
-
+    public static ImageWriter getImageWriterFromServiceLoader(ImageWriterParam param) {
+        try {
+            return getImageWriterSpi(param).createWriterInstance();
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Error instantiating Writer for format: "
-                            + param.formatName);
+            throw new RuntimeException("Error instantiating Writer for format: "  + param.formatName, e);
         }
     }
 
-    private static boolean supportsFormat(String[] supportedFormats,
-            String format) {
-        boolean supported = false;
+    private static ImageWriterSpi getImageWriterSpi(ImageWriterParam param) {
+        Iterator<ImageWriterSpi> iter = new FormatNameFilterIterator<ImageWriterSpi>(
+                ServiceLoader.load(ImageWriterSpi.class).iterator(), param.formatName);
+        if (!iter.hasNext())
+            throw new RuntimeException("No Writer for format: " + param.formatName + " registered");
 
-        if (format != null && supportedFormats != null) {
-            
-            for (int i = 0; i < supportedFormats.length; i++)
-                if (supportedFormats[i] != null
-                        && supportedFormats[i].trim().equalsIgnoreCase(
-                                format.trim()))
-                    supported = true;
+        ImageWriterSpi spi = iter.next();
+        if (param.className != null) {
+            while (!param.className.equals(spi.getPluginClassName())) {
+                if (iter.hasNext())
+                    spi = iter.next();
+                else {
+                    LOG.warn("No preferred Writer {} for format: {} - use {}",
+                            param.className, param.formatName, spi.getPluginClassName());
+                    break;
+                }
+            }
         }
-        
-        return supported;
+        return spi;
     }
+
 }

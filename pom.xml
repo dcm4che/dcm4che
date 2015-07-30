@@ -50,9 +50,9 @@
     <url>http://dcm4che.org/jira</url>
   </issueManagement>
   <scm>
-    <connection>scm:git:git://github.com/dcm4che/dcm4che.git</connection>
-    <developerConnection>scm:git:git://github.com/dcm4che/dcm4che.git</developerConnection>
-    <url>http://github.com/dcm4che/dcm4che</url>
+    <connection>scm:git:git://github.com/gunterze/dcm4che.git</connection>
+    <developerConnection>scm:git:git://github.com/gunterze/dcm4che.git</developerConnection>
+    <url>http://github.com/gunterze/dcm4che</url>
   </scm>
   <organization>
     <name>dcm4che.org</name>
@@ -74,8 +74,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
     </plugins>
@@ -132,6 +132,7 @@
     <module>dcm4che-json</module>
     <module>dcm4che-dict</module>
     <module>dcm4che-js-dict</module>
+      <module>dcm4che-test-data</module>
   </modules>
   <distributionManagement>
     <repository>

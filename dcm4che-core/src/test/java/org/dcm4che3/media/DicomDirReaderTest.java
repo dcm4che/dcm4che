@@ -15,8 +15,7 @@ import org.junit.Test;
 public class DicomDirReaderTest {
 
     private static File toFile(String name) throws Exception {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new File(cl.getResource(name).toURI());
+        return new File("target/test-data/" + name);
     }
 
     @Test

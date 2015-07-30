@@ -50,7 +50,6 @@ import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.TagUtils;
@@ -239,8 +238,7 @@ public class SAXWriter implements DicomInputHandler {
         int len = dis.length();
         if (TagUtils.isGroupLength(tag) || TagUtils.isPrivateCreator(tag)) {
             dis.readValue(dis, attrs);
-        } else if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkData(attrs)) {
+        } else if (dis.isExcludeBulkData()) {
             if (len == -1)
                 dis.readValue(dis, attrs);
             else
@@ -252,8 +250,7 @@ public class SAXWriter implements DicomInputHandler {
             if (vr == VR.SQ || len == -1) {
                 dis.readValue(dis, attrs);
             } else if (len > 0) {
-                if (dis.getIncludeBulkData() ==  IncludeBulkData.URI
-                        && dis.isBulkData(attrs)) {
+                if (dis.isIncludeBulkDataURI()) {
                     writeBulkData(dis.createBulkData());
                 } else {
                     byte[] b = dis.readValue();
@@ -305,15 +302,13 @@ public class SAXWriter implements DicomInputHandler {
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         int len = dis.length();
-        if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkDataFragment(frags)) {
+        if (dis.isExcludeBulkData()) {
             dis.skipFully(len);
         } else try {
             frags.add(ByteUtils.EMPTY_BYTES); // increment size
             if (len > 0) {
                 startElement("DataFragment", "number", frags.size());
-                if (dis.getIncludeBulkData() == IncludeBulkData.URI
-                        && dis.isBulkDataFragment(frags)) {
+                if (dis.isIncludeBulkDataURI()) {
                     writeBulkData(dis.createBulkData());
                 } else {
                     byte[] b = dis.readValue();

@@ -56,7 +56,6 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
@@ -147,12 +146,8 @@ public class JSONWriter implements DicomInputHandler {
         int len = dis.length();
         if (TagUtils.isGroupLength(tag)) {
             dis.readValue(dis, attrs);
-        } else if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkData(attrs)) {
-            if (len == -1)
-                dis.readValue(dis, attrs);
-            else
-                dis.skipFully(len);
+        } else if (dis.isExcludeBulkData()) {
+            dis.readValue(dis, attrs);
         } else {
             gen.writeStartObject(TagUtils.toHexString(tag));
             gen.write("vr", vr.name());
@@ -162,8 +157,7 @@ public class JSONWriter implements DicomInputHandler {
                 if (hasItems.removeLast())
                     gen.writeEnd();
             } else if (len > 0) {
-                if (dis.getIncludeBulkData() ==  IncludeBulkData.URI
-                        && dis.isBulkData(attrs)) {
+                if (dis.isIncludeBulkDataURI()) {
                     writeBulkData(dis.createBulkData());
                 } else {
                     byte[] b = dis.readValue();
@@ -314,8 +308,7 @@ public class JSONWriter implements DicomInputHandler {
     public void readValue(DicomInputStream dis, Fragments frags)
             throws IOException {
         int len = dis.length();
-        if (dis.getIncludeBulkData() == IncludeBulkData.NO
-                && dis.isBulkDataFragment(frags)) {
+        if (dis.isExcludeBulkData()) {
             dis.skipFully(len);
             return;
         }
@@ -327,8 +320,7 @@ public class JSONWriter implements DicomInputHandler {
         
         gen.writeStartObject();
         if (len > 0) {
-            if (dis.getIncludeBulkData() == IncludeBulkData.URI
-                    && dis.isBulkDataFragment(frags)) {
+            if (dis.isIncludeBulkDataURI()) {
                 writeBulkData(dis.createBulkData());
             } else {
                 writeInlineBinary(frags.vr(), dis.readValue(), 

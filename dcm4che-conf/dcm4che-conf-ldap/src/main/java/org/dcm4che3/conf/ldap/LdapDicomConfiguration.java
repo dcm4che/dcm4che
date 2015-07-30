@@ -1766,7 +1766,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotNull(attrs, "dicomTransferRole", ac.getRole());
         LdapUtils.storeNotEmpty(attrs, "dcmAETitle", ac.getAETitles());
         LdapUtils.storeNotEmpty(attrs, "dcmSOPClass", ac.getSOPClasses());
-        LdapUtils.storeNotNull(attrs, "labeledURI", ac.getURI());
+        LdapUtils.storeNotNull(attrs, "dcmURI", ac.getURI());
         return attrs;
     }
 
@@ -1784,7 +1784,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
                         TransferCapability.Role.valueOf(
                                 LdapUtils.stringValue(attrs.get("dicomTransferRole"), null)),
                         LdapUtils.stringArray(attrs.get("dcmAETitle")),
-                        LdapUtils.stringValue(attrs.get("labeledURI"), null)));
+                        LdapUtils.stringValue(attrs.get("dcmURI"), null)));
             }
         } finally {
            LdapUtils.safeClose(ne);
@@ -1822,7 +1822,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dcmSOPClass",
                 prev.getSOPClasses(),
                 ac.getSOPClasses());
-        LdapUtils.storeDiff(mods, "labeledURI", prev.getURI(), ac.getURI());
+        LdapUtils.storeDiff(mods, "dcmURI", prev.getURI(), ac.getURI());
         return mods;
     }
 

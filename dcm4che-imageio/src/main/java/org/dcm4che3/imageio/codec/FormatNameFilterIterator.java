@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * *** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,70 +35,69 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * *** END LICENSE BLOCK *****
+ */
 
 package org.dcm4che3.imageio.codec;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.imageio.spi.ImageReaderWriterSpi;
 import java.util.Iterator;
-
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.image.PhotometricInterpretation;
-
+import java.util.NoSuchElementException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @since Jul 2015
  */
-public class CompressionRules
-        implements Iterable<CompressionRule>, Serializable {
-    
-    private static final long serialVersionUID = 5027417735779753342L;
+final class FormatNameFilterIterator<T extends ImageReaderWriterSpi> implements Iterator<T> {
+    private final Iterator<T> iter;
+    private final String formatName;
+    private T next = null;
 
-    private final ArrayList<CompressionRule> list =
-            new ArrayList<CompressionRule>();
-
-    public void add(CompressionRule rule) {
-        if (findByCommonName(rule.getCommonName()) != null)
-            throw new IllegalStateException("CompressionRule with cn: '"
-                    + rule.getCommonName() + "' already exists");
-        int index = Collections.binarySearch(list, rule);
-        if (index < 0)
-            index = -(index+1);
-        list.add(index, rule);
+    FormatNameFilterIterator(Iterator<T> iter, String formatName) {
+        this.iter = iter;
+        this.formatName = formatName;
+        advance();
     }
 
-    public void add(CompressionRules rules) {
-         for (CompressionRule rule : rules)
-             add(rule);
+    private void advance() {
+        while (iter.hasNext()) {
+            T elt = iter.next();
+            if (contains(elt.getFormatNames(), formatName)) {
+                next = elt;
+                return;
+            }
+        }
+
+        next = null;
     }
 
-    public boolean remove(CompressionRule ac) {
-        return list.remove(ac);
-    }
+    private static boolean contains(String[] names, String name) {
+        for (int i = 0; i < names.length; i++) {
+            if (name.equalsIgnoreCase(names[i])) {
+                return true;
+            }
+        }
 
-    public void clear() {
-        list.clear();
-    }
-
-    public CompressionRule findByCommonName(String commonName) {
-        for (CompressionRule rule : list)
-            if (commonName.equals(rule.getCommonName()))
-                return rule;
-        return null;
-    }
-
-    public CompressionRule findCompressionRule(String aeTitle, ImageDescriptor imageDescriptor) {
-        for (CompressionRule ac : list)
-            if (ac.matchesCondition(aeTitle, imageDescriptor))
-                return ac;
-        return null;
+        return false;
     }
 
     @Override
-    public Iterator<CompressionRule> iterator() {
-        return list.iterator();
+    public boolean hasNext() {
+        return next != null;
+    }
+
+    @Override
+    public T next() {
+        if (next == null) {
+            throw new NoSuchElementException();
+        }
+        T o = next;
+        advance();
+        return o;
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 }

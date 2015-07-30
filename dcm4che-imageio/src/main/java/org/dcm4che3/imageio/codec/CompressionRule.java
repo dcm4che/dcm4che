@@ -107,11 +107,8 @@ public class CompressionRule
         return imageWriteParams;
     }
 
-    public boolean matchesCondition(PhotometricInterpretation pmi, 
-            int bitsStored, int pixelRepresentation, String aeTitle, 
-            String sopClass, String bodyPart) {
-        return condition.matches(pmi, bitsStored, pixelRepresentation, aeTitle,
-                sopClass, bodyPart);
+    public boolean matchesCondition(String aeTitle, ImageDescriptor imageDescriptor) {
+        return condition.matches(aeTitle, imageDescriptor);
     }
 
     @Override
@@ -178,15 +175,13 @@ public class CompressionRule
             return o.weight - weight;
         }
 
-        public boolean matches(PhotometricInterpretation pmi, 
-                int bitsStored, int pixelRepresentation, 
-                String aeTitle, String sopClass, String bodyPart) {
-            return pmis.contains(pmi)
-                    && matchBitStored(bitsStored)
-                    && matchPixelRepresentation(pixelRepresentation)
+        public boolean matches(String aeTitle, ImageDescriptor imageDescriptor) {
+            return pmis.contains(imageDescriptor.getPhotometricInterpretation())
+                    && matchBitStored(imageDescriptor.getBitsStored())
+                    && matchPixelRepresentation(imageDescriptor.getPixelRepresentation())
                     && isEmptyOrContains(this.aeTitles, aeTitle)
-                    && isEmptyOrContains(this.sopClasses, sopClass)
-                    && isEmptyOrContains(this.bodyPartExamined, bodyPart);
+                    && isEmptyOrContains(this.sopClasses, imageDescriptor.getSopClassUID())
+                    && isEmptyOrContains(this.bodyPartExamined, imageDescriptor.getBodyPartExamined());
         }
 
         private boolean matchPixelRepresentation(int pixelRepresentation) {

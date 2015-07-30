@@ -1563,7 +1563,7 @@ public class Attributes implements Serializable {
                                     from, to, (String) tm);
                         }
                     } else {
-                        if (tmRange != null || isRange((String) da)) {
+                        if (tmRange != null) {
                             String[] daRange = splitRange((String) da);
                             if (daRange[0] == null) {
                                 daRange[0] = "";

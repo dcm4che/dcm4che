@@ -191,6 +191,10 @@ public class QueryTool implements TestTool {
         queryatts.setString(tag, vr, value);
     }
 
+    public void addQueryTag(String privateCreator, int tag, VR vr, String value) throws Exception {
+        queryatts.setString(privateCreator, tag, vr, value);
+    }
+
     public void clearQueryKeys() {
         this.queryatts = new Attributes();
     }

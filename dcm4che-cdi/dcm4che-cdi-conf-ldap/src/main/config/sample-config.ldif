@@ -1,0 +1,30 @@
+version: 1
+
+dn: dicomDeviceName=echoscp,cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+dicomInstalled: TRUE
+dicomDeviceName: echoscp
+objectClass: dicomDevice
+objectClass: dcmDevice
+
+dn: cn=dicom,dicomDeviceName=echoscp,cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+cn: dicom
+dicomHostname: localhost
+dicomPort: 11112
+objectClass: dicomNetworkConnection
+objectClass: dcmNetworkConnection
+
+dn: dicomAETitle=ECHOSCP,dicomDeviceName=echoscp,cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+dicomAssociationInitiator: FALSE
+objectClass: dicomNetworkAE
+objectClass: dcmNetworkAE
+dicomNetworkConnectionReference: cn=dicom,dicomDeviceName=echoscp,cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+dicomAETitle: ECHOSCP
+dicomAssociationAcceptor: TRUE
+
+dn: dicomSOPClass=1.2.840.10008.1.1+dicomTransferRole=SCP,dicomAETitle=ECHOSCP,dicomDeviceName=echoscp,cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+dicomSOPClass: 1.2.840.10008.1.1
+dicomTransferRole: SCP
+dicomTransferSyntax: 1.2.840.10008.1.2
+objectClass: dicomTransferCapability
+objectClass: dcmTransferCapability
+

@@ -1,0 +1,20 @@
+version: 1
+
+dn: cn=DICOM Configuration,dc=example,dc=com
+objectClass: dicomConfigurationRoot
+objectClass: top
+cn: DICOM Configuration
+
+dn: cn=Devices,cn=DICOM Configuration,dc=example,dc=com
+objectClass: dicomDevicesRoot
+objectClass: top
+cn: Devices
+
+dn: cn=Unique AE Titles Registry,cn=DICOM Configuration,dc=example,dc=com
+objectClass: dicomUniqueAETitlesRegistryRoot
+objectClass: top
+cn: Unique AE Titles Registry
+
+dn: cn=Unique HL7 Application Names Registry,cn=DICOM Configuration,dc=example,dc=com
+objectClass: hl7UniqueApplicationNamesRegistryRoot
+cn: Unique HL7 Application Names Registry

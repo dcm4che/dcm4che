@@ -52,6 +52,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class WadoRS {
 
     private File outDir;
 
-    private boolean appendContentID = false;
+    private final boolean appendContentID = false;
     
     private File xsltFile;
 
@@ -135,7 +136,7 @@ public class WadoRS {
 
     private boolean dumpHeader = false;
 
-    private  Map<String, String> retrievedInstances = new HashMap<String, String>();;
+    private final  Map<String, String> retrievedInstances = new HashMap<String, String>();;
 
     private WadoRSResponse response;
 
@@ -251,6 +252,8 @@ public class WadoRS {
     private static SimpleHTTPResponse sendRequest(final WadoRS main) throws IOException {
         URL newUrl = new URL(main.getUrl());
 
+        LOG.info("WADO-RS URL: {}", newUrl);
+
         HttpURLConnection connection = (HttpURLConnection) newUrl
                 .openConnection();
 
@@ -265,6 +268,8 @@ public class WadoRS {
         connection.setRequestProperty("charset", "utf-8");
 
         String[] acceptHeaders = compileAcceptHeader(main.acceptTypes);
+
+        LOG.info("Accept-Headers: {}", Arrays.toString(acceptHeaders));
 
         for (String acceptStr : acceptHeaders)
             connection.addRequestProperty("Accept", acceptStr);

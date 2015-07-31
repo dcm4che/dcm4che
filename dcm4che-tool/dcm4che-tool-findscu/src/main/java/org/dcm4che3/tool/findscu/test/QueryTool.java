@@ -191,7 +191,11 @@ public class QueryTool implements TestTool {
         queryatts.setString(tag, vr, value);
     }
 
-    public void addQueryTag(String privateCreator, int tag, VR vr, String value) throws Exception {
+    /**
+     * adds a new private query tag. For convenience, the VR of the tag is passed as well
+     * (so that it's not necessary to have the private dictionary on client side)
+     */
+    public void addQueryTag(String privateCreator, int tag, VR vr, String value) {
         queryatts.setString(privateCreator, tag, vr, value);
     }
 

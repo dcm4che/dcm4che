@@ -1334,8 +1334,7 @@ public class Device implements Serializable {
     public <T extends DeviceExtension> T getDeviceExtensionNotNull(Class<T> clazz) {
         T devExt = getDeviceExtension(clazz);
         if (devExt == null)
-            throw new IllegalStateException("No " + clazz.getName()
-                    + " configured for Device: " + deviceName);
+            throw new IllegalStateException("No " + clazz.getName()+ " configured for Device: " + deviceName);
         return devExt;
     }
 
@@ -1350,4 +1349,10 @@ public class Device implements Serializable {
         return aes;
     }
 
+    public ApplicationEntity getApplicationEntityNotNull(String aet) {
+        ApplicationEntity applicationEntity = getApplicationEntity(aet);
+        if (applicationEntity == null)
+            throw new IllegalArgumentException("Device " + deviceName + " does not contain AET " + aet);
+        return applicationEntity;
+    }
 }

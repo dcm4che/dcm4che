@@ -87,6 +87,11 @@ public class DicomServiceException extends IOException {
         return e;
     }
 
+    @Override
+    public String toString() {
+
+        return super.toString() + "( status = "+getStatus()+" )";
+    }
 
     private void setStatus(int status) {
         rsp.setInt(Tag.Status, VR.US, status);

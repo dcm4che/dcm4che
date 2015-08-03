@@ -38,7 +38,7 @@
     Retrieves the metadata for study with UID 1.2.3.4
     -
     Examples:
-    $ wadors --accept-type image/dicom+jpeg;1.2.840.10008.1.2.4.50
+    $ wadors --accept-type "image/dicom+jpeg;1.2.840.10008.1.2.4.50"
     http://localhost:8080/dcm4che-arc/wado/DCM4CHEE/studies/1.2.3.4
     Retrieves the images (bulk data) for study with UID 1.2.3.4 as JPEG
     baseline

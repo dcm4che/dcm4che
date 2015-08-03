@@ -44,14 +44,13 @@ import java.util.ArrayList;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.wadors.WadoRS;
-import org.dcm4che3.tool.wadors.WadoRS.Naming;
 
 /**
- * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * WADO-RS client tool for tests.
  * 
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
-
-public class WadoRSTool implements TestTool{
+public class WadoRSTool implements TestTool {
 
     private ArrayList<String> mediaTypesWithTS = new ArrayList<String>();
     private final String url;
@@ -66,11 +65,10 @@ public class WadoRSTool implements TestTool{
     public void wadoRS(String testDescription, boolean dumpHeader) throws IOException {
         long t1, t2;
         WadoRS wadors = new WadoRS(getUrl(),getRetrieveDir());
-        wadors.setNaming(Naming.UID);
         t1 = System.currentTimeMillis();
         wadors.setAcceptType(getMediaTypesWithTS().toArray(new String[getMediaTypesWithTS().size()]));
         wadors.setDumpHeaders(dumpHeader);
-        wadors.wadors(wadors);
+        wadors.wadors();
         t2 = System.currentTimeMillis();
         init(new WadoRSResult(testDescription, t2-t1, wadors.getResponse()));
     }

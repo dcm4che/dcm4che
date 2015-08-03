@@ -22,14 +22,6 @@
      -I,--indent                       use additional whitespace in XML output
      -K,--no-keyword                   do not include keyword attribute of
                                        DicomAttribute element in XML output
-        --naming <namingType>          Specifies the naming of the files
-                                       (parts), can be one of two values (UID
-                                       or CONTENT_ID), if UID then output file
-                                       names (parts) should have
-                                       SopInstanceUIDsif CONTENT_ID then the
-                                       content-id of the part in the multipart
-                                       response will be used,default is a
-                                       simple counter for part index.
         --out-dir <directory>          specifies directory where files with
                                        file names specified by option
                                        --out-file will be stored.

@@ -305,8 +305,8 @@ public class WadoRS {
             bodyPath = f.getAbsolutePath();
             main.retrievedInstances.put(headerPath, bodyPath);
         } else {
-            if(main.dumpHeader)
-            main.retrievedInstances.put(dumpHeader(main, connection.getHeaderFields()),"multipart-request-head");
+            if (main.dumpHeader)
+                main.retrievedInstances.put(dumpHeader(main, connection.getHeaderFields()), "multipart-request-head");
             in = connection.getInputStream();
             try {
                 File spool = new File(main.outDir,"Spool");
@@ -436,15 +436,22 @@ public class WadoRS {
         String[] acceptHeaders = new String[acceptTypes.length];
         for (int i = 0; i < acceptTypes.length; i++) {
             String acceptType = acceptTypes[i];
-            if (acceptType.contains("application/json") || acceptType.contains("application/zip"))
+            if (acceptType.contains("application/json") || acceptType.contains("application/zip") || acceptType.contains("multipart/related")) {
                 acceptHeaders[i] = acceptType;
-            else
-                acceptHeaders[i] = "multipart/related; type="
-                        + acceptType.split(";")[0];
+            } else {
+                String mediaType = acceptType;
+                String transferSyntaxUID = null;
+                if (mediaType.contains(";")) {
+                    String[] splittedAcceptHeader = acceptType.split(";");
+                    mediaType = splittedAcceptHeader[0];
+                    transferSyntaxUID = splittedAcceptHeader[1];
+                }
 
-            if (acceptType.contains(";")) {
-                acceptHeaders[i] += "; transfer-syntax="
-                        + acceptType.split(";")[1];
+                acceptHeaders[i] = "multipart/related; type=" + mediaType;
+
+                if (transferSyntaxUID != null) {
+                    acceptHeaders[i] += "; transfer-syntax=" + transferSyntaxUID;
+                }
             }
         }
         return acceptHeaders;
@@ -708,7 +715,7 @@ public class WadoRS {
     }
 
     public boolean useDefaultNaming() {
-        return this.naming == Naming.DEFAULT ? true : false;
+        return this.naming == Naming.DEFAULT;
     }
 
     public int getNextPartIndex() {

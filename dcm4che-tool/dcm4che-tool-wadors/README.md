@@ -8,11 +8,13 @@
     -
     Options:
         --accept-type <mediaType;ts>   Includes the type of the accepted
-                                       multipart/related response, defined as
-                                       type=MediaType;transfer-syntax={Transfe
-                                       rSyntaxUID}. No default however
-                                       multiple accept-type options can be
-                                       specified.
+                                       response, defined as {MediaType} or
+                                       {MediaType};{TransferSyntaxUID}. Please
+                                       note that the "multipart/related" type
+                                       does NOT need to be specified but will
+                                       be automatically added if appropriate.
+                                       Multiple accept-type options can be
+                                       specified. There is no default.
         --dump-headers                 Specifies whether to dump request
                                        header and response header for each
                                        multipart.

@@ -168,6 +168,11 @@ public class StoreSCPTool implements TestTool {
     }
 
     public void start(String testDescriptionIn) throws InterruptedException {
+        this.start(testDescriptionIn, "*");
+    }
+
+
+    public void start(String testDescriptionIn, String... transferSyntaxes) throws InterruptedException {
 
         started = true;
 
@@ -188,7 +193,7 @@ public class StoreSCPTool implements TestTool {
                 new TransferCapability(null, 
                         "*",
                         TransferCapability.Role.SCP,
-                        "*"));
+                        transferSyntaxes));
         ExecutorService executorService = Executors.newCachedThreadPool();
         ScheduledExecutorService scheduledExecutorService = 
                 Executors.newSingleThreadScheduledExecutor();

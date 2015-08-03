@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.tool.wadors.test;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.dcm4che3.tool.common.SimpleHTTPResponse;
@@ -49,17 +50,18 @@ import org.dcm4che3.tool.common.SimpleHTTPResponse;
 public class WadoRSResponse extends SimpleHTTPResponse{
 
     //map of head and body for each part 
-    Map<String, String> retrievedInstances;
+    private Map<String, Path> retrievedInstances;
+
     public WadoRSResponse(int status, String message) {
         super(status, message);
     }
     
-    public WadoRSResponse(int status, String message,  Map<String, String> instancePaths) {
+    public WadoRSResponse(int status, String message, Map<String, Path> instancePaths) {
         super(status, message);
         this.retrievedInstances = instancePaths;
     }
 
-    public  Map<String, String> getRetrievedInstance() {
+    public Map<String, Path> getRetrievedInstance() {
         return retrievedInstances;
     }
 

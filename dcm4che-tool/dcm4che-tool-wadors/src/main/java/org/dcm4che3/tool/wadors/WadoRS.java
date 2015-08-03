@@ -51,6 +51,7 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -132,7 +133,7 @@ public class WadoRS {
 
     private boolean dumpHeader = false;
 
-    private final Map<String, String> retrievedInstances = new HashMap<String, String>();
+    private final Map<String, Path> retrievedInstances = new HashMap<String, Path>();
 
     private WadoRSResponse response;
 
@@ -274,7 +275,6 @@ public class WadoRS {
         InputStream in = null;
         if (connection.getHeaderField("content-type").contains("application/json") || connection.getHeaderField("content-type").contains("application/zip")) {
             String headerPath;
-            String bodyPath;
             in = connection.getInputStream();
             if (main.dumpHeader)
                 headerPath = writeHeader(connection.getHeaderFields(), new File(main.outDir, "out.json" + "-head"));
@@ -283,11 +283,10 @@ public class WadoRS {
             }
             File f = new File(main.outDir, connection.getHeaderField("content-type").contains("application/json") ? "out.json" : "out.zip");
             Files.copy(in, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            bodyPath = f.getAbsolutePath();
-            main.retrievedInstances.put(headerPath, bodyPath);
+            main.retrievedInstances.put(headerPath, f.toPath().toAbsolutePath());
         } else {
             if (main.dumpHeader)
-                main.retrievedInstances.put(dumpHeader(main, connection.getHeaderFields()), "multipart-request-head");
+                dumpHeader(main, connection.getHeaderFields());
             in = connection.getInputStream();
             try {
                 File spool = new File(main.outDir, "Spool");
@@ -364,9 +363,9 @@ public class WadoRS {
 
     }
 
-    private static String dumpHeader(WadoRS main,
-            Map<String, List<String>> headerFields) throws FileNotFoundException {
+    private static String dumpHeader(WadoRS main, Map<String, List<String>> headerFields) throws FileNotFoundException {
         File f = new File(main.outDir, "request-head");
+        main.retrievedInstances.put("multipart-request-head", f.toPath().toAbsolutePath());
         return writeHeader(headerFields, f);
     }
 
@@ -440,8 +439,7 @@ public class WadoRS {
                 } else {
                     headPath = attrs.getString(Tag.SOPInstanceUID);
                 }
-                String bodyPath = out.getAbsolutePath();
-                wadors.retrievedInstances.put(headPath, bodyPath);
+                wadors.retrievedInstances.put(headPath, out.toPath().toAbsolutePath());
                 return true;
             }
 
@@ -501,8 +499,7 @@ public class WadoRS {
                 } else {
                     headPath = attrs.getString(Tag.SOPInstanceUID);
                 }
-                String bodyPath = out.getAbsolutePath();
-                wadors.retrievedInstances.put(headPath, bodyPath);
+                wadors.retrievedInstances.put(headPath, out.toPath().toAbsolutePath());
                 return true;
             }
         },
@@ -534,8 +531,7 @@ public class WadoRS {
                 else {
                     headPath = fileName;
                 }
-                String bodyPath = out.getAbsolutePath();
-                wadors.retrievedInstances.put(headPath, bodyPath);
+                wadors.retrievedInstances.put(headPath, out.toPath().toAbsolutePath());
                 return true;
             }
         };
@@ -642,7 +638,7 @@ public class WadoRS {
         return ++this.partIndex;
     }
 
-    public Map<String, String> getRetrievedInstances() {
+    public Map<String, Path> getRetrievedInstances() {
         return retrievedInstances;
     }
 

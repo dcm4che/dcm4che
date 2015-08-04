@@ -322,7 +322,7 @@ public class SAXWriter implements DicomInputHandler {
                     if (dis.bigEndian())
                         frags.vr().toggleEndian(b, false);
                     try {
-                        startElement("DataFragment", "number", frags.size());
+                        startElement("DataFragment", "number", frags.size() + 1);
                         writeInlineBinary(b);
                         endElement("DataFragment");
                     } catch (SAXException e) {

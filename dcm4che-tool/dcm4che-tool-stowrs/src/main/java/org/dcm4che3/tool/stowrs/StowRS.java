@@ -72,7 +72,6 @@ import org.dcm4che3.data.Attributes.Visitor;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.SAXReader;
@@ -324,45 +323,6 @@ public class StowRS {
         this.responses.add(response);
     }
 
-    private static MediaType forTransferSyntax(String ts) {
-        if (UID.ExplicitVRLittleEndian.equals(ts)
-                || UID.ImplicitVRLittleEndian.equals(ts))
-            return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-
-        if (UID.JPEGLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_TYPE;
-
-        if (UID.JPEGLSLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_LS_TYPE;
-
-        if (UID.JPEG2000LosslessOnly.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-
-        if (UID.JPEG2000Part2MultiComponentLosslessOnly.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JPX_TYPE;
-
-        if (UID.RLELossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_RLE_TYPE;
-
-        if (UID.JPEGBaseline1.equals(ts) || UID.JPEGExtended24.equals(ts)
-                || UID.JPEGLosslessNonHierarchical14.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_TYPE;
-        else if (UID.JPEGLSLossyNearLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_LS_TYPE;
-        else if (UID.JPEG2000.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-        else if (UID.JPEG2000Part2MultiComponent.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-        else if (UID.MPEG2.equals(ts)
-                || UID.MPEG2MainProfileHighLevel.equals(ts))
-            return MediaTypes.VIDEO_MPEG_TYPE;
-        else if (UID.MPEG4AVCH264HighProfileLevel41.equals(ts)
-                || UID.MPEG4AVCH264BDCompatibleHighProfileLevel41.equals(ts))
-            return MediaTypes.VIDEO_MP4_TYPE;
-        else
-            throw new IllegalArgumentException("ts: " + ts);
-    }
-
     private static Attributes parseJSON(String fname) throws Exception {
         Attributes attrs = new Attributes();
         attrs.addAll(parseJSON(fname, attrs));
@@ -426,8 +386,7 @@ public class StowRS {
         connection.setRequestProperty("Content-Type", "multipart/related; type=" + metaDataType + "; boundary=" + MULTIPART_BOUNDARY);
         String bulkDataTransferSyntax = "transfer-syntax=" + transferSyntax;
 
-        MediaType type = getBulkDataMediaType(metadata);
-        String contentTypeBulkData = type.getSubtype() != null ? type.getType() + "/" + type.getSubtype() : type.getType();
+        MediaType pixelDataMediaType = getBulkDataMediaType(metadata);
         connection.setRequestProperty("Accept", "application/dicom+xml");
         connection.setRequestProperty("charset", "utf-8");
         connection.setUseCaches(false);
@@ -463,8 +422,9 @@ public class StowRS {
         // write bulkdata
 
         for (BulkData chunk : extractedBulkData.otherBulkDataChunks) {
-            writeBulkDataPart(contentTypeBulkData, wr, chunk.getURIOrUUID(), Collections.singletonList(chunk));
+            writeBulkDataPart(MediaType.APPLICATION_OCTET_STREAM_TYPE, wr, chunk.getURIOrUUID(), Collections.singletonList(chunk));
         }
+
 
         if (!extractedBulkData.pixelDataBulkData.isEmpty()) {
             // pixeldata as a single bulk data part
@@ -473,7 +433,7 @@ public class StowRS {
                 LOG.info("Combining bulk data of multiple pixel data fragments");
             }
 
-            writeBulkDataPart(contentTypeBulkData, wr, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData);
+            writeBulkDataPart(pixelDataMediaType, wr, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData);
         }
 
         // end of multipart message
@@ -492,9 +452,9 @@ public class StowRS {
         return new StowRSResponse(rspCode, response, responseAttrs);
     }
 
-    private static void writeBulkDataPart(String contentTypeBulkData, DataOutputStream wr, String uri, List<BulkData> chunks) throws IOException {
+    private static void writeBulkDataPart(MediaType mediaType, DataOutputStream wr, String uri, List<BulkData> chunks) throws IOException {
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
-        wr.writeBytes("Content-Type: " + contentTypeBulkData + " \r\n");
+        wr.writeBytes("Content-Type: " + mediaType.toString() + " \r\n");
         wr.writeBytes("Content-Location: " + uri + " \r\n");
         wr.writeBytes("\r\n");
 
@@ -504,7 +464,7 @@ public class StowRS {
     }
 
     private static MediaType getBulkDataMediaType(Attributes metadata) {
-        return forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID));
+        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID));
     }
 
     private static void writeBulkDataToStream(BulkData bulkData, DataOutputStream wr) throws IOException {

@@ -1674,7 +1674,9 @@ public class Attributes implements Serializable {
             DatePrecision precision = new DatePrecision();
             Date date = DateUtils.parseDT(from, dt, false, precision);
             dt = DateUtils.formatDT(to, date, precision);
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+            // ignored
+        }
         return dt;
     }
 
@@ -1683,7 +1685,9 @@ public class Attributes implements Serializable {
             DatePrecision precision = new DatePrecision();
             Date date = DateUtils.parseTM(from, tm, false, precision);
             tm = DateUtils.formatTM(to, date, precision);
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+            // ignored
+        }
         return tm;
     }
 
@@ -2278,7 +2282,7 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute were added or
      *          overwritten with a different value
      */
@@ -2295,7 +2299,7 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute would be added or
      *          overwritten with a different value
      */
@@ -2346,60 +2350,6 @@ public class Attributes implements Serializable {
         return true;
    }
 
-    public Attributes diff(Attributes b, boolean both) {
-        Object[] otherValues = b.values;
-        Attributes inAnotInB = new Attributes();
-        Attributes inBnotInA = new Attributes();
-        Attributes diffBoth = new Attributes();
-        for(int indexOfTag = 0;indexOfTag < tags.length && tags[indexOfTag]!=0; indexOfTag++) {
-            if(TagUtils.isPrivateGroup(tags[indexOfTag])) {
-                if(TagUtils.isPrivateCreator(tags[indexOfTag])) {
-                    //treat as a normal tag with normal compare
-                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
-                }
-                else {
-                    //check if private creator is in b
-                    int privateCreatorTag = TagUtils.creatorTagOf(tags[indexOfTag]);
-                    Object o=getValue(privateCreatorTag);
-                    Object o1=b.values[b.indexOf(privateCreatorTag)];
-                    if(b.contains(privateCreatorTag) && o1.equals(o))
-                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
-                    else
-                        inAnotInB.set(tags[indexOfTag],vrs[indexOfTag],values[indexOfTag]);
-                }
-            }
-            else {
-                diffAttr(b, otherValues, inAnotInB, indexOfTag);
-            }
-        }
-        
-        inBnotInA.addAll(filterOutPrivateCreator(inAnotInB,b));
-        if(both) {
-        diffBoth.addAll(inAnotInB);
-        diffBoth.addAll(inBnotInA);
-        }
-            return both?diffBoth:inAnotInB;
-    }
-
-    private Attributes filterOutPrivateCreator(Attributes inAnotInB, Attributes b) {
-        for(int tag : b.tags)
-            if(!inAnotInB.contains(tag) && TagUtils.isPrivateCreator(tag))
-                b.remove(tag);
-        return b;
-    }
-
-    private void diffAttr(Attributes b, Object[] otherValues,
-            Attributes inAnotInB, int indexOfTag) {
-        if(!(b.contains(tags[indexOfTag]) && otherValues[b.indexOf(tags[indexOfTag])].equals(values[indexOfTag]))) {
-            //add to diff in a not in b
-            inAnotInB.set(tags[indexOfTag], vrs[indexOfTag], values[indexOfTag]);
-        }
-        else {
-            if(!TagUtils.isPrivateCreator(tags[indexOfTag]))
-            b.remove(tags[indexOfTag]);
-        }
-    }
-    
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])
@@ -2672,13 +2622,17 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Invokes {@link Visitor.visit} for each attribute in this instance. The
-     * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
+     * Invokes {@link Visitor#visit} for each attribute in this instance. The
+     * operation will be aborted if <code>visitor.visit()</code> returns
+     * <code>false</code> or throws an exception.
      * 
      * @param visitor
-     * @param visitNestedDatasets controls if <code>visitor.visit()</code>
-     *  is also invoked for attributes in nested datasets
+     * @param visitNestedDatasets
+     *            controls if <code>visitor.visit()</code> is also invoked for
+     *            attributes in nested datasets
      * @return <code>true</code> if the operation was not aborted.
+     * @throws Exception
+     *             exception thrown by {@link Visitor#visit}
      */
     public boolean accept(Visitor visitor, boolean visitNestedDatasets)
             throws Exception{

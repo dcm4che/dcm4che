@@ -40,9 +40,10 @@ package org.dcm4che3.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.ListIterator;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomOutputStream;
 
@@ -142,4 +143,82 @@ public class Fragments extends ArrayList<Object> implements Value {
     public byte[] toBytes(VR vr, boolean bigEndian) throws IOException {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (getClass() != obj.getClass())
+            return false;
+
+        Fragments other = (Fragments) obj;
+        if (bigEndian != other.bigEndian)
+            return false;
+        if (privateCreator == null) {
+            if (other.privateCreator != null)
+                return false;
+        } else if (!privateCreator.equals(other.privateCreator))
+            return false;
+        if (tag != other.tag)
+            return false;
+        if (vr != other.vr)
+            return false;
+
+        ListIterator<Object> e1 = listIterator();
+        ListIterator<Object> e2 = other.listIterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            Object o1 = e1.next();
+            Object o2 = e2.next();
+            if (!itemsEqual(o1, o2))
+                return false;
+        }
+        if (e1.hasNext() || e2.hasNext())
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        
+        int hashCode = 1;
+        for (Object e : this)
+            hashCode = 31 * hashCode + itemHashCode(e);
+        
+        hashCode = prime * hashCode + (bigEndian ? 1231 : 1237);
+        hashCode = prime * hashCode + ((privateCreator == null) ? 0 : privateCreator.hashCode());
+        hashCode = prime * hashCode + tag;
+        hashCode = prime * hashCode + ((vr == null) ? 0 : vr.hashCode());
+        return hashCode;
+    }
+
+    private boolean itemsEqual(Object o1, Object o2) {
+
+        if (o1 == null) {
+            return o2 == null;
+        } else {
+            if (o1 instanceof byte[]) {
+                if (o2 instanceof byte[] && ((byte[]) o1).length == ((byte[]) o2).length) {
+                    return Arrays.equals((byte[]) o1, (byte[]) o2);
+                } else {
+                    return false;
+                }
+            } else {
+                return o1.equals(o2);
+            }
+        }
+    }
+
+    private int itemHashCode(Object e) {
+        if (e == null) {
+            return 0;
+        } else {
+            if (e instanceof byte[])
+                return Arrays.hashCode((byte[]) e);
+            else
+                return e.hashCode();
+        }
+    }
+
 }

@@ -193,6 +193,36 @@ public class AttributesTest {
     }
 
     @Test
+    public void testEqualsFragments() {
+        Attributes a1 = new Attributes();
+        Fragments frags1 = a1.newFragments(Tag.PixelData, VR.OB, 2);
+        frags1.add(null);
+        frags1.add(new byte[] { 1, 2, 3 });
+        Attributes a2 = new Attributes();
+        Fragments frags2 = a2.newFragments(Tag.PixelData, VR.OB, 2);
+        frags2.add(null);
+        frags2.add(new byte[] { 1, 2, 3 });
+
+        assertTrue(a1.equals(a2));
+        assertTrue(a2.equals(a1));
+    }
+
+    @Test
+    public void testNotEqualsFragments() {
+        Attributes a1 = new Attributes();
+        Fragments frags1 = a1.newFragments(Tag.PixelData, VR.OB, 2);
+        frags1.add(null);
+        frags1.add(new byte[] { 1, 2, 3 });
+        Attributes a2 = new Attributes();
+        Fragments frags2 = a2.newFragments(Tag.PixelData, VR.OB, 2);
+        frags2.add(null);
+        frags2.add(new byte[] { 1, 2, 1 });
+
+        assertFalse(a1.equals(a2));
+        assertFalse(a2.equals(a1));
+    }
+
+    @Test
     public void testEqualsBulkData() {
         Attributes a1 = new Attributes();
         a1.setValue(Tag.PixelData, VR.OB, new BulkData(null, "file:/PixelData", false));

@@ -99,6 +99,7 @@ public class RetrieveTool implements TestTool{
     private int numFailed;
     private int expectedMatches = Integer.MIN_VALUE;
     private final Attributes retrieveatts = new Attributes();
+    private final GetSCU retrievescu;
     
     private final List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
@@ -124,17 +125,26 @@ public class RetrieveTool implements TestTool{
                 ? InformationModel.StudyRoot : InformationModel.PatientRoot;
         this.relational = relational;
         this.conn = conn;
-    }
 
-    public void retrieve(String testDescription) throws IOException, InterruptedException,
-            IncompatibleConnectionException, GeneralSecurityException,
-            FileNotFoundException, IOException {
         //setup device and connection
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
         ae.addConnection(conn);
-        final GetSCU retrievescu = new GetSCU(ae);
+        retrievescu = new GetSCU(ae);
+
+        retrievescu.setInformationModel(retrieveInformationModel, IVR_LE_FIRST, relational);
+        try {
+            configureServiceClass(retrievescu);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void retrieve(String testDescription) throws IOException, InterruptedException,
+            IncompatibleConnectionException, GeneralSecurityException,
+            FileNotFoundException, IOException {
+
         retrievescu.getAAssociateRQ().setCalledAET(aeTitle);
         retrievescu.getRemoteConnection().setHostname(host);
         retrievescu.getRemoteConnection().setPort(port);
@@ -152,10 +162,8 @@ public class RetrieveTool implements TestTool{
                 .newSingleThreadScheduledExecutor();
         retrievescu.getDevice().setExecutor(executorService);
         retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
-        retrievescu.setInformationModel(retrieveInformationModel,
-                IVR_LE_FIRST, relational);
+
         retrievescu.addLevel(retrieveLevel);
-        configureServiceClass(retrievescu);
         retrievescu.getKeys().addAll(retrieveatts);
         
         long timeStart = System.currentTimeMillis();
@@ -183,6 +191,10 @@ public class RetrieveTool implements TestTool{
         init(new RetrieveResult(testDescription, expectedMatches, numCStores,
                 numSuccess, numFailed,
                 (timeEnd - timeStart), response));
+    }
+
+    public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
+        retrievescu.addOfferedStorageSOPClass(cuid, tsuids);
     }
 
     public void addTag(int tag, String... values) {

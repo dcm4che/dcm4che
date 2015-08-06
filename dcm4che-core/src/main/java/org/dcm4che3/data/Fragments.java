@@ -184,7 +184,7 @@ public class Fragments extends ArrayList<Object> implements Value {
         
         int hashCode = 1;
         for (Object e : this)
-            hashCode = 31 * hashCode + itemHashCode(e);
+            hashCode = prime * hashCode + itemHashCode(e);
         
         hashCode = prime * hashCode + (bigEndian ? 1231 : 1237);
         hashCode = prime * hashCode + ((privateCreator == null) ? 0 : privateCreator.hashCode());

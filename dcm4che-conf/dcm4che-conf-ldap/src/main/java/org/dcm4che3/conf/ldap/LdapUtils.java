@@ -265,6 +265,10 @@ public class LdapUtils {
         return attr != null ? (String) attr.get() : defVal;
     }
 
+    public static <T extends Enum<T>> T enumValue(Class<T> enumType, Attribute attr, T defVal) throws NamingException {
+        return attr != null ? Enum.valueOf(enumType, (String) attr.get()) : defVal;
+    }
+
     public static String[] stringArray(Attribute attr) throws NamingException {
         if (attr == null)
             return StringUtils.EMPTY_STRING;
@@ -303,7 +307,7 @@ public class LdapUtils {
     }
 
 
-   public static Connection findConnection(String connDN, String deviceDN, Device device)
+    public static Connection findConnection(String connDN, String deviceDN, Device device)
             throws NameNotFoundException {
         for (Connection conn : device.listConnections())
             if (dnOf(conn, deviceDN).equalsIgnoreCase(connDN))
@@ -328,5 +332,4 @@ public class LdapUtils {
         storeNotNull(attrs, attrID, attrVal);
         return attrs;
     }
-
 }

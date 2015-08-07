@@ -72,7 +72,8 @@ public class GroupTCConfigTest {
         // tc group config
         ApplicationEntity ae = new ApplicationEntity("myAE");
         TCGroupConfigAEExtension ext = new TCGroupConfigAEExtension();
-        ext.getScpTCs().put(TCGroupConfigAEExtension.DefaultGroup.QUERY_RETRIEVE.name(), new TCGroupConfigAEExtension.TCGroupDetails());
+        ext.getScpTCs().put(TCGroupConfigAEExtension.DefaultGroup.QUERY.name(), new TCGroupConfigAEExtension.TCGroupDetails());
+        ext.getScpTCs().put(TCGroupConfigAEExtension.DefaultGroup.RETRIEVE.name(), new TCGroupConfigAEExtension.TCGroupDetails());
         ext.getScuTCs().put(TCGroupConfigAEExtension.DefaultGroup.STORAGE.name(), new TCGroupConfigAEExtension.TCGroupDetails());
         ae.addAEExtension(ext);
         device.addApplicationEntity(ae);
@@ -111,7 +112,8 @@ public class GroupTCConfigTest {
         // persist device back with exclusions
 
         TCGroupConfigAEExtension tcAEExt = loadedDevice.getApplicationEntity("myAE").getAEExtension(TCGroupConfigAEExtension.class);
-        tcAEExt.getScpTCs().get(TCGroupConfigAEExtension.DefaultGroup.QUERY_RETRIEVE.name()).getExcludedTransferCapabilities().add(UID.StudyRootQueryRetrieveInformationModelFIND);
+        tcAEExt.getScpTCs().get(TCGroupConfigAEExtension.DefaultGroup.QUERY.name()).getExcludedTransferCapabilities().add(UID.StudyRootQueryRetrieveInformationModelFIND);
+        tcAEExt.getScpTCs().get(TCGroupConfigAEExtension.DefaultGroup.RETRIEVE.name()).getExcludedTransferCapabilities().add(UID.StudyRootQueryRetrieveInformationModelFIND);
         tcAEExt.getScuTCs().get(TCGroupConfigAEExtension.DefaultGroup.STORAGE.name()).getExcludedTransferSyntaxes().add(UID.JPEGBaseline1);
 
         config.merge(loadedDevice);

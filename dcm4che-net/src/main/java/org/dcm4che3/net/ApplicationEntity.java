@@ -78,10 +78,8 @@ public class ApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 3883790997057469573L;
 
-    protected static final Logger LOG =
-            LoggerFactory.getLogger(ApplicationEntity.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ApplicationEntity.class);
 
-    private Device device;
 
     @ConfigurableProperty(name = "dicomAETitle", tags = Tag.PRIMARY)
     private String AETitle;
@@ -137,7 +135,7 @@ public class ApplicationEntity implements Serializable {
             new TreeMap<String, TransferCapability>();
 
     @ConfigurableProperty(name = "aeExtensions", isExtensionsProperty = true)
-    private HashMap<Class<? extends AEExtension>, AEExtension> extensions =
+    private Map<Class<? extends AEExtension>, AEExtension> extensions =
             new HashMap<Class<? extends AEExtension>, AEExtension>();
 
     @ConfigurableProperty(name = "dicomAssociationAcceptor")
@@ -146,6 +144,11 @@ public class ApplicationEntity implements Serializable {
     @ConfigurableProperty(name = "dicomAssociationInitiator")
     private boolean associationInitiator = true;
 
+    @ConfigurableProperty(name = "dcmAETitleAliases",
+            label = "Aliases (alternative AE titles)")
+    private List<String> AETitleAliases = new ArrayList<String>();
+
+    private Device device;
     private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity() {
@@ -155,7 +158,15 @@ public class ApplicationEntity implements Serializable {
         setAETitle(aeTitle);
     }
 
-    public HashMap<Class<? extends AEExtension>, AEExtension> getExtensions() {
+    public List<String> getAETitleAliases() {
+        return AETitleAliases;
+    }
+
+    public void setAETitleAliases(List<String> AETitleAliases) {
+        this.AETitleAliases = AETitleAliases;
+    }
+
+    public Map<Class<? extends AEExtension>, AEExtension> getExtensions() {
         return extensions;
     }
 

@@ -170,7 +170,7 @@ public class ApplicationEntity implements Serializable {
         return extensions;
     }
 
-    public void setExtensions(HashMap<Class<? extends AEExtension>, AEExtension> extensions) {
+    public void setExtensions(Map<Class<? extends AEExtension>, AEExtension> extensions) {
         this.extensions = extensions;
     }
 

@@ -3027,4 +3027,27 @@ public class Attributes implements Serializable {
         }
         return modified;
     }
+
+    public static void unifyCharacterSets(Attributes... attrsList) {
+        if (attrsList.length == 0)
+            return;
+
+        SpecificCharacterSet utf8 = SpecificCharacterSet.valueOf("ISO_IR 192");
+        SpecificCharacterSet commonCS = attrsList[0].getSpecificCharacterSet();
+        for (int i = 1; i < attrsList.length && !commonCS.equals(utf8); i++) {
+            SpecificCharacterSet cs = attrsList[i].getSpecificCharacterSet();
+            if (!(cs.equals(commonCS) || cs.isASCII() && commonCS.containsASCII())) {
+                commonCS = commonCS.isASCII() && cs.containsASCII() ? cs : utf8;
+            }
+        }
+        for (Attributes attrs : attrsList) {
+            SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
+            if (!(cs.equals(commonCS))) {
+                if (!cs.isASCII() || !commonCS.containsASCII())
+                    attrs.decodeStringValuesUsingSpecificCharacterSet();
+                attrs.setString(Tag.SpecificCharacterSet, VR.CS, commonCS.toCodes());
+            }
+        }
+    }
+
 }

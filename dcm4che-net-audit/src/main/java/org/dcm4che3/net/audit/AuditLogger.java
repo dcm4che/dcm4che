@@ -162,10 +162,9 @@ public class AuditLogger extends DeviceExtension {
 
     @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
             label = "ARR Device",
-            description = "Device which provides the Audit Record Repository to which audit messages are sent",
+            description = "Devices that correspond to Audit Record Repositories to which audit messages are sent",
             tags = ConfigurableProperty.Tag.PRIMARY,
-            collectionOfReferences = true,
-            isReference = false)
+            collectionOfReferences = true)
     private List<Device> auditRecordRepositoryDevices = new ArrayList<Device>();
 
     @ConfigurableProperty(

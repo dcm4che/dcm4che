@@ -128,6 +128,28 @@ public class GroupTCConfigTest {
 
         Assert.assertFalse(tss.contains(UID.JPEGBaseline1));
         Assert.assertTrue(tss.contains(UID.JPEGExtended24));
+
+
+        // try whitelisting
+        tcAEExt = loadedDevice.getApplicationEntity("myAE").getAEExtension(TCGroupConfigAEExtension.class);
+        TCGroupConfigAEExtension.TCGroupDetails tcGroupDetails = new TCGroupConfigAEExtension.TCGroupDetails();
+        tcAEExt.getScpTCs().put(TCGroupConfigAEExtension.DefaultGroup.STORAGE.name(), tcGroupDetails);
+
+        tcGroupDetails.getExcludedTransferSyntaxes().clear();
+        tcGroupDetails.getWhitelistedTransferSyntaxes().add(UID.ImplicitVRLittleEndian);
+
+        config.merge(loadedDevice);
+
+        loadedDevice = config.findDevice("myDevice");
+        myAE = loadedDevice.getApplicationEntity("myAE");
+        TransferCapability loadedTCs = myAE.getTransferCapabilityFor(UID.ComputedRadiographyImageStorage, TransferCapability.Role.SCP);
+
+        Assert.assertTrue(loadedTCs.containsTransferSyntax(UID.ImplicitVRLittleEndian));
+        Assert.assertFalse(loadedTCs.containsTransferSyntax(UID.JPEGExtended24));
+        Assert.assertFalse(loadedTCs.containsTransferSyntax(UID.ExplicitVRLittleEndian));
+        Assert.assertFalse(loadedTCs.containsTransferSyntax(UID.DeflatedExplicitVRLittleEndian));
+        Assert.assertFalse(loadedTCs.containsTransferSyntax(UID.ExplicitVRBigEndianRetired));
+
     }
 
 }

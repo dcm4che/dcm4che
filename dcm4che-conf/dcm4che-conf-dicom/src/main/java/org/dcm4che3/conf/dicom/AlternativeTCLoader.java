@@ -109,24 +109,39 @@ public class AlternativeTCLoader {
 
         for (TransferCapability tc : tcGroup.getTransferCapabilities()) {
 
+            TCGroupConfigAEExtension.TCGroupDetails tcGroupDetails = tcGroupRefEntry.getValue();
+
             // exclude TC if blacklisted
-            if (tcGroupRefEntry.getValue().getExcludedTransferCapabilities().contains(tc.getSopClass()))
+            if (tcGroupDetails.getExcludedTransferCapabilities().contains(tc.getSopClass()))
                 continue;
 
             TransferCapability tcModified = tc.deepCopy();
             tcModified.setRole(role);
-            tcModified.setCommonName(tcModified.getCommonName()+" "+role);
+            tcModified.setCommonName(tcModified.getCommonName() + " " + role);
 
-
-            // filter out excluded TSs
+            // handle exclusions/whitelisting
             ArrayList<String> tsList = new ArrayList<String>(Arrays.asList(tcModified.getTransferSyntaxes()));
             Iterator<String> iterator = tsList.iterator();
-            while (iterator.hasNext())
-                if (tcGroupRefEntry.getValue().getExcludedTransferSyntaxes().contains(iterator.next()))
-                    iterator.remove();
-            tcModified.setTransferSyntaxes((String[]) tsList.toArray(new String[]{}));
+            if (tcGroupDetails.getWhitelistedTransferSyntaxes() != null &&
+                    !tcGroupDetails.getWhitelistedTransferSyntaxes().isEmpty()) {
 
-            applicationEntity.addTransferCapability(tcModified);
+                // use whitelisting logic if enabled - remove all but the specified TSs
+                while (iterator.hasNext())
+                    if (!tcGroupDetails.getWhitelistedTransferSyntaxes().contains(iterator.next()))
+                        iterator.remove();
+            } else {
+
+                // otherwise just filter out excluded TSs
+                while (iterator.hasNext())
+                    if (tcGroupDetails.getExcludedTransferSyntaxes().contains(iterator.next()))
+                        iterator.remove();
+            }
+
+            // add TC only if there is at least one TS left after filtering
+            if (!tsList.isEmpty()) {
+                tcModified.setTransferSyntaxes((String[]) tsList.toArray(new String[]{}));
+                applicationEntity.addTransferCapability(tcModified);
+            }
         }
     }
 

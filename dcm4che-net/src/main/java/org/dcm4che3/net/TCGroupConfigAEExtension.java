@@ -63,6 +63,33 @@ public class TCGroupConfigAEExtension extends AEExtension {
         return groups;
     }
 
+    /**
+     * Restricts transfer syntaxes for all SOP classes for this AE to Little Endian Implicit and Video-related ones
+     */
+    public void setLEIAndVideoOnly(boolean leiAndVideoOnly) {
+        if (leiAndVideoOnly) {
+            for (TCGroupDetails tcGroupDetails : scpTCs.values())
+                whitelistLEIAndVideoTSs(tcGroupDetails);
+            for (TCGroupDetails tcGroupDetails : scuTCs.values())
+                whitelistLEIAndVideoTSs(tcGroupDetails);
+        } else {
+
+            for (TCGroupDetails tcGroupDetails : scpTCs.values())
+                tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+            for (TCGroupDetails tcGroupDetails : scuTCs.values())
+                tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+        }
+    }
+
+    private void whitelistLEIAndVideoTSs(TCGroupDetails tcGroupDetails) {
+        tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+        tcGroupDetails.getWhitelistedTransferSyntaxes().add(UID.ImplicitVRLittleEndian);
+
+        for (String videoTsuid : DefaultTransferCapabilities.VIDEO_TSUIDS) {
+            tcGroupDetails.getWhitelistedTransferSyntaxes().add(videoTsuid);
+        }
+    }
+
     public Map<String, TCGroupDetails> getScuTCs() {
         return scuTCs;
     }
@@ -88,6 +115,11 @@ public class TCGroupConfigAEExtension extends AEExtension {
         @ConfigurableProperty
         private List<String> excludedTransferSyntaxes = new ArrayList<String>();
 
+        @ConfigurableProperty(
+                description = "If not empty, all the syntaxes but those specified by this parameter" +
+                "will be effectively removed from AE's transfer capabilities")
+        private List<String> whitelistedTransferSyntaxes = new ArrayList<String>();
+
         @ConfigurableProperty
         private List<String> excludedTransferCapabilities = new ArrayList<String>();
 
@@ -105,6 +137,14 @@ public class TCGroupConfigAEExtension extends AEExtension {
 
         public void setExcludedTransferCapabilities(List<String> excludedTransferCapabilities) {
             this.excludedTransferCapabilities = excludedTransferCapabilities;
+        }
+
+        public List<String> getWhitelistedTransferSyntaxes() {
+            return whitelistedTransferSyntaxes;
+        }
+
+        public void setWhitelistedTransferSyntaxes(List<String> whitelistedTransferSyntaxes) {
+            this.whitelistedTransferSyntaxes = whitelistedTransferSyntaxes;
         }
     }
 

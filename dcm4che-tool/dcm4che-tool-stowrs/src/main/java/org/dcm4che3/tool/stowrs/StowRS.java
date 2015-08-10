@@ -210,7 +210,8 @@ public class StowRS {
                 ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
                 SAXParserFactory.newInstance().newSAXParser().parse(file, ch);
                 Attributes fmi = ch.getFileMetaInformation();
-                metadata.addAll(fmi);
+                if (fmi != null)
+                	metadata.addAll(fmi);
             } catch (Exception e) {
                 LOG.error("error parsing metadata XML file {}", file);
                 return;
@@ -325,7 +326,9 @@ public class StowRS {
 
     private static Attributes parseJSON(String fname) throws Exception {
         Attributes attrs = new Attributes();
-        attrs.addAll(parseJSON(fname, attrs));
+        Attributes fmi = parseJSON(fname, attrs);
+        if (fmi != null)
+        	attrs.addAll(fmi);
         return attrs;
     }
 
@@ -454,7 +457,7 @@ public class StowRS {
 
     private static void writeBulkDataPart(MediaType mediaType, DataOutputStream wr, String uri, List<BulkData> chunks) throws IOException {
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
-        wr.writeBytes("Content-Type: " + mediaType.toString() + " \r\n");
+        wr.writeBytes("Content-Type: " + mediaType.getType() + "/" + mediaType.getSubtype() + " \r\n");
         wr.writeBytes("Content-Location: " + uri + " \r\n");
         wr.writeBytes("\r\n");
 
@@ -463,8 +466,8 @@ public class StowRS {
         }
     }
 
-    private static MediaType getBulkDataMediaType(Attributes metadata) {
-        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID));
+    private MediaType getBulkDataMediaType(Attributes metadata) {
+        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID, getTransferSyntax()));
     }
 
     private static void writeBulkDataToStream(BulkData bulkData, DataOutputStream wr) throws IOException {

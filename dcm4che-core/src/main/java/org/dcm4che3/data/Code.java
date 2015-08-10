@@ -55,6 +55,8 @@ public class Code implements Serializable {
     private String codingSchemeDesignator;
     private String codingSchemeVersion;
     private String codeMeaning;
+    private transient int hashCode;
+    private transient final Key key = new Key();
 
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
@@ -128,15 +130,15 @@ public class Code implements Serializable {
 
     @Override
     public int hashCode() {
-        return 37 * (37 * (37 * 
-            codeValue.hashCode() +
-            codeMeaning.hashCode()) +
-            codingSchemeDesignator.hashCode()) + 
-            hashCode(codingSchemeVersion);
-    }
-
-    private int hashCode(String s) {
-        return s == null ? 0 : s.hashCode();
+        int result = hashCode;
+        if (result == 0) {
+            result = 17;
+            result = 31 * result + codeValue.hashCode();
+            result = 31 * result + codingSchemeDesignator.hashCode();
+            result = 31 * result + (codingSchemeVersion != null ? codingSchemeVersion.hashCode() : 0);
+            hashCode = result;
+        }
+        return result;
     }
 
     @Override
@@ -184,4 +186,31 @@ public class Code implements Serializable {
         return codeItem ;
     }
 
+    public final Key key() {
+        return key;
+    }
+
+    public final class Key {
+        private Key() {}
+
+        @Override
+        public int hashCode() {
+            return outer().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this)
+                return true;
+            if (!(o instanceof Key))
+                return false;
+
+            Key other = (Key) o;
+            return outer().equalsIgnoreMeaning(other.outer());
+        }
+
+        private Code outer() {
+            return Code.this;
+        }
+    }
 }

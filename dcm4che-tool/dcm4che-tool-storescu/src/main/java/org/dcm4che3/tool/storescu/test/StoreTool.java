@@ -85,7 +85,7 @@ public class StoreTool implements TestTool {
     private int warnings;
     private int failures;
     private ArrayList<Attributes> cmdRSP = new ArrayList<Attributes>();
-    private TestResult result;
+    private StoreResult result;
     
     /**
      * @param host
@@ -209,12 +209,12 @@ public class StoreTool implements TestTool {
 
     @Override
     public void init(TestResult result) {
-        this.result = result;
+        this.result = (StoreResult) result;
     }
 
     @Override
-    public TestResult getResult() {
-        return this.result;
+    public StoreResult getResult() {
+        return (StoreResult) this.result;
     }
 
     public void setbaseDir(String dir) {

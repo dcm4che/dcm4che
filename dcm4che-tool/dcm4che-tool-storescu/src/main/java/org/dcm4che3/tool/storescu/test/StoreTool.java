@@ -214,7 +214,7 @@ public class StoreTool implements TestTool {
 
     @Override
     public StoreResult getResult() {
-        return (StoreResult) this.result;
+        return this.result;
     }
 
     public void setbaseDir(String dir) {

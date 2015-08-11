@@ -239,6 +239,26 @@ public class Connection implements Serializable {
         this.port = port;
     }
 
+    /**
+     *
+     * @param commonName
+     * @param hostname
+     * @param port
+     * @param timeout value in seconds to assign to all timeouts
+     */
+    public Connection(String commonName, String hostname, int port, int timeout) {
+        this(commonName, hostname, port);
+
+        setConnectTimeout(timeout);
+        setRequestTimeout(timeout);
+        setAcceptTimeout(timeout);
+        setReleaseTimeout(timeout);
+        setResponseTimeout(timeout);
+        setRetrieveTimeout(timeout);
+        setIdleTimeout(timeout);
+    }
+
+
     public static TCPProtocolHandler registerTCPProtocolHandler(
             Protocol protocol, TCPProtocolHandler handler) {
         return tcpHandlers.put(protocol, handler);

@@ -86,6 +86,7 @@ public class StoreTool implements TestTool {
     private ArrayList<Attributes> cmdRSP = new ArrayList<Attributes>();
 
     private StoreResult result;
+    private long timeStarted;
 
     /**
      * @param host
@@ -110,7 +111,7 @@ public class StoreTool implements TestTool {
             throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
 
-        long t1, t2;
+        long t2;
         Path p = Paths.get(fileName);
         if(!p.isAbsolute() && baseDirectory == null)
             throw new IllegalArgumentException("No base Directory and file"
@@ -168,7 +169,7 @@ public class StoreTool implements TestTool {
         try {
             main.open();
 
-            t1 = System.currentTimeMillis();
+            timeStarted = System.currentTimeMillis();
             main.sendFiles();
             t2 = System.currentTimeMillis();
         } finally {
@@ -176,7 +177,7 @@ public class StoreTool implements TestTool {
             executorService.shutdown();
             scheduledExecutorService.shutdown();
         }
-        init(new StoreResult(testDescription, fileName, totalSize, (t2 - t1),
+        init(new StoreResult(testDescription, fileName, totalSize, (t2 - timeStarted),
                 filesSent, warnings, failures, cmdRSP));
     }
 
@@ -206,8 +207,10 @@ public class StoreTool implements TestTool {
             System.err.println(cmd);
         }
 
-        if (filesSent % 100 == 0)
-            LOG.warn("Files sent: {}", filesSent);
+        if (filesSent % 100 == 0) {
+            LOG.warn("Files sent: {}, took {} sec.", filesSent, (System.currentTimeMillis() - timeStarted) / 1000 );
+
+        }
 
     }
 

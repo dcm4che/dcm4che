@@ -50,6 +50,16 @@ public class TagUtils {
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
+    private static final byte INV_HEX_DIGITS[] = {
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+             0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
+            -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, 10, 11, 12, 13, 14, 15
+    };
+
     public static String shortToHexString(int n) {
         char[] s = {
                 HEX_DIGITS[(n >>> 12) & 0xF],
@@ -79,6 +89,18 @@ public class TagUtils {
             s[j++] = HEX_DIGITS[b[i] & 0xF];
         }
         return new String(s);
+    }
+
+    public static byte[] fromHexString(String s) {
+        char[] chars = s.toCharArray();
+        byte[] b = new byte[chars.length / 2];
+        try {
+            for (int i = 0, j = 0; i < b.length; i++)
+                b[i] = (byte) ((INV_HEX_DIGITS[chars[j++]] << 4) | INV_HEX_DIGITS[chars[j++]]);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(s);
+        }
+        return b;
     }
 
     public static String toString(int tag) {

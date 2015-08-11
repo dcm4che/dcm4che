@@ -80,12 +80,16 @@ import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.getscu.GetSCU;
 import org.dcm4che3.tool.getscu.GetSCU.InformationModel;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
 public class RetrieveTool implements TestTool{
+
+    private static final Logger LOG = LoggerFactory.getLogger(RetrieveTool.class);
 
     private final String host;
     private final int port;
@@ -106,7 +110,9 @@ public class RetrieveTool implements TestTool{
     private final String retrieveLevel;
     private final InformationModel retrieveInformationModel;
     private final boolean relational;
-    
+
+    private boolean rememberResultAttributes = true;
+
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
@@ -172,6 +178,8 @@ public class RetrieveTool implements TestTool{
         try {
             retrievescu.open();
             retrievescu.retrieve(new DimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
+        } catch (Exception exception){
+            LOG.error("Error while retrieving", exception);
         } finally {
             retrievescu.close();
             executorService.shutdown();
@@ -252,7 +260,10 @@ public class RetrieveTool implements TestTool{
             ++numSuccess;
         else
             ++numFailed;
-        response.add(data);
+
+        if (rememberResultAttributes)
+            response.add(data);
+
         ++numCStores;
     }
 
@@ -293,4 +304,11 @@ public class RetrieveTool implements TestTool{
         return retrieveDir.toPath();
     }
 
+    /**
+     * If set to false, does not keep the attributes retrieved. Useful for large performance tests to avoid VM crashes.
+     * @param rememberResultAttributes
+     */
+    public void setRememberResultAttributes(boolean rememberResultAttributes) {
+        this.rememberResultAttributes = rememberResultAttributes;
+    }
 }

@@ -207,10 +207,8 @@ public class StoreTool implements TestTool {
             System.err.println(cmd);
         }
 
-        if (filesSent % 100 == 0) {
-            LOG.warn("Files sent: {}, took {} sec.", filesSent, (System.currentTimeMillis() - timeStarted) / 1000 );
-
-        }
+        if (filesSent % 100 == 0)
+            LOG.warn("Files sent: {}, took {} sec.", filesSent, (System.currentTimeMillis() - timeStarted) / 1000.0);
 
     }
 

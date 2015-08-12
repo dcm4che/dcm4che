@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -1226,6 +1227,10 @@ public class Association {
         fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH,
                 getRemoteAET());
         return fmi;
+    }
+
+    public EnumSet<QueryOption> getQueryOptionsFor(String cuid) {
+        return QueryOption.toOptions(ac.getExtNegotiationFor(cuid));
     }
 }
 

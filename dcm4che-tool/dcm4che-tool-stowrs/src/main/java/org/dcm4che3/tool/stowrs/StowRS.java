@@ -457,7 +457,7 @@ public class StowRS {
 
     private static void writeBulkDataPart(MediaType mediaType, DataOutputStream wr, String uri, List<BulkData> chunks) throws IOException {
         wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
-        wr.writeBytes("Content-Type: " + mediaType.getType() + "/" + mediaType.getSubtype() + " \r\n");
+        wr.writeBytes("Content-Type: " + toContentType(mediaType) + " \r\n");
         wr.writeBytes("Content-Location: " + uri + " \r\n");
         wr.writeBytes("\r\n");
 
@@ -466,7 +466,17 @@ public class StowRS {
         }
     }
 
-    private MediaType getBulkDataMediaType(Attributes metadata) {
+    private static String toContentType(MediaType mediaType) {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append(mediaType.getType()).append('/').append(mediaType.getSubtype());
+    	String tsuid = mediaType.getParameters().get("transfer-syntax");
+    	if (tsuid != null ) {
+    		sb.append("; transfer-syntax=").append(tsuid);
+    	}
+		return sb.toString();
+	}
+
+	private MediaType getBulkDataMediaType(Attributes metadata) {
         return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID, getTransferSyntax()));
     }
 
@@ -545,8 +555,7 @@ public class StowRS {
 
     private static Attributes parseJSON(String fname, Attributes attrs)
             throws IOException {
-        InputStream in = fname.equals("-") ? System.in : new FileInputStream(
-                fname);
+        InputStream in = fname.equals("-") ? System.in : new FileInputStream(fname);
         try {
             JSONReader reader = new JSONReader(
                     Json.createParser(new InputStreamReader(in, "UTF-8")));

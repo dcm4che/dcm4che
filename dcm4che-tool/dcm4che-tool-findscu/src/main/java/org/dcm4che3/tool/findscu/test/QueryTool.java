@@ -62,17 +62,20 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.findscu.FindSCU;
 import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 public class QueryTool implements TestTool {
+
+    private static final Logger LOG = LoggerFactory.getLogger(QueryTool.class);
 
     private String host;
     private int port;
@@ -109,8 +112,15 @@ public class QueryTool implements TestTool {
         this.sourceAETitle = sourceAETitle;
         this.conn = conn;
         this.queryLevel = queryLevel;
-        this.queryModel = queryModel.equalsIgnoreCase("StudyRoot")
-                ?InformationModel.StudyRoot: InformationModel.PatientRoot;
+
+        InformationModel queryModelResolved = InformationModel.StudyRoot;
+        try {
+            queryModelResolved = InformationModel.valueOf(queryModel);
+        } catch (IllegalArgumentException ignored) {
+            LOG.warn("Query model {} does not exist, using StudyRoot", queryModelResolved);
+        }
+
+        this.queryModel = queryModelResolved;
         this.relational = relational;
     }
 
@@ -149,8 +159,8 @@ public class QueryTool implements TestTool {
         if(relational)
             queryOptions.add(QueryOption.RELATIONAL);
         
-        main.setInformationModel(queryModel, IVR_LE_FIRST,queryOptions);
-        main.addLevel(queryLevel);
+        main.setInformationModel(queryModel, IVR_LE_FIRST, queryOptions);
+//        main.addLevel(queryLevel);
 //        if (relational) {
 //            main.getAAssociateRQ()
 //            .addExtendedNegotiation(new ExtendedNegotiation(queryModel.getCuid(), new byte[]{1}));
@@ -255,4 +265,5 @@ public class QueryTool implements TestTool {
     public String getQueryLevel() {
         return queryLevel;
     }
+
 }

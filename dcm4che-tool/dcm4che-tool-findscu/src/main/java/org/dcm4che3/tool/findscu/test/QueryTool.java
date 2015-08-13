@@ -160,7 +160,7 @@ public class QueryTool implements TestTool {
             queryOptions.add(QueryOption.RELATIONAL);
         
         main.setInformationModel(queryModel, IVR_LE_FIRST, queryOptions);
-//        main.addLevel(queryLevel);
+        main.addLevel(queryLevel);
 //        if (relational) {
 //            main.getAAssociateRQ()
 //            .addExtendedNegotiation(new ExtendedNegotiation(queryModel.getCuid(), new byte[]{1}));

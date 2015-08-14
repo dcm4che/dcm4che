@@ -265,5 +265,9 @@ public class QueryTool implements TestTool {
     public String getQueryLevel() {
         return queryLevel;
     }
+    
+    public void setQueryLevel(String level) {
+        queryLevel = level;
+    }
 
 }

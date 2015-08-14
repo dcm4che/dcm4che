@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * J4Care.
- * Portions created by the Initial Developer are Copyright (C) 2013
+ * Portions created by the Initial Developer are Copyright (C) 2015
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,57 +38,22 @@
  * *** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.imageio.codec;
-
-import javax.imageio.stream.MemoryCacheImageOutputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+package org.dcm4che3.data;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @since Jul 2015
+ * @since Aug 2015
  */
-final class ExtMemoryCacheImageOutputStream extends MemoryCacheImageOutputStream {
-    private final ExtFilterOutputStream stream;
+public class FilterAttributesCoercion implements AttributesCoercion {
+    private final AttributesCoercion delegate;
 
-    public ExtMemoryCacheImageOutputStream() {
-        this(new ExtFilterOutputStream());
-    }
-
-    private ExtMemoryCacheImageOutputStream(ExtFilterOutputStream stream) {
-        super(stream);
-        this.stream = stream;
-    }
-
-    public void setOutputStream(OutputStream stream) {
-        this.stream.setOutputStream(stream);
+    public FilterAttributesCoercion(AttributesCoercion delegate) {
+        this.delegate = delegate;
     }
 
     @Override
-    public void flushBefore(long pos) throws IOException {
-        if (stream.getOutputStream() != null)
-            super.flushBefore(pos);
+    public void coerce(Attributes attrs, Attributes modified) {
+        if (delegate != null)
+            delegate.coerce(attrs, modified);
     }
-
-    private static final class ExtFilterOutputStream extends FilterOutputStream {
-
-        public ExtFilterOutputStream() {
-            super(null);
-        }
-
-        public OutputStream getOutputStream() {
-            return super.out;
-        }
-
-        public void setOutputStream(OutputStream out) {
-            super.out = out;
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            out.write(b, off, len);
-        }
-    }
-
 }

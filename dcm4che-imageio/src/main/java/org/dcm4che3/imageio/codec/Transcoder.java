@@ -42,6 +42,8 @@ package org.dcm4che3.imageio.codec;
 
 import org.dcm4che3.data.*;
 import org.dcm4che3.image.Overlays;
+import org.dcm4che3.image.PhotometricInterpretation;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputHandler;
@@ -82,19 +84,23 @@ public class Transcoder implements Closeable {
 
     private ImageDescriptor imageDescriptor;
 
+    private final String srcTransferSyntax;
+    private final TransferSyntaxType srcTransferSyntaxType;
+
     private String destTransferSyntax;
+    private TransferSyntaxType destTransferSyntaxType;
 
     private boolean closeOutputStream = true;
-
-    private final TransferSyntaxType srcTransferSyntaxType;
-    private TransferSyntaxType destTransferSyntaxType;
     private Attributes postPixelData;
     private final DicomInputStream dis;
     private final Attributes dataset;
     private DicomOutputStream dos;
+    private EncapsulatedPixelData encapsulatedPixelData;
     private byte[] buffer;
+    private ImageReaderFactory.ImageReaderParam decompressorParam;
+    private ImageReader decompressor;
+    private ImageReadParam decompressParam;
     private ImageWriterFactory.ImageWriterParam compressorParam;
-
     private ImageWriter compressor;
     private ImageWriteParam compressParam;
     private ImageReader verifier;
@@ -157,8 +163,9 @@ public class Transcoder implements Closeable {
         dis.readFileMetaInformation();
         dis.setDicomInputHandler(dicomInputHandler);
         dataset = new Attributes(dis.bigEndian(), 64);
-        srcTransferSyntaxType = TransferSyntaxType.forUID(dis.getTransferSyntax());
-        destTransferSyntax = dis.getTransferSyntax();
+        srcTransferSyntax = dis.getTransferSyntax();
+        srcTransferSyntaxType = TransferSyntaxType.forUID(srcTransferSyntax);
+        destTransferSyntax = srcTransferSyntax;
         destTransferSyntaxType = srcTransferSyntaxType;
     }
 
@@ -227,8 +234,21 @@ public class Transcoder implements Closeable {
 
         this.destTransferSyntaxType = TransferSyntaxType.forUID(tsuid);
         this.destTransferSyntax = tsuid;
+
+        if (srcTransferSyntaxType != TransferSyntaxType.NATIVE)
+            initDecompressor();
         if (destTransferSyntaxType != TransferSyntaxType.NATIVE)
             initCompressor(tsuid);
+    }
+
+    private void initDecompressor() {
+        decompressorParam = ImageReaderFactory.getImageReaderParam(srcTransferSyntax);
+        if (decompressorParam == null)
+            throw new UnsupportedOperationException(
+                    "Unsupported Transfer Syntax: " + srcTransferSyntax);
+
+        this.decompressor = ImageReaderFactory.getImageReader(decompressorParam);
+        this.decompressParam = decompressor.getDefaultReadParam();
     }
 
     private void initCompressor(String tsuid) {
@@ -285,13 +305,35 @@ public class Transcoder implements Closeable {
 
     }
 
-    private void processPixelData()
-            throws IOException {
-        if (compressor == null) {
-            copyPixelData();
-        } else {
+    private void processPixelData() throws IOException {
+        if (decompressor != null)
+            initEncapsulatedPixelData();
+        if (compressor != null)
             compressPixelData();
+        else if (decompressor != null)
+            decompressPixelData();
+        else
+            copyPixelData();
+    }
+
+    private void initEncapsulatedPixelData() throws IOException {
+        encapsulatedPixelData = new EncapsulatedPixelData(dis);
+    }
+
+    private void decompressPixelData() throws IOException {
+        int length = imageDescriptor.getLength();
+        int padding = length & 1;
+        BufferedImage bi = srcTransferSyntaxType == TransferSyntaxType.RLE
+                ? createBufferedImage() : null;
+        adjustDataset();
+        writeDataset();
+        dos.writeHeader(Tag.PixelData, VR.OW, length + padding);
+        for (int i = 0; i < imageDescriptor.getFrames(); i++) {
+            bi = decompressFrame(bi, i);
+            writeFrame(bi);
         }
+        if (padding != 0)
+            dos.write(0);
     }
 
     private void copyPixelData() throws IOException {
@@ -311,11 +353,17 @@ public class Transcoder implements Closeable {
 
     private void compressPixelData() throws IOException {
         int padding = dis.length() - imageDescriptor.getLength();
-        BufferedImage bi = createBufferedImage();
+        BufferedImage bi = decompressor == null || srcTransferSyntaxType == TransferSyntaxType.RLE
+                ? createBufferedImage()
+                : null;
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
-            readFrame(bi);
+            if (decompressor == null)
+                readFrame(bi);
+            else
+                bi = decompressFrame(bi, i);
             if (i == 0) {
-                adjustDataset(bi);
+                extractEmbeddedOverlays(bi);
+                adjustDataset();
                 writeDataset();
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
@@ -328,14 +376,14 @@ public class Transcoder implements Closeable {
     }
 
 
-    private void adjustDataset(BufferedImage bi) {
-        extractEmbeddedOverlays(bi);
+    private void adjustDataset() {
         if (imageDescriptor.getSamples() == 3) {
-            dataset.setString(Tag.PhotometricInterpretation, VR.CS,
-                    imageDescriptor.getPhotometricInterpretation()
-                            .decompress()
-                            .compress(destTransferSyntax)
-                            .toString());
+            PhotometricInterpretation pmi = imageDescriptor.getPhotometricInterpretation();
+            if (decompressor != null)
+                pmi = pmi.decompress();
+            if (compressor != null)
+                pmi = pmi.compress(destTransferSyntax);
+            dataset.setString(Tag.PhotometricInterpretation, VR.CS,  pmi.toString());
             dataset.setInt(Tag.PlanarConfiguration, VR.US, destTransferSyntaxType.getPlanarConfiguration());
         }
     }
@@ -374,6 +422,21 @@ public class Transcoder implements Closeable {
         int mask = (1<<imageDescriptor.getBitsStored())-1;
         for (int i = 0; i < data.length; i++)
             data[i] &= mask;
+    }
+
+    private BufferedImage decompressFrame(BufferedImage bi, int frameIndex) throws IOException {
+        encapsulatedPixelData.nextFrame();
+        decompressor.setInput(decompressorParam.patchJPEGLS != null
+                ? new PatchJPEGLSImageInputStream(encapsulatedPixelData, compressorParam.patchJPEGLS)
+                : encapsulatedPixelData, true);
+        decompressParam.setDestination(bi);
+        long start = System.currentTimeMillis();
+        bi = decompressor.read(0, decompressParam);
+        long end = System.currentTimeMillis();
+        if (LOG.isDebugEnabled())
+            LOG.debug("Decompressed frame #{} 1:{} in {} ms",
+                    frameIndex + 1, (float) sizeOf(bi) / encapsulatedPixelData.getStreamPosition(), end - start);
+        return bi;
     }
 
     private void compressFrame(BufferedImage bi, int frameIndex) throws IOException {
@@ -463,6 +526,80 @@ public class Transcoder implements Closeable {
         if (buffer == null)
             buffer = new byte[BUFFER_SIZE];
         return buffer;
+    }
+
+    private void writeFrame(BufferedImage bi) throws IOException {
+        WritableRaster raster = bi.getRaster();
+        SampleModel sm = raster.getSampleModel();
+        DataBuffer db = raster.getDataBuffer();
+        switch (db.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
+                write(sm, ((DataBufferByte) db).getBankData());
+                break;
+            case DataBuffer.TYPE_USHORT:
+                write(sm, ((DataBufferUShort) db).getData());
+                break;
+            case DataBuffer.TYPE_SHORT:
+                write(sm, ((DataBufferShort) db).getData());
+                break;
+            case DataBuffer.TYPE_INT:
+                write(sm, ((DataBufferInt) db).getData());
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported Datatype: " + db.getDataType());
+        }
+    }
+
+    private void write(SampleModel sm, byte[][] bankData) throws IOException {
+        int h = sm.getHeight();
+        int w = sm.getWidth();
+        ComponentSampleModel csm = (ComponentSampleModel) sm;
+        int len = w * csm.getPixelStride();
+        int stride = csm.getScanlineStride();
+        if (csm.getBandOffsets()[0] != 0)
+            bgr2rgb(bankData[0]);
+        for (byte[] b : bankData)
+            for (int y = 0, off = 0; y < h; ++y, off += stride)
+                dos.write(b, off, len);
+    }
+
+    private static void bgr2rgb(byte[] bs) {
+        for (int i = 0, j = 2; j < bs.length; i += 3, j += 3) {
+            byte b = bs[i];
+            bs[i] = bs[j];
+            bs[j] = b;
+        }
+    }
+
+    private void write(SampleModel sm, short[] data) throws IOException {
+        int h = sm.getHeight();
+        int w = sm.getWidth();
+        int stride = ((ComponentSampleModel) sm).getScanlineStride();
+        byte[] b = new byte[w * 2];
+        for (int y = 0; y < h; ++y) {
+            for (int i = 0, j = y * stride; i < b.length;) {
+                short s = data[j++];
+                b[i++] = (byte) s;
+                b[i++] = (byte) (s >> 8);
+            }
+            dos.write(b);
+        }
+    }
+
+    private void write(SampleModel sm, int[] data) throws IOException {
+        int h = sm.getHeight();
+        int w = sm.getWidth();
+        int stride = ((SinglePixelPackedSampleModel) sm).getScanlineStride();
+        byte[] b = new byte[w * 3];
+        for (int y = 0; y < h; ++y) {
+            for (int i = 0, j = y * stride; i < b.length;) {
+                int s = data[j++];
+                b[i++] = (byte) (s >> 16);
+                b[i++] = (byte) (s >> 8);
+                b[i++] = (byte) s;
+            }
+            dos.write(b);
+        }
     }
 
     private void initDicomOutputStream() throws IOException {

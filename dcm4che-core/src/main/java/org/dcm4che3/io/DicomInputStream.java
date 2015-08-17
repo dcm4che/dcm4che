@@ -412,6 +412,20 @@ public class DicomInputStream extends FilterInputStream
         length = ByteUtils.bytesToInt(buf, 4, bigEndian);
     }
 
+    public boolean readItemHeader() throws IOException {
+        for(;;) {
+            readHeader();
+            if (tag == Tag.Item)
+                return true;
+            if (tag == Tag.SequenceDelimitationItem) {
+                if (length != 0)
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
+                return false;
+            }
+            skipAttribute(UNEXPECTED_ATTRIBUTE);
+        }
+    }
+
     public Attributes readCommand() throws IOException {
         if (bigEndian || explicitVR)
             throw new IllegalStateException(
@@ -635,18 +649,10 @@ public class DicomInputStream extends FilterInputStream
         String privateCreator = attrs.getPrivateCreator(sqtag);
         boolean undefLen = len == -1;
         long endPos = pos + (len & 0xffffffffL);
-        for (int i = 0; undefLen || pos < endPos; ++i) {
-            readHeader();
-            if (tag == Tag.Item) {
-                addItemPointer(sqtag, privateCreator, i);
-                handler.readValue(this, seq);
-                removeItemPointer();
-            } else if (tag == Tag.SequenceDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                break;
-            } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+        for (int i = 0; (undefLen || pos < endPos) && readItemHeader(); ++i) {
+            addItemPointer(sqtag, privateCreator, i);
+            handler.readValue(this, seq);
+            removeItemPointer();
         }
         if (seq.isEmpty())
             attrs.setNull(sqtag, VR.SQ);
@@ -680,18 +686,10 @@ public class DicomInputStream extends FilterInputStream
             throws IOException {
         Fragments frags = new Fragments(vr, attrs.bigEndian(), 10);
         String privateCreator = attrs.getPrivateCreator(fragsTag);
-        for (int i = 0; true; ++i) {
-            readHeader();
-            if (tag == Tag.Item) {
-                addItemPointer(fragsTag, privateCreator, i);
-                handler.readValue(this, frags);
-                removeItemPointer();
-            } else if (tag == Tag.SequenceDelimitationItem) {
-                if (length != 0)
-                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH);
-                break;
-            } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE);
+        for (int i = 0; readItemHeader(); ++i) {
+            addItemPointer(fragsTag, privateCreator, i);
+            handler.readValue(this, frags);
+            removeItemPointer();
         }
         if (frags.isEmpty())
             attrs.setNull(fragsTag, vr);

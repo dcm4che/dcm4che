@@ -83,6 +83,9 @@ public class Transcoder implements Closeable {
     private ImageDescriptor imageDescriptor;
 
     private String destTransferSyntax;
+
+    private boolean closeOutputStream = true;
+
     private final TransferSyntaxType srcTransferSyntaxType;
     private TransferSyntaxType destTransferSyntaxType;
     private Attributes postPixelData;
@@ -173,6 +176,14 @@ public class Transcoder implements Closeable {
 
     public void setBulkDataDirectory(File blkDirectory) {
         dis.setBulkDataDirectory(blkDirectory);
+    }
+
+    public boolean isCloseOutputStream() {
+        return closeOutputStream;
+    }
+
+    public void setCloseOutputStream(boolean closeOutputStream) {
+        this.closeOutputStream = closeOutputStream;
     }
 
     public void transcode(Handler handler) throws IOException {
@@ -267,7 +278,8 @@ public class Transcoder implements Closeable {
         if (verifier != null)
             verifier.dispose();
         SafeClose.close(dis);
-        SafeClose.close(dos);
+        if (closeOutputStream)
+            SafeClose.close(dos);
         for (File tmpFile : dis.getBulkDataFiles())
             tmpFile.delete();
 

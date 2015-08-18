@@ -359,8 +359,12 @@ public class Compressor extends Decompressor implements Closeable {
             byte[][] data = ((DataBufferByte) db).getBankData();
             for (byte[] bs : data)
                 iis.readFully(bs);
-            if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
-                ByteUtils.swapShorts(data);
+            if (pixeldata!=null)
+                if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+                    ByteUtils.swapShorts(data);
+            else
+                if (dataset.bigEndian() && pixeldataVR.vr == VR.OW)
+                    ByteUtils.swapShorts(data);
             break;
         case DataBuffer.TYPE_USHORT:
             readFully(((DataBufferUShort) db).getData());

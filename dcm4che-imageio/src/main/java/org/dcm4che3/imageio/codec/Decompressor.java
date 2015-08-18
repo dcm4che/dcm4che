@@ -122,7 +122,7 @@ public class Decompressor {
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJPEGLS = param.patchJPEGLS;
-        } else if (pixeldata instanceof Fragments) {
+        } else if (pixeldata instanceof BulkData) {
             this.file = ((BulkData) pixeldata).getFile();
         }
     }

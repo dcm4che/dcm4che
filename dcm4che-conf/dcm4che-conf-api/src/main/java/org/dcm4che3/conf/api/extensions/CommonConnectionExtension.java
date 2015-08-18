@@ -13,7 +13,7 @@ public class CommonConnectionExtension extends ConnectionExtension {
      * @param clazz Class of the extension
      */
     public void reconfigureReflectively(ConnectionExtension from, Class<? extends ConnectionExtension> clazz) {
-        ReconfiguringIterator.reconfigure(this, from, clazz);
+        ReconfiguringIterator.reconfigure(from, this, clazz);
     }
 
     public void reconfigure(ConnectionExtension from) {

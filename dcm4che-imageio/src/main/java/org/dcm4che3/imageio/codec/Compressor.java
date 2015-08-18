@@ -42,11 +42,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteOrder;
 
 import javax.imageio.IIOImage;
@@ -56,6 +52,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.dcm4che3.data.Tag;
@@ -84,6 +81,7 @@ public class Compressor extends Decompressor implements Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(Compressor.class);
 
     private BulkData pixeldata;
+    private byte[] embeddedPixeldata;
     private VR.Holder pixeldataVR = new VR.Holder();
     private ImageWriter compressor;
     private ImageReader verifier;
@@ -116,6 +114,11 @@ public class Compressor extends Decompressor implements Closeable {
                         "Pixel data too short: " + this.pixeldata.length()
                         + " instead " + imageParams.getLength() + " bytes");
         }
+
+        if (pixeldata instanceof byte[]) {
+            this.embeddedPixeldata = (byte[]) pixeldata;
+        }
+
         embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
     }
 
@@ -331,15 +334,25 @@ public class Compressor extends Decompressor implements Closeable {
 
     public BufferedImage readFrame(int frameIndex) throws IOException {
         if (iis == null)
-            iis = new FileImageInputStream(file);
+            if (file != null)
+                iis = new FileImageInputStream(file);
+            else
+                iis = new MemoryCacheImageInputStream(new ByteArrayInputStream(embeddedPixeldata));
 
         if (decompressor != null)
             return decompressFrame(iis, frameIndex);
 
-        iis.setByteOrder(pixeldata.bigEndian
-                ? ByteOrder.BIG_ENDIAN
-                : ByteOrder.LITTLE_ENDIAN);
-        iis.seek(pixeldata.offset() + imageParams.getFrameLength() * frameIndex);
+        if (pixeldata!=null) {
+            iis.setByteOrder(pixeldata.bigEndian
+                    ? ByteOrder.BIG_ENDIAN
+                    : ByteOrder.LITTLE_ENDIAN);
+            iis.seek(pixeldata.offset() + imageParams.getFrameLength() * frameIndex);
+        } else {
+            iis.setByteOrder(dataset.bigEndian()
+                    ? ByteOrder.BIG_ENDIAN
+                    : ByteOrder.LITTLE_ENDIAN);
+            iis.seek(imageParams.getFrameLength() * frameIndex);
+        }
         DataBuffer db = bi.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:

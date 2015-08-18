@@ -57,6 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.*;
+import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
@@ -69,82 +71,64 @@ import java.io.*;
 public class Transcoder implements Closeable {
 
     public interface Handler {
-
         OutputStream newOutputStream(Transcoder transcoder, Attributes dataset) throws IOException;
-
     }
 
     private final static Logger LOG = LoggerFactory.getLogger(Transcoder.class);
 
     private final static int BUFFER_SIZE = 8192;
 
-    private Handler handler;
+    private final DicomInputStream dis;
+
+    private final String srcTransferSyntax;
+
+    private final TransferSyntaxType srcTransferSyntaxType;
+
+    private final Attributes dataset;
 
     private boolean includeFileMetaInformation;
 
-    private ImageDescriptor imageDescriptor;
-
-    private final String srcTransferSyntax;
-    private final TransferSyntaxType srcTransferSyntaxType;
+    private boolean closeOutputStream = true;
 
     private String destTransferSyntax;
+
     private TransferSyntaxType destTransferSyntaxType;
 
-    private boolean closeOutputStream = true;
-    private Attributes postPixelData;
-    private final DicomInputStream dis;
-    private final Attributes dataset;
-    private DicomOutputStream dos;
-    private EncapsulatedPixelData encapsulatedPixelData;
-    private byte[] buffer;
-    private ImageReaderFactory.ImageReaderParam decompressorParam;
-    private ImageReader decompressor;
-    private ImageReadParam decompressParam;
-    private ImageWriterFactory.ImageWriterParam compressorParam;
-    private ImageWriter compressor;
-    private ImageWriteParam compressParam;
-    private ImageReader verifier;
-    private ImageReadParam verifyParam;
     private int maxPixelValueError = -1;
+
     private int avgPixelValueBlockSize = 1;
-    private final DicomInputHandler dicomInputHandler = new DicomInputHandler() {
-        @Override
-        public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
-            final int tag = dis.tag();
-            if (dis.level() == 0 && tag == Tag.PixelData) {
-                imageDescriptor = new ImageDescriptor(attrs);
-                initDicomOutputStream();
-                processPixelData();
-                postPixelData = new Attributes(dis.bigEndian());
-            } else {
-                dis.readValue(dis, attrs);
-                if (postPixelData != null && dis.level() == 0)
-                    postPixelData.addSelected(attrs, attrs.getPrivateCreator(tag), tag);
-            }
-        }
 
-        @Override
-        public void readValue(DicomInputStream dis, Sequence seq) throws IOException {
-            dis.readValue(dis, seq);
-        }
+    private DicomOutputStream dos;
 
-        @Override
-        public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
-            final int length = dis.length();
-            dos.writeHeader(Tag.Item, null, length);
-            StreamUtils.copy(dis, dos, length, buffer());
-        }
+    private Attributes postPixelData;
 
-        @Override
-        public void startDataset(DicomInputStream dis) throws IOException {
+    private Handler handler;
 
-        }
+    private ImageDescriptor imageDescriptor;
 
-        @Override
-        public void endDataset(DicomInputStream dis) throws IOException {
+    private EncapsulatedPixelData encapsulatedPixelData;
 
-        }
-    };
+    private ImageReaderFactory.ImageReaderParam decompressorParam;
+
+    private ImageReader decompressor;
+
+    private ImageReadParam decompressParam;
+
+    private ImageWriterFactory.ImageWriterParam compressorParam;
+
+    private ImageWriter compressor;
+
+    private ImageWriteParam compressParam;
+
+    private ImageReader verifier;
+
+    private ImageReadParam verifyParam;
+
+    private BufferedImage bi;
+
+    private BufferedImage bi2;
+
+    private byte[] buffer;
 
     public Transcoder(File f) throws IOException {
         this(new DicomInputStream(f));
@@ -191,17 +175,6 @@ public class Transcoder implements Closeable {
 
     public void setCloseOutputStream(boolean closeOutputStream) {
         this.closeOutputStream = closeOutputStream;
-    }
-
-    public void transcode(Handler handler) throws IOException {
-        this.handler = handler;
-        dis.readAttributes(dataset, -1, -1);
-
-        if (dos == null) {
-            initDicomOutputStream();
-            writeDataset();
-        } else if (postPixelData != null)
-            dos.writeDataset(null, postPixelData);
     }
 
     public boolean isIncludeFileMetaInformation() {
@@ -293,6 +266,8 @@ public class Transcoder implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (decompressor != null)
+            decompressor.dispose();
         if (compressor != null)
             compressor.dispose();
         if (verifier != null)
@@ -304,6 +279,57 @@ public class Transcoder implements Closeable {
             tmpFile.delete();
 
     }
+
+    public void transcode(Handler handler) throws IOException {
+        this.handler = handler;
+        dis.readAttributes(dataset, -1, -1);
+
+        if (dos == null) {
+            initDicomOutputStream();
+            writeDataset();
+        } else if (postPixelData != null)
+            dos.writeDataset(null, postPixelData);
+    }
+
+    private final DicomInputHandler dicomInputHandler = new DicomInputHandler() {
+        @Override
+        public void readValue(DicomInputStream dis, Attributes attrs) throws IOException {
+            int tag = dis.tag();
+            if (dis.level() == 0 && tag == Tag.PixelData) {
+                imageDescriptor = new ImageDescriptor(attrs);
+                initDicomOutputStream();
+                processPixelData();
+                postPixelData = new Attributes(dis.bigEndian());
+            } else {
+                dis.readValue(dis, attrs);
+                if (postPixelData != null && dis.level() == 0)
+                    postPixelData.addSelected(attrs, attrs.getPrivateCreator(tag), tag);
+            }
+        }
+
+        @Override
+        public void readValue(DicomInputStream dis, Sequence seq) throws IOException {
+            dis.readValue(dis, seq);
+        }
+
+        @Override
+        public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
+            int length = dis.length();
+            dos.writeHeader(Tag.Item, null, length);
+            StreamUtils.copy(dis, dos, length, buffer());
+        }
+
+        @Override
+        public void startDataset(DicomInputStream dis) throws IOException {
+
+        }
+
+        @Override
+        public void endDataset(DicomInputStream dis) throws IOException {
+
+        }
+    };
+
 
     private void processPixelData() throws IOException {
         if (decompressor != null)
@@ -323,21 +349,19 @@ public class Transcoder implements Closeable {
     private void decompressPixelData() throws IOException {
         int length = imageDescriptor.getLength();
         int padding = length & 1;
-        BufferedImage bi = srcTransferSyntaxType == TransferSyntaxType.RLE
-                ? createBufferedImage() : null;
         adjustDataset();
         writeDataset();
         dos.writeHeader(Tag.PixelData, VR.OW, length + padding);
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
-            bi = decompressFrame(bi, i);
-            writeFrame(bi);
+            decompressFrame(i);
+            writeFrame();
         }
         if (padding != 0)
             dos.write(0);
     }
 
     private void copyPixelData() throws IOException {
-        final int length = dis.length();
+        int length = dis.length();
         writeDataset();
         dos.writeHeader(Tag.PixelData, dis.vr(), length);
         if (length == -1) {
@@ -353,23 +377,20 @@ public class Transcoder implements Closeable {
 
     private void compressPixelData() throws IOException {
         int padding = dis.length() - imageDescriptor.getLength();
-        BufferedImage bi = decompressor == null || srcTransferSyntaxType == TransferSyntaxType.RLE
-                ? createBufferedImage()
-                : null;
         for (int i = 0; i < imageDescriptor.getFrames(); i++) {
             if (decompressor == null)
-                readFrame(bi);
+                readFrame();
             else
-                bi = decompressFrame(bi, i);
+                bi = decompressFrame(i);
             if (i == 0) {
-                extractEmbeddedOverlays(bi);
+                extractEmbeddedOverlays();
                 adjustDataset();
                 writeDataset();
                 dos.writeHeader(Tag.PixelData, VR.OB, -1);
                 dos.writeHeader(Tag.Item, null, 0);
             }
-            nullifyUnusedBits(bi);
-            compressFrame(bi, i);
+            nullifyUnusedBits();
+            compressFrame(i);
         }
         dis.skipFully(padding);
         dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
@@ -388,7 +409,7 @@ public class Transcoder implements Closeable {
         }
     }
 
-    private void extractEmbeddedOverlays(BufferedImage bi) {
+    private void extractEmbeddedOverlays() {
         for (int gg0000 : imageDescriptor.getEmbeddedOverlays()) {
             int ovlyRow = dataset.getInt(Tag.OverlayRows | gg0000, 0);
             int ovlyColumns = dataset.getInt(Tag.OverlayColumns | gg0000, 0);
@@ -404,7 +425,7 @@ public class Transcoder implements Closeable {
         }
     }
 
-    private void nullifyUnusedBits(BufferedImage bi) {
+    private void nullifyUnusedBits() {
         if (imageDescriptor.getBitsStored() < imageDescriptor.getBitsAllocated()) {
             DataBuffer db = bi.getRaster().getDataBuffer();
             switch (db.getDataType()) {
@@ -424,11 +445,13 @@ public class Transcoder implements Closeable {
             data[i] &= mask;
     }
 
-    private BufferedImage decompressFrame(BufferedImage bi, int frameIndex) throws IOException {
+    private BufferedImage decompressFrame(int frameIndex) throws IOException {
         encapsulatedPixelData.nextFrame();
         decompressor.setInput(decompressorParam.patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(encapsulatedPixelData, compressorParam.patchJPEGLS)
                 : encapsulatedPixelData, true);
+        if (srcTransferSyntaxType == TransferSyntaxType.RLE)
+            initBufferedImage();
         decompressParam.setDestination(bi);
         long start = System.currentTimeMillis();
         bi = decompressor.read(0, decompressParam);
@@ -439,7 +462,7 @@ public class Transcoder implements Closeable {
         return bi;
     }
 
-    private void compressFrame(BufferedImage bi, int frameIndex) throws IOException {
+    private void compressFrame(int frameIndex) throws IOException {
         ExtMemoryCacheImageOutputStream ios = new ExtMemoryCacheImageOutputStream();
         compressor.setOutput(compressorParam.patchJPEGLS != null
                 ? new PatchJPEGLSImageOutputStream(ios, compressorParam.patchJPEGLS)
@@ -451,6 +474,7 @@ public class Transcoder implements Closeable {
         if (LOG.isDebugEnabled())
             LOG.debug("Compressed frame #{} {}:1 in {} ms",
                    frameIndex + 1, (float) sizeOf(bi) / length, end - start);
+        verify(ios, frameIndex);
         if ((length & 1) != 0) {
             ios.write(0);
             length++;
@@ -465,7 +489,8 @@ public class Transcoder implements Closeable {
         return db.getSize() * db.getNumBanks() * (DataBuffer.getDataTypeSize(db.getDataType()) / 8);
     }
 
-    private void readFrame(BufferedImage bi) throws IOException {
+    private void readFrame() throws IOException {
+        initBufferedImage();
         WritableRaster raster = bi.getRaster();
         DataBuffer dataBuffer = raster.getDataBuffer();
         switch (dataBuffer.getDataType()) {
@@ -521,14 +546,13 @@ public class Transcoder implements Closeable {
         }
     }
 
-
     private byte[] buffer() {
         if (buffer == null)
             buffer = new byte[BUFFER_SIZE];
         return buffer;
     }
 
-    private void writeFrame(BufferedImage bi) throws IOException {
+    private void writeFrame() throws IOException {
         WritableRaster raster = bi.getRaster();
         SampleModel sm = raster.getSampleModel();
         DataBuffer db = raster.getDataBuffer();
@@ -625,7 +649,10 @@ public class Transcoder implements Closeable {
         return c;
     }
 
-    private BufferedImage createBufferedImage() {
+    private void initBufferedImage() {
+        if (bi != null)
+            return;
+
         int rows = imageDescriptor.getRows();
         int cols = imageDescriptor.getColumns();
         int samples = imageDescriptor.getSamples();
@@ -657,7 +684,7 @@ public class Transcoder implements Closeable {
                 : new PixelInterleavedSampleModel(dataType, cols, rows,
                 samples, cols * samples, bandOffsets(samples));
         WritableRaster raster = Raster.createWritableRaster(sm, null);
-        return new BufferedImage(cm, raster, false, null);
+        bi = new BufferedImage(cm, raster, false, null);
     }
 
     private int[] bandOffsets(int samples) {
@@ -667,4 +694,121 @@ public class Transcoder implements Closeable {
         return offsets;
     }
 
+    private void verify(ImageOutputStream cache, int index)
+            throws IOException {
+        if (verifier == null)
+            return;
+
+        cache.mark();
+        cache.seek(0);
+        verifier.setInput(cache);
+        verifyParam.setDestination(bi2);
+        long start = System.currentTimeMillis();
+        bi2 = verifier.read(0, verifyParam);
+        int maxDiff = maxDiff(bi.getRaster(), bi2.getRaster());
+        long end = System.currentTimeMillis();
+        if (LOG.isDebugEnabled())
+            LOG.debug("Verified compressed frame #{} in {} ms - max pixel value error: {}",
+                    new Object[] { index + 1, end - start, maxDiff });
+        if (maxDiff > maxPixelValueError)
+            throw new CompressionVerificationException(maxDiff);
+        cache.reset();
+    }
+
+    private int maxDiff(WritableRaster raster, WritableRaster raster2) {
+        ComponentSampleModel csm =
+                (ComponentSampleModel) raster.getSampleModel();
+        ComponentSampleModel csm2 =
+                (ComponentSampleModel) raster2.getSampleModel();
+        DataBuffer db = raster.getDataBuffer();
+        DataBuffer db2 = raster2.getDataBuffer();
+        int blockSize = avgPixelValueBlockSize;
+        if (blockSize > 1) {
+            int w = csm.getWidth();
+            int h = csm.getHeight();
+            int maxY = (h / blockSize - 1) * blockSize;
+            int maxX = (w / blockSize - 1) * blockSize;
+            int[] samples = new int[blockSize * blockSize];
+            int diff, maxDiff = 0;
+            for (int b = 0; b < csm.getNumBands(); b++)
+                for (int y = 0; y < maxY; y += blockSize) {
+                    for (int x = 0; x < maxX; x += blockSize) {
+                        if (maxDiff < (diff = Math.abs(
+                                sum(csm.getSamples(
+                                        x, y, blockSize, blockSize, b, samples, db))
+                                        - sum(csm2.getSamples(
+                                        x, y, blockSize, blockSize, b, samples, db2)))))
+                            maxDiff = diff;
+                    }
+                }
+            return maxDiff / samples.length;
+        }
+        switch (db.getDataType()) {
+            case DataBuffer.TYPE_BYTE:
+                return maxDiff(csm, ((DataBufferByte) db).getBankData(),
+                        csm2, ((DataBufferByte) db2).getBankData());
+            case DataBuffer.TYPE_USHORT:
+                return maxDiff(csm, ((DataBufferUShort) db).getData(),
+                        csm2, ((DataBufferUShort) db2).getData());
+            case DataBuffer.TYPE_SHORT:
+                return maxDiff(csm, ((DataBufferShort) db).getData(),
+                        csm2, ((DataBufferShort) db2).getData());
+            default:
+                throw new UnsupportedOperationException(
+                        "Unsupported Datatype: " + db.getDataType());
+        }
+    }
+
+    private int sum(int[] samples) {
+        int sum = 0;
+        for (int sample : samples)
+            sum += sample;
+        return sum;
+    }
+
+    private int maxDiff(ComponentSampleModel csm, short[] data,
+                        ComponentSampleModel csm2, short[] data2) {
+        int w = csm.getWidth() * csm.getPixelStride();
+        int h = csm.getHeight();
+        int stride = csm.getScanlineStride();
+        int stride2 = csm2.getScanlineStride();
+        int diff, maxDiff = 0;
+        for (int y = 0; y < h; y++) {
+            for (int j = w, i = y * stride, i2 = y * stride2; j-- > 0; i++, i2++) {
+                if (maxDiff < (diff = Math.abs(data[i] - data2[i2])))
+                    maxDiff = diff;
+            }
+        }
+        return maxDiff;
+    }
+
+    private int maxDiff(ComponentSampleModel csm, byte[][] banks,
+                        ComponentSampleModel csm2, byte[][] banks2) {
+        int w = csm.getWidth();
+        int h = csm.getHeight();
+        int bands = csm.getNumBands();
+        int stride = csm.getScanlineStride();
+        int pixelStride = csm.getPixelStride();
+        int[] bankIndices = csm.getBankIndices();
+        int[] bandOffsets = csm.getBandOffsets();
+        int stride2 = csm2.getScanlineStride();
+        int pixelStride2 = csm2.getPixelStride();
+        int[] bankIndices2 = csm2.getBankIndices();
+        int[] bandOffsets2 = csm2.getBandOffsets();
+        int diff, maxDiff = 0;
+        for (int b = 0; b < bands; b++) {
+            byte[] bank = banks[bankIndices[b]];
+            byte[] bank2 = banks2[bankIndices2[b]];
+            int off = bandOffsets[b];
+            int off2 = bandOffsets2[b];
+            for (int y = 0; y < h; y++) {
+                for (int x = w, i = y * stride + off, i2 = y * stride2 + off2;
+                     x-- > 0; i += pixelStride, i2 += pixelStride2) {
+                    if (maxDiff < (diff = Math.abs(bank[i] - bank2[i2])))
+                        maxDiff = diff;
+                }
+            }
+        }
+        return maxDiff;
+    }
 }

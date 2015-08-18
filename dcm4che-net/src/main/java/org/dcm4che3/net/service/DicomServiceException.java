@@ -77,6 +77,14 @@ public class DicomServiceException extends IOException {
         setErrorComment(getMessage());
     }
 
+    public DicomServiceException(int status, String message, Throwable cause) {
+        super(message, cause);
+        rsp = new Attributes();
+        setStatus(status);
+        setErrorComment(getMessage());
+    }
+
+
     public static Throwable initialCauseOf(Throwable e) {
         if (e == null)
             return null;

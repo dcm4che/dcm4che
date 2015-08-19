@@ -45,7 +45,6 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -68,41 +67,7 @@ public class AnnotatedConfigurableProperty {
         setType(type);
     }
 
-    //////// wrapping annotations, otherwise it gets too unDRY ///////////////
 
-    public boolean isExtensionsProperty() {
-        return getAnnotation(ConfigurableProperty.class).isExtensionsProperty();
-    }
-
-    public String getDefaultValue() {
-        return getAnnotation(ConfigurableProperty.class).defaultValue();
-    }
-
-    public boolean isCollectionOfReferences() {
-        return getAnnotation(ConfigurableProperty.class).collectionOfReferences();
-    }
-
-    public boolean isReference() {
-        return getAnnotation(ConfigurableProperty.class).isReference();
-    }
-
-    public List<ConfigurableProperty.Tag> getTags() {
-        if (getAnnotation(ConfigurableProperty.class)==null)
-            return new ArrayList<ConfigurableProperty.Tag>();
-
-        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
-    }
-
-    public String getAnnotatedName() throws ConfigurationException {
-
-        String name = getAnnotation(ConfigurableProperty.class).name();
-        if (!name.equals("")) return name;
-        name = this.name;
-        if (name != null) return name;
-        throw new ConfigurationException("Property name not specified");
-
-    }
-    ////////////////////////////////////////////
 
     public AnnotatedConfigurableProperty clone(){
 
@@ -196,18 +161,6 @@ public class AnnotatedConfigurableProperty {
     }
 
 
-    public boolean isMap() {
-        return Map.class.isAssignableFrom(getRawClass());
-    }
-
-    public boolean isCollection() {
-        return Collection.class.isAssignableFrom(getRawClass());
-    }
-
-    public boolean isArray() {
-        return getRawClass().isArray();
-    }
-
     public void setAnnotations(Map<Type, Annotation> annotations) {
         this.annotations = annotations;
     }
@@ -222,6 +175,16 @@ public class AnnotatedConfigurableProperty {
 
     public String getName() {
         return name;
+    }
+
+    public String getAnnotatedName() throws ConfigurationException {
+
+        String name = getAnnotation(ConfigurableProperty.class).name();
+        if (!name.equals("")) return name;
+        name = this.name;
+        if (name != null) return name;
+        throw new ConfigurationException("Property name not specified");
+
     }
 
     @SuppressWarnings("unchecked")
@@ -244,10 +207,14 @@ public class AnnotatedConfigurableProperty {
 
     public boolean isMapOfConfObjects() {
         return Map.class.isAssignableFrom(getRawClass()) &&
-                !isCollectionOfReferences() &&
-                getPseudoPropertyForGenericsParamater(1).isConfObject() &&
-                !isExtensionsProperty();
+                !getAnnotation(ConfigurableProperty.class).collectionOfReferences() &&
+                getPseudoPropertyForGenericsParamater(1).isConfObject();
     }
 
+    public List<ConfigurableProperty.Tag> getTags() {
+        if (getAnnotation(ConfigurableProperty.class)==null)
+            return new ArrayList<ConfigurableProperty.Tag>();
 
+        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
+    }
 }

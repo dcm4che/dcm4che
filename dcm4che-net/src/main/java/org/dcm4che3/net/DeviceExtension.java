@@ -38,15 +38,12 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.SetParentIntoField;
-
 import java.io.Serializable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@SetParentIntoField("device")
 public class DeviceExtension implements Serializable {
 
     private static final long serialVersionUID = -548874586138178220L;
@@ -57,7 +54,7 @@ public class DeviceExtension implements Serializable {
         return device;
     }
 
-    public void setDevice(Device device) {
+    void setDevice(Device device) {
         if (device != null && this.device != null)
             throw new IllegalStateException(
                     "already owned by Device: " + device.getDeviceName());

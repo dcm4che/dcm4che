@@ -45,7 +45,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,16 +79,12 @@ import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.getscu.GetSCU;
 import org.dcm4che3.tool.getscu.GetSCU.InformationModel;
 import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  */
 public class RetrieveTool implements TestTool{
-
-    private static final Logger LOG = LoggerFactory.getLogger(RetrieveTool.class);
 
     private final String host;
     private final int port;
@@ -103,16 +98,13 @@ public class RetrieveTool implements TestTool{
     private int numFailed;
     private int expectedMatches = Integer.MIN_VALUE;
     private final Attributes retrieveatts = new Attributes();
-    private final GetSCU retrievescu;
     
     private final List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     private final String retrieveLevel;
     private final InformationModel retrieveInformationModel;
     private final boolean relational;
-
-    private boolean rememberResultAttributes = true;
-
+    
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
 
@@ -131,26 +123,17 @@ public class RetrieveTool implements TestTool{
                 ? InformationModel.StudyRoot : InformationModel.PatientRoot;
         this.relational = relational;
         this.conn = conn;
-
-        //setup device and connection
-        device.setInstalled(true);
-        ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
-        device.addApplicationEntity(ae);
-        ae.addConnection(conn);
-        retrievescu = new GetSCU(ae);
-
-        retrievescu.setInformationModel(retrieveInformationModel, IVR_LE_FIRST, relational);
-        try {
-            configureServiceClass(retrievescu);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void retrieve(String testDescription) throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException,
             FileNotFoundException, IOException {
-
+        //setup device and connection
+        device.setInstalled(true);
+        ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
+        device.addApplicationEntity(ae);
+        ae.addConnection(conn);
+        final GetSCU retrievescu = new GetSCU(ae);
         retrievescu.getAAssociateRQ().setCalledAET(aeTitle);
         retrievescu.getRemoteConnection().setHostname(host);
         retrievescu.getRemoteConnection().setPort(port);
@@ -168,8 +151,10 @@ public class RetrieveTool implements TestTool{
                 .newSingleThreadScheduledExecutor();
         retrievescu.getDevice().setExecutor(executorService);
         retrievescu.getDevice().setScheduledExecutor(scheduledExecutorService);
-
+        retrievescu.setInformationModel(retrieveInformationModel,
+                IVR_LE_FIRST, relational);
         retrievescu.addLevel(retrieveLevel);
+        configureServiceClass(retrievescu);
         retrievescu.getKeys().addAll(retrieveatts);
         
         long timeStart = System.currentTimeMillis();
@@ -177,9 +162,7 @@ public class RetrieveTool implements TestTool{
         // open, send and wait for response
         try {
             retrievescu.open();
-            retrievescu.retrieve(new DimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
-        } catch (Exception exception){
-            LOG.error("Error while retrieving", exception);
+            retrievescu.retrieve(getDimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
         } finally {
             retrievescu.close();
             executorService.shutdown();
@@ -201,13 +184,9 @@ public class RetrieveTool implements TestTool{
                 (timeEnd - timeStart), response));
     }
 
-    public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
-        retrievescu.addOfferedStorageSOPClass(cuid, tsuids);
-    }
-
-    public void addTag(int tag, String... values) {
+	public void addTag(int tag, String... values) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null); 
-        retrieveatts.setString(tag, vr, values);
+		retrieveatts.setString(tag, vr, values);
     }
 
     public void clearTags() {
@@ -216,6 +195,20 @@ public class RetrieveTool implements TestTool{
 
     public void setExpectedMatches(int expectedResult) {
         this.expectedMatches = expectedResult;
+    }
+    
+    private DimseRSPHandler getDimseRSPHandler(int messageID) {
+
+        DimseRSPHandler rspHandler = new DimseRSPHandler(messageID) {
+
+            @Override
+            public void onDimseRSP(Association as, Attributes cmd,
+                    Attributes data) {
+                super.onDimseRSP(as, cmd, data);
+            }
+        };
+
+        return rspHandler;
     }
 
     private void registerSCPservice(Device device, final File storeDir) {
@@ -260,10 +253,7 @@ public class RetrieveTool implements TestTool{
             ++numSuccess;
         else
             ++numFailed;
-
-        if (rememberResultAttributes)
-            response.add(data);
-
+        response.add(data);
         ++numCStores;
     }
 
@@ -300,15 +290,4 @@ public class RetrieveTool implements TestTool{
         return this.result;
     }
 
-    public Path getRetrieveDir() {
-        return retrieveDir.toPath();
-    }
-
-    /**
-     * If set to false, does not keep the attributes retrieved. Useful for large performance tests to avoid VM crashes.
-     * @param rememberResultAttributes
-     */
-    public void setRememberResultAttributes(boolean rememberResultAttributes) {
-        this.rememberResultAttributes = rememberResultAttributes;
-    }
 }

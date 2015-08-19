@@ -256,7 +256,7 @@ public class MediaTypes {
         else if (UID.JPEG2000.equals(ts))
             s = IMAGE_DICOM_JPEG_JP2;
         else if (UID.JPEG2000Part2MultiComponent.equals(ts))
-            s = IMAGE_DICOM_JPEG_JPX;
+            s = IMAGE_DICOM_JPEG_JP2;
         else if (UID.MPEG2.equals(ts)
                 || UID.MPEG2MainProfileHighLevel.equals(ts))
             s = VIDEO_MPEG;

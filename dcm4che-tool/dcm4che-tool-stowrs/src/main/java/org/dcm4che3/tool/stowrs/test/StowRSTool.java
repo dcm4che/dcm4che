@@ -40,7 +40,7 @@ package org.dcm4che3.tool.stowrs.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.dcm4che3.data.Attributes;
@@ -70,7 +70,7 @@ public class StowRSTool implements TestTool{
 
     public void send(String testDescription, StowMetaDataType metadataType, List<File> files, String transferSyntax) throws IOException, InterruptedException{
         long t1, t2;
-        StowRS stowrs = new StowRS(keys, metadataType, files, url, transferSyntax);
+        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
         t1 = System.currentTimeMillis();
         stowrs.stow();
         t2 = System.currentTimeMillis();
@@ -78,7 +78,14 @@ public class StowRSTool implements TestTool{
     }
 
     public void send(String testDescription, StowMetaDataType metadataType, File file, String transferSyntax) throws IOException, InterruptedException{
-        send(testDescription, metadataType, Collections.singletonList(file), transferSyntax);
+        ArrayList<File> files = new ArrayList<File>();
+        files.add(file);
+        long t1, t2;
+        StowRS stowrs = new StowRS(keys, metadataType.name(), files, url, transferSyntax);
+        t1 = System.currentTimeMillis();
+        stowrs.stow();
+        t2 = System.currentTimeMillis();
+        init(new StowRSResult(testDescription, t2-t1, stowrs.getResponses()));
     }
 
     public void overrideTag(int tag, String value) throws Exception {
@@ -87,8 +94,8 @@ public class StowRSTool implements TestTool{
     }
 
     @Override
-    public void init(TestResult resultIn) {
-        this.result = resultIn;
+    public void init(TestResult result) {
+        this.result = result;
     }
 
     @Override

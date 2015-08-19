@@ -90,26 +90,8 @@ public class CompressionRules
              add(rule);
     }
 
-    /**
-     * Removes a compression rule with the same Common Name
-     * @param ac
-     * @return
-     */
     public boolean remove(CompressionRule ac) {
-
-        if (ac == null || ac.getCommonName() == null)
-            return false;
-
-        boolean res = false;
-        Iterator<CompressionRule> iterator = list.iterator();
-        while (iterator.hasNext()) {
-            CompressionRule compressionRule = iterator.next();
-            if (ac.getCommonName().equals(compressionRule.getCommonName())) {
-                iterator.remove();
-                res = true;
-            }
-        }
-        return res;
+        return list.remove(ac);
     }
 
     public void clear() {

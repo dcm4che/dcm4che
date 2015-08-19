@@ -40,7 +40,6 @@ package org.dcm4che3.tool.storescp.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -107,8 +106,6 @@ public class StoreSCPTool implements TestTool {
 
     private final List<String> instanceLocations = new ArrayList<String>();
 
-    private final List<File> instanceFiles = new ArrayList<File>();
-
     private static final Logger LOG = LoggerFactory.getLogger(StoreSCPTool.class);
 
     private String testDescription;
@@ -147,7 +144,6 @@ public class StoreSCPTool implements TestTool {
                     SafeClose.close(out);
                     fileReceived++;
                     rqCMDs.add(rq);
-                    instanceFiles.add(file);
                     instanceLocations.add(file.getAbsolutePath());
                 }
                 
@@ -168,11 +164,6 @@ public class StoreSCPTool implements TestTool {
     }
 
     public void start(String testDescriptionIn) throws InterruptedException {
-        this.start(testDescriptionIn, "*");
-    }
-
-
-    public void start(String testDescriptionIn, String... transferSyntaxes) throws InterruptedException {
 
         started = true;
 
@@ -193,7 +184,7 @@ public class StoreSCPTool implements TestTool {
                 new TransferCapability(null, 
                         "*",
                         TransferCapability.Role.SCP,
-                        transferSyntaxes));
+                        "*"));
         ExecutorService executorService = Executors.newCachedThreadPool();
         ScheduledExecutorService scheduledExecutorService = 
                 Executors.newSingleThreadScheduledExecutor();
@@ -229,7 +220,7 @@ public class StoreSCPTool implements TestTool {
             }
         }
 
-        init(new StoreSCPResult(this.testDescription, t2 - t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs, this.instanceLocations));
+        init(new StoreSCPResult(this.testDescription, t2-t1, getfilesReceived(), getCmdRQList(), this.sopIUIDs, this.instanceLocations));
     }
     private List<Attributes> getCmdRQList() {
         return rqCMDs;
@@ -264,12 +255,5 @@ public class StoreSCPTool implements TestTool {
 
     public List<String> getInstanceLocations() {
         return instanceLocations;
-    }
-
-    public List<File> getInstanceFiles() {
-        return instanceFiles;
-    }
-    public Path getStorageDirectory() {
-        return storageDirectory.toPath();
     }
 }

@@ -70,8 +70,6 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 /**
- * Tool to convert JSON to XML.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Json2Dcm {

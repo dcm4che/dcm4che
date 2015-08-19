@@ -37,30 +37,27 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.SetParentIntoField;
-
 import java.io.Serializable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@SetParentIntoField("applicationEntity")
 public class AEExtension implements Serializable {
 
     private static final long serialVersionUID = -8287458555186708798L;
 
-    protected ApplicationEntity applicationEntity;
+    protected ApplicationEntity ae;
 
     public final ApplicationEntity getApplicationEntity() {
-        return applicationEntity;
+        return ae;
     }
 
-    public void setApplicationEntity(ApplicationEntity applicationEntity) {
-        if (applicationEntity != null && this.applicationEntity != null)
+    void setApplicationEntity(ApplicationEntity ae) {
+        if (ae != null && this.ae != null)
             throw new IllegalStateException(
-                    "already owned by AE: " + applicationEntity.getAETitle());
-        this.applicationEntity = applicationEntity;
+                    "already owned by AE: " + ae.getAETitle());
+        this.ae = ae;
     }
 
     public void reconfigure(AEExtension from) { }

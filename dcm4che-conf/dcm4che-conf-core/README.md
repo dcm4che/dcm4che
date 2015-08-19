@@ -19,31 +19,12 @@
       CAUTION: this feature's use should be limited to reduce the referential complexity - the more references are
       introduced, the more complex UI's logic will need to be to handle proper cascading
 
-      Currently supported reference targets are `Device`s, `Connection`s, and `ApplicationEntity`s.
-      
-    - a special extensions maps (see below)
+      Currently supported reference targets are `Device`s and `Connection`s within same device.
 
 - A configurable property should not be related to volatile operational data, i.e., it should be something that changes not so often, a rule of thumb is one hour - if you expect that a property could generally change more often - choose a different way of storing it.
 
 - Keep field/property declarations right:e.g., use `List` not `ArrayList`, put the right generic parameters, i.e., `List<ApplicationEntity>`
 - Correctly named getters and setters MUST be provided for all configurable properties.
-
-#### Config extensions (extensibility by composition)
-Some properties might be related only to a certain, possibly optional feature of a configurable object, and then it makes sense not to include them into the main class but rather make the class extendable and put those properties into an optional extension. This is also very usefult to separate concerns and to keep dependencies between components in a manageable state
-
-Dcm4che config framework allows extensibility by composition (i.e. not using polymorphism like A extends B, but rather adding 'features' to A, like A can have feature B and feature C). One can make a class 'extendable' by including a special property in a form of a Map where an extension class corresponds to an extension instance itself. This property must be marked with `isExtensionsProperty=true` to enable the extension logic. For example to make `Connection` class extandable, the following property was added:
-
-    @ConfigurableProperty(name = "connectionExtensions", isExtensionsProperty = true)
-    private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions 
-    = new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
-    
-    
-To make the framework aware of extensions while loading/persisting configuration, one has to register them (see `DicomConfigurationBuilder`). For EE case, there is a helper in `dcm4chee-conf-cdi` project that performs it automatically by using CDI. 
-    
-More examples:
-- [Device](https://github.com/dcm4che/dcm4che/blob/master/dcm4che-net/src/main/java/org/dcm4che3/net/Device.java) and 
-a device extension [ArchiveDeviceExtension](https://github.com/dcm4che/dcm4chee-arc-cdi/blob/master/dcm4chee-arc-conf/src/main/java/org/dcm4chee/archive/conf/ArchiveDeviceExtension.java).
-- [How to use config extensions](https://github.com/dcm4che/dcm4chee-integration-examples/tree/master/config-extensions-example)
 
 
 ### As a tools/config provider developer

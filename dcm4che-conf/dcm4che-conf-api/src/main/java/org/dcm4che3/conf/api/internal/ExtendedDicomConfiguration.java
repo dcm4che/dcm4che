@@ -39,7 +39,6 @@
 package org.dcm4che3.conf.api.internal;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.*;
 
@@ -89,11 +88,14 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
 
     void close();
 
+    Collection<Class<? extends DeviceExtension>> getRegisteredDeviceExtensions();
+
+    Collection<Class<? extends AEExtension>> getRegisteredAEExtensions();
+
     /**
      * Returns all AE names from all devices from the configuration backend
      * @return AE names
      * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
     String[] listRegisteredAETitles() throws ConfigurationException;
-
 }

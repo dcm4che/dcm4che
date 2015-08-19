@@ -40,6 +40,7 @@ package org.dcm4che3.io;
 
 import java.io.IOException;
 
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.ElementDictionary;
@@ -47,7 +48,6 @@ import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.PersonName;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -322,7 +322,7 @@ public class SAXWriter implements DicomInputHandler {
                     if (dis.bigEndian())
                         frags.vr().toggleEndian(b, false);
                     try {
-                        startElement("DataFragment", "number", frags.size() + 1);
+                        startElement("DataFragment", "number", frags.size());
                         writeInlineBinary(b);
                         endElement("DataFragment");
                     } catch (SAXException e) {
@@ -339,7 +339,7 @@ public class SAXWriter implements DicomInputHandler {
             val = vr.toStrings(val, bigEndian, cs);
         int vm = vr.vmOf(val);
         for (int i = 0; i < vm; i++) {
-            String s = vr.toString(val, bigEndian, i, "");
+            String s = vr.toString(val, bigEndian, i, null);
             addAttribute("number", Integer.toString(i + 1));
             if (vr == VR.PN) {
                 PersonName pn = new PersonName(s, true);

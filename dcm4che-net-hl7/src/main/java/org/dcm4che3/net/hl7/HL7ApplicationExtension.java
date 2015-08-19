@@ -37,31 +37,28 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net.hl7;
 
-import org.dcm4che3.conf.core.api.SetParentIntoField;
-
 import java.io.Serializable;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@SetParentIntoField("HL7Application")
 public class HL7ApplicationExtension implements Serializable {
 
     private static final long serialVersionUID = -6314667837949323448L;
 
-    protected HL7Application HL7Application;
+    protected HL7Application hl7App;
 
     public final HL7Application getHL7Application() {
-        return HL7Application;
+        return hl7App;
     }
 
-    public void setHL7Application(HL7Application hl7App) {
-        if (hl7App != null && this.HL7Application != null)
+    void setHL7Application(HL7Application hl7App) {
+        if (hl7App != null && this.hl7App != null)
             throw new IllegalStateException(
                     "already owned by HL7 Application: "
                     + hl7App.getApplicationName());
-        this.HL7Application = hl7App;
+        this.hl7App = hl7App;
     }
 
     public void reconfigure(HL7ApplicationExtension from) { }

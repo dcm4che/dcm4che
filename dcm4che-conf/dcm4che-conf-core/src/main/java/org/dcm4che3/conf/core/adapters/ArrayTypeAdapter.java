@@ -75,7 +75,7 @@ public class ArrayTypeAdapter implements ConfigTypeAdapter<Object, Object> {
     }
 
     @Override
-    public Object fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public Object fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         Class<?> componentType = ((Class) property.getType()).getComponentType();
 
@@ -100,7 +100,7 @@ public class ArrayTypeAdapter implements ConfigTypeAdapter<Object, Object> {
             int i = 0;
             for (Object el : l) {
                 // deserialize element
-                el = elementTypeAdapter.fromConfigNode(el, componentPseudoProperty, vitalizer, arr);
+                el = elementTypeAdapter.fromConfigNode(el, componentPseudoProperty, vitalizer);
 
                 // push to array
                 try {

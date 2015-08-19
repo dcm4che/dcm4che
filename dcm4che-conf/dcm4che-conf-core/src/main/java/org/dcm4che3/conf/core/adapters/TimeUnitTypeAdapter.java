@@ -54,7 +54,7 @@ public class TimeUnitTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
     }
 
     @Override
-    public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public TimeUnit fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         return TimeUnit.valueOf(configNode);
     }
 

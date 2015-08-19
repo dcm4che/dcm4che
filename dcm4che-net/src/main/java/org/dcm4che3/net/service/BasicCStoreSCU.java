@@ -44,24 +44,28 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.DataWriter;
+import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.InputStreamDataWriter;
 import org.dcm4che3.net.Status;
+import org.dcm4che3.net.pdu.PresentationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <T>
- *            instance locator type
- * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
+ *
  */
 public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         implements CStoreSCU<T> {
@@ -78,12 +82,10 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
     protected int outstandingRSP = 0;
     protected Object outstandingRSPLock = new Object();
 
-    @Override
     public int getStatus() {
         return status;
     }
 
-    @Override
     public boolean cancel() {
         if (status==Status.Pending) {
             this.status = Status.Cancel;
@@ -92,33 +94,27 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         return false;
     }
 
-    @Override
     public int getPriority() {
         return priority;
     }
 
-    @Override
     public List<T> getCompleted() {
         return completed;
     }
 
-    @Override
     public List<T> getWarning() {
         return warning;
     }
 
-    @Override
     public List<T> getFailed() {
         return failed;
     }
 
-    @Override
     public int getRemaining() {
         return (nr_instances - completed.size() - warning.size() - failed
                 .size());
     }
 
-    @Override
     public BasicCStoreSCUResp cstore(List<T> instances, Association storeas,
             int priority) {
 
@@ -151,7 +147,7 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
                 }
                 try {
                     cstore(storeas, inst, tsuid, dataWriter);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     LOG.warn(
                             "Unable to perform sub-operation on association to {}",
                             storeas.getRemoteAET(), e);

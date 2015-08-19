@@ -57,11 +57,10 @@ public interface ConfigTypeAdapter<T, ST> {
      * @param configNode
      * @param property   the property which is going to be assigned the returned value (Can be null)
      * @param vitalizer
-     * @param parent
      * @return
      * @throws ConfigurationException
      */
-    T fromConfigNode(ST configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException;
+    T fromConfigNode(ST configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException;
 
     /**
      * <p>Creates a serialized configuration representation for a provided object.

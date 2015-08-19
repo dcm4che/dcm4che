@@ -83,11 +83,6 @@ public class Device implements Serializable {
     @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
 
-    // Will add later on one big bang refactoring
-//    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
-//    description = "An immutable unique identifier")
-//    private String uuid = UUID.randomUUID().toString();
-
     @ConfigurableProperty(name = "dicomDescription")
     private String description;
 
@@ -213,8 +208,7 @@ public class Device implements Serializable {
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new TreeMap<String, ApplicationEntity>();
 
-    @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
-    private Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
+    private final Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
             new HashMap<Class<? extends DeviceExtension>,DeviceExtension>();
 
     private transient AssociationHandler associationHandler = new AssociationHandler();
@@ -237,13 +231,7 @@ public class Device implements Serializable {
         setDeviceName(name);
     }
 
-//    public String getUuid() {
-//        return uuid;
-//    }
-//
-//    public void setUuid(String uuid) {
-//        this.uuid = uuid;
-//    }
+
 
     private void checkNotEmpty(String name, String val) {
         if (val != null && val.isEmpty())
@@ -941,17 +929,6 @@ public class Device implements Serializable {
         return ae;
     }
 
-
-    public void setExtensions(Map<Class<? extends DeviceExtension>, DeviceExtension> extensions) {
-        this.extensions = extensions;
-    }
-
-    public Map<Class<? extends DeviceExtension>, DeviceExtension> getExtensions() {
-        return extensions;
-    }
-
-
-
     public void addDeviceExtension(DeviceExtension ext) {
         Class<? extends DeviceExtension> clazz = ext.getClass();
         if (extensions.containsKey(clazz))
@@ -1212,7 +1189,6 @@ public class Device implements Serializable {
         setManufacturerModelName(from.manufacturerModelName);
         setSoftwareVersions(from.softwareVersions);
         setStationName(from.stationName);
-//        setUuid(from.getUuid());
         setDeviceSerialNumber(from.deviceSerialNumber);
         setTrustStoreURL(from.trustStoreURL);
         setTrustStoreType(from.trustStoreType);
@@ -1334,7 +1310,8 @@ public class Device implements Serializable {
     public <T extends DeviceExtension> T getDeviceExtensionNotNull(Class<T> clazz) {
         T devExt = getDeviceExtension(clazz);
         if (devExt == null)
-            throw new IllegalStateException("No " + clazz.getName()+ " configured for Device: " + deviceName);
+            throw new IllegalStateException("No " + clazz.getName()
+                    + " configured for Device: " + deviceName);
         return devExt;
     }
 
@@ -1349,10 +1326,4 @@ public class Device implements Serializable {
         return aes;
     }
 
-    public ApplicationEntity getApplicationEntityNotNull(String aet) {
-        ApplicationEntity applicationEntity = getApplicationEntity(aet);
-        if (applicationEntity == null)
-            throw new IllegalArgumentException("Device " + deviceName + " does not contain AET " + aet);
-        return applicationEntity;
-    }
 }

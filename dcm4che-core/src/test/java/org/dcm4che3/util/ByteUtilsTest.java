@@ -3,6 +3,7 @@ package org.dcm4che3.util;
 import static org.junit.Assert.*;
 
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.util.ByteUtils;
 import org.junit.Test;
 
 /**

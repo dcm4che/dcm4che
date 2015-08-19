@@ -48,13 +48,19 @@ import org.dcm4che3.tool.common.test.TestResult;
  */
 public class QidoRSResult implements TestResult{
 
-    private final String testDescription;
+    private String testDescription;
     private int expectedResult = Integer.MIN_VALUE;
-    private final int numMatches;
-    private final long time;
-    private final List<Attributes> queryResponse;
-    private final long timeFirst;
-
+    private int numMatches;
+    private long time;
+    private List<Attributes> queryResponse;
+    private long timeFirst;
+    /**
+     * @param testDescription
+     * @param expectedResult
+     * @param numMatches
+     * @param time
+     * @param timeFirst
+     */
     public QidoRSResult(String testDescription, int expectedResult,
             int numMatches, long time, long timeFirst, List<Attributes> dataList) {
         super();

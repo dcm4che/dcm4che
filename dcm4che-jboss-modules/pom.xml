@@ -8,9 +8,6 @@
   <artifactId>dcm4che-jboss-modules</artifactId>
   <packaging>pom</packaging>
   <name>dcm4che-jboss-modules</name>
-  <properties>
-    <pegasus.module.dependency/>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
@@ -45,11 +42,6 @@
     <dependency>
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-dict-private</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -130,24 +122,6 @@
         <version>2.3</version>
         <executions>
           <execution>
-            <id>${project.name}-bundles-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/bundles.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
             <id>${project.name}-modules-assembly</id>
             <phase>package</phase>
             <goals>
@@ -161,23 +135,23 @@
               </descriptors>
             </configuration>
           </execution>
+          <execution>
+            <id>${project.name}-bundles-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/bundles.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
   <profiles>
-
-    <!-- Profile to create adapted JBoss modules for CSP build
-    which might contain modules with adapted dependencies, etc.-->
-    <profile>
-      <id>csp</id>
-      <properties>
-        <pegasus.module.dependency>
-          &lt;module name="pegasus" slot="agility" services="export" export="true"/&gt;
-        </pegasus.module.dependency>
-      </properties>
-    </profile>
-
     <profile>
       <id>copy-modules-to-jboss</id>
       <activation>

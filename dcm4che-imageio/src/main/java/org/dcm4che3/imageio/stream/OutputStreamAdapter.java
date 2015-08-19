@@ -74,8 +74,4 @@ public class OutputStreamAdapter extends ImageOutputStreamImpl {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void seek(long pos) throws IOException  {
-        throw new UnsupportedOperationException();
-    }
 }

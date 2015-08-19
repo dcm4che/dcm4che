@@ -43,6 +43,7 @@ import static org.junit.Assert.*;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.util.AttributesFormat;
 import org.junit.Test;
 
 /**

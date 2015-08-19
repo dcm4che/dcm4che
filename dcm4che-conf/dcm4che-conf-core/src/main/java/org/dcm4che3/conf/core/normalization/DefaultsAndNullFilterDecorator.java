@@ -47,28 +47,20 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 /**
  *
  */
-@SuppressWarnings("unchecked")
 public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
-    public static final Logger log = LoggerFactory.getLogger(DefaultsAndNullFilterDecorator.class);
-
-
-    protected List<Class> allExtensionClasses;
     private boolean persistDefaults;
     private BeanVitalizer dummyVitalizer = new DefaultBeanVitalizer();
 
-    public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults, List<Class> allExtensionClasses) {
+    public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults) {
         super(delegate);
         this.persistDefaults = persistDefaults;
-        this.allExtensionClasses = allExtensionClasses;
     }
 
     @Override
@@ -78,34 +70,19 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             @Override
             public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
-                boolean doDelete = false;
-
                 // if the value for a property equals to default, filter it out
-                if (property.getDefaultValue().equals(String.valueOf(containerNode.get(property.getAnnotatedName())))
+                if (property.getAnnotation(ConfigurableProperty.class).defaultValue().equals(String.valueOf(containerNode.get(property.getAnnotatedName())))
                         || containerNode.get(property.getAnnotatedName()) == null) {
-                    doDelete = true;
-                } // if that is an empty extension map or map
-                else if ((property.isExtensionsProperty() || property.isMap())
-                        && containerNode.get(property.getAnnotatedName()) != null
-                        && ((Map) containerNode.get(property.getAnnotatedName())).size() == 0) {
-                    doDelete = true;
-                } // if that is an empty collection or array
-                else if ((property.isCollection() || property.isArray())
-                        && containerNode.get(property.getAnnotatedName()) != null
-                        && ((Collection) containerNode.get(property.getAnnotatedName())).size() == 0) {
-                    doDelete = true;
-                }
-
-                if (doDelete)
                     containerNode.remove(property.getAnnotatedName());
-
-                return doDelete;
+                    return true;
+                }
+                return false;
             }
         };
 
         // filter out defaults
         if (configurableClass != null && !persistDefaults)
-            traverseTree(configNode, configurableClass, filterDefaults);
+            traverseTree(configNode,configurableClass,filterDefaults);
 
         super.persistNode(path, configNode, configurableClass);
     }
@@ -118,26 +95,18 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             @Override
             public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
-                String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
                 // if no value for this property, see if there is default and set it
-                if (!containerNode.containsKey(property.getAnnotatedName()) && !defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
-                    Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
-                    containerNode.put(property.getAnnotatedName(), normalized);
-                    return true;
-                }
-                // for null map & extension map - create empty obj
-                else if ((property.isExtensionsProperty() || property.isMap()) &&
-                        containerNode.get(property.getAnnotatedName()) == null) {
-                    containerNode.put(property.getAnnotatedName(), new TreeMap());
-                    return true;
-                }
-                // for null arrays/collections map - create empty arr
-                else if ((property.isCollection() || property.isArray())
-                        && containerNode.get(property.getAnnotatedName()) == null) {
-                    containerNode.put(property.getAnnotatedName(), new ArrayList());
-                    return true;
-                }
+                if (!containerNode.containsKey(property.getAnnotatedName())) {
+                    String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
+                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                        Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
+                        containerNode.put(property.getAnnotatedName(), normalized);
+                    } else {
+                        containerNode.put(property.getAnnotatedName(), null);
+                    }
 
+                    return true;
+                }
                 return false;
             }
         };
@@ -148,6 +117,11 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             traverseTree(node, configurableClass, applyDefaults);
         return node;
     }
+
+
+    public interface EntryFilter {
+        boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
+    };
 
     protected void traverseTree(Object node, Class nodeClass, EntryFilter filter) throws ConfigurationException {
 
@@ -163,7 +137,6 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
             if (filter.applyFilter(containerNode, property)) continue;
 
-            if (childNode == null) continue;
 
             // if the property is a configclass
             if (property.isConfObject()) {
@@ -186,48 +159,17 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             // map, where a value generics parameter is a configurable class
             if (property.isMapOfConfObjects()) {
 
-                try {
-                    Map<String, Object> collection = (Map<String, Object>) childNode;
+                Map<String, Object> collection = (Map<String, Object>) childNode;
 
-                    for (Object object : collection.values())
-                        traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
-
-                } catch (ClassCastException e) {
-                    log.warn("Map is malformed", e);
-                }
+                for (Object object : collection.values())
+                    traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
 
                 continue;
             }
 
-            // extensions map
-            if (property.isExtensionsProperty()) {
-
-                try {
-                    Map<String, Object> extensionsMap = (Map<String, Object>) childNode;
-
-                    for (Map.Entry<String, Object> entry : extensionsMap.entrySet()) {
-                        try {
-                            traverseTree(entry.getValue(), ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter);
-                        } catch (ClassNotFoundException e) {
-                            // noop
-                            log.warn("Extension class {} not found", entry.getKey());
-                        }
-                    }
-
-                } catch (ClassCastException e) {
-                    log.warn("Extensions are malformed", e);
-                }
-
-            }
-
-
         }
     }
 
-
-    public interface EntryFilter {
-        boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
-    }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {

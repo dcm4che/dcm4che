@@ -39,68 +39,43 @@
  */
 package org.dcm4che3.conf.dicom.ldap;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.naming.NameClassPair;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
-import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomPath;
 
+import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import java.util.*;
+
 
 public class LdapConfigurationStorage implements Configuration {
 
-    private String baseDN;
-    private InitialDirContext ldapCtx;
-    private List<Class> allExtensionClasses;
+    private final String baseDN;
+    private final InitialDirContext ldapCtx;
+    private final List<Class<?>> allExtensionClasses;
 
-    public List<Class> getAllExtensionClasses() {
+    public List<Class<?>> getAllExtensionClasses() {
         return allExtensionClasses;
     }
 
-    public LdapConfigurationStorage() {
-        //NOOP
-    }
-    
-    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class> allExtensionClasses)
+    public LdapConfigurationStorage(Hashtable<?, ?> env, List<Class<?>> allExtensionClasses)
             throws ConfigurationException {
-        setEnvironment(env);
-        setExtensions(allExtensionClasses);
-    }
-    
-    public void setExtensions(List<Class> allExtensionClasses) {
         this.allExtensionClasses = allExtensionClasses;
-    }
-    
-    public void setEnvironment(Hashtable<?, ?> env) throws ConfigurationException {
         try {
-            Hashtable<Object, Object> env_ = (Hashtable<Object, Object>) env.clone();
+            Hashtable env_ = (Hashtable) env.clone();
             String e = (String) env.get("java.naming.provider.url");
             int end = e.lastIndexOf('/');
             env_.put("java.naming.provider.url", e.substring(0, end));
             this.baseDN = e.substring(end + 1);
-            // TODO: what happens when LDAP goes down and up again while app is
-            // running?
+            //TODO: what happens when LDAP goes down and up again while app is running?
             this.ldapCtx = new InitialDirContext(env_);
         } catch (Exception e) {
             throw new ConfigurationException(e);
@@ -413,10 +388,4 @@ public class LdapConfigurationStorage implements Configuration {
     public InitialDirContext getLdapCtx() {
         return ldapCtx;
     }
-
-    @Override
-    public void runBatch(ConfigBatch batch) {
-        batch.run();
-    }
-    
 }

@@ -38,11 +38,8 @@
 
 package org.dcm4che3.tool.dcm2xml;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -66,14 +63,11 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.io.SAXWriter;
+import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.tool.common.CLIUtils;
 
 /**
- * Tool for converting DICOM to XML presentation and optionally apply XSLT
- * stylesheet on it.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Dcm2Xml {
@@ -214,9 +208,15 @@ public class Dcm2Xml {
             configureBulkdata(main, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
-                main.convert(new DicomInputStream(System.in), System.out);
+                main.parse(new DicomInputStream(System.in));
             } else {
-                main.convert(new File(fname), System.out);
+                DicomInputStream dis =
+                        new DicomInputStream(new File(fname));
+                try {
+                    main.parse(dis);
+                } finally {
+                    dis.close();
+                }
             }
         } catch (ParseException e) {
             System.err.println("dcm2xml: " + e.getMessage());
@@ -274,7 +274,7 @@ public class Dcm2Xml {
         return argList.get(0);
     }
 
-    public void convert(DicomInputStream dis, OutputStream out) throws IOException,
+    public void parse(DicomInputStream dis) throws IOException,
             TransformerConfigurationException {
         dis.setIncludeBulkData(includeBulkData);
         if (blkAttrs != null)
@@ -287,32 +287,12 @@ public class Dcm2Xml {
         Transformer t = th.getTransformer();
         t.setOutputProperty(OutputKeys.INDENT, indent ? "yes" : "no");
         t.setOutputProperty(OutputKeys.VERSION, xmlVersion);
-        th.setResult(new StreamResult(out));
+        th.setResult(new StreamResult(System.out));
         SAXWriter saxWriter = new SAXWriter(th);
         saxWriter.setIncludeKeyword(includeKeyword);
         saxWriter.setIncludeNamespaceDeclaration(includeNamespaceDeclaration);
         dis.setDicomInputHandler(saxWriter);
         dis.readDataset(-1, -1);
-    }
-
-    public void convert(File dicomFile, OutputStream out) throws IOException,
-            TransformerConfigurationException {
-        DicomInputStream dis = new DicomInputStream(dicomFile);
-        try {
-            convert(dis, out);
-        } finally {
-            dis.close();
-        }
-    }
-
-    public void convert(File dicomFile, File xmlFile) throws IOException,
-            TransformerConfigurationException {
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(xmlFile));
-        try {
-            convert(dicomFile, out);
-        } finally {
-            out.close();
-        }
     }
 
     private TransformerHandler getTransformerHandler()

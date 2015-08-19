@@ -14,7 +14,7 @@ public class CommonDeviceExtension extends DeviceExtension {
      * @param clazz Class of the extension
      */
     public void reconfigureReflectively(DeviceExtension from, Class<? extends DeviceExtension> clazz) {
-        ReconfiguringIterator.reconfigure(from, this, clazz);
+        ReconfiguringIterator.reconfigure(this, from, clazz);
     }
 
     public void reconfigure(DeviceExtension from) {

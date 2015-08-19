@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
-
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.*;
@@ -70,8 +69,6 @@ import java.util.concurrent.TimeUnit;
 @LDAP(objectClasses = "dcmAuditLogger")
 @ConfigurableClass
 public class AuditLogger extends DeviceExtension {
-
-    private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
     public enum SendStatus {
         SENT, QUEUED, SUPPRESSED
@@ -162,10 +159,10 @@ public class AuditLogger extends DeviceExtension {
 
     @ConfigurableProperty(name = "dcmAuditRecordRepositoryDeviceReference",
             label = "ARR Device",
-            description = "Devices that correspond to Audit Record Repositories to which audit messages are sent",
+            description = "Device which provides the Audit Record Repository to which audit messages are sent",
             tags = ConfigurableProperty.Tag.PRIMARY,
-            collectionOfReferences = true)
-    private List<Device> auditRecordRepositoryDevices = new ArrayList<Device>();
+            isReference = true)
+    private Device auditRecordRepositoryDevice;
 
     @ConfigurableProperty(
             name = "dcmAuditFacility",
@@ -265,7 +262,7 @@ public class AuditLogger extends DeviceExtension {
     private List<Connection> connections = new ArrayList<Connection>(1);
 
     private transient MessageBuilder builder;
-    private transient Map<String,ActiveConnection> activeConnection = new HashMap<String, ActiveConnection>();
+    private transient ActiveConnection activeConnection;
     private transient ScheduledFuture<?> retryTimer;
     private transient Exception lastException;
     private transient long lastSentTimeInMillis;
@@ -286,33 +283,20 @@ public class AuditLogger extends DeviceExtension {
         for (AuditSuppressCriteria filter : suppressAuditMessageFilters) this.suppressAuditMessageFilters.add(filter);
     }
 
-    public final List<Device> getAuditRecordRepositoryDevices() {
-        return auditRecordRepositoryDevices;
+    public final Device getAuditRecordRepositoryDevice() {
+        return auditRecordRepositoryDevice;
     }
 
-    public List<String> getAuditRecordRepositoryDeviceNames() {
-        if (auditRecordRepositoryDevices == null)
+    public String getAuditRecordRepositoryDeviceName() {
+        if (auditRecordRepositoryDevice == null)
             throw new IllegalStateException("AuditRecordRepositoryDevice not initalized");
-        List<String> names = new ArrayList<String>(auditRecordRepositoryDevices.size());
-        for (Device d : auditRecordRepositoryDevices) {
-        	names.add(d.getDeviceName());
-        }
-        return names;
+        return auditRecordRepositoryDevice.getDeviceName();
     }
 
-    public void setAuditRecordRepositoryDevices(List<Device> arrDevices) {
-    	for (ActiveConnection c : activeConnection.values())
-    		SafeClose.close(c);
-        activeConnection.clear();
-        this.auditRecordRepositoryDevices = arrDevices;
-    }
-    
-    public void addAuditRecordRepositoryDevice(Device device) {
-    	auditRecordRepositoryDevices.add(device);
-    }
-
-    public boolean removeAuditRecordRepositoryDevice(Device device) {
-    	return auditRecordRepositoryDevices.remove(device);
+    public void setAuditRecordRepositoryDevice(Device arrDevice) {
+        SafeClose.close(activeConnection);
+        activeConnection = null;
+        this.auditRecordRepositoryDevice = arrDevice;
     }
 
     public final Facility getFacility() {
@@ -725,7 +709,7 @@ public class AuditLogger extends DeviceExtension {
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
         setRetryInterval(from.retryInterval);
         setAuditLoggerInstalled(from.auditLoggerInstalled);
-        setAuditRecordRepositoryDevices(from.auditRecordRepositoryDevices);
+        setAuditRecordRepositoryDevice(from.auditRecordRepositoryDevice);
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
         device.reconfigureConnections(connections, from.connections);
         closeActiveConnection();
@@ -788,32 +772,25 @@ public class AuditLogger extends DeviceExtension {
 
     private SendStatus sendMessage(DatagramPacket msg) throws IncompatibleConnectionException,
             GeneralSecurityException, IOException {
-        if (auditRecordRepositoryDevices.isEmpty())
-            throw new IllegalStateException("No AuditRecordRepositoryDevice initalized");
-        String deviceName;
-        SendStatus status = SendStatus.SENT;
-        for (Device arrDev : auditRecordRepositoryDevices) {
-        	deviceName = arrDev.getDeviceName();
-	        if (getNumberOfQueuedMessages(deviceName) > 0) {
-	            spoolMessage(deviceName, msg);
-	        } else {
-	            try {
-	                activeConnection(arrDev).sendMessage(msg);
-	                lastSentTimeInMillis = System.currentTimeMillis();
-	            } catch (IOException e) {
-	                lastException = e;
-	                if (retryInterval > 0) {
-	                    LOG.info("Failed to send audit message:", e);
-	                    spoolMessage(deviceName, msg);
-	                    scheduleRetry();
-	                    status = SendStatus.QUEUED;
-	                } else {
-	                    throw e;
-	                }
-	            }
-	        }
+        if (getNumberOfQueuedMessages() > 0) {
+            spoolMessage(msg);
+        } else {
+            try {
+                activeConnection().sendMessage(msg);
+                lastSentTimeInMillis = System.currentTimeMillis();
+                return SendStatus.SENT;
+            } catch (IOException e) {
+                lastException = e;
+                if (retryInterval > 0) {
+                    LOG.info("Failed to send audit message:", e);
+                    spoolMessage(msg);
+                    scheduleRetry();
+                } else {
+                    throw e;
+                }
+            }
         }
-        return status;
+        return SendStatus.QUEUED;
     }
 
     private synchronized void scheduleRetry() {
@@ -835,13 +812,13 @@ public class AuditLogger extends DeviceExtension {
                 retryInterval, TimeUnit.SECONDS);
     }
 
-    private void spoolMessage(String deviceName, DatagramPacket msg) throws IOException {
+    private void spoolMessage(DatagramPacket msg) throws IOException {
         if (spoolDirectory != null)
             spoolDirectory.mkdirs();
 
         File f = null;
         try {
-            f = File.createTempFile(spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+deviceName+DEVICE_NAME_IN_FILENAME_SEPARATOR, spoolFileNameSuffix, spoolDirectory);
+            f = File.createTempFile(spoolFileNamePrefix, spoolFileNameSuffix, spoolDirectory);
             if (spoolDirectory == null)
                 spoolDirectory = f.getParentFile();
 
@@ -854,7 +831,7 @@ public class AuditLogger extends DeviceExtension {
             }
             f = null;
         } catch (IOException e) {
-            throw new IOException("Failed to spool audit message for device "+deviceName, e);
+            throw new IOException("Failed to spool audit message", e);
         } finally {
             if (f != null)
                 f.delete();
@@ -865,62 +842,50 @@ public class AuditLogger extends DeviceExtension {
         File dir = spoolDirectory;
         if (dir == null)
             return;
-        boolean failed = false;
-        for (final Device arrDev : this.auditRecordRepositoryDevices) {
-	        try {
-	        	FilenameFilter fnFilter = new FilenameFilter() {
-	        		String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+arrDev.getDeviceName()+DEVICE_NAME_IN_FILENAME_SEPARATOR;
-	                @Override
-	                public boolean accept(File dir, String name) {
-	                    return name.startsWith(prefix) 
-	                    		&& name.endsWith(spoolFileNameSuffix);
-	                }
-	            };
-	            File[] queuedMessages = dir.listFiles(fnFilter);
-	            byte[] b = null;
-	            while (queuedMessages != null && queuedMessages.length > 0) {
-	                Arrays.sort(queuedMessages, FILE_COMPARATOR);
-	                for (File file : queuedMessages) {
-	                    LOG.debug("Read audit message from {}", file);
-	                    int len = (int) file.length();
-	                    if (b == null || b.length < len)
-	                        b = new byte[len];
-	                    try {
-	                        FileInputStream in = new FileInputStream(file);
-	                        try {
-	                            StreamUtils.readFully(in, b, 0, len);
-	                        } finally {
-	                            SafeClose.close(in);
-	                        }
-	                    } catch (IOException e) {
-	                        LOG.warn("Failed to read audit message from {}", file, e);
-	                        File dest = new File(file.getParent(), file.getName() + ".err");
-	                        file.renameTo(dest);
-	                        continue;
-	                    }
-                    	activeConnection(arrDev).sendMessage(new DatagramPacket(b, 0, len));
-	                    lastSentTimeInMillis = System.currentTimeMillis();
-	                    if (file.delete())
-	                        LOG.debug("Delete spool file {}", file);
-	                    else
-	                        LOG.warn("Failed to delete spool file {}", file);
-	                }
-	                queuedMessages = dir.listFiles(FILENAME_FILTER);
-	            }
-	        } catch (Exception e) {
-	            lastException = e;
-	            LOG.info("Failed to send audit message:", e);
-	            failed = true;
-	        }
+
+        try {
+            File[] queuedMessages = dir.listFiles(FILENAME_FILTER);
+            byte[] b = null;
+            while (queuedMessages != null && queuedMessages.length > 0) {
+                Arrays.sort(queuedMessages, FILE_COMPARATOR);
+                for (File file : queuedMessages) {
+                    LOG.debug("Read audit message from {}", file);
+                    int len = (int) file.length();
+                    if (b == null || b.length < len)
+                        b = new byte[len];
+                    try {
+                        FileInputStream in = new FileInputStream(file);
+                        try {
+                            StreamUtils.readFully(in, b, 0, len);
+                        } finally {
+                            SafeClose.close(in);
+                        }
+                    } catch (IOException e) {
+                        LOG.warn("Failed to read audit message from {}", file, e);
+                        File dest = new File(file.getParent(), file.getPath() + ".err");
+                        file.renameTo(dest);
+                        continue;
+                    }
+                    activeConnection().sendMessage(new DatagramPacket(b, 0, len));
+                    lastSentTimeInMillis = System.currentTimeMillis();
+                    if (file.delete())
+                        LOG.debug("Delete spool file {}", file);
+                    else
+                        LOG.warn("Failed to delete spool file {}", file);
+                }
+                queuedMessages = dir.listFiles(FILENAME_FILTER);
+            }
+        } catch (Exception e) {
+            lastException = e;
+            LOG.info("Failed to send audit message:", e);
+            scheduleRetry();
         }
-        if (failed)
-        	scheduleRetry();
         synchronized (this) {
             notify();
         }
     }
 
-	public Exception getLastException() {
+    public Exception getLastException() {
         return lastException;
     }
 
@@ -929,24 +894,8 @@ public class AuditLogger extends DeviceExtension {
     }
 
     public int getNumberOfQueuedMessages() {
-    	int tot = 0;
-    	for (Device d : this.auditRecordRepositoryDevices)
-    		tot += getNumberOfQueuedMessages(d.getDeviceName());
-    	return tot;
-    }
-    
-    public int getNumberOfQueuedMessages(final String deviceName) {
         try {
-        	FilenameFilter fnFilter = new FilenameFilter() {
-        		String prefix = spoolFileNamePrefix+DEVICE_NAME_IN_FILENAME_SEPARATOR+deviceName+DEVICE_NAME_IN_FILENAME_SEPARATOR;
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(prefix) 
-                    		&& name.endsWith(spoolFileNameSuffix);
-                }
-            };
-
-            return spoolDirectory.list(fnFilter).length;
+            return spoolDirectory.list(FILENAME_FILTER).length;
         } catch (NullPointerException e) {
             return 0;
         }
@@ -962,54 +911,53 @@ public class AuditLogger extends DeviceExtension {
 
     public synchronized void waitForNoQueuedMessages(long timeout)
             throws InterruptedException {
-    	int count;
-    	for (Device arrDev : this.auditRecordRepositoryDevices) {
-    		while ( (count = getNumberOfQueuedMessages(arrDev.getDeviceName())) > 0) {
-    			LOG.debug("Wait for {} queued Audit Messages for AuditRepository {}!", count, arrDev.getDeviceName());
-    			wait(timeout);
-    		}
-    	}
+        while (getNumberOfQueuedMessages() > 0)
+            wait(timeout);
     }
 
     public synchronized void closeActiveConnection() {
-        for (Map.Entry<String, ActiveConnection> entry : activeConnection.entrySet()) {
+        ActiveConnection activeConnection = this.activeConnection;
+        if (activeConnection != null) {
             try {
-                entry.getValue().close();
+                activeConnection.close();
             } catch (IOException e) {
-            	LOG.error("Failed to close active connection to {}", entry.getKey(), e);
                 throw new AssertionError(e);
             }
-            this.activeConnection.clear();
+            this.activeConnection = null;
         }
     }
 
-    private synchronized ActiveConnection activeConnection(Device arrDev)
+    private synchronized ActiveConnection activeConnection()
             throws IncompatibleConnectionException {
-        ActiveConnection activeConnection = this.activeConnection.get(device.getDeviceName());
+        ActiveConnection activeConnection = this.activeConnection;
         if (activeConnection != null)
             return activeConnection;
+
+        Device arrDev = this.auditRecordRepositoryDevice;
+        if (auditRecordRepositoryDevice == null)
+            throw new IllegalStateException("No AuditRecordRepositoryDevice initalized");
 
         AuditRecordRepository arr = arrDev.getDeviceExtension(AuditRecordRepository.class);
         if (arr == null)
             throw new IllegalStateException("AuditRecordRepositoryDevice "
-                    + arrDev.getDeviceName()
+                    + auditRecordRepositoryDevice.getDeviceName()
                     + " does not provide Audit Record Repository");
 
         for (Connection remoteConn : arr.getConnections())
             if (remoteConn.isInstalled() && remoteConn.isServer())
                 for (Connection conn : connections)
                     if (conn.isInstalled() && conn.isCompatible(remoteConn)) {
-                        activeConnection = conn.getProtocol().isTCP()
+                        return (this.activeConnection =
+                                conn.getProtocol().isTCP()
                                         ? new TCPConnection(conn, remoteConn)
-                                        : new UDPConnection(conn, remoteConn);
-                        this.activeConnection.put(arrDev.getDeviceName(), activeConnection);
-                        return activeConnection;
+                                        : new UDPConnection(conn, remoteConn));
                     }
         throw new IncompatibleConnectionException(
                 "No compatible connection to " + arr + " available on " + this);
     }
 
-	public static String processID() {
+
+    public static String processID() {
         String s = ManagementFactory.getRuntimeMXBean().getName();
         int atPos = s.indexOf('@');
         return atPos > 0 ? s.substring(0, atPos)

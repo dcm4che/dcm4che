@@ -104,7 +104,7 @@ public class ValueSelector implements Serializable {
                     selectNumber(s, fromIndex) - 1,
                     itemPointersOf(s, fromIndex));
         } catch (Exception e) {
-            throw new IllegalArgumentException(s,e);
+            throw new IllegalArgumentException(s);
         }
     }
 

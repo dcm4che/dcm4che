@@ -47,7 +47,6 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.adapters.DefaultReferenceAdapter;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.DicomPath;
-import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 
@@ -58,7 +57,7 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
     }
 
     @Override
-    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         // Connection of a device. Get the device (it will grab the current one from threadLocal), and get the connection from there
         if (Connection.class.isAssignableFrom(property.getRawClass())) {
@@ -90,7 +89,7 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
 
 
                 Device device = vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
-                Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer, parent);
+                Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer);
 
                 return (T) device.connectionWithEqualsRDN(conn);
 
@@ -107,21 +106,9 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
             } catch (Exception e) {
                 throw new ConfigurationException("Cannot load referenced device (" + configNode + ")", e);
             }
-        } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
-            try {
-
-                PathPattern.PathParser parser = DicomPath.AEByTitleRef.parse(configNode);
-                String aeName = parser.getParam("aeName");
-
-                return (T) vitalizer.getContext(DicomConfiguration.class).findApplicationEntity(aeName);
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot load referenced AE (" + configNode + ")", e);
-            }
-
-
         }
 
-        return super.fromConfigNode(configNode, property, vitalizer, parent);
+        return super.fromConfigNode(configNode, property, vitalizer);
     }
 
     @Override
@@ -153,11 +140,6 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> 
                 String deviceName = ((Device) object).getDeviceName();
                 return DicomPath.DeviceByNameRef.
                         set("deviceName", deviceName).path();
-
-            } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
-
-                String aeTitle = ((ApplicationEntity) object).getAETitle();
-                return DicomPath.AEByTitleRef.set("aeName", aeTitle).path();
 
             }
         } catch (Exception e) {

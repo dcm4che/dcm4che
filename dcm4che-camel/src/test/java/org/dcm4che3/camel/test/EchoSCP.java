@@ -60,7 +60,7 @@ import org.dcm4che3.net.service.DicomServiceException;
 public class EchoSCP implements Processor {
 
     public static void main(String[] args) throws Exception {
-        DicomConfiguration dicomConf = new CommonDicomConfiguration(new SingleJsonFileConfigurationStorage("config.json"), null);
+        DicomConfiguration dicomConf = new CommonDicomConfiguration(new SingleJsonFileConfigurationStorage("config.json"));
         Device device = dicomConf.findDevice(args[0]);
         Main main = new Main();
         main.bind("dicomDevice", new DicomDeviceComponent(device));

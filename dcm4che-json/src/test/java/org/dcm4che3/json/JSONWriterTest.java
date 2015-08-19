@@ -40,9 +40,7 @@ package org.dcm4che3.json;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
@@ -56,17 +54,15 @@ import org.dcm4che3.data.VR;
 import org.junit.Test;
 
 /**
- * Tests for {@link JSONReader} and {@link JSONWriter}.
- * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
+ *
  */
-public class JSONTest {
+public class JSONWriterTest {
 
-    private final String RESULT = "{"
-            + "\"00080005\":{\"vr\":\"CS\",\"Value\":[\"ISO 2022 IR 87\"]},"
-            + "\"00080008\":{\"vr\":\"CS\",\"Value\":[\"DERIVED\",null,null,\"PRIMARY\"]},"
-            + "\"00080050\":{\"vr\":\"SH\"},"
+    private static byte[] BYTE01 = { 0, 1 };
+    private String RESULT = "{"
+            + "\"00080005\":{\"vr\":\"CS\",\"Value\":[null,\"ISO 2022 IR 87\"]},"
+            + "\"00080008\":{\"vr\":\"CS\",\"Value\":[\"DERIVED\",\"PRIMARY\"]},"
             + "\"00082112\":{\"vr\":\"SQ\",\"Value\":["
                 + "{"
                     + "\"00081150\":{\"vr\":\"UI\",\"Value\":[\"1.2.840.10008.5.1.4.1.1.2\"]},"
@@ -91,28 +87,16 @@ public class JSONTest {
             + "}";
 
     @Test
-    public void testJSONWriting() {
-        Attributes dataset = createTestDataset();
-
-        StringWriter writer = new StringWriter();
-        JsonGenerator gen = Json.createGenerator(writer);
-        new JSONWriter(gen).write(dataset);
-        gen.flush();
-        String json = writer.toString();
-        assertEquals(RESULT, json);
-    }
-
-    private Attributes createTestDataset() {
+    public void test() {
         Attributes dataset = new Attributes();
-        dataset.setString(Tag.SpecificCharacterSet, VR.CS, "ISO 2022 IR 87");
-        dataset.setString(Tag.ImageType, VR.CS, "DERIVED", null, "", "PRIMARY");
-        dataset.setNull(Tag.AccessionNumber, VR.SH);
+        dataset.setString(Tag.SpecificCharacterSet, VR.CS, null, "ISO 2022 IR 87");
+        dataset.setString(Tag.ImageType, VR.CS, "DERIVED", "PRIMARY");
         Attributes item = new Attributes(2);
         dataset.newSequence(Tag.SourceImageSequence, 1).add(item);
         item.setString(Tag.ReferencedSOPClassUID, VR.UI, UID.CTImageStorage);
         item.setString(Tag.ReferencedSOPInstanceUID, VR.UI, "1.2.3.4");
         dataset.setString(Tag.PatientName, VR.PN, "af^ag=if^ig=pf^pg");
-        dataset.setBytes("PRIVATE", 0x00090002, VR.OB, new byte[] { 0, 1 });
+        dataset.setBytes("PRIVATE", 0x00090002, VR.OB, BYTE01);
         dataset.setDouble(Tag.FrameTime, VR.DS, 33.0);
         dataset.setInt(Tag.SamplesPerPixel, VR.US, 1);
         dataset.setInt(Tag.NumberOfFrames, VR.IS, 1);
@@ -121,22 +105,11 @@ public class JSONTest {
         Fragments frags = dataset.newFragments(Tag.PixelData, VR.OB, 2);
         frags.add(null);
         frags.add(new BulkData(null, "file:/PixelData?offset=1234&length=5678", false));
-        return dataset;
-    }
-
-    @Test
-    public void testJSONReading() {
-
-        Attributes dataset = new Attributes();
-        
-        JSONReader reader = new JSONReader(Json.createParser(new ByteArrayInputStream(RESULT.getBytes(StandardCharsets.UTF_8))));
-        reader.readDataset(dataset);
-        
-        Attributes referenceDataset = createTestDataset();
-        // currently empty strings become null after reading them from JSON, so we have to adapt the reference a little:
-        referenceDataset.setString(Tag.ImageType, VR.CS, "DERIVED", null, null, "PRIMARY");
-
-        assertEquals(referenceDataset, dataset);
+        StringWriter writer = new StringWriter();
+        JsonGenerator gen = Json.createGenerator(writer);
+        new JSONWriter(gen).write(dataset);
+        gen.flush();
+        assertEquals(RESULT, writer.toString());
     }
 
 }

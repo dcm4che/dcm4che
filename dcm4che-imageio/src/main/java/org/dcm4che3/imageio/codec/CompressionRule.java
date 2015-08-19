@@ -181,10 +181,7 @@ public class CompressionRule
 
         int bitsStoredMask;
 
-        @ConfigurableProperty(
-                name = "dcmPixelRepresentation",
-                description = "If equals to -1, ignores pixel representation",
-                defaultValue = "-1")
+        @ConfigurableProperty(name = "dcmPixelRepresentation",defaultValue = "-1")
         int pixelRepresentation = -1;
 
         @ConfigurableProperty(name = "dcmDeviceName")
@@ -221,7 +218,6 @@ public class CompressionRule
             this.sopClasses = sopClasses;
             this.imageType = imgTypes;
             this.bodyPartExamined = bodyPartExamined;
-            this.pixelRepresentation = pixelRepresentation;
             calcWeight();
         }
 

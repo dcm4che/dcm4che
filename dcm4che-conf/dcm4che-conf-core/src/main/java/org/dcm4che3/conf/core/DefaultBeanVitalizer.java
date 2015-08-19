@@ -43,8 +43,10 @@ package org.dcm4che3.conf.core;
  * @author Roman K
  */
 
-import org.dcm4che3.conf.core.adapters.*;
 import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.adapters.ArrayTypeAdapter;
+import org.dcm4che3.conf.core.adapters.DefaultConfigTypeAdapters;
+import org.dcm4che3.conf.core.adapters.ReflectiveAdapter;
 import org.dcm4che3.conf.core.api.internal.*;
 
 import java.util.HashMap;
@@ -109,7 +111,7 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
      */
     @Override
     public <T> void configureInstance(T object, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        new ReflectiveAdapter<T>(object).fromConfigNode(configNode, new AnnotatedConfigurableProperty(configurableClass), this, null);
+        new ReflectiveAdapter<T>(object).fromConfigNode(configNode, new AnnotatedConfigurableProperty(configurableClass), this);
     }
 
     /**
@@ -151,10 +153,6 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
         // check if it is a reference
         if (property.getAnnotation(ConfigurableProperty.class)!=null && property.getAnnotation(ConfigurableProperty.class).isReference())
             return getReferenceTypeAdapter();
-
-        // check if it is an extensions map
-        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.getAnnotation(ConfigurableProperty.class).isExtensionsProperty())
-            return new NullToNullDecorator(new ExtensionTypeAdaptor());
 
         // delegate to default otherwise
         return lookupDefaultTypeAdapter(clazz);

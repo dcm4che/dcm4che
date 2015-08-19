@@ -98,7 +98,6 @@ public class HL7Application implements Serializable {
             collectionOfReferences = true)
     private List<Connection> conns = new ArrayList<Connection>(1);
 
-    @ConfigurableProperty(name = "hl7AppExtensions", isExtensionsProperty = true)
     private Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions =
             new HashMap<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension>();
 
@@ -113,14 +112,6 @@ public class HL7Application implements Serializable {
 
     public final Device getDevice() {
         return device;
-    }
-
-    public Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> getExtensions() {
-        return extensions;
-    }
-
-    public void setExtensions(Map<Class<? extends HL7ApplicationExtension>, HL7ApplicationExtension> extensions) {
-        this.extensions = extensions;
     }
 
     void setDevice(Device device) {
@@ -144,6 +135,15 @@ public class HL7Application implements Serializable {
         if (name.isEmpty())
             throw new IllegalArgumentException("name cannot be empty");
         this.applicationName = name;
+/*      TODO: inspect - commented out since this is done in HL7DeviceExtension.hl7apps setter
+        HL7DeviceExtension ext = device != null
+                ? device.getDeviceExtension(HL7DeviceExtension.class)
+                : null;
+        if (ext != null)
+            ext.removeHL7Application(this.name);
+        this.name = name;
+        if (ext != null)
+            ext.addHL7Application(this);*/
     }
 
     public Set<String> getAcceptedMessageTypesSet() {
@@ -177,7 +177,8 @@ public class HL7Application implements Serializable {
 
     public void setAcceptedSendingApplications(String... names) {
         acceptedSendingApplicationsSet.clear();
-        Collections.addAll(acceptedSendingApplicationsSet, names);
+        for (String name : names)
+            acceptedSendingApplicationsSet.add(name);
     }
 
     public String[] getAcceptedMessageTypes() {
@@ -187,7 +188,8 @@ public class HL7Application implements Serializable {
 
     public void setAcceptedMessageTypes(String... types) {
         acceptedMessageTypesSet.clear();
-        Collections.addAll(acceptedMessageTypesSet, types);
+        for (String name : types)
+            acceptedMessageTypesSet.add(name);
     }
 
     public boolean isInstalled() {

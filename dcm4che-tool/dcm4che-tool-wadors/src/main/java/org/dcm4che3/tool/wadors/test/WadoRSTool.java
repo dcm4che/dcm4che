@@ -44,17 +44,18 @@ import java.util.ArrayList;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.wadors.WadoRS;
+import org.dcm4che3.tool.wadors.WadoRS.Naming;
 
 /**
- * WADO-RS client tool for tests.
- * 
  * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * 
  */
-public class WadoRSTool implements TestTool {
+
+public class WadoRSTool implements TestTool{
 
     private ArrayList<String> mediaTypesWithTS = new ArrayList<String>();
-    private final String url;
-    private final File retrieveDir;
+    private String url;
+    private File retrieveDir;
     private TestResult result;
 
     public WadoRSTool(String url, File retrieveDir) {
@@ -65,28 +66,27 @@ public class WadoRSTool implements TestTool {
     public void wadoRS(String testDescription, boolean dumpHeader) throws IOException {
         long t1, t2;
         WadoRS wadors = new WadoRS(getUrl(),getRetrieveDir());
+        wadors.setNaming(Naming.UID);
         t1 = System.currentTimeMillis();
         wadors.setAcceptType(getMediaTypesWithTS().toArray(new String[getMediaTypesWithTS().size()]));
         wadors.setDumpHeaders(dumpHeader);
-        wadors.wadors();
+        wadors.wadors(wadors);
         t2 = System.currentTimeMillis();
         init(new WadoRSResult(testDescription, t2-t1, wadors.getResponse()));
     }
-
-    /**
-     * Add accepted media type and (optional) transfer syntax UID.
-     * 
-     * @param mediaType
-     *            media type (e.g. "application/dicom", "application/dicom+xml",
-     *            "application/json", "application/octet-stream",
-     *            "image/dicom+jpeg", ...)
-     * @param transferSyntax
-     *            optional transfer syntax UID to accept (please note that a
-     *            specifying a transfer syntax UID is not allowed for all media
-     *            types)
-     */
     public void addAcceptType(String mediaType, String transferSyntax) {
-        mediaTypesWithTS.add(mediaType + (transferSyntax != null ? ";" + transferSyntax : ""));
+        
+//        if(mediaType.contains("json"))
+//            mediaTypesWithTS.add(mediaType+(transferSyntax!=null?" ; transfer-syntax="+transferSyntax:""));
+//        else
+//        if(mediaType.contains("multipart")) {
+//            //append multipart/related
+//            mediaTypesWithTS.add(mediaType+(transferSyntax!=null?" ; transfer-syntax="+transferSyntax:""));
+//        }
+//        else {
+            mediaTypesWithTS.add(mediaType+(transferSyntax!=null?";transfer-syntax="+transferSyntax:""));
+//        }
+        
     }
 
     public ArrayList<String> getMediaTypesWithTS() {
@@ -106,8 +106,8 @@ public class WadoRSTool implements TestTool {
     }
 
     @Override
-    public void init(TestResult resultIn) {
-        this.result = resultIn;
+    public void init(TestResult result) {
+        this.result = result;
     }
 
     @Override

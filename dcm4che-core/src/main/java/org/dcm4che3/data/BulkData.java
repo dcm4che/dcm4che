@@ -64,8 +64,6 @@ public class BulkData implements Value {
     public final String uri;
     public final String uuid;
     public final boolean bigEndian;
-
-    // derived fields, not considered for equals/hashCode:
     private int uriPathEnd;
     private long offset;
     private int length = -1;
@@ -278,10 +276,6 @@ public class BulkData implements Value {
         return "BulkData[uuid=" + uuid + ", uri=" +  uri + ", bigEndian=" + bigEndian  + "]";
     }
 
-    public String getURIOrUUID() {
-        return (uri != null) ? uri : uuid;
-    }
-
     public File getFile() {
         try {
             return new File(new URI(uriWithoutQuery()));
@@ -376,38 +370,5 @@ public class BulkData implements Value {
             ois.readBoolean());
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        BulkData other = (BulkData) obj;
-        if (bigEndian != other.bigEndian)
-            return false;
-        if (uri == null) {
-            if (other.uri != null)
-                return false;
-        } else if (!uri.equals(other.uri))
-            return false;
-        if (uuid == null) {
-            if (other.uuid != null)
-                return false;
-        } else if (!uuid.equals(other.uuid))
-            return false;
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (bigEndian ? 1231 : 1237);
-        result = prime * result + ((uri == null) ? 0 : uri.hashCode());
-        result = prime * result + ((uuid == null) ? 0 : uuid.hashCode());
-        return result;
-    }
 
 }

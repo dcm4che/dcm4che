@@ -58,4 +58,6 @@ public interface HL7Configuration {
 
     String[] listRegisteredHL7ApplicationNames() throws ConfigurationException;
 
+    Collection<Class<? extends HL7ApplicationExtension>> getRegisteredHL7ApplicationExtensions();
+
 }

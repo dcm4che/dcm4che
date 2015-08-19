@@ -78,7 +78,7 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
     }
 
     @Override
-    public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 
@@ -91,7 +91,7 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
         T collection = (T) createCollectionDeserialized(property);
 
         for (Object o : configNode)
-            collection.add(elementAdapter.fromConfigNode(o, elementPseudoProperty, vitalizer, collection));
+            collection.add(elementAdapter.fromConfigNode(o, elementPseudoProperty, vitalizer));
 
         return collection;
     }

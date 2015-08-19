@@ -2,7 +2,6 @@
 /subsystem=osgi/capability=org.dcm4che.conf.api:add()
 /subsystem=osgi/capability=org.dcm4che.conf.api-hl7:add()
 /subsystem=osgi/capability=org.dcm4che.core:add()
-/subsystem=osgi/capability=org.dcm4che.dict-private:add()
 /subsystem=osgi/capability=org.dcm4che.emf:add()
 /subsystem=osgi/capability=org.dcm4che.hl7:add()
 /subsystem=osgi/capability=org.dcm4che.image:add()

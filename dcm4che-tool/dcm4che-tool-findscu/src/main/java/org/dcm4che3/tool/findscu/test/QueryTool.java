@@ -62,20 +62,17 @@ import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
+import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.findscu.FindSCU;
 import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
 public class QueryTool implements TestTool {
-
-    private static final Logger LOG = LoggerFactory.getLogger(QueryTool.class);
 
     private String host;
     private int port;
@@ -112,15 +109,8 @@ public class QueryTool implements TestTool {
         this.sourceAETitle = sourceAETitle;
         this.conn = conn;
         this.queryLevel = queryLevel;
-
-        InformationModel queryModelResolved = InformationModel.StudyRoot;
-        try {
-            queryModelResolved = InformationModel.valueOf(queryModel);
-        } catch (IllegalArgumentException ignored) {
-            LOG.warn("Query model {} does not exist, using StudyRoot", queryModelResolved);
-        }
-
-        this.queryModel = queryModelResolved;
+        this.queryModel = queryModel.equalsIgnoreCase("StudyRoot")
+                ?InformationModel.StudyRoot: InformationModel.PatientRoot;
         this.relational = relational;
     }
 
@@ -159,7 +149,7 @@ public class QueryTool implements TestTool {
         if(relational)
             queryOptions.add(QueryOption.RELATIONAL);
         
-        main.setInformationModel(queryModel, IVR_LE_FIRST, queryOptions);
+        main.setInformationModel(queryModel, IVR_LE_FIRST,queryOptions);
         main.addLevel(queryLevel);
 //        if (relational) {
 //            main.getAAssociateRQ()
@@ -199,14 +189,6 @@ public class QueryTool implements TestTool {
     public void addQueryTag(int tag, String value) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null);
         queryatts.setString(tag, vr, value);
-    }
-
-    /**
-     * adds a new private query tag. For convenience, the VR of the tag is passed as well
-     * (so that it's not necessary to have the private dictionary on client side)
-     */
-    public void addQueryTag(String privateCreator, int tag, VR vr, String value) {
-        queryatts.setString(privateCreator, tag, vr, value);
     }
 
     public void clearQueryKeys() {
@@ -265,9 +247,4 @@ public class QueryTool implements TestTool {
     public String getQueryLevel() {
         return queryLevel;
     }
-    
-    public void setQueryLevel(String level) {
-        queryLevel = level;
-    }
-
 }

@@ -44,7 +44,6 @@ import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,19 +55,23 @@ import java.util.Map;
  */
 public class DefaultReferenceAdapter<T> extends DefaultConfigTypeAdapters.CommonAbstractTypeAdapter<T> {
 
+    private BeanVitalizer vitalizer;
+    private Configuration config;
+
     public DefaultReferenceAdapter(BeanVitalizer vitalizer, Configuration config) {
         super("string");
         metadata.put("class", "Reference");
         //TODO: add regex..
 
+        this.vitalizer = vitalizer;
+        this.config = config;
     }
 
     @Override
-    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         // treat configNode as path, load the node at that path, create an instance from it
-        Configuration config = vitalizer.getContext(ConfigurationManager.class).getConfigurationStorage();
         Map<String, Object> referencedNode = (Map<String, Object>) config.getConfigurationNode(configNode, property.getRawClass());
-        if (referencedNode == null) throw new ConfigurationException("Referenced node '" + configNode + "' not found");
+        if (referencedNode == null) throw new ConfigurationException("Referenced node '"+configNode+"' not found");
         return (T) vitalizer.newConfiguredInstance(referencedNode, property.getRawClass());
     }
 

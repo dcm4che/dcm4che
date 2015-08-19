@@ -53,7 +53,7 @@ public class PropertyTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
     }
 
     @Override
-    public Property fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public Property fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         return new Property(configNode);
     }
 

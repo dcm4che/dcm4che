@@ -68,6 +68,10 @@ public class WadoURIResponse extends SimpleHTTPResponse{
         return retrievedInstances.get(0);
     }
 
+    public List<String> getRetrievedInstances() {
+        return retrievedInstances;
+    }
+
     public void addRetrievedInstance(String instancePath) {
         retrievedInstances.add(instancePath);
     }

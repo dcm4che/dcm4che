@@ -38,40 +38,23 @@
 
 package org.dcm4che3.net;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.net.proxy.ProxyManager;
-import org.dcm4che3.net.proxy.ProxyService;
+import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.*;
+import java.net.*;
+import java.security.GeneralSecurityException;
+import java.util.*;
 
 /**
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
@@ -141,12 +124,6 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dcmHTTPProxy")
     private String httpProxy;
-    
-    @ConfigurableProperty(name = "dcmHTTPProxyProviderName")
-    private String httpProxyProviderName;
-
-    @ConfigurableProperty(name = "dcmHTTPProxyProviderVersion")
-    private String httpProxyProviderVersion;
 
     @ConfigurableProperty(
             name = "dicomPort",
@@ -233,10 +210,7 @@ public class Connection implements Serializable {
     )
     private Protocol protocol = Protocol.DICOM;
 
-    private boolean needUpdateProxyManager = false;
-    private ProxyManager proxyManager = null;
-    
-        private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
+    private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
     private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
             new EnumMap<Protocol, UDPProtocolHandler>(Protocol.class);
@@ -426,37 +400,6 @@ public class Connection implements Serializable {
         this.protocol = protocol;
         needRebind();
     }
-    
-    public ProxyManager getProxyManager() {
-                updateProxyManager();
-                if(this.proxyManager == null) {
-                        return ProxyService.getInstance().getDefaultProxyManager();
-                } else {
-                        return this.proxyManager;
-                }
-        }
-
-    private void updateProxyManager() {
-        if(this.needUpdateProxyManager) {
-                // Get manager from Service with provider name and version
-                this.proxyManager = ProxyService.getInstance()
-                                .getProxyManager(httpProxyProviderName, httpProxyProviderVersion);
-                // Proxy Manager updated
-                this.needUpdateProxyManager = false;
-        }
-    }
-
-        public void setProxyManager(final ProxyManager proxyManager) {
-                if(proxyManager == null) {
-                        this.httpProxyProviderName = "";
-                        this.httpProxyProviderVersion = "";
-                } else {
-                        this.httpProxyProviderName = proxyManager.getProviderName();
-                        this.httpProxyProviderVersion = proxyManager.getVersion();
-                }
-                this.proxyManager = proxyManager;
-                this.needUpdateProxyManager = false;
-        }
 
     boolean isRebindNeeded() {
         return rebindNeeded;
@@ -561,22 +504,6 @@ public class Connection implements Serializable {
         this.httpProxy = proxy;
     }
 
-    public void setHttpProxyProviderName(final String httpProxyProviderName) {
-        if(this.httpProxyProviderName == httpProxyProviderName)
-                return;
-        
-                this.httpProxyProviderName = httpProxyProviderName;
-                this.needUpdateProxyManager = true;
-        }
-    
-    public void setHttpProxyProviderVersion(String httpProxyProviderVersion) {
-                if(this.httpProxyProviderVersion == httpProxyProviderVersion)
-                        return;
-                
-        this.httpProxyProviderVersion = httpProxyProviderVersion;
-        this.needUpdateProxyManager = true;
-        }
-    
     public final boolean useHttpProxy() {
         return httpProxy != null;
     }
@@ -1128,8 +1055,8 @@ public class Connection implements Serializable {
                 int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
                 s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
                 try {
-                        getProxyManager().doProxyHandshake(s, remoteHostname, remotePort, userauth,
-                                        connectTimeout);
+                    doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                            connectTimeout);
                 } catch (IOException e) {
                     SafeClose.close(s);
                     throw e;
@@ -1174,6 +1101,65 @@ public class Connection implements Serializable {
 
     public Listener getListener() {
         return listener;
+    }
+
+    private void doProxyHandshake(Socket s, String hostname, int port,
+                                  String userauth, int connectTimeout) throws IOException {
+
+        StringBuilder request = new StringBuilder(128);
+        request.append("CONNECT ")
+                .append(hostname).append(':').append(port)
+                .append(" HTTP/1.1\r\nHost: ")
+                .append(hostname).append(':').append(port);
+        if (userauth != null) {
+            byte[] b = userauth.getBytes("UTF-8");
+            char[] base64 = new char[(b.length + 2) / 3 * 4];
+            Base64.encode(b, 0, b.length, base64, 0);
+            request.append("\r\nProxy-Authorization: basic ")
+                    .append(base64);
+        }
+        request.append("\r\n\r\n");
+        OutputStream out = s.getOutputStream();
+        out.write(request.toString().getBytes("US-ASCII"));
+        out.flush();
+
+        s.setSoTimeout(connectTimeout);
+        @SuppressWarnings("resource")
+        String response = new HTTPResponse(s).toString();
+        s.setSoTimeout(0);
+        if (!response.startsWith("HTTP/1.1 2"))
+            throw new IOException("Unable to tunnel through " + s
+                    + ". Proxy returns \"" + response + '\"');
+    }
+
+    private static class HTTPResponse extends ByteArrayOutputStream {
+
+        private final String rsp;
+
+        public HTTPResponse(Socket s) throws IOException {
+            super(64);
+            InputStream in = s.getInputStream();
+            boolean eol = false;
+            int b;
+            while ((b = in.read()) != -1) {
+                write(b);
+                if (b == '\n') {
+                    if (eol) {
+                        rsp = new String(super.buf, 0, super.count, "US-ASCII");
+                        return;
+                    }
+                    eol = true;
+                } else if (b != '\r') {
+                    eol = false;
+                }
+            }
+            throw new IOException("Unexpected EOF from " + s);
+        }
+
+        @Override
+        public String toString() {
+            return rsp;
+        }
     }
 
     private SSLSocket createTLSSocket(Socket s, Connection remoteConn)
@@ -1274,7 +1260,8 @@ public class Connection implements Serializable {
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
         setConnectionInstalled(from.connectionInstalled);
-        setProxyManager(from.getProxyManager());
+
         reconfigureExtensions(from);
     }
+
 }

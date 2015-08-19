@@ -76,16 +76,18 @@ import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONReader.Callback;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
- * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * QIDO-RS client
  * 
+ * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
-
-public class QidoRS{
+public class QidoRS {
     
     private static final Logger LOG = LoggerFactory.getLogger(QidoRS.class);
     
@@ -98,7 +100,7 @@ public class QidoRS{
     
     private Templates xsltTemplates;
     
-    private HashMap<String, String> query =new HashMap<String, String>();
+    private final HashMap<String, String> query =new HashMap<String, String>();
     
     private String[] includeField;
     
@@ -136,7 +138,7 @@ public class QidoRS{
     
     private boolean runningModeTest;
 
-    private List<Attributes> responseAttrs = new ArrayList<Attributes>();
+    private final List<Attributes> responseAttrs = new ArrayList<Attributes>();
 
     private long timeFirst;
 
@@ -288,6 +290,8 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
 }
     private static String sendRequest(URL url, final QidoRS main) throws IOException {
         
+        LOG.info("URL: {}", url);
+
         HttpURLConnection connection = (HttpURLConnection) url
                 .openConnection();
         
@@ -364,12 +368,17 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
         
         ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
 
-        if(!main.returnAll)
-            for(int i=0; i< main.returnAttrs.tags().length;i++) {
-                int tag = main.returnAttrs.tags()[i];
-                if(main.returnAttrs.getValue(tag) == null)
-                    url=addParam(url,"includefield",keyWordOf(main, dict, tag, main.returnAttrs));
+        if (!main.returnAll) {
+            if (main.returnAttrs != null) {
+                for (int tag : main.returnAttrs.tags()) {
+                    if (!TagUtils.isPrivateCreator(tag)) {
+                        url = addParam(url, "includefield", ElementDictionary.keywordOf(tag, main.returnAttrs.getPrivateCreator(tag)));
+                    }
+                }
             }
+        } else {
+            url = addParam(url, "includefield", "all");
+        }
 
         if(main.getQueryAttrs() != null) {
             for(int i=0; i< main.queryAttrs.tags().length;i++) {

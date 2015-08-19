@@ -39,14 +39,12 @@ package org.dcm4che3.tool.stowrs.test;
 
 import java.util.List;
 
-import org.dcm4che3.tool.common.SimpleHTTPResponse;
 import org.dcm4che3.tool.common.test.TestResult;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
  */
-
 public class StowRSResult implements TestResult {
 
     private String testDescription;

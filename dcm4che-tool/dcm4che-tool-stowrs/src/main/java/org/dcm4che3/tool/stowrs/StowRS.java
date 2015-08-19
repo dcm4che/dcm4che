@@ -38,38 +38,25 @@
 
 package org.dcm4che3.tool.stowrs;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
 import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonReaderFactory;
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.ws.rs.core.MediaType;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerConfigurationException;
@@ -81,9 +68,10 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Attributes.Visitor;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.SAXReader;
@@ -92,42 +80,45 @@ import org.dcm4che3.json.JSONReader;
 import org.dcm4che3.json.JSONWriter;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.stowrs.test.StowRSResponse;
+import org.dcm4che3.tool.stowrs.test.StowRSTool.StowMetaDataType;
 import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StreamUtils;
 import org.dcm4che3.ws.rs.MediaTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
+ * STOW-RS client.
+ * 
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
 public class StowRS {
-    private String singleFrameMultipleFragmentsURI;
-    static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(StowRS.class);
+
+    private static final String MULTIPART_BOUNDARY = "-------gc0p4Jq0M2Yt08jU534c0p";
+
     private Attributes keys = new Attributes();
     private static Options opts;
     private String URL;
     private final List<StowRSResponse> responses = new ArrayList<StowRSResponse>();
-    private static ResourceBundle rb = ResourceBundle
-            .getBundle("org.dcm4che3.tool.stowrs.messages");
+    private static ResourceBundle rb = ResourceBundle.getBundle("org.dcm4che3.tool.stowrs.messages");
 
-    private boolean multipleFragments;
-    private String mediaType;
+    private StowMetaDataType mediaType;
     private String transferSyntax;
     private List<File> files = new ArrayList<File>();
+
     public StowRS() {
+        // empty
     }
 
-    public StowRS(Attributes overrideAttrs, String mediaType, List<File> files, String url, String ts) {
+    public StowRS(Attributes overrideAttrs, StowMetaDataType mediaType, List<File> files, String url, String ts) {
         this.URL = url;
         this.keys = overrideAttrs;
-        transferSyntax = ts;
-        if (!mediaType.equalsIgnoreCase("NO_METADATA_DICOM"))
-            this.mediaType = mediaType;
+        this.transferSyntax = ts;
+        this.mediaType = mediaType;
         this.files = files;
     }
 
@@ -138,147 +129,191 @@ public class StowRS {
 
             cl = parseComandLine(args);
             StowRS instance = new StowRS();
-            if(cl.hasOption("m"))
-            instance.keys = configureKeys(instance, cl);
+            if (cl.hasOption("m"))
+                instance.keys = configureKeys(instance, cl);
             if (!cl.hasOption("u")) {
                 throw new IllegalArgumentException("Missing url");
             } else {
                 instance.URL = cl.getOptionValue("u");
             }
+            
             if (cl.hasOption("t")) {
-                if(!cl.hasOption("ts")) {
+                if (!cl.hasOption("ts")) {
                     throw new MissingArgumentException("Missing option required option ts when sending metadata");
-                }
-                else {
+                } else {
                     instance.setTransferSyntax(cl.getOptionValue("ts"));
                 }
-                instance.mediaType = cl.getOptionValue("t");
-                
-                for(Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
-                    instance.files.add(new File(iter.next()));
-                }
-                
-                
-                if (instance.files == null)
-                    throw new IllegalArgumentException("Missing metadata files");
-                }
-            instance.stow();
-            
-            if (instance.mediaType == null) {
-                for(Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
-                    instance.files.add(new File(iter.next()));
-                }
-                if (instance.files == null)
-                    throw new IllegalArgumentException(
-                            "No dicom files specified");
-                for (File metadataFile : instance.files) {
-                    instance.addResponse(sendDicomFile(instance, metadataFile));
-                    LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
+
+                String mediaTypeString = cl.getOptionValue("t");
+                if ("JSON".equalsIgnoreCase(mediaTypeString)) {
+                    instance.mediaType = StowMetaDataType.JSON;
+                } else if ("XML".equalsIgnoreCase(mediaTypeString)) {
+                    instance.mediaType = StowMetaDataType.XML;
+                } else {
+                    throw new IllegalArgumentException("Bad Type " + mediaTypeString + " specified for metadata, specify either XML or JSON");
                 }
             }
+            else {
+                instance.mediaType = StowMetaDataType.NO_METADATA_DICOM;
+            }
+
+            for (Iterator<String> iter = cl.getArgList().iterator(); iter.hasNext();) {
+                instance.files.add(new File(iter.next()));
+            }
+
+            if (instance.files.isEmpty())
+                throw new IllegalArgumentException("Missing files");
+            
+            instance.stow();
+
         } catch (Exception e) {
             if (!cl.hasOption("u")) {
                 LOG.error("stowrs: missing required option -u");
                 LOG.error("Try 'stowrs --help' for more information.");
                 System.exit(2);
             } else {
-                LOG.error("Error: \n");
+                LOG.error("Error: \n", e);
                 e.printStackTrace();
             }
 
         }
     }
 
-    public void stow() throws IOException, InterruptedException {
-        Attributes metadata = new Attributes();
-        Attributes fmi;
-        for (File metadataFile : files)
-            if (mediaType == null) {
-                if (files == null)
-                    throw new IllegalArgumentException(
-                            "No dicom files specified");
-                addResponse(sendDicomFile(this, metadataFile));
-                    LOG.info(metadataFile.getPath() + " with size : " + metadataFile.length());
-            }
-            else if (mediaType.equalsIgnoreCase("JSON")) {
-                try {
-                    metadata = parseJSON(metadataFile.getPath());
-                    String ts = transferSyntax;
-                    ArrayList<BulkDataChunk> bulkFiles = new ArrayList<BulkDataChunk>();
-                    JsonObject object = loadJSON(metadataFile);
-                    bulkFiles = extractBlkDataFiles(object);
-                    boolean combine = false;
-                    if(isMultiFrame(metadata)) {
-                        //multiply frames
-                        if(multipleFragments) {
-                            //multiple fragment - reject
-                            LOG.error("Compressed multiframe multi fragment"
-                                    + " is not supported by stow in the DICOM standard");
-                            return;
-                        }
-                        else {
-                            //no fragments, just bulkdatauri
-                            combine = false;
-                        }
-                    }
-                    else {
-                        //single frame
-                        singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
-                        metadata.setValue(Tag.PixelData, multipleFragments?VR.OB:VR.OW, new BulkData(null
-                                , singleFrameMultipleFragmentsURI,
-                                (ts.equalsIgnoreCase("1.2.840.10008.1.2.1.99") || ts.equalsIgnoreCase("1.2.840.10008.1.2.2"))?true : false));
-                        combine = true;
-                    }
-                    addResponse(sendMetaDataAndBulkData(false, this, metadata, bulkFiles, combine));
-                } catch (Exception e) {
-                    LOG.error("error parsing metadata file");
-                    return;
-                }
-            }
-            else if (mediaType.equalsIgnoreCase("XML")) {
+    public void stow() {
 
-                try {
-                    ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
-                    SAXParserFactory.newInstance().newSAXParser().parse(metadataFile,ch);
-                    fmi = ch.getFileMetaInformation();
-                    metadata.addAll(fmi);
-                    String ts = transferSyntax;
-                    ArrayList<BulkDataChunk> bulkFiles = new ArrayList<BulkDataChunk>();
-                    Document doc = loadXml(metadataFile);
-                    bulkFiles = extractBlkDataFiles(doc);
-                    boolean combine = false;
-                    if(isMultiFrame(metadata)) {
-                        //multiply frames
-                        if(doc.getElementsByTagName("DataFragment").getLength() > 1) {
-                            //multiple fragment - reject
-                            LOG.error("Compressed multiframe multi fragment"
-                                    + " is not supported by stow in the DICOM standard");
-                            return;
+        for (File file : files) {
+            
+            LOG.info("Sending {}", file);
+            
+            if (mediaType == StowMetaDataType.NO_METADATA_DICOM) {
+                stowDicomFile(file);
+            } else {
+                stowMetaDataAndBulkData(file);
+            }
+        }
+    }
+
+    private void stowMetaDataAndBulkData(File file) {
+
+        Attributes metadata;
+        if (mediaType == StowMetaDataType.JSON) {
+            try {
+                metadata = parseJSON(file.getPath());
+            } catch (Exception e) {
+                LOG.error("error parsing metadata JSON file {}", file);
+                return;
+            }
+        } else if (mediaType == StowMetaDataType.XML) {
+
+            metadata = new Attributes();
+            try {
+                ContentHandlerAdapter ch = new ContentHandlerAdapter(metadata);
+                SAXParserFactory.newInstance().newSAXParser().parse(file, ch);
+                Attributes fmi = ch.getFileMetaInformation();
+                if (fmi != null)
+                	metadata.addAll(fmi);
+            } catch (Exception e) {
+                LOG.error("error parsing metadata XML file {}", file);
+                return;
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported media type " + mediaType);
+        }
+
+        ExtractedBulkData extractedBulkData = extractBulkData(metadata);
+
+        if (isMultiFrame(metadata)) {
+
+            if (extractedBulkData.pixelDataBulkData.size() > 1) {
+
+                // multiple fragments - reject
+                LOG.error("Compressed multiframe with multiple fragments in file {} is not supported by STOW-RS in the current DICOM standard (2015b)", file);
+
+                return;
+            }
+        }
+
+        if (!extractedBulkData.pixelDataBulkData.isEmpty()) {
+
+            // replace the pixel data bulk data URI, because we might have to merge multiple fragments into one
+
+            metadata.setValue(Tag.PixelData, metadata.getVR(Tag.PixelData), new BulkData(null, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData.get(0).bigEndian));
+        }
+
+        try {
+            addResponse(sendMetaDataAndBulkData(metadata, extractedBulkData));
+        } catch (IOException e) {
+            LOG.error("Error for file {}", file, e);
+        }
+    }
+
+    private void stowDicomFile(File file) {
+        try {
+
+            addResponse(sendDicomFile(URL, file));
+            LOG.info(file.getPath() + " with size : " + file.length());
+
+        } catch (IOException e) {
+            LOG.error("Error for file {}", file, e);
+        }
+    }
+
+    private static class ExtractedBulkData {
+        final List<BulkData> pixelDataBulkData = new ArrayList<BulkData>();
+        final List<BulkData> otherBulkDataChunks = new ArrayList<BulkData>();
+
+        final String pixelDataBulkDataURI = createRandomBulkDataURI();
+    }
+
+    private static String createRandomBulkDataURI() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private ExtractedBulkData extractBulkData(Attributes dataset) {
+
+        final ExtractedBulkData extractedBulkData = new ExtractedBulkData();
+
+        try {
+            dataset.accept(new Visitor() {
+
+                @Override
+                public boolean visit(Attributes attrs, int tag, VR vr, Object value) {
+
+                    if (attrs.isRoot() && tag == Tag.PixelData) {
+                        if (value instanceof BulkData) {
+                            extractedBulkData.pixelDataBulkData.add((BulkData) value);
+                        } else if (value instanceof Fragments) {
+                            Fragments frags = (Fragments) value;
+                            if (frags.size() > 1 && frags.get(1) instanceof BulkData) {
+                                // please note that we are ignoring the first fragment (offset table) here
+                                // (it's okay as we are anyways not supporting fragmented multi-frames at the moment)
+                                for (int i = 1; i < frags.size(); i++) {
+                                    if (frags.get(i) instanceof BulkData) {
+                                        extractedBulkData.pixelDataBulkData.add((BulkData) frags.get(i));
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            //no fragments, just bulk data uri
-                            combine = false;
+                    } else {
+                        // other bulk data tags (not top-level pixel data)
+
+                        if (value instanceof BulkData) {
+                            extractedBulkData.otherBulkDataChunks.add((BulkData) value);
                         }
+
+                        // Note: at the moment we support fragments only for top-level PixelData.
+                        // Maybe we should also support it for others, seems to be at least allowed for PixelData inside sequences
+                        // (see DICOM PS3.5 2015b A.4 Transfer Syntaxes For Encapsulation of Encoded Pixel Data)
                     }
-                    else {
-                        //single frame
-                        singleFrameMultipleFragmentsURI = UUID.randomUUID().toString().replaceAll("[a-z]*", "").replace("-", "");
-                        metadata.setValue(Tag.PixelData, doc.getElementsByTagName("DataFragment").getLength() > 1?VR.OB:VR.OW, new BulkData(null
-                                , singleFrameMultipleFragmentsURI,
-                                (ts.equalsIgnoreCase("1.2.840.10008.1.2.1.99") || ts.equalsIgnoreCase("1.2.840.10008.1.2.2"))?true : false));
-                        LOG.info("Single frame multiple fragments, combining fragments");
-                        combine = true;
-                    }
-                    addResponse(sendMetaDataAndBulkData(true, this, metadata, bulkFiles, combine));
-                } catch (Exception e) {
-                    LOG.error("error parsing metadata file");
-                    return;
+
+                    return true;
                 }
-            }
-            else {
-                throw new IllegalArgumentException(
-                        "Bad Type specified for metadata, specify either XML or JSON");
-            }
+            }, true);
+        } catch (Exception e) {
+            throw new RuntimeException(e); // should not happen
+        }
+
+        return extractedBulkData;
     }
 
     public List<StowRSResponse> getResponses() {
@@ -289,52 +324,11 @@ public class StowRS {
         this.responses.add(response);
     }
 
-    private static StowRSResponse sendDicomFile(StowRS instance, File f) throws IOException, InterruptedException {
-        return doRequestDICOM(instance.URL, f);
-}
-
-    private static MediaType forTransferSyntax(String ts) {
-        if (UID.ExplicitVRLittleEndian.equals(ts)
-                || UID.ImplicitVRLittleEndian.equals(ts))
-            return MediaType.APPLICATION_OCTET_STREAM_TYPE;
-
-        if (UID.JPEGLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_TYPE;
-
-        if (UID.JPEGLSLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_LS_TYPE;
-
-        if (UID.JPEG2000LosslessOnly.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-
-        if (UID.JPEG2000Part2MultiComponentLosslessOnly.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JPX_TYPE;
-
-        if (UID.RLELossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_RLE_TYPE;
-
-        if (UID.JPEGBaseline1.equals(ts) || UID.JPEGExtended24.equals(ts)
-                || UID.JPEGLosslessNonHierarchical14.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_TYPE;
-        else if (UID.JPEGLSLossyNearLossless.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_LS_TYPE;
-        else if (UID.JPEG2000.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-        else if (UID.JPEG2000Part2MultiComponent.equals(ts))
-            return MediaTypes.IMAGE_DICOM_JPEG_JP2_TYPE;
-        else if (UID.MPEG2.equals(ts)
-                || UID.MPEG2MainProfileHighLevel.equals(ts))
-            return MediaTypes.VIDEO_MPEG_TYPE;
-        else if (UID.MPEG4AVCH264HighProfileLevel41.equals(ts)
-                || UID.MPEG4AVCH264BDCompatibleHighProfileLevel41.equals(ts))
-            return MediaTypes.VIDEO_MP4_TYPE;
-        else
-            throw new IllegalArgumentException("ts: " + ts);
-    }
-
     private static Attributes parseJSON(String fname) throws Exception {
         Attributes attrs = new Attributes();
-        attrs.addAll(parseJSON(fname, attrs));
+        Attributes fmi = parseJSON(fname, attrs);
+        if (fmi != null)
+        	attrs.addAll(fmi);
         return attrs;
     }
 
@@ -361,195 +355,61 @@ public class StowRS {
         return temp;
     }
 
-    private static ArrayList<BulkDataChunk> extractBlkDataFiles(Document doc)
-            throws URISyntaxException {
-        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
-        NodeList list = doc.getElementsByTagName("BulkData");
-        for (int i = 0; i < list.getLength(); i++) {
-            String fullUri = list.item(i).getAttributes().item(0)
-                    .getNodeValue();
-            String offset = fullUri.replaceAll(".*\\?", "")
-                    .replaceAll("\\&.*", "").replaceAll(list.getLength() == 1?"offset=":"offsets=", "");
-            
-            String length = fullUri.replaceAll(".*\\?", "")
-                    .replaceAll(".*\\&", "").replaceAll(list.getLength() == 1?"length=":"lengths=", "");
-            String uri = fullUri.split("\\?")[0];
-            
-            for(int j=0; j<offset.split(",").length; j++) {
-                String len = length.split(",")[j];
-                String ofs = offset.split(",")[j];
-                if(j==0) {
-                    len = len.replace("lengths=", "");
-                    len = len.replace("length=", "");
-                    ofs = ofs.replace("offsets=", "");
-                    ofs = ofs.replace("offset=", "");
-                }
-                    
-                if(Integer.parseInt(len) > 0) {
-                    files.add(new BulkDataChunk(fullUri, uri, ofs+"", len,
-                            childOfPixelData(list.item(i))));
-                }
-            }
-            
-        }
-        return files;
-    }
-
-    private ArrayList<BulkDataChunk> extractBlkDataFiles(
-            JsonObject object) throws URISyntaxException {
-        ArrayList<BulkDataChunk> files = new ArrayList<BulkDataChunk>();
-        for (Entry<String, JsonValue> entry : object.entrySet()) {
-            if (entry.getValue().getValueType().equals(ValueType.OBJECT)) {
-                JsonObject entryObject = (JsonObject) entry.getValue();
-                if (entryObject.containsKey("BulkDataURI")) {
-
-                    String fullUri = entryObject.getString("BulkDataURI");
-                    
-                    if(fullUri.contains(","))
-                        multipleFragments = true;
-                    
-                    String offset = fullUri.replaceAll(".*\\?", "")
-                            .replaceAll("\\&.*", "").replaceAll(multipleFragments?"offsets=":"offset=", "");
-                    
-                    String length = fullUri.replaceAll(".*\\?", "")
-                            .replaceAll(".*\\&", "").replaceAll(multipleFragments?"lengths=":"length=", "");
-                    String uri = fullUri.split("\\?")[0];
-                    if(multipleFragments)
-                        for(int j=0; j<offset.split(",").length; j++) {
-                            String len = length.split(",")[j];
-                            String ofs = offset.split(",")[j];
-                            if(Integer.parseInt(len) > 0) {
-                                files.add(new BulkDataChunk(fullUri, uri, ofs, len,
-                                        childOfPixelData(object.getJsonObject("7FE00010"),
-                                                fullUri)));
-                            }
-                        }
-                    else
-                    files.add(new BulkDataChunk(fullUri, uri, offset, length,
-                            childOfPixelData(object.getJsonObject("7FE00010"),
-                                    fullUri)));
-                } 
-                }
-            }
-        return files;
-    }
-
-    private static boolean childOfPixelData(Node item) {
-        if (item.getParentNode().getNodeName().equalsIgnoreCase("DataFragment"))
-            return childOfPixelData(item.getParentNode());
-        return item.getParentNode().getAttributes().getNamedItem("keyword")
-                .getNodeValue().equalsIgnoreCase("PixelData") ? true : false;
-    }
-
-    private static boolean childOfPixelData(JsonObject pixelData,
-            String uri) {
-        if (pixelData == null)
-            return false;
-        else if (pixelData.containsKey("BulkDataURI")) {
-            String pixelDatauri =  pixelData.get("BulkDataURI").toString().replace("\"", "");
-            if(pixelDatauri.equalsIgnoreCase(uri))
-            return true;
-        }
-        return false;
-    }
-
-    private static Document loadXml(File metadataFile) {
-        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory
-                .newInstance();
-        try {
-            DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(metadataFile);
-            doc.getDocumentElement().normalize();
-            return doc;
-        } catch (ParserConfigurationException e) {
-            throw new IllegalStateException("Error parsing the XML", e);
-        } catch (SAXException e) {
-            throw new IllegalStateException("Error parsing the XML", e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Error accessing the XML", e);
-        }
-    }
-
-    private static JsonObject loadJSON(File metadataFile)
-            throws FileNotFoundException {
-        Map<String, Object> config = new HashMap<String, Object>();
-        // if you need pretty printing
-        config.put("javax.json.stream.JsonGenerator.prettyPrinting",
-                Boolean.valueOf(true));
-        JsonReaderFactory readerFactory = Json.createReaderFactory(config);
-        JsonReader reader = readerFactory.createReader(new FileInputStream(
-                metadataFile));
-        JsonObject doc = reader.readObject();
-        return doc;
-    }
-
     private static boolean isMultiFrame(Attributes metadata) {
         return metadata.contains(Tag.NumberOfFrames)
                 && metadata.getInt(Tag.NumberOfFrames, 1) > 1;
     }
 
-    private static void coerceattributes(Attributes metadata, StowRS instance) {
-        if (instance.keys.tags().length > 0)
+    private static void coerceAttributes(Attributes metadata, Attributes keys) {
+        if (!keys.isEmpty()) {
             LOG.info("Coercing the following keys from specified attributes to metadata:");
-        metadata.update(instance.keys, new Attributes());
-        LOG.info(instance.keys.toString());
+            metadata.update(keys, null);
+            LOG.info(keys.toString());
+        }
     }
 
-    private static StowRSResponse sendMetaDataAndBulkData(Boolean xml, StowRS instance,
-            Attributes metadata, ArrayList<BulkDataChunk> files,
-            boolean combined) throws IOException {
+    private StowRSResponse sendMetaDataAndBulkData(Attributes metadata, ExtractedBulkData extractedBulkData) throws IOException {
         Attributes responseAttrs = new Attributes();
-        int rspCode = 0;
-        String rspMessage = null;
-        String contentTypeBulkData;
-        String bulkDataTransferSyntax;
-        URL newUrl = null;
+
+        URL newUrl;
         try {
-            newUrl = new URL(instance.URL);
+            newUrl = new URL(URL);
         } catch (MalformedURLException e2) {
-            LOG.error("malformed url" + e2.getStackTrace().toString());
+            throw new RuntimeException(e2);
         }
-        String boundary = "-------gc0p4Jq0M2Yt08jU534c0p";
-        HttpURLConnection connection = (HttpURLConnection) newUrl
-                .openConnection();
+
+        HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
         connection.setChunkedStreamingMode(2048);
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setInstanceFollowRedirects(false);
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type",
-                "multipart/related; type="+(xml?"application/dicom+xml":"application/json")+"; boundary="
-                        + boundary);
-        bulkDataTransferSyntax = "transfer-syntax="
-                + instance.transferSyntax;
-        MediaType type = getBulkDataMediaType(metadata);
-        contentTypeBulkData = type.getSubtype() != null ? type.getType() + "/"
-                + type.getSubtype() : type.getType();
+
+        String metaDataType = mediaType == StowMetaDataType.XML ? "application/dicom+xml" : "application/json";
+        connection.setRequestProperty("Content-Type", "multipart/related; type=" + metaDataType + "; boundary=" + MULTIPART_BOUNDARY);
+        String bulkDataTransferSyntax = "transfer-syntax=" + transferSyntax;
+
+        MediaType pixelDataMediaType = getBulkDataMediaType(metadata);
+        connection.setRequestProperty("Accept", "application/dicom+xml");
         connection.setRequestProperty("charset", "utf-8");
         connection.setUseCaches(false);
 
-        DataOutputStream wr;
+        DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
 
-        wr = new DataOutputStream(connection.getOutputStream());
+        // write metadata
+        wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
+
+        if (mediaType == StowMetaDataType.XML)
+            wr.writeBytes("Content-Type: application/dicom+xml; " + bulkDataTransferSyntax + " \r\n");
+        else
+            wr.writeBytes("Content-Type: application/json; " + bulkDataTransferSyntax + " \r\n");
+        wr.writeBytes("\r\n");
+
+        coerceAttributes(metadata, keys);
 
         try {
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            // write metadata
-            if(xml)
-                wr.writeBytes("Content-Type: application/dicom+xml; "
-                    + bulkDataTransferSyntax + " \r\n");
-            else
-                wr.writeBytes("Content-Type: application/json; "
-                    + bulkDataTransferSyntax + " \r\n");
-            wr.writeBytes("\r\n");
-        } catch (IOException e1) {
-            LOG.error("Error writing metadata");
-        }
-
-        coerceattributes(metadata, instance);
-        try {
-            if(xml)
-            SAXTransformer.getSAXWriter(new StreamResult(wr)).write(metadata);
+            if (mediaType == StowMetaDataType.XML)
+                SAXTransformer.getSAXWriter(new StreamResult(wr)).write(metadata);
             else {
                 JsonGenerator gen = Json.createGenerator(wr);
                 JSONWriter writer = new JSONWriter(gen);
@@ -557,223 +417,145 @@ public class StowRS {
                 gen.flush();
             }
         } catch (TransformerConfigurationException e) {
-            LOG.error("Error transforming xml" + e.getStackTrace().toString());
+            throw new IOException(e);
         } catch (SAXException e) {
-            // exception wrapper
+            throw new IOException(e);
         }
 
-        if (!combined)
-            for (BulkDataChunk chunk : files) {
-                try {
-                    wr.writeBytes("\r\n--" + boundary + "\r\n");
-                    // write bulkdata
-                    wr.writeBytes("Content-Type: " + contentTypeBulkData
-                            + " \r\n");
-                    wr.writeBytes("Content-Location: " + chunk.getBulkDataUri()
-                            + " \r\n");
-                    wr.writeBytes("\r\n");
-                    getByteandWrite(new File(chunk.getFileUrl().getPath()),
-                            chunk.getOffset(), chunk.getLength(), wr);
-                    wr.writeBytes("\r\n--" + boundary + "--\r\n");
-                    wr.flush();
-                    wr.close();
-                    String response = connection.getResponseMessage();
-                    rspCode = connection.getResponseCode();
-                    rspMessage = response;
-                    LOG.info("response: " + response);
-                    try {
-                        responseAttrs = SAXReader.parse(connection.getInputStream());
-                    } catch (Exception e) {
-                        LOG.error("Error creating response attributes, {}",e);
-                    }
-                    connection.disconnect();
+        // write bulkdata
 
-                } catch (IOException e) {
-                    LOG.error("Error writing bulk data");
-                }
-            }
-        else {
-            ArrayList<BulkDataChunk> onlyPixelData = new ArrayList<BulkDataChunk>();
-            for (Iterator<BulkDataChunk> iter = files.iterator(); iter
-                    .hasNext();) {
-                BulkDataChunk chunk = iter.next();
-                if (chunk.isPixelData()) {
-                    onlyPixelData.add(chunk);
-                    iter.remove();
-                }
-            }
-            if (!files.isEmpty()) {
-                for (BulkDataChunk chunk : files) {
-                    try {
-                        wr.writeBytes("\r\n--" + boundary + "\r\n");
-                        // write bulkdata
-                        wr.writeBytes("Content-Type: " + contentTypeBulkData
-                                + " \r\n");
-                        wr.writeBytes("Content-Location: "
-                                + chunk.getBulkDataUri() + " \r\n");
-                        wr.writeBytes("\r\n");
-                        getByteandWrite(new File(chunk.getFileUrl().getPath()),
-                                chunk.getOffset(), chunk.getLength(), wr);
-                        wr.writeBytes("\r\n--" + boundary + "--\r\n");
-                        wr.flush();
-                        wr.close();
-                        String response = connection.getResponseMessage();
-                        rspCode = connection.getResponseCode();
-                        rspMessage = response;
-                        LOG.info("response: " + response);
-                        try {
-                            responseAttrs = SAXReader.parse(connection.getInputStream());
-                        } catch (Exception e) {
-                            LOG.error("Error creating response attributes, {}",e);
-                        }
-                        connection.disconnect();
-
-                    } catch (IOException e) {
-                        LOG.error("Error writing bulk data");
-                    }
-                }
-            }
-
-            try {
-                wr.writeBytes("\r\n--" + boundary + "\r\n");
-                // write bulkdata
-                wr.writeBytes("Content-Type: " + contentTypeBulkData + " \r\n");
-                wr.writeBytes("Content-Location: " + instance.singleFrameMultipleFragmentsURI
-                        + " \r\n");
-                wr.writeBytes("\r\n");
-                for (BulkDataChunk chunk : onlyPixelData) {
-                    FileInputStream fis = new FileInputStream(chunk
-                            .getFileUrl().getPath());
-                    fis.skip(chunk.getOffset());
-                    byte[] bytes = new byte[chunk.getLength()];
-                    fis.read(bytes, 0, chunk.getLength());
-                    fis.close();
-                    wr.write(bytes);
-                    wr.flush();
-                }
-                wr.writeBytes("\r\n--" + boundary + "--\r\n");
-                wr.flush();
-                wr.close();
-                String response = connection.getResponseMessage();
-                rspCode = connection.getResponseCode();
-                rspMessage = response;
-                LOG.info("response: " + response);
-                try {
-                    responseAttrs = SAXReader.parse(connection.getInputStream());
-                } catch (Exception e) {
-                    LOG.error("Error creating response attributes, {}",e);
-                }
-                connection.disconnect();
-
-            } catch (IOException e) {
-                LOG.error("Error writing bulk data");
-            }
+        for (BulkData chunk : extractedBulkData.otherBulkDataChunks) {
+            writeBulkDataPart(MediaType.APPLICATION_OCTET_STREAM_TYPE, wr, chunk.getURIOrUUID(), Collections.singletonList(chunk));
         }
-        return new StowRSResponse(rspCode, rspMessage, responseAttrs);
-    }
 
-    private static MediaType getBulkDataMediaType(Attributes metadata) {
-        return forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID));
-    }
 
-    private static boolean getByteandWrite(File file, int offset, int length,
-            DataOutputStream wr) throws IOException {
-        FileInputStream fis = null;
-        byte[] buffer = new byte[4096];
+        if (!extractedBulkData.pixelDataBulkData.isEmpty()) {
+            // pixeldata as a single bulk data part
+
+            if (extractedBulkData.pixelDataBulkData.size() > 1) {
+                LOG.info("Combining bulk data of multiple pixel data fragments");
+            }
+
+            writeBulkDataPart(pixelDataMediaType, wr, extractedBulkData.pixelDataBulkDataURI, extractedBulkData.pixelDataBulkData);
+        }
+
+        // end of multipart message
+        wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "--\r\n");
+        wr.close();
+        String response = connection.getResponseMessage();
+        int rspCode = connection.getResponseCode();
+        LOG.info("response: " + response);
         try {
-            fis = new FileInputStream(file);
-            try {
-                fis.skip(offset);
-                int cnt = 0;
-                offset = 0;
-                wr.flush();
-                while ((cnt = fis.read(buffer)) >= 0 && offset < length) {
-                    wr.write(buffer, 0, cnt);
-                    offset += cnt;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        } catch (FileNotFoundException e1) {
-            LOG.error("File not found" + e1.getStackTrace().toString());
-            return false;
-        } finally {
-            if (fis != null)
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    LOG.error("Error closing file {} , Exception: {}",
-                            file.getName(), e.getStackTrace().toString());
-                    return false;
-                }
+            responseAttrs = SAXReader.parse(connection.getInputStream());
+        } catch (Exception e) {
+            LOG.error("Error creating response attributes", e);
         }
-        return true;
+        connection.disconnect();
+
+        return new StowRSResponse(rspCode, response, responseAttrs);
     }
 
-    private static StowRSResponse doRequestDICOM(String url, File f) {
-        Attributes responseAttrs = new Attributes();
+    private static void writeBulkDataPart(MediaType mediaType, DataOutputStream wr, String uri, List<BulkData> chunks) throws IOException {
+        wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
+        wr.writeBytes("Content-Type: " + toContentType(mediaType) + " \r\n");
+        wr.writeBytes("Content-Location: " + uri + " \r\n");
+        wr.writeBytes("\r\n");
+
+        for (BulkData chunk : chunks) {
+            writeBulkDataToStream(chunk, wr);
+        }
+    }
+
+    private static String toContentType(MediaType mediaType) {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append(mediaType.getType()).append('/').append(mediaType.getSubtype());
+    	String tsuid = mediaType.getParameters().get("transfer-syntax");
+    	if (tsuid != null ) {
+    		sb.append("; transfer-syntax=").append(tsuid);
+    	}
+		return sb.toString();
+	}
+
+	private MediaType getBulkDataMediaType(Attributes metadata) {
+        return MediaTypes.forTransferSyntax(metadata.getString(Tag.TransferSyntaxUID, getTransferSyntax()));
+    }
+
+    private static void writeBulkDataToStream(BulkData bulkData, DataOutputStream wr) throws IOException {
+        InputStream in = null;
+        try {
+            in = bulkData.openStream();
+
+            int length = bulkData.length();
+
+            if (length >= 0) {
+                StreamUtils.copy(in, wr, length);
+            } else { // unspecified length
+                StreamUtils.copy(in, wr);
+            }
+
+        } finally {
+            if (in != null)
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    LOG.error("Error closing stream", e);
+                }
+        }
+    }
+
+    private static StowRSResponse sendDicomFile(String url, File f) throws IOException {
         int rspCode = 0;
         String rspMessage = null;
-        try {
-            URL newUrl = new URL(url);
-            String boundary = "-------gc0p4Jq0M2Yt08jU534c0p";
-            HttpURLConnection connection = (HttpURLConnection) newUrl
-                    .openConnection();
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setInstanceFollowRedirects(false);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type",
-                    "multipart/related; type=application/dicom; boundary="
-                            + boundary);
-            connection.setRequestProperty("Accept", "application/dicom+xml");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.setUseCaches(false);
 
-            DataOutputStream wr;
-            wr = new DataOutputStream(connection.getOutputStream());
-            wr.writeBytes("\r\n--" + boundary + "\r\n");
-            wr.writeBytes("Content-Disposition: inline; name=\"file[]\"; filename=\""
-                    + f.getName() + "\"\r\n");
-            wr.writeBytes("Content-Type: application/dicom \r\n");
-            wr.writeBytes("\r\n");
-            FileInputStream fis = new FileInputStream(f);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            try {
-                for (int readNum; (readNum = fis.read(buf)) != -1;) {
-                    bos.write(buf, 0, readNum);
-                }
-            } catch (IOException e) {
-                LOG.error(e.getStackTrace().toString());
+        URL newUrl = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) newUrl.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setInstanceFollowRedirects(false);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "multipart/related; type=application/dicom; boundary=" + MULTIPART_BOUNDARY);
+        connection.setRequestProperty("Accept", "application/dicom+xml");
+        connection.setRequestProperty("charset", "utf-8");
+        connection.setUseCaches(false);
+
+        DataOutputStream wr;
+        wr = new DataOutputStream(connection.getOutputStream());
+        wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "\r\n");
+        wr.writeBytes("Content-Disposition: inline; name=\"file[]\"; filename=\"" + f.getName() + "\"\r\n");
+        wr.writeBytes("Content-Type: application/dicom \r\n");
+        wr.writeBytes("\r\n");
+        FileInputStream fis = new FileInputStream(f);
+        StreamUtils.copy(fis, wr);
+        fis.close();
+        wr.writeBytes("\r\n--" + MULTIPART_BOUNDARY + "--\r\n");
+        wr.flush();
+        wr.close();
+        String response = connection.getResponseMessage();
+        rspCode = connection.getResponseCode();
+        rspMessage = connection.getResponseMessage();
+        LOG.info("response: " + response);
+        Attributes responseAttrs;
+        try {
+            InputStream in;
+            if (rspCode < HttpURLConnection.HTTP_BAD_REQUEST) {
+                in = connection.getInputStream();
+            } else {
+                in = connection.getErrorStream();
             }
-            byte[] bytes = bos.toByteArray();
-            wr.write(bytes);
-            wr.writeBytes("\r\n--" + boundary + "--\r\n");
-            wr.flush();
-            wr.close();
-            String response = connection.getResponseMessage();
-            rspCode = connection.getResponseCode();
-            rspMessage = connection.getResponseMessage();
-            LOG.info("response: " + response);
-            try {
-                responseAttrs = SAXReader.parse(connection.getInputStream());
-            } catch (Exception e) {
-                LOG.error("Error creating response attributes, {}",e);
-            }
-            connection.disconnect();
-        } catch (IOException e) {
-            LOG.error("error writing to http data output stream"
-                    + e.getStackTrace().toString());
+            responseAttrs = SAXReader.parse(in);
+        } catch (SAXException e) {
+            throw new IOException(e);
+        } catch (ParserConfigurationException e) {
+            throw new IOException(e);
         }
+        connection.disconnect();
+        
         return new StowRSResponse(rspCode, rspMessage, responseAttrs);
     }
 
     private static Attributes parseJSON(String fname, Attributes attrs)
             throws IOException {
-        InputStream in = fname.equals("-") ? System.in : new FileInputStream(
-                fname);
+        InputStream in = fname.equals("-") ? System.in : new FileInputStream(fname);
         try {
             JSONReader reader = new JSONReader(
                     Json.createParser(new InputStreamReader(in, "UTF-8")));
@@ -793,41 +575,5 @@ public class StowRS {
     public void setTransferSyntax(String transferSyntax) {
         this.transferSyntax = transferSyntax;
     }
-}
 
-class BulkDataChunk {
-    private final int offset;
-    private final int length;
-    private final URI fileUrl;
-    private final String bulkDataURI;
-    private boolean isPixelData = false;
-
-    public BulkDataChunk(String bulkDataURI, String uri, String offset,
-            String length, boolean isPixelData) throws URISyntaxException {
-        this.offset = Integer.valueOf(offset);
-        this.length = Integer.valueOf(length);
-        this.fileUrl = new URI(uri);
-        this.bulkDataURI = bulkDataURI;
-        this.isPixelData = isPixelData;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    public int getLength() {
-        return length;
-    }
-
-    public URI getFileUrl() {
-        return fileUrl;
-    }
-
-    public String getBulkDataUri() {
-        return bulkDataURI;
-    }
-
-    public boolean isPixelData() {
-        return isPixelData;
-    }
 }

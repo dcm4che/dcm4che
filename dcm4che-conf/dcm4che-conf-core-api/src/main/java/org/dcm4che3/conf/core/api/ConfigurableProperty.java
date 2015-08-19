@@ -98,7 +98,7 @@ public @interface ConfigurableProperty {
      * introduced, the more complex UI's logic will need to be to handle proper cascading
      *
      * <br/><br/>
-     * Currently supported reference targets are <b>Devices</b> and <b>Connections</b> within same device.
+     * Currently supported reference targets are <b>Devices</b>, <b>ApplicationEntity</b> and <b>Connections</b> within same device.
      *
      */
     boolean collectionOfReferences() default false;
@@ -117,6 +117,15 @@ public @interface ConfigurableProperty {
      */
     boolean isReference() default false;
 
+
+    /**
+     * Enables the extension-by-composition mechanism of the framework for containing class and marks the property as an extension map.
+     * Only may be applied on fields with type Map&lt;Class<? extends T>, T&gt;.
+     * T will be treated as base extension class
+     * @return
+     */
+    boolean isExtensionsProperty() default false;
+
     /**
      * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings
      * @return
@@ -130,7 +139,12 @@ public @interface ConfigurableProperty {
          * Non-required properties could be put into a "advanced..." tab to simplify the view.
          * This tag indicates that the property should never be hidden from the user with such technique.
          */
-        PRIMARY
+        PRIMARY,
+
+        /**
+         * Marks the field as identifier
+         */
+        UUID
     }
 
     /**

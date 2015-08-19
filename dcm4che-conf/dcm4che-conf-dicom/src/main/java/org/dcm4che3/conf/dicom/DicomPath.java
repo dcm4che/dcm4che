@@ -68,7 +68,10 @@ public enum DicomPath {
     ConnectionByHostRef,
     ConnectionByHostPortRef,
     TCGroups,
-    AllTCsOfAllAEsWithTCGroupExt;
+    AllTCsOfAllAEsWithTCGroupExt,
+    AEByTitleRef,
+    DeviceNameByAEUUID,
+    DeviceNameByUUID;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -80,6 +83,8 @@ public enum DicomPath {
         PATHS.put(/***********/AllDeviceNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomDeviceName");
         PATHS.put(/***********/AllHL7AppNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/deviceExtensions/HL7DeviceExtension/hl7Apps/*/hl7ApplicationName");
         PATHS.put(/***/DeviceNameByHL7AppName, "/dicomConfigurationRoot/dicomDevicesRoot/*[deviceExtensions/HL7DeviceExtension/hl7Apps/*[hl7ApplicationName='{hl7AppName}']]/dicomDeviceName");
+        PATHS.put(/*******/DeviceNameByAEUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE/*[dcmUUID='{aeUUID}']]/dicomDeviceName");
+        PATHS.put(/*********/DeviceNameByUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dcmUUID='{deviceUUID}']/dicomDeviceName");
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
@@ -91,6 +96,7 @@ public enum DicomPath {
         PATHS.put(/*******/UniqueHL7AppByName, "/dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot[@name='{hl7AppName}']");
 
         // references (parsable, will be stored this way)
+        PATHS.put(/*************/AEByTitleRef, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE[dicomAETitle='{aeName}']");
         PATHS.put(/**********/DeviceByNameRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']");
         PATHS.put(/********/ConnectionByCnRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[cn='{cn}']");
         PATHS.put(/******/ConnectionByHostRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}']");

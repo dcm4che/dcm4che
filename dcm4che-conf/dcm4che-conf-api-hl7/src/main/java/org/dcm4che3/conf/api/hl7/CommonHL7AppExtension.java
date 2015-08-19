@@ -14,7 +14,7 @@ public class CommonHL7AppExtension extends HL7ApplicationExtension{
      * @param clazz Class of the extension
      */
     public void reconfigureReflectively(HL7ApplicationExtension from, Class<? extends HL7ApplicationExtension> clazz) {
-        ReconfiguringIterator.reconfigure(this, from, clazz);
+        ReconfiguringIterator.reconfigure(from, this, clazz);
     }
 
     public void reconfigure(HL7ApplicationExtension from) {

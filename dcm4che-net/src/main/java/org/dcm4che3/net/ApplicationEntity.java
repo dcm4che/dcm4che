@@ -62,53 +62,54 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
- * <p>
+ * <p/>
  * A Network AE is an application entity that provides services on a network. A
  * Network AE will have the 16 same functional capability regardless of the
  * particular network connection used. If there are functional differences based
  * on selected network connection, then these are separate Network AEs. If there
  * are 18 functional differences based on other internal structures, then these
  * are separate Network AEs.
- * 
- * @author Gunter Zeilinger <gunterze@gmail.com>
  *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  */
-@LDAP(objectClasses = {"dcmNetworkAE","dicomNetworkAE"}, distinguishingField = "dicomAETitle")
+@LDAP(objectClasses = {"dcmNetworkAE", "dicomNetworkAE" }, distinguishingField = "dicomAETitle")
 @ConfigurableClass
 public class ApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 3883790997057469573L;
 
-    protected static final Logger LOG = 
-            LoggerFactory.getLogger(ApplicationEntity.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(ApplicationEntity.class);
 
-    private Device device;
 
-    @ConfigurableProperty(name="dicomAETitle" , tags = Tag.PRIMARY)
+    @ConfigurableProperty(name = "dicomAETitle", tags = Tag.PRIMARY)
     private String AETitle;
 
-    @ConfigurableProperty(name="dicomDescription")
+    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
+            description = "An immutable unique identifier")
+    private String uuid = UUID.randomUUID().toString();
+
+    @ConfigurableProperty(name = "dicomDescription")
     private String description;
 
-    @ConfigurableProperty(name="dicomVendorData")
+    @ConfigurableProperty(name = "dicomVendorData")
     private byte[][] vendorData = {};
 
-    @ConfigurableProperty(name="dicomApplicationCluster")
+    @ConfigurableProperty(name = "dicomApplicationCluster")
     private String[] applicationClusters = {};
 
-    @ConfigurableProperty(name="dicomPreferredCalledAETitle")
+    @ConfigurableProperty(name = "dicomPreferredCalledAETitle")
     private String[] preferredCalledAETitles = {};
 
-    @ConfigurableProperty(name="dicomPreferredCallingAETitle")
+    @ConfigurableProperty(name = "dicomPreferredCallingAETitle")
     private String[] preferredCallingAETitles = {};
 
-    @ConfigurableProperty(name="dicomSupportedCharacterSet")
+    @ConfigurableProperty(name = "dicomSupportedCharacterSet")
     private String[] supportedCharacterSets = {};
 
-    @ConfigurableProperty(name="dicomInstalled")
+    @ConfigurableProperty(name = "dicomInstalled")
     private Boolean aeInstalled;
 
-    @ConfigurableProperty(name="dcmAcceptedCallingAETitle")
+    @ConfigurableProperty(name = "dcmAcceptedCallingAETitle")
     private final Set<String> acceptedCallingAETitlesSet =
             new LinkedHashSet<String>();
 
@@ -120,9 +121,9 @@ public class ApplicationEntity implements Serializable {
      * "Proxy" property, actually forwards everything to scuTCs and scpTCs in its setter/getter
      */
     @LDAP(noContainerNode = true)
-    @ConfigurableProperty(  name = "dcmTransferCapability",
-                            description = "DICOM Transfer Capabilities",
-                            tags = Tag.PRIMARY)
+    @ConfigurableProperty(name = "dcmTransferCapability",
+            description = "DICOM Transfer Capabilities",
+            tags = Tag.PRIMARY)
     private Collection<TransferCapability> transferCapabilities;
 
     // populated/collected by transferCapabilities' setter/getter
@@ -133,15 +134,21 @@ public class ApplicationEntity implements Serializable {
     private final Map<String, TransferCapability> scpTCs =
             new TreeMap<String, TransferCapability>();
 
-    private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
-            new HashMap<Class<? extends AEExtension>,AEExtension>();
+    @ConfigurableProperty(name = "aeExtensions", isExtensionsProperty = true)
+    private Map<Class<? extends AEExtension>, AEExtension> extensions =
+            new HashMap<Class<? extends AEExtension>, AEExtension>();
 
     @ConfigurableProperty(name = "dicomAssociationAcceptor")
     private boolean associationAcceptor = true;
 
-    @ConfigurableProperty(name="dicomAssociationInitiator")
+    @ConfigurableProperty(name = "dicomAssociationInitiator")
     private boolean associationInitiator = true;
 
+    @ConfigurableProperty(name = "dcmAETitleAliases",
+            label = "Aliases (alternative AE titles)")
+    private List<String> AETitleAliases = new ArrayList<String>();
+
+    private Device device;
     private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity() {
@@ -151,6 +158,29 @@ public class ApplicationEntity implements Serializable {
         setAETitle(aeTitle);
     }
 
+    public List<String> getAETitleAliases() {
+        return AETitleAliases;
+    }
+
+    public void setAETitleAliases(List<String> AETitleAliases) {
+        this.AETitleAliases = AETitleAliases;
+    }
+
+    public Map<Class<? extends AEExtension>, AEExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<Class<? extends AEExtension>, AEExtension> extensions) {
+        this.extensions = extensions;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public void setTransferCapabilities(Collection<TransferCapability> transferCapabilities) {
         scpTCs.clear();
@@ -188,8 +218,7 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set the device that is identified by this application entity.
      *
-     * @param device
-     *                The owning <code>Device</code>.
+     * @param device The owning <code>Device</code>.
      */
     void setDevice(Device device) {
         if (device != null) {
@@ -216,8 +245,7 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set the AE title for this Network AE.
      *
-     * @param aet
-     *            A String containing the AE title.
+     * @param aet A String containing the AE title.
      */
     public void setAETitle(String aet) {
         if (aet.isEmpty())
@@ -242,8 +270,7 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set a description of this network AE.
      *
-     * @param description
-     *                A String containing the description.
+     * @param description A String containing the description.
      */
     public final void setDescription(String description) {
         this.description = description;
@@ -261,8 +288,7 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set any vendor information or configuration specific to this network AE
      *
-     * @param vendorData
-     *                An Object of the vendor data.
+     * @param vendorData An Object of the vendor data.
      */
     public final void setVendorData(byte[]... vendorData) {
         this.vendorData = vendorData;
@@ -346,8 +372,7 @@ public class ApplicationEntity implements Serializable {
      * implies that the Network AE supports only the default character
      * repertoire (ISO IR 6).
      *
-     * @param characterSets
-     *                A String array of the supported character sets.
+     * @param characterSets A String array of the supported character sets.
      */
     public void setSupportedCharacterSets(String... characterSets) {
         supportedCharacterSets = characterSets;
@@ -357,7 +382,7 @@ public class ApplicationEntity implements Serializable {
      * Determine whether or not this network AE can accept associations.
      *
      * @return A boolean value. True if the Network AE can accept associations,
-     *         false otherwise.
+     * false otherwise.
      */
     public final boolean isAssociationAcceptor() {
         return associationAcceptor;
@@ -366,9 +391,8 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set whether or not this network AE can accept associations.
      *
-     * @param acceptor
-     *                A boolean value. True if the Network AE can accept
-     *                associations, false otherwise.
+     * @param acceptor A boolean value. True if the Network AE can accept
+     *                 associations, false otherwise.
      */
     public final void setAssociationAcceptor(boolean acceptor) {
         this.associationAcceptor = acceptor;
@@ -378,7 +402,7 @@ public class ApplicationEntity implements Serializable {
      * Determine whether or not this network AE can initiate associations.
      *
      * @return A boolean value. True if the Network AE can accept associations,
-     *         false otherwise.
+     * false otherwise.
      */
     public final boolean isAssociationInitiator() {
         return associationInitiator;
@@ -387,9 +411,8 @@ public class ApplicationEntity implements Serializable {
     /**
      * Set whether or not this network AE can initiate associations.
      *
-     * @param initiator
-     *                A boolean value. True if the Network AE can accept
-     *                associations, false otherwise.
+     * @param initiator A boolean value. True if the Network AE can accept
+     *                  associations, false otherwise.
      */
     public final void setAssociationInitiator(boolean initiator) {
         this.associationInitiator = initiator;
@@ -400,8 +423,8 @@ public class ApplicationEntity implements Serializable {
      * Determine whether or not this network AE is installed on a network.
      *
      * @return A Boolean value. True if the AE is installed on a network. If not
-     *         present, information about the installed status of the AE is
-     *         inherited from the device
+     * present, information about the installed status of the AE is
+     * inherited from the device
      */
     public boolean isInstalled() {
         return device != null && device.isInstalled()
@@ -413,14 +436,12 @@ public class ApplicationEntity implements Serializable {
     }
 
 
-
     /**
      * Set whether or not this network AE is installed on a network.
      *
-     * @param aeInstalled
-     *                A Boolean value. True if the AE is installed on a network.
-     *                If not present, information about the installed status of
-     *                the AE is inherited from the device
+     * @param aeInstalled A Boolean value. True if the AE is installed on a network.
+     *                    If not present, information about the installed status of
+     *                    the AE is inherited from the device
      */
     public void setAeInstalled(Boolean aeInstalled) {
         this.aeInstalled = aeInstalled;
@@ -452,7 +473,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     void onDimseRQ(Association as, PresentationContext pc, Dimse cmd,
-            Attributes cmdAttrs, PDVInputStream data) throws IOException {
+                   Attributes cmdAttrs, PDVInputStream data) throws IOException {
         DimseRQHandler tmp = getDimseRQHandler();
         if (tmp == null) {
             LOG.error("DimseRQHandler not initalized");
@@ -495,9 +516,9 @@ public class ApplicationEntity implements Serializable {
     }
 
     public TransferCapability removeTransferCapabilityFor(String sopClass,
-            TransferCapability.Role role) {
+                                                          TransferCapability.Role role) {
         TransferCapability tc = (role == TransferCapability.Role.SCU ? scuTCs : scpTCs)
-                        .remove(sopClass);
+                .remove(sopClass);
         if (tc != null)
             tc.setApplicationEntity(null);
         return tc;
@@ -514,31 +535,31 @@ public class ApplicationEntity implements Serializable {
     }
 
     protected PresentationContext negotiate(AAssociateRQ rq, AAssociateAC ac,
-           PresentationContext rqpc) {
-       String as = rqpc.getAbstractSyntax();
-       TransferCapability tc = roleSelection(rq, ac, as);
-       int pcid = rqpc.getPCID();
-       if (tc == null)
-           return new PresentationContext(pcid,
-                   PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
-                   rqpc.getTransferSyntax());
+                                            PresentationContext rqpc) {
+        String as = rqpc.getAbstractSyntax();
+        TransferCapability tc = roleSelection(rq, ac, as);
+        int pcid = rqpc.getPCID();
+        if (tc == null)
+            return new PresentationContext(pcid,
+                    PresentationContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
+                    rqpc.getTransferSyntax());
 
-       for (String ts : rqpc.getTransferSyntaxes())
-           if (tc.containsTransferSyntax(ts)) {
-               byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
-               if (info != null)
-                   ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
-               return new PresentationContext(pcid,
-                       PresentationContext.ACCEPTANCE, ts);
-           }
+        for (String ts : rqpc.getTransferSyntaxes())
+            if (tc.containsTransferSyntax(ts)) {
+                byte[] info = negotiate(rq.getExtNegotiationFor(as), tc);
+                if (info != null)
+                    ac.addExtendedNegotiation(new ExtendedNegotiation(as, info));
+                return new PresentationContext(pcid,
+                        PresentationContext.ACCEPTANCE, ts);
+            }
 
-       return new PresentationContext(pcid,
+        return new PresentationContext(pcid,
                 PresentationContext.TRANSFER_SYNTAX_NOT_SUPPORTED,
                 rqpc.getTransferSyntax());
     }
 
     private TransferCapability roleSelection(AAssociateRQ rq,
-            AAssociateAC ac, String asuid) {
+                                             AAssociateAC ac, String asuid) {
         RoleSelection rqrs = rq.getRoleSelectionFor(asuid);
         if (rqrs == null)
             return getTC(scpTCs, asuid, rq);
@@ -558,7 +579,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     private TransferCapability getTC(Map<String, TransferCapability> tcs,
-            String asuid, AAssociateRQ rq) {
+                                     String asuid, AAssociateRQ rq) {
         TransferCapability tc = tcs.get(asuid);
         if (tc != null)
             return tc;
@@ -645,7 +666,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)
-        throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
+            throws IOException, InterruptedException, IncompatibleConnectionException, GeneralSecurityException {
         CompatibleConnection cc = findCompatibelConnection(remote);
         if (rq.getCalledAET() == null)
             rq.setCalledAET(remote.getAETitle());
@@ -660,10 +681,10 @@ public class ApplicationEntity implements Serializable {
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
         StringUtils.appendLine(sb, indent, "ApplicationEntity[title: ", AETitle);
-        StringUtils.appendLine(sb, indent2,"desc: ", description);
-        StringUtils.appendLine(sb, indent2,"acceptor: ", associationAcceptor);
-        StringUtils.appendLine(sb, indent2,"initiator: ", associationInitiator);
-        StringUtils.appendLine(sb, indent2,"installed: ", getAeInstalled());
+        StringUtils.appendLine(sb, indent2, "desc: ", description);
+        StringUtils.appendLine(sb, indent2, "acceptor: ", associationAcceptor);
+        StringUtils.appendLine(sb, indent2, "initiator: ", associationInitiator);
+        StringUtils.appendLine(sb, indent2, "installed: ", getAeInstalled());
         for (Connection conn : connections)
             conn.promptTo(sb, indent2).append(StringUtils.LINE_SEPARATOR);
         for (TransferCapability tc : getTransferCapabilities())
@@ -687,7 +708,7 @@ public class ApplicationEntity implements Serializable {
 
     private void reconfigureAEExtensions(ApplicationEntity from) {
         for (Iterator<Class<? extends AEExtension>> it =
-                extensions.keySet().iterator(); it.hasNext();) {
+             extensions.keySet().iterator(); it.hasNext(); ) {
             if (!from.extensions.containsKey(it.next()))
                 it.remove();
         }
@@ -716,6 +737,7 @@ public class ApplicationEntity implements Serializable {
         setAssociationAcceptor(from.associationAcceptor);
         setAssociationInitiator(from.associationInitiator);
         setAeInstalled(from.aeInstalled);
+        setUuid(from.getUuid());
     }
 
     public Set<String> getAcceptedCallingAETitlesSet() {
@@ -724,8 +746,8 @@ public class ApplicationEntity implements Serializable {
 
     public void setAcceptedCallingAETitlesSet(Set<String> acceptedCallingAETitlesSet) {
         this.acceptedCallingAETitlesSet.clear();
-        if (acceptedCallingAETitlesSet!=null)
-        this.acceptedCallingAETitlesSet.addAll(acceptedCallingAETitlesSet);
+        if (acceptedCallingAETitlesSet != null)
+            this.acceptedCallingAETitlesSet.addAll(acceptedCallingAETitlesSet);
     }
 
     public void addAEExtension(AEExtension ext) {
@@ -771,11 +793,11 @@ public class ApplicationEntity implements Serializable {
             return false;
         else
             for (String ts : transferCapability.getTransferSyntaxes())
-                if (!matchingTC.containsTransferSyntax(ts) 
+                if (!matchingTC.containsTransferSyntax(ts)
                         && !onlyAbstractSyntax)
                     return false;
 
         return true;
     }
 
-    }
+}

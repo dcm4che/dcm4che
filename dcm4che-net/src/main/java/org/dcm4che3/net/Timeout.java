@@ -45,13 +45,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Schedules an association.abort() on the given association
+ * using the scheduledExecutor assigned to the device of that association.
+ *
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class Timeout implements Runnable {
 
     public static Logger LOG = LoggerFactory.getLogger(Timeout.class);
-    
+
     private final Association as;
     private final String expiredMsg;
     private final String cancelMsg;
@@ -66,12 +69,15 @@ public class Timeout implements Runnable {
                 .schedule(this, timeout, TimeUnit.MILLISECONDS);
     }
 
-    public static Timeout start(Association as, String startMsg, 
+    public static Timeout start(Association as, String startMsg,
             String expiredMsg, String cancelMsg, int timeout) {
         LOG.debug(startMsg, as, timeout);
         return new Timeout(as, expiredMsg, cancelMsg, timeout);
     }
 
+    /**
+     * Permanently cancels the potential effect of the timeout
+     */
     public void stop() {
         LOG.debug(cancelMsg, as);
         future.cancel(false);
@@ -79,7 +85,7 @@ public class Timeout implements Runnable {
 
     @Override
     public void run() {
-        LOG.info(expiredMsg, as);
+        LOG.warn(expiredMsg, as);
         as.abort();
     }
 

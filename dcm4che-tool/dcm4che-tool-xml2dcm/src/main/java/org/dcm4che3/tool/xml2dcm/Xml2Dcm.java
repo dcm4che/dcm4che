@@ -55,18 +55,20 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.ContentHandlerAdapter;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
+import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.tool.common.CLIUtils;
 
 /**
+ * Tool to convert XML to DICOM.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Xml2Dcm {

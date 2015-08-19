@@ -39,12 +39,6 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,15 +46,27 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+
 /**
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
-
-    String fileName;
+    private String fileName;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public SingleJsonFileConfigurationStorage() {
+        //NOOP
+    }
+    
     public SingleJsonFileConfigurationStorage(String fileName) {
+        setFileName(fileName);
+    }
+    
+    public void setFileName(String fileName) {
         this.fileName = fileName;
     }
 
@@ -135,4 +141,10 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public void lock() {
         // ostrich
     }
+
+    @Override
+    public void runBatch(ConfigBatch batch) {
+        batch.run();
+    }
+    
 }

@@ -53,7 +53,10 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -73,7 +76,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
  * encapsulates the properties associated with a connection to a TCP/IP network.
- * <p/>
+ * <p>
  * The <i>network connection</i> describes one TCP port on one network device.
  * This can be used for a TCP connection over which a DICOM association can be
  * negotiated with one or more Network AEs. It specifies 8 the hostname and TCP
@@ -218,6 +221,9 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean connectionInstalled;
 
+    @ConfigurableProperty(name = "connectionExtensions", isExtensionsProperty = true)
+    private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions =
+            new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
 
     @ConfigurableProperty(
             name = "dcmProtocol",
@@ -230,7 +236,7 @@ public class Connection implements Serializable {
     private boolean needUpdateProxyManager = false;
     private ProxyManager proxyManager = null;
     
-	private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
+        private static final EnumMap<Protocol, TCPProtocolHandler> tcpHandlers =
             new EnumMap<Protocol, TCPProtocolHandler>(Protocol.class);
     private static final EnumMap<Protocol, UDPProtocolHandler> udpHandlers =
             new EnumMap<Protocol, UDPProtocolHandler>(Protocol.class);
@@ -258,6 +264,26 @@ public class Connection implements Serializable {
         this.hostname = hostname;
         this.port = port;
     }
+
+    /**
+     *
+     * @param commonName
+     * @param hostname
+     * @param port
+     * @param timeout value in seconds to assign to all timeouts
+     */
+    public Connection(String commonName, String hostname, int port, int timeout) {
+        this(commonName, hostname, port);
+
+        setConnectTimeout(timeout);
+        setRequestTimeout(timeout);
+        setAcceptTimeout(timeout);
+        setReleaseTimeout(timeout);
+        setResponseTimeout(timeout);
+        setRetrieveTimeout(timeout);
+        setIdleTimeout(timeout);
+    }
+
 
     public static TCPProtocolHandler registerTCPProtocolHandler(
             Protocol protocol, TCPProtocolHandler handler) {
@@ -402,35 +428,35 @@ public class Connection implements Serializable {
     }
     
     public ProxyManager getProxyManager() {
-   		updateProxyManager();
-   		if(this.proxyManager == null) {
-   			return ProxyService.getInstance().getDefaultProxyManager();
-   		} else {
-   			return this.proxyManager;
-   		}
-	}
+                updateProxyManager();
+                if(this.proxyManager == null) {
+                        return ProxyService.getInstance().getDefaultProxyManager();
+                } else {
+                        return this.proxyManager;
+                }
+        }
 
     private void updateProxyManager() {
-    	if(this.needUpdateProxyManager) {
-    		// Get manager from Service with provider name and version
-    		this.proxyManager = ProxyService.getInstance()
-    				.getProxyManager(httpProxyProviderName, httpProxyProviderVersion);
-    		// Proxy Manager updated
-    		this.needUpdateProxyManager = false;
-    	}
+        if(this.needUpdateProxyManager) {
+                // Get manager from Service with provider name and version
+                this.proxyManager = ProxyService.getInstance()
+                                .getProxyManager(httpProxyProviderName, httpProxyProviderVersion);
+                // Proxy Manager updated
+                this.needUpdateProxyManager = false;
+        }
     }
 
-	public void setProxyManager(final ProxyManager proxyManager) {
-		if(proxyManager == null) {
-			this.httpProxyProviderName = "";
-			this.httpProxyProviderVersion = "";
-		} else {
-			this.httpProxyProviderName = proxyManager.getProviderName();
-			this.httpProxyProviderVersion = proxyManager.getVersion();
-		}
-		this.proxyManager = proxyManager;
-		this.needUpdateProxyManager = false;
-	}
+        public void setProxyManager(final ProxyManager proxyManager) {
+                if(proxyManager == null) {
+                        this.httpProxyProviderName = "";
+                        this.httpProxyProviderVersion = "";
+                } else {
+                        this.httpProxyProviderName = proxyManager.getProviderName();
+                        this.httpProxyProviderVersion = proxyManager.getVersion();
+                }
+                this.proxyManager = proxyManager;
+                this.needUpdateProxyManager = false;
+        }
 
     boolean isRebindNeeded() {
         return rebindNeeded;
@@ -473,7 +499,7 @@ public class Connection implements Serializable {
     /**
      * The TCP port that the AE is listening on or <code>0</code> for a
      * network connection that only initiates associations.
-     * <p/>
+     * <p>
      * A valid port value is between 0 and 65535.
      *
      * @param port The port number or <code>-1</code>.
@@ -489,6 +515,44 @@ public class Connection implements Serializable {
         needRebind();
     }
 
+    public Map<Class<? extends ConnectionExtension>, ConnectionExtension> getExtensions() {
+        return extensions;
+    }
+
+    public void setExtensions(Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions) {
+        this.extensions = extensions;
+    }
+
+    public <T> T getExtension(Class<T> clazz) {
+        return (T) extensions.get(clazz);
+    }
+
+    public void addExtension(ConnectionExtension connectionExtension) {
+        connectionExtension.setConnection(this);
+        extensions.put(connectionExtension.getClass(), connectionExtension);
+    }
+
+
+    private void reconfigureExtensions(Connection from) {
+        for (Iterator<Class<? extends ConnectionExtension>> it =
+             extensions.keySet().iterator(); it.hasNext(); ) {
+            if (!from.extensions.containsKey(it.next()))
+                it.remove();
+        }
+        for (ConnectionExtension src : from.extensions.values()) {
+            Class<? extends ConnectionExtension> clazz = src.getClass();
+            ConnectionExtension ext = extensions.get(clazz);
+            if (ext == null)
+                try {
+                    addExtension(ext = clazz.newInstance());
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to instantiate " + clazz.getName(), e);
+                }
+            ext.reconfigure(src);
+        }
+    }
+
     public final String getHttpProxy() {
         return httpProxy;
     }
@@ -498,20 +562,20 @@ public class Connection implements Serializable {
     }
 
     public void setHttpProxyProviderName(final String httpProxyProviderName) {
-    	if(this.httpProxyProviderName == httpProxyProviderName)
-    		return;
-    	
-		this.httpProxyProviderName = httpProxyProviderName;
-		this.needUpdateProxyManager = true;
-	}
+        if(this.httpProxyProviderName == httpProxyProviderName)
+                return;
+        
+                this.httpProxyProviderName = httpProxyProviderName;
+                this.needUpdateProxyManager = true;
+        }
     
     public void setHttpProxyProviderVersion(String httpProxyProviderVersion) {
-		if(this.httpProxyProviderVersion == httpProxyProviderVersion)
-			return;
-		
-    	this.httpProxyProviderVersion = httpProxyProviderVersion;
-    	this.needUpdateProxyManager = true;
-	}
+                if(this.httpProxyProviderVersion == httpProxyProviderVersion)
+                        return;
+                
+        this.httpProxyProviderVersion = httpProxyProviderVersion;
+        this.needUpdateProxyManager = true;
+        }
     
     public final boolean useHttpProxy() {
         return httpProxy != null;
@@ -1064,8 +1128,8 @@ public class Connection implements Serializable {
                 int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
                 s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
                 try {
-                	getProxyManager().doProxyHandshake(s, remoteHostname, remotePort, userauth,
-                			connectTimeout);
+                        getProxyManager().doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                                        connectTimeout);
                 } catch (IOException e) {
                     SafeClose.close(s);
                     throw e;
@@ -1211,5 +1275,6 @@ public class Connection implements Serializable {
         setBlacklist(from.blacklist);
         setConnectionInstalled(from.connectionInstalled);
         setProxyManager(from.getProxyManager());
+        reconfigureExtensions(from);
     }
 }

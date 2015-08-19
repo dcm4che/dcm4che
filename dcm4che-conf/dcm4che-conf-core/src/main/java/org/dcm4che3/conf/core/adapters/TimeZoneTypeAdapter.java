@@ -54,7 +54,7 @@ public class TimeZoneTypeAdapter extends DefaultConfigTypeAdapters.CommonAbstrac
     }
 
     @Override
-    public TimeZone fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public TimeZone fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         return (configNode == null ? null : TimeZone.getTimeZone(configNode));
     }
 

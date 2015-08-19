@@ -77,6 +77,14 @@ public class DicomServiceException extends IOException {
         setErrorComment(getMessage());
     }
 
+    public DicomServiceException(int status, String message, Throwable cause) {
+        super(message, cause);
+        rsp = new Attributes();
+        setStatus(status);
+        setErrorComment(getMessage());
+    }
+
+
     public static Throwable initialCauseOf(Throwable e) {
         if (e == null)
             return null;
@@ -87,6 +95,11 @@ public class DicomServiceException extends IOException {
         return e;
     }
 
+    @Override
+    public String toString() {
+
+        return super.toString() + "( status = "+getStatus()+" )";
+    }
 
     private void setStatus(int status) {
         rsp.setInt(Tag.Status, VR.US, status);

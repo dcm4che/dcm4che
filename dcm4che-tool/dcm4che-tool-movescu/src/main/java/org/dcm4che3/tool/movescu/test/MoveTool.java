@@ -104,7 +104,7 @@ public class MoveTool implements TestTool{
         this.aeTitle = aeTitle;
         this.destAEtitle = destAEtitle;
         this.retrieveLevel = retrieveLevel;
-        this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot") ? InformationModel.StudyRoot : InformationModel.PatientRoot;
+        this.retrieveInformationModel = "StudyRoot".equalsIgnoreCase(informationModel) ? InformationModel.StudyRoot : InformationModel.PatientRoot;
         this.relational = relational;
         this.device = device;
         this.sourceAETitle = sourceAETitle;

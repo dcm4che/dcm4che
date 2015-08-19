@@ -41,10 +41,9 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.storage.CachedRootNodeConfiguration;
+import org.dcm4che3.conf.core.storage.CachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
-import org.dcm4che3.conf.dicom.CommonDicomConfigurationWithHL7;
-import org.dcm4che3.conf.dicom.DicomConfigurationBuilder;
+import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
 import org.dcm4che3.conf.dicom.misc.DeepEqualsDiffer;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.hl7.HL7DeviceExtension;
@@ -79,6 +78,7 @@ public class SimpleStorageTest {
         DicomConfigurationBuilder builder = DicomConfigurationBuilder.newConfigurationBuilder(System.getProperties());
         builder.registerDeviceExtension(HL7DeviceExtension.class);
         builder.registerAEExtension(TCGroupConfigAEExtension.class);
+        builder.registerDeviceExtension(SomeDeviceExtension.class);
         return builder.build();
     }
 
@@ -87,7 +87,7 @@ public class SimpleStorageTest {
         URL resource = Thread.currentThread().getContextClassLoader().getResource("mockConfig.json");
         String path = resource.getPath();
         SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage(path);
-        return new CachedRootNodeConfiguration(storage);
+        return new CachingConfigurationDecorator(storage);
     }
 
     @Test

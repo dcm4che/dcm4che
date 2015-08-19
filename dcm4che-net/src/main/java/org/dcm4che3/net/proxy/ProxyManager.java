@@ -6,6 +6,7 @@ import java.net.Socket;
 /**
  * Define Service Provider Interface for proxy manager (authentication
  * processing)
+ * Loaded via Proxyservice Loader found under META-INF/services 
  *
  * @author Amaury Pernette
  * 

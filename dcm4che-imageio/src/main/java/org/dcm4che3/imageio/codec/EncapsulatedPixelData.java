@@ -41,44 +41,31 @@
 package org.dcm4che3.imageio.codec;
 
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.util.StreamUtils;
 
-import javax.imageio.stream.ImageInputStreamImpl;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.IOException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2015
  */
-public class EncapsulatedPixelData extends ImageInputStreamImpl {
+public class EncapsulatedPixelData extends MemoryCacheImageInputStream {
 
     private final DicomInputStream dis;
     private final byte[] basicOffsetTable;
-    private final int frameStartWord;
-    private int fragmStartWord;
-    private int fragmPos;
-    private int fragmLen;
-    private boolean endOfFrame;
-    private boolean nextFragment;
+    private int frameStartWord;
+    private long fragmEndPos;
+    private long frameEndPos;
+    private boolean endOfStream;
 
     public EncapsulatedPixelData(DicomInputStream dis) throws IOException {
+        super(dis);
         this.dis = dis;
-        dis.readHeader();
+        dis.readItemHeader();
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         basicOffsetTable = b;
-        nextFragment = nextFragment();
-        frameStartWord = fragmStartWord;
-        endOfFrame = true;
-    }
 
-    private boolean nextFragment() throws IOException {
-        if (!dis.readItemHeader())
-            return false;
-        fragmPos = 0;
-        fragmLen = dis.length();
-        fragmStartWord = (dis.read() << 8) | dis.read();
-        return true;
     }
 
     @Override
@@ -86,65 +73,48 @@ public class EncapsulatedPixelData extends ImageInputStreamImpl {
         if (endOfFrame())
             return -1;
 
-        switch (fragmPos++) {
-            case 0:
-                streamPos++;
-                return (fragmStartWord >> 8) & 0xff;
-            case 1:
-                streamPos++;
-                return fragmStartWord & 0xff;
-        }
-        int read = dis.read();
-        streamPos++;
-        return read;
+        return super.read();
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int read = 0;
-        while (fragmPos < 2 && len > 0) {
-            int b0 = read();
-            if (b0 == -1)
-                return read > 0 ? read : -1;
-            b[off++] = (byte) b0;
-            len--;
-            read++;
-        }
-
         if (endOfFrame())
-            return read > 0 ? read : -1;
+            return -1;
 
-        int read2 = dis.read(b, off, Math.min(len, fragmLen - fragmPos));
-        if (read2 == -1)
-            return read;
-
-        streamPos += read2;
-        return read + read2;
-    }
-
-    private boolean endOfFrame() throws IOException {
-        if (endOfFrame)
-            return true;
-
-        if (fragmLen > fragmPos)
-            return false;
-
-        if (nextFragment = nextFragment()) {
-            if (fragmStartWord != frameStartWord)
-                return false;
-        }
-        endOfFrame = true;
-        return true;
+        return super.read(b, off,
+                Math.min(len, (int)((frameEndPos < 0 ? fragmEndPos : frameEndPos) - streamPos)));
     }
 
     public boolean nextFrame() throws IOException {
-        if (!endOfFrame)
-            StreamUtils.skipFully(dis, fragmLen - fragmPos);
-        if (nextFragment) {
-            endOfFrame = false;
-        }
-        streamPos = 0;
-        bitOffset = 0;
-        return endOfFrame;
+        while (!endOfFrame())
+            seek(fragmEndPos);
+        flush();
+        frameEndPos = -1;
+        return !endOfStream;
     }
+
+    private boolean endOfFrame() throws IOException {
+        if (frameEndPos >= 0)
+            return streamPos >= frameEndPos;
+
+        if (streamPos < fragmEndPos)
+            return false;
+
+        if (!dis.readItemHeader()) {
+            frameEndPos = fragmEndPos;
+            endOfStream = true;
+            return true;
+        }
+        mark();
+        int fragmStartWord = (super.read() << 8) | super.read();
+        reset();
+        if (frameStartWord == 0) {
+            frameStartWord = fragmStartWord;
+        } else {
+            frameEndPos = fragmStartWord == frameStartWord ? fragmEndPos : -1L;
+        }
+        fragmEndPos = streamPos + dis.length();
+        return frameEndPos >= 0;
+    }
+
 }

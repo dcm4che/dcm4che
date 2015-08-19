@@ -94,13 +94,25 @@ public class TranscoderTest {
     }
 
     @Test
+    public void testDecompressJPEG12bit() throws Exception {
+        if (Boolean.getBoolean("JIIO"))
+            test("NM1_JPLY", "NM1_JPLY.unc", UID.ExplicitVRLittleEndian, true);
+    }
+
+    @Test
+    public void testDecompressMF() throws Exception {
+        test("US-PAL-8-10x-echo", "US-PAL-8-10x-echo.unc", UID.ExplicitVRLittleEndian, true);
+    }
+
+    @Test
     public void testCompressMF() throws Exception {
         test("cplx_p02.dcm", "cplx_p02_jply.dcm", UID.JPEGBaseline1, true);
     }
 
     @Test
     public void testCompressEmbeddedOverlays() throws Exception {
-        test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended24, true);
+        if (Boolean.getBoolean("JIIO"))
+            test("ovly_p01.dcm", "ovly_p01_jply.dcm", UID.JPEGExtended24, true);
     }
 
     @Test

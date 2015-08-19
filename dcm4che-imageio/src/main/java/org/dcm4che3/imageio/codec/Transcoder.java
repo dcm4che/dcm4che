@@ -448,8 +448,8 @@ public class Transcoder implements Closeable {
     private BufferedImage decompressFrame(int frameIndex) throws IOException {
         encapsulatedPixelData.nextFrame();
         decompressor.setInput(decompressorParam.patchJPEGLS != null
-                ? new PatchJPEGLSImageInputStream(encapsulatedPixelData, compressorParam.patchJPEGLS)
-                : encapsulatedPixelData, true);
+                ? new PatchJPEGLSImageInputStream(encapsulatedPixelData, decompressorParam.patchJPEGLS)
+                : encapsulatedPixelData);
         if (srcTransferSyntaxType == TransferSyntaxType.RLE)
             initBufferedImage();
         decompressParam.setDestination(bi);

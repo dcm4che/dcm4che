@@ -121,7 +121,7 @@ public class UpgradeRunner {
                     Properties props = new Properties();
                     props.putAll(upgradeSettings.getProperties());
 
-                    if (props.getProperty(RUN_ALWAYS) != null) {
+                    if (props.getProperty(RUN_ALWAYS) == null) {
                         // check if we need to run scripts at all
                         if (fromVersion.compareToIgnoreCase(toVersion) >= 0) {
                             log.info("Skipping configuration upgrade - configuration version is already " + toVersion);

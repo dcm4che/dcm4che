@@ -38,43 +38,19 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.upgrade;
+package org.dcm4che3.conf.api.upgrade;
 
-import org.dcm4che3.conf.api.upgrade.UpgradeScript;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Allows to specify an upgrade script version, when a script is executed, this value will be persisted in the config metadata
  * @author Roman K
  */
-@ConfigurableClass
-public class ConfigurationMetadata {
-
-    @ConfigurableProperty
-    private String version;
-
-    @ConfigurableProperty
-    Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts = new HashMap<String, UpgradeScript.UpgradeScriptMetadata>();
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public Map<String, UpgradeScript.UpgradeScriptMetadata> getMetadataOfUpgradeScripts() {
-        return metadataOfUpgradeScripts;
-    }
-
-    public void setMetadataOfUpgradeScripts(Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts) {
-        this.metadataOfUpgradeScripts = metadataOfUpgradeScripts;
-    }
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ScriptVersion {
+    String value();
 }
-
-

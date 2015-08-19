@@ -39,6 +39,9 @@ package org.dcm4che3.tool.wadouri.test;
 
 import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
  * 
@@ -46,18 +49,27 @@ import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
 public class WadoURIResponse extends SimpleHTTPResponse{
 
-    String retrievedInstance;
+    List<String> retrievedInstances = new ArrayList<String>();
+
     public WadoURIResponse(int status, String message) {
         super(status, message);
     }
     
     public WadoURIResponse(int status, String message, String instancePath) {
         super(status, message);
-        this.retrievedInstance = instancePath;
+        retrievedInstances.add(instancePath);
     }
 
+    /**
+     * In case of multi-frame returns the first frame
+     * @return
+     */
     public String getRetrievedInstance() {
-        return retrievedInstance;
+        return retrievedInstances.get(0);
+    }
+
+    public void addRetrievedInstance(String instancePath) {
+        retrievedInstances.add(instancePath);
     }
 
 }

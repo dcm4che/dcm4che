@@ -45,10 +45,9 @@ import org.dcm4che3.tool.wadouri.WadoURI;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
  */
 
-public class WadoURITool implements TestTool{
+public class WadoURITool implements TestTool {
 
     private String url;
     private String studyUID;
@@ -64,7 +63,7 @@ public class WadoURITool implements TestTool{
     //windowParams;
     private String windowCenter;
     private String windowWidth;
-    private int frameNumber;
+    private int[] frameNumbers;
     private int imageQuality;
     //presentationUID;
     private String presentationSeriesUID;
@@ -75,7 +74,7 @@ public class WadoURITool implements TestTool{
     private TestResult result;
 
     public WadoURITool() {
-        
+
     }
 
     public WadoURITool(
@@ -92,7 +91,7 @@ public class WadoURITool implements TestTool{
             String regionCoordinates,
             String windowCenter,
             String windowWidth,
-            int frameNumber,
+            int[] frameNumbers,
             int imageQuality,
             String presentationSeriesUID,
             String presentationUID,
@@ -112,7 +111,7 @@ public class WadoURITool implements TestTool{
         this.regionCoordinates = regionCoordinates;
         this.windowCenter = windowCenter;
         this.windowWidth = windowWidth;
-        this.frameNumber = frameNumber;
+        this.frameNumbers = frameNumbers;
         this.imageQuality = imageQuality;
         this.presentationSeriesUID = presentationSeriesUID;
         this.presentationUID = presentationUID;
@@ -130,19 +129,44 @@ public class WadoURITool implements TestTool{
 
     private void wado(String testDescription, boolean enableOverlays) throws Exception {
         long t1, t2;
-        WadoURI wadouri = new WadoURI(this.url, this.studyUID,this.seriesUID,this.objectUID,
-                this.contentType,this.charset,this.anonymize,this.annotation
-                ,this.rows,this.columns,this.regionCoordinates,this.windowCenter,
-                this.windowWidth,this.frameNumber,this.imageQuality,this.presentationSeriesUID,
-                this.presentationUID,this.transferSyntax);
+
+        t1 = System.currentTimeMillis();
+        WadoURIResponse response = null;
+
+
+        if (frameNumbers == null || frameNumbers.length == 0) {
+            // no frames
+            response = makeWadoURI(enableOverlays, -1).getResponse();
+        } else {
+            // multi-frame - iterate through frames
+            for (int frameNumber : frameNumbers) {
+                WadoURI wadouri = makeWadoURI(enableOverlays, frameNumber);
+
+                WadoURIResponse thisFrameResponse = wadouri.getResponse();
+                if (response == null)
+                    response = thisFrameResponse;
+                else
+                    response.addRetrievedInstance(thisFrameResponse.getRetrievedInstance());
+            }
+        }
+        t2 = System.currentTimeMillis();
+        init(new WadoURIResult(testDescription, t2 - t1, response));
+    }
+
+    private WadoURI makeWadoURI(boolean enableOverlays, int frameNumber) throws Exception {
+        WadoURI wadouri = new WadoURI(this.url, this.studyUID, this.seriesUID, this.objectUID,
+                 this.contentType, this.charset, this.anonymize, this.annotation
+                 , this.rows, this.columns, this.regionCoordinates, this.windowCenter,
+                 this.windowWidth, frameNumber, this.imageQuality, this.presentationSeriesUID,
+                 this.presentationUID, this.transferSyntax);
+
         wadouri.setOverlays(enableOverlays);
         wadouri.setOutDir(this.retrieveDir);
         wadouri.setOutFileName(this.objectUID);
-        t1 = System.currentTimeMillis();
         wadouri.wado(wadouri);
-        t2 = System.currentTimeMillis();
-        init(new WadoURIResult(testDescription, t2-t1, wadouri.getResponse()));
+        return wadouri;
     }
+
     @Override
     public void init(TestResult result) {
         this.result = result;

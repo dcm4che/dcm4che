@@ -42,7 +42,6 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
@@ -55,6 +54,9 @@ import java.io.*;
 import java.net.*;
 import java.security.GeneralSecurityException;
 import java.util.*;
+import org.dcm4che3.net.proxy.ProxyManager;
+import org.dcm4che3.net.proxy.ProxyService;
+
 
 /**
  * A DICOM Part 15, Annex H compliant class, <code>NetworkConnection</code>
@@ -189,6 +191,12 @@ public class Connection implements Serializable {
     @ConfigurableProperty(name = "dicomTLSCipherSuite")
     private String[] tlsCipherSuites = {};
 
+    @ConfigurableProperty(name = "dcmHTTPProxyProviderName", defaultValue = ProxyService.DEFAULT_PROVIDER_NAME)
+    private String httpProxyProviderName = ProxyService.DEFAULT_PROVIDER_NAME; 
+
+    @ConfigurableProperty(name = "dcmHTTPProxyProviderVersion", defaultValue = ProxyService.DEFAULT_VERSION)
+    private String httpProxyProviderVersion = ProxyService.DEFAULT_VERSION;
+
     @ConfigurableProperty(name = "dcmTLSProtocol")
     private String[] tlsProtocols = {"TLSv1", "SSLv3"};
 
@@ -221,7 +229,7 @@ public class Connection implements Serializable {
     private transient InetAddress clientBindAddr;
     private transient volatile Listener listener;
     private transient boolean rebindNeeded;
-
+    
     static {
         registerTCPProtocolHandler(Protocol.DICOM, DicomProtocolHandler.INSTANCE);
     }
@@ -312,6 +320,14 @@ public class Connection implements Serializable {
         return hostname;
     }
 
+    public String getHttpProxyProviderName() {
+        return httpProxyProviderName;
+    }
+
+    public String getHttpProxyProviderVersion() {
+        return httpProxyProviderVersion;
+    }
+
     /**
      * This is the DNS name for this particular connection. This is used to
      * obtain the current IP address for connections. Hostname must be
@@ -367,6 +383,11 @@ public class Connection implements Serializable {
     public String getClientBindAddress() {
         return clientBindAddress;
     }
+
+
+    public ProxyManager getProxyManager() {
+         return ProxyService.getInstance().getProxyManager(this.httpProxyProviderName,this.httpProxyProviderVersion);
+        }
 
     /**
      * Bind address of outgoing connections, {@code "0.0.0.0"}  or {@code null}.
@@ -475,6 +496,13 @@ public class Connection implements Serializable {
         extensions.put(connectionExtension.getClass(), connectionExtension);
     }
 
+    public void setHttpProxyProviderName(String httpProxyProviderName) {
+        this.httpProxyProviderName = httpProxyProviderName;
+    }
+
+    public void setHttpProxyProviderVersion(String httpProxyProviderVersion) {
+        this.httpProxyProviderVersion = httpProxyProviderVersion;
+    }
 
     private void reconfigureExtensions(Connection from) {
         for (Iterator<Class<? extends ConnectionExtension>> it =
@@ -1055,7 +1083,7 @@ public class Connection implements Serializable {
                 int proxyPort = ss.length > 1 ? Integer.parseInt(ss[1]) : 8080;
                 s.connect(new InetSocketAddress(ss[0], proxyPort), connectTimeout);
                 try {
-                    doProxyHandshake(s, remoteHostname, remotePort, userauth,
+                    getProxyManager().doProxyHandshake(s, remoteHostname, remotePort, userauth,
                             connectTimeout);
                 } catch (IOException e) {
                     SafeClose.close(s);
@@ -1103,64 +1131,64 @@ public class Connection implements Serializable {
         return listener;
     }
 
-    private void doProxyHandshake(Socket s, String hostname, int port,
-                                  String userauth, int connectTimeout) throws IOException {
-
-        StringBuilder request = new StringBuilder(128);
-        request.append("CONNECT ")
-                .append(hostname).append(':').append(port)
-                .append(" HTTP/1.1\r\nHost: ")
-                .append(hostname).append(':').append(port);
-        if (userauth != null) {
-            byte[] b = userauth.getBytes("UTF-8");
-            char[] base64 = new char[(b.length + 2) / 3 * 4];
-            Base64.encode(b, 0, b.length, base64, 0);
-            request.append("\r\nProxy-Authorization: basic ")
-                    .append(base64);
-        }
-        request.append("\r\n\r\n");
-        OutputStream out = s.getOutputStream();
-        out.write(request.toString().getBytes("US-ASCII"));
-        out.flush();
-
-        s.setSoTimeout(connectTimeout);
-        @SuppressWarnings("resource")
-        String response = new HTTPResponse(s).toString();
-        s.setSoTimeout(0);
-        if (!response.startsWith("HTTP/1.1 2"))
-            throw new IOException("Unable to tunnel through " + s
-                    + ". Proxy returns \"" + response + '\"');
-    }
-
-    private static class HTTPResponse extends ByteArrayOutputStream {
-
-        private final String rsp;
-
-        public HTTPResponse(Socket s) throws IOException {
-            super(64);
-            InputStream in = s.getInputStream();
-            boolean eol = false;
-            int b;
-            while ((b = in.read()) != -1) {
-                write(b);
-                if (b == '\n') {
-                    if (eol) {
-                        rsp = new String(super.buf, 0, super.count, "US-ASCII");
-                        return;
-                    }
-                    eol = true;
-                } else if (b != '\r') {
-                    eol = false;
-                }
-            }
-            throw new IOException("Unexpected EOF from " + s);
-        }
-
-        @Override
-        public String toString() {
-            return rsp;
-        }
-    }
+//    private void doProxyHandshake(Socket s, String hostname, int port,
+//                                  String userauth, int connectTimeout) throws IOException {
+//
+//        StringBuilder request = new StringBuilder(128);
+//        request.append("CONNECT ")
+//                .append(hostname).append(':').append(port)
+//                .append(" HTTP/1.1\r\nHost: ")
+//                .append(hostname).append(':').append(port);
+//        if (userauth != null) {
+//            byte[] b = userauth.getBytes("UTF-8");
+//            char[] base64 = new char[(b.length + 2) / 3 * 4];
+//            Base64.encode(b, 0, b.length, base64, 0);
+//            request.append("\r\nProxy-Authorization: basic ")
+//                    .append(base64);
+//        }
+//        request.append("\r\n\r\n");
+//        OutputStream out = s.getOutputStream();
+//        out.write(request.toString().getBytes("US-ASCII"));
+//        out.flush();
+//
+//        s.setSoTimeout(connectTimeout);
+//        @SuppressWarnings("resource")
+//        String response = new HTTPResponse(s).toString();
+//        s.setSoTimeout(0);
+//        if (!response.startsWith("HTTP/1.1 2"))
+//            throw new IOException("Unable to tunnel through " + s
+//                    + ". Proxy returns \"" + response + '\"');
+//    }
+//
+//    private static class HTTPResponse extends ByteArrayOutputStream {
+//
+//        private final String rsp;
+//
+//        public HTTPResponse(Socket s) throws IOException {
+//            super(64);
+//            InputStream in = s.getInputStream();
+//            boolean eol = false;
+//            int b;
+//            while ((b = in.read()) != -1) {
+//                write(b);
+//                if (b == '\n') {
+//                    if (eol) {
+//                        rsp = new String(super.buf, 0, super.count, "US-ASCII");
+//                        return;
+//                    }
+//                    eol = true;
+//                } else if (b != '\r') {
+//                    eol = false;
+//                }
+//            }
+//            throw new IOException("Unexpected EOF from " + s);
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return rsp;
+//        }
+//    }
 
     private SSLSocket createTLSSocket(Socket s, Connection remoteConn)
             throws GeneralSecurityException, IOException {
@@ -1260,7 +1288,6 @@ public class Connection implements Serializable {
         setTlsProtocols(from.tlsProtocols);
         setBlacklist(from.blacklist);
         setConnectionInstalled(from.connectionInstalled);
-
         reconfigureExtensions(from);
     }
 

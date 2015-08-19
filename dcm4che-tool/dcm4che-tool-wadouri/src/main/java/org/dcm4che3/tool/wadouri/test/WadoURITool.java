@@ -78,12 +78,26 @@ public class WadoURITool implements TestTool{
         
     }
 
-    public WadoURITool(String url, String studyUID, String seriesUID, String objectUID,
-            String contentType, String charset, boolean anonymize,
-            String annotation, int rows, int columns, String regionCoordinates,
-            String windowCenter, String windowWidth, int frameNumber,
-            int imageQuality, String presentationSeriesUID,
-            String presentationUID, String transferSyntax, File retrieveDir) {
+    public WadoURITool(
+            String url,
+            String studyUID,
+            String seriesUID,
+            String objectUID,
+            String contentType,
+            String charset,
+            boolean anonymize,
+            String annotation,
+            int rows,
+            int columns,
+            String regionCoordinates,
+            String windowCenter,
+            String windowWidth,
+            int frameNumber,
+            int imageQuality,
+            String presentationSeriesUID,
+            String presentationUID,
+            String transferSyntax,
+            File retrieveDir) {
         super();
         this.url = url;
         this.studyUID = studyUID;

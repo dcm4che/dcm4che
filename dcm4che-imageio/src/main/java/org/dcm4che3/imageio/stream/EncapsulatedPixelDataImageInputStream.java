@@ -38,7 +38,7 @@
  * *** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.imageio.codec;
+package org.dcm4che3.imageio.stream;
 
 import org.dcm4che3.io.DicomInputStream;
 
@@ -49,7 +49,7 @@ import java.io.IOException;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Aug 2015
  */
-public class EncapsulatedPixelData extends MemoryCacheImageInputStream {
+public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInputStream {
 
     private final DicomInputStream dis;
     private final byte[] basicOffsetTable;
@@ -58,7 +58,7 @@ public class EncapsulatedPixelData extends MemoryCacheImageInputStream {
     private long frameEndPos;
     private boolean endOfStream;
 
-    public EncapsulatedPixelData(DicomInputStream dis) throws IOException {
+    public EncapsulatedPixelDataImageInputStream(DicomInputStream dis) throws IOException {
         super(dis);
         this.dis = dis;
         dis.readItemHeader();

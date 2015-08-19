@@ -45,6 +45,7 @@ import org.dcm4che3.image.Overlays;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
+import org.dcm4che3.imageio.stream.EncapsulatedPixelDataImageInputStream;
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
@@ -58,7 +59,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.*;
 import javax.imageio.stream.ImageOutputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
@@ -106,7 +106,7 @@ public class Transcoder implements Closeable {
 
     private ImageDescriptor imageDescriptor;
 
-    private EncapsulatedPixelData encapsulatedPixelData;
+    private EncapsulatedPixelDataImageInputStream encapsulatedPixelData;
 
     private ImageReaderFactory.ImageReaderParam decompressorParam;
 
@@ -343,7 +343,7 @@ public class Transcoder implements Closeable {
     }
 
     private void initEncapsulatedPixelData() throws IOException {
-        encapsulatedPixelData = new EncapsulatedPixelData(dis);
+        encapsulatedPixelData = new EncapsulatedPixelDataImageInputStream(dis);
     }
 
     private void decompressPixelData() throws IOException {

@@ -9,42 +9,39 @@ import java.net.Socket;
 import org.dcm4che3.util.Base64;
 
 /**
- * Define basic proxy authentication processing.
- * This code come from old Connection.doProxyHandshake() method (before refactoring).
+ * Define basic proxy authentication processing. This code come from old
+ * Connection.doProxyHandshake() method (before refactoring).
  *
  * @author Amaury Pernette
  * 
  */
 public class BasicProxyManager implements ProxyManager {
 
-	public static String PROVIDER_NAME = "org.dcm4che.basic";
-	public static String VERSION = "1.0";
-	
-	@Override
-	public String getProviderName() {
-		return PROVIDER_NAME;
-	}
+    public static String PROVIDER_NAME = "org.dcm4che.basic";
+    public static String VERSION = "1.0";
 
-	@Override
-	public String getVersion() {
-		return VERSION;
-	}
+    @Override
+    public String getProviderName() {
+        return PROVIDER_NAME;
+    }
 
-	@Override
-	public void doProxyHandshake(Socket s, String hostname, int port,
-			String userauth, int connectTimeout) throws IOException {
+    @Override
+    public String getVersion() {
+        return VERSION;
+    }
+
+    @Override
+    public void doProxyHandshake(Socket s, String hostname, int port, String userauth, int connectTimeout)
+            throws IOException {
 
         StringBuilder request = new StringBuilder(128);
-        request.append("CONNECT ")
-                .append(hostname).append(':').append(port)
-                .append(" HTTP/1.1\r\nHost: ")
+        request.append("CONNECT ").append(hostname).append(':').append(port).append(" HTTP/1.1\r\nHost: ")
                 .append(hostname).append(':').append(port);
         if (userauth != null) {
             byte[] b = userauth.getBytes("UTF-8");
             char[] base64 = new char[(b.length + 2) / 3 * 4];
             Base64.encode(b, 0, b.length, base64, 0);
-            request.append("\r\nProxy-Authorization: basic ")
-                    .append(base64);
+            request.append("\r\nProxy-Authorization: basic ").append(base64);
         }
         request.append("\r\n\r\n");
         OutputStream out = s.getOutputStream();
@@ -56,10 +53,9 @@ public class BasicProxyManager implements ProxyManager {
         String response = new HTTPResponse(s).toString();
         s.setSoTimeout(0);
         if (!response.startsWith("HTTP/1.1 2"))
-            throw new IOException("Unable to tunnel through " + s
-                    + ". Proxy returns \"" + response + '\"');
+            throw new IOException("Unable to tunnel through " + s + ". Proxy returns \"" + response + '\"');
 
-	}
+    }
 
     private static class HTTPResponse extends ByteArrayOutputStream {
 

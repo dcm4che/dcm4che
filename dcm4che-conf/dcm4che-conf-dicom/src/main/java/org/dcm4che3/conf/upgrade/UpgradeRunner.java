@@ -127,6 +127,9 @@ public class UpgradeRunner {
                             log.info("Skipping configuration upgrade - configuration version is already " + toVersion);
                             return;
                         }
+                    } else {
+                        log.warn("org.dcm4che.conf.upgrade.runAlways is set to TRUE, all the upgrade scripts will be re-executed unconditionally. " +
+                                "This is NOT supposed to be used in production and may introduce inconsistencies in a clustered setup.");
                     }
 
                     log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());

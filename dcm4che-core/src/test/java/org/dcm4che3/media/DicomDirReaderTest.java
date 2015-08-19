@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
-import org.dcm4che3.media.DicomDirReader;
 import org.junit.Test;
 
 /**

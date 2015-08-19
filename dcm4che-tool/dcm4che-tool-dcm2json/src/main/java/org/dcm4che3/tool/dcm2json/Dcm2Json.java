@@ -38,8 +38,10 @@
 
 package org.dcm4che3.tool.dcm2json;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,6 +53,7 @@ import java.util.ResourceBundle;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -67,6 +70,8 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 /**
+ * Tool to convert DICOM to JSON representation.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class Dcm2Json {
@@ -169,15 +174,9 @@ public class Dcm2Json {
             configureBulkdata(main, cl);
             String fname = fname(cl.getArgList());
             if (fname.equals("-")) {
-                main.parse(new DicomInputStream(System.in));
+                main.convert(new DicomInputStream(System.in), System.out);
             } else {
-                DicomInputStream dis =
-                        new DicomInputStream(new File(fname));
-                try {
-                    main.parse(dis);
-                } finally {
-                    dis.close();
-                }
+                main.convert(new File(fname), System.out);
             }
         } catch (ParseException e) {
             System.err.println("dcm2xml: " + e.getMessage());
@@ -238,7 +237,7 @@ public class Dcm2Json {
         return argList.get(0);
     }
 
-    public void parse(DicomInputStream dis) throws IOException {
+    public void convert(DicomInputStream dis, OutputStream out) throws IOException {
         dis.setIncludeBulkData(includeBulkData);
         if (blkAttrs != null)
             dis.setBulkDataDescriptor(BulkDataDescriptor.valueOf(blkAttrs));
@@ -246,11 +245,31 @@ public class Dcm2Json {
         dis.setBulkDataFilePrefix(blkFilePrefix);
         dis.setBulkDataFileSuffix(blkFileSuffix);
         dis.setConcatenateBulkDataFiles(catBlkFiles);
-        JsonGenerator jsonGen = createGenerator(System.out);
+        JsonGenerator jsonGen = createGenerator(out);
         JSONWriter jsonWriter = new JSONWriter(jsonGen);
         dis.setDicomInputHandler(jsonWriter);
         dis.readDataset(-1, -1);
         jsonGen.flush();
+    }
+
+    public void convert(File dicomFile, OutputStream out) throws IOException,
+            TransformerConfigurationException {
+        DicomInputStream dis = new DicomInputStream(dicomFile);
+        try {
+            convert(dis, out);
+        } finally {
+            dis.close();
+        }
+    }
+
+    public void convert(File dicomFile, File jsonFile) throws IOException,
+            TransformerConfigurationException {
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(jsonFile));
+        try {
+            convert(dicomFile, out);
+        } finally {
+            out.close();
+        }
     }
 
     private JsonGenerator createGenerator(OutputStream out) {

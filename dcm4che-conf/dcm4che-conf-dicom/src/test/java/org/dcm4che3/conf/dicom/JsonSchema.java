@@ -47,6 +47,7 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.dicom.CommonDicomConfigurationWithHL7;
 import org.dcm4che3.net.ApplicationEntity;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ import java.util.Map;
  */
 public class JsonSchema {
 
-    @Test
+    //    @Test
     public void testSchema() throws ConfigurationException {
 
         BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();

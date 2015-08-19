@@ -1203,8 +1203,8 @@ public class Association {
         checkException();
         rspHandler.setPC(pc);
         addDimseRSPHandler(rspHandler);
-        encoder.writeDIMSE(pc, cmd, data);
         startTimeout(rspHandler.getMessageID(), rspTimeout);
+        encoder.writeDIMSE(pc, cmd, data);
     }
 
     static int minZeroAsMax(int i1, int i2) {

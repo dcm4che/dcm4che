@@ -149,12 +149,14 @@ public class DefaultTransferCapabilities {
         UID.RTIonPlanStorage,
         UID.RTIonBeamsTreatmentRecordStorage,
     };
+
     public static final String[] QUERY_CUIDS = {
-        UID.PatientRootQueryRetrieveInformationModelFIND,
-        UID.StudyRootQueryRetrieveInformationModelFIND,
-        UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired,
-        UID.ModalityWorklistInformationModelFIND
+            UID.PatientRootQueryRetrieveInformationModelFIND,
+            UID.StudyRootQueryRetrieveInformationModelFIND,
+            UID.PatientStudyOnlyQueryRetrieveInformationModelFINDRetired
+            //UID.ModalityWorklistInformationModelFIND - handled separately
     };
+
     public static final String[] RETRIEVE_CUIDS = {
         UID.PatientRootQueryRetrieveInformationModelGET,
         UID.PatientRootQueryRetrieveInformationModelMOVE,

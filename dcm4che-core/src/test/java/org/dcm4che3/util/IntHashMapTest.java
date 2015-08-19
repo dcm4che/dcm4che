@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.dcm4che3.util.IntHashMap;
 import org.junit.Before;
 import org.junit.Test;
 

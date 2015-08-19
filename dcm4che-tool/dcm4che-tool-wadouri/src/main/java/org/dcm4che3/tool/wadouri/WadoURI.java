@@ -436,6 +436,9 @@ public class WadoURI{
             else if(contentType.contains("text/rtf")) {
                 f=writeFile(in, main, ".rtf");
             }
+            else if(contentType.contains("text/xml")) {
+                f=writeFile(in, main, ".xml");
+            }
             else // text/plain
                 f=writeFile(in, main, ".txt");
         }

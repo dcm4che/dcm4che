@@ -38,7 +38,15 @@
 
 package org.dcm4che3.tool.storescu.test;
 
-import static org.junit.Assert.assertTrue;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.net.*;
+import org.dcm4che3.tool.common.test.TestResult;
+import org.dcm4che3.tool.common.test.TestTool;
+import org.dcm4che3.tool.storescu.StoreSCU;
+import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,19 +60,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.Status;
-import org.dcm4che3.tool.storescu.StoreSCU;
-import org.dcm4che3.tool.common.test.TestResult;
-import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.util.TagUtils;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
@@ -72,28 +68,33 @@ import org.dcm4che3.util.TagUtils;
  */
 public class StoreTool implements TestTool {
 
+    public static final Logger LOG = LoggerFactory.getLogger(StoreTool.class);
+
+
     private String host;
     private int port;
     private String aeTitle;
     private File baseDirectory;
     private Device device;
     private Connection conn;
+
     private String sourceAETitle;
-    
     private long totalSize;
     private int filesSent;
     private int warnings;
     private int failures;
     private ArrayList<Attributes> cmdRSP = new ArrayList<Attributes>();
-    private TestResult result;
-    
+
+    private StoreResult result;
+    private long timeStarted;
+
     /**
      * @param host
      * @param port
      * @param aeTitle
      * @param baseDirectory
-     * @param device 
-     * @param conn 
+     * @param device
+     * @param conn
      */
     public StoreTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle, Connection conn) {
         super();
@@ -110,18 +111,18 @@ public class StoreTool implements TestTool {
             throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
 
-        long t1, t2;
+        long t2;
         Path p = Paths.get(fileName);
         if(!p.isAbsolute() && baseDirectory == null)
             throw new IllegalArgumentException("No base Directory and file"
                     + " to send is provided as a relative path");
-        
+
         File file = p.isAbsolute()? new File(fileName):new File(baseDirectory, fileName);
 
         assertTrue(
                 "file or directory does not exists: " + file.getAbsolutePath(),
                 file.exists());
-        
+
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
         device.addApplicationEntity(ae);
@@ -168,7 +169,7 @@ public class StoreTool implements TestTool {
         try {
             main.open();
 
-            t1 = System.currentTimeMillis();
+            timeStarted = System.currentTimeMillis();
             main.sendFiles();
             t2 = System.currentTimeMillis();
         } finally {
@@ -176,7 +177,7 @@ public class StoreTool implements TestTool {
             executorService.shutdown();
             scheduledExecutorService.shutdown();
         }
-        init(new StoreResult(testDescription, fileName, totalSize, (t2 - t1),
+        init(new StoreResult(testDescription, fileName, totalSize, (t2 - timeStarted),
                 filesSent, warnings, failures, cmdRSP));
     }
 
@@ -205,15 +206,19 @@ public class StoreTool implements TestTool {
                     TagUtils.shortToHexString(status), f));
             System.err.println(cmd);
         }
+
+        if (filesSent % 100 == 0)
+            LOG.warn("Files sent: {}, took {} sec.", filesSent, (System.currentTimeMillis() - timeStarted) / 1000.0);
+
     }
 
     @Override
     public void init(TestResult result) {
-        this.result = result;
+        this.result = (StoreResult) result;
     }
 
     @Override
-    public TestResult getResult() {
+    public StoreResult getResult() {
         return this.result;
     }
 

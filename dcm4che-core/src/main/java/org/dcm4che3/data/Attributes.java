@@ -42,7 +42,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.dcm4che3.data.IOD.DataElement;
@@ -1619,7 +1623,7 @@ public class Attributes implements Serializable {
                                     from, to, (String) tm);
                         }
                     } else {
-                        if (tmRange != null || isRange((String) da)) {
+                        if (tmRange != null) {
                             String[] daRange = splitRange((String) da);
                             if (daRange[0] == null) {
                                 daRange[0] = "";
@@ -1670,7 +1674,9 @@ public class Attributes implements Serializable {
             DatePrecision precision = new DatePrecision();
             Date date = DateUtils.parseDT(from, dt, false, precision);
             dt = DateUtils.formatDT(to, date, precision);
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+            // ignored
+        }
         return dt;
     }
 
@@ -1679,7 +1685,9 @@ public class Attributes implements Serializable {
             DatePrecision precision = new DatePrecision();
             Date date = DateUtils.parseTM(from, tm, false, precision);
             tm = DateUtils.formatTM(to, date, precision);
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+            // ignored
+        }
         return tm;
     }
 
@@ -2003,7 +2011,7 @@ public class Attributes implements Serializable {
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, selection, false, false, false, null);
+        return add(other, null, null, 0, 0, selection, false, false, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -2178,7 +2186,7 @@ public class Attributes implements Serializable {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
-        final int[] tags = other.tags;
+        final int[] otherTags = other.tags;
         final VR[] srcVRs = other.vrs;
         final Object[] srcValues = other.values;
         final int otherSize = other.size;
@@ -2186,24 +2194,18 @@ public class Attributes implements Serializable {
         String privateCreator = null;
         int creatorTag = 0;
         for (int i = 0; i < otherSize; i++) {
-            int tag = tags[i];
+            int tag = otherTags[i];
             VR vr = srcVRs[i];
             Object value = srcValues[i];
             if (TagUtils.isPrivateCreator(tag)) {
-                if (contains(tag))
-                    continue; // do not overwrite private creator IDs
-
-                if (vr == VR.LO) {
-                    value = other.decodeStringValue(i);
-                    if ((value instanceof String)
-                            && creatorTagOf((String) value, tag, false) != -1)
-                        continue; // do not add duplicate private creator ID
-                }
+                continue; // private creators will be automatically added with the private tags
             }
+
             if (include != null && Arrays.binarySearch(include, fromIndex, toIndex, tag) < 0)
                 continue;
             if (exclude != null && Arrays.binarySearch(exclude, fromIndex, toIndex, tag) >= 0)
                 continue;
+
             if (TagUtils.isPrivateTag(tag)) {
                 int tmp = TagUtils.creatorTagOf(tag);
                 if (creatorTag != tmp) {
@@ -2214,6 +2216,10 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
+
+            if (selection != null && !selection.contains(privateCreator, tag))
+                continue;
+
             if (merge || update) {
                 int j = indexOf(tag);
                 if (j >= 0) {
@@ -2244,7 +2250,7 @@ public class Attributes implements Serializable {
                 if (value instanceof Sequence) {
                     set(privateCreator, tag, (Sequence) value,
                             selection != null 
-                                ? selection.getNestedDataset(tag)
+                                ? selection.getNestedDataset(privateCreator, tag)
                                 : null);
                 } else if (value instanceof Fragments) {
                     set(privateCreator, tag, (Fragments) value);
@@ -2276,7 +2282,7 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute were added or
      *          overwritten with a different value
      */
@@ -2293,7 +2299,7 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute would be added or
      *          overwritten with a different value
      */
@@ -2344,60 +2350,6 @@ public class Attributes implements Serializable {
         return true;
    }
 
-    public Attributes diff(Attributes b, boolean both) {
-        Object[] otherValues = b.values;
-        Attributes inAnotInB = new Attributes();
-        Attributes inBnotInA = new Attributes();
-        Attributes diffBoth = new Attributes();
-        for(int indexOfTag = 0;indexOfTag < tags.length && tags[indexOfTag]!=0; indexOfTag++) {
-            if(TagUtils.isPrivateGroup(tags[indexOfTag])) {
-                if(TagUtils.isPrivateCreator(tags[indexOfTag])) {
-                    //treat as a normal tag with normal compare
-                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
-                }
-                else {
-                    //check if private creator is in b
-                    int privateCreatorTag = TagUtils.creatorTagOf(tags[indexOfTag]);
-                    Object o=getValue(privateCreatorTag);
-                    Object o1=b.values[b.indexOf(privateCreatorTag)];
-                    if(b.contains(privateCreatorTag) && o1.equals(o))
-                    diffAttr(b, otherValues, inAnotInB, indexOfTag);
-                    else
-                        inAnotInB.set(tags[indexOfTag],vrs[indexOfTag],values[indexOfTag]);
-                }
-            }
-            else {
-                diffAttr(b, otherValues, inAnotInB, indexOfTag);
-            }
-        }
-        
-        inBnotInA.addAll(filterOutPrivateCreator(inAnotInB,b));
-        if(both) {
-        diffBoth.addAll(inAnotInB);
-        diffBoth.addAll(inBnotInA);
-        }
-            return both?diffBoth:inAnotInB;
-    }
-
-    private Attributes filterOutPrivateCreator(Attributes inAnotInB, Attributes b) {
-        for(int tag : b.tags)
-            if(!inAnotInB.contains(tag) && TagUtils.isPrivateCreator(tag))
-                b.remove(tag);
-        return b;
-    }
-
-    private void diffAttr(Attributes b, Object[] otherValues,
-            Attributes inAnotInB, int indexOfTag) {
-        if(!(b.contains(tags[indexOfTag]) && otherValues[b.indexOf(tags[indexOfTag])].equals(values[indexOfTag]))) {
-            //add to diff in a not in b
-            inAnotInB.set(tags[indexOfTag], vrs[indexOfTag], values[indexOfTag]);
-        }
-        else {
-            if(!TagUtils.isPrivateCreator(tags[indexOfTag]))
-            b.remove(tags[indexOfTag]);
-        }
-    }
-    
     private boolean equalValues(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])
@@ -2670,13 +2622,17 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Invokes {@link Visitor.visit} for each attribute in this instance. The
-     * operation will be aborted if <code>visitor.visit()</code> returns <code>false</code>.
+     * Invokes {@link Visitor#visit} for each attribute in this instance. The
+     * operation will be aborted if <code>visitor.visit()</code> returns
+     * <code>false</code> or throws an exception.
      * 
      * @param visitor
-     * @param visitNestedDatasets controls if <code>visitor.visit()</code>
-     *  is also invoked for attributes in nested datasets
+     * @param visitNestedDatasets
+     *            controls if <code>visitor.visit()</code> is also invoked for
+     *            attributes in nested datasets
      * @return <code>true</code> if the operation was not aborted.
+     * @throws Exception
+     *             exception thrown by {@link Visitor#visit}
      */
     public boolean accept(Visitor visitor, boolean visitNestedDatasets)
             throws Exception{
@@ -3163,7 +3119,7 @@ public class Attributes implements Serializable {
             } else if (origValue instanceof Fragments) {
                 result.set(privateCreator, tag, (Fragments) origValue);
             } else {
-                result.set(privateCreator, tag, vrs[i], origValue);
+                result.set(privateCreator, tag, vrs[j], origValue);
             }
         }
         return result;

@@ -1,26 +1,33 @@
-package org.dcm4che3.conf.api.migration;
+package org.dcm4che3.conf.api.upgrade;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 
-public interface MigrationScript {
-    String NO_VERSION = "NO_VERSION";
+import java.util.Map;
+import java.util.Properties;
 
-    void migrate(MigrationContext migrationContext) throws ConfigurationException;
+public interface UpgradeScript {
+    String NO_VERSION = "-NO_VERSION-";
 
-    static class MigrationContext {
+    void upgrade(UpgradeContext upgradeContext) throws ConfigurationException;
+
+    class UpgradeContext {
         private String fromVersion;
         private String toVersion;
+        private Properties properties;
+        private Map<String,Object> scriptConfig;
         private Configuration configuration;
         private DicomConfiguration dicomConfiguration;
 
-        public MigrationContext() {
+        public UpgradeContext() {
         }
 
-        public MigrationContext(String fromVersion, String toVersion, Configuration configuration, DicomConfiguration dicomConfiguration) {
+        public UpgradeContext(String fromVersion, String toVersion, Properties properties, Map<String,Object> scriptConfig, Configuration configuration, DicomConfiguration dicomConfiguration) {
             this.fromVersion = fromVersion;
             this.toVersion = toVersion;
+            this.properties = properties;
+            this.scriptConfig = scriptConfig;
             this.configuration = configuration;
             this.dicomConfiguration = dicomConfiguration;
         }
@@ -39,6 +46,14 @@ public interface MigrationScript {
 
         public DicomConfiguration getDicomConfiguration() {
             return dicomConfiguration;
+        }
+
+        public Properties getProperties() {
+            return properties;
+        }
+        
+        public Map<String,Object> getScriptConfig() {
+            return scriptConfig;
         }
     }
 }

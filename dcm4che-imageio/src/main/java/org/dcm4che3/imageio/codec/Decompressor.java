@@ -74,7 +74,7 @@ public class Decompressor {
     protected final String tsuid;
     protected final TransferSyntaxType tsType;
     protected Fragments pixeldataFragments;
-    protected File file;
+    protected File file = null;
     protected ImageParams imageParams;
     protected BufferedImage bi;
     protected ImageReader decompressor;
@@ -122,7 +122,7 @@ public class Decompressor {
             LOG.debug("Decompressor: {}", decompressor.getClass().getName());
             this.readParam = decompressor.getDefaultReadParam();
             this.patchJPEGLS = param.patchJPEGLS;
-        } else {
+        } else if (pixeldata instanceof BulkData) {
             this.file = ((BulkData) pixeldata).getFile();
         }
     }

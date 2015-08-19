@@ -63,9 +63,9 @@ public class NullToNullDecorator<T, ST> implements ConfigTypeAdapter<T, ST> {
         this.configTypeAdapter = configTypeAdapter;
     }
 
-    public T fromConfigNode(ST configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public T fromConfigNode(ST configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
         if (configNode == null) return null;
-        return configTypeAdapter.fromConfigNode(configNode, property, vitalizer);
+        return configTypeAdapter.fromConfigNode(configNode, property, vitalizer, parent);
     }
 
     public ST toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {

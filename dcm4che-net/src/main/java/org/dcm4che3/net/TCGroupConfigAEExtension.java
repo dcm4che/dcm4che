@@ -4,6 +4,7 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.data.UID;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static org.dcm4che3.net.TransferCapability.Role.SCU;
@@ -22,7 +23,9 @@ public class TCGroupConfigAEExtension extends AEExtension {
     public enum DefaultGroup {
         STORAGE,
         PPS,
-        QUERY_RETRIEVE,
+        QUERY,
+        RETRIEVE,
+        MWL,
         STORAGE_COMMITMENT
     }
 
@@ -60,6 +63,33 @@ public class TCGroupConfigAEExtension extends AEExtension {
         return groups;
     }
 
+    /**
+     * Restricts transfer syntaxes for all SOP classes for this AE to Little Endian Implicit and Video-related ones
+     */
+    public void setLEIAndVideoOnly(boolean leiAndVideoOnly) {
+        if (leiAndVideoOnly) {
+            for (TCGroupDetails tcGroupDetails : scpTCs.values())
+                whitelistLEIAndVideoTSs(tcGroupDetails);
+            for (TCGroupDetails tcGroupDetails : scuTCs.values())
+                whitelistLEIAndVideoTSs(tcGroupDetails);
+        } else {
+
+            for (TCGroupDetails tcGroupDetails : scpTCs.values())
+                tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+            for (TCGroupDetails tcGroupDetails : scuTCs.values())
+                tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+        }
+    }
+
+    private void whitelistLEIAndVideoTSs(TCGroupDetails tcGroupDetails) {
+        tcGroupDetails.getWhitelistedTransferSyntaxes().clear();
+        tcGroupDetails.getWhitelistedTransferSyntaxes().add(UID.ImplicitVRLittleEndian);
+
+        for (String videoTsuid : DefaultTransferCapabilities.VIDEO_TSUIDS) {
+            tcGroupDetails.getWhitelistedTransferSyntaxes().add(videoTsuid);
+        }
+    }
+
     public Map<String, TCGroupDetails> getScuTCs() {
         return scuTCs;
     }
@@ -77,13 +107,18 @@ public class TCGroupConfigAEExtension extends AEExtension {
     }
 
     @ConfigurableClass
-    public static class TCGroupDetails {
+    public static class TCGroupDetails implements Serializable {
 
         public TCGroupDetails() {
         }
 
         @ConfigurableProperty
         private List<String> excludedTransferSyntaxes = new ArrayList<String>();
+
+        @ConfigurableProperty(
+                description = "If not empty, all the syntaxes but those specified by this parameter" +
+                "will be effectively removed from AE's transfer capabilities")
+        private List<String> whitelistedTransferSyntaxes = new ArrayList<String>();
 
         @ConfigurableProperty
         private List<String> excludedTransferCapabilities = new ArrayList<String>();
@@ -102,6 +137,14 @@ public class TCGroupConfigAEExtension extends AEExtension {
 
         public void setExcludedTransferCapabilities(List<String> excludedTransferCapabilities) {
             this.excludedTransferCapabilities = excludedTransferCapabilities;
+        }
+
+        public List<String> getWhitelistedTransferSyntaxes() {
+            return whitelistedTransferSyntaxes;
+        }
+
+        public void setWhitelistedTransferSyntaxes(List<String> whitelistedTransferSyntaxes) {
+            this.whitelistedTransferSyntaxes = whitelistedTransferSyntaxes;
         }
     }
 
@@ -126,11 +169,21 @@ public class TCGroupConfigAEExtension extends AEExtension {
                 allTCToList(transferCapabilities, new String[]{UID.InstanceAvailabilityNotificationSOPClass, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
-            case QUERY_RETRIEVE:
+            case QUERY:
                 transferCapabilities = new ArrayList<TransferCapability>();
-                allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
-                allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), UID.ImplicitVRLittleEndian);
+                allTCToList(transferCapabilities, DefaultTransferCapabilities.QUERY_CUIDS, EnumSet.allOf(QueryOption.class), DefaultTransferCapabilities.OTHER_TSUIDS);
+                allTCToList(transferCapabilities, new String[]{UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                return transferCapabilities;
+
+            case RETRIEVE:
+                transferCapabilities = new ArrayList<TransferCapability>();
+                allTCToList(transferCapabilities, DefaultTransferCapabilities.RETRIEVE_CUIDS, EnumSet.of(QueryOption.RELATIONAL), DefaultTransferCapabilities.OTHER_TSUIDS);
                 allTCToList(transferCapabilities, new String[]{UID.CompositeInstanceRetrieveWithoutBulkDataGET, UID.VerificationSOPClass}, null, UID.ImplicitVRLittleEndian);
+                return transferCapabilities;
+
+            case MWL:
+                transferCapabilities = new ArrayList<TransferCapability>();
+                allTCToList(transferCapabilities, new String[]{UID.ModalityWorklistInformationModelFIND, UID.VerificationSOPClass}, EnumSet.allOf(QueryOption.class), UID.ImplicitVRLittleEndian);
                 return transferCapabilities;
 
             case PPS:

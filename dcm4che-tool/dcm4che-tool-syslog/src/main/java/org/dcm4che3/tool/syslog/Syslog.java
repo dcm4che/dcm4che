@@ -86,7 +86,7 @@ public class Syslog {
         logDevice.addConnection(conn);
         arrDevice.addDeviceExtension(arr);
         arrDevice.addConnection(remote);
-        auditLogger.setAuditRecordRepositoryDevice(arrDevice);
+        auditLogger.addAuditRecordRepositoryDevice(arrDevice);
     }
 
     private void setProtocol(Connection.Protocol protocol) {

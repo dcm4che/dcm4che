@@ -40,6 +40,7 @@ package org.dcm4che3.tool.mppsscp;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
@@ -74,91 +75,150 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public class MppsSCP {
 
-   private static ResourceBundle rb =
+    private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.mppsscp.messages");
 
-   private static final Logger LOG = LoggerFactory.getLogger(MppsSCP.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MppsSCP.class);
 
-   private final Device device = new Device("mppsscp");
-   private final ApplicationEntity ae = new ApplicationEntity("*");
-   private final Connection conn = new Connection();
-   private File storageDir;
-   private IOD mppsNCreateIOD;
-   private IOD mppsNSetIOD;
+    private Device device = new Device("mppsscp");
+    private final ApplicationEntity ae = new ApplicationEntity("*");
+    private final Connection conn = new Connection();
+    private File storageDir;
+    private IOD mppsNCreateIOD;
+    private IOD mppsNSetIOD;
 
-   private final BasicMPPSSCP mppsSCP = new BasicMPPSSCP() {
-       
-       @Override
-       protected Attributes create(Association as, Attributes rq,
-               Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
-           return MppsSCP.this.create(as, rq, rqAttrs);
-       }
-       
-       @Override
-       protected Attributes set(Association as, Attributes rq, Attributes rqAttrs,
-               Attributes rsp) throws DicomServiceException {
-           return MppsSCP.this.set(as, rq, rqAttrs);
-       }
-   };
+    protected final BasicMPPSSCP mppsSCP = new BasicMPPSSCP() {
 
-   public MppsSCP() throws IOException {
-       device.addConnection(conn);
-       device.addApplicationEntity(ae);
-       ae.setAssociationAcceptor(true);
-       ae.addConnection(conn);
-       DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-       serviceRegistry.addDicomService(new BasicCEchoSCP());
-       serviceRegistry.addDicomService(mppsSCP);
-       ae.setDimseRQHandler(serviceRegistry);
-   }
+        @Override
+        protected Attributes create(Association as, Attributes rq,
+                                    Attributes rqAttrs, Attributes rsp) throws DicomServiceException {
+            return MppsSCP.this.create(as, rq, rqAttrs);
+        }
 
-   public void setStorageDirectory(File storageDir) {
-       if (storageDir != null)
-           storageDir.mkdirs();
-       this.storageDir = storageDir;
-   }
+        @Override
+        protected Attributes set(Association as, Attributes rq, Attributes rqAttrs,
+                                 Attributes rsp) throws DicomServiceException {
+            return MppsSCP.this.set(as, rq, rqAttrs);
+        }
+    };
+    private boolean started = false;
 
-   public File getStorageDirectory() {
-       return storageDir;
-   }
+    public MppsSCP() throws IOException {
+        device.addConnection(conn);
+        device.addApplicationEntity(ae);
+        ae.setAssociationAcceptor(true);
+        ae.addConnection(conn);
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        serviceRegistry.addDicomService(mppsSCP);
+        ae.setDimseRQHandler(serviceRegistry);
+    }
 
-   private void setMppsNCreateIOD(IOD mppsNCreateIOD) {
-       this.mppsNCreateIOD = mppsNCreateIOD;
-   }
+    /**
+     * Bind the MPPS SCP to the provided preconfigured ae
+     *
+     * @param applicationEntity
+     */
+    public MppsSCP(ApplicationEntity applicationEntity) {
+        device = applicationEntity.getDevice();
+        applicationEntity.setAssociationAcceptor(true);
+        DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+        serviceRegistry.addDicomService(new BasicCEchoSCP());
+        serviceRegistry.addDicomService(mppsSCP);
+        applicationEntity.setDimseRQHandler(serviceRegistry);
+    }
 
-   private void setMppsNSetIOD(IOD mppsNSetIOD) {
-       this.mppsNSetIOD = mppsNSetIOD;
-   }
+    private void configure(boolean hasOptionNoValidate,
+                           String mppsNCreateIOD,
+                           String mppsNSetIOD,
+                           boolean ignore,
+                           String directory) throws IOException, GeneralSecurityException {
+        configureStorageDirectory(this, ignore, directory);
+        configureIODs(this, hasOptionNoValidate,
+                mppsNCreateIOD,
+                mppsNSetIOD);
 
-   public static void main(String[] args) {
-       try {
-           CommandLine cl = parseComandLine(args);
-           MppsSCP main = new MppsSCP();
-           CLIUtils.configureBindServer(main.conn, main.ae, cl);
-           CLIUtils.configure(main.conn, cl);
-           configureTransferCapability(main.ae, cl);
-           configureStorageDirectory(main, cl);
-           configureIODs(main, cl);
-           ExecutorService executorService = Executors.newCachedThreadPool();
-           ScheduledExecutorService scheduledExecutorService = 
-                   Executors.newSingleThreadScheduledExecutor();
-           main.device.setScheduledExecutor(scheduledExecutorService);
-           main.device.setExecutor(executorService);
-           main.device.bindConnections();
-       } catch (ParseException e) {
-           System.err.println("mppsscp: " + e.getMessage());
-           System.err.println(rb.getString("try"));
-           System.exit(2);
-       } catch (Exception e) {
-           System.err.println("mppsscp: " + e.getMessage());
-           e.printStackTrace();
-           System.exit(2);
-       }
-   }
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        device.setScheduledExecutor(scheduledExecutorService);
+        device.setExecutor(executorService);
+    }
+
+    public void start() throws IOException, GeneralSecurityException {
+        device.bindConnections();
+        started = true;
+    }
+
+    public void stop() {
+
+        if (!started) return;
+
+        started = false;
+
+        device.unbindConnections();
+        ((ExecutorService) device.getExecutor()).shutdown();
+        device.getScheduledExecutor().shutdown();
+
+        //very quick fix to block for listening connection
+        while (device.getConnections().get(0).isListening())
+        {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+
+    }
+
+    public void setStorageDirectory(File storageDir) {
+        if (storageDir != null)
+            storageDir.mkdirs();
+        this.storageDir = storageDir;
+    }
+
+    public File getStorageDirectory() {
+        return storageDir;
+    }
+
+    private void setMppsNCreateIOD(IOD mppsNCreateIOD) {
+        this.mppsNCreateIOD = mppsNCreateIOD;
+    }
+
+    private void setMppsNSetIOD(IOD mppsNSetIOD) {
+        this.mppsNSetIOD = mppsNSetIOD;
+    }
+
+    public static void main(String[] args) {
+        try {
+            CommandLine cl = parseComandLine(args);
+            MppsSCP main = new MppsSCP();
+
+            CLIUtils.configureBindServer(main.conn, main.ae, cl);
+            CLIUtils.configure(main.conn, cl);
+            configureTransferCapability(main.ae, cl);
+
+            main.configure(cl.hasOption("no-validate"),
+                    cl.getOptionValue("mpps-ncreate-iod", "resource:mpps-ncreate-iod.xml"),
+                    cl.getOptionValue("mpps-nset-iod", "resource:mpps-nset-iod.xml"),
+                    cl.hasOption("ignore"),
+                    cl.getOptionValue("directory", "."));
+
+            main.start();
+
+        } catch (ParseException e) {
+            System.err.println("mppsscp: " + e.getMessage());
+            System.err.println(rb.getString("try"));
+            System.exit(2);
+        } catch (Exception e) {
+            System.err.println("mppsscp: " + e.getMessage());
+            e.printStackTrace();
+            System.exit(2);
+        }
+    }
 
     private static CommandLine parseComandLine(String[] args) throws ParseException {
         Options opts = new Options();
@@ -211,29 +271,24 @@ public class MppsSCP {
                 .create(null));
     }
 
-    private static void configureStorageDirectory(MppsSCP main, CommandLine cl) {
-        if (!cl.hasOption("ignore")) {
-            main.setStorageDirectory(
-                    new File(cl.getOptionValue("directory", ".")));
+    private static void configureStorageDirectory(MppsSCP main, boolean hasOptionIgnore, String directory) {
+        if (!hasOptionIgnore) {
+            main.setStorageDirectory(new File(directory));
         }
     }
 
-    private static void configureIODs(MppsSCP main, CommandLine cl)
+    private static void configureIODs(MppsSCP main, boolean hasOptionNoValidate, String mppsNCreateIOD, String mppsNSetIOD)
             throws IOException {
-        if (!cl.hasOption("no-validate")) {
-            main.setMppsNCreateIOD(IOD.load(
-                    cl.getOptionValue("mpps-ncreate-iod", 
-                            "resource:mpps-ncreate-iod.xml")));
-            main.setMppsNSetIOD(IOD.load(
-                    cl.getOptionValue("mpps-nset-iod", 
-                            "resource:mpps-nset-iod.xml")));
+        if (!hasOptionNoValidate) {
+            main.setMppsNCreateIOD(IOD.load(mppsNCreateIOD));
+            main.setMppsNSetIOD(IOD.load(mppsNSetIOD));
         }
     }
 
     private static void configureTransferCapability(ApplicationEntity ae,
-            CommandLine cl) throws IOException {
+                                                    CommandLine cl) throws IOException {
         Properties p = CLIUtils.loadProperties(
-                cl.getOptionValue("sop-classes", 
+                cl.getOptionValue("sop-classes",
                         "resource:sop-classes.properties"),
                 null);
         for (String cuid : p.stringPropertyNames()) {
@@ -260,15 +315,13 @@ public class MppsSCP {
         File file = new File(storageDir, iuid);
         if (file.exists())
             throw new DicomServiceException(Status.DuplicateSOPinstance).
-                setUID(Tag.AffectedSOPInstanceUID, iuid);
+                    setUID(Tag.AffectedSOPInstanceUID, iuid);
         DicomOutputStream out = null;
         LOG.info("{}: M-WRITE {}", as, file);
         try {
             out = new DicomOutputStream(file);
             out.writeDataset(
-                    Attributes.createFileMetaInformation(iuid, cuid,
-                            UID.ExplicitVRLittleEndian),
-                    rqAttrs);
+                    Attributes.createFileMetaInformation(iuid, cuid, UID.ExplicitVRLittleEndian), rqAttrs);
         } catch (IOException e) {
             LOG.warn(as + ": Failed to store MPPS:", e);
             throw new DicomServiceException(Status.ProcessingFailure, e);
@@ -292,7 +345,7 @@ public class MppsSCP {
         File file = new File(storageDir, iuid);
         if (!file.exists())
             throw new DicomServiceException(Status.NoSuchObjectInstance).
-                setUID(Tag.AffectedSOPInstanceUID, iuid);
+                    setUID(Tag.AffectedSOPInstanceUID, iuid);
         LOG.info("{}: M-UPDATE {}", as, file);
         Attributes data;
         DicomInputStream in = null;

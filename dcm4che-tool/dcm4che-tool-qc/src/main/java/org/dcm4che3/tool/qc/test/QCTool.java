@@ -38,6 +38,7 @@
 package org.dcm4che3.tool.qc.test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Code;
@@ -117,5 +118,21 @@ public class QCTool implements TestTool{
         qc.setDeleteParams(deleteParams);
         QCResult tmpResult = qc.performOperation(testDescription, qc);
         init(tmpResult); 
+    }
+
+    public void deleteMulti(String testDescription, String[] deleteParams) {
+
+        if (deleteParams == null)
+            return;
+
+        MultipleQCResult results = new MultipleQCResult();
+
+        for (String param : deleteParams) {
+            qc.setDeleteParams(param);
+            QCResult tmpResult = qc.performOperation(testDescription, qc);
+            results.getResults().add(tmpResult);
+        }
+
+        init(results);
     }
 }

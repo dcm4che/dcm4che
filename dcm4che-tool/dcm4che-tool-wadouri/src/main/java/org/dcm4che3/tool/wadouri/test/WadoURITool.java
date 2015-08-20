@@ -162,7 +162,7 @@ public class WadoURITool implements TestTool {
 
         wadouri.setOverlays(enableOverlays);
         wadouri.setOutDir(this.retrieveDir);
-        wadouri.setOutFileName(this.objectUID);
+        wadouri.setOutFileName(this.objectUID + (frameNumber == -1 ? "" : "_frame_" + frameNumber));
         wadouri.wado(wadouri);
         return wadouri;
     }

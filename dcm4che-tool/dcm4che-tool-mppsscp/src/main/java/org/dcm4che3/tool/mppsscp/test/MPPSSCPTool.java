@@ -73,10 +73,10 @@ public class MPPSSCPTool implements TestTool {
     private List<ReceivedMPPS> received = Collections.synchronizedList(new ArrayList<ReceivedMPPS>());
 
     public class ReceivedMPPS {
-        String iuid;
-        Dimse dimse;
-        Attributes attributes;
-        Attributes request;
+        public String iuid;
+        public Dimse dimse;
+        public Attributes attributes;
+        public Attributes request;
     }
 
     public MPPSSCPTool(Device d) {
@@ -123,26 +123,32 @@ public class MPPSSCPTool implements TestTool {
 
     @Override
     public MPPSResult getResult() {
-        return null;
+        return new MPPSResult();
     }
 
 
     public void waitForIncoming(int howMany, int timeoutInSeconds) {
-        long t = System.currentTimeMillis();
-        while (System.currentTimeMillis() < t + timeoutInSeconds * 1000.0) {
+        try {
+            long t = System.currentTimeMillis();
+            while (timeoutInSeconds <= 0 || System.currentTimeMillis() < t + timeoutInSeconds * 1000.0) {
 
-            try {
-                MPPSSCPTool.this.wait(100);
-            } catch (InterruptedException ignored) {
+                synchronized (this) {
+                    try {
+                        this.wait(100);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+
+                if (received.size() >= howMany) return;
+
             }
-
-            if (howMany >= received.size()) return;
-
+            throw new RuntimeException("Timeout - did not receive all the expected MPPS messages");
+        } finally {
+            stop();
         }
-        throw new RuntimeException("Timeout - did not receive all the expected MPPS messages");
     }
 
-    private class MPPSResult implements TestResult {
+    public class MPPSResult implements TestResult {
         public List<ReceivedMPPS> getReceivedMPPS() {
             return received;
         }
@@ -157,7 +163,9 @@ public class MPPSSCPTool implements TestTool {
             receivedMPPS.dimse = Dimse.N_CREATE_RQ;
             receivedMPPS.attributes = rqAttrs;
             received.add(receivedMPPS);
-            MPPSSCPTool.this.notify();
+            synchronized (MPPSSCPTool.this) {
+                MPPSSCPTool.this.notify();
+            }
             return null;
         }
 
@@ -169,7 +177,9 @@ public class MPPSSCPTool implements TestTool {
             receivedMPPS.dimse = Dimse.N_CREATE_RQ;
             receivedMPPS.attributes = rqAttrs;
             received.add(receivedMPPS);
-            MPPSSCPTool.this.notify();
+            synchronized (MPPSSCPTool.this) {
+                MPPSSCPTool.this.notify();
+            }
             return null;
         }
     }

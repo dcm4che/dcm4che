@@ -211,15 +211,21 @@ class BufferedImageUtils {
                 return maxDiff(csm, ((DataBufferByte) db).getBankData(),
                         csm2, ((DataBufferByte) db2).getBankData());
             case DataBuffer.TYPE_USHORT:
-                return maxDiff(csm, ((DataBufferUShort) db).getData(),
-                        csm2, ((DataBufferUShort) db2).getData());
             case DataBuffer.TYPE_SHORT:
-                return maxDiff(csm, ((DataBufferShort) db).getData(),
-                        csm2, ((DataBufferShort) db2).getData());
+                return maxDiff(csm, getShortData(db),csm2, getShortData(db2));
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported Datatype: " + db.getDataType());
         }
+    }
+
+    private static short[] getShortData (DataBuffer db) {
+        if (db instanceof DataBufferShort)
+            return ((DataBufferShort)db).getData();
+        if (db instanceof DataBufferUShort)
+            return ((DataBufferUShort)db).getData();
+        throw new UnsupportedOperationException(
+                "Unsupported Datatype: " + db.getDataType());
     }
 
     public static int maxDiff(WritableRaster raster, WritableRaster raster2, int blockSize) {

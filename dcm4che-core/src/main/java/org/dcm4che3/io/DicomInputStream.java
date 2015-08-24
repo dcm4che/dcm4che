@@ -47,6 +47,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,6 +100,10 @@ public class DicomInputStream extends FilterInputStream
     private static final int ZLIB_HEADER = 0x789c;
     private static final int DEF_ALLOCATE_LIMIT = 0x4000000; // 64MiB
 
+    // Length of the buffer used for readFully(short[], int, int)
+    private static final int BYTE_BUF_LENGTH = 8192;
+
+    private byte[] byteBuf;
     private int allocateLimit = DEF_ALLOCATE_LIMIT;
     private String uri;
     private String tsuid;
@@ -385,6 +390,24 @@ public class DicomInputStream extends FilterInputStream
 
     public void readFully(byte b[], int off, int len) throws IOException {
         StreamUtils.readFully(this, b, off, len);
+    }
+
+    public void readFully(short[] s, int off, int len) throws IOException {
+        if (off < 0 || len < 0 || off + len > s.length || off + len < 0) {
+            throw new IndexOutOfBoundsException
+                    ("off < 0 || len < 0 || off + len > s.length!");
+        }
+
+        if (byteBuf == null)
+            byteBuf = new byte[BYTE_BUF_LENGTH];
+
+        while (len > 0) {
+            int nelts = Math.min(len, byteBuf.length/2);
+            readFully(byteBuf, 0, nelts*2);
+            ByteUtils.bytesToShorts(byteBuf, s, off, nelts, bigEndian);
+            off += nelts;
+            len -= nelts;
+        }
     }
 
     public void readHeader() throws IOException {

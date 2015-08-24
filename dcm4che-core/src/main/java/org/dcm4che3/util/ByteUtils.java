@@ -78,6 +78,33 @@ public class ByteUtils {
         return (bytes[off + 1] << 8)  + (bytes[off] & 255);
     }
 
+    public static void bytesToShorts(byte[] b, short[] s, int off, int len, boolean bigEndian) {
+        if (bigEndian)
+            bytesToShortsBE(b, s, off, len);
+        else
+            bytesToShortsLE(b, s, off, len);
+    }
+
+    public static void bytesToShortsLE(byte[] b, short[] s, int off, int len) {
+        int boff = 0;
+        for (int j = 0; j < len; j++) {
+            int b0 = b[boff + 1];
+            int b1 = b[boff] & 0xff;
+            s[off + j] = (short)((b0 << 8) | b1);
+            boff += 2;
+        }
+    }
+
+    public static void bytesToShortsBE(byte[] b, short[] s, int off, int len) {
+        int boff = 0;
+        for (int j = 0; j < len; j++) {
+            int b0 = b[boff];
+            int b1 = b[boff + 1] & 0xff;
+            s[off + j] = (short)((b0 << 8) | b1);
+            boff += 2;
+        }
+    }
+
     public static int bytesToInt(byte[] bytes, int off, boolean bigEndian) {
         return bigEndian ? bytesToIntBE(bytes, off) : bytesToIntLE(bytes, off);
     }

@@ -39,6 +39,7 @@
 package org.dcm4che3.imageio.dcm;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -84,6 +85,16 @@ public class TestDicomImageReader {
     }
 
     @Test
+    public void testReadRasterFromInputStream() throws IOException {
+        testReadRasterFromInputStream("cplx_p02.dcm", 1);
+    }
+
+    @Test
+    public void testReadRasterFromCompressedInputStream() throws IOException {
+        testReadRasterFromInputStream("US-PAL-8-10x-echo", 5);
+    }
+
+    @Test
     public void testReadRasterFromAttributes() throws IOException {
         testReadRasterFromAttributes("cplx_p02.dcm", 1);
     }
@@ -100,6 +111,16 @@ public class TestDicomImageReader {
             testReadRasterFromInput(iis, imageIndex);
         } finally {
             SafeClose.close(iis);
+        }
+    }
+
+    private void testReadRasterFromInputStream(String ifname, int imageIndex)
+            throws IOException {
+        FileInputStream is = new FileInputStream(new File("target/test-data/" + ifname));
+        try {
+            testReadRasterFromInput(is, imageIndex);
+        } finally {
+            SafeClose.close(is);
         }
     }
 

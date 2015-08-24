@@ -55,6 +55,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
     private final byte[] basicOffsetTable;
     private int frameStartWord;
     private long fragmEndPos;
+    private long frameStartPos = -1L;
     private long frameEndPos;
     private boolean endOfStream;
 
@@ -85,11 +86,21 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
                 Math.min(len, (int)((frameEndPos < 0 ? fragmEndPos : frameEndPos) - streamPos)));
     }
 
-    public boolean nextFrame() throws IOException {
-        while (!endOfFrame())
-            seek(fragmEndPos);
-        flush();
-        frameEndPos = -1;
+    public void seekCurrentFrame() throws IOException {
+        seek(frameStartPos);
+    }
+
+    public boolean seekNextFrame() throws IOException {
+        if (endOfStream)
+            return false;
+
+        while (!endOfFrame()) {
+            seek(fragmEndPos-1);
+            read(); // ensure to load whole Data Fragment into Memory Cache
+            flush();
+        }
+        frameStartPos = streamPos;
+        frameEndPos = -1L;
         return !endOfStream;
     }
 
@@ -108,7 +119,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         mark();
         int fragmStartWord = (super.read() << 8) | super.read();
         reset();
-        if (frameStartWord == 0) {
+        if (streamPos == 0L) {
             frameStartWord = fragmStartWord;
         } else {
             frameEndPos = fragmStartWord == frameStartWord ? fragmEndPos : -1L;

@@ -446,7 +446,7 @@ public class Transcoder implements Closeable {
     }
 
     private BufferedImage decompressFrame(int frameIndex) throws IOException {
-        encapsulatedPixelData.nextFrame();
+        encapsulatedPixelData.seekNextFrame();
         decompressor.setInput(decompressorParam.patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(encapsulatedPixelData, decompressorParam.patchJPEGLS)
                 : encapsulatedPixelData);

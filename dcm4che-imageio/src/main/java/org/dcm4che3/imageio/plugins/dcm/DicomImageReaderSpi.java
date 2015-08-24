@@ -39,6 +39,7 @@
 package org.dcm4che3.imageio.plugins.dcm;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 
 import javax.imageio.ImageReader;
@@ -58,7 +59,7 @@ public class DicomImageReaderSpi extends ImageReaderSpi {
     private static final String[] formatNames = { "dicom", "DICOM" };
     private static final String[] suffixes = { "dcm", "dic", "dicm", "dicom" };
     private static final String[] MIMETypes = { "application/dicom" };
-    private static final Class<?>[] inputTypes = { ImageInputStream.class, DicomMetaData.class };
+    private static final Class<?>[] inputTypes = { ImageInputStream.class, InputStream.class, DicomMetaData.class };
 
     public DicomImageReaderSpi() {
         super(vendorName, version, formatNames, suffixes, MIMETypes, 

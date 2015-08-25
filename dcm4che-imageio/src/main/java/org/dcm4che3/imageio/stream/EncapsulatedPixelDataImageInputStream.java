@@ -96,7 +96,7 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
 
         while (!endOfFrame()) {
             seek(fragmEndPos-1);
-            read(); // ensure to load whole Data Fragment into Memory Cache
+            super.read(); // ensure to read whole Data Fragment from DicomInputStream
             flush();
         }
         frameStartPos = streamPos;

@@ -62,12 +62,12 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.Sequence;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.image.LookupTable;
 import org.dcm4che3.image.LookupTableFactory;
@@ -186,7 +186,7 @@ public class DicomImageReader extends ImageReader {
         if (decompressor == null)
             return createImageType(bitsStored, dataType, banded);
         
-        if (rle)
+        if (rle || banded)
             return createImageType(bitsStored, dataType, true);
         
         openiis();
@@ -209,7 +209,7 @@ public class DicomImageReader extends ImageReader {
             imageType = createImageType(8, DataBuffer.TYPE_BYTE, false);
         else if (decompressor == null)
             imageType = createImageType(bitsStored, dataType, banded);
-        else if (rle)
+        else if (rle || banded)
             imageType = createImageType(bitsStored, dataType, true);
         else {
             openiis();
@@ -308,8 +308,11 @@ public class DicomImageReader extends ImageReader {
             imageType = param.getDestinationType();
             dest = param.getDestination();
         }
-        if (rle && imageType == null && dest == null)
-            imageType = createImageType(bitsStored, dataType, true);
+        if (imageType == null && dest == null) {
+            // decompressors will need a little help to figure out that the data is banded (LIB-375)
+            if (rle || banded)
+                imageType = createImageType(bitsStored, dataType, true);
+        }
         decompressParam.setDestinationType(imageType);
         decompressParam.setDestination(dest);
         return decompressParam;

@@ -53,10 +53,11 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
 
     private final DicomInputStream dis;
     private final byte[] basicOffsetTable;
-    private int frameStartWord;
+    private final int frameStartWord;
+    private int fragmStartWord;
     private long fragmEndPos;
-    private long frameStartPos = -1L;
-    private long frameEndPos;
+    private long frameStartPos;
+    private long frameEndPos = -1L;
     private boolean endOfStream;
 
     public EncapsulatedPixelDataImageInputStream(DicomInputStream dis) throws IOException {
@@ -66,7 +67,8 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         byte[] b = new byte[dis.length()];
         dis.readFully(b);
         basicOffsetTable = b;
-
+        readItemHeader();
+        frameStartWord = fragmStartWord;
     }
 
     @Override
@@ -104,6 +106,18 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         return !endOfStream;
     }
 
+    private boolean readItemHeader() throws IOException {
+        if (!dis.readItemHeader()) {
+            endOfStream = true;
+            return false;
+        }
+        fragmEndPos = streamPos + dis.length();
+        mark();
+        fragmStartWord = (super.read() << 8) | super.read();
+        reset();
+        return true;
+    }
+
     private boolean endOfFrame() throws IOException {
         if (frameEndPos >= 0)
             return streamPos >= frameEndPos;
@@ -111,21 +125,12 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        if (!dis.readItemHeader()) {
-            frameEndPos = fragmEndPos;
-            endOfStream = true;
+        frameEndPos = fragmEndPos;
+        if (!readItemHeader() || fragmStartWord == frameStartWord)
             return true;
-        }
-        mark();
-        int fragmStartWord = (super.read() << 8) | super.read();
-        reset();
-        if (streamPos == 0L) {
-            frameStartWord = fragmStartWord;
-        } else {
-            frameEndPos = fragmStartWord == frameStartWord ? fragmEndPos : -1L;
-        }
-        fragmEndPos = streamPos + dis.length();
-        return frameEndPos >= 0;
+
+        frameEndPos = -1L;
+        return false;
     }
 
 }

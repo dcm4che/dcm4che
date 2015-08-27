@@ -116,7 +116,7 @@ public class DicomImageReader extends ImageReader {
 
     private int frames;
 
-    private int flushedFrames = 0;
+    private int flushedFrames;
 
     private int width;
 
@@ -444,10 +444,12 @@ public class DicomImageReader extends ImageReader {
         assert frameIndex >= flushedFrames;
         if (frameIndex == flushedFrames)
             epdiis.seekCurrentFrame();
-        else while (frameIndex > flushedFrames++)
+        else while (frameIndex > flushedFrames) {
             if (!epdiis.seekNextFrame()) {
-                throw new IOException("Data Fragments only contains " + flushedFrames + " frames");
+                throw new IOException("Data Fragments only contains " + (flushedFrames + 1) + " frames");
             }
+            flushedFrames++;
+        }
     }
 
     private void applyOverlay(int gg0000, WritableRaster raster,
@@ -579,10 +581,8 @@ public class DicomImageReader extends ImageReader {
             if (dis.tag() == Tag.PixelData) {
                 pixelDataVR = dis.vr();
                 pixelDataLength = dis.length();
-                if (pixelDataLength == -1) {
+                if (pixelDataLength == -1)
                     epdiis = new EncapsulatedPixelDataImageInputStream(dis);
-                    epdiis.seekNextFrame();
-                }
             }
             setMetadata(new DicomMetaData(fmi, ds));
             return;

@@ -38,15 +38,13 @@
 package org.dcm4che3.imageio.codec;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
@@ -70,16 +68,15 @@ public class Decompressor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Decompressor.class);
 
-    protected final Attributes dataset;
-    protected final String tsuid;
-    protected final TransferSyntaxType tsType;
-    protected Fragments pixeldataFragments;
-    protected File file = null;
-    protected ImageParams imageParams;
-    protected BufferedImage bi;
-    protected ImageReader decompressor;
-    protected ImageReadParam readParam;
-    protected PatchJPEGLS patchJPEGLS;
+    private final Attributes dataset;
+    private Object pixels;
+    private final String tsuid;
+    private final TransferSyntaxType tsType;
+    private ImageParams imageParams;
+    private BufferedImage bi;
+    private ImageReader imageReader;
+    private ImageReadParam readParam;
+    private PatchJPEGLS patchJPEGLS;
 
     public Decompressor(Attributes dataset, String tsuid) {
         if (tsuid == null)
@@ -88,8 +85,8 @@ public class Decompressor {
         this.dataset = dataset;
         this.tsuid = tsuid;
         this.tsType = TransferSyntaxType.forUID(tsuid);
-        Object pixeldata = dataset.getValue(Tag.PixelData);
-        if (pixeldata == null)
+        this.pixels = dataset.getValue(Tag.PixelData);
+        if (this.pixels == null)
             return;
 
         if (tsType == null)
@@ -98,44 +95,40 @@ public class Decompressor {
         this.imageParams = new ImageParams(dataset);
         int frames = imageParams.getFrames();
 
-        if (pixeldata instanceof Fragments) {
+        if (this.pixels instanceof Fragments) {
             if (!tsType.isPixeldataEncapsulated())
                 throw new IllegalArgumentException("Encapusulated Pixel Data"
                         + "with Transfer Syntax: " + tsuid);
-            this.pixeldataFragments = (Fragments) pixeldata;
 
-            int numFragments = pixeldataFragments.size();
+            int numFragments = ((Fragments)this.pixels).size();
             if (frames == 1 ? (numFragments < 2)
                             : (numFragments != frames + 1))
                 throw new IllegalArgumentException(
                         "Number of Pixel Data Fragments: "
                         + numFragments + " does not match " + frames);
 
-            this.file = ((BulkData) pixeldataFragments.get(1)).getFile();
             ImageReaderFactory.ImageReaderParam param =
                     ImageReaderFactory.getImageReaderParam(tsuid);
             if (param == null)
                 throw new UnsupportedOperationException(
                         "Unsupported Transfer Syntax: " + tsuid);
 
-            this.decompressor = ImageReaderFactory.getImageReader(param);
-            LOG.debug("Decompressor: {}", decompressor.getClass().getName());
-            this.readParam = decompressor.getDefaultReadParam();
+            this.imageReader = ImageReaderFactory.getImageReader(param);
+            LOG.debug("Decompressor: {}", imageReader.getClass().getName());
+            this.readParam = imageReader.getDefaultReadParam();
             this.patchJPEGLS = param.patchJPEGLS;
-        } else if (pixeldata instanceof BulkData) {
-            this.file = ((BulkData) pixeldata).getFile();
         }
     }
 
     public void dispose() {
-        if (decompressor != null)
-            decompressor.dispose();
+        if (imageReader != null)
+            imageReader.dispose();
 
-        decompressor = null;
+        imageReader = null;
     }
 
     public boolean decompress() {
-        if (decompressor == null)
+        if (imageReader == null)
             return false;
 
         imageParams.decompress(dataset, tsType);
@@ -179,22 +172,23 @@ public class Decompressor {
     }
 
     public void writeTo(OutputStream out) throws IOException {
-        ImageInputStream iis = createImageInputStream();
         int frames = imageParams.getFrames();
         try {
-            for (int i = 0; i < frames; ++i)
+            for (int i = 0; i < frames; ++i) {
+                ImageInputStream iis = createImageInputStream(i);
                 writeFrameTo(iis, i, out);
+                close(iis);
+            }
             if (imageParams.paddingNull())
                 out.write(0);
         } finally {
-            try { iis.close(); } catch (IOException ignore) {}
-            decompressor.dispose();
+
+            imageReader.dispose();
         }
     }
 
-    public FileImageInputStream createImageInputStream()
-            throws IOException {
-        return new FileImageInputStream(file);
+    private void close (ImageInputStream iis) {
+        try { iis.close(); } catch (IOException ignore) {}
     }
 
     public void writeFrameTo(ImageInputStream iis, int frameIndex,
@@ -205,21 +199,47 @@ public class Decompressor {
     @SuppressWarnings("resource")
     protected BufferedImage decompressFrame(ImageInputStream iis, int index)
             throws IOException {
-        SegmentedImageInputStream siis = SegmentedImageInputStream.ofFrame(
-                iis, pixeldataFragments, index, imageParams.getFrames());
-        decompressor.setInput(patchJPEGLS != null
-                ? new PatchJPEGLSImageInputStream(siis, patchJPEGLS)
-                : siis);
+
+        if (pixels instanceof Fragments && ((Fragments) pixels).get(index+1) instanceof BulkData)
+            iis = SegmentedImageInputStream.ofFrame(iis, (Fragments) pixels, index, imageParams.getFrames());
+
+        imageReader.setInput(patchJPEGLS != null
+                ? new PatchJPEGLSImageInputStream(iis, patchJPEGLS)
+                : iis);
         readParam.setDestination(bi);
         long start = System.currentTimeMillis();
-        bi = decompressor.read(0, readParam);
+        bi = imageReader.read(0, readParam);
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Decompressed frame #{} 1:{} in {} ms", 
                     new Object[] {index + 1,
-                    (float) BufferedImageUtils.sizeOf(bi) / siis.getStreamPosition(),
+                    (float) BufferedImageUtils.sizeOf(bi) / iis.getStreamPosition(),
                     end - start });
         return bi;
     }
+
+    public ImageInputStream createImageInputStream() throws IOException {
+        return createImageInputStream(0);
+    }
+
+    public ImageInputStream createImageInputStream(int frameIndex) throws IOException {
+
+        if (pixels instanceof Fragments) {
+            Fragments pixelFragments = (Fragments) pixels;
+            if (pixelFragments.get(frameIndex + 1) instanceof BulkData)
+                return new FileImageInputStream(((BulkData) pixelFragments.get(frameIndex + 1)).getFile());
+            else if (pixelFragments.get(frameIndex + 1) instanceof byte[])
+                return new MemoryCacheImageInputStream(new ByteArrayInputStream((byte[])pixelFragments.get(frameIndex + 1)));
+            else
+                return null;
+        }
+
+        if (pixels instanceof byte[]) {
+            return new MemoryCacheImageInputStream(new ByteArrayInputStream((byte[])pixels));
+        }
+
+        return null;
+    }
+
 
 }

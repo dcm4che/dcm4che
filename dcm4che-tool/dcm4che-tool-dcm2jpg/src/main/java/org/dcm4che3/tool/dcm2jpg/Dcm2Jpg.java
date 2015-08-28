@@ -63,6 +63,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PatternOptionBuilder;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.image.BufferedImageUtils;
 import org.dcm4che3.image.PaletteColorModel;
 import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
@@ -372,9 +373,7 @@ public class Dcm2Jpg {
 
     private BufferedImage convert(BufferedImage bi) {
         ColorModel cm = bi.getColorModel();
-        if (cm instanceof PaletteColorModel)
-            return ((PaletteColorModel) cm).convertToIntDiscrete(bi.getData());
-        return bi;
+        return cm.getNumComponents() == 3 ? BufferedImageUtils.convertToIntRGB(bi) : bi;
     }
 
     private BufferedImage readImage(ImageInputStream iis) throws IOException {

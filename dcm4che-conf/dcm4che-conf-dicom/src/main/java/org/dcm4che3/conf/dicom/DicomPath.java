@@ -39,10 +39,10 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.util.PathPattern;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.dcm4che3.conf.core.util.PathPattern;
 
 /**
  * Single source for all the DicomConfiguration-related xpaths
@@ -52,6 +52,7 @@ import java.util.Map;
 public enum DicomPath {
 
     DeviceNameByAEName,
+    DeviceNameByAENameAlias,
     AllDeviceNames,
     AllAETitles,
     DeviceNameByHL7AppName,
@@ -78,8 +79,18 @@ public enum DicomPath {
 
     static {
         // search
-        PATHS.put(/**************/AllAETitles, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dicomAETitle");
+        PATHS.put(/**************/AllAETitles, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dicomAETitle | /dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dcmAETitleAliases");
+
+        // Note: I tried combining DeviceNameByAEName and DeviceNameByAENameAlias into one XPath like this:
+        // /dicomConfigurationRoot/dicomDevicesRoot/storescp[dicomNetworkAE[@name='{aeName}'] | dicomNetworkAE[*/dcmAETitleAliases='{aeName}']]/dicomDeviceName
+        // but it didn't work for AEs that did not have aliases defined at all.
+        // Strange thing, e.g. this seems to work: /dicomConfigurationRoot/dicomDevicesRoot/storescp[dicomNetworkAE[@name='STORESCP'] | dicomNetworkAE[*/dcmAETitleAliases='STORESCP']]/dicomDeviceName
+        // but this doesn't: /dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='STORESCP'] | dicomNetworkAE[*/dcmAETitleAliases='STORESCP']]/dicomDeviceName
+        // (in the case that there is no alias defined at all for the AE STORESCP)
+
         PATHS.put(/*******/DeviceNameByAEName, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='{aeName}']]/dicomDeviceName");
+        PATHS.put(/**/DeviceNameByAENameAlias, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[*/dcmAETitleAliases='{aeNameAlias}']]/dicomDeviceName");
+
         PATHS.put(/***********/AllDeviceNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomDeviceName");
         PATHS.put(/***********/AllHL7AppNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/deviceExtensions/HL7DeviceExtension/hl7Apps/*/hl7ApplicationName");
         PATHS.put(/***/DeviceNameByHL7AppName, "/dicomConfigurationRoot/dicomDevicesRoot/*[deviceExtensions/HL7DeviceExtension/hl7Apps/*[hl7ApplicationName='{hl7AppName}']]/dicomDeviceName");

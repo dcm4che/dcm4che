@@ -43,8 +43,18 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -205,6 +215,10 @@ public class Device implements Serializable {
     )
     private final List<Connection> connections = new ArrayList<Connection>();
 
+    /**
+     * Note: This only maps the main AE titles to application entities. The
+     * {@link #aliasApplicationEntitiesMap} will contain also alias AE titles.
+     */
     @LDAP(noContainerNode = true)
     @ConfigurableProperty(
             name="dicomNetworkAE",
@@ -212,6 +226,13 @@ public class Device implements Serializable {
     )
     private final Map<String, ApplicationEntity> applicationEntitiesMap =
             new TreeMap<String, ApplicationEntity>();
+
+    /**
+     * Maps alias AE titles ({@link ApplicationEntity#getAETitleAliases()}),
+     * including also the main AE title ({@link ApplicationEntity#getAETitle()}
+     * ), to application entities.
+     */
+    private final transient Map<String, ApplicationEntity> aliasApplicationEntitiesMap = new TreeMap<String, ApplicationEntity>();
 
     @ConfigurableProperty(name = "deviceExtensions", isExtensionsProperty = true)
     private Map<Class<? extends DeviceExtension>,DeviceExtension> extensions =
@@ -875,7 +896,7 @@ public class Device implements Serializable {
     }
 
     public boolean removeConnection(Connection conn) {
-        for (ApplicationEntity ae : applicationEntitiesMap.values())
+        for (ApplicationEntity ae : getApplicationEntities())
             if (ae.getConnections().contains(conn))
                 throw new IllegalStateException(conn + " used by AE: " +
                         ae.getAETitle());
@@ -914,20 +935,22 @@ public class Device implements Serializable {
 
     public void setApplicationEntitiesMap(Map<String, ApplicationEntity> applicationEntitiesMap) {
         this.applicationEntitiesMap.clear();
+        this.aliasApplicationEntitiesMap.clear();
         for (Entry<String, ApplicationEntity> entry : applicationEntitiesMap.entrySet()) {
             addApplicationEntity(entry.getValue());
         }
     }
 
     public Map<String, ApplicationEntity> getApplicationEntitiesMap() {
-        return applicationEntitiesMap;
+        return new HashMap<String, ApplicationEntity>(applicationEntitiesMap);
     }
-
-
 
     public void addApplicationEntity(ApplicationEntity ae) {
         ae.setDevice(this);
+
         applicationEntitiesMap.put(ae.getAETitle(), ae);
+
+        addAllAliasesForApplicationEntity(ae);
     }
 
     public ApplicationEntity removeApplicationEntity(ApplicationEntity ae) {
@@ -936,11 +959,28 @@ public class Device implements Serializable {
 
     public ApplicationEntity removeApplicationEntity(String aet) {
         ApplicationEntity ae = applicationEntitiesMap.remove(aet);
-        if (ae != null)
+        if (ae != null) {
             ae.setDevice(null);
+
+            removeAllAliasesForApplicationEntity(ae);
+        }
+
         return ae;
     }
 
+    private void addAllAliasesForApplicationEntity(ApplicationEntity ae) {
+        aliasApplicationEntitiesMap.put(ae.getAETitle(), ae);
+        for (String aliasAET : ae.getAETitleAliases()) {
+            aliasApplicationEntitiesMap.put(aliasAET, ae);
+        }
+    }
+
+    private void removeAllAliasesForApplicationEntity(ApplicationEntity ae) {
+        aliasApplicationEntitiesMap.remove(ae.getAETitle());
+        for (String aliasAET : ae.getAETitleAliases()) {
+            aliasApplicationEntitiesMap.remove(aliasAET);
+        }
+    }
 
     public void setExtensions(Map<Class<? extends DeviceExtension>, DeviceExtension> extensions) {
         this.extensions = extensions;
@@ -1010,14 +1050,20 @@ public class Device implements Serializable {
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
-        ApplicationEntity ae = applicationEntitiesMap.get(aet);
+        ApplicationEntity ae = aliasApplicationEntitiesMap.get(aet);
+
+        // special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET), it will get used as a fallback for unknown AETs
         if (ae == null)
-            ae = applicationEntitiesMap.get("*");
+            ae = aliasApplicationEntitiesMap.get("*");
+
         return ae;
     }
 
+    /**
+     * @return AE titles of this device, including alias AE titles
+     */
     public Collection<String> getApplicationAETitles() {
-        return applicationEntitiesMap.keySet();
+        return aliasApplicationEntitiesMap.keySet();
     }
 
     public Collection<ApplicationEntity> getApplicationEntities() {
@@ -1293,6 +1339,12 @@ public class Device implements Serializable {
                  addApplicationEntity(ae = new ApplicationEntity(src.getAETitle()));
              ae.reconfigure(src);
          }
+
+        aliasApplicationEntitiesMap.clear();
+        for (ApplicationEntity ae : applicationEntitiesMap.values())
+        {
+            addAllAliasesForApplicationEntity(ae);
+        }
      }
 
     public void reconfigureConnections(List<Connection> conns,

@@ -39,29 +39,50 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.TCConfiguration;
+import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
-import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.Configuration.ConfigBatch;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.dicom.adapters.*;
+import org.dcm4che3.conf.dicom.adapters.AttributeFormatTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.AuditSimpleTypeAdapters;
+import org.dcm4che3.conf.dicom.adapters.CodeTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.DicomReferenceHandlerAdapter;
+import org.dcm4che3.conf.dicom.adapters.IssuerTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.PropertyTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.ValueSelectorTypeAdapter;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
-import org.dcm4che3.net.*;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.DeviceInfo;
 import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.dcm4che3.conf.core.api.Configuration.ConfigBatch;
-
-import java.security.cert.X509Certificate;
-import java.util.*;
 
 /**
  * @author Roman K
@@ -75,7 +96,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     Configuration config;
     BeanVitalizer vitalizer;
 
-    private Map<Class, List<Class>> extensionsByClass;
+    private final Map<Class, List<Class>> extensionsByClass;
 
     /**
      * Returns a list of registered extensions for a specified base extension class
@@ -100,7 +121,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
      * e.g., one device extension references another device which has an extension that references the former device.
      * Devices that have been created but not fully loaded are added to this threadlocal. See findDevice.
      */
-    private ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
+    private final ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
 
 
 
@@ -276,21 +297,25 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         if (aet == null) throw new IllegalArgumentException("Requested AE's title cannot be null");
 
-        Iterator search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
+        Iterator<?> search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
 
-        try {
-            String deviceNameNode = (String) search.next();
-            if (search.hasNext())
-                LOG.warn("Application entity title '{}' is not unique. Check the configuration!", aet);
-            Device device = findDevice(deviceNameNode);
+        if (!search.hasNext()) {
+            search = config.search(DicomPath.DeviceNameByAENameAlias.set("aeNameAlias", aet).path());
 
-            ApplicationEntity ae = device.getApplicationEntitiesMap().get(aet);
-            if (ae == null) throw new NoSuchElementException("Unexpected error");
-            return ae;
-
-        } catch (NoSuchElementException e) {
-            throw new ConfigurationNotFoundException("AE '" + aet + "' not found", e);
+            if (!search.hasNext())
+                throw new ConfigurationNotFoundException("AE '" + aet + "' not found");
         }
+
+        String deviceNameNode = (String) search.next();
+        if (search.hasNext())
+            LOG.warn("Application entity title '{}' is not unique. Check the configuration!", aet);
+        Device device = findDevice(deviceNameNode);
+
+        ApplicationEntity ae = device.getApplicationEntity(aet);
+        if (ae == null)
+            throw new NoSuchElementException("Unexpected error");
+        return ae;
+
     }
 
     @Override
@@ -304,14 +329,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             String deviceNameNode = (String) search.next();
             Device device = findDevice(deviceNameNode);
 
-            ApplicationEntity ae = null;
-            for (Map.Entry<String, ApplicationEntity> applicationEntityEntry : device.getApplicationEntitiesMap().entrySet())
-                if (uuid.equals(applicationEntityEntry.getValue().getUuid())) {
-                    ae = applicationEntityEntry.getValue();
-                    break;
+            for (ApplicationEntity applicationEntity : device.getApplicationEntities()) {
+                if (uuid.equals(applicationEntity.getUuid())) {
+                    return applicationEntity;
                 }
-            if (ae == null) throw new NoSuchElementException("Unexpected error");
-            return ae;
+            }
+
+            throw new NoSuchElementException("Unexpected error");
 
         } catch (NoSuchElementException e) {
             throw new ConfigurationNotFoundException("AE with UUID '" + uuid + "' not found", e);

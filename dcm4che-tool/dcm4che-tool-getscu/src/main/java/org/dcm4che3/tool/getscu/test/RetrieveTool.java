@@ -62,14 +62,7 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.PDVInputStream;
-import org.dcm4che3.net.Status;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCStoreSCP;
 import org.dcm4che3.net.service.DicomServiceException;
@@ -96,7 +89,6 @@ public class RetrieveTool implements TestTool{
     private final String aeTitle;
     private final Device device;
     private final Connection conn;
-    private final String sourceAETitle;
     private final File retrieveDir;
     private int numCStores;
     private int numSuccess;
@@ -109,7 +101,6 @@ public class RetrieveTool implements TestTool{
     private TestResult result;
     private final String retrieveLevel;
     private final InformationModel retrieveInformationModel;
-    private final boolean relational;
 
     private boolean rememberResultAttributes = true;
 
@@ -124,12 +115,10 @@ public class RetrieveTool implements TestTool{
         this.port = port;
         this.aeTitle = aeTitle;
         this.device = device;
-        this.sourceAETitle = sourceAETitle;
         this.retrieveDir = retrieveDir;
         this.retrieveLevel = retrieveLevel;
         this.retrieveInformationModel = informationModel.equalsIgnoreCase("StudyRoot")
                 ? InformationModel.StudyRoot : InformationModel.PatientRoot;
-        this.relational = relational;
         this.conn = conn;
 
         //setup device and connection
@@ -158,7 +147,7 @@ public class RetrieveTool implements TestTool{
         retrievescu.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
         retrievescu.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         retrievescu.setStorageDirectory(retrieveDir);
-        registerSCPservice(device, retrieveDir);
+        registerSCPservice(retrieveDir);
         
         // add retrieve attrs
 
@@ -218,7 +207,7 @@ public class RetrieveTool implements TestTool{
         this.expectedMatches = expectedResult;
     }
 
-    private void registerSCPservice(Device device, final File storeDir) {
+    private void registerSCPservice(final File storeDir) {
             DicomServiceRegistry serviceReg = new DicomServiceRegistry();
             serviceReg.addDicomService( new BasicCStoreSCP("*") {
 
@@ -291,8 +280,8 @@ public class RetrieveTool implements TestTool{
     }
 
     @Override
-    public void init(TestResult result) {
-        this.result = result;
+    public void init(TestResult resultIn) {
+        this.result = resultIn;
     }
 
     @Override

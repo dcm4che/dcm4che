@@ -534,15 +534,17 @@ public class StowRS {
         rspCode = connection.getResponseCode();
         rspMessage = connection.getResponseMessage();
         LOG.info("response: " + response);
-        Attributes responseAttrs;
+        Attributes responseAttrs = null;
         try {
             InputStream in;
-            if (rspCode < HttpURLConnection.HTTP_BAD_REQUEST) {
+            boolean isErrorCase = rspCode >= HttpURLConnection.HTTP_BAD_REQUEST;
+            if (!isErrorCase) {
                 in = connection.getInputStream();
             } else {
                 in = connection.getErrorStream();
             }
-            responseAttrs = SAXReader.parse(in);
+            if (!isErrorCase || rspCode == HttpURLConnection.HTTP_CONFLICT)
+                responseAttrs = SAXReader.parse(in);
         } catch (SAXException e) {
             throw new IOException(e);
         } catch (ParserConfigurationException e) {

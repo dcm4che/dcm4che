@@ -40,7 +40,6 @@ package org.dcm4che3.data;
 
 import java.io.Serializable;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.util.StringUtils;
 
 /**
@@ -126,15 +125,15 @@ public class Issuer implements Serializable {
         return s.isEmpty() ? null : s;
     }
 
-    public final String getLocalNamespaceEntityID() {
+    public String getLocalNamespaceEntityID() {
         return localNamespaceEntityID;
     }
 
-    public final String getUniversalEntityID() {
+    public String getUniversalEntityID() {
         return universalEntityID;
     }
 
-    public final String getUniversalEntityIDType() {
+    public String getUniversalEntityIDType() {
         return universalEntityIDType;
     }
 

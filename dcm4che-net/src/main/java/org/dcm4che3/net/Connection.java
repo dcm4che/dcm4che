@@ -38,24 +38,27 @@
 
 package org.dcm4che3.net;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.*;
+import java.security.GeneralSecurityException;
+import java.util.*;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.*;
-import java.net.*;
-import java.security.GeneralSecurityException;
-import java.util.*;
+
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.proxy.ProxyManager;
 import org.dcm4che3.net.proxy.ProxyService;
+import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -348,6 +351,9 @@ public class Connection implements Serializable {
     /**
      * Bind address of listening socket or {@code null}. If {@code null}, bind
      * listening socket to {@link #getHostname()}. This is the default.
+     * <p>
+     * The bind address can also include system properties with the
+     * <em>${system.property}</em> syntax, that need to be resolved.
      *
      * @return Bind address of the connection or {@code null}
      */
@@ -378,7 +384,8 @@ public class Connection implements Serializable {
      * connections. If {@code null}, bind outgoing connections to
      * {@link #getHostname()}. This is the default.
      *
-     * @param bindAddress Bind address of outgoing connection, {@code 0.0.0.0} or {@code null}
+     * @return Bind address of outgoing connection, {@code 0.0.0.0} or
+     *         {@code null}
      */
     public String getClientBindAddress() {
         return clientBindAddress;
@@ -949,8 +956,10 @@ public class Connection implements Serializable {
         if (bindAddress == null)
             return hostAddr();
 
-        if (bindAddr == null)
-            bindAddr = InetAddress.getByName(bindAddress);
+        if (bindAddr == null) {
+            String resolvedBindAddress = StringUtils.replaceSystemProperties(bindAddress);
+            bindAddr = InetAddress.getByName(resolvedBindAddress);
+        }
 
         return bindAddr;
     }

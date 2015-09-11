@@ -66,21 +66,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.io.SAXWriter;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.QueryOption;
-import org.dcm4che3.net.Status;
+import org.dcm4che3.net.*;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
@@ -88,8 +81,14 @@ import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 
 /**
+ * The findscu application implements a Service Class User (SCU) for the
+ * Query/Retrieve, the Modality Worklist Management, the Unified Worklist and
+ * Procedure Step, the Hanging Protocol Query/Retrieve and the Color Palette
+ * Query/Retrieve Service Class. findscu only supports query functionality using
+ * the C-FIND message. It sends query keys to an Service Class Provider (SCP)
+ * and waits for responses.
+ * 
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public class FindSCU {
 
@@ -139,7 +138,7 @@ public class FindSCU {
     private File outDir;
     private DecimalFormat outFileFormat;
     private int[] inFilter;
-    private Attributes keys = new Attributes();
+    private final Attributes keys = new Attributes();
 
     private boolean catOut = false;
     private boolean xml = false;
@@ -151,7 +150,7 @@ public class FindSCU {
     private OutputStream out;
 
     private Association as;
-    private AtomicInteger totNumMatches = new AtomicInteger();
+    private final AtomicInteger totNumMatches = new AtomicInteger();
 
     public FindSCU() throws IOException {
         device.addConnection(conn);
@@ -470,7 +469,8 @@ public class FindSCU {
         Attributes attrs;
         DicomInputStream dis = null;
         try {
-            attrs = new DicomInputStream(f).readDataset(-1, -1);
+            dis = new DicomInputStream(f);
+            attrs = dis.readDataset(-1, -1);
             if (inFilter != null) {
                 attrs = new Attributes(inFilter.length + 1);
                 attrs.addSelected(attrs, inFilter);

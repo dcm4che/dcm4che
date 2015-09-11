@@ -60,12 +60,16 @@ import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.util.Base64;
 import org.dcm4che3.util.StringUtils;
 import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
 public class JSONWriter implements DicomInputHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JSONWriter.class);
 
     private final JsonGenerator gen;
     private final Deque<Boolean> hasItems = new ArrayDeque<Boolean>();
@@ -236,10 +240,20 @@ public class JSONWriter implements DicomInputHandler {
                 gen.writeNull();
             else switch (vr) {
             case DS:
-                gen.write(StringUtils.parseDS(s));
+                try {
+                    gen.write(StringUtils.parseDS(s));
+                } catch (Exception e) {
+                    LOG.info("illegal DS value: {} - encoded as null", s);
+                    gen.writeNull();
+                }
                 break;
             case IS:
-                gen.write(StringUtils.parseIS(s));
+                try {
+                    gen.write(StringUtils.parseIS(s));
+                } catch (Exception e) {
+                    LOG.info("illegal IS value: {} - encoded as null", s);
+                    gen.writeNull();
+                }
                 break;
             case PN:
                 writePersonName(s);

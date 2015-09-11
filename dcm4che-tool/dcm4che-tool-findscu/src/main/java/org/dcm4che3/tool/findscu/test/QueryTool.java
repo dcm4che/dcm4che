@@ -54,14 +54,7 @@ import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.DimseRSPHandler;
-import org.dcm4che3.net.IncompatibleConnectionException;
-import org.dcm4che3.net.QueryOption;
-import org.dcm4che3.net.Status;
+import org.dcm4che3.net.*;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.findscu.FindSCU;
@@ -70,6 +63,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Tool for using {@link FindSCU} within tests.
+ * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
@@ -77,17 +72,17 @@ public class QueryTool implements TestTool {
 
     private static final Logger LOG = LoggerFactory.getLogger(QueryTool.class);
 
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
     private String aeTitle;
-    private Device device;
-    private Connection conn;
-    private String sourceAETitle;
-    private List<Attributes> response = new ArrayList<Attributes>();
+    private final Device device;
+    private final Connection conn;
+    private final String sourceAETitle;
+    private final List<Attributes> response = new ArrayList<Attributes>();
     private TestResult result;
     private String queryLevel;
-    private InformationModel queryModel;
-    private boolean relational;
+    private final InformationModel queryModel;
+    private final boolean relational;
     private int numMatches;
     private static String[] IVR_LE_FIRST = { UID.ImplicitVRLittleEndian,
             UID.ExplicitVRLittleEndian, UID.ExplicitVRBigEndianRetired };
@@ -96,12 +91,6 @@ public class QueryTool implements TestTool {
     
     private long timeFirst=0;
 
-    /**
-     * @param host
-     * @param port
-     * @param aeTitle
-     * @param conn 
-     */
     public QueryTool(String host, int port, String aeTitle, String queryLevel, String queryModel
             , boolean relational, Device device, String sourceAETitle, Connection conn) {
         super();
@@ -219,6 +208,10 @@ public class QueryTool implements TestTool {
     public void addReturnTag(int tag) throws Exception {
         VR vr = ElementDictionary.vrOf(tag, null);
         queryatts.setNull(tag, vr);
+    }
+
+    public void addReturnTag(String privateCreator, int tag, VR vr) throws Exception {
+        queryatts.setNull(privateCreator, tag, vr);
     }
 
     public void setExpectedMatches(int matches) {

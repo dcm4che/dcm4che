@@ -44,6 +44,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.tool.common.test.TestResult;
 
 /**
+ * Result of {@link QueryTool}.
+ * 
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  * @author Hesham elbadawi <bsdreko@gmail.com>
  */
@@ -55,13 +57,7 @@ public class QueryResult implements TestResult{
     private long time;
     private long timeFirst;
     private List<Attributes> queryResponse;
-    /**
-     * @param testDescription
-     * @param expectedResult
-     * @param numMatches
-     * @param time
-     * @param timeFirst
-     */
+
     public QueryResult(String testDescription, int expectedResult,
             int numMatches, long time, long timeFirst, List<Attributes> data) {
         super();

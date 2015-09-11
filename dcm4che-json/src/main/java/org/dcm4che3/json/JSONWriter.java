@@ -242,7 +242,7 @@ public class JSONWriter implements DicomInputHandler {
             case DS:
                 try {
                     gen.write(StringUtils.parseDS(s));
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     LOG.info("illegal DS value: {} - encoded as null", s);
                     gen.writeNull();
                 }
@@ -250,7 +250,7 @@ public class JSONWriter implements DicomInputHandler {
             case IS:
                 try {
                     gen.write(StringUtils.parseIS(s));
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     LOG.info("illegal IS value: {} - encoded as null", s);
                     gen.writeNull();
                 }

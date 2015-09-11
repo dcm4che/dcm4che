@@ -364,8 +364,12 @@ public class Connection implements Serializable {
     /**
      * Bind address of listening socket or {@code null}. If {@code null}, bind
      * listening socket to {@link #getHostname()}.
+     * <p>
+     * The bind address can also include system properties with the
+     * <em>${system.property}</em> syntax, that will be resolved.
      *
-     * @param bindAddress Bind address of listening socket or {@code null}
+     * @param bindAddress
+     *            Bind address of listening socket or {@code null}
      */
     public final void setBindAddress(String bindAddress) {
         if (bindAddress != null

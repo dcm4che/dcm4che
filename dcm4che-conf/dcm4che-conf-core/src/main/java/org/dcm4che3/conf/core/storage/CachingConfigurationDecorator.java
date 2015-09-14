@@ -169,12 +169,11 @@ public class CachingConfigurationDecorator extends DelegatingConfiguration {
         try {
             super.runBatch(batch);
         }catch (RuntimeException e) {
-            // if something goes wrong during batching - refresh the cache before others are able to read inconsistent data
-            try {
-                refreshNode("/");
-            } catch (ConfigurationException e1) {
-                log.warn("Caught an exception during batch, but was not able to refresh the cache", e1);
-            }
+
+            // if something goes wrong during batching - invalidate the cache before others are able to read inconsistent data
+            // we cannot re-load here since an underlying transaction is likely to be inactive
+            cachedConfigurationRoot = null;
+
             throw e;
         }
 

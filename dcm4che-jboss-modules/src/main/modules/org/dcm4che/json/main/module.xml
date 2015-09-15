@@ -8,5 +8,6 @@
         <module name="org.dcm4che.core" export="true"/>
         <module name="javax.json.api" export="true"/>
         <module name="javax.api"/>
+        <module name="org.slf4j"/>
     </dependencies>
 </module>

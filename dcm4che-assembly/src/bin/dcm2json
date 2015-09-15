@@ -55,4 +55,4 @@ if $cygwin; then
 fi
 
 # Execute the JVM
-exec $JAVA $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"
+exec "$JAVA" $JAVA_OPTS -cp "$CP" $MAIN_CLASS "$@"

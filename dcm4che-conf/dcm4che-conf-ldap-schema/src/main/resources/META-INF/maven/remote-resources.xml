@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<remoteResourcesBundle xsi:schemaLocation="http://maven.apache.org/remote-resources/1.1.0 http://maven.apache.org/xsd/remote-resources-1.1.0.xsd"
+    xmlns="http://maven.apache.org/remote-resources/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <remoteResources>
+    <remoteResource>apacheds/dcm4che.ldif</remoteResource>
+    <remoteResource>apacheds/dicom.ldif</remoteResource>
+    <remoteResource>opendj/03-rfc2587.ldif</remoteResource>
+    <remoteResource>opendj/10-dicom.ldif</remoteResource>
+    <remoteResource>opendj/11-dcm4che.ldif</remoteResource>
+    <remoteResource>schema/dcm4che.schema</remoteResource>
+    <remoteResource>schema/dicom.schema</remoteResource>
+    <remoteResource>slapd/dcm4che.ldif</remoteResource>
+    <remoteResource>slapd/dicom.ldif</remoteResource>
+  </remoteResources>
+  <sourceEncoding>UTF-8</sourceEncoding>
+</remoteResourcesBundle>

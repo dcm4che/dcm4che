@@ -79,7 +79,8 @@ public class StreamUtils {
             throws IOException {
         int count;
         while ((count = in.read(buf, 0, buf.length)) > 0)
-            out.write(buf, 0, count);
+            if (out != null)
+                out.write(buf, 0, count);
     }
 
     public static  void copy(InputStream in, OutputStream out)

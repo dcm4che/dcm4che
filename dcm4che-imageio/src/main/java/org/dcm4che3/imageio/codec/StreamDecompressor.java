@@ -60,7 +60,11 @@ import java.io.IOException;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jan 2015.
+ *
+ * @deprecated This is prototype code. StreamDecompressor will be replaced by a Transcoder that supports both stream
+ * compression and decompression. For now you can continue using {@link Decompressor} for non-stream decompression.
  */
+@Deprecated
 public class StreamDecompressor implements CoerceAttributes {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamDecompressor.class);

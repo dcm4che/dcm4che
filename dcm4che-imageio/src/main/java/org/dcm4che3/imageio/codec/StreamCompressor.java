@@ -62,7 +62,11 @@ import java.io.IOException;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Feb 2015.
+ *
+ * @deprecated This is prototype code. StreamCompressor will be replaced by a Transcoder that supports both stream
+ * compression and decompression. For now you can continue using {@link Compressor} for non-stream compression.
  */
+@Deprecated
 public class StreamCompressor extends StreamDecompressor {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamCompressor.class);

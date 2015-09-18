@@ -93,10 +93,10 @@ public class Compressor implements Closeable {
     private int[] embeddedOverlays;
     private int maxPixelValueError = -1;
     private int avgPixelValueBlockSize = 1;
-    private BufferedImage bi2;
+    private BufferedImage decompressedImageForVerification;
     private ImageParams imageParams;
     private Decompressor decompressor = null;
-    private BufferedImage bi;
+    private BufferedImage uncompressedImage;
 
     private ImageReadParam verifyParam;
 
@@ -178,7 +178,7 @@ public class Compressor implements Closeable {
 
         TransferSyntaxType compressTsType = TransferSyntaxType.forUID(compressTsuid);
         if (decompressor == null || tsType == TransferSyntaxType.RLE)
-            bi = BufferedImageUtils.createBufferedImage(imageParams, compressTsType);
+            uncompressedImage = BufferedImageUtils.createBufferedImage(imageParams, compressTsType);
         imageParams.compress(dataset, compressTsType);
         int frames = imageParams.getFrames();
         Fragments compressedPixeldata =
@@ -290,11 +290,11 @@ public class Compressor implements Closeable {
                 throw ex;
 
             try {
-                BufferedImage bi = Compressor.this.readFrame(frameIndex);
-                Compressor.this.extractEmbeddedOverlays(frameIndex, bi);
+                BufferedImage imageToCompress = Compressor.this.readFrame(frameIndex);
+                Compressor.this.extractEmbeddedOverlays(frameIndex, imageToCompress);
                 if (imageParams.getBitsStored() < imageParams.getBitsAllocated())
                     BufferedImageUtils.nullifyUnusedBits(imageParams.getBitsStored(),
-                            bi.getRaster().getDataBuffer());
+                            imageToCompress.getRaster().getDataBuffer());
                 cache = new MemoryCacheImageOutputStream(cacheout) {
 
                     @Override
@@ -307,13 +307,13 @@ public class Compressor implements Closeable {
                         ? new PatchJPEGLSImageOutputStream(cache, compressPatchJPEGLS)
                         : cache);
                 long start = System.currentTimeMillis();
-                compressor.write(null, new IIOImage(bi, null, null), compressParam);
+                compressor.write(null, new IIOImage(imageToCompress, null, null), compressParam);
                 long end = System.currentTimeMillis();
                 streamLength = (int) cache.getStreamPosition();
                 if (LOG.isDebugEnabled())
                     LOG.debug("Compressed frame #{} {}:1 in {} ms", 
                             frameIndex + 1,
-                            (float) BufferedImageUtils.sizeOf(bi) / streamLength,
+                            (float) BufferedImageUtils.sizeOf(imageToCompress) / streamLength,
                             end - start);
                 Compressor.this.verify(cache, frameIndex);
             } catch (IOException ex) {
@@ -354,7 +354,7 @@ public class Compressor implements Closeable {
                     : ByteOrder.LITTLE_ENDIAN);
             iis.seek(imageParams.getFrameLength() * frameIndex);
         }
-        DataBuffer db = bi.getRaster().getDataBuffer();
+        DataBuffer db = uncompressedImage.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
             byte[][] data = ((DataBufferByte) db).getBankData();
@@ -378,7 +378,7 @@ public class Compressor implements Closeable {
             throw new UnsupportedOperationException(
                     "Unsupported Datatype: " + db.getDataType());
         }
-        return bi;
+        return uncompressedImage;
     }
 
     private void verify(ImageInputStream iis, int index)
@@ -388,10 +388,10 @@ public class Compressor implements Closeable {
 
         iis.seek(0);
         verifier.setInput(iis);
-        verifyParam.setDestination(bi2);
+        verifyParam.setDestination(decompressedImageForVerification);
         long start = System.currentTimeMillis();
-        bi2 = verifier.read(0, verifyParam);
-        int maxDiff =  BufferedImageUtils.maxDiff(bi.getRaster(), bi2.getRaster(), avgPixelValueBlockSize);
+        decompressedImageForVerification = verifier.read(0, verifyParam);
+        int maxDiff =  BufferedImageUtils.maxDiff(uncompressedImage.getRaster(), decompressedImageForVerification.getRaster(), avgPixelValueBlockSize);
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Verified compressed frame #{} in {} ms - max pixel value error: {}",

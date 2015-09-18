@@ -73,7 +73,7 @@ public class Decompressor {
     private final String tsuid;
     private final TransferSyntaxType tsType;
     private ImageParams imageParams;
-    private BufferedImage bi;
+    private BufferedImage decompressedImage;
     private ImageReader imageReader;
     private ImageReadParam readParam;
     private PatchJPEGLS patchJPEGLS;
@@ -133,7 +133,7 @@ public class Decompressor {
 
         imageParams.decompress(dataset, tsType);
         if (tsType == TransferSyntaxType.RLE)
-            bi = BufferedImageUtils.createBufferedImage(imageParams, tsType);
+            decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);
 
         dataset.setValue(Tag.PixelData, VR.OW, new Value() {
 
@@ -206,16 +206,16 @@ public class Decompressor {
         imageReader.setInput(patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(iis, patchJPEGLS)
                 : iis);
-        readParam.setDestination(bi);
+        readParam.setDestination(decompressedImage);
         long start = System.currentTimeMillis();
-        bi = imageReader.read(0, readParam);
+        decompressedImage = imageReader.read(0, readParam);
         long end = System.currentTimeMillis();
         if (LOG.isDebugEnabled())
             LOG.debug("Decompressed frame #{} 1:{} in {} ms", 
                     new Object[] {index + 1,
-                    (float) BufferedImageUtils.sizeOf(bi) / iis.getStreamPosition(),
+                    (float) BufferedImageUtils.sizeOf(decompressedImage) / iis.getStreamPosition(),
                     end - start });
-        return bi;
+        return decompressedImage;
     }
 
     public ImageInputStream createImageInputStream() throws IOException {

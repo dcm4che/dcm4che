@@ -2338,8 +2338,8 @@ public class Attributes implements Serializable {
             sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)
                 sb.setLength(maxLength);
-            sb.append('\n');
         }
+        sb.append('\n');
         return sb;
     }
 

@@ -43,7 +43,7 @@ package org.dcm4che3.data;
  */
 public class Implementation {
 
-    private static final String IMPL_CLASS_UID = "1.2.40.0.13.1.1";
+    private static final String IMPL_CLASS_UID = "1.2.40.0.13.1.3";
     private static final String IMPL_VERS_NAME = versionName();
     private static String versionName() {
         StringBuilder sb = new StringBuilder(16);

@@ -149,7 +149,10 @@ public class UpgradeRunner {
 
                                 if (upgradeScriptMetadata.getLastVersionExecuted() != null
                                         && upgradeScriptMetadata.getLastVersionExecuted().compareTo(currentScriptVersion.value()) >= 0) {
-                                    log.info("Upgrade script '{}' is skipped because version '{}' was already executed", script.getClass().getName(), currentScriptVersion.value());
+                                    log.info("Upgrade script '{}' is skipped because current version '{}' is older than the last executed one ('{}')",
+                                            script.getClass().getName(),
+                                            currentScriptVersion.value(),
+                                            upgradeScriptMetadata.getLastVersionExecuted());
                                     continue;
                                 }
 

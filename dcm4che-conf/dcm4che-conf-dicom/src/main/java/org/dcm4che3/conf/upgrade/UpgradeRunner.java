@@ -121,17 +121,6 @@ public class UpgradeRunner {
                     Properties props = new Properties();
                     props.putAll(upgradeSettings.getProperties());
 
-                    if (props.getProperty(RUN_ALWAYS) == null) {
-                        // check if we need to run scripts at all
-                        if (fromVersion.compareToIgnoreCase(toVersion) >= 0) {
-                            log.info("Skipping configuration upgrade - configuration version is already " + toVersion);
-                            return;
-                        }
-                    } else {
-                        log.warn("org.dcm4che.conf.upgrade.runAlways is set to TRUE, all the upgrade scripts will be re-executed unconditionally. " +
-                                "This is NOT supposed to be used in production and may introduce inconsistencies in a clustered setup.");
-                    }
-
                     log.info("Config upgrade scripts specified in settings: {}", upgradeSettings.getUpgradeScriptsToRun());
                     log.info("Config upgrade scripts discovered in the deployment: {}", availableUpgradeScripts);
 
@@ -141,8 +130,8 @@ public class UpgradeRunner {
                         boolean found = false;
 
                         for (UpgradeScript script : availableUpgradeScripts) {
-                            if (script.getClass().getName().equals(upgradeScriptName)) {
-                                log.info("Executing upgrade script {}", upgradeScriptName);
+                            if (script.getClass().getName().startsWith(upgradeScriptName)) {
+                                found = true;
 
                                 // fetch upgradescript metadata
                                 UpgradeScript.UpgradeScriptMetadata upgradeScriptMetadata = configMetadata.getMetadataOfUpgradeScripts().get(upgradeScriptName);
@@ -150,6 +139,25 @@ public class UpgradeRunner {
                                     upgradeScriptMetadata = new UpgradeScript.UpgradeScriptMetadata();
                                     configMetadata.getMetadataOfUpgradeScripts().put(upgradeScriptName, upgradeScriptMetadata);
                                 }
+
+
+                                // check if the script need to be executed
+                                ScriptVersion currentScriptVersion = script.getClass().getAnnotation(ScriptVersion.class);
+
+                                if (currentScriptVersion == null)
+                                    throw new ConfigurationException("Upgrade script '" + script.getClass().getName() + "' does not have @ScriptVersion defined");
+
+                                if (upgradeScriptMetadata.getLastVersionExecuted() != null
+                                        && upgradeScriptMetadata.getLastVersionExecuted().compareTo(currentScriptVersion.value()) >= 0) {
+                                    log.info("Upgrade script '{}' is skipped because version '{}' was already executed", script.getClass().getName(), currentScriptVersion.value());
+                                    continue;
+                                }
+
+                                log.info("Executing upgrade script '{}' (this version '{}', last executed version '{}')",
+                                        script.getClass().getName(),
+                                        currentScriptVersion.value(),
+                                        upgradeScriptMetadata.getLastVersionExecuted());
+
 
                                 // collect pieces and prepare context
                                 @SuppressWarnings("unchecked")
@@ -160,17 +168,13 @@ public class UpgradeRunner {
                                 script.upgrade(upgradeContext);
 
                                 // set last executed version from the annotation of the upgrade script if present
-                                ScriptVersion scriptVersion = script.getClass().getAnnotation(ScriptVersion.class);
-                                if (scriptVersion != null) {
-                                    upgradeScriptMetadata.setLastVersionExecuted(scriptVersion.value());
-                                }
+                                upgradeScriptMetadata.setLastVersionExecuted(currentScriptVersion.value());
 
-                                found = true;
                             }
                         }
 
                         if (!found)
-                            throw new ConfigurationException("Upgrade script " + upgradeScriptName + " not found in the deployment");
+                            throw new ConfigurationException("Upgrade script '" + upgradeScriptName + "' not found in the deployment");
                     }
 
                     // update version
@@ -183,6 +187,8 @@ public class UpgradeRunner {
                 }
             }
         });
+
+        log.info("Configuration upgrade completed successfully");
     }
 
 

@@ -42,7 +42,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -115,7 +125,7 @@ public class ApplicationEntity implements Serializable {
 
     // Connections are dereferenced by DicomConfiguration
     @ConfigurableProperty(name = "dicomNetworkConnectionReference", collectionOfReferences = true, tags = Tag.PRIMARY)
-    private List<Connection> connections = new ArrayList<Connection>(1);
+    private final List<Connection> connections = new ArrayList<Connection>(1);
 
     /**
      * "Proxy" property, actually forwards everything to scuTCs and scpTCs in its setter/getter
@@ -159,7 +169,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public List<String> getAETitleAliases() {
-        return AETitleAliases;
+        return new ArrayList<String>(AETitleAliases);
     }
 
     public void setAETitleAliases(List<String> AETitleAliases) {
@@ -235,6 +245,10 @@ public class ApplicationEntity implements Serializable {
 
     /**
      * Get the AE title for this Network AE.
+     * 
+     * <p>
+     * Please note that there could also be alias AE titles for the same AE. You
+     * can get them via {@link #getAETitleAliases()}.
      *
      * @return A String containing the AE title.
      */
@@ -681,6 +695,7 @@ public class ApplicationEntity implements Serializable {
     public StringBuilder promptTo(StringBuilder sb, String indent) {
         String indent2 = indent + "  ";
         StringUtils.appendLine(sb, indent, "ApplicationEntity[title: ", AETitle);
+        StringUtils.appendLine(sb, indent2, "alias titles: ", AETitleAliases);
         StringUtils.appendLine(sb, indent2, "desc: ", description);
         StringUtils.appendLine(sb, indent2, "acceptor: ", associationAcceptor);
         StringUtils.appendLine(sb, indent2, "initiator: ", associationInitiator);
@@ -728,6 +743,7 @@ public class ApplicationEntity implements Serializable {
 
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
         setDescription(from.description);
+        setAETitleAliases(from.getAETitleAliases());
         setVendorData(from.vendorData);
         setApplicationClusters(from.applicationClusters);
         setPreferredCalledAETitles(from.preferredCalledAETitles);

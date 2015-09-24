@@ -45,7 +45,9 @@ Utilities
 ---------
 - [dcm2dcm][]: Transcode DICOM file according the specified Transfer Syntax
 - [dcm2jpg][]: Convert DICOM image to JPEG or other image formats
-- [dcm2xml][]: Convert DICOM file in XML presentation
+- [dcm2xml][]: Convert DICOM file to XML presentation
+- [dcm2json][]: Convert DICOM file to JSON presentation
+- [dcmdict][]: Lookup DICOM attribute and UID information in DICOM dictionary
 - [dcmdir][]: Dump, create or update DICOMDIR file
 - [dcmdump][]: Dump DICOM file in textual form
 - [dcmqrscp][]: Simple DICOM archive
@@ -59,14 +61,24 @@ Utilities
 - [hl7snd][]: Send HL7 v2.x message
 - [ianscp][]: DICOM Instance Availability Notification receiver 
 - [ianscu][]: Send DICOM Instance Availability Notification
+- [jpg2dcm][]: Encapsulate JPEG Image into DICOM Object
+- [json2dcm][]: Convert JSON file to DICOM file
 - [mkkos][]: Make DICOM Key Object Selection Document
 - [modality][]: Simulates DICOM Modality
 - [movescu][]: Invoke DICOM C-MOVE Retrieve request
 - [mppsscp][]: DICOM Modality Performed Procedure Step Receiver
 - [mppsscu][]: Send DICOM Modality Performed Procedure Step
+- [prefs2xml][]: Export Java Preferences
+- [qc][]: Perform QC operations on a dcm4chee archive
+- [qidors][]: Query a QIDO-RS service
 - [stgcmtscu][]: Invoke DICOM Storage Commitment Request
 - [storescp][]: DICOM Composite Object Receiver
 - [storescu][]: Send DICOM Composite Objects
+- [stowrs][]: Send DICOM objects to a STOW-RS service
+- [syslog][]: Send RFC 5424 Syslog messages
+- [syslogd][]: Receive RFC 5424 Syslog messages
+- [wadors][]: Query a WADO-RS service
+- [wadouri][]: Query a WADO-URI service
 - [xml2dcm][]: Create/Update DICOM file from/with XML presentation
 - [xml2hl7][]: Create HL7 v2.x message from XML presentation
 - [xml2prefs][]: Import Java Preferences
@@ -74,6 +86,8 @@ Utilities
 [dcm2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2dcm/README.md
 [dcm2jpg]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2jpg/README.md
 [dcm2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2xml/README.md
+[dcm2json]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcm2json/README.md
+[dcmdict]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdict/README.md
 [dcmdir]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdir/README.md
 [dcmdump]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmdump/README.md
 [dcmqrscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-dcmqrscp/README.md
@@ -87,14 +101,24 @@ Utilities
 [hl7snd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-hl7snd/README.md
 [ianscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscp/README.md
 [ianscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ianscu/README.md
+[jpg2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-jpg2dcm/README.md
+[json2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-json2dcm/README.md
 [mkkos]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mkkos/README.md
 [modality]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-ihe/dcm4che-tool-ihe-modality/README.md
 [movescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-movescu/README.md
 [mppsscp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscp/README.md
 [mppsscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-mppsscu/README.md
+[prefs2xml]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-prefs2xml/README.md
+[qc]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-qc/README.md
+[qidors]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-qidors/README.md
 [stgcmtscu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stgcmtscu/README.md
 [storescp]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescp/README.md
 [storescu]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-storescu/README.md
+[stowrs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-stowrs/README.md
+[syslog]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslog/README.md
+[syslogd]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-syslogd/README.md
+[wadors]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-wadors/README.md
+[wadouri]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-wadouri/README.md
 [xml2dcm]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2dcm/README.md
 [xml2hl7]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2hl7/README.md
 [xml2prefs]: https://github.com/dcm4che/dcm4che/blob/master/dcm4che-tool/dcm4che-tool-xml2prefs/README.md

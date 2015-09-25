@@ -59,6 +59,7 @@ import java.util.Properties;
 /**
  * @author Roman K
  */
+@SuppressWarnings("unchecked")
 public class UpgradeRunner {
 
     public static final String RUN_ALWAYS = "org.dcm4che.conf.upgrade.runAlways";
@@ -108,6 +109,7 @@ public class UpgradeRunner {
 
                     BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
+                    // load or initialize config metadata
                     Object metadataNode = configuration.getConfigurationNode(METADATA_ROOT_PATH, ConfigurationMetadata.class);
                     ConfigurationMetadata configMetadata = null;
                     if (metadataNode != null)
@@ -142,28 +144,34 @@ public class UpgradeRunner {
 
 
                                 // check if the script need to be executed
-                                ScriptVersion currentScriptVersion = script.getClass().getAnnotation(ScriptVersion.class);
+                                ScriptVersion currentScriptVersionAnno = script.getClass().getAnnotation(ScriptVersion.class);
 
-                                if (currentScriptVersion == null)
-                                    throw new ConfigurationException("Upgrade script '" + script.getClass().getName() + "' does not have @ScriptVersion defined");
+                                String currentscriptVersion;
+                                if (currentScriptVersionAnno == null) {
+                                    currentscriptVersion = UpgradeScript.NO_VERSION;
+                                    log.warn("Upgrade script '{}' does not have @ScriptVersion defined - using default '{}'",
+                                            script.getClass().getName(),
+                                            currentscriptVersion);
+                                } else {
+                                    currentscriptVersion = currentScriptVersionAnno.value();
+                                }
 
                                 if (upgradeScriptMetadata.getLastVersionExecuted() != null
-                                        && upgradeScriptMetadata.getLastVersionExecuted().compareTo(currentScriptVersion.value()) >= 0) {
+                                        && upgradeScriptMetadata.getLastVersionExecuted().compareTo(currentscriptVersion) >= 0) {
                                     log.info("Upgrade script '{}' is skipped because current version '{}' is older than the last executed one ('{}')",
                                             script.getClass().getName(),
-                                            currentScriptVersion.value(),
+                                            currentscriptVersion,
                                             upgradeScriptMetadata.getLastVersionExecuted());
                                     continue;
                                 }
 
                                 log.info("Executing upgrade script '{}' (this version '{}', last executed version '{}')",
                                         script.getClass().getName(),
-                                        currentScriptVersion.value(),
+                                        currentscriptVersion,
                                         upgradeScriptMetadata.getLastVersionExecuted());
 
 
                                 // collect pieces and prepare context
-                                @SuppressWarnings("unchecked")
                                 Map<String, Object> scriptConfig = (Map<String, Object>) upgradeSettings.getUpgradeConfig().get(upgradeScriptName);
                                 UpgradeScript.UpgradeContext upgradeContext = new UpgradeScript.UpgradeContext(
                                         fromVersion, toVersion, props, scriptConfig, configuration, dicomConfigurationManager, upgradeScriptMetadata);
@@ -171,7 +179,7 @@ public class UpgradeRunner {
                                 script.upgrade(upgradeContext);
 
                                 // set last executed version from the annotation of the upgrade script if present
-                                upgradeScriptMetadata.setLastVersionExecuted(currentScriptVersion.value());
+                                upgradeScriptMetadata.setLastVersionExecuted(currentscriptVersion);
 
                             }
                         }
@@ -183,7 +191,7 @@ public class UpgradeRunner {
                     // update version
                     configMetadata.setVersion(toVersion);
 
-                    // persist metadata
+                    // persist updated metadata
                     configuration.persistNode(METADATA_ROOT_PATH, beanVitalizer.createConfigNodeFromInstance(configMetadata), ConfigurationMetadata.class);
                 } catch (ConfigurationException e) {
                     throw new RuntimeException("Error while running the upgrade", e);

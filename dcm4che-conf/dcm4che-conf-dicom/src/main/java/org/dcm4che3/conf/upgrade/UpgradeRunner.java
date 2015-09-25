@@ -89,10 +89,9 @@ public class UpgradeRunner {
 
         String toVersion = upgradeSettings.getUpgradeToVersion();
         if (toVersion != null) {
-            log.info("Dcm4che configuration init: upgrading configuration to version " + toVersion);
             upgradeToVersion(toVersion);
         } else
-            log.warn("Dcm4che configuration init: upgrade version is null");
+            log.warn("Dcm4che configuration init: target upgrade version is null. Upgrade will not be performed. Set the target config version in upgrade settings first.'");
 
     }
 
@@ -119,6 +118,8 @@ public class UpgradeRunner {
                         configMetadata.setVersion(UpgradeScript.NO_VERSION);
                     }
                     String fromVersion = configMetadata.getVersion();
+
+                    log.info("Dcm4che configuration init: upgrading configuration from version '{}' to version '{}'", fromVersion, toVersion);
 
                     Properties props = new Properties();
                     props.putAll(upgradeSettings.getProperties());

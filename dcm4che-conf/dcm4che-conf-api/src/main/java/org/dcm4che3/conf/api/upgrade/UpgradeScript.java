@@ -9,6 +9,21 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Implement this interface to cover
+ * <ul>
+ *     <li>transformation of configuration classes structure between releases</li>
+ *     <li>conditional default config initialization</li>
+ *     <li>migration of legacy configuration</li>
+ * </ul>
+ *
+ * Mark the implemented class with
+ * <code>@ org.dcm4che3.conf.api.upgrade.ScriptVersion</code>
+ * annotation to allow upgrade runner to detect whether the script needs to be re-executed.
+ *
+ * upgradeScriptMetadata is also available to the script itself during the execution, however it is not recommended to base the logic of the script on it.
+ *
+ */
 public interface UpgradeScript {
     String NO_VERSION = "-NO_VERSION-";
 

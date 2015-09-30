@@ -41,7 +41,6 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
-import org.dcm4che3.conf.core.storage.CachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.dicom.ldap.LdapConfigurationStorage;
 import org.dcm4che3.net.AEExtension;
@@ -167,7 +166,7 @@ public class DicomConfigurationBuilder {
         return new CommonDicomConfigurationWithHL7(configurationStorage, extensionClassesMap);
     }
 
-    private Configuration createConfigurationStorage(List<Class> allExtensions) throws ConfigurationException {
+    protected Configuration createConfigurationStorage(List<Class> allExtensions) throws ConfigurationException {
 
         // if configurationStorage is already set - skip the storage init
         if (configurationStorage == null) {
@@ -220,10 +219,6 @@ public class DicomConfigurationBuilder {
                     throw new RuntimeException("Not implemented");
             }
         }
-
-        if (cache != null ? cache
-                : Boolean.valueOf(getPropertyWithNotice(props, "org.dcm4che.conf.cached", "false")))
-            configurationStorage = new CachingConfigurationDecorator(configurationStorage, props);
 
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,

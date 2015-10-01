@@ -38,16 +38,46 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.api.internal;
+package org.dcm4che3.conf;
 
-import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
-import org.dcm4che3.conf.core.api.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Hashtable;
 
 /**
+ * Logs the discovered configuration settings
+ *
  * @author Roman K
  */
-public abstract class DicomConfigurationManagerFactory {
-    public abstract DicomConfigurationManager createDicomConfigurationManager(Configuration storage, Iterable<ConfigurableClassExtension> extensions);
+public class ConfigurationSettingsLoader {
 
+    private static Logger log = LoggerFactory.getLogger(ConfigurationSettingsLoader.class);
+
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval) {
+        return getPropertyWithNotice(props, key, defval, "", false);
+    }
+
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval, String options) {
+        return getPropertyWithNotice(props, key, defval, options, false);
+    }
+
+    public static String getPasswordWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval) {
+        return getPropertyWithNotice(props, key, defval, "", true);
+    }
+
+    private static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                                String key, String defval, String options, boolean hide) {
+        String val = (String) props.get(key);
+        if (val == null) {
+            val = defval;
+            log.warn("Configuration storage init: system property '{}' not found. Using default value '{}'.{}", key, defval, options);
+        } else {
+            log.info("Initializing dcm4che configuration storage " + "({} = {})", key, hide ? "***" : val);
+        }
+        return val;
+    }
 }

@@ -51,4 +51,5 @@ import java.util.Map;
  * @author Roman K
  */
 public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
+
 }

@@ -1,3 +1,4 @@
+//
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -35,42 +36,15 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.net.hl7;
 
-import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
-import org.dcm4che3.conf.core.api.SetParentIntoField;
+package org.dcm4che3.conf.api.internal;
 
-import java.io.Serializable;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
  *
  */
-@SetParentIntoField("HL7Application")
-public class HL7ApplicationExtension extends ConfigurableClassExtension<HL7ApplicationExtension> implements Serializable {
-
-    private static final long serialVersionUID = -6314667837949323448L;
-
-    protected HL7Application HL7Application;
-
-    public final HL7Application getHL7Application() {
-        return HL7Application;
-    }
-
-    public void setHL7Application(HL7Application hl7App) {
-        if (hl7App != null && this.HL7Application != null)
-            throw new IllegalStateException(
-                    "already owned by HL7 Application: "
-                    + hl7App.getApplicationName());
-        this.HL7Application = hl7App;
-    }
-
-    @Override
-    public void reconfigure(HL7ApplicationExtension from) {
-    }
-
-    @Override
-    public Class<HL7ApplicationExtension> getBaseClass() {
-        return HL7ApplicationExtension.class;
-    }
+public interface DicomConfigurationManagerProvider {
+    DicomConfigurationManager createDicomConfigurationManager() throws ConfigurationException;
 }

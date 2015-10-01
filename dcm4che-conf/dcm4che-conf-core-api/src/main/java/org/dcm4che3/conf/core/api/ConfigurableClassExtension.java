@@ -38,16 +38,21 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.api.internal;
-
-import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
-import org.dcm4che3.conf.core.api.Configuration;
+package org.dcm4che3.conf.core.api;
 
 /**
+ * Superclass for all base extensions (that are allowing extension-by-composition mechanism of the framework).
+ * @see ConfigurableProperty
  * @author Roman K
  */
-public abstract class DicomConfigurationManagerFactory {
-    public abstract DicomConfigurationManager createDicomConfigurationManager(Configuration storage, Iterable<ConfigurableClassExtension> extensions);
+public abstract class ConfigurableClassExtension<T> {
+
+    public abstract void reconfigure(T from);
+
+    /**
+     * Will be removed later on
+     * @return the actual base class
+     */
+    public abstract Class<T> getBaseClass();
 
 }

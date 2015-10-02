@@ -88,16 +88,6 @@ public interface Configuration {
     Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException;
 
     /**
-     * UNSTABLE. NOT YET PROPERLY DEFINED. COULD BE RESTRUCTURED IN NEAR FUTURE.
-     * Returns the class that was used to persist the node using persistNode
-     *
-     * @param path
-     * @return
-     * @throws ConfigurationException
-     */
-    Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException;
-
-    /**
      * Tests if a node under the specified path exists.
      *
      * @param path
@@ -166,12 +156,7 @@ public interface Configuration {
      *
      * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
      */
-    interface ConfigBatch {
-
-        /**
-         * Executes configuration batch changes on the specified configuration storage.
-         */
-        public void run();
+    interface ConfigBatch extends Runnable{
     }
 
 }

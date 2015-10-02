@@ -52,6 +52,9 @@ public class DelegatingConfiguration implements Configuration {
 
     protected Configuration delegate;
 
+    public DelegatingConfiguration() {
+    }
+
     public DelegatingConfiguration(Configuration delegate) {
         this.delegate = delegate;
     }
@@ -64,11 +67,6 @@ public class DelegatingConfiguration implements Configuration {
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         return delegate.getConfigurationNode(path, configurableClass);
-    }
-
-    @Override
-    public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        return delegate.getConfigurationNodeClass(path);
     }
 
     @Override

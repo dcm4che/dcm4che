@@ -103,11 +103,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         return node;
     }
 
-    @Override
-    public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        throw new RuntimeException("Not implemented");
-    }
-
 
     @Override
     public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {

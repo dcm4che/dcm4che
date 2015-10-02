@@ -195,11 +195,6 @@ public class LdapConfigurationStorage implements Configuration {
     }
 
     @Override
-    public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
     public boolean nodeExists(String path) throws ConfigurationException {
 
         String dn = LdapConfigUtils.refToLdapDN(path, this);

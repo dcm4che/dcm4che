@@ -38,16 +38,66 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.api.internal;
+package org.dcm4che3.conf.core.storage;
 
-import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
-import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Roman K
  */
-public abstract class DicomConfigurationManagerFactory {
-    public abstract DicomConfigurationManager createDicomConfigurationManager(Configuration storage, Iterable<ConfigurableClassExtension> extensions);
+public class InMemoryReadOnlyConfiguration implements Configuration {
 
+    private final Map<String, Object> root;
+
+    public InMemoryReadOnlyConfiguration(Map<String, Object> root) {
+        this.root = root;
+    }
+
+    @Override
+    public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
+        return root;
+    }
+
+    @Override
+    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+        return ConfigNodeUtil.getNode(root, path);
+    }
+
+    @Override
+    public boolean nodeExists(String path) throws ConfigurationException {
+        return ConfigNodeUtil.nodeExists(root, path);
+    }
+
+    @Override
+    public void refreshNode(String path) throws ConfigurationException {
+    }
+
+    @Override
+    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+        throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public void removeNode(String path) throws ConfigurationException {
+        throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+        return ConfigNodeUtil.search(root, liteXPathExpression);
+    }
+
+    @Override
+    public void lock() {
+    }
+
+    @Override
+    public void runBatch(ConfigBatch batch) {
+        batch.run();
+    }
 }

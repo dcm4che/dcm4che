@@ -133,24 +133,12 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
         try {
             for (Iterator<T> iter = instances.iterator(); iter.hasNext();) {
                 T inst = iter.next();
-                String tsuid;
-                DataWriter dataWriter;
 
                 if (status == Status.Cancel)
                     break;
 
                 try {
-                    tsuid = selectTransferSyntaxFor(storeas, inst);
-                    dataWriter = createDataWriter(inst, tsuid);
-                } catch (Exception e) {
-                    LOG.info("Unable to store {}/{} to {}",
-                            UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
-                            storeas.getRemoteAET(), e);
-                    failed.add(inst);
-                    continue;
-                }
-                try {
-                    cstore(storeas, inst, tsuid, dataWriter);
+                    storeInstance(storeas, inst);
                 } catch (Throwable e) {
                     LOG.warn(
                             "Unable to perform sub-operation on association to {}",
@@ -174,7 +162,24 @@ public class BasicCStoreSCU<T extends InstanceLocator> extends Observable
             }
         }
     }
-    
+
+    protected void storeInstance(Association storeas, T inst) throws IOException, InterruptedException {
+        String tsuid;
+        DataWriter dataWriter;
+        try {
+            tsuid = selectTransferSyntaxFor(storeas, inst);
+            dataWriter = createDataWriter(inst, tsuid);
+        } catch (Exception e) {
+            LOG.info("Unable to store {}/{} to {}",
+                    UID.nameOf(inst.cuid), UID.nameOf(inst.tsuid),
+                    storeas.getRemoteAET(), e);
+            failed.add(inst);
+            return;
+        }
+
+        cstore(storeas, inst, tsuid, dataWriter);
+    }
+
     private void setFinalStatus() {
         
         if (status!=Status.Cancel) {

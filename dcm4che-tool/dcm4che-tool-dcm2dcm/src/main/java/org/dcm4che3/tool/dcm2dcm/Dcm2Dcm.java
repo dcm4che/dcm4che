@@ -310,9 +310,9 @@ public class Dcm2Dcm {
                 if (tstype.isPixeldataEncapsulated()) {
                     tsuid = adjustTransferSyntax(tsuid,
                             dataset.getInt(Tag.BitsStored, 8));
-                    compressor = new Compressor(dataset, dis.getTransferSyntax());
-                    compressor.compress(tsuid,
-                            params.toArray(new Property[params.size()]));
+                    compressor = new Compressor(dataset, dis.getTransferSyntax(),
+                            tsuid, params.toArray(new Property[params.size()]));
+                    compressor.compress();
                 } else if (pixeldata instanceof Fragments)
                     Decompressor.decompress(dataset, dis.getTransferSyntax());
             }

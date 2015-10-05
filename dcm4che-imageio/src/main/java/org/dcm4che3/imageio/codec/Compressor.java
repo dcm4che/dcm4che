@@ -37,28 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.imageio.codec;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.io.*;
-import java.nio.ByteOrder;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
-
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
 import org.dcm4che3.image.Overlays;
@@ -72,15 +54,42 @@ import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.IIOImage;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteOrder;
+
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * Compresses the pixel data of DICOM images to a lossless or lossy encapsulated transfer syntax format.
+ * <p>
+ * If the source image is already compressed it will be transcoded (i.e. first decompressed then compressed again).
  *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
 public class Compressor implements Closeable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Compressor.class);
 
     private final Attributes dataset;
+    private final String compressTsuid;
     private Object pixels;
     private VR.Holder pixeldataVR = new VR.Holder();
     private final TransferSyntaxType tsType;
@@ -100,10 +109,14 @@ public class Compressor implements Closeable {
 
     private ImageReadParam verifyParam;
 
-    public Compressor(Attributes dataset, String tsuid) {
+    public Compressor(Attributes dataset, String tsuid, String compressTsuid, Property... compressParams) {
+        if (compressTsuid == null)
+            throw new NullPointerException("compressTsuid");
+
         this.dataset = dataset;
         this.imageParams = new ImageParams(dataset);
         this.tsType = TransferSyntaxType.forUID(tsuid);
+        this.compressTsuid = compressTsuid;
 
         pixels = dataset.getValue(Tag.PixelData, pixeldataVR);
         if (pixels == null)
@@ -124,16 +137,6 @@ public class Compressor implements Closeable {
             this.decompressor = new Decompressor(dataset, tsuid);
 
         embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
-    }
-
-    public boolean compress(String compressTsuid, Property... params)
-            throws IOException {
-
-        if (compressTsuid == null)
-            throw new NullPointerException("compressTsuid");
-
-        if (imageParams == null)
-            return false;
 
         ImageWriterFactory.ImageWriterParam param =
                 ImageWriterFactory.getImageWriterParam(compressTsuid);
@@ -147,7 +150,7 @@ public class Compressor implements Closeable {
 
         this.compressParam = compressor.getDefaultWriteParam();
         int count = 0;
-        for (Property property : cat(param.getImageWriteParams(), params)) {
+        for (Property property : cat(param.getImageWriteParams(), compressParams)) {
             String name = property.getName();
             if (name.equals("maxPixelValueError")) {
                 maxPixelValueError = ((Number) property.getValue()).intValue();
@@ -175,6 +178,12 @@ public class Compressor implements Closeable {
             this.verifyParam = verifier.getDefaultReadParam();
             LOG.debug("Verifier: {}", verifier.getClass().getName());
         }
+    }
+
+    public boolean compress() throws IOException {
+
+        if (pixels == null)
+            return false;
 
         TransferSyntaxType compressTsType = TransferSyntaxType.forUID(compressTsuid);
         if (decompressor == null || tsType == TransferSyntaxType.RLE)
@@ -186,7 +195,7 @@ public class Compressor implements Closeable {
         compressedPixeldata.add(Value.NULL);
         for (int i = 0; i < frames; i++) {
             CompressedFrame frame = new CompressedFrame(i);
-            if (embeddedOverlays.length != 0)
+            if (needToExtractEmbeddedOverlays())
                 frame.compress();
             compressedPixeldata.add(frame);
         }
@@ -195,6 +204,10 @@ public class Compressor implements Closeable {
             dataset.setInt(Tag.OverlayBitPosition | gg0000, VR.US, 0);
         }
         return true;
+    }
+
+    private boolean needToExtractEmbeddedOverlays() {
+        return embeddedOverlays.length != 0;
     }
 
     private Property[] cat(Property[] a, Property[] b) {
@@ -435,5 +448,52 @@ public class Compressor implements Closeable {
         }
 
         return null;
+    }
+
+    /**
+     * @return (Pessimistic) estimation of the maximum heap memory (in bytes) that will be needed at any moment in time
+     * during compression.
+     */
+    public long getEstimatedNeededMemory() {
+        if (pixels == null)
+            return 0;
+
+        long memoryNeededDuringDecompression = 0;
+
+        long uncompressedFrameLength = imageParams.getFrameLength();
+
+        if (decompressor != null) {
+            // memory for decompression, if decompression is needed
+            memoryNeededDuringDecompression += decompressor.getEstimatedNeededMemory();
+        }
+
+        long memoryNeededDuringCompression = 0;
+
+        // Memory for the uncompressed buffered image (only one frame, as frames are always processed sequentially)
+        memoryNeededDuringCompression += uncompressedFrameLength;
+
+        if (verifier != null) {
+            // verification step done, an additional uncompressed buffered image needs to be allocated
+            memoryNeededDuringCompression += uncompressedFrameLength;
+        }
+
+        // Memory for one compressed frame
+        // (For now: pessimistic assumption that same memory as for the uncompressed frame is needed. This very much
+        // depends on the compression algorithm, properties and the compressor implementation.)
+        long compressedFrameLength = uncompressedFrameLength;
+
+        if (!needToExtractEmbeddedOverlays()) {
+            // As the compression happens lazily on demand (when writing to the OutputStream), we just need to keep one
+            // frame in memory at one moment in time.
+            memoryNeededDuringCompression += compressedFrameLength;
+        } else {
+            // if embedded overlays need to be extracted, compression for each frame is done eagerly, so all compressed
+            // frames have to be kept in memory
+            memoryNeededDuringCompression += compressedFrameLength * imageParams.getFrames();
+        }
+
+        // as decompression and compression are executed sequentially (in between GC can run),
+        // therefore we have to consider the maximum of the two
+        return Math.max(memoryNeededDuringDecompression, memoryNeededDuringCompression);
     }
 }

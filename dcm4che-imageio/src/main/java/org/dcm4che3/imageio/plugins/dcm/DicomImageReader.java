@@ -544,7 +544,7 @@ public class DicomImageReader extends ImageReader {
             if (pixeldata instanceof BulkData) {
                 this.frameLength = pmi.frameLength(width, height, samples, bitsAllocated);
                 this.pixeldata = (BulkData) pixeldata;
-            } else {
+            } else { // Fragments
                 Attributes fmi = metadata.getFileMetaInformation();
                 if (fmi == null)
                     throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");

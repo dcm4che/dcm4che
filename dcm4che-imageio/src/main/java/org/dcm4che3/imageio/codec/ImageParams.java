@@ -44,15 +44,11 @@ import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.image.PhotometricInterpretation;
 
-import java.awt.*;
-import java.awt.color.ColorSpace;
-import java.awt.image.*;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jan 2015.
  */
-class ImageParams {
+public class ImageParams {
 
     private final int rows;
     private final int cols;

@@ -1,5 +1,5 @@
 /*
- * **** BEGIN LICENSE BLOCK *****
+ * *** BEGIN LICENSE BLOCK *****
  *  Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  *  The contents of this file are subject to the Mozilla Public License Version
@@ -37,19 +37,67 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.api.internal;
 
-import org.dcm4che3.conf.api.internal.ExtendedDicomConfiguration;
+package org.dcm4che3.conf.core.storage;
+
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.net.Device;
+import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
- * This interface is for internal use.
  * @author Roman K
  */
-public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
+public class InMemoryReadOnlyConfiguration implements Configuration {
 
+    private final Map<String, Object> root;
+
+    public InMemoryReadOnlyConfiguration(Map<String, Object> root) {
+        this.root = root;
+    }
+
+    @Override
+    public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
+        return root;
+    }
+
+    @Override
+    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+        return ConfigNodeUtil.getNode(root, path);
+    }
+
+    @Override
+    public boolean nodeExists(String path) throws ConfigurationException {
+        return ConfigNodeUtil.nodeExists(root, path);
+    }
+
+    @Override
+    public void refreshNode(String path) throws ConfigurationException {
+    }
+
+    @Override
+    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+        throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public void removeNode(String path) throws ConfigurationException {
+        throw new RuntimeException("Configuration is read-only");
+    }
+
+    @Override
+    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+        return ConfigNodeUtil.search(root, liteXPathExpression);
+    }
+
+    @Override
+    public void lock() {
+    }
+
+    @Override
+    public void runBatch(ConfigBatch batch) {
+        batch.run();
+    }
 }

@@ -38,66 +38,21 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.upgrade;
-
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-
-import java.util.List;
-import java.util.Map;
+package org.dcm4che3.conf.core.api;
 
 /**
+ * Superclass for all base extensions (that are allowing extension-by-composition mechanism of the framework).
+ * @see ConfigurableProperty
  * @author Roman K
  */
-@ConfigurableClass
-public class UpgradeSettings {
+public abstract class ConfigurableClassExtension<T> {
 
-    public UpgradeSettings() {
-    }
+    public abstract void reconfigure(T from);
 
-    @ConfigurableProperty
-    String upgradeToVersion;
+    /**
+     * Will be removed later on
+     * @return the actual base class
+     */
+    public abstract Class<T> getBaseClass();
 
-    @ConfigurableProperty(
-            description = "List of classes that implement UpgradeScript. Defines which scripts should be run and in which sequence")
-    List<String> upgradeScriptsToRun;
-
-    @ConfigurableProperty(
-            description = "These key/value properties are available to upgrade scripts"
-    )
-    Map<String, String> properties;
-    
-    private Map<String,Object> upgradeConfig;
-
-    public Map<String, String> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
-    }
-    
-    public Map<String, Object> getUpgradeConfig() {
-        return upgradeConfig;
-    }
-
-    public void setUpgradeConfig(Map<String, Object> upgradeConfig) {
-        this.upgradeConfig = upgradeConfig;
-    }
-
-    public String getUpgradeToVersion() {
-        return upgradeToVersion;
-    }
-
-    public void setUpgradeToVersion(String upgradeToVersion) {
-        this.upgradeToVersion = upgradeToVersion;
-    }
-
-    public List<String> getUpgradeScriptsToRun() {
-        return upgradeScriptsToRun;
-    }
-
-    public void setUpgradeScriptsToRun(List<String> upgradeScriptsToRun) {
-        this.upgradeScriptsToRun = upgradeScriptsToRun;
-    }
 }

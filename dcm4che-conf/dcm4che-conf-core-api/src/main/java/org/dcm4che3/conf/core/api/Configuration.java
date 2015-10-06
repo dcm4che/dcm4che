@@ -60,6 +60,14 @@ import java.util.Map;
  */
 public interface Configuration {
 
+    String CONF_STORAGE_SYSTEM_PROP = "org.dcm4che.conf.storage";
+
+    enum ConfigStorageType {
+        JSON_FILE,
+        LDAP,
+        DB_BLOBS;
+    }
+
     /**
      * Return the root of the configuration tree.
      * The returned node should not be modified directly (only through persistNode/removeNode).
@@ -71,7 +79,8 @@ public interface Configuration {
 
     /**
      * Loads a configuration node under the specified path.
-     * @param path A reference to a node
+     *
+     * @param path              A reference to a node
      * @param configurableClass
      * @return configuration node or null, if not found
      * @throws ConfigurationException
@@ -79,17 +88,8 @@ public interface Configuration {
     Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException;
 
     /**
-     * UNSTABLE. NOT YET PROPERLY DEFINED. COULD BE RESTRUCTURED IN NEAR FUTURE.
-     * Returns the class that was used to persist the node using persistNode
-     *
-     * @param path
-     * @return
-     * @throws ConfigurationException
-     */
-    Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException;
-
-    /**
      * Tests if a node under the specified path exists.
+     *
      * @param path
      * @return
      * @throws ConfigurationException
@@ -136,32 +136,27 @@ public interface Configuration {
      * Should be auto-released on transaction commit/rollback.
      */
     void lock();
-    
+
     /**
      * Provides support for batching configuration changes.
      * </p>
      * The method implementation must ensure that the batch-changes are executed within a transaction.
-     * The implementation may decide to run the changes either in 
+     * The implementation may decide to run the changes either in
      * <ul>
      * <li>the context of an already existing transaction</li>
      * <li>the context of a new transaction</li>
      * </ul>
-     * 
+     *
      * @param batch Configuration batch change to execute
      */
     void runBatch(ConfigBatch batch);
-    
+
     /**
      * Defines a configuration batch that allows to execute configuration changes in a bulk-type manner.
-     * 
+     *
      * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
      */
-    interface ConfigBatch {
-        
-        /**
-         * Executes configuration batch changes on the specified configuration storage.
-         */
-        public void run();
+    interface ConfigBatch extends Runnable{
     }
- 
+
 }

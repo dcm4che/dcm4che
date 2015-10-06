@@ -60,6 +60,7 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
+import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -73,6 +74,24 @@ public class LdapConfigurationStorage implements Configuration {
     private String baseDN;
     private InitialDirContext ldapCtx;
     private List<Class> allExtensionClasses;
+
+    public static Hashtable<String, String> collectLDAPProps(Hashtable<?, ?> props) {
+        Hashtable<String, String> ldapStringProps = new Hashtable<String, String>();
+        ldapStringProps.put("java.naming.provider.url",
+                ConfigurationSettingsLoader.getPropertyWithNotice(props,
+                        "org.dcm4che.conf.ldap.url",
+                        "ldap://localhost:389/dc=example,dc=com"));
+        ldapStringProps.put("java.naming.security.principal",
+                ConfigurationSettingsLoader.getPropertyWithNotice(props,
+                        "org.dcm4che.conf.ldap.principal",
+                        "cn=Directory Manager"));
+        ldapStringProps.put("java.naming.security.credentials",
+                ConfigurationSettingsLoader.getPasswordWithNotice(props,
+                        "org.dcm4che.conf.ldap.credentials", "1"));
+        ldapStringProps.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
+        ldapStringProps.put("java.naming.ldap.attributes.binary", "dicomVendorData");
+        return ldapStringProps;
+    }
 
     public List<Class> getAllExtensionClasses() {
         return allExtensionClasses;
@@ -173,11 +192,6 @@ public class LdapConfigurationStorage implements Configuration {
             exts.put(aClass.getSimpleName(), ext);
 
         }
-    }
-
-    @Override
-    public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        throw new RuntimeException("Not implemented");
     }
 
     @Override

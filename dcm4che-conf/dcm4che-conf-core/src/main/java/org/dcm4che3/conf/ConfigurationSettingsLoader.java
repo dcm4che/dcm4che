@@ -38,43 +38,46 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.upgrade;
+package org.dcm4che3.conf;
 
-import org.dcm4che3.conf.api.upgrade.UpgradeScript;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Hashtable;
 
 /**
+ * Logs the discovered configuration settings
+ *
  * @author Roman K
  */
-@ConfigurableClass
-public class ConfigurationMetadata {
+public class ConfigurationSettingsLoader {
 
-    @ConfigurableProperty
-    private String version;
+    private static Logger log = LoggerFactory.getLogger(ConfigurationSettingsLoader.class);
 
-    @ConfigurableProperty
-    Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts = new HashMap<String, UpgradeScript.UpgradeScriptMetadata>();
-
-    public String getVersion() {
-        return version;
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval) {
+        return getPropertyWithNotice(props, key, defval, "", false);
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval, String options) {
+        return getPropertyWithNotice(props, key, defval, options, false);
     }
 
-    public Map<String, UpgradeScript.UpgradeScriptMetadata> getMetadataOfUpgradeScripts() {
-        return metadataOfUpgradeScripts;
+    public static String getPasswordWithNotice(Hashtable<?, ?> props,
+                                               String key, String defval) {
+        return getPropertyWithNotice(props, key, defval, "", true);
     }
 
-    public void setMetadataOfUpgradeScripts(Map<String, UpgradeScript.UpgradeScriptMetadata> metadataOfUpgradeScripts) {
-        this.metadataOfUpgradeScripts = metadataOfUpgradeScripts;
+    private static String getPropertyWithNotice(Hashtable<?, ?> props,
+                                                String key, String defval, String options, boolean hide) {
+        String val = (String) props.get(key);
+        if (val == null) {
+            val = defval;
+            log.warn("Configuration storage init: system property '{}' not found. Using default value '{}'.{}", key, defval, options);
+        } else {
+            log.info("Initializing dcm4che configuration storage " + "({} = {})", key, hide ? "***" : val);
+        }
+        return val;
     }
-
 }
-
-

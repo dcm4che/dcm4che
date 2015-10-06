@@ -51,20 +51,23 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * Simple caching, no full transaction support, e.g. for rollbacks
+ * Oversynchronized
+ *
  * @author Roman K
  */
-public class CachingConfigurationDecorator extends DelegatingConfiguration {
+public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration {
 
 
-    public static final Logger log = LoggerFactory.getLogger(CachingConfigurationDecorator.class);
+    public static final Logger log = LoggerFactory.getLogger(SimpleCachingConfigurationDecorator.class);
 
     private Map<String, Object> cachedConfigurationRoot = null;
 
-    public CachingConfigurationDecorator(Configuration delegate) {
+    public SimpleCachingConfigurationDecorator(Configuration delegate) {
         this(delegate, System.getProperties());
     }
 
-    public CachingConfigurationDecorator(Configuration delegate, Hashtable<?, ?> properties) {
+    public SimpleCachingConfigurationDecorator(Configuration delegate, Hashtable<?, ?> properties) {
         super(delegate);
         String s = (String) properties.get("org.dcm4che.conf.staleTimeout");
         staleTimeout = Integer.valueOf(s == null ? "30" : s) * 1000L;

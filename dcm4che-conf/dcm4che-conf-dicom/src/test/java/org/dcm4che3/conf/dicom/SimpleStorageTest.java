@@ -41,7 +41,7 @@ package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.storage.CachingConfigurationDecorator;
+import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
 import org.dcm4che3.conf.dicom.misc.DeepEqualsDiffer;
@@ -87,7 +87,7 @@ public class SimpleStorageTest {
         URL resource = Thread.currentThread().getContextClassLoader().getResource("mockConfig.json");
         String path = resource.getPath();
         SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage(path);
-        return new CachingConfigurationDecorator(storage);
+        return new SimpleCachingConfigurationDecorator(storage);
     }
 
     @Test

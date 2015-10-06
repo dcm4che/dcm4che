@@ -1,12 +1,13 @@
 package org.dcm4che3.net;
 
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 /**
  * @author Roman K
  */
 @SetParentIntoField("connection")
-public class ConnectionExtension {
+public class ConnectionExtension extends ConfigurableClassExtension<ConnectionExtension> {
 
     private Connection connection;
 
@@ -18,6 +19,12 @@ public class ConnectionExtension {
         this.connection = connection;
     }
 
-    public void reconfigure(ConnectionExtension src) {
+    @Override
+    public void reconfigure(ConnectionExtension from) {
+    }
+
+    @Override
+    public Class<ConnectionExtension> getBaseClass() {
+        return ConnectionExtension.class;
     }
 }

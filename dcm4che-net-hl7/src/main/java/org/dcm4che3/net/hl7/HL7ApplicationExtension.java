@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.net.hl7;
 
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 import java.io.Serializable;
@@ -46,7 +47,7 @@ import java.io.Serializable;
  *
  */
 @SetParentIntoField("HL7Application")
-public class HL7ApplicationExtension implements Serializable {
+public class HL7ApplicationExtension extends ConfigurableClassExtension<HL7ApplicationExtension> implements Serializable {
 
     private static final long serialVersionUID = -6314667837949323448L;
 
@@ -64,5 +65,12 @@ public class HL7ApplicationExtension implements Serializable {
         this.HL7Application = hl7App;
     }
 
-    public void reconfigure(HL7ApplicationExtension from) { }
+    @Override
+    public void reconfigure(HL7ApplicationExtension from) {
+    }
+
+    @Override
+    public Class<HL7ApplicationExtension> getBaseClass() {
+        return HL7ApplicationExtension.class;
+    }
 }

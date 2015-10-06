@@ -43,13 +43,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.util.StringUtils;
 
 /**
  * @author Roman K
@@ -58,14 +61,22 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     private String fileName;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public static String resolveConfigFileNameSetting(Hashtable<?, ?> props) {
+        return StringUtils.replaceSystemProperties(
+                ConfigurationSettingsLoader.getPropertyWithNotice(
+                        props,
+                        "org.dcm4che.conf.filename",
+                        "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json"));
+    }
+
     public SingleJsonFileConfigurationStorage() {
         //NOOP
     }
-    
+
     public SingleJsonFileConfigurationStorage(String fileName) {
         setFileName(fileName);
     }
-    
+
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -90,11 +101,6 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
         return node;
-    }
-
-    @Override
-    public Class getConfigurationNodeClass(String path) throws ConfigurationException, ClassNotFoundException {
-        throw new RuntimeException("Not implemented");
     }
 
 

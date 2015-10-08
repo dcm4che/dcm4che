@@ -199,6 +199,10 @@ public class RetrieveTool implements TestTool{
         retrieveatts.setString(tag, vr, values);
     }
 
+    public void addAll(Attributes attrs) {
+        retrieveatts.addAll(attrs);
+    }
+
     public void clearTags() {
         retrieveatts.clear();
     }

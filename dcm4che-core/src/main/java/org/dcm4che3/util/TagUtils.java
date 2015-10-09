@@ -160,5 +160,26 @@ public class TagUtils {
                     : tag;
     }
 
+    public static int forName(String name) {
+        try {
+            return Integer.parseInt(name, 16);
+        } catch (NumberFormatException nfe) {
+            try {
+                return Tag.class.getField(name).getInt(null);
+            } catch (Exception e) {
+                return -1;
+            }
+        }
+    }
+
+    public static int[] parseTagPath(String tagPath) {
+        String[] names = StringUtils.split(tagPath, '.');
+        int[] tags = new int[names.length];
+        for (int i = 0; i < tags.length; i++)
+            if ((tags[i] = forName(names[i])) == -1)
+                throw new IllegalArgumentException("tagPath: " + tagPath);
+        return tags;
+    }
+
 }
 

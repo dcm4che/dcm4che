@@ -46,6 +46,7 @@ set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-${project.version}.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-tool-common-${project.version}.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\jai_imageio-1.2-pre-dr-b04.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\clibwrapper_jiio-1.2-pre-dr-b04.jar

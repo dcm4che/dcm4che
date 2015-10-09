@@ -136,8 +136,6 @@ public class Decompressor {
             return false;
 
         imageParams.decompress(dataset, tsType);
-        if (tsType == TransferSyntaxType.RLE)
-            decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);
 
         dataset.setValue(Tag.PixelData, VR.OW, new Value() {
 
@@ -206,6 +204,9 @@ public class Decompressor {
 
         if (pixels instanceof Fragments && ((Fragments) pixels).get(index+1) instanceof BulkData)
             iis = SegmentedImageInputStream.ofFrame(iis, (Fragments) pixels, index, imageParams.getFrames());
+
+        if (decompressedImage == null && tsType == TransferSyntaxType.RLE)
+            decompressedImage = BufferedImageUtils.createBufferedImage(imageParams, tsType);
 
         imageReader.setInput(patchJPEGLS != null
                 ? new PatchJPEGLSImageInputStream(iis, patchJPEGLS)

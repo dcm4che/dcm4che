@@ -39,20 +39,14 @@
 package org.dcm4che3.tool.dcmqrscp;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
-import org.dcm4che3.net.Association;
 import org.dcm4che3.net.DataWriter;
 import org.dcm4che3.net.DataWriterAdapter;
-import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.BasicCStoreSCU;
-import org.dcm4che3.net.service.BasicRetrieveTask;
-import org.dcm4che3.net.service.CStoreSCU;
 import org.dcm4che3.net.service.InstanceLocator;
 import org.dcm4che3.util.SafeClose;
 

@@ -43,11 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,38 +56,27 @@ import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Sequence;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.io.DicomInputStream;
-import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.dcm4che3.media.DicomDirReader;
 import org.dcm4che3.media.DicomDirWriter;
 import org.dcm4che3.media.RecordFactory;
-import org.dcm4che3.media.RecordType;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Association;
-import org.dcm4che3.net.AssociationStateException;
-import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.PDVInputStream;
 import org.dcm4che3.net.QueryOption;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.TransferCapability;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.net.service.AbstractDicomService;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicCFindSCP;
 import org.dcm4che3.net.service.BasicCGetSCP;
 import org.dcm4che3.net.service.BasicCMoveSCP;
-import org.dcm4che3.net.service.BasicCStoreSCP;
 import org.dcm4che3.net.service.BasicCStoreSCU;
 import org.dcm4che3.net.service.BasicRetrieveTask;
 import org.dcm4che3.net.service.CStoreSCU;
@@ -102,9 +89,7 @@ import org.dcm4che3.net.service.RetrieveTask;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.tool.common.FilesetInfo;
 import org.dcm4che3.util.AttributesFormat;
-import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
 import org.dcm4che3.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,8 +111,8 @@ public class DcmQRSCP<T extends InstanceLocator> {
     private static ResourceBundle rb = ResourceBundle
             .getBundle("org.dcm4che3.tool.dcmqrscp.messages");
 
-    private final Device device = new Device("dcmqrscp");
-    private final ApplicationEntity ae = new ApplicationEntity("*");
+    private Device device = new Device("dcmqrscp");
+    private ApplicationEntity ae = new ApplicationEntity("*");
     private final Connection conn = new Connection();
 
     private File storageDir;
@@ -142,81 +127,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
     private DicomDirReader ddReader;
     private DicomDirWriter ddWriter;
     private HashMap<String, Connection> remoteConnections = new HashMap<String, Connection>();
-
-    private final class CStoreSCPImpl extends BasicCStoreSCP {
-
-        CStoreSCPImpl() {
-            super("*");
-        }
-
-        @Override
-        protected void store(Association as, PresentationContext pc,
-                Attributes rq, PDVInputStream data, Attributes rsp)
-                throws IOException {
-            String cuid = rq.getString(Tag.AffectedSOPClassUID);
-            String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            String tsuid = pc.getTransferSyntax();
-            File file = new File(storageDir, iuid);
-            try {
-                Attributes fmi = as
-                        .createFileMetaInformation(iuid, cuid, tsuid);
-                storeTo(as, fmi, data, file);
-                Attributes attrs = parse(file);
-                File dest = getDestinationFile(attrs);
-                renameTo(as, file, dest);
-                file = dest;
-                if (addDicomDirRecords(as, attrs, fmi, file)) {
-                    LOG.info("{}: M-UPDATE {}", as, dicomDir);
-                } else {
-                    LOG.info("{}: ignore received object", as);
-                    deleteFile(as, file);
-                }
-
-            } catch (Exception e) {
-                deleteFile(as, file);
-                throw new DicomServiceException(Status.ProcessingFailure, e);
-            }
-        }
-    };
-
-    private final class StgCmtSCPImpl extends AbstractDicomService {
-
-        public StgCmtSCPImpl() {
-            super(UID.StorageCommitmentPushModelSOPClass);
-        }
-
-        @Override
-        public void onDimseRQ(Association as, PresentationContext pc,
-                Dimse dimse, Attributes rq, Attributes actionInfo)
-                throws IOException {
-            if (dimse != Dimse.N_ACTION_RQ)
-                throw new DicomServiceException(Status.UnrecognizedOperation);
-
-            int actionTypeID = rq.getInt(Tag.ActionTypeID, 0);
-            if (actionTypeID != 1)
-                throw new DicomServiceException(Status.NoSuchActionType)
-                        .setActionTypeID(actionTypeID);
-
-            Attributes rsp = Commands.mkNActionRSP(rq, Status.Success);
-            String callingAET = as.getCallingAET();
-            String calledAET = as.getCalledAET();
-            Connection remoteConnection = getRemoteConnection(callingAET);
-            if (remoteConnection == null)
-                throw new DicomServiceException(Status.ProcessingFailure,
-                        "Unknown Calling AET: " + callingAET);
-            Attributes eventInfo = calculateStorageCommitmentResult(calledAET,
-                    actionInfo);
-            try {
-                as.writeDimseRSP(pc, rsp, null);
-                device.execute(new SendStgCmtResult(as, eventInfo,
-                        stgCmtOnSameAssoc, remoteConnection));
-            } catch (AssociationStateException e) {
-                LOG.warn("{} << N-ACTION-RSP failed: {}", as, e.getMessage());
-            }
-        }
-
-    }
-
+    
     private final class CFindSCPImpl extends BasicCFindSCP {
 
         private final String[] qrLevels;
@@ -390,60 +301,27 @@ public class DcmQRSCP<T extends InstanceLocator> {
         device.addApplicationEntity(ae);
         ae.setAssociationAcceptor(true);
         ae.addConnection(conn);
+    }
+    
+    public void init() {
         device.setDimseRQHandler(createServiceRegistry());
     }
-
-    private void storeTo(Association as, Attributes fmi, PDVInputStream data,
-            File file) throws IOException {
-        LOG.info("{}: M-WRITE {}", as, file);
-        file.getParentFile().mkdirs();
-        DicomOutputStream out = new DicomOutputStream(file);
-        try {
-            out.writeFileMetaInformation(fmi);
-            data.copyTo(out);
-        } finally {
-            SafeClose.close(out);
-        }
+    
+    protected void addCStoreSCPService(DicomServiceRegistry serviceRegistry ) {
+        serviceRegistry.addDicomService(new CStoreSCPImpl(ddWriter, filePathFormat, recFact));
     }
-
-    private File getDestinationFile(Attributes attrs) {
-        File file = new File(storageDir, filePathFormat.format(attrs));
-        while (file.exists())
-            file = new File(file.getParentFile(),
-                    TagUtils.toHexString(new Random().nextInt()));
-        return file;
-    }
-
-    private static void renameTo(Association as, File from, File dest)
-            throws IOException {
-        LOG.info("{}: M-RENAME {}", new Object[] { as, from, dest });
-        dest.getParentFile().mkdirs();
-        if (!from.renameTo(dest))
-            throw new IOException("Failed to rename " + from + " to " + dest);
-    }
-
-    private static Attributes parse(File file) throws IOException {
-        DicomInputStream in = new DicomInputStream(file);
-        try {
-            in.setIncludeBulkData(IncludeBulkData.NO);
-            return in.readDataset(-1, Tag.PixelData);
-        } finally {
-            SafeClose.close(in);
-        }
-    }
-
-    private static void deleteFile(Association as, File file) {
-        if (file.delete())
-            LOG.info("{}: M-DELETE {}", as, file);
-        else
-            LOG.warn("{}: M-DELETE {} failed!", as, file);
+    
+    protected void addStgCmtSCPService(DicomServiceRegistry serviceRegistry ) {
+        serviceRegistry.addDicomService(new StgCmtSCPImpl(ddReader, remoteConnections,  stgCmtOnSameAssoc, device.getExecutor()));
     }
 
     private DicomServiceRegistry createServiceRegistry() {
         DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
         serviceRegistry.addDicomService(new BasicCEchoSCP());
-        serviceRegistry.addDicomService(new CStoreSCPImpl());
-        serviceRegistry.addDicomService(new StgCmtSCPImpl());
+        
+        addCStoreSCPService(serviceRegistry);
+        addStgCmtSCPService(serviceRegistry);
+        
         serviceRegistry.addDicomService(new CFindSCPImpl(
                 UID.PatientRootQueryRetrieveInformationModelFIND,
                 PATIENT_ROOT_LEVELS));
@@ -478,6 +356,14 @@ public class DcmQRSCP<T extends InstanceLocator> {
 
     public final Device getDevice() {
         return device;
+    }
+    
+    public void setDevice(Device device) {
+        this.device = device;
+    }
+    
+    public void setApplicationEntity(ApplicationEntity ae) {
+        this.ae = ae;
     }
 
     public final void setDicomDirectory(File dicomDir) {
@@ -627,6 +513,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
         try {
             CommandLine cl = parseComandLine(args);
             DcmQRSCP<InstanceLocator> main = new DcmQRSCP<InstanceLocator>();
+            main.init();
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
@@ -844,120 +731,13 @@ public class DcmQRSCP<T extends InstanceLocator> {
                     Status.UnableToCalculateNumberOfMatches, e);
         }
     }
-
-    public Attributes calculateStorageCommitmentResult(String calledAET,
-            Attributes actionInfo) throws DicomServiceException {
-        Sequence requestSeq = actionInfo.getSequence(Tag.ReferencedSOPSequence);
-        int size = requestSeq.size();
-        String[] sopIUIDs = new String[size];
-        Attributes eventInfo = new Attributes(6);
-        eventInfo.setString(Tag.RetrieveAETitle, VR.AE, calledAET);
-        eventInfo.setString(Tag.StorageMediaFileSetID, VR.SH,
-                ddReader.getFileSetID());
-        eventInfo.setString(Tag.StorageMediaFileSetUID, VR.SH,
-                ddReader.getFileSetUID());
-        eventInfo.setString(Tag.TransactionUID, VR.UI,
-                actionInfo.getString(Tag.TransactionUID));
-        Sequence successSeq = eventInfo.newSequence(Tag.ReferencedSOPSequence,
-                size);
-        Sequence failedSeq = eventInfo.newSequence(Tag.FailedSOPSequence, size);
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>(
-                size * 4 / 3);
-        for (int i = 0; i < sopIUIDs.length; i++) {
-            Attributes item = requestSeq.get(i);
-            map.put(sopIUIDs[i] = item.getString(Tag.ReferencedSOPInstanceUID),
-                    item.getString(Tag.ReferencedSOPClassUID));
-        }
-        DicomDirReader ddr = ddReader;
-        try {
-            Attributes patRec = ddr.findPatientRecord();
-            while (patRec != null) {
-                Attributes studyRec = ddr.findStudyRecord(patRec);
-                while (studyRec != null) {
-                    Attributes seriesRec = ddr.findSeriesRecord(studyRec);
-                    while (seriesRec != null) {
-                        Attributes instRec = ddr.findLowerInstanceRecord(
-                                seriesRec, true, sopIUIDs);
-                        while (instRec != null) {
-                            String iuid = instRec
-                                    .getString(Tag.ReferencedSOPInstanceUIDInFile);
-                            String cuid = map.remove(iuid);
-                            if (cuid.equals(instRec
-                                    .getString(Tag.ReferencedSOPClassUIDInFile)))
-                                successSeq.add(refSOP(iuid, cuid,
-                                        Status.Success));
-                            else
-                                failedSeq.add(refSOP(iuid, cuid,
-                                        Status.ClassInstanceConflict));
-                            instRec = ddr.findNextInstanceRecord(instRec, true,
-                                    sopIUIDs);
-                        }
-                        seriesRec = ddr.findNextSeriesRecord(seriesRec);
-                    }
-                    studyRec = ddr.findNextStudyRecord(studyRec);
-                }
-                patRec = ddr.findNextPatientRecord(patRec);
-            }
-        } catch (IOException e) {
-            LOG.info("Failed to M-READ " + dicomDir, e);
-            throw new DicomServiceException(Status.ProcessingFailure, e);
-        }
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            failedSeq.add(refSOP(entry.getKey(), entry.getValue(),
-                    Status.NoSuchObjectInstance));
-        }
-        if (failedSeq.isEmpty())
-            eventInfo.remove(Tag.FailedSOPSequence);
-        return eventInfo;
+    
+    public Connection getConnection() {
+        return conn;
     }
-
-    boolean addDicomDirRecords(Association as, Attributes ds, Attributes fmi,
-            File f) throws IOException {
-        DicomDirWriter ddWriter = getDicomDirWriter();
-        RecordFactory recFact = getRecordFactory();
-        String pid = ds.getString(Tag.PatientID, null);
-        String styuid = ds.getString(Tag.StudyInstanceUID, null);
-        String seruid = ds.getString(Tag.SeriesInstanceUID, null);
-        String iuid = fmi.getString(Tag.MediaStorageSOPInstanceUID, null);
-        if (pid == null)
-            ds.setString(Tag.PatientID, VR.LO, pid = styuid);
-
-        Attributes patRec = ddWriter.findPatientRecord(pid);
-        if (patRec == null) {
-            patRec = recFact.createRecord(RecordType.PATIENT, null, ds, null,
-                    null);
-            ddWriter.addRootDirectoryRecord(patRec);
-        }
-        Attributes studyRec = ddWriter.findStudyRecord(patRec, styuid);
-        if (studyRec == null) {
-            studyRec = recFact.createRecord(RecordType.STUDY, null, ds, null,
-                    null);
-            ddWriter.addLowerDirectoryRecord(patRec, studyRec);
-        }
-        Attributes seriesRec = ddWriter.findSeriesRecord(studyRec, seruid);
-        if (seriesRec == null) {
-            seriesRec = recFact.createRecord(RecordType.SERIES, null, ds, null,
-                    null);
-            ddWriter.addLowerDirectoryRecord(studyRec, seriesRec);
-        }
-        Attributes instRec = ddWriter.findLowerInstanceRecord(seriesRec, false,
-                iuid);
-        if (instRec != null)
-            return false;
-
-        instRec = recFact.createRecord(ds, fmi, ddWriter.toFileIDs(f));
-        ddWriter.addLowerDirectoryRecord(seriesRec, instRec);
-        ddWriter.commit();
-        return true;
-    }
-
-    private static Attributes refSOP(String iuid, String cuid, int failureReason) {
-        Attributes attrs = new Attributes(3);
-        attrs.setString(Tag.ReferencedSOPClassUID, VR.UI, cuid);
-        attrs.setString(Tag.ReferencedSOPInstanceUID, VR.UI, iuid);
-        if (failureReason != Status.Success)
-            attrs.setInt(Tag.FailureReason, VR.US, failureReason);
-        return attrs;
+    
+    public ApplicationEntity getApplicationEntity() {
+        return ae;
     }
 
 }

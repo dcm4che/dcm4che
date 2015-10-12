@@ -48,9 +48,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.net.pdu.AAbort;
 import org.dcm4che3.net.pdu.AAssociateAC;
@@ -66,7 +66,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
  */
 public class Association {
 
@@ -474,14 +473,17 @@ public class Association {
                 decoder = new PDUDecoder(Association.this, in);
                 device.incrementNumberOfOpenAssociations();
                 try {
-                    while (!(state == State.Sta1 || state == State.Sta13))
-                        decoder.nextPDU();
-                } catch (AAbort aa) {
-                    abort(aa);
-                } catch (IOException e) {
-                    onIOException(e);
+                    try {
+                        while (!(state == State.Sta1 || state == State.Sta13))
+                            decoder.nextPDU();
+                    } catch (AAbort aa) {
+                        abort(aa);
+                    } catch (IOException e) {
+                        onIOException(e);
+                    } finally {
+                        onClose();
+                    }
                 } finally {
-                    onClose();
                     device.decrementNumberOfOpenAssociations();
                 }
             }

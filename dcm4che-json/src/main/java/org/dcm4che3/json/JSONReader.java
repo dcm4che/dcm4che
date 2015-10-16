@@ -229,6 +229,7 @@ public class JSONReader {
                 case OB:
                 case OD:
                 case OF:
+                case OL:
                 case OW:
                 case UN:
                     throw new JsonParsingException("Unexpected \"Value\""

@@ -219,6 +219,7 @@ public class JSONWriter implements DicomInputHandler {
         case OB:
         case OD:
         case OF:
+        case OL:
         case OW:
         case UN:
             writeInlineBinary(vr, (byte[]) val, bigEndian, preserve);

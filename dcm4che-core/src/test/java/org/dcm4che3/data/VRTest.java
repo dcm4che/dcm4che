@@ -123,6 +123,7 @@ public class VRTest {
         assertEquals(0x4f42, VR.OB.code());
         assertEquals(0x4f44, VR.OD.code());
         assertEquals(0x4f46, VR.OF.code());
+        assertEquals(0x4f4c, VR.OL.code());
         assertEquals(0x4f57, VR.OW.code());
         assertEquals(0x504e, VR.PN.code());
         assertEquals(0x5348, VR.SH.code());
@@ -156,6 +157,7 @@ public class VRTest {
         assertEquals(8, VR.LT.headerLength());
         assertEquals(12, VR.OB.headerLength());
         assertEquals(12, VR.OF.headerLength());
+        assertEquals(12, VR.OL.headerLength());
         assertEquals(12, VR.OW.headerLength());
         assertEquals(8, VR.PN.headerLength());
         assertEquals(8, VR.SH.headerLength());
@@ -190,6 +192,7 @@ public class VRTest {
         assertEquals(VR.OB, VR.valueOf(0x4f42));
         assertEquals(VR.OD, VR.valueOf(0x4f44));
         assertEquals(VR.OF, VR.valueOf(0x4f46));
+        assertEquals(VR.OL, VR.valueOf(0x4f4c));
         assertEquals(VR.OW, VR.valueOf(0x4f57));
         assertEquals(VR.PN, VR.valueOf(0x504e));
         assertEquals(VR.SH, VR.valueOf(0x5348));
@@ -222,6 +225,7 @@ public class VRTest {
         assertArrayEquals(TAGS_AS_AT, (byte[]) VR.AT.toValue(TAGS_AS_STRINGS, false));
         assertArrayEquals(INTS_AS_OB, (byte[]) VR.OB.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SS, (byte[]) VR.OW.toValue(INTS, false));
+        assertArrayEquals(INTS_AS_SL, (byte[]) VR.OL.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SL, (byte[]) VR.SL.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SS, (byte[]) VR.SS.toValue(INTS, false));
         assertArrayEquals(INTS_AS_SL, (byte[]) VR.UL.toValue(INTS, false));
@@ -276,6 +280,7 @@ public class VRTest {
    @Test
     public void testToInts() {
        assertArrayEquals(INTS, VR.OB.toInts(INTS_AS_OB, false));
+       assertArrayEquals(INTS, VR.OL.toInts(INTS_AS_SL, false));
        assertArrayEquals(INTS, VR.OW.toInts(INTS_AS_SS, false));
        assertArrayEquals(INTS, VR.SL.toInts(INTS_AS_SL, false));
        assertArrayEquals(INTS, VR.SS.toInts(INTS_AS_SS, false));
@@ -345,6 +350,7 @@ public class VRTest {
         assertArrayEquals(DCM4CHEE_AS_AE,
                 VR.AE.toggleEndian(DCM4CHEE_AS_AE, true));
         assertArrayEquals(INTS_AS_OB, VR.OB.toggleEndian(INTS_AS_OB, true));
+        assertArrayEquals(INTS_AS_SL_BE, VR.OL.toggleEndian(INTS_AS_SL, true));
         assertArrayEquals(INTS_AS_SS_BE, VR.SS.toggleEndian(INTS_AS_SS, true));
         assertArrayEquals(INTS_AS_SL_BE, VR.SL.toggleEndian(INTS_AS_SL, true));
         assertArrayEquals(TAGS_AS_AT_BE, VR.AT.toggleEndian(TAGS_AS_AT, true));

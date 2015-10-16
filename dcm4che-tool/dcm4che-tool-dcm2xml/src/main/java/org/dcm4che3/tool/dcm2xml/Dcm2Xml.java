@@ -40,6 +40,8 @@ package org.dcm4che3.tool.dcm2xml;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -78,7 +80,7 @@ public class Dcm2Xml {
     private static ResourceBundle rb =
         ResourceBundle.getBundle("org.dcm4che3.tool.dcm2xml.messages");
 
-    private File xsltFile;
+    private String xsltURL;
     private boolean indent = false;
     private boolean includeKeyword = true;
     private boolean includeNamespaceDeclaration = false;
@@ -90,8 +92,8 @@ public class Dcm2Xml {
     private Attributes blkAttrs;
     private String xmlVersion = XML_1_0;
 
-    public final void setXSLT(File xsltFile) {
-        this.xsltFile = xsltFile;
+    public final void setXSLTURL(String xsltURL) {
+        this.xsltURL = xsltURL;
     }
 
     public final void setIndent(boolean indent) {
@@ -200,7 +202,7 @@ public class Dcm2Xml {
             CommandLine cl = parseComandLine(args);
             Dcm2Xml main = new Dcm2Xml();
             if (cl.hasOption("x"))
-                main.setXSLT(new File(cl.getOptionValue("x")));
+                main.setXSLTURL(toURL(cl.getOptionValue("x")));
             main.setIndent(cl.hasOption("I"));
             main.setIncludeKeyword(!cl.hasOption("K"));
             main.setIncludeNamespaceDeclaration(cl.hasOption("xmlns")); if (cl.hasOption("xml11"))
@@ -226,6 +228,15 @@ public class Dcm2Xml {
             System.err.println("dcm2xml: " + e.getMessage());
             e.printStackTrace();
             System.exit(2);
+        }
+    }
+
+    private static String toURL(String fileOrURL) {
+        try {
+            new URL(fileOrURL);
+            return fileOrURL;
+        } catch (MalformedURLException e) {
+            return new File(fileOrURL).toURI().toString();
         }
     }
 
@@ -299,11 +310,11 @@ public class Dcm2Xml {
             throws TransformerConfigurationException, IOException {
         SAXTransformerFactory tf = (SAXTransformerFactory)
                 TransformerFactory.newInstance();
-        if (xsltFile == null)
+        if (xsltURL == null)
             return tf.newTransformerHandler();
 
         TransformerHandler th = tf.newTransformerHandler(
-                new StreamSource(xsltFile));
+                new StreamSource(xsltURL));
         return th;
     }
 }

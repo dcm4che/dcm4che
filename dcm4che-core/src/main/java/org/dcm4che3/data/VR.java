@@ -63,6 +63,7 @@ public enum VR {
     OB(0x4f42, 12, 0, BinaryValueType.BYTE, true),
     OD(0x4f44, 12, 0, BinaryValueType.DOUBLE, true),
     OF(0x4f46, 12, 0, BinaryValueType.FLOAT, true),
+    OL(0x4f4c, 12, 0, BinaryValueType.INT, true),
     OW(0x4f57, 12, 0, BinaryValueType.SHORT, true),
     PN(0x504e, 8, ' ', StringValueType.PN, false),
     SH(0x5348, 8, ' ', StringValueType.STRING, false),

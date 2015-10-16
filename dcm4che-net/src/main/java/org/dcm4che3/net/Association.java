@@ -482,8 +482,8 @@ public class Association {
                 } catch (IOException e) {
                     onIOException(e);
                 } finally {
-                    onClose();
                     device.decrementNumberOfOpenAssociations();
+                    onClose();
                 }
             }
         });

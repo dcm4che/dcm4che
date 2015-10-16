@@ -311,6 +311,7 @@ public class StandardElementDictionary extends ElementDictionary {
     <xsl:apply-templates select="//el[@vr='OB']"/>
     <xsl:apply-templates select="//el[@vr='OD']"/>
     <xsl:apply-templates select="//el[@vr='OF']"/>
+    <xsl:apply-templates select="//el[@vr='OL']"/>
     <xsl:apply-templates select="//el[contains(@vr,'OW')]">
         <xsl:with-param name="vr">OW</xsl:with-param>
     </xsl:apply-templates>

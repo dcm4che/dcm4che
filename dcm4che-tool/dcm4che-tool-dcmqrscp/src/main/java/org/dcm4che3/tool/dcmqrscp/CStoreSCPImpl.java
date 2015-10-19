@@ -151,7 +151,7 @@ public class CStoreSCPImpl extends BasicCStoreSCP {
             LOG.warn("{}: M-DELETE {} failed!", as, file);
     }
 
-    private boolean addDicomDirRecords(Association as, Attributes ds, Attributes fmi, File f)
+    protected boolean addDicomDirRecords(Association as, Attributes ds, Attributes fmi, File f)
             throws IOException {
         DicomDirWriter ddWriter = dicomDirWriter;
         RecordFactory recFact = recordFactory;

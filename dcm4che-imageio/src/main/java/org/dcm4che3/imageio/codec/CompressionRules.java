@@ -38,22 +38,23 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.image.PhotometricInterpretation;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.image.PhotometricInterpretation;
-
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Roman K
  */
 @ConfigurableClass
 public class CompressionRules
@@ -61,33 +62,31 @@ public class CompressionRules
     
     private static final long serialVersionUID = 5027417735779753342L;
 
+    /**
+     * This list has a consistent order wrt config save/load
+     */
     @LDAP(noContainerNode = true)
     @ConfigurableProperty
-    private List<CompressionRule> list =
-            new ArrayList<CompressionRule>();
+    private List<CompressionRule> list = new ArrayList<CompressionRule>();
+
+    /**
+     * this list is sorted wrt weighting logic (elements with the same weight might not follow a deterministic order)
+     */
+    private List<CompressionRule> weightedList = new ArrayList<CompressionRule>();
 
     public void add(CompressionRule rule) {
         if (findByCommonName(rule.getCommonName()) != null)
             throw new IllegalStateException("CompressionRule with cn: '"
                     + rule.getCommonName() + "' already exists");
-        int index = Collections.binarySearch(list, rule);
+        int index = Collections.binarySearch(weightedList, rule);
         if (index < 0)
             index = -(index+1);
-        list.add(index, rule);
-    }
-
-    public List<CompressionRule> getList() {
-        return list;
-    }
-
-    public void setList(List<CompressionRule> list) {
-        this.list.clear();
-        for (CompressionRule rule : list) add(rule);
+        weightedList.add(index, rule);
+        list.add(rule);
     }
 
     public void add(CompressionRules rules) {
-         for (CompressionRule rule : rules)
-             add(rule);
+         for (CompressionRule rule : rules) add(rule);
     }
 
     /**
@@ -101,23 +100,36 @@ public class CompressionRules
             return false;
 
         boolean res = false;
-        Iterator<CompressionRule> iterator = list.iterator();
+        Iterator<CompressionRule> iterator = weightedList.iterator();
         while (iterator.hasNext()) {
             CompressionRule compressionRule = iterator.next();
             if (ac.getCommonName().equals(compressionRule.getCommonName())) {
-                iterator.remove();
                 res = true;
+                // will remove below
+                break;
+            }
+        }
+
+        Iterator<CompressionRule> listIterator = list.iterator();
+        while (listIterator.hasNext()) {
+            CompressionRule next = listIterator.next();
+            if (ac.getCommonName().equals(next.getCommonName())) {
+                if (!res) throw new IllegalStateException("Compression rule lists are not consistent, will not remove rule "+next.getCommonName());
+                listIterator.remove();
+                iterator.remove();
+                break;
             }
         }
         return res;
     }
 
     public void clear() {
+        weightedList.clear();
         list.clear();
     }
 
     public CompressionRule findByCommonName(String commonName) {
-        for (CompressionRule rule : list)
+        for (CompressionRule rule : weightedList)
             if (commonName.equals(rule.getCommonName()))
                 return rule;
         return null;
@@ -155,7 +167,7 @@ public class CompressionRules
             PhotometricInterpretation pmi,
             int bitsStored, int pixelRepresentation, 
             String sopClass, String[] imgTypes, String bodyPart) {
-        for (CompressionRule ac : list)
+        for (CompressionRule ac : weightedList)
             if (ac.matchesCondition(pmi, bitsStored, pixelRepresentation,
                     aeTitle, deviceName, sopClass, imgTypes, bodyPart))
                 return ac;
@@ -164,6 +176,16 @@ public class CompressionRules
 
     @Override
     public Iterator<CompressionRule> iterator() {
-        return list.iterator();
+        return weightedList.iterator();
+    }
+
+    public List<CompressionRule> getList() {
+        return list;
+    }
+
+    public void setList(List<CompressionRule> list) {
+        this.list.clear();
+        this.weightedList.clear();
+        for (CompressionRule rule : list) add(rule);
     }
 }

@@ -65,20 +65,20 @@ public interface Configuration extends BatchRunner {
     /**
      * A special property key that indicates that this property is the referable uuid of the containing config node
      */
-    String UUID_KEY = "#uuid";
+    String UUID_KEY = "_.uuid";
 
     /**
      * A special property key that indicates that
      * the containing node is a hash-based optimistic locking root and
      * that this property contains the hash of this node.
      */
-    String OLOCK_HASH_KEY = "#hash";
+    String OLOCK_HASH_KEY = "_.hash";
 
     /**
      * A special property key that indicates that this property is a reference
      * to a node with uuid that equals to the property's value
      */
-    String REFERENCE_KEY = "#ref";
+    String REFERENCE_KEY = "_.ref";
 
     enum ConfigStorageType {
         JSON_FILE,

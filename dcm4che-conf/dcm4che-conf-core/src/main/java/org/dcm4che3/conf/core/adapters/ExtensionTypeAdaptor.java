@@ -44,6 +44,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 import org.dcm4che3.conf.core.api.internal.*;
+import org.dcm4che3.conf.core.util.Extensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +78,7 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Obj
 
                 // figure out current extension class
                 List<Class<?>> extensionClasses = vitalizer.getContext(ConfigurationManager.class).getExtensionClassesByBaseClass(extensionBaseClass);
-                Class<?> extensionClass = ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), extensionClasses);
+                Class<?> extensionClass = Extensions.getExtensionClassBySimpleName(entry.getKey(), extensionClasses);
 
                 // create empty extension bean
                 Object extension = vitalizer.newInstance(extensionClass);

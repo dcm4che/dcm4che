@@ -44,17 +44,22 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Roman K
  */
-public class InMemoryReadOnlyConfiguration implements Configuration {
+public class InMemoryConfiguration implements Configuration {
 
     private final Map<String, Object> root;
 
-    public InMemoryReadOnlyConfiguration(Map<String, Object> root) {
+    public InMemoryConfiguration() {
+        this.root = new HashMap<String, Object>();
+    }
+
+    public InMemoryConfiguration(Map<String, Object> root) {
         this.root = root;
     }
 
@@ -65,7 +70,7 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return ConfigNodeUtil.getNode(root, path);
+        return ConfigNodeUtil.deepCloneNode(ConfigNodeUtil.getNode(root, path));
     }
 
     @Override
@@ -79,17 +84,38 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        throw new RuntimeException("Configuration is read-only");
+        if (!path.equals("/"))
+            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, ConfigNodeUtil.deepCloneNode(configNode));
+        else {
+            root.clear();
+            root.putAll(configNode);
+        }
     }
 
     @Override
     public void removeNode(String path) throws ConfigurationException {
-        throw new RuntimeException("Configuration is read-only");
+        ConfigNodeUtil.removeNodes(getConfigurationRoot(), path);
     }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        return ConfigNodeUtil.search(root, liteXPathExpression);
+        final Iterator search = ConfigNodeUtil.search(root, liteXPathExpression);
+        return new Iterator() {
+            @Override
+            public boolean hasNext() {
+                return search.hasNext();
+            }
+
+            @Override
+            public Object next() {
+                return ConfigNodeUtil.deepCloneNode(search.next());
+            }
+
+            @Override
+            public void remove() {
+                // noop
+            }
+        };
     }
 
     @Override

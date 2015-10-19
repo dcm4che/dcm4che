@@ -41,6 +41,8 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
+import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
+import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.dcm4che3.conf.dicom.ldap.LdapConfigurationStorage;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
@@ -62,11 +64,11 @@ public class DicomConfigurationBuilder {
     private static Logger LOG = LoggerFactory
             .getLogger(DicomConfigurationBuilder.class);
 
-    private Boolean cache;
-    private Boolean persistDefaults;
+    private boolean cache = true;
     private Hashtable<?, ?> ldapProps = null;
     private Configuration configurationStorage = null;
     private Map<Class, List<Class>> extensionClassesMap = new HashMap<Class, List<Class>>();
+    private boolean doOptimisticLocking = false;
 
     private void setLdapProps(Hashtable<?, ?> ldapProps) {
         this.ldapProps = ldapProps;
@@ -122,11 +124,6 @@ public class DicomConfigurationBuilder {
 
     public DicomConfigurationBuilder cache(boolean cache) {
         this.cache = cache;
-        return this;
-    }
-
-    public DicomConfigurationBuilder persistDefaults(boolean persistDefaults) {
-        this.persistDefaults = persistDefaults;
         return this;
     }
 
@@ -191,11 +188,14 @@ public class DicomConfigurationBuilder {
             }
         }
 
+        if (cache)
+            configurationStorage = new SimpleCachingConfigurationDecorator(configurationStorage, props);
+
+        if (doOptimisticLocking)
+            configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions, configurationStorage);
+
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,
-                persistDefaults != null
-                        ? persistDefaults
-                        : Boolean.valueOf(ConfigurationSettingsLoader.getPropertyWithNotice(props, "org.dcm4che.conf.persistDefaults", "false")),
                 allExtensions);
 
         return configurationStorage;
@@ -230,4 +230,8 @@ public class DicomConfigurationBuilder {
         return dicomConfigurationBuilder;
     }
 
+    public DicomConfigurationBuilder optimisticLocking(boolean doOptimisticLocking) {
+        this.doOptimisticLocking = doOptimisticLocking;
+        return this;
+    }
 }

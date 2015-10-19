@@ -39,19 +39,20 @@
  */
 package org.dcm4che3.conf.core.adapters;
 
-import static java.lang.String.format;
-
-import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import static java.lang.String.format;
 
 /**
  * @author Roman K
@@ -69,9 +70,16 @@ public class DefaultConfigTypeAdapters {
      * @throws org.dcm4che3.conf.core.api.ConfigurationException
      */
     public static Object delegateGetChildFromConfigNode(Map<String, Object> configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
-        // determine node name and get the property
-        String nodeName = property.getAnnotatedName();
-        Object node = configNode.get(nodeName);
+
+        Object node;
+        if (property.isOlockHash()) {
+            // olock prop name is constant
+            node = configNode.get(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY);
+        } else {
+            // determine node name and get the property
+            String nodeName = property.getAnnotatedName();
+            node = configNode.get(nodeName);
+        }
 
         // lookup adapter and run it on the property
         ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
@@ -82,11 +90,14 @@ public class DefaultConfigTypeAdapters {
     }
 
     public static void delegateChildToConfigNode(Object object, Map<String, Object> parentNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        String nodeName = property.getAnnotatedName();
+        // special case - olock prop name is constant
+        String nodeName = !property.isOlockHash() ? property.getAnnotatedName() : HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY;
+
         ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
         Object value = adapter.toConfigNode(object, property, vitalizer);
-        // filter out nulls
-        if (value != null)
+
+        // filter out nulls, except olocks
+        if (value != null || property.isOlockHash())
             parentNode.put(nodeName, value);
     }
 

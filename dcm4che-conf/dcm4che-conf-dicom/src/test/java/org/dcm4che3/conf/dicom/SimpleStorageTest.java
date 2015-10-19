@@ -87,7 +87,7 @@ public class SimpleStorageTest {
         URL resource = Thread.currentThread().getContextClassLoader().getResource("mockConfig.json");
         String path = resource.getPath();
         SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage(path);
-        return new SimpleCachingConfigurationDecorator(storage);
+        return new SimpleCachingConfigurationDecorator(storage, true);
     }
 
     @Test

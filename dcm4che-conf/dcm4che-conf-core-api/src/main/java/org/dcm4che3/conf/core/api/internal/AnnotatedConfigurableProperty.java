@@ -41,11 +41,11 @@ package org.dcm4che3.conf.core.api.internal;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -71,19 +71,26 @@ public class AnnotatedConfigurableProperty {
     //////// wrapping annotations, otherwise it gets too unDRY ///////////////
 
     public boolean isExtensionsProperty() {
-        return getAnnotation(ConfigurableProperty.class).isExtensionsProperty();
+        return getAnnotation(ConfigurableProperty.class).isExtensionsProperty() ||
+                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.ExtensionsProperty);
     }
 
     public String getDefaultValue() {
         return getAnnotation(ConfigurableProperty.class).defaultValue();
     }
 
+    public boolean isOlockHash() {
+        return getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.OptimisticLockingHash);
+    }
+
     public boolean isCollectionOfReferences() {
-        return getAnnotation(ConfigurableProperty.class).collectionOfReferences();
+        return getAnnotation(ConfigurableProperty.class).collectionOfReferences() ||
+                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.CollectionOfReferences);
     }
 
     public boolean isReference() {
-        return getAnnotation(ConfigurableProperty.class).isReference();
+        return getAnnotation(ConfigurableProperty.class).isReference() ||
+                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.Reference);
     }
 
     public List<ConfigurableProperty.Tag> getTags() {

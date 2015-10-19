@@ -56,7 +56,7 @@ import java.util.Deque;
 import java.util.Map;
 
 /**
- * Calculates and sets olock hashes for nodes that have the #hash property (ignores the previous value)
+ * Calculates and sets olock hashes for nodes that have the _.hash property (ignores the previous value)
  *
  * @author Roman K
  */

@@ -201,7 +201,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         // consistent?
         String originalHash = "VIegnOfZrq1ZdZqHMUhnJBBIG0Q=";
-        Assert.assertEquals(originalHash, oldNode.get("#hash"));
+        Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
         // remember old hash, change smth, check
         party1.setGuests(party1.getGuests() + 1);
@@ -212,16 +212,16 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         ConfigNodeTraverser.traverseMapNode(newNode, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("node changed",
-                ConfigNodeUtil.getNode(oldNode, "/parties/p2[@name='#hash']"),
-                ConfigNodeUtil.getNode(newNode, "/parties/p2[@name='#hash']"));
+                ConfigNodeUtil.getNode(oldNode, "/parties/p2/"+Configuration.OLOCK_HASH_KEY),
+                ConfigNodeUtil.getNode(newNode, "/parties/p2/"+Configuration.OLOCK_HASH_KEY));
 
         Assert.assertEquals("node not changed",
-                ConfigNodeUtil.getNode(oldNode, "/parties/p1[@name='#hash']"),
-                ConfigNodeUtil.getNode(newNode, "/parties/p1[@name='#hash']"));
+                ConfigNodeUtil.getNode(oldNode, "/parties/p1/"+Configuration.OLOCK_HASH_KEY),
+                ConfigNodeUtil.getNode(newNode, "/parties/p1/"+Configuration.OLOCK_HASH_KEY));
         
         Assert.assertEquals("parent should not change",
-                oldNode.get("#hash"),
-                newNode.get("#hash"));
+                oldNode.get(Configuration.OLOCK_HASH_KEY),
+                newNode.get(Configuration.OLOCK_HASH_KEY));
 
 
         // try changing map keys 
@@ -233,24 +233,24 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         ConfigNodeTraverser.traverseMapNode(nodeWithMapChanged, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("parent should change",
-                newNode.get("#hash"),
-                nodeWithMapChanged.get("#hash"));
+                newNode.get(Configuration.OLOCK_HASH_KEY),
+                nodeWithMapChanged.get(Configuration.OLOCK_HASH_KEY));
 
         Assert.assertEquals("map entry hash should not change",
-                ConfigNodeUtil.getNode(newNode, "/parties/p1[@name='#hash']"),
-                ConfigNodeUtil.getNode(nodeWithMapChanged, "/parties/aNewOldParty[@name='#hash']"));
+                ConfigNodeUtil.getNode(newNode, "/parties/p1/"+ Configuration.OLOCK_HASH_KEY),
+                ConfigNodeUtil.getNode(nodeWithMapChanged, "/parties/aNewOldParty/"+ Configuration.OLOCK_HASH_KEY));
 
 
 
         // try recalc
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter());
-        Assert.assertEquals(originalHash, oldNode.get("#hash"));
+        Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
         // try calculating hashes when old hash is there
 
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockCopyFilter("#old_hash"));
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter("#old_hash"));
-        Assert.assertEquals(originalHash, oldNode.get("#hash"));
+        Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
 
 
@@ -298,7 +298,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         ConfigNodeUtil.replaceNode(configurationNode1,"/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor", false);
         ConfigNodeUtil.replaceNode(configurationNode2,"/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator", false);
-        ConfigNodeUtil.replaceNode(configurationNode3,"/dicomConnection[cn='dicom']/dcmIdleTimeout", 100);
+        ConfigNodeUtil.replaceNode(configurationNode3,"/dcmKeyStorePin", "12345");
         
         // persist some changes from 1st user
         lockedConfig.persistNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), configurationNode1, Device.class);
@@ -320,8 +320,8 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Map<String,Object> newNode = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
 
         Assert.assertEquals(
-                100,
-                ConfigNodeUtil.getNode(newNode, "/dicomConnection[cn='dicom']/dcmIdleTimeout"));
+                "12345",
+                ConfigNodeUtil.getNode(newNode, "/dcmKeyStorePin"));
 
         Assert.assertEquals(
                 false,

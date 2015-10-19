@@ -66,7 +66,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
                 // if there is nothing in storage - just persist and leave
                 if (nodeInStorage == null) {
                     if (nodeBeingPersisted != null)
-                        ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter("#hash"));
+                        ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter(Configuration.OLOCK_HASH_KEY));
                     delegate.persistNode(path, nodeBeingPersisted, configurableClass);
                     return;
                 }
@@ -81,7 +81,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
                 ConfigNodeTraverser.dualTraverseMapNodes(nodeInStorage, nodeBeingPersisted, new OLockMergeDualFilter());
 
                 // filter the #hash clutter out
-                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter("#old_hash", "#hash"));
+                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter("#old_hash", Configuration.OLOCK_HASH_KEY));
 
                 delegate.persistNode(path, nodeBeingPersisted, configurableClass);
             }

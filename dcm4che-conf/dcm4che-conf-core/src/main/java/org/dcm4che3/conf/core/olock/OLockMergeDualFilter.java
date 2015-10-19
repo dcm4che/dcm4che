@@ -42,6 +42,7 @@
 
 package org.dcm4che3.conf.core.olock;
 
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.OptimisticLockException;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
 import org.dcm4che3.conf.core.util.SimpleConfigNodeUtil;
@@ -80,7 +81,7 @@ class OLockMergeDualFilter extends ADualNodeFilter {
     public void beforeNode(Map<String, Object> oldNode, Map<String, Object> newNode) {
 
         // if this node is not olock-enabled, don't apply olock logic, just push current mode to stack once again
-        if (!newNode.containsKey("#hash")) {
+        if (!newNode.containsKey(Configuration.OLOCK_HASH_KEY)) {
             isMerging.push(isMerging.peek());
             return;
         }
@@ -89,12 +90,12 @@ class OLockMergeDualFilter extends ADualNodeFilter {
 
             // We are NOT merging now
 
-            if (newNode.get("#old_hash").equals(newNode.get("#hash"))) {
+            if (newNode.get("#old_hash").equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then we swap and turn on merging (from old to new)
                 isMerging.push(true);
                 swap(oldNode, newNode);
             } else {
-                if (newNode.get("#old_hash").equals(oldNode.get("#hash"))) {
+                if (newNode.get("#old_hash").equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed - keep going
                     isMerging.push(false);
                 } else {
@@ -110,11 +111,11 @@ class OLockMergeDualFilter extends ADualNodeFilter {
             Map<String, Object> actualOldNode = newNode;
 
 
-            if (actualNewNode.get("#old_hash").equals(actualNewNode.get("#hash"))) {
+            if (actualNewNode.get("#old_hash").equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then keep on merging (from old to new)
                 isMerging.push(true);
             } else {
-                if (actualNewNode.get("#old_hash").equals(actualOldNode.get("#hash"))) {
+                if (actualNewNode.get("#old_hash").equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed, swap and switch to non-merging mode
                     isMerging.push(false);
                     swap(actualOldNode, actualNewNode);

@@ -42,7 +42,7 @@ package org.dcm4che3.conf.core.api;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-public class ConfigurationException extends Exception {
+public class ConfigurationException extends RuntimeException {
 
     private static final long serialVersionUID = 1507953586524535616L;
 

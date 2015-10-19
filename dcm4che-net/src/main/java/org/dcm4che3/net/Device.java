@@ -40,6 +40,7 @@ package org.dcm4che3.net;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
@@ -88,6 +89,9 @@ public class Device implements Serializable {
 
     @ConfigurableProperty(name = "dicomDescription")
     private String description;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
+    private String olockHash;
 
     @ConfigurableProperty(name = "dicomManufacturer")
     private String manufacturer;
@@ -643,6 +647,14 @@ public class Device implements Serializable {
     public final void setTrustStorePinProperty(String trustStorePinProperty) {
         checkNotEmpty("keyPin", keyStoreKeyPin);
         this.trustStorePinProperty = trustStorePinProperty;
+    }
+
+    public String getOlockHash() {
+        return olockHash;
+    }
+
+    public void setOlockHash(String olockHash) {
+        this.olockHash = olockHash;
     }
 
     public X509Certificate[] getThisNodeCertificates(String ref) {
@@ -1256,6 +1268,7 @@ public class Device implements Serializable {
     }
 
     protected void setDeviceAttributes(Device from) {
+        setOlockHash(from.olockHash);
         setDescription(from.description);
         setManufacturer(from.manufacturer);
         setManufacturerModelName(from.manufacturerModelName);

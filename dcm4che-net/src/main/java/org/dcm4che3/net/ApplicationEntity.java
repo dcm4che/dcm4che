@@ -38,37 +38,22 @@
 
 package org.dcm4che3.net;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.net.pdu.*;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.net.pdu.AAbort;
-import org.dcm4che3.net.pdu.AAssociateAC;
-import org.dcm4che3.net.pdu.AAssociateRQ;
-import org.dcm4che3.net.pdu.CommonExtendedNegotiation;
-import org.dcm4che3.net.pdu.ExtendedNegotiation;
-import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.net.pdu.RoleSelection;
-import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * DICOM Part 15, Annex H compliant description of a DICOM network service.
@@ -94,12 +79,15 @@ public class ApplicationEntity implements Serializable {
     @ConfigurableProperty(name = "dicomAETitle", tags = Tag.PRIMARY)
     private String AETitle;
 
-    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
+    @ConfigurableProperty(name = "dcmUUID", type = ConfigurablePropertyType.UUID,
             description = "An immutable unique identifier")
     private String uuid = UUID.randomUUID().toString();
 
     @ConfigurableProperty(name = "dicomDescription")
     private String description;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
+    private String olockHash;
 
     @ConfigurableProperty(name = "dicomVendorData")
     private byte[][] vendorData = {};
@@ -742,6 +730,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
+        setOlockHash(from.olockHash);
         setDescription(from.description);
         setAETitleAliases(from.getAETitleAliases());
         setVendorData(from.vendorData);
@@ -782,6 +771,14 @@ public class ApplicationEntity implements Serializable {
 
         ext.setApplicationEntity(null);
         return true;
+    }
+
+    public String getOlockHash() {
+        return olockHash;
+    }
+
+    public void setOlockHash(String olockHash) {
+        this.olockHash = olockHash;
     }
 
     public Collection<AEExtension> listAEExtensions() {

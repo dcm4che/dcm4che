@@ -42,6 +42,7 @@
 
 package org.dcm4che3.conf.core.olock;
 
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 
 import java.util.Map;
@@ -59,7 +60,7 @@ public class OLockCopyFilter extends ConfigNodeTraverser.AConfigNodeFilter{
 
     @Override
     public void afterNode(Map<String, Object> node) {
-        if (node.containsKey(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY))
-            node.put(oLockPropertyName, node.get(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY));
+        if (node.containsKey(Configuration.OLOCK_HASH_KEY))
+            node.put(oLockPropertyName, node.get(Configuration.OLOCK_HASH_KEY));
     }
 }

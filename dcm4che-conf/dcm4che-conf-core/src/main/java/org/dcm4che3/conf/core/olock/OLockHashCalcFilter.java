@@ -42,6 +42,7 @@
 
 package org.dcm4che3.conf.core.olock;
 
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.util.Base64;
 import org.slf4j.Logger;
@@ -126,7 +127,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     }
 
     private boolean doIgnore(String key) {
-        return HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY.equals(key) || ignoredKey != null && ignoredKey.equals(key);
+        return Configuration.OLOCK_HASH_KEY.equals(key) || ignoredKey != null && ignoredKey.equals(key);
     }
 
 
@@ -141,8 +142,8 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
         byte[] pop = stack.pop();
 
         // if this node is olock'd, save hash, otherwise addup to what will be consumed by the parent
-        if (node.containsKey(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY))
-            node.put(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY, hashToString(pop));
+        if (node.containsKey(Configuration.OLOCK_HASH_KEY))
+            node.put(Configuration.OLOCK_HASH_KEY, hashToString(pop));
         else
             addHash(stack.peek(), getHash(hashToString(pop)));
     }

@@ -48,7 +48,7 @@ import java.util.Map;
  * The Configuration API operates on a tree data structure, where any subtree is referred to as a configuration node.
  * A configuration node represents a JSON object. A configuration node is either
  * <ul>
- * <li> a primitive wrapper/string (Integer, Boolean, Float, String)</li>
+ * <li> a primitive wrapper/string (Number, Boolean, String)</li>
  * <li> null</li>
  * <li> a collection of nodes </li>
  * <li> Map&lt;String,Object&gt; where each object is a configuration node (single map can have values of multiple types.</li>
@@ -61,6 +61,24 @@ import java.util.Map;
 public interface Configuration extends BatchRunner {
 
     String CONF_STORAGE_SYSTEM_PROP = "org.dcm4che.conf.storage";
+
+    /**
+     * A special property key that indicates that this property is the referable uuid of the containing config node
+     */
+    String UUID_KEY = "#uuid";
+
+    /**
+     * A special property key that indicates that
+     * the containing node is a hash-based optimistic locking root and
+     * that this property contains the hash of this node.
+     */
+    String OLOCK_HASH_KEY = "#hash";
+
+    /**
+     * A special property key that indicates that this property is a reference
+     * to a node with uuid that equals to the property's value
+     */
+    String REFERENCE_KEY = "#ref";
 
     enum ConfigStorageType {
         JSON_FILE,

@@ -21,15 +21,10 @@ import java.util.Map;
  * <ul>
  * <li>
  *  If one deletes a node that is a root of olock, and another changes that node, it is NOT considered a conflict, regardless of operation order the node will be just deleted.
- *  this holds for case of a subnode, or a map
+ *  this holds for case of a subnode, a map entry, or a collection element that has a uuid.
  *  </li><li>
- *  For collections, if one modifies an element that is an olocked node, and another deletes it (or adds to that collection so the elements are shifted),
- *  there will (most likely) be optimistic lock exceptions. With certain probability, the hashes of different collection elements will be equals,
- *  but in that case it should not matter since those would be identical (equal) elements.
- *  </li><li>
- *  A foreseen case where algorithm might produce an unexpected result is when there is a collection of not-olocked elements that in turn have some olocked properties.
- *  Then the scenario above could change a different element from the one that the user intended to modify. Therefore such collections
- *  are PROHIBITED by design (TODO:make validation)
+ *  For any collections whose elements don't have uuids, a collection is always fully overwritten without trying
+ *  to merge in any modified contents from the backend.
  *  </li>
  * </ul>
  *
@@ -41,7 +36,6 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
 
     private static final Logger log = LoggerFactory.getLogger(HashBasedOptimisticLockingConfiguration.class);
 
-    public static final String OLOCK_HASH_KEY = "#hash";
     public static final String NOT_CALCULATED_YET = "not-calculated-yet";
     private BatchRunner mergeBatchRunner;
     private List<Class> allExtensionClasses;

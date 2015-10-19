@@ -79,8 +79,7 @@ public class ApplicationEntity implements Serializable {
     @ConfigurableProperty(name = "dicomAETitle", tags = Tag.PRIMARY)
     private String AETitle;
 
-    @ConfigurableProperty(name = "dcmUUID", type = ConfigurablePropertyType.UUID,
-            description = "An immutable unique identifier")
+    @ConfigurableProperty(type = ConfigurablePropertyType.UUID, description = "An immutable unique identifier")
     private String uuid = UUID.randomUUID().toString();
 
     @ConfigurableProperty(name = "dicomDescription")

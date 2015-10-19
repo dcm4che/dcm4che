@@ -109,6 +109,10 @@ public class AnnotatedConfigurableProperty {
         throw new ConfigurationException("Property name not specified");
 
     }
+
+    public boolean isUuid() {
+        return getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.UUID);
+    }
     ////////////////////////////////////////////
 
     public AnnotatedConfigurableProperty clone(){
@@ -202,7 +206,6 @@ public class AnnotatedConfigurableProperty {
         return clazz;
     }
 
-
     public boolean isMap() {
         return Map.class.isAssignableFrom(getRawClass());
     }
@@ -249,12 +252,11 @@ public class AnnotatedConfigurableProperty {
         return getRawClass().getAnnotation(ConfigurableClass.class) != null;
     }
 
+
     public boolean isMapOfConfObjects() {
         return Map.class.isAssignableFrom(getRawClass()) &&
                 !isCollectionOfReferences() &&
                 getPseudoPropertyForGenericsParamater(1).isConfObject() &&
                 !isExtensionsProperty();
     }
-
-
 }

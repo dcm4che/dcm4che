@@ -40,12 +40,12 @@
 package org.dcm4che3.conf.core.adapters;
 
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
-import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.validation.ValidationException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -74,7 +74,11 @@ public class DefaultConfigTypeAdapters {
         Object node;
         if (property.isOlockHash()) {
             // olock prop name is constant
-            node = configNode.get(HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY);
+            node = configNode.get(Configuration.OLOCK_HASH_KEY);
+        } else
+        if (property.isUuid()){
+            // uuid prop name is constant
+            node = configNode.get(Configuration.UUID_KEY);
         } else {
             // determine node name and get the property
             String nodeName = property.getAnnotatedName();
@@ -90,8 +94,16 @@ public class DefaultConfigTypeAdapters {
     }
 
     public static void delegateChildToConfigNode(Object object, Map<String, Object> parentNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-        // special case - olock prop name is constant
-        String nodeName = !property.isOlockHash() ? property.getAnnotatedName() : HashBasedOptimisticLockingConfiguration.OLOCK_HASH_KEY;
+        String nodeName;
+        if (property.isOlockHash()) {
+            // special case - olock prop name is constant
+            nodeName = Configuration.OLOCK_HASH_KEY;
+        } else if (property.isUuid()) {
+            // special case - uuid prop name is constant
+            nodeName = Configuration.UUID_KEY;
+        } else {
+            nodeName = property.getAnnotatedName();
+        }
 
         ConfigTypeAdapter adapter = vitalizer.lookupTypeAdapter(property);
         Object value = adapter.toConfigNode(object, property, vitalizer);

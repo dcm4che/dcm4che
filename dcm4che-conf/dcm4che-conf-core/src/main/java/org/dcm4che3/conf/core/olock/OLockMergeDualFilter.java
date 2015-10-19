@@ -46,10 +46,7 @@ import org.dcm4che3.conf.core.api.OptimisticLockException;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
 import org.dcm4che3.conf.core.util.SimpleConfigNodeUtil;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Performs hash-based optimistic locking logic that is
@@ -146,6 +143,9 @@ class OLockMergeDualFilter extends ADualNodeFilter {
         newNode.putAll(tmpNode);
     }
 
+
+
+
     @Override
     public void afterNode(Map<String, Object> node1, Map<String, Object> node2) {
         isMerging.pop();
@@ -162,12 +162,15 @@ class OLockMergeDualFilter extends ADualNodeFilter {
     }
 
     @Override
-    public void beforeCollectionElement(int index) {
-        path.push(Integer.toString(index));
+    public void beforeListElement(int index1, int index2) {
+        if (isMerging.peek())
+            path.push(Integer.toString(index1));
+        else
+            path.push(Integer.toString(index2));
     }
 
     @Override
-    public void afterCollectionElement(int index) {
+    public void afterListElement(int index1, int index2) {
         path.pop();
     }
 }

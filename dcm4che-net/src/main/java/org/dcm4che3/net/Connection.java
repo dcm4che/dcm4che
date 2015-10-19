@@ -81,6 +81,14 @@ public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
 
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
     public enum Protocol {
         DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
 
@@ -124,6 +132,9 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
     private String olockHash;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.UUID)
+    private String uuid = UUID.randomUUID().toString();
 
     @ConfigurableProperty(name = "dcmBindAddress")
     private String bindAddress;

@@ -39,15 +39,13 @@
  */
 package org.dcm4che3.conf.core.util;
 
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
@@ -112,11 +110,24 @@ public class ConfigNodeTraverser {
 
         }
 
-        public void beforeCollectionElement(int index) {
+        public void beforeListElement(int index1, int index2) {
 
         }
 
-        public void afterCollectionElement(int index) {
+        public void afterListElement(int index1, int index2) {
+
+        }
+
+        /**
+         * @param node1
+         * @param node2
+         * @return false if the traverser should skip this list, true if it should proceed normally
+         */
+        public boolean beforeList(List node1, List node2) {
+            return true;
+        }
+
+        public void afterList(List node1, List node2) {
 
         }
     }
@@ -267,32 +278,56 @@ public class ConfigNodeTraverser {
     private static void dualTraverseProperty(Object node1El, Object node2El, ADualNodeFilter filter) {
         if (node2El == null && node1El == null) return;
 
-        if (node1El instanceof Collection) {
+        if (node1El instanceof List) {
 
-            if (!(node2El instanceof Collection)) return;
+            if (!(node2El instanceof List)) return;
 
-            Iterator node1i = ((Collection) node1El).iterator();
-            Iterator node2i = ((Collection) node2El).iterator();
+            List list1 = (List) node1El;
+            List list2 = (List) node2El;
 
-            int i = 0;
+            // if any of elements don't have #uuid defined, don't go deeper into the collection
+            // because there is no guarantee that elements will match
 
-            while (node1i.hasNext() && node2i.hasNext()) {
+            boolean allUuids = allElementsAreNodesAndHaveUuids(list1)
+                    && allElementsAreNodesAndHaveUuids(list2)
+                    && filter.beforeList(list1, list2);
 
-                filter.beforeCollectionElement(i);
+            if (allUuids) {
 
-                try {
-                    Object i1 = node1i.next();
-                    Object i2 = node2i.next();
+                // we are sure by now
+                List<Map<String, Object>> nodeList1 = list1;
+                List<Map<String, Object>> nodeList2 = list2;
 
-                    if (!(i1 instanceof Map) || !(i2 instanceof Map)) break;
+                // match on #uuid
 
-                    dualTraverseMapNodes((Map) i1, (Map) i2, filter);
-                } finally {
-                    filter.afterCollectionElement(i);
+                // extract Map uuid -> index
+                Map<String, Integer> index1 = new HashMap<String, Integer>();
+
+                int i = 0;
+                for (Map<String, Object> node : nodeList1) {
+                    index1.put((String) node.get(Configuration.UUID_KEY), i);
+                    i++;
                 }
 
-                i++;
+                i = 0;
+                for (Map<String, Object> node : nodeList2) {
+
+                    Object uuid = node.get(Configuration.UUID_KEY);
+                    Integer elem1Ind = index1.get(uuid);
+
+                    if (elem1Ind != null) {
+                        // found match
+                        filter.beforeListElement(elem1Ind, i);
+                        dualTraverseMapNodes(nodeList1.get(elem1Ind), node, filter);
+                        filter.afterListElement(elem1Ind, i);
+                    }
+
+                    i++;
+                }
+
             }
+
+            filter.afterList(list1, list2);
         }
 
         if (node1El instanceof Map) {
@@ -304,5 +339,12 @@ public class ConfigNodeTraverser {
 
     }
 
+    private static boolean allElementsAreNodesAndHaveUuids(List list) {
+        for (Object o : list) {
+            if (!(o instanceof Map)) return false;
+            if (!(((Map) o).get(Configuration.UUID_KEY) instanceof String)) return false;
+        }
+        return true;
+    }
 
 }

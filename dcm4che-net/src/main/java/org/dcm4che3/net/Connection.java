@@ -1296,6 +1296,7 @@ public class Connection implements Serializable {
 
     void reconfigure(Connection from) {
         setOlockHash(from.olockHash);
+        setUuid(from.uuid);
         setCommonName(from.commonName);
         setHostname(from.hostname);
         setPort(from.port);

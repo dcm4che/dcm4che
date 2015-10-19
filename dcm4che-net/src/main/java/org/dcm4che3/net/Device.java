@@ -1076,7 +1076,6 @@ public class Device implements Serializable {
      *
      * @return
      */
-    @Deprecated
     public Collection<ApplicationEntity> getApplicationEntities() {
         return applicationEntitiesMap.values();
     }
@@ -1270,7 +1269,7 @@ public class Device implements Serializable {
         setManufacturerModelName(from.manufacturerModelName);
         setSoftwareVersions(from.softwareVersions);
         setStationName(from.stationName);
-//        setUuid(from.getUuid());
+        setUuid(from.getUuid());
         setDeviceSerialNumber(from.deviceSerialNumber);
         setTrustStoreURL(from.trustStoreURL);
         setTrustStoreType(from.trustStoreType);

@@ -41,20 +41,17 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.LinkedHashSet;
-import java.util.Objects;
 
 /**
  * Marks a field of a configuration class to be a persistable configuration property of the bean
  *
  * @author Roman K
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ConfigurableProperty {
 
-    public enum EnumRepresentation {
+    enum EnumRepresentation {
         ORDINAL,
         STRING
     }
@@ -68,12 +65,14 @@ public @interface ConfigurableProperty {
 
     /**
      * Label to show in configuration UIs. If empty empty string (default), the name will be used.
+     *
      * @return
      */
     String label() default "";
 
     /**
      * Description to show in configuration UIs.
+     *
      * @return
      */
     String description() default "";
@@ -81,86 +80,127 @@ public @interface ConfigurableProperty {
     /**
      * Just a random string very unlikely to be equal to any user-specified default string (java does not allow to use null...)
      */
-    public static final String NO_DEFAULT_VALUE = " $#!@@#$@!#$%  Default-value-does-not-exist-for-this-property  $#!@@#$@!#$%";
+    String NO_DEFAULT_VALUE = " $#!@@#$@!#$%  Default-value-does-not-exist-for-this-property  $#!@@#$@!#$%";
 
 
     /**
      * Default for primitives (int, string, boolean, enum). If default is not specified, the property is considered required.
+     *
      * @return
      */
     String defaultValue() default NO_DEFAULT_VALUE;
 
     /**
-     * Specifies that the annotated field/property is a collection, elements of which are stored as references
-     * to actual values (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
-     * <br/><br/>
-     * <b>Caution</b>: this feature's use should be limited to reduce the referential complexity - the more references are
-     * introduced, the more complex UI's logic will need to be to handle proper cascading
-     *
-     * <br/><br/>
-     * Currently supported reference targets are <b>Devices</b>, <b>ApplicationEntity</b> and <b>Connections</b> within same device.
-     *
-     */
-    boolean collectionOfReferences() default false;
-
-    /**
-     * Specifies that the annotated field/property is stored as a reference
-     * (like "dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='device1']")
-     *
-     * <br/><br/>
-     * <b>Caution</b>: this feature's use should be limited to reduce the referential complexity - the more references are
-     * introduced, the more complex UI's logic will need to be to handle proper cascading
-     *
-     * <br/><br/>
-     * Currently supported reference targets are <b>Devices</b> and <b>Connections</b> within same device.
-     *
-     */
-    boolean isReference() default false;
-
-
-    /**
-     * Enables the extension-by-composition mechanism of the framework for containing class and marks the property as an extension map.
-     * Only may be applied on fields with type Map&lt;Class<? extends T>, T&gt;.
-     * T will be treated as base extension class
-     * @return
-     */
-    boolean isExtensionsProperty() default false;
-
-    /**
      * Is the property required to be set, i.e. must be non-null for objects, non-empty for Strings
+     *
      * @return
      */
     boolean required() default false;
 
     EnumRepresentation enumRepresentation() default EnumRepresentation.STRING;
 
-    public enum Tag {
+    enum ConfigurablePropertyType {
+        /**
+         * Referenceable UUID
+         */
+        UUID,
+
+        /**
+         * Specifies that the annotated field/property is not stored as a child node, but
+         * as a reference to another node instead
+         */
+        Reference,
+
+        /**
+         * Same as {@link org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType#Reference}
+         * but applicable for Collections and Maps
+         */
+        CollectionOfReferences,
+
+        /**
+         * Enables the extension-by-composition mechanism of the framework for containing class and marks the property as an extension map.
+         * Only may be applied on fields with type Map&lt;Class<? extends T>, T&gt;.
+         * T will be treated as base extension class
+         *
+         * @return
+         */
+        ExtensionsProperty,
+
+
+        /**
+         * Marks the class as a root for the hash-based optimistic locking mechanism.
+         * This field will be auto-calculated on loading,
+         * and will be used to compare against the current state in the backend on persist to prevent conflicting changes.
+         * <p/>
+         * <p>There must be only single property of this type for a configurable class.</p>
+         */
+        OptimisticLockingHash,
+
+        /**
+         * Basic property - default.
+         */
+        Basic
+    }
+
+    /**
+     * Defines special behavior for the property
+     */
+    ConfigurablePropertyType type() default ConfigurablePropertyType.Basic;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    /// GUI ///////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    enum Tag {
         /**
          * Non-required properties could be put into a "advanced..." tab to simplify the view.
          * This tag indicates that the property should never be hidden from the user with such technique.
          */
-        PRIMARY,
+        PRIMARY;
 
-        /**
-         * Marks the field as identifier
-         */
-        UUID
     }
 
     /**
      * Ordering of properties for GUI. The larger the number, the lower in the list the property will be displayed.
+     *
      * @return
      */
     int order() default 0;
 
     /**
-     * Name of the group this property belong to
+     * Name of the group in the GUI this property belongs to
      */
     String group() default "Other";
 
     /**
      * Additional info for the GUI
+     *
      * @return
      */
     Tag[] tags() default {};
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    /// DEPRECATED ////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    @Deprecated
+    /**
+     * Use {@link ConfigurableProperty#type()} instead
+     */
+    boolean isReference() default false;
+
+    @Deprecated
+    /**
+     * Use {@link ConfigurableProperty#type()} instead
+     */
+    boolean collectionOfReferences() default false;
+
+
+    @Deprecated
+    /**
+     * Use {@link ConfigurableProperty#type()} instead
+     */
+    boolean isExtensionsProperty() default false;
+
+
 }

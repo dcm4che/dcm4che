@@ -46,7 +46,8 @@ import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
-import org.dcm4che3.conf.core.api.internal.ConfigIterators;
+import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
+import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,21 +63,19 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
 
     protected List<Class> allExtensionClasses;
-    private boolean persistDefaults;
     private BeanVitalizer dummyVitalizer = new DefaultBeanVitalizer();
 
-    public DefaultsAndNullFilterDecorator(Configuration delegate, boolean persistDefaults, List<Class> allExtensionClasses) {
+    public DefaultsAndNullFilterDecorator(Configuration delegate, List<Class> allExtensionClasses) {
         super(delegate);
-        this.persistDefaults = persistDefaults;
         this.allExtensionClasses = allExtensionClasses;
     }
 
     @Override
     public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
 
-        EntryFilter filterDefaults = new EntryFilter() {
+        ConfigNodeTypesafeFilter filterDefaults = new ConfigNodeTypesafeFilter() {
             @Override
-            public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            public boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
                 boolean doDelete = false;
 
@@ -104,8 +103,8 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
         };
 
         // filter out defaults
-        if (configurableClass != null && !persistDefaults)
-            traverseTree(configNode, configurableClass, filterDefaults);
+        if (configurableClass != null)
+            ConfigNodeTraverser.traverseNodeTypesafe(configNode, configurableClass, filterDefaults, allExtensionClasses);
 
         super.persistNode(path, configNode, configurableClass);
     }
@@ -114,9 +113,9 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
 
-        EntryFilter applyDefaults = new EntryFilter() {
+        ConfigNodeTypesafeFilter applyDefaults = new ConfigNodeTypesafeFilter() {
             @Override
-            public boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            public boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
                 String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
                 // if no value for this property, see if there is default and set it
@@ -145,89 +144,10 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
         // fill in default values for properties that are null and have defaults
         Map<String, Object> node = (Map<String, Object>) super.getConfigurationNode(path, configurableClass);
         if (configurableClass != null && node != null)
-            traverseTree(node, configurableClass, applyDefaults);
+            ConfigNodeTraverser.traverseNodeTypesafe(node, configurableClass, applyDefaults, allExtensionClasses);
         return node;
     }
 
-    protected void traverseTree(Object node, Class nodeClass, EntryFilter filter) throws ConfigurationException {
-
-        // if because of any reason this is not a map (e.g. a reference or a custom adapter for a configurableclass),
-        // we don't care about defaults
-        if (!(node instanceof Map)) return;
-
-        Map<String, Object> containerNode = (Map<String, Object>) node;
-
-        List<AnnotatedConfigurableProperty> properties = ConfigIterators.getAllConfigurableFieldsAndSetterParameters(nodeClass);
-        for (AnnotatedConfigurableProperty property : properties) {
-            Object childNode = containerNode.get(property.getAnnotatedName());
-
-            if (filter.applyFilter(containerNode, property)) continue;
-
-            if (childNode == null) continue;
-
-            // if the property is a configclass
-            if (property.isConfObject()) {
-                traverseTree(childNode, property.getRawClass(), filter);
-                continue;
-            }
-
-            // collection, where a generics parameter is a configurable class or it is an array with comp type of configurableClass
-            if (property.isCollectionOfConfObjects() || property.isArrayOfConfObjects()) {
-
-                Collection collection = (Collection) childNode;
-
-                for (Object object : collection) {
-                    traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
-                }
-
-                continue;
-            }
-
-            // map, where a value generics parameter is a configurable class
-            if (property.isMapOfConfObjects()) {
-
-                try {
-                    Map<String, Object> collection = (Map<String, Object>) childNode;
-
-                    for (Object object : collection.values())
-                        traverseTree(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter);
-
-                } catch (ClassCastException e) {
-                    log.warn("Map is malformed", e);
-                }
-
-                continue;
-            }
-
-            // extensions map
-            if (property.isExtensionsProperty()) {
-
-                try {
-                    Map<String, Object> extensionsMap = (Map<String, Object>) childNode;
-
-                    for (Map.Entry<String, Object> entry : extensionsMap.entrySet()) {
-                        try {
-                            traverseTree(entry.getValue(), ConfigIterators.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter);
-                        } catch (ClassNotFoundException e) {
-                            // noop
-                            log.warn("Extension class {} not found", entry.getKey());
-                        }
-                    }
-
-                } catch (ClassCastException e) {
-                    log.warn("Extensions are malformed", e);
-                }
-
-            }
-
-
-        }
-    }
-
-
-    public interface EntryFilter {
-        boolean applyFilter(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
-    }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {

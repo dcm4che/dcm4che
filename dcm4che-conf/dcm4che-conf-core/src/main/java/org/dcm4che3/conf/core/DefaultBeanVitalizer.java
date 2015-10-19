@@ -149,11 +149,11 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
         if (typeAdapter != null) return typeAdapter;
 
         // check if it is a reference
-        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.getAnnotation(ConfigurableProperty.class).isReference())
+        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.isReference())
             return getReferenceTypeAdapter();
 
         // check if it is an extensions map
-        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.getAnnotation(ConfigurableProperty.class).isExtensionsProperty())
+        if (property.getAnnotation(ConfigurableProperty.class)!=null && property.isExtensionsProperty())
             return new NullToNullDecorator(new ExtensionTypeAdaptor());
 
         // delegate to default otherwise
@@ -167,7 +167,7 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
         ConfigTypeAdapter adapter = null;
 
         // if it is a config class, use reflective adapter
-        if (clazz.getAnnotation(ConfigurableClass.class) != null)
+        if (ConfigIterators.isConfigurableClass(clazz))
             adapter = new ReflectiveAdapter();
         else if (clazz.isArray())
             adapter = new ArrayTypeAdapter();

@@ -39,10 +39,7 @@
  */
 package org.dcm4che3.conf.core.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +74,14 @@ public class SimpleConfigNodeUtil {
         return names;
     }
 
-    public static String toSimpleEscapedPath(List<String> items) {
+    public static String toSimpleEscapedPath(Iterator<String> items) {
+        ArrayList<String> strings = new ArrayList<String>();
+        while (items.hasNext())
+            strings.add(items.next());
+        return toSimpleEscapedPath(strings);
+    }
+
+    public static String toSimpleEscapedPath(Iterable<String> items) {
         String s = "";
         for (String item : items) s += "/" + item.replace("/", "\\/");
         return s;

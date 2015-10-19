@@ -45,6 +45,7 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
+import org.dcm4che3.conf.core.util.Extensions;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.hl7.HL7Application;
@@ -268,7 +269,7 @@ public class LdapNode {
             for (Map.Entry<String, Map<String, Object>> ext : extensions.entrySet()) {
                 Class<?> extClass = null;
                 try {
-                    extClass = ConfigIterators.getExtensionClassBySimpleName(ext.getKey(), getLdapConfigurationStorage().getAllExtensionClasses());
+                    extClass = Extensions.getExtensionClassBySimpleName(ext.getKey(), getLdapConfigurationStorage().getAllExtensionClasses());
                 } catch (Exception e) {
                     throw new ConfigurationException("Cannot find extension class " + ext.getKey(), e);
                 }

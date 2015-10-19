@@ -648,6 +648,10 @@ public class DcmQRSCP<T extends InstanceLocator> {
     final DicomDirReader getDicomDirReader() {
         return ddReader;
     }
+    
+    public void setDicomDirReader(DicomDirReader ddReader) {
+        this.ddReader = ddReader;
+    }
 
     final DicomDirWriter getDicomDirWriter() {
         return ddWriter;

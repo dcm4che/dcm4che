@@ -79,24 +79,32 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
                 boolean doDelete = false;
 
+                String name = property.getAnnotatedName();
+                if (property.isOlockHash())
+                    name = Configuration.OLOCK_HASH_KEY;
+                if (property.isUuid())
+                    name = Configuration.CONF_STORAGE_SYSTEM_PROP;
+
+                Object value = containerNode.get(name);
+
                 // if the value for a property equals to default, filter it out
-                if (property.getDefaultValue().equals(String.valueOf(containerNode.get(property.getAnnotatedName())))
-                        || containerNode.get(property.getAnnotatedName()) == null) {
+                if (property.getDefaultValue().equals(String.valueOf(value))
+                        || value == null) {
                     doDelete = true;
                 } // if that is an empty extension map or map
-                else if ((property.isExtensionsProperty() || property.isMap())
-                        && containerNode.get(property.getAnnotatedName()) != null
-                        && ((Map) containerNode.get(property.getAnnotatedName())).size() == 0) {
+                else if ((property.isExtensionsProperty()
+                        || property.isMap())
+                        && ((Map) value).size() == 0) {
                     doDelete = true;
                 } // if that is an empty collection or array
-                else if ((property.isCollection() || property.isArray())
-                        && containerNode.get(property.getAnnotatedName()) != null
-                        && ((Collection) containerNode.get(property.getAnnotatedName())).size() == 0) {
+                else if ((property.isCollection()
+                        || property.isArray())
+                        && ((Collection) value).size() == 0) {
                     doDelete = true;
                 }
 
                 if (doDelete)
-                    containerNode.remove(property.getAnnotatedName());
+                    containerNode.remove(name);
 
                 return doDelete;
             }

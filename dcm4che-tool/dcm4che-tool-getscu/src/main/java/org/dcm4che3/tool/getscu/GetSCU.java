@@ -456,7 +456,8 @@ public class GetSCU {
         Attributes attrs = new Attributes();
         DicomInputStream dis = null;
         try {
-            attrs.addSelected(new DicomInputStream(f).readDataset(-1, -1), inFilter);
+            dis = new DicomInputStream(f);
+            attrs.addSelected(dis.readDataset(-1, -1), inFilter);
         } finally {
             SafeClose.close(dis);
         }

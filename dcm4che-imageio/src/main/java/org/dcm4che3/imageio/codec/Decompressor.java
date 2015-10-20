@@ -37,12 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.imageio.codec;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.BulkData;
-import org.dcm4che3.data.Fragments;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.data.Value;
+import org.dcm4che3.data.*;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.SegmentedImageInputStream;
@@ -71,6 +66,7 @@ import java.io.OutputStream;
 public class Decompressor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Decompressor.class);
+    private static String unpatchedJpegLSImplCUID = "1.2.40.0.13.1.1";
 
     private final Attributes dataset;
     private Object pixels;
@@ -120,7 +116,12 @@ public class Decompressor {
             this.imageReader = ImageReaderFactory.getImageReader(param);
             LOG.debug("Decompressor: {}", imageReader.getClass().getName());
             this.readParam = imageReader.getDefaultReadParam();
-            this.patchJPEGLS = param.patchJPEGLS;
+            String implementationClassUID = dataset.getString(Tag.ImplementationClassUID);
+
+            if (implementationClassUID.equals(unpatchedJpegLSImplCUID)) {
+                this.patchJPEGLS = param.patchJPEGLS;
+                dataset.setString(Tag.ImplementationClassUID, VR.UI, Implementation.getClassUID());
+            }
         }
     }
 

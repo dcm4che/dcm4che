@@ -51,6 +51,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.net.proxy.ProxyManager;
@@ -79,6 +80,14 @@ import org.slf4j.LoggerFactory;
 public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public enum Protocol {
         DICOM, HL7, SYSLOG_TLS, SYSLOG_UDP;
@@ -120,6 +129,12 @@ public class Connection implements Serializable {
 
     @ConfigurableProperty(name = "dicomHostname", label = "Hostname", tags = Tag.PRIMARY)
     private String hostname;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
+    private String olockHash;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.UUID)
+    private String uuid = UUID.randomUUID().toString();
 
     @ConfigurableProperty(name = "dcmBindAddress")
     private String bindAddress;
@@ -1271,7 +1286,17 @@ public class Connection implements Serializable {
                 && protocol == other.protocol;
     }
 
+    public String getOlockHash() {
+        return olockHash;
+    }
+
+    public void setOlockHash(String olockHash) {
+        this.olockHash = olockHash;
+    }
+
     void reconfigure(Connection from) {
+        setOlockHash(from.olockHash);
+        setUuid(from.uuid);
         setCommonName(from.commonName);
         setHostname(from.hostname);
         setPort(from.port);

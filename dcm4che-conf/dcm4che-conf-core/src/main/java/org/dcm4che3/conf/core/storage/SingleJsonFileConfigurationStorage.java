@@ -42,6 +42,7 @@ package org.dcm4che3.conf.core.storage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -53,19 +54,35 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ *
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
+
+    private static final Logger log = LoggerFactory.getLogger(SingleJsonFileConfigurationStorage.class);
+
+    public static final String CONF_FILENAME_SYSPROP = "org.dcm4che.conf.filename";
+
+    /**
+     * Experimental
+     */
+    public static final String USE_GIT_SYSPROP = "org.dcm4che.conf.experimental.useGit";
+
     private String fileName;
+    private boolean makeGitCommitOnPersist = false;
+
     private ObjectMapper objectMapper = new ObjectMapper();
+
 
     public static String resolveConfigFileNameSetting(Hashtable<?, ?> props) {
         return StringUtils.replaceSystemProperties(
                 ConfigurationSettingsLoader.getPropertyWithNotice(
                         props,
-                        "org.dcm4che.conf.filename",
+                        CONF_FILENAME_SYSPROP,
                         "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json"));
     }
 
@@ -74,11 +91,19 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     public SingleJsonFileConfigurationStorage(String fileName) {
-        setFileName(fileName);
+        this.fileName = fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void configure(Hashtable<?, ?> props) {
+        String fileName = ConfigurationSettingsLoader.getPropertyWithNotice(
+                props,
+                CONF_FILENAME_SYSPROP,
+                "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json");
+
+        this.fileName = StringUtils.replaceSystemProperties(fileName);
+
+        if (props.containsKey(USE_GIT_SYSPROP)) makeGitCommitOnPersist = true;
+
     }
 
     @Override
@@ -112,7 +137,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 //            configNode.put("#class", configurableClass.getName());
 
         if (!path.equals("/")) {
-                ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
+            ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
         } else
             configurationRoot = configNode;
 
@@ -123,6 +148,40 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
             throw new ConfigurationException(e);
         }
 
+
+        commitToGitIfConfigured(path);
+
+        log.info("Configuration updated at path "+path);
+
+    }
+
+    private void commitToGitIfConfigured(String path) {
+        if (makeGitCommitOnPersist) {
+
+
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder();
+
+                Process process = processBuilder
+                        .command("git", "add", "-A")
+                        .redirectErrorStream(true)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .directory(Paths.get(fileName).getParent().toFile())
+                        .start();
+
+                process.waitFor();
+
+                process = processBuilder
+                        .command("git", "commit", "-m", "\"Changed path " + path +" \"")
+                        .start();
+
+                 process.waitFor();
+
+
+            } catch (Exception e) {
+                throw new ConfigurationException("Cannot commit to git repo", e);
+            }
+        }
     }
 
     @Override
@@ -136,6 +195,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         Map<String, Object> configurationRoot = getConfigurationRoot();
         ConfigNodeUtil.removeNodes(configurationRoot, path);
         persistNode("/", configurationRoot, null);
+
     }
 
     @Override
@@ -149,8 +209,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public void runBatch(ConfigBatch batch) {
+    public void runBatch(Batch batch) {
         batch.run();
     }
-    
+
 }

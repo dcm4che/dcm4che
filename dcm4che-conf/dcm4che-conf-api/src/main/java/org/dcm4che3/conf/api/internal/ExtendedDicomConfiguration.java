@@ -39,13 +39,13 @@
 package org.dcm4che3.conf.api.internal;
 
 import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.net.*;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.DeviceInfo;
 
 import java.io.Closeable;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
+import java.util.Map;
 
 /**
  * This interface is for internal use. For any vendor/external integration purposes, please use DicomConfiguration.
@@ -66,6 +66,8 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
     boolean registerAETitle(String aet) throws ConfigurationException;
     @Deprecated
     void unregisterAETitle(String aet) throws ConfigurationException;
+
+    Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException;
 
     /**
      * Query for Devices with specified attributes.

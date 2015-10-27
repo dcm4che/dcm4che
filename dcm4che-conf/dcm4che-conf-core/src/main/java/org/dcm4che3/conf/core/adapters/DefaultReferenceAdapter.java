@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Default dereferencer.
+ * Default de/referencer.
  *
  * @param <T>
  */

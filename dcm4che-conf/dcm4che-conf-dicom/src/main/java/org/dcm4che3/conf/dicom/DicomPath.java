@@ -39,10 +39,10 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.core.util.PathPattern;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.dcm4che3.conf.core.util.PathPattern;
 
 /**
  * Single source for all the DicomConfiguration-related xpaths
@@ -94,8 +94,8 @@ public enum DicomPath {
         PATHS.put(/***********/AllDeviceNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomDeviceName");
         PATHS.put(/***********/AllHL7AppNames, "/dicomConfigurationRoot/dicomDevicesRoot/*/deviceExtensions/HL7DeviceExtension/hl7Apps/*/hl7ApplicationName");
         PATHS.put(/***/DeviceNameByHL7AppName, "/dicomConfigurationRoot/dicomDevicesRoot/*[deviceExtensions/HL7DeviceExtension/hl7Apps/*[hl7ApplicationName='{hl7AppName}']]/dicomDeviceName");
-        PATHS.put(/*******/DeviceNameByAEUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE/*[dcmUUID='{aeUUID}']]/dicomDeviceName");
-        PATHS.put(/*********/DeviceNameByUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dcmUUID='{deviceUUID}']/dicomDeviceName");
+        PATHS.put(/*******/DeviceNameByAEUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE/*[_.uuid='{aeUUID}']]/dicomDeviceName");
+        PATHS.put(/*********/DeviceNameByUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[_.uuid='{deviceUUID}']/dicomDeviceName");
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");

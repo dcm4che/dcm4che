@@ -48,7 +48,7 @@ import java.util.Map;
  * The Configuration API operates on a tree data structure, where any subtree is referred to as a configuration node.
  * A configuration node represents a JSON object. A configuration node is either
  * <ul>
- * <li> a primitive wrapper/string (Integer, Boolean, Float, String)</li>
+ * <li> a primitive wrapper/string (Number, Boolean, String)</li>
  * <li> null</li>
  * <li> a collection of nodes </li>
  * <li> Map&lt;String,Object&gt; where each object is a configuration node (single map can have values of multiple types.</li>
@@ -58,9 +58,27 @@ import java.util.Map;
  * A <i>path</i> is a valid XPath expression evaluated against the configuration tree. The usage of very advanced XPath expressions is not recommended, since it could lead to eager loading of configuration tree.
  * Examples of paths can be found in org.dcm4che3.conf.dicom.DicomPath. A helper class org.dcm4che3.conf.core.util.PathPattern can be used to safely compose parametrized paths.
  */
-public interface Configuration {
+public interface Configuration extends BatchRunner {
 
     String CONF_STORAGE_SYSTEM_PROP = "org.dcm4che.conf.storage";
+
+    /**
+     * A special property key that indicates that this property is the referable uuid of the containing config node
+     */
+    String UUID_KEY = "_.uuid";
+
+    /**
+     * A special property key that indicates that
+     * the containing node is a hash-based optimistic locking root and
+     * that this property contains the hash of this node.
+     */
+    String OLOCK_HASH_KEY = "_.hash";
+
+    /**
+     * A special property key that indicates that this property is a reference
+     * to a node with uuid that equals to the property's value
+     */
+    String REFERENCE_KEY = "_.ref";
 
     enum ConfigStorageType {
         JSON_FILE,
@@ -136,27 +154,5 @@ public interface Configuration {
      * Should be auto-released on transaction commit/rollback.
      */
     void lock();
-
-    /**
-     * Provides support for batching configuration changes.
-     * </p>
-     * The method implementation must ensure that the batch-changes are executed within a transaction.
-     * The implementation may decide to run the changes either in
-     * <ul>
-     * <li>the context of an already existing transaction</li>
-     * <li>the context of a new transaction</li>
-     * </ul>
-     *
-     * @param batch Configuration batch change to execute
-     */
-    void runBatch(ConfigBatch batch);
-
-    /**
-     * Defines a configuration batch that allows to execute configuration changes in a bulk-type manner.
-     *
-     * @author Alexander Hoermandinger <alexander.hoermandinger@agfa.com>
-     */
-    interface ConfigBatch extends Runnable{
-    }
 
 }

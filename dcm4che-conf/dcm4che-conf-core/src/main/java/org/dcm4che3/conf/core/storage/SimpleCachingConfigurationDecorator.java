@@ -39,7 +39,6 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
@@ -47,7 +46,6 @@ import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -60,6 +58,7 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
 
 
     public static final Logger log = LoggerFactory.getLogger(SimpleCachingConfigurationDecorator.class);
+    private boolean readOnly = false;
 
     private Map<String, Object> cachedConfigurationRoot = null;
 
@@ -67,10 +66,20 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
         this(delegate, System.getProperties());
     }
 
+    /**
+     *
+     * @param delegate
+     * @param readOnly if set to true, will not propagate changes to the underlying storage
+     */
+    public SimpleCachingConfigurationDecorator(Configuration delegate, boolean readOnly) {
+        this(delegate, System.getProperties());
+        this.readOnly = readOnly;
+    }
+
     public SimpleCachingConfigurationDecorator(Configuration delegate, Hashtable<?, ?> properties) {
         super(delegate);
         String s = (String) properties.get("org.dcm4che.conf.staleTimeout");
-        staleTimeout = Integer.valueOf(s == null ? "30" : s) * 1000L;
+        staleTimeout = Integer.valueOf(s == null ? "0" : s) * 1000L;
     }
 
     long staleTimeout;
@@ -86,7 +95,8 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
                 (staleTimeout != 0 && now > fetchTime + staleTimeout)) {
             fetchTime = now;
             if (cachedConfigurationRoot == null)
-                log.info("Configuration cache initialized"); else
+                log.info("Configuration cache initialized");
+            else
                 log.debug("Configuration cache refreshed");
 
             cachedConfigurationRoot = delegate.getConfigurationRoot();
@@ -109,25 +119,16 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
         if (node == null) return null;
 
         try {
-            return deepCloneNode(node);
+
+            return ConfigNodeUtil.deepCloneNode(node);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }
 
-    private Object deepCloneNode(Object node) {
-        // clone
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.treeToValue(objectMapper.valueToTree(node), node.getClass());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
-        delegate.persistNode(path, configNode, configurableClass);
+        if (!readOnly) delegate.persistNode(path, configNode, configurableClass);
         if (!path.equals("/"))
             ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
         else
@@ -136,12 +137,10 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
 
     @Override
     public synchronized void refreshNode(String path) throws ConfigurationException {
-        Object newConfigurationNode = delegate.getConfigurationNode(path, null);
-        if (path.equals("/"))
-            cachedConfigurationRoot = (Map<String, Object>) newConfigurationNode;
-        else
-            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, newConfigurationNode);
-
+        if (!readOnly) {
+            cachedConfigurationRoot = null;
+            getConfigurationRoot();
+        }
     }
 
     @Override
@@ -151,7 +150,7 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
 
     @Override
     public synchronized void removeNode(String path) throws ConfigurationException {
-        delegate.removeNode(path);
+        if (!readOnly) delegate.removeNode(path);
         ConfigNodeUtil.removeNodes(getConfigurationRoot(), path);
     }
 
@@ -162,20 +161,20 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
         List l = new ArrayList();
         final Iterator origIterator = ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
 
-        while (origIterator.hasNext()) l.add(deepCloneNode(origIterator.next()));
+        while (origIterator.hasNext()) l.add(ConfigNodeUtil.deepCloneNode(origIterator.next()));
 
         return l.iterator();
     }
 
     @Override
-    public synchronized void runBatch(ConfigBatch batch) {
+    public synchronized void runBatch(Batch batch) {
         try {
             super.runBatch(batch);
-        }catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 
             // if something goes wrong during batching - invalidate the cache before others are able to read inconsistent data
             // we cannot re-load here since an underlying transaction is likely to be inactive
-            cachedConfigurationRoot = null;
+            if (!readOnly) cachedConfigurationRoot = null;
 
             throw e;
         }

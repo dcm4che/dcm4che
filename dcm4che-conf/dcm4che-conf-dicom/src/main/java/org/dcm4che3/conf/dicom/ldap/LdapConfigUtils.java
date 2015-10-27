@@ -45,6 +45,7 @@ import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.util.Extensions;
 import org.dcm4che3.conf.dicom.CommonDicomConfiguration;
 import org.dcm4che3.conf.dicom.DicomPath;
 import org.dcm4che3.net.Connection;
@@ -249,7 +250,7 @@ public class LdapConfigUtils {
                             extName = pathItem.get("$name").toString();
                         }
 
-                        currentClass = ConfigIterators.getExtensionClassBySimpleName(extName, ldapStorage.getAllExtensionClasses());
+                        currentClass = Extensions.getExtensionClassBySimpleName(extName, ldapStorage.getAllExtensionClasses());
 
                         LDAP ldapanno = (LDAP) currentClass.getAnnotation(LDAP.class);
                         if (ldapanno == null || !ldapanno.noContainerNode()) {

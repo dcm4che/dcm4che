@@ -45,6 +45,7 @@ import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.apache.commons.jxpath.Pointer;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,6 +101,51 @@ public class ConfigNodeUtil {
 
     public static boolean validatePath(String path) {
         return true;
+    }
+
+    /**
+     * Clones structure but re-uses primitives
+     * @param node
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static Object deepCloneNode(Object node) {
+
+
+        if (isPrimitive(node)) return node;
+
+        if (node instanceof Collection) {
+            ArrayList<Object> newList = new ArrayList<Object>();
+            for (Object o : (Collection) node) newList.add(deepCloneNode(o));
+            return newList;
+        }
+
+        if (node instanceof Map) {
+            Map newMap = new TreeMap();
+
+            for (Entry e : (Set<Entry>) ((Map) node).entrySet()) {
+                newMap.put(e.getKey(), deepCloneNode(e.getValue()));
+            }
+
+            return newMap;
+        }
+
+        throw new IllegalArgumentException("Unexpected node type " + node.getClass());
+
+//        // clone
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            return objectMapper.treeToValue(objectMapper.valueToTree(node), node.getClass());
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
+
+    public static boolean isPrimitive(Object value) {
+        return value == null ||
+                value instanceof Number ||
+                value instanceof String ||
+                value instanceof Boolean;
     }
 
     public String[] split(String path) {

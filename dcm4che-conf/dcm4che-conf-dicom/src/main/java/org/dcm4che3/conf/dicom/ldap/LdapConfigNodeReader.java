@@ -107,7 +107,7 @@ public class LdapConfigNodeReader {
 
                             Object value = resAttributes.get(property.getAnnotation(LDAP.class).mapValueAttribute()).get();
 
-                            if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+                            if (property.isCollectionOfReferences())
                                 value = LdapConfigUtils.ldapDnToRef((String) value, property.getPseudoPropertyForCollectionElement(), ldapConfigurationStorage);
 
                             map.put(key, value);
@@ -127,7 +127,7 @@ public class LdapConfigNodeReader {
             // nested
             if (property.isConfObject()) {
 
-                if (property.getAnnotation(ConfigurableProperty.class).isReference()) {
+                if (property.isReference()) {
                     if (attributes != null) {
                         isAnyContents = true;
                         Object value = attributes.get(LdapConfigUtils.getLDAPPropertyName(property)).get();
@@ -147,7 +147,7 @@ public class LdapConfigNodeReader {
             // collection with confObjects (not refs)
             if (property.isArrayOfConfObjects()
                     || property.isCollectionOfConfObjects()
-                    && !property.getAnnotation(ConfigurableProperty.class).collectionOfReferences()) {
+                    && !property.isCollectionOfReferences()) {
 
                 Class elemClass = property.getPseudoPropertyForConfigClassCollectionElement().getRawClass();
                 String subDn = LdapConfigUtils.getSubDn(dn, property);

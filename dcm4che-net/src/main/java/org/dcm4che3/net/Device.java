@@ -40,6 +40,7 @@ package org.dcm4che3.net;
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.data.Code;
@@ -81,13 +82,18 @@ public class Device implements Serializable {
     @ConfigurableProperty(name = "dicomDeviceName", label = "Device name", tags = Tag.PRIMARY)
     private String deviceName;
 
-    // Will add later on one big bang refactoring
-//    @ConfigurableProperty(name = "dcmUUID", tags = Tag.UUID,
-//    description = "An immutable unique identifier")
-//    private String uuid = UUID.randomUUID().toString();
+    /**
+     * Temporarily gets assigned the value of device name with a prefix
+     * @see Device#setDeviceName(String)
+     */
+    @ConfigurableProperty(type = ConfigurablePropertyType.UUID)
+    private String uuid;
 
     @ConfigurableProperty(name = "dicomDescription")
     private String description;
+
+    @ConfigurableProperty(type = ConfigurablePropertyType.OptimisticLockingHash)
+    private String olockHash;
 
     @ConfigurableProperty(name = "dicomManufacturer")
     private String manufacturer;
@@ -253,14 +259,6 @@ public class Device implements Serializable {
         setDeviceName(name);
     }
 
-//    public String getUuid() {
-//        return uuid;
-//    }
-//
-//    public void setUuid(String uuid) {
-//        this.uuid = uuid;
-//    }
-
     private void checkNotEmpty(String name, String val) {
         if (val != null && val.isEmpty())
             throw new IllegalArgumentException(name + " cannot be empty");
@@ -291,6 +289,8 @@ public class Device implements Serializable {
     public final void setDeviceName(String name) {
         checkNotEmpty("Device Name", name);
         this.deviceName = name;
+        // temporarily
+        this.uuid = "Device-" + name;
     }
 
     /**
@@ -643,6 +643,14 @@ public class Device implements Serializable {
     public final void setTrustStorePinProperty(String trustStorePinProperty) {
         checkNotEmpty("keyPin", keyStoreKeyPin);
         this.trustStorePinProperty = trustStorePinProperty;
+    }
+
+    public String getOlockHash() {
+        return olockHash;
+    }
+
+    public void setOlockHash(String olockHash) {
+        this.olockHash = olockHash;
     }
 
     public X509Certificate[] getThisNodeCertificates(String ref) {
@@ -1068,7 +1076,6 @@ public class Device implements Serializable {
      *
      * @return
      */
-    @Deprecated
     public Collection<ApplicationEntity> getApplicationEntities() {
         return applicationEntitiesMap.values();
     }
@@ -1256,12 +1263,13 @@ public class Device implements Serializable {
     }
 
     protected void setDeviceAttributes(Device from) {
+        setOlockHash(from.olockHash);
         setDescription(from.description);
         setManufacturer(from.manufacturer);
         setManufacturerModelName(from.manufacturerModelName);
         setSoftwareVersions(from.softwareVersions);
         setStationName(from.stationName);
-//        setUuid(from.getUuid());
+        setUuid(from.getUuid());
         setDeviceSerialNumber(from.deviceSerialNumber);
         setTrustStoreURL(from.trustStoreURL);
         setTrustStoreType(from.trustStoreType);
@@ -1409,5 +1417,13 @@ public class Device implements Serializable {
         if (applicationEntity == null)
             throw new IllegalArgumentException("Device " + deviceName + " does not contain AET " + aet);
         return applicationEntity;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

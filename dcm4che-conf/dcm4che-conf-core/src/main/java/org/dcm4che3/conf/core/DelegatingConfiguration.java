@@ -39,11 +39,11 @@
  */
 package org.dcm4che3.conf.core;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Roman K
@@ -100,7 +100,7 @@ public class DelegatingConfiguration implements Configuration {
     }
 
     @Override
-    public void runBatch(ConfigBatch batch) {
+    public void runBatch(Batch batch) {
         delegate.runBatch(batch);
     }
 

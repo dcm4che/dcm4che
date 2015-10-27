@@ -1,4 +1,6 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ *
+ * ** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -16,7 +18,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2015
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,31 +36,32 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
-
-package org.dcm4che3.conf.core.api;
-
-/**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * **** END LICENSE BLOCK *****
  *
  */
-public class ConfigurationException extends RuntimeException {
 
-    private static final long serialVersionUID = 1507953586524535616L;
+package org.dcm4che3.conf.core.olock;
 
-    public ConfigurationException() {
+import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author Roman K
+ */
+public class CleanupFilter extends ConfigNodeTraverser.AConfigNodeFilter {
+
+    List<String> commonOLockPropnames;
+
+    public CleanupFilter(String... commonOLockPropnames) {
+        this.commonOLockPropnames = new ArrayList<String>(Arrays.asList(commonOLockPropnames));
     }
 
-    public ConfigurationException(String message) {
-        super(message);
+    @Override
+    public void beforeNode(Map<String, Object> node) {
+        for (String oLockPropname : commonOLockPropnames) node.remove(oLockPropname);
     }
-
-    public ConfigurationException(Throwable cause) {
-        super(cause);
-    }
-
-    public ConfigurationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

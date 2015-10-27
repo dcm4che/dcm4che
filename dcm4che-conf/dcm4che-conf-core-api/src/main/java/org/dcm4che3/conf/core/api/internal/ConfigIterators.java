@@ -55,19 +55,14 @@ import java.util.*;
  */
 public class ConfigIterators {
 
+    /*
+     * Caches to overcome slow reflection access
+     */
+
+
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedSetter>> configurableSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedSetter>>());
-
-    public static Class<?> getExtensionClassBySimpleName(String extensionSimpleName, List allExtensionClasses) throws ClassNotFoundException {
-
-        List<Class> extensionClasses = allExtensionClasses;
-
-        for (Class aClass : extensionClasses) {
-            if (aClass.getSimpleName().equals(extensionSimpleName)) return aClass;
-        }
-
-        throw new ClassNotFoundException();
-    }
+    private static final Map<Class, Boolean> isClassConfigurable = Collections.synchronizedMap(new HashMap<Class, Boolean>());
 
     public static class AnnotatedSetter {
         private Map<Type, Annotation> annotations;
@@ -128,6 +123,17 @@ public class ConfigIterators {
 
         return configurableFieldsCache.get(clazz);
 
+    }
+
+    public static boolean isConfigurableClass(Class clazz) {
+
+        if (isClassConfigurable.containsKey(clazz))
+            return isClassConfigurable.get(clazz);
+
+        boolean isItForReal = clazz.getAnnotation(ConfigurableClass.class) != null;
+        isClassConfigurable.put(clazz, isItForReal);
+
+        return isItForReal;
     }
 
     private static void processAndCacheAnnotationsForClass(Class clazz) {

@@ -39,40 +39,18 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
-import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.DicomConfiguration;
-import org.dcm4che3.conf.api.TCConfiguration;
-import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
+import org.dcm4che3.conf.api.*;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.Configuration.ConfigBatch;
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.api.*;
+import org.dcm4che3.conf.core.api.BatchRunner.Batch;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.dicom.adapters.AttributeFormatTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.AuditSimpleTypeAdapters;
-import org.dcm4che3.conf.dicom.adapters.CodeTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.DicomReferenceHandlerAdapter;
-import org.dcm4che3.conf.dicom.adapters.IssuerTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.PropertyTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.ValueSelectorTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
@@ -83,6 +61,9 @@ import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 /**
  * @author Roman K
@@ -100,6 +81,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     /**
      * Returns a list of registered extensions for a specified base extension class
+     *
      * @param clazz
      * @param <T>
      * @return
@@ -122,7 +104,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
      * Devices that have been created but not fully loaded are added to this threadlocal. See findDevice.
      */
     private final ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
-
 
 
     public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
@@ -394,7 +375,8 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         }
     }
 
-    protected Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
+    @Override
+    public Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
         if (deviceConfigurationNode == null) return null;
 
         Device device = new Device();
@@ -540,19 +522,19 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
                 configurationNode,
                 TCConfiguration.class);
     }
-    
+
     @Override
     public void runBatch(final DicomConfigBatch dicomConfigBatch) {
         /*
          * Use the batch support of underlying configuration storage to execute batch
          */
-        config.runBatch(new ConfigBatch() {
+        config.runBatch(new Batch() {
 
             @Override
             public void run() {
                 dicomConfigBatch.run();
             }
-            
+
         });
     }
 

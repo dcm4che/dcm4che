@@ -168,7 +168,7 @@ public class DicomConfigurationBuilder {
             switch (Configuration.ConfigStorageType.valueOf(configType.toUpperCase().trim())) {
                 case JSON_FILE:
                     SingleJsonFileConfigurationStorage jsonConfigurationStorage = createJsonFileConfigurationStorage();
-                    jsonConfigurationStorage.setFileName(SingleJsonFileConfigurationStorage.resolveConfigFileNameSetting(props));
+                    jsonConfigurationStorage.configure(props);
                     configurationStorage = jsonConfigurationStorage;
                     break;
                 case LDAP:

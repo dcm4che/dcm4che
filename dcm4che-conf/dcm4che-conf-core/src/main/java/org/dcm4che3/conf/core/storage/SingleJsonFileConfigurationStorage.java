@@ -58,14 +58,20 @@ import org.dcm4che3.util.StringUtils;
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
+    public static final String CONF_FILENAME_SYSPROP = "org.dcm4che.conf.filename";
+    public static final String USE_GIT_SYSPROP = "org.dcm4che.conf.experimental.useGit";
+
     private String fileName;
+    private boolean makeGitCommitOnPersist = false;
+
     private ObjectMapper objectMapper = new ObjectMapper();
+
 
     public static String resolveConfigFileNameSetting(Hashtable<?, ?> props) {
         return StringUtils.replaceSystemProperties(
                 ConfigurationSettingsLoader.getPropertyWithNotice(
                         props,
-                        "org.dcm4che.conf.filename",
+                        CONF_FILENAME_SYSPROP,
                         "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json"));
     }
 
@@ -74,11 +80,19 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     public SingleJsonFileConfigurationStorage(String fileName) {
-        setFileName(fileName);
+        this.fileName = fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void configure(Hashtable<?, ?> props) {
+        String fileName = ConfigurationSettingsLoader.getPropertyWithNotice(
+                props,
+                CONF_FILENAME_SYSPROP,
+                "${jboss.server.config.dir}/dcm4chee-arc/sample-config.json");
+
+        this.fileName = StringUtils.replaceSystemProperties(fileName);
+
+        if (props.containsKey(USE_GIT_SYSPROP)) makeGitCommitOnPersist = true;
+
     }
 
     @Override
@@ -112,7 +126,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 //            configNode.put("#class", configurableClass.getName());
 
         if (!path.equals("/")) {
-                ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
+            ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
         } else
             configurationRoot = configNode;
 
@@ -152,5 +166,5 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public void runBatch(Batch batch) {
         batch.run();
     }
-    
+
 }

@@ -64,7 +64,7 @@ public class DicomConfigurationBuilder {
     private static Logger LOG = LoggerFactory
             .getLogger(DicomConfigurationBuilder.class);
 
-    private boolean cache = true;
+    private boolean cache = false;
     private Hashtable<?, ?> ldapProps = null;
     private Configuration configurationStorage = null;
     private Map<Class, List<Class>> extensionClassesMap = new HashMap<Class, List<Class>>();

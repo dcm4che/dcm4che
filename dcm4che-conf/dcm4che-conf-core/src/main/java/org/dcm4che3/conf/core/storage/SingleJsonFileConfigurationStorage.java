@@ -54,12 +54,17 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
+
+    private static final Logger log = LoggerFactory.getLogger(SingleJsonFileConfigurationStorage.class);
+
     public static final String CONF_FILENAME_SYSPROP = "org.dcm4che.conf.filename";
 
     /**
@@ -145,6 +150,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
 
         commitToGitIfConfigured(path);
+
+        log.info("Configuration updated at path "+path);
 
     }
 

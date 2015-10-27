@@ -42,6 +42,7 @@ package org.dcm4che3.conf.core.storage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -55,10 +56,15 @@ import org.dcm4che3.conf.core.util.ConfigNodeUtil;
 import org.dcm4che3.util.StringUtils;
 
 /**
+ *
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
     public static final String CONF_FILENAME_SYSPROP = "org.dcm4che.conf.filename";
+
+    /**
+     * Experimental
+     */
     public static final String USE_GIT_SYSPROP = "org.dcm4che.conf.experimental.useGit";
 
     private String fileName;
@@ -137,6 +143,38 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
             throw new ConfigurationException(e);
         }
 
+
+        commitToGitIfConfigured(path);
+
+    }
+
+    private void commitToGitIfConfigured(String path) {
+        if (makeGitCommitOnPersist) {
+
+
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder();
+
+                Process process = processBuilder
+                        .command("git", "add", "-A")
+                        .redirectErrorStream(true)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .directory(Paths.get(fileName).getParent().toFile())
+                        .start();
+
+                process.waitFor();
+
+                process = processBuilder
+                        .command("git", "commit", "-m", "\"Changed path " + path +" \"")
+                        .start();
+
+                 process.waitFor();
+
+
+            } catch (Exception e) {
+                throw new ConfigurationException("Cannot commit to git repo", e);
+            }
+        }
     }
 
     @Override
@@ -150,6 +188,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
         Map<String, Object> configurationRoot = getConfigurationRoot();
         ConfigNodeUtil.removeNodes(configurationRoot, path);
         persistNode("/", configurationRoot, null);
+
     }
 
     @Override

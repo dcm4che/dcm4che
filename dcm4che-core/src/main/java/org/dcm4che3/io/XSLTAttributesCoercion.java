@@ -38,24 +38,63 @@
  * *** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.data;
+package org.dcm4che3.io;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.AttributesCoercion;
+
+import javax.xml.transform.Templates;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @since Aug 2015
+ * @since Oct 2015
  */
-public class MergeAttributesCoercion implements AttributesCoercion {
-    private final Attributes newAttrs;
+public class XSLTAttributesCoercion implements AttributesCoercion {
+
+    private final Templates templates;
+    private boolean includeNameSpaceDeclaration;
+    private boolean includeKeword;
+    private SAXTransformer.SetupTransformer setupTransformer;
     private AttributesCoercion next;
 
-    public MergeAttributesCoercion(Attributes mergedAttrs, AttributesCoercion next) {
-        this.newAttrs = mergedAttrs;
+    public XSLTAttributesCoercion(Templates templates, AttributesCoercion next) {
+        this.templates = templates;
         this.next = next;
+    }
+
+    public boolean isIncludeNameSpaceDeclaration() {
+        return includeNameSpaceDeclaration;
+    }
+
+    public void setIncludeNameSpaceDeclaration(boolean includeNameSpaceDeclaration) {
+        this.includeNameSpaceDeclaration = includeNameSpaceDeclaration;
+    }
+
+    public boolean isIncludeKeword() {
+        return includeKeword;
+    }
+
+    public void setIncludeKeword(boolean includeKeword) {
+        this.includeKeword = includeKeword;
+    }
+
+    public SAXTransformer.SetupTransformer getSetupTransformer() {
+        return setupTransformer;
+    }
+
+    public void setSetupTransformer(SAXTransformer.SetupTransformer setupTransformer) {
+        this.setupTransformer = setupTransformer;
     }
 
     @Override
     public void coerce(Attributes attrs, Attributes modified) {
-        Attributes.unifyCharacterSets(attrs, newAttrs);
+        Attributes newAttrs;
+        try {
+            newAttrs = SAXTransformer.transform(
+                    attrs, templates, includeNameSpaceDeclaration, includeKeword, setupTransformer);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         if (modified != null) {
             attrs.update(newAttrs, modified);
         } else {
@@ -64,4 +103,5 @@ public class MergeAttributesCoercion implements AttributesCoercion {
         if (next != null)
             next.coerce(attrs, modified);
     }
+
 }

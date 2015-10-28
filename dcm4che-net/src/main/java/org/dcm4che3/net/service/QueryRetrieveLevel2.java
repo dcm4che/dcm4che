@@ -105,7 +105,7 @@ public enum QueryRetrieveLevel2 {
                     level.checkUniqueKey(keys, false, true);
                 break;
             }
-            level.checkUniqueKey(keys, relational, false);
+            level2.checkUniqueKey(keys, relational, false);
         }
 
         return level;

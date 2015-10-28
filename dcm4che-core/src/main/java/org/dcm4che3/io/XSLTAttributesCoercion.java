@@ -70,6 +70,11 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
         this.includeNameSpaceDeclaration = includeNameSpaceDeclaration;
     }
 
+    public XSLTAttributesCoercion includeNameSpaceDeclaration(boolean includeNameSpaceDeclaration) {
+        setIncludeNameSpaceDeclaration(includeNameSpaceDeclaration);
+        return this;
+    }
+
     public boolean isIncludeKeyword() {
         return includeKeyword;
     }
@@ -78,12 +83,22 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
         this.includeKeyword = includeKeyword;
     }
 
+    public XSLTAttributesCoercion includeKeyword(boolean includeKeyword) {
+        setIncludeKeyword(includeKeyword);
+        return this;
+    }
+
     public SAXTransformer.SetupTransformer getSetupTransformer() {
         return setupTransformer;
     }
 
     public void setSetupTransformer(SAXTransformer.SetupTransformer setupTransformer) {
         this.setupTransformer = setupTransformer;
+    }
+
+    public XSLTAttributesCoercion setupTransformer(SAXTransformer.SetupTransformer setupTransformer) {
+        setSetupTransformer(setupTransformer);
+        return this;
     }
 
     @Override

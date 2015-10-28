@@ -53,7 +53,7 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
 
     private final Templates templates;
     private boolean includeNameSpaceDeclaration;
-    private boolean includeKeword;
+    private boolean includeKeyword;
     private SAXTransformer.SetupTransformer setupTransformer;
     private AttributesCoercion next;
 
@@ -70,12 +70,12 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
         this.includeNameSpaceDeclaration = includeNameSpaceDeclaration;
     }
 
-    public boolean isIncludeKeword() {
-        return includeKeword;
+    public boolean isIncludeKeyword() {
+        return includeKeyword;
     }
 
-    public void setIncludeKeword(boolean includeKeword) {
-        this.includeKeword = includeKeword;
+    public void setIncludeKeyword(boolean includeKeyword) {
+        this.includeKeyword = includeKeyword;
     }
 
     public SAXTransformer.SetupTransformer getSetupTransformer() {
@@ -91,7 +91,7 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
         Attributes newAttrs;
         try {
             newAttrs = SAXTransformer.transform(
-                    attrs, templates, includeNameSpaceDeclaration, includeKeword, setupTransformer);
+                    attrs, templates, includeNameSpaceDeclaration, includeKeyword, setupTransformer);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

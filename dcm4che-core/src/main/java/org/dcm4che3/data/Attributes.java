@@ -2074,7 +2074,7 @@ public class Attributes implements Serializable {
                         if (merge) {
                             continue;
                         }
-                        if (modified != null) {
+                        if (modified != null && !modified.contains(privateCreator, tag)) {
                             if (origValue instanceof Sequence) {
                                 modified.set(privateCreator, tag, (Sequence) origValue, null);
                             } else if (origValue instanceof Fragments) {
@@ -3034,10 +3034,17 @@ public class Attributes implements Serializable {
 
         SpecificCharacterSet utf8 = SpecificCharacterSet.valueOf("ISO_IR 192");
         SpecificCharacterSet commonCS = attrsList[0].getSpecificCharacterSet();
-        for (int i = 1; i < attrsList.length && !commonCS.equals(utf8); i++) {
-            SpecificCharacterSet cs = attrsList[i].getSpecificCharacterSet();
-            if (!(cs.equals(commonCS) || cs.isASCII() && commonCS.containsASCII())) {
-                commonCS = commonCS.isASCII() && cs.containsASCII() ? cs : utf8;
+        if (!commonCS.equals(utf8)) {
+            for (int i = 1; i < attrsList.length; i++) {
+                SpecificCharacterSet cs = attrsList[i].getSpecificCharacterSet();
+                if (!(cs.equals(commonCS) || cs.isASCII() && commonCS.containsASCII())) {
+                    if (commonCS.isASCII() && cs.containsASCII())
+                        commonCS = cs;
+                    else {
+                        commonCS = utf8;
+                        break;
+                    }
+                }
             }
         }
         for (Attributes attrs : attrsList) {

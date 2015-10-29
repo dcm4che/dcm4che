@@ -43,15 +43,15 @@ package org.dcm4che3.imageio.codec.jpeg;
  * JPEG-LS coding parameters for images with more than 12 bits per pixel, resulting in two problems:
  * <ol>
  * <li>JPEG-LS streams created by CLibJPEGImageWriter are not compliant with the JPEG-LS specification and can
- * therefore not be decoded using standard-conform decoders. (Note: Some commerical decoders can automatically detect
+ * therefore not be decoded using standard-compliant decoders. (Note: Some commerical decoders can automatically detect
  * such faulty JPEG-LS streams and are able to decode them correctly, e.g. Agfa/Pegasus.)</li>
  * <li>Reading a correct JPEG-LS stream using default coding parameters (i.e. not containing an LSE segment) with
  * CLibJPEGImageReader will result in a corrupted image.</li>
  * </ol>
  * <p>
  * This enum contains different options to use with a {@link PatchJPEGLSImageInputStream} or {@link
- * PatchJPEGLSImageOutputStream} to both patch such faulty JPEG-LS streams created by JAI-ImageIO to make them readable
- * by standard-conform decoders and to make correct JPEG-LS streams (created by other encoders) readable by
+ * PatchJPEGLSImageOutputStream} to both patch faulty JPEG-LS streams created by JAI-ImageIO to make them readable
+ * by standard-compliant decoders and to make correct JPEG-LS streams (created by other encoders) readable by
  * JAI-ImageIO.
  *
  * @see <a href="http://www.dcm4che.org/jira/browse/DCMEE-1144">http://www.dcm4che.org/jira/browse/DCMEE-1144</a>
@@ -71,7 +71,8 @@ public enum PatchJPEGLS {
      * stream can be decoded by JPEG-LS compliant decoders.
      * <p>
      * Warning: Patching a correct JPEG-LS (not created by JAI-ImageIO) with this option is likely to corrupt it (if it
-     * has more than 12 bits per pixel and uses default coding parameters, i.e. doesn't contain an LSE segment).
+     * has more than 12 bits per pixel and uses default coding parameters, i.e. doesn't contain an LSE segment). Use
+     * JAI2ISO_IF_NO_APP_OR_COM to prevent this problem in some cases.
      */
     JAI2ISO,
 
@@ -93,19 +94,20 @@ public enum PatchJPEGLS {
      * Used to patch correct JPEG-LS streams, so they can be decompressed by the faulty JAI-ImageIO
      * CLibImageReader. The resulting stream will still be correct JPEG-LS and can also be decoded by other decoders.
      * <p>
-     * Warning: Patching faulty JPEG-LS streams created by JAI-ImageIO with this option will make them corrupt.
+     * Warning: Patching faulty JPEG-LS streams created by JAI-ImageIO with this option will make them corrupt (i.e.
+     * unreadable by both JAI-ImageIO and standard-compliant decoders).
      */
     ISO2JAI,
 
     /**
-     * Amend default JPEG-LS Coding parameters (for streams to do not contain them yet), but only if the stream
+     * Amend default JPEG-LS Coding parameters (for streams that do not contain them yet), but only if the stream
      * contains APPn or COM segments - so it was certainly not created by JAI-ImageIO.
      * <p>
      * This option can be used to prevent adding those default parameters to faulty streams created by JAI-ImageIO
-     * which would make them unreadable for both JAI-ImageIO and correct decoders.
+     * which would make them unreadable for both JAI-ImageIO and standard-compliant decoders.
      * On the other hand some correct encoders (e.g. dcmtk 3.6.0) also do not add APPn or COM segments and will
      * therefore not be patched, which prevents them from getting decompressed correctly with JAI-ImageIO, if this
-     * option is used.
+     * option is used. (Use the ISO2JAI option for reading such streams with JAI-ImageIO.)
      */
     ISO2JAI_IF_APP_OR_COM;
 

@@ -43,7 +43,7 @@ package org.dcm4che3.imageio.codec.jpeg;
  * JPEG-LS coding parameters for images with more than 12 bits per pixel, resulting in two problems:
  * <ol>
  * <li>JPEG-LS streams created by CLibJPEGImageWriter are not compliant with the JPEG-LS specification and can
- * therefore not be decoded using standard-compliant decoders. (Note: Some commerical decoders can automatically detect
+ * therefore not be decoded using standard-compliant decoders. (Note: Some commercial decoders can automatically detect
  * such faulty JPEG-LS streams and are able to decode them correctly, e.g. Agfa/Pegasus.)</li>
  * <li>Reading a correct JPEG-LS stream using default coding parameters (i.e. not containing an LSE segment) with
  * CLibJPEGImageReader will result in a corrupted image.</li>

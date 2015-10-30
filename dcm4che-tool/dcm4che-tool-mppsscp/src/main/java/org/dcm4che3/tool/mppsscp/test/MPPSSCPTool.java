@@ -40,26 +40,25 @@
 
 package org.dcm4che3.tool.mppsscp.test;
 
-import org.dcm4che3.data.*;
-import org.dcm4che3.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.Dimse;
 import org.dcm4che3.net.service.BasicCEchoSCP;
 import org.dcm4che3.net.service.BasicMPPSSCP;
 import org.dcm4che3.net.service.DicomServiceException;
 import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.test.TestResult;
 import org.dcm4che3.tool.common.test.TestTool;
-
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -174,7 +173,7 @@ public class MPPSSCPTool implements TestTool {
 
             ReceivedMPPS receivedMPPS = new ReceivedMPPS();
             receivedMPPS.iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-            receivedMPPS.dimse = Dimse.N_CREATE_RQ;
+            receivedMPPS.dimse = Dimse.N_SET_RQ;
             receivedMPPS.attributes = rqAttrs;
             received.add(receivedMPPS);
             synchronized (MPPSSCPTool.this) {

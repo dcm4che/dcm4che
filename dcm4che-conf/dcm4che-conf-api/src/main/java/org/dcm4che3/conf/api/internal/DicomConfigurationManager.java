@@ -52,4 +52,15 @@ import java.util.Map;
  */
 public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
 
+    /**
+     * Remembers a weak reference to the provided device so that any subsequent call to
+     * persist or merge for this specific instance is made, an error is logged.
+     *
+     * This is a safeguard against misusing a singleton injected device and making direct modifications on it.
+     *
+     * In future, logging an error will be replaced with throwing an exception
+     * @param d
+     */
+    void preventDeviceModifications(Device d);
+
 }

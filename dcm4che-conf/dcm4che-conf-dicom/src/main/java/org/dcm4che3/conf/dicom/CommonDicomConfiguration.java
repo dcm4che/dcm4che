@@ -71,8 +71,13 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class CommonDicomConfiguration implements DicomConfigurationManager, TransferCapabilityConfigExtension {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(CommonDicomConfiguration.class);
+    private static final Logger log = LoggerFactory.getLogger(CommonDicomConfiguration.class);
+
+
+    /**
+     * see preventDeviceModifications(org.dcm4che3.net.Device)
+     */
+    private Map<Device, Object> readOnlyDevices = Collections.synchronizedMap(new WeakHashMap<Device, Object>());
 
     Configuration config;
     BeanVitalizer vitalizer;
@@ -159,6 +164,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         if (!configurationExists()) return false;
         config.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), DicomConfigurationRootNode.class);
         return true;
+    }
+
+    @Override
+    public void preventDeviceModifications(Device d) {
+        readOnlyDevices.put(d, true);
     }
 
     @LDAP(objectClasses = "hl7UniqueApplicationName", distinguishingField = "hl7ApplicationName")
@@ -289,7 +299,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         String deviceNameNode = (String) search.next();
         if (search.hasNext())
-            LOG.warn("Application entity title '{}' is not unique. Check the configuration!", aet);
+            log.warn("Application entity title '{}' is not unique. Check the configuration!", aet);
         Device device = findDevice(deviceNameNode);
 
         ApplicationEntity ae = device.getApplicationEntity(aet);
@@ -424,6 +434,9 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void persist(Device device) throws ConfigurationException {
+
+        if (readOnlyDevices.containsKey(device)) handleReadOnlyDeviceModification();
+
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         if (config.nodeExists(deviceRef(device.getDeviceName())))
             throw new ConfigurationAlreadyExistsException("Device " + device.getDeviceName() + " already exists");
@@ -431,8 +444,17 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         merge(device);
     }
 
+    private void handleReadOnlyDeviceModification() {
+        log.error("Persisting the config for the Device object that is marked as read-only. " +
+                "This error is not affecting the behavior for now, but soon it will be replaced with an exception!" +
+                "If you want to make config modifications, use a separate instance of Device! See CSP configuration docs for details.");
+    }
+
     @Override
     public void merge(Device device) throws ConfigurationException {
+
+        if (readOnlyDevices.containsKey(device)) handleReadOnlyDeviceModification();
+
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         Map<String, Object> configNode = createDeviceConfigNode(device);
         config.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);

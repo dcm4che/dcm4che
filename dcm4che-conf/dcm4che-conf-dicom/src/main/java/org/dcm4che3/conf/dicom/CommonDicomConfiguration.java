@@ -445,9 +445,15 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     private void handleReadOnlyDeviceModification() {
-        log.error("Persisting the config for the Device object that is marked as read-only. " +
-                "This error is not affecting the behavior for now, but soon it will be replaced with an exception!" +
-                "If you want to make config modifications, use a separate instance of Device! See CSP configuration docs for details.");
+
+        String message = "Persisting the config for a Device object that is marked as read-only. " +
+                "This warning is not affecting the behavior for now, but soon it will be replaced with throwing an exception!" +
+                "If you want to make config modifications, use a separate instance of Device! See CSP configuration docs for details.";
+
+        // create exception to log the stacktrace
+        ConfigurationException exception = new ConfigurationException();
+
+        log.warn(message,exception);
     }
 
     @Override

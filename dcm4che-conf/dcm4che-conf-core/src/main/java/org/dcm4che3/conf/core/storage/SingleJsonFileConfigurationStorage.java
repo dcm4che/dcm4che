@@ -58,7 +58,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author Roman K
  */
 public class SingleJsonFileConfigurationStorage implements Configuration {
@@ -107,12 +106,12 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public boolean nodeExists(String path) throws ConfigurationException {
+    public synchronized boolean nodeExists(String path) throws ConfigurationException {
         return ConfigNodeUtil.nodeExists(getConfigurationRoot(), path);
     }
 
     @Override
-    public Map<String, Object> getConfigurationRoot() throws ConfigurationException {
+    public synchronized Map<String, Object> getConfigurationRoot() throws ConfigurationException {
         try {
             return objectMapper.readValue(new File(fileName), Map.class);
         } catch (FileNotFoundException e) {
@@ -123,14 +122,14 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
+    public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
         return node;
     }
 
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         Map<String, Object> configurationRoot = getConfigurationRoot();
 
 //        if (configurableClass != null)
@@ -151,31 +150,32 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
         commitToGitIfConfigured(path);
 
-        log.info("Configuration updated at path "+path);
+        log.info("Configuration updated at path " + path);
 
     }
 
     private void commitToGitIfConfigured(String path) {
         if (makeGitCommitOnPersist) {
 
-
             try {
                 ProcessBuilder processBuilder = new ProcessBuilder();
 
-                Process process = processBuilder
-                        .command("git", "add", "-A")
+                processBuilder
                         .redirectErrorStream(true)
                         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                        .directory(Paths.get(fileName).getParent().toFile())
-                        .start();
+                        .directory(Paths.get(fileName).getParent().toFile());
 
-                process.waitFor();
+                processBuilder
+                        .command("git", "init")
+                        .start().waitFor();
 
-                process = processBuilder
-                        .command("git", "commit", "-m", "\"Changed path " + path +" \"")
-                        .start();
+                processBuilder
+                        .command("git", "add", "-A")
+                        .start().waitFor();
 
-                 process.waitFor();
+                processBuilder
+                        .command("git", "commit", "-m", "\"Changed path " + path + " \"")
+                        .start().waitFor();
 
 
             } catch (Exception e) {
@@ -190,7 +190,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public void removeNode(String path) throws ConfigurationException {
+    public synchronized void removeNode(String path) throws ConfigurationException {
 
         Map<String, Object> configurationRoot = getConfigurationRoot();
         ConfigNodeUtil.removeNodes(configurationRoot, path);
@@ -199,7 +199,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     }
 
     @Override
-    public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+    public synchronized Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         return ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
     }
 

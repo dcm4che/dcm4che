@@ -48,11 +48,12 @@ import java.io.OutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.DatasetWithFMI;
 import org.dcm4che3.data.SpecificCharacterSet;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.data.Value;
 import org.dcm4che3.util.ByteUtils;
@@ -144,6 +145,10 @@ public class DicomOutputStream extends FilterOutputStream {
         if (encOpts.groupLength)
             dataset.calcLength(encOpts, explicitVR);
         dataset.writeTo(this);
+    }
+
+    public void writeDatasetWithFMI(DatasetWithFMI datasetWithFMI) throws IOException {
+        writeDataset(datasetWithFMI.getFileMetaInformation(), datasetWithFMI.getDataset());
     }
 
     private void switchTransferSyntax(String tsuid) throws IOException {

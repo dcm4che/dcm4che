@@ -54,14 +54,15 @@ import java.util.List;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
+import org.dcm4che3.data.DatasetWithFMI;
 import org.dcm4che3.data.ElementDictionary;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.ItemPointer;
 import org.dcm4che3.data.Sequence;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.SafeClose;
@@ -416,6 +417,24 @@ public class DicomInputStream extends FilterInputStream
         Attributes attrs = new Attributes(9);
         readAttributes(attrs, -1, -1);
         return attrs;
+    }
+
+    /**
+     * @return file meta information and complete dataset
+     */
+    public DatasetWithFMI readDatasetWithFMI() throws IOException {
+        return readDatasetWithFMI(-1, -1);
+    }
+
+    /**
+     * @param len     maximum length to read in bytes, use -1 for no limit
+     * @param stopTag stop reading at the given Tag, use -1 for no stop tag
+     *
+     * @return file meta information and dataset
+     */
+    public DatasetWithFMI readDatasetWithFMI(int len, int stopTag) throws IOException {
+        Attributes dataset = readDataset(len, stopTag);
+        return new DatasetWithFMI(getFileMetaInformation(), dataset);
     }
 
     public Attributes readDataset(int len, int stopTag) throws IOException {

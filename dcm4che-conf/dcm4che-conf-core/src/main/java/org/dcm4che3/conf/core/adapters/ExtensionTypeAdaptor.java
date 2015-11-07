@@ -100,7 +100,7 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Obj
 
             } catch (ClassNotFoundException e) {
                 // noop
-                log.warn("Extension class {} not found", entry.getKey());
+                log.debug("Extension class {} not found", entry.getKey());
             }
         }
 

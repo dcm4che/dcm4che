@@ -43,13 +43,19 @@ import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.ConfigIterators;
-import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
 public class ConfigNodeTraverser {
+
+    private static Logger log = LoggerFactory.getLogger(ConfigNodeTraverser.class);
 
     public interface ConfigNodeTypesafeFilter {
         boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
@@ -176,7 +182,7 @@ public class ConfigNodeTraverser {
                         traverseNodeTypesafe(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter, allExtensionClasses);
 
                 } catch (ClassCastException e) {
-                    DefaultsAndNullFilterDecorator.log.warn("Map is malformed", e);
+                    log.warn("Map is malformed", e);
                 }
 
                 continue;
@@ -193,12 +199,12 @@ public class ConfigNodeTraverser {
                             traverseNodeTypesafe(entry.getValue(), Extensions.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter, allExtensionClasses);
                         } catch (ClassNotFoundException e) {
                             // noop
-                            DefaultsAndNullFilterDecorator.log.warn("Extension class {} not found", entry.getKey());
+                            log.debug("Extension class {} not found, parent node class {} ", entry.getKey(), nodeClass.getName());
                         }
                     }
 
                 } catch (ClassCastException e) {
-                    DefaultsAndNullFilterDecorator.log.warn("Extensions are malformed", e);
+                    log.warn("Extensions are malformed", e);
                 }
 
             }

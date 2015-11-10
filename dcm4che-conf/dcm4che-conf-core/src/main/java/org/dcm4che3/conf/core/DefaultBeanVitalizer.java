@@ -60,6 +60,8 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     private Map<Class, ConfigTypeAdapter> customConfigTypeAdapters = new HashMap<Class, ConfigTypeAdapter>();
     private ConfigTypeAdapter referenceTypeAdapter;
 
+    private ArrayTypeAdapter arrayTypeAdapter = new ArrayTypeAdapter();
+
     @Override
     public void setReferenceTypeAdapter(ConfigTypeAdapter referenceTypeAdapter) {
         this.referenceTypeAdapter = referenceTypeAdapter;
@@ -170,7 +172,7 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
         if (ConfigIterators.isConfigurableClass(clazz))
             adapter = new ReflectiveAdapter();
         else if (clazz.isArray())
-            adapter = new ArrayTypeAdapter();
+            adapter = arrayTypeAdapter;
         else if (clazz.isEnum())
             adapter = DefaultConfigTypeAdapters.get(Enum.class);
         else

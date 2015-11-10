@@ -58,14 +58,14 @@ public class DatasetWithFMI {
     /**
      * @return File meta information, can be null
      */
-    public final Attributes getFileMetaInformation() {
+    public Attributes getFileMetaInformation() {
         return fileMetaInformation;
     }
 
     /**
      * @return dataset, never null
      */
-    public final Attributes getDataset() {
+    public Attributes getDataset() {
         return dataset;
     }
 

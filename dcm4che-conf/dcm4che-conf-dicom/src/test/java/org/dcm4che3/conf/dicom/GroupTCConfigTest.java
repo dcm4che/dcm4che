@@ -83,12 +83,7 @@ public class GroupTCConfigTest {
         ae1.addTransferCapability(new TransferCapability("aRegularTC", UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP, UID.ImplicitVRLittleEndian));
         device.addApplicationEntity(ae1);
 
-        try {
-            config.findDevice("myDevice");
-            config.merge(device);
-        } catch (ConfigurationNotFoundException e) {
-            config.persist(device);
-        }
+        config.merge(device);
 
         // load device and check some tcs
         Device loadedDevice = config.findDevice("myDevice");

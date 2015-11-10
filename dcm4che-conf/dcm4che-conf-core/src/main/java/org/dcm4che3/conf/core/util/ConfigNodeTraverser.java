@@ -58,7 +58,7 @@ public class ConfigNodeTraverser {
     private static Logger log = LoggerFactory.getLogger(ConfigNodeTraverser.class);
 
     public interface ConfigNodeTypesafeFilter {
-        boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException;
+        boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException;
     }
 
     public static class AConfigNodeFilter {
@@ -150,7 +150,7 @@ public class ConfigNodeTraverser {
         for (AnnotatedConfigurableProperty property : properties) {
             Object childNode = containerNode.get(property.getAnnotatedName());
 
-            if (filter.beforeNode(containerNode, property)) continue;
+            if (filter.beforeNode(containerNode, nodeClass, property)) continue;
 
             if (childNode == null) continue;
 

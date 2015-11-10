@@ -196,7 +196,7 @@ public class DicomConfigurationBuilder {
 
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,
-                allExtensions);
+                allExtensions, CommonDicomConfiguration.createDefaultDicomVitalizer());
 
         return configurationStorage;
     }

@@ -354,8 +354,7 @@ public class AuditSuppressCriteria {
 
         for (EventID eventyID : eventIDs) {
             if (eventyID.getCode().equals(o.getCode())
-                 && equals(eventyID.getCodeSystemName(), o.getCodeSystemName())
-                 && equals(eventyID.getCodeSystem(), o.getCodeSystem()))
+                 && equals(eventyID.getCodeSystemName(), o.getCodeSystemName()))
                 return true;
         }
         return false;
@@ -372,8 +371,7 @@ public class AuditSuppressCriteria {
         for (EventTypeCode o : list) {
             for (EventTypeCode eventTypeCode : eventTypeCodes) {
                 if (eventTypeCode.getCode().equals(o.getCode())
-                     && equals(eventTypeCode.getCodeSystemName(), o.getCodeSystemName())
-                     && equals(eventTypeCode.getCodeSystem(), o.getCodeSystem()))
+                     && equals(eventTypeCode.getCodeSystemName(), o.getCodeSystemName()))
                     return true;
             }
         }
@@ -418,8 +416,7 @@ public class AuditSuppressCriteria {
         for (RoleIDCode o : list) {
             for (RoleIDCode roleIDCode : roleIDCodes) {
                 if (roleIDCode.getCode().equals(o.getCode())
-                     && equals(roleIDCode.getCodeSystemName(), o.getCodeSystemName())
-                     && equals(roleIDCode.getCodeSystem(), o.getCodeSystem()))
+                     && equals(roleIDCode.getCodeSystemName(), o.getCodeSystemName()))
                     return true;
             }
         }
@@ -456,7 +453,7 @@ public class AuditSuppressCriteria {
                     a[i].getCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -469,7 +466,7 @@ public class AuditSuppressCriteria {
                     a[i].getCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -482,7 +479,7 @@ public class AuditSuppressCriteria {
                     a[i].getCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -495,7 +492,7 @@ public class AuditSuppressCriteria {
             a[i] = new EventID();
             a[i].setCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }
@@ -507,7 +504,7 @@ public class AuditSuppressCriteria {
             a[i] = new EventTypeCode();
             a[i].setCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }
@@ -519,7 +516,7 @@ public class AuditSuppressCriteria {
             a[i] = new RoleIDCode();
             a[i].setCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }

@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -61,7 +63,6 @@ import org.dcm4che3.audit.Instance;
 import org.dcm4che3.audit.MPPS;
 import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.ParticipantObjectContainsStudy;
-import org.dcm4che3.audit.ParticipantObjectDescription;
 import org.dcm4che3.audit.ParticipantObjectDetail;
 import org.dcm4che3.audit.ParticipantObjectIdentification;
 import org.dcm4che3.audit.SOPClass;
@@ -170,7 +171,7 @@ public class AuditMessages {
         EventID(String code, String codeSystemName, String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -185,11 +186,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -288,7 +284,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -307,20 +303,20 @@ public class AuditMessages {
         }
 
         @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setCodeSystemName(String value) {
             throw new UnsupportedOperationException();
         }
 
     }
 
-    public static final class AuditSourceTypeCode
-            extends org.dcm4che3.audit.AuditSourceTypeCode {
+    public static final class AuditSourceTypeCode {
 
+        private String code;
+
+        private String codeSystemName;
+
+        private String displayName;
+        
         public static final AuditSourceTypeCode EndUserDisplayDevice = 
                 new AuditSourceTypeCode("1");
         public static final AuditSourceTypeCode DataAcquisitionDevice = 
@@ -341,39 +337,19 @@ public class AuditMessages {
                 new AuditSourceTypeCode("9");
 
         public AuditSourceTypeCode(String code) {
-            super.code = code;
+            this.code = code;
         }
 
         public AuditSourceTypeCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
-            super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            this.code = code;
+            this.codeSystemName = codeSystemName;
+            this.displayName = displayName;
         }
-
+        
         @Override
-        public void setCode(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setDisplayName(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystemName(String value) {
-            throw new UnsupportedOperationException();
+        public String toString() {
+            return codeSystemName == null ? code : code+"^"+codeSystemName;
         }
 
     }
@@ -397,7 +373,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -412,11 +388,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -454,7 +425,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -469,11 +440,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -592,7 +558,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -611,17 +577,75 @@ public class AuditMessages {
         }
 
         @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setCodeSystemName(String value) {
             throw new UnsupportedOperationException();
         }
 
     }
 
+    public static final class ParticipantObjectDescription {
+
+        protected List<String> description;
+        protected List<MPPS> mpps;
+        protected List<Accession> accession;
+        protected List<SOPClass> sopClass;
+        protected List<ParticipantObjectContainsStudy> participantObjectContainsStudy;
+        protected Boolean encrypted;
+        protected Boolean anonymized;
+
+        public List<String> getDescriptions() {
+            if (description == null) {
+                description = new ArrayList<String>();
+            }
+            return this.description;
+        }
+        
+        public List<MPPS> getMPPS() {
+            if (mpps == null) {
+                mpps = new ArrayList<MPPS>();
+            }
+            return this.mpps;
+        }
+
+        public List<Accession> getAccession() {
+            if (accession == null) {
+                accession = new ArrayList<Accession>();
+            }
+            return this.accession;
+        }
+
+        public List<SOPClass> getSOPClass() {
+            if (sopClass == null) {
+                sopClass = new ArrayList<SOPClass>();
+            }
+            return this.sopClass;
+        }
+
+        public List<ParticipantObjectContainsStudy> getParticipantObjectContainsStudy() {
+            if (participantObjectContainsStudy == null) {
+                participantObjectContainsStudy = new ArrayList<ParticipantObjectContainsStudy>();
+            }
+            return this.participantObjectContainsStudy;
+        }
+
+        public Boolean isEncrypted() {
+            return encrypted;
+        }
+
+        public void setEncrypted(Boolean value) {
+            this.encrypted = value;
+        }
+
+        public Boolean isAnonymized() {
+            return anonymized;
+        }
+
+        public void setAnonymized(Boolean value) {
+            this.anonymized = value;
+        }
+
+    }
+    
     public static EventIdentification createEventIdentification(
             EventID eventID, String action, Calendar eventDateTime,
             String outcome, String outcomeDescription, org.dcm4che3.audit.EventTypeCode... types) {
@@ -648,7 +672,9 @@ public class AuditMessages {
         ap.setUserIsRequestor(requestor);
         ap.setNetworkAccessPointID(napID);
         ap.setNetworkAccessPointTypeCode(napTypeCode);
-        ap.setMediaType(mediaType);
+        MediaIdentifier media = new MediaIdentifier();
+        media.setMediaType(mediaType);
+        ap.setMediaIdentifier(media);
         for (RoleIDCode roleID : roleIDs)
             ap.getRoleIDCode().add(roleID);
         return ap;
@@ -659,8 +685,11 @@ public class AuditMessages {
         AuditSourceIdentification asi = new AuditSourceIdentification();
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
-        for (AuditSourceTypeCode type : types)
-            asi.getAuditSourceTypeCode().add(type);
+        for (AuditSourceTypeCode type : types) {
+            asi.getAuditSourceTypeCode().add(type.code);
+            asi.setCodeSystemName(type.codeSystemName);
+            asi.setOriginalText(type.displayName);
+        }
         return asi;
    }
 
@@ -677,8 +706,18 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCode(type);
         poi.setParticipantObjectTypeCodeRole(role);
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
-        poi.setParticipantObjectSensitivity(sensitivity);
-        poi.setParticipantObjectDescription(description);
+        poi.setParticipantObjectSensistity(sensitivity);
+        if (description != null) {
+            poi.getParticipantObjectDescription().addAll(description.getDescriptions());
+            poi.setAnonymized(description.isAnonymized());
+            poi.setEncrypted(description.isEncrypted());
+            poi.getAccession().addAll(description.getAccession());
+            poi.getMPPS().addAll(description.getMPPS());
+            if (description.getSOPClass().size() > 0)
+                poi.setSOPClass(description.getSOPClass().get(0));
+            if (description.getParticipantObjectContainsStudy().size() > 0)
+                poi.setParticipantObjectContainsStudy(description.getParticipantObjectContainsStudy().get(0));
+        }
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;
@@ -722,7 +761,9 @@ public class AuditMessages {
     public static ParticipantObjectContainsStudy
             createParticipantObjectContainsStudy(String uid) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
-        study.setUID(uid);
+        StudyIDs studyId = new StudyIDs();
+        studyId.setUID(uid);
+        study.getStudyIDs().add(studyId );
         return study;
     }
 

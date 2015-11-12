@@ -42,8 +42,8 @@ package org.dcm4che3.audit;
 import java.io.StringReader;
 
 import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.ParticipantObjectDescription;
 import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.audit.AuditMessages.ParticipantObjectDescription;
 import org.junit.Test;
 
 /**
@@ -166,7 +166,7 @@ public class AuditMessageTest {
                     AuditMessages.NetworkAccessPointTypeCode.IPAddress,
                     null,
                     AuditMessages.RoleIDCode.Source));
-        msg.getAuditSourceIdentification().add(
+        msg.setAuditSourceIdentification(
                 AuditMessages.createAuditSourceIdentification(
                     "Hospital",
                     "ReadingRoom",

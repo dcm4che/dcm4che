@@ -9,20 +9,28 @@
     <bindings node="//xs:complexType[@name='AuditMessageType']">
       <class name="AuditMessage" />
     </bindings>
-    <bindings node="//xs:complexType[@name='EventIdentificationType']">
+    <bindings node="//xs:complexType[@name='EventIdentificationContents']">
       <class name="EventIdentification" />
     </bindings>
-    <bindings node="//xs:complexType[@name='ActiveParticipantType']">
+    <bindings node="//xs:complexType[@name='ActiveParticipantContents']">
       <class name="ActiveParticipant" />
     </bindings>
-    <bindings node="//xs:complexType[@name='AuditSourceIdentificationType']">
+    <bindings node="//xs:complexType[@name='AuditSourceIdentificationContents']">
       <class name="AuditSourceIdentification" />
     </bindings>
-    <bindings node="//xs:complexType[@name='ParticipantObjectIdentificationType']">
+    <bindings node="//xs:complexType[@name='ParticipantObjectIdentificationContents']">
       <class name="ParticipantObjectIdentification" />
     </bindings>
-    <bindings node="//xs:complexType[@name='ParticipantObjectDescriptionType']">
-      <class name="ParticipantObjectDescription" />
+    <bindings node="//xs:element[@name='MediaIdentifier']">
+      <class name="MediaIdentifier" />
+    </bindings>
+    <bindings node="//xs:element[@name='MediaType']">
+      <class name="MediaType" />
+    </bindings>
+    <bindings node="//xs:attributeGroup[@name='CodedValueType']">
+      <bindings node="xs:attribute[@name='csd-code']">
+        <property name="code"/>
+      </bindings>
     </bindings>
   </bindings>
 </bindings>

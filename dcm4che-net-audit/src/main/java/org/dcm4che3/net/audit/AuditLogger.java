@@ -39,6 +39,7 @@
 package org.dcm4che3.net.audit;
 
 import org.dcm4che3.audit.*;
+import org.dcm4che3.audit.AuditMessages.AuditSourceTypeCode;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -458,15 +459,11 @@ public class AuditLogger extends DeviceExtension {
         for (String code : auditSourceTypeCodes) {
             if (code.equals("dicomPrimaryDeviceType")) {
                 for (String type : device.getPrimaryDeviceTypes()) {
-                    AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                    astc.setCode(type);
-                    astc.setCodeSystemName("DCM");
-                    asi.getAuditSourceTypeCode().add(astc);
+                    AuditSourceTypeCode astc = new AuditSourceTypeCode(type, "DCM", "Dicom device type "+type);
+                    asi.getAuditSourceTypeCode().add(astc.toString());
                 }
             } else {
-                AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                astc.setCode(code);
-                asi.getAuditSourceTypeCode().add(astc);
+                asi.getAuditSourceTypeCode().add(code);
             }
         }
         return asi;

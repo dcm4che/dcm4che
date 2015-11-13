@@ -44,10 +44,8 @@ import org.dcm4che3.tool.common.SimpleHTTPResponse;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
- * 
  */
-
-public class WadoRSResponse extends SimpleHTTPResponse{
+public class WadoRSResponse extends SimpleHTTPResponse {
 
     //map of head and body for each part 
     private Map<String, Path> retrievedInstances;

@@ -20,5 +20,6 @@
     <module>dcm4che-conf-prefs-hl7</module>
     <module>dcm4che-conf-prefs-imageio</module>
     <module>dcm4che-conf-ldap-schema</module>
+    <module>dcm4che-conf-json-schema</module>
   </modules>
 </project>

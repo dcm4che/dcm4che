@@ -1,0 +1,719 @@
+{
+  "title": "Device",
+  "description": "DICOM Device related information",
+  "type": "object",
+  "required": ["dicomDeviceName", "dicomInstalled"],
+  "properties": {
+    "dicomDeviceName": {
+      "title": "Device Name",
+      "description": "",
+      "type": "string"
+    },
+    "dicomInstalled": {
+      "title": "installed",
+      "description": "",
+      "type": "boolean"
+    },
+    "dicomDescription": {
+      "title": "Device Description",
+      "description": "",
+      "type": "string"
+    },
+    "dicomPrimaryDeviceType": {
+      "title": "Primary Device Type",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomManufacturer": {
+      "title": "Manufacturer",
+      "description": "",
+      "type": "string"
+    },
+    "dicomManufacturerModelName": {
+      "title": "Manufacturer Model Name",
+      "description": "",
+      "type": "string"
+    },
+    "dicomSoftwareVersion": {
+      "title": "Software Version",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomStationName": {
+      "title": "Station Name",
+      "description": "",
+      "type": "string"
+    },
+    "dicomDeviceSerialNumber": {
+      "title": "Device Serial Number",
+      "description": "",
+      "type": "string"
+    },
+    "dicomInstitutionName": {
+      "title": "Institution Name",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstitutionCode": {
+      "title": "Institution Code",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstitutionAddress": {
+      "title": "Institution Address",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomInstitutionDepartmentName": {
+      "title": "Institution Department Name",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomIssuerOfPatientID": {
+      "title": "Issuer of Patient ID",
+      "description": "",
+      "type": "string"
+    },
+    "dicomIssuerOfAccessionNumber": {
+      "title": "Issuer of Accession Number",
+      "description": "",
+      "type": "string"
+    },
+    "dicomOrderPlacerIdentifier": {
+      "title": "Order Placer Identifier",
+      "description": "",
+      "type": "string"
+    },
+    "dicomOrderFillerIdentifier": {
+      "title": "Order Filler Identifier",
+      "description": "",
+      "type": "string"
+    },
+    "dicomIssuerOfAdmissionID": {
+      "title": "Issuer of Admission ID",
+      "description": "",
+      "type": "string"
+    },
+    "dicomIssuerOfServiceEpisodeID": {
+      "title": "Issuer of Service Episode ID",
+      "description": "",
+      "type": "string"
+    },
+    "dicomIssuerOfContainerIdentifier": {
+      "title": "Issuer of Container Identifier",
+      "description": "",
+      "type": "string"
+    },
+    "dicomIssuerOfSpecimenIdentifier": {
+      "title": "Issuer of Specimen Identifier",
+      "description": "",
+      "type": "string"
+    },
+    "dicomAuthorizedNodeCertificateReference": {
+      "title": "Authorized Node Certificate Reference",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomThisNodeCertificateReference": {
+      "title": "This Node Certificate Reference",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dicomNetworkConnection": {
+      "title": "Network Connection",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dicomHostname"
+        ],
+        "properties": {
+          "cn": {
+            "title": "Common name",
+            "description": "",
+            "type": "string"
+          },
+          "dicomHostname": {
+            "title": "Hostname",
+            "description": "",
+            "type": "string"
+          },
+          "dicomPort": {
+            "title": "Port",
+            "description": "",
+            "type": "integer"
+          },
+          "dicomTLSCipherSuite": {
+            "title": "TLS CipherSuites",
+            "description": "",
+            "type": "array",
+            "items": {
+              "enum": [
+                "SSL_RSA_WITH_NULL_SHA",
+                "TLS_RSA_WITH_AES_128_CBC_SHA",
+                "SSL_RSA_WITH_3DES_EDE_CBC_SHA"
+              ]
+            }
+          },
+          "dicomInstalled": {
+            "title": "installed",
+            "description": "",
+            "type": "boolean"
+          },
+          "dcmNetworkConnection": {
+            "title": "dcm4che Network Connection",
+            "description": "",
+            "type": "object",
+            "properties": {
+              "dcmProtocol": {
+                "title": "Protocol",
+                "description": "",
+                "enum": [
+                  "DICOM",
+                  "HL7",
+                  "SYSLOG_TLS",
+                  "SYSLOG_UDP"
+                ]
+              },
+              "dcmHTTPProxy": {
+                "title": "HTTP Proxy",
+                "description": "",
+                "type": "string"
+              },
+              "dcmTLSNeedClientAuth": {
+                "title": "TLS Need Client Auth",
+                "description": "",
+                "type": "boolean"
+              },
+              "dcmTLSProtocol": {
+                "title": "TLS Protocol",
+                "description": "",
+                "type": [
+                  "TLSv1",
+                  "SSLv3"
+                ]
+              },
+              "dcmTCPBacklog": {
+                "title": "TCP Backlog",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmTCPConnectTimeout": {
+                "title": "TCP Connect Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmTCPCloseDelay": {
+                "title": "TCP Close Delay",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmTCPSendBufferSize": {
+                "title": "TCP Send Buffer Size",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmTCPReceiveBufferSize": {
+                "title": "TCP Receive Buffer Size",
+                "description": "",
+                "type": "string"
+              },
+              "dcmTCPNoDelay": {
+                "title": "TCP No Delay",
+                "description": "",
+                "type": "boolean"
+              },
+              "dcmBindAddress": {
+                "title": "Bind Address",
+                "description": "",
+                "type": "string"
+              },
+              "dcmClientBindAddress": {
+                "title": "Client Bind Address",
+                "description": "",
+                "type": "string"
+              },
+              "dcmBlacklistedHostname": {
+                "title": "Blacklisted Hostname",
+                "description": "",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "dcmSendPDULength": {
+                "title": "Send PDU Length",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmReceivePDULength": {
+                "title": "Receive PDU Length",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmMaxOpsPerformed": {
+                "title": "Max Ops Performed",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmMaxOpsInvoked": {
+                "title": "Max Ops Invoked",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmPackPDV": {
+                "title": "Pack PDV",
+                "description": "",
+                "type": "boolean"
+              },
+              "dcmAARQTimeout": {
+                "title": "AA-RQ Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmAAACTimeout": {
+                "title": "AA-AC Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmARRPTimeout": {
+                "title": "AR-RP Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmResponseTimeout": {
+                "title": "Response Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmRetrieveTimeout": {
+                "title": "Retrieve Timeout",
+                "description": "",
+                "type": "integer"
+              },
+              "dcmIdleTimeout": {
+                "title": "Idle Timeout",
+                "description": "",
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "dicomNetworkAE": {
+      "title": "Network AE",
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dicomAETitle",
+          "dicomNetworkConnectionReference",
+          "dicomAssociationInitiator",
+          "dicomAssociationAcceptor"
+        ],
+        "properties": {
+          "dicomAETitle": {
+            "title": "AE Title",
+            "description": "",
+            "type": "string"
+          },
+          "dicomNetworkConnectionReference": {
+            "title": "Network Connection Reference",
+            "description": "",
+            "type": "string"
+          },
+          "dicomAssociationInitiator": {
+            "title": "Association Initiator",
+            "description": "",
+            "type": "boolean"
+          },
+          "dicomAssociationAcceptor": {
+            "title": "Association Acceptor",
+            "description": "",
+            "type": "boolean"
+          },
+          "dicomDescription": {
+            "title": "AE Description",
+            "description": "",
+            "type": "string"
+          },
+          "dicomApplicationCluster": {
+            "title": "Application Cluster",
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomPreferredCalledAETitle": {
+            "title": "Preferred Called AE Title",
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomPreferredCallingAETitle": {
+            "title": "Preferred Calling AE Title",
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomSupportedCharacterSet": {
+            "title": "Supported Character Set",
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomInstalled": {
+            "title": "installed",
+            "description": "",
+            "type": "boolean"
+          },
+          "dicomTransferCapability": {
+            "title": "Transfer Capability",
+            "description": "",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "dicomSOPClass",
+                "dicomTransferRole",
+                "dicomTransferSyntax"
+              ],
+              "properties": {
+                "cn": {
+                  "title": "Common name",
+                  "description": "",
+                  "type": "string"
+                },
+                "dicomSOPClass": {
+                  "title": "SOP Class",
+                  "description": "",
+                  "type": "string"
+                },
+                "dicomTransferRole": {
+                  "title": "Transfer Role",
+                  "description": "",
+                  "enum": [
+                    "SCP",
+                    "SCU"
+                  ]
+                },
+                "dicomTransferSyntax": {
+                  "title": "Transfer Syntax",
+                  "description": "",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "dcmTransferCapability": {
+                  "title": "dcm4che Transfer Capability",
+                  "description": "",
+                  "type": "object",
+                  "properties": {
+                    "dcmRelationalQueries": {
+                      "title": "Relational Queries",
+                      "description": "Enable/disable relational queries; disabled if absent",
+                      "type": "boolean"
+                    },
+                    "dcmCombinedDateTimeMatching": {
+                      "title": "Combined Date Time Matching",
+                      "description": "Enable/disable combined date time matching; disabled if absent",
+                      "type": "boolean"
+                    },
+                    "dcmFuzzySemanticMatching": {
+                      "title": "Fuzzy Semantic Matching",
+                      "description": "Enable/disable fuzzy semantic matching of person  names; disabled if absent",
+                      "type": "boolean"
+                    },
+                    "dcmTimezoneQueryAdjustment": {
+                      "title": "Timezone Query Adjustment",
+                      "description": "Enable/disable timezone query adjustment; disabled if absent",
+                      "type": "boolean"
+                    },
+                    "dcmStorageConformance": {
+                      "title": "Storage Conformance",
+                      "description": "Indicates level of Conformance of a Storage SCP",
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1,
+                        2,
+                        3
+                      ]
+                    },
+                    "dcmDigitalSignatureSupport": {
+                      "title": "Digital Signature Support",
+                      "description": "Indicates level of Digital Signature Support of a Storage SCP",
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1,
+                        2,
+                        3
+                      ]
+                    },
+                    "dcmDataElementCoercion": {
+                      "title": "Data Element Coercion",
+                      "description": "Indicates coercion of Data Elements of a Storage SCP",
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1,
+                        2
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "dcmNetworkAE": {
+            "title": "dcm4che Network AE",
+            "description": "",
+            "type": "object",
+            "properties": {
+              "dcmAcceptedCallingAETitle": {
+                "title": "Accepted Calling AE Title",
+                "description": "",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dcmDevice": {
+      "title": "dcm4che Device",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "dcmLimitOpenAssociations": {
+          "title": "Limit Open Associations",
+          "description": "",
+          "type": "integer"
+        },
+        "dcmTrustStoreURL": {
+          "title": "Trust Store URL",
+          "description": "",
+          "type": "string"
+        },
+        "dcmTrustStoreType": {
+          "title": "Trust Store Type",
+          "description": "",
+          "enum": [
+            "JKS",
+            "PKCS12"
+          ]
+        },
+        "dcmTrustStorePin": {
+          "title": "Trust Store Pin",
+          "description": "",
+          "type": "string"
+        },
+        "dcmTrustStorePinProperty": {
+          "title": "Trust Store Pin Property",
+          "description": "",
+          "type": "string"
+        },
+        "dcmKeyStoreURL": {
+          "title": "Key Store URL",
+          "description": "",
+          "type": "string"
+        },
+        "dcmKeyStoreType": {
+          "title": "Key Store Type",
+          "description": "",
+          "enum": [
+            "JKS",
+            "PKCS12"
+          ]
+        },
+        "dcmKeyStorePin": {
+          "title": "Key Store Pin",
+          "description": "",
+          "type": "string"
+        },
+        "dcmKeyStorePinProperty": {
+          "title": "Key Store Pin Property",
+          "description": "",
+          "type": "string"
+        },
+        "dcmKeyStoreKeyPin": {
+          "title": "Key Store Key Pin",
+          "description": "",
+          "type": "string"
+        },
+        "dcmKeyStoreKeyPinProperty": {
+          "title": "Key Store Key Pin Property",
+          "description": "",
+          "type": "string"
+        },
+        "dcmTimeZoneOfDevice": {
+          "title": "Time Zone of Device",
+          "description": "",
+          "type": "string"
+        }
+      }
+    },
+    "hl7Application": {
+      "title": "HL7 Application",
+      "description": "HL7 Application information",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "hl7ApplicationName",
+          "dicomNetworkConnectionReference"
+        ],
+        "properties": {
+          "hl7ApplicationName": {
+            "title": "HL7 Application name",
+            "description": "HL7 Application and Facility name (Application^Facility)",
+            "type": "string"
+          },
+          "dicomNetworkConnectionReference": {
+            "title": "Network Connection Reference",
+            "description": "The JSON Pointers to the Network Connection objects for this HL7 Application",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "hl7AcceptedSendingApplication": {
+            "title": "Accepted Sending Application",
+            "description": "Application^Facility name of accepted Sending Application(s); any if absent",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "hl7AcceptedMessageType": {
+            "title": "Accepted Message Type",
+            "description": "Message Type(s) (MessageType^TriggerEvent) of accepted messages",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "hl7DefaultCharacterSet": {
+            "title": "Default Character Set",
+            "description": "Character Set used to decode received messages if not specified by MSH-18, ASCII if absent",
+            "type": "string"
+          },
+          "dicomInstalled": {
+            "title": "installed",
+            "description": "",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "dcmImageReader": {
+      "title": "Image Reader",
+      "description": "Image Reader information",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dicomTransferSyntax",
+          "dcmIIOFormatName"
+        ],
+        "properties": {
+          "dicomTransferSyntax": {
+            "title": "Transfer Syntax",
+            "description": "",
+            "type": "string"
+          },
+          "dcmIIOFormatName": {
+            "title": "Image IO Reader Format Name",
+            "description": "Image IO Reader Format Name",
+            "type": "string"
+          },
+          "dcmJavaClassName": {
+            "title": "Java Class Name",
+            "description": "Fully qualified Java class or interface name",
+            "type": "string"
+          },
+          "dcmPatchJPEGLS": {
+            "title": "Patch JPEG-LS",
+            "description": "",
+            "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
+          }
+        }
+      }
+    },
+    "dcmImageWriter": {
+      "title": "Image Writer",
+      "description": "Image Writer information",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dicomTransferSyntax",
+          "dcmIIOFormatName"
+        ],
+        "properties": {
+          "dicomTransferSyntax": {
+            "title": "Transfer Syntax",
+            "description": "",
+            "type": "string"
+          },
+          "dcmIIOFormatName": {
+            "title": "Image IO Writer Format Name",
+            "description": "Image IO Writer Format Name",
+            "type": "string"
+          },
+          "dcmJavaClassName": {
+            "title": "Java Class Name",
+            "description": "Fully qualified Java class or interface name",
+            "type": "string"
+          },
+          "dcmPatchJPEGLS": {
+            "title": "Patch JPEG-LS",
+            "description": "",
+            "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
+          },
+          "dcmImageWriteParam": {
+            "title": "Image Write Param",
+            "description": "Image Write Param (name=value)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

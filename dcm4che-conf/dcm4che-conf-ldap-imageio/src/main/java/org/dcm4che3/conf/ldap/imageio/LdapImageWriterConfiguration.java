@@ -95,7 +95,6 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
         LdapUtils.storeNotNull(attrs, "dcmJavaClassName", param.className);
         LdapUtils.storeNotNull(attrs, "dcmPatchJPEGLS", param.patchJPEGLS);
         LdapUtils.storeNotEmpty(attrs, "dcmImageWriteParam", param.getImageWriteParams());
-        LdapUtils.storeNotEmpty(attrs, "dcmWriteIIOMetadata", param.getIIOMetadata());
         return attrs;
     }
 
@@ -125,8 +124,7 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
                                         attrs.get("dcmJavaClassName"), null),
                                         LdapUtils.stringValue(
                                                 attrs.get("dcmPatchJPEGLS"), null),
-                               		LdapUtils.stringArray(attrs.get("dcmImageWriteParam")),
-                               		LdapUtils.stringArray(attrs.get("dcmWriteIIOMetadata"))));
+                               		LdapUtils.stringArray(attrs.get("dcmImageWriteParam"))));
             }
         } finally {
            LdapUtils.safeClose(ne);
@@ -181,8 +179,6 @@ public class LdapImageWriterConfiguration extends LdapDicomConfigurationExtensio
                 prevParam.patchJPEGLS, param.patchJPEGLS);
         LdapUtils.storeDiff(mods, "dcmImageWriteParam",
                 prevParam.getImageWriteParams(), param.getImageWriteParams());
-        LdapUtils.storeDiff(mods, "dcmWriteIIOMetadata",
-                prevParam.getIIOMetadata(), param.getIIOMetadata());
        return mods;
     }
 

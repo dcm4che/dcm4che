@@ -75,23 +75,13 @@ public class ImageWriterFactory implements Serializable {
         public final String className;
         public final PatchJPEGLS patchJPEGLS;
         public final Property[] imageWriteParams;
-        public final Property[] iioMetadata;
 
         public ImageWriterParam(String formatName, String className,
-                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams, Property[] iioMetadata) {
+                PatchJPEGLS patchJPEGLS, Property[] imageWriteParams) {
             this.formatName = formatName;
             this.className = nullify(className);
             this.patchJPEGLS = patchJPEGLS;
             this.imageWriteParams = imageWriteParams;
-            this.iioMetadata = iioMetadata;
-        }
-
-        public ImageWriterParam(String formatName, String className,
-                String patchJPEGLS, String[] imageWriteParams, String[] iioMetadata) {
-            this(formatName, className, patchJPEGLS != null
-                    && !patchJPEGLS.isEmpty() ? PatchJPEGLS
-                    .valueOf(patchJPEGLS) : null, Property
-                    .valueOf(imageWriteParams), Property.valueOf(iioMetadata));
         }
 
         public ImageWriterParam(String formatName, String className,
@@ -99,16 +89,12 @@ public class ImageWriterFactory implements Serializable {
             this(formatName, className, patchJPEGLS != null
                     && !patchJPEGLS.isEmpty() ? PatchJPEGLS
                     .valueOf(patchJPEGLS) : null, Property
-                    .valueOf(imageWriteParams), null);
+                    .valueOf(imageWriteParams));
         }
 
 
         public Property[] getImageWriteParams() {
             return imageWriteParams;
-        }
-
-        public Property[] getIIOMetadata() {
-            return iioMetadata;
         }
     }
 

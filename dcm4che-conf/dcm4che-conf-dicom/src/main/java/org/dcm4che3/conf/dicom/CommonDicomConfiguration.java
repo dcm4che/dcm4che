@@ -39,18 +39,42 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.TCConfiguration;
+import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
-import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.dicom.adapters.*;
+import org.dcm4che3.conf.dicom.adapters.AttributeFormatTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.AuditSimpleTypeAdapters;
+import org.dcm4che3.conf.dicom.adapters.CodeTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.DicomReferenceHandlerAdapter;
+import org.dcm4che3.conf.dicom.adapters.IssuerTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.PropertyTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.ValueSelectorTypeAdapter;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
@@ -61,9 +85,6 @@ import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.cert.X509Certificate;
-import java.util.*;
 
 /**
  * @author Roman K
@@ -119,7 +140,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         DefaultBeanVitalizer defaultBeanVitalizer = createDefaultDicomVitalizer();
 
         // register reference handler
-        defaultBeanVitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage)));
+        defaultBeanVitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(defaultBeanVitalizer, configurationStorage)));
 
         // register DicomConfiguration context
         defaultBeanVitalizer.registerContext(DicomConfiguration.class, this);

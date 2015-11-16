@@ -284,6 +284,10 @@ public class LdapUtils {
         return attr != null ? Integer.parseInt((String) attr.get()) : defVal;
     }
 
+    public static Code codeValue(Attribute attr) throws NamingException {
+        return attr != null ? new Code((String) attr.get()) : null;
+    }
+
     public static int[] intArray(Attribute attr) throws NamingException {
         if (attr == null)
             return ByteUtils.EMPTY_INTS;

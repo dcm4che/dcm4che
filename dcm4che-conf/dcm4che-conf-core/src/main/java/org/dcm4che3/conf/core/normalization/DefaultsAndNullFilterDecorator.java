@@ -39,19 +39,25 @@
  */
 package org.dcm4che3.conf.core.normalization;
 
-import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.dcm4che3.conf.core.DelegatingConfiguration;
+import org.dcm4che3.conf.core.adapters.ArrayTypeAdapter;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 /**
  *
@@ -63,19 +69,21 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
 
     protected List<Class> allExtensionClasses;
-    private BeanVitalizer dummyVitalizer = new DefaultBeanVitalizer();
+    private BeanVitalizer vitalizer;
 
-    public DefaultsAndNullFilterDecorator(Configuration delegate, List<Class> allExtensionClasses) {
+    public DefaultsAndNullFilterDecorator(Configuration delegate, List<Class> allExtensionClasses, BeanVitalizer vitalizer) {
         super(delegate);
         this.allExtensionClasses = allExtensionClasses;
+
+        this.vitalizer = vitalizer;
     }
 
     @Override
-    public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
+    public void persistNode(String path, final Map<String, Object> configNode, final Class configurableClass) throws ConfigurationException {
 
         ConfigNodeTypesafeFilter filterDefaults = new ConfigNodeTypesafeFilter() {
             @Override
-            public boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
                 boolean doDelete = false;
 
@@ -96,11 +104,15 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                         || property.isMap())
                         && ((Map) value).size() == 0) {
                     doDelete = true;
-                } // if that is an empty collection or array
-                else if ((property.isCollection()
-                        || property.isArray())
-                        && ((Collection) value).size() == 0) {
+                } // if that is an empty collection
+                else if ((property.isCollection() && ((Collection) value).size() == 0)) {
                     doDelete = true;
+                } // if that is an array and it equals the default value, then filter it out
+                else if (property.isArray()) {
+                    Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
+                    if (value.equals(defaultNode)) {
+                        doDelete = true;
+                    }
                 }
 
                 if (doDelete)
@@ -123,26 +135,32 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
         ConfigNodeTypesafeFilter applyDefaults = new ConfigNodeTypesafeFilter() {
             @Override
-            public boolean beforeNode(Map<String, Object> containerNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
+            public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException {
 
-                String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
                 // if no value for this property, see if there is default and set it
-                if (!containerNode.containsKey(property.getAnnotatedName()) && !defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
-                    Object normalized = dummyVitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, dummyVitalizer);
-                    containerNode.put(property.getAnnotatedName(), normalized);
-                    return true;
-                }
-                // for null map & extension map - create empty obj
-                else if ((property.isExtensionsProperty() || property.isMap()) &&
-                        containerNode.get(property.getAnnotatedName()) == null) {
-                    containerNode.put(property.getAnnotatedName(), new TreeMap());
-                    return true;
-                }
-                // for null arrays/collections map - create empty arr
-                else if ((property.isCollection() || property.isArray())
-                        && containerNode.get(property.getAnnotatedName()) == null) {
-                    containerNode.put(property.getAnnotatedName(), new ArrayList());
-                    return true;
+                if (!containerNode.containsKey(property.getAnnotatedName())) {
+                    String defaultValue = property.getAnnotation(ConfigurableProperty.class).defaultValue();
+                    if (!defaultValue.equals(ConfigurableProperty.NO_DEFAULT_VALUE)) {
+                        Object normalized = vitalizer.lookupDefaultTypeAdapter(property.getRawClass()).normalize(defaultValue, property, vitalizer);
+                        containerNode.put(property.getAnnotatedName(), normalized);
+                        return true;
+                    }
+                    // for null map & extension map - create empty obj
+                    else if ((property.isExtensionsProperty() || property.isMap())) {
+                        containerNode.put(property.getAnnotatedName(), new TreeMap());
+                        return true;
+                    }
+                    // for null collections - create empty list
+                    else if ((property.isCollection())) {
+                        containerNode.put(property.getAnnotatedName(), new ArrayList());
+                        return true;
+                    }
+                    // for null array - set to default value
+                    else if (property.isArray()) {
+                        Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
+                        containerNode.put(property.getAnnotatedName(), defaultNode);
+                        return true;
+                    }
                 }
 
                 return false;
@@ -154,6 +172,16 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
         if (configurableClass != null && node != null)
             ConfigNodeTraverser.traverseNodeTypesafe(node, configurableClass, applyDefaults, allExtensionClasses);
         return node;
+    }
+
+    private Object getDefaultValueFromClass(Class containerNodeClass, AnnotatedConfigurableProperty property) {
+        Object defaultValueFromClass;
+        try {
+            defaultValueFromClass = PropertyUtils.getSimpleProperty(vitalizer.newInstance(containerNodeClass), property.getName());
+        } catch (ReflectiveOperationException e) {
+            throw new ConfigurationException(e);
+        }
+        return new ArrayTypeAdapter().toConfigNode(defaultValueFromClass, property, vitalizer);
     }
 
 

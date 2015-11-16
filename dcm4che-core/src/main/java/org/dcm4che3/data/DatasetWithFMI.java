@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2011
+ * Portions created by the Initial Developer are Copyright (C) 2011-2015
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,32 +35,59 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4che3.tool.wadors.test;
 
-import java.nio.file.Path;
-import java.util.Map;
-
-import org.dcm4che3.tool.common.SimpleHTTPResponse;
+package org.dcm4che3.data;
 
 /**
- * @author Hesham Elbadawi <bsdreko@gmail.com>
+ * DICOM dataset together with file meta information.
+ *
+ * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
-public class WadoRSResponse extends SimpleHTTPResponse {
+public class DatasetWithFMI {
 
-    //map of head and body for each part 
-    private Map<String, Path> retrievedInstances;
+    private final Attributes fileMetaInformation;
+    private final Attributes dataset;
 
-    public WadoRSResponse(int status, String message) {
-        super(status, message);
-    }
-    
-    public WadoRSResponse(int status, String message, Map<String, Path> instancePaths) {
-        super(status, message);
-        this.retrievedInstances = instancePaths;
+    public DatasetWithFMI(Attributes fileMetaInformation, Attributes dataset) {
+        if (dataset == null)
+            throw new NullPointerException();
+        this.fileMetaInformation = fileMetaInformation;
+        this.dataset = dataset;
     }
 
-    public Map<String, Path> getRetrievedInstance() {
-        return retrievedInstances;
+    /**
+     * @return File meta information, can be null
+     */
+    public Attributes getFileMetaInformation() {
+        return fileMetaInformation;
     }
 
+    /**
+     * @return dataset, never null
+     */
+    public Attributes getDataset() {
+        return dataset;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        DatasetWithFMI that = (DatasetWithFMI) o;
+
+        if (fileMetaInformation != null ? !fileMetaInformation.equals(that.fileMetaInformation) : that.fileMetaInformation != null)
+            return false;
+        return !(dataset != null ? !dataset.equals(that.dataset) : that.dataset != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = fileMetaInformation != null ? fileMetaInformation.hashCode() : 0;
+        result = 31 * result + (dataset != null ? dataset.hashCode() : 0);
+        return result;
+    }
 }

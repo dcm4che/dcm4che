@@ -39,18 +39,42 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
-import org.dcm4che3.conf.api.*;
+import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.api.DicomConfiguration;
+import org.dcm4che3.conf.api.TCConfiguration;
+import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
-import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.LDAP;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.dicom.adapters.*;
+import org.dcm4che3.conf.dicom.adapters.AttributeFormatTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.AuditSimpleTypeAdapters;
+import org.dcm4che3.conf.dicom.adapters.CodeTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.DicomReferenceHandlerAdapter;
+import org.dcm4che3.conf.dicom.adapters.IssuerTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.PropertyTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.ValueSelectorTypeAdapter;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
@@ -61,9 +85,6 @@ import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.security.cert.X509Certificate;
-import java.util.*;
 
 /**
  * @author Roman K
@@ -80,7 +101,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     private Map<Device, Object> readOnlyDevices = Collections.synchronizedMap(new WeakHashMap<Device, Object>());
 
     Configuration config;
-    BeanVitalizer vitalizer;
+    private BeanVitalizer vitalizer;
 
     private final Map<Class, List<Class>> extensionsByClass;
 
@@ -114,28 +135,19 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
         this.config = configurationStorage;
         this.extensionsByClass = extensionsByClass;
-        this.vitalizer = new DefaultBeanVitalizer();
 
+
+        DefaultBeanVitalizer defaultBeanVitalizer = createDefaultDicomVitalizer();
 
         // register reference handler
-        this.vitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(this.vitalizer, configurationStorage)));
-
-        // register DICOM type adapters
-        this.vitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new NullToNullDecorator(new AttributeFormatTypeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(Code.class, new NullToNullDecorator(new CodeTypeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(Issuer.class, new NullToNullDecorator(new IssuerTypeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new NullToNullDecorator(new ValueSelectorTypeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(Property.class, new NullToNullDecorator(new PropertyTypeAdapter()));
-
-        // register audit log type adapters
-        this.vitalizer.registerCustomConfigTypeAdapter(EventTypeCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventTypeCodeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(EventID.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventIDTypeAdapter()));
-        this.vitalizer.registerCustomConfigTypeAdapter(RoleIDCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.RoleIDCodeTypeAdapter()));
+        defaultBeanVitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(defaultBeanVitalizer, configurationStorage)));
 
         // register DicomConfiguration context
-        this.vitalizer.registerContext(DicomConfiguration.class, this);
-        this.vitalizer.registerContext(ConfigurationManager.class, this);
+        defaultBeanVitalizer.registerContext(DicomConfiguration.class, this);
+        defaultBeanVitalizer.registerContext(ConfigurationManager.class, this);
 
+
+        this.vitalizer = defaultBeanVitalizer;
 
         // quick init
         try {
@@ -146,6 +158,25 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         } catch (ConfigurationException e) {
             throw new RuntimeException("Dicom configuration cannot be initialized", e);
         }
+    }
+
+    public static DefaultBeanVitalizer createDefaultDicomVitalizer() {
+        DefaultBeanVitalizer defaultBeanVitalizer = new DefaultBeanVitalizer();
+
+
+        // register DICOM type adapters
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new NullToNullDecorator(new AttributeFormatTypeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(Code.class, new NullToNullDecorator(new CodeTypeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(Issuer.class, new NullToNullDecorator(new IssuerTypeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(ValueSelector.class, new NullToNullDecorator(new ValueSelectorTypeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(Property.class, new NullToNullDecorator(new PropertyTypeAdapter()));
+
+        // register audit log type adapters
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(EventTypeCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventTypeCodeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(EventID.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventIDTypeAdapter()));
+        defaultBeanVitalizer.registerCustomConfigTypeAdapter(RoleIDCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.RoleIDCodeTypeAdapter()));
+
+        return defaultBeanVitalizer;
     }
 
     protected HashMap<String, Object> createInitialConfigRootNode() {

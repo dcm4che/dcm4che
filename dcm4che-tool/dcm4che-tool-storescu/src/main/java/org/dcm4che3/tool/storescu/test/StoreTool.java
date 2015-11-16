@@ -38,16 +38,6 @@
 
 package org.dcm4che3.tool.storescu.test;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.net.*;
-import org.dcm4che3.tool.common.test.TestResult;
-import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.storescu.StoreSCU;
-import org.dcm4che3.util.TagUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -59,6 +49,23 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.DimseRSPHandler;
+import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.net.pdu.AAssociateRQ;
+import org.dcm4che3.tool.common.test.TestResult;
+import org.dcm4che3.tool.common.test.TestTool;
+import org.dcm4che3.tool.storescu.StoreSCU;
+import org.dcm4che3.util.TagUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -88,14 +95,8 @@ public class StoreTool implements TestTool {
     private StoreResult result;
     private long timeStarted;
 
-    /**
-     * @param host
-     * @param port
-     * @param aeTitle
-     * @param baseDirectory
-     * @param device
-     * @param conn
-     */
+    private String implementationClassUID;
+
     public StoreTool(String host, int port, String aeTitle, File baseDirectory, Device device, String sourceAETitle, Connection conn) {
         super();
         this.host = host;
@@ -149,7 +150,10 @@ public class StoreTool implements TestTool {
         });
 
         // configure connection params
-        main.getAAssociateRQ().setCalledAET(aeTitle);
+        AAssociateRQ aAssociateRQ = main.getAAssociateRQ();
+        if (implementationClassUID != null)
+            aAssociateRQ.setImplClassUID(implementationClassUID);
+        aAssociateRQ.setCalledAET(aeTitle);
         main.getRemoteConnection().setHostname(host);
         main.getRemoteConnection().setPort(port);
         //ensure secure connection
@@ -224,6 +228,10 @@ public class StoreTool implements TestTool {
 
     public void setbaseDir(String dir) {
         this.baseDirectory = new File (dir);
+    }
+
+    public void setImplementationClassUID(String implementationClassUID) {
+        this.implementationClassUID = implementationClassUID;
     }
 
 }

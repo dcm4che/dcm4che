@@ -372,7 +372,8 @@
           "dicomNetworkConnectionReference": {
             "title": "Network Connection Reference",
             "description": "JSON Pointers to the Network Connection objects for this AE",
-            "type": "string"
+            "type": "array",
+            "items": { "type": "string" }
           },
           "dicomAssociationInitiator": {
             "title": "Association Initiator",
@@ -731,9 +732,7 @@
           "title": "Network Connection Reference",
           "description": "The JSON Pointers to the Network Connection objects used by this Audit Logger",
           "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "items": { "type": "string" }
         },
         "dcmAuditRecordRepositoryDeviceName": {
           "title": "Audit Record Repository Device Name",
@@ -923,9 +922,7 @@
           "title": "Network Connection Reference",
           "description": "The JSON Pointers to the Network Connection objects of this Audit Record Repository",
           "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "items": { "type": "string" }
         },
         "dicomInstalled": {
           "title": "installed",
@@ -936,4 +933,3 @@
     }
   }
 }
-

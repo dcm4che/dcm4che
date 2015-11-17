@@ -55,7 +55,7 @@ public class WadoRSTool implements TestTool {
     private ArrayList<String> mediaTypesWithTS = new ArrayList<String>();
     private final String url;
     private final File retrieveDir;
-    private TestResult result;
+    private WadoRSResult result;
 
     public WadoRSTool(String url, File retrieveDir) {
         this.url = url;
@@ -81,7 +81,7 @@ public class WadoRSTool implements TestTool {
      *            "application/json", "application/octet-stream",
      *            "image/dicom+jpeg", ...)
      * @param transferSyntax
-     *            optional transfer syntax UID to accept (please note that a
+     *            optional transfer syntax UID to accept (please note that
      *            specifying a transfer syntax UID is not allowed for all media
      *            types)
      */
@@ -107,11 +107,11 @@ public class WadoRSTool implements TestTool {
 
     @Override
     public void init(TestResult resultIn) {
-        this.result = resultIn;
+        this.result = (WadoRSResult) resultIn;
     }
 
     @Override
-    public TestResult getResult() {
+    public WadoRSResult getResult() {
         return this.result;
     }
 

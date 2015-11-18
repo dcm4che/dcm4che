@@ -39,6 +39,7 @@ package org.dcm4che3.conf.ldap;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
@@ -128,6 +129,11 @@ public class LdapUtils {
     public static void storeNotNull(Attributes attrs, String attrID, Object val) {
         if (val != null)
             attrs.put(attrID, LdapUtils.toString(val));
+    }
+
+    public static void storeNotNull(Attributes attrs, String attrID, TimeZone val) {
+        if (val != null)
+            attrs.put(attrID, val.getID());
     }
 
     public static void storeNotDef(Attributes attrs, String attrID, int val, int defVal) {
@@ -263,6 +269,10 @@ public class LdapUtils {
 
     public static String stringValue(Attribute attr, String defVal) throws NamingException {
         return attr != null ? (String) attr.get() : defVal;
+    }
+
+    public static TimeZone timeZoneValue(Attribute attr, TimeZone defVal) throws NamingException {
+        return attr != null ? TimeZone.getTimeZone((String) attr.get()) : defVal;
     }
 
     public static <T extends Enum<T>> T enumValue(Class<T> enumType, Attribute attr, T defVal) throws NamingException {

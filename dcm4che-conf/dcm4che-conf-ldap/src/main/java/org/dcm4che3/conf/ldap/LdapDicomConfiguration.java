@@ -116,15 +116,14 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private String userCertificate = USER_CERTIFICATE_BINARY;
     private boolean extended = true;
 
-    private final List<LdapDicomConfigurationExtension> extensions =
-            new ArrayList<LdapDicomConfigurationExtension>();
+    private final List<LdapDicomConfigurationExtension> extensions = new ArrayList<>();
 
     /**
      * Needed for avoiding infinite loops when dealing with extensions containing circular references
      * e.g., one device extension references another device which has an extension that references the former device.
      * Devices that have been created but not fully loaded are added to this threadlocal. See loadDevice.
      */
-    private ThreadLocal<Map<String,Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String,Device>>();
+    private ThreadLocal<Map<String,Device>> currentlyLoadedDevicesLocal = new ThreadLocal<>();
     
 
     public LdapDicomConfiguration() throws ConfigurationException {
@@ -727,7 +726,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeNotNull(attrs, "dcmKeyStorePinProperty", device.getKeyStorePinProperty());
         LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
         LdapUtils.storeNotNull(attrs, "dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
-        LdapUtils.storeNotNull(attrs, "dcmTimeZoneOfDevice", toTimeZoneString(device.getTimeZoneOfDevice()));        
+        LdapUtils.storeNotNull(attrs, "dcmTimeZoneOfDevice", device.getTimeZoneOfDevice());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(device, attrs);
         return attrs;
@@ -1080,26 +1079,11 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         device.setKeyStoreKeyPin(LdapUtils.stringValue(attrs.get("dcmKeyStoreKeyPin"), null));
         device.setKeyStoreKeyPinProperty(
                 LdapUtils.stringValue(attrs.get("dcmKeyStoreKeyPinProperty"), null));
-        device.setTimeZoneOfDevice(timeZoneOf(
-        	LdapUtils.stringValue(attrs.get("dcmTimeZoneOfDevice"), null)));
+        device.setTimeZoneOfDevice(LdapUtils.timeZoneValue(attrs.get("dcmTimeZoneOfDevice"), null));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadFrom(device, attrs);
     }
 
-    private TimeZone timeZoneOf(String timeZoneID) {
-	if(timeZoneID==null)
-	return null;
-	else
-	return TimeZone.getTimeZone(timeZoneID);
-    }
-
-    private String toTimeZoneString(TimeZone tz)
-    {
-	if(tz==null)
-	    return null;
-	else
-	    return tz.getID();
-    }
     private void loadConnections(Device device, String deviceDN) throws NamingException {
         NamingEnumeration<SearchResult> ne = 
                 search(deviceDN, "(objectclass=dicomNetworkConnection)");

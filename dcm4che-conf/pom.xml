@@ -21,5 +21,6 @@
     <module>dcm4che-conf-prefs-imageio</module>
     <module>dcm4che-conf-ldap-schema</module>
     <module>dcm4che-conf-json-schema</module>
+    <module>dcm4che-conf-json</module>
   </modules>
 </project>

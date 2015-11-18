@@ -189,6 +189,123 @@
           }
         }
       }
+    },
+    "dicomNetworkAE": {
+      "title": "Network AE",
+      "description": "Application entity that provides services on a network",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "dicomAETitle",
+          "dicomNetworkConnectionReference",
+          "dicomAssociationInitiator",
+          "dicomAssociationAcceptor"
+        ],
+        "properties": {
+          "dicomAETitle": {
+            "title": "AE Title",
+            "description": "Unique AE title for this Network AE",
+            "type": "string"
+          },
+          "dicomNetworkConnectionReference": {
+            "title": "Network Connection Reference",
+            "description": "JSON Pointers to the Network Connection objects for this AE",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dicomAssociationInitiator": {
+            "title": "Association Initiator",
+            "description": "True if the Network AE can initiate associations, false otherwise",
+            "type": "boolean"
+          },
+          "dicomAssociationAcceptor": {
+            "title": "Association Acceptor",
+            "description": "True if the Network AE can accept associations, false otherwise",
+            "type": "boolean"
+          },
+          "dicomDescription": {
+            "title": "AE Description",
+            "description": "Unconstrained text description of the application entity",
+            "type": "string"
+          },
+          "dicomApplicationCluster": {
+            "title": "Application Cluster",
+            "description": "Locally defined names for a subset of related applications",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomPreferredCalledAETitle": {
+            "title": "Preferred Called AE Title",
+            "description": "AE Title(s) that are preferred for initiating associations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomPreferredCallingAETitle": {
+            "title": "Preferred Calling AE Title",
+            "description": "AE Title(s) that are preferred for accepting associations",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomSupportedCharacterSet": {
+            "title": "Supported Character Set",
+            "description": "Character Set(s) supported by the Network AE for data sets it receives",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dicomInstalled": {
+            "title": "installed",
+            "description": "True if the AE is installed on network. If not present, information about the installed status of the AE is inherited from the device",
+            "type": "boolean"
+          },
+          "dicomTransferCapability": {
+            "title": "Transfer Capability",
+            "description": "Each transfer capability specifies the SOP class that the Network AE can support, the mode that it can utilize (SCP or SCU), and the Transfer Syntax(es) that it can utilize",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "dicomSOPClass",
+                "dicomTransferRole",
+                "dicomTransferSyntax"
+              ],
+              "properties": {
+                "cn": {
+                  "title": "Name",
+                  "description": "Arbitrary/Meaningful name for the Transfer Capability object",
+                  "type": "string"
+                },
+                "dicomSOPClass": {
+                  "title": "SOP Class",
+                  "description": "SOP Class UID",
+                  "type": "string"
+                },
+                "dicomTransferRole": {
+                  "title": "Transfer Role",
+                  "description": "Either SCU or SCP",
+                  "enum": [ "SCP",  "SCU" ]
+                },
+                "dicomTransferSyntax": {
+                  "title": "Transfer Syntax",
+                  "description": "Transfer syntax(es) that may be requested as an SCU or that are offered as an SCP",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

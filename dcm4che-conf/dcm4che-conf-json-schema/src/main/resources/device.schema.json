@@ -3,6 +3,35 @@
   "description": "DICOM Device related information",
   "type": "object",
   "required": ["dicomDeviceName", "dicomInstalled"],
+  "groups": {
+    "Manufactorer Information": [
+      "dicomManufacturer",
+      "dicomManufacturerModelName",
+      "dicomSoftwareVersion",
+      "dicomDeviceSerialNumber"
+    ],
+    "Organisation": [
+      "dicomStationName",
+      "dicomInstitutionName",
+      "dicomInstitutionCode",
+      "dicomInstitutionAddress",
+      "dicomInstitutionDepartmentName"
+    ],
+    "Issuers": [
+      "dicomIssuerOfPatientID",
+      "dicomIssuerOfAccessionNumber",
+      "dicomOrderPlacerIdentifier",
+      "dicomOrderFillerIdentifier",
+      "dicomIssuerOfAdmissionID",
+      "dicomIssuerOfServiceEpisodeID",
+      "dicomIssuerOfContainerIdentifier",
+      "dicomIssuerOfSpecimenIdentifier"
+    ],
+    "Certificates": [
+      "dicomAuthorizedNodeCertificateReference",
+      "dicomThisNodeCertificateReference"
+    ]
+  },
   "properties": {
     "dicomDeviceName": {
       "title": "Device Name",

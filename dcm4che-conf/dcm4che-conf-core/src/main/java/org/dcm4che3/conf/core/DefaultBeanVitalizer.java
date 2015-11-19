@@ -80,7 +80,6 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
     }
 
     /** Creates a new instance
-     *  TODO: Decorate to allow to use bean manager to init @Inject'ed fields..
      *
      * @param clazz
      * @param <T>

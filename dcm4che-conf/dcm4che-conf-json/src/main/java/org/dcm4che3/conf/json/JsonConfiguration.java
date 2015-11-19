@@ -74,7 +74,22 @@ public class JsonConfiguration {
 
         return true;
     }
-    
+
+    public void writeTo(DeviceInfo deviceInfo, JsonGenerator gen) {
+        gen.writeStartObject();
+        gen.write("dicomDeviceName", deviceInfo.getDeviceName());
+        JsonConfiguration.writeNotNullTo("dicomDescription", deviceInfo.getDescription(), gen);
+        JsonConfiguration.writeNotNullTo("dicomManufacturer", deviceInfo.getManufacturer(), gen);
+        JsonConfiguration.writeNotNullTo("dicomManufacturerModelName", deviceInfo.getManufacturerModelName(), gen);
+        JsonConfiguration.writeNotEmptyTo("dicomSoftwareVersion", deviceInfo.getSoftwareVersions(), gen);
+        JsonConfiguration.writeNotNullTo("dicomStationName", deviceInfo.getStationName(), gen);
+        JsonConfiguration.writeNotEmptyTo("dicomInstitutionDepartmentName",
+                deviceInfo.getInstitutionalDepartmentNames(), gen);
+        JsonConfiguration.writeNotEmptyTo("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes(), gen);
+        gen.write("dicomInstalled", deviceInfo.getInstalled());
+        gen.writeEnd();
+    }
+
     public void writeTo(Device device, JsonGenerator gen) {
         gen.writeStartObject();
         gen.write("dicomDeviceName", device.getDeviceName());

@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+@SuppressWarnings("unchecked")
 public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Object, Object>> {
 
 
@@ -61,7 +62,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Ob
 
         ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             valueAdapter = vitalizer.getReferenceTypeAdapter();
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
@@ -85,7 +86,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Ob
 
         ConfigTypeAdapter<V, Object> valueAdapter;
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             valueAdapter = vitalizer.getReferenceTypeAdapter();
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);
@@ -93,7 +94,9 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Ob
         Map<Object, Object> configNode = new TreeMap<Object, Object>();
 
         for (Entry<K, V> e : object.entrySet()) {
-            configNode.put(keyAdapter.toConfigNode(e.getKey(), keyPseudoProperty, vitalizer),
+            configNode.put(
+                    // always forces toString for keys - so Integers, Booleans, etc will get stringified
+                    String.valueOf(keyAdapter.toConfigNode(e.getKey(), keyPseudoProperty, vitalizer)),
                     valueAdapter.toConfigNode(e.getValue(), valuePseudoProperty, vitalizer));
         }
 
@@ -117,7 +120,7 @@ public class MapTypeAdapter<K, V> implements ConfigTypeAdapter<Map<K, V>, Map<Ob
 
         AnnotatedConfigurableProperty valuePseudoProperty = property.getPseudoPropertyForGenericsParamater(1);
         ConfigTypeAdapter<V, Object> valueAdapter;
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             valueAdapter = vitalizer.getReferenceTypeAdapter();
         else
             valueAdapter = (ConfigTypeAdapter<V, Object>) vitalizer.lookupTypeAdapter(valuePseudoProperty);

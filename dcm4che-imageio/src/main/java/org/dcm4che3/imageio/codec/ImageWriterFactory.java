@@ -38,21 +38,6 @@
 
 package org.dcm4che3.imageio.codec;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.TreeMap;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -64,6 +49,20 @@ import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.TreeMap;
 
 /**
  * Provides Image Writers for different DICOM transfer syntaxes and MIME types.
@@ -246,7 +245,7 @@ public class ImageWriterFactory implements Serializable {
     }
 
     public void init() {
-        if (LOG.isInfoEnabled()) {
+        if (LOG.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Image Writers:\n");
             for (Entry<String, ImageWriterParam> entry : mapTransferSyntaxUIDs.entrySet()) {
@@ -259,7 +258,7 @@ public class ImageWriterFactory implements Serializable {
                 sb.append(' ').append(entry.getKey()).append(": ");
                 sb.append(getImageWriterName(entry.getValue())).append('\n');
             }
-            LOG.info(sb.toString());
+            LOG.debug(sb.toString());
         }
     }
 

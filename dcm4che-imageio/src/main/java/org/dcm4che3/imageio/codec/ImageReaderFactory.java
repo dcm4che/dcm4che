@@ -38,6 +38,19 @@
 
 package org.dcm4che3.imageio.codec;
 
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.util.ResourceLocator;
+import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,20 +62,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
-import org.dcm4che3.conf.core.api.LDAP;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
-import org.dcm4che3.util.ResourceLocator;
-import org.dcm4che3.util.SafeClose;
-import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provides Image Readers for different DICOM transfer syntaxes and MIME types.
@@ -202,7 +201,7 @@ public class ImageReaderFactory implements Serializable {
     }
 
     public void init() {
-        if (LOG.isInfoEnabled()) {
+        if (LOG.isDebugEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append("Image Readers:\n");
             for (Entry<String, ImageReaderParam> entry : mapTransferSyntaxUIDs.entrySet()) {
@@ -215,7 +214,7 @@ public class ImageReaderFactory implements Serializable {
                 sb.append(' ').append(entry.getKey()).append(": ");
                 sb.append(getImageReaderName(entry.getValue())).append('\n');
             }
-            LOG.info(sb.toString());
+            LOG.debug(sb.toString());
         }
     }
 

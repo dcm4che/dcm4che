@@ -713,8 +713,7 @@ public class AuditMessages {
             poi.setEncrypted(description.isEncrypted());
             poi.getAccession().addAll(description.getAccession());
             poi.getMPPS().addAll(description.getMPPS());
-            if (description.getSOPClass().size() > 0)
-                poi.setSOPClass(description.getSOPClass().get(0));
+            poi.getSOPClass().addAll(description.getSOPClass());
             if (description.getParticipantObjectContainsStudy().size() > 0)
                 poi.setParticipantObjectContainsStudy(description.getParticipantObjectContainsStudy().get(0));
         }

@@ -297,7 +297,7 @@
         <xs:sequence>
             <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
             <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
-            <xs:element ref="SOPClass"/>
+            <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
             <xs:element ref="ParticipantObjectContainsStudy"/>
             <xs:element minOccurs="0" ref="Encrypted"/>
             <xs:element minOccurs="0" ref="Anonymized"/>
@@ -382,7 +382,11 @@
         <xs:attribute name="ParticipantObjectTypeCodeRole">
             <xs:simpleType>
                 <xs:restriction base="xs:token">
-                    <xs:enumeration value="1"/>
+                    <xs:enumeration value="1">
+                        <xs:annotation>
+                            <xs:documentation>Patient</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
                     <xs:enumeration value="2">
                         <xs:annotation>
                             <xs:documentation>Location</xs:documentation>

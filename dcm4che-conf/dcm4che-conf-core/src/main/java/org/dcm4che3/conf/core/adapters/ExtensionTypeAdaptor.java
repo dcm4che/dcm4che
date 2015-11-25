@@ -41,6 +41,8 @@
 package org.dcm4che3.conf.core.adapters;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 import org.dcm4che3.conf.core.api.internal.*;
@@ -94,7 +96,7 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Obj
                     }
 
                 // proceed with deserialization
-                vitalizer.configureInstance(extension, (Map<String, Object>) entry.getValue(), extensionClass);
+                new ReflectiveAdapter(extension).fromConfigNode((Map<String, Object>) entry.getValue(), new AnnotatedConfigurableProperty(extensionClass), vitalizer, parent);
 
                 extensionsMap.put(extensionClass, extension);
 

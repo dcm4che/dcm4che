@@ -41,6 +41,7 @@ package org.dcm4che3.conf.core.api.internal;
 
 
 import org.dcm4che3.conf.core.api.ConfigurableClass;
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 
 import java.lang.annotation.Annotation;
@@ -60,6 +61,7 @@ public class ConfigIterators {
      */
 
 
+    private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsAndSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedConfigurableProperty>> configurableFieldsCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedConfigurableProperty>>());
     private static final Map<Class, List<AnnotatedSetter>> configurableSettersCache = Collections.synchronizedMap(new HashMap<Class, List<AnnotatedSetter>>());
     private static final Map<Class, Boolean> isClassConfigurable = Collections.synchronizedMap(new HashMap<Class, Boolean>());
@@ -100,8 +102,15 @@ public class ConfigIterators {
 
 
     public static List<AnnotatedConfigurableProperty> getAllConfigurableFieldsAndSetterParameters(Class clazz) {
-        List<AnnotatedConfigurableProperty> fields = getAllConfigurableFields(clazz);
+
+        if (configurableFieldsAndSettersCache.containsKey(clazz))
+            return configurableFieldsAndSettersCache.get(clazz);
+
+        List<AnnotatedConfigurableProperty> fields = new ArrayList<AnnotatedConfigurableProperty>( getAllConfigurableFields(clazz));
         for (AnnotatedSetter s : getAllConfigurableSetters(clazz)) fields.addAll(s.getParameters());
+
+        configurableFieldsAndSettersCache.put(clazz, fields);
+
         return fields;
     }
 
@@ -136,13 +145,42 @@ public class ConfigIterators {
         return isItForReal;
     }
 
+    public static AnnotatedConfigurableProperty getUUIDPropertyForClass(Class clazz) {
+        for (AnnotatedConfigurableProperty annotatedConfigurableProperty : getAllConfigurableFieldsAndSetterParameters(clazz)) {
+            if (annotatedConfigurableProperty.isUuid())
+                return annotatedConfigurableProperty;
+        }
+        return null;
+    }
+
     private static void processAndCacheAnnotationsForClass(Class clazz) {
         processAnnotatedSetters(clazz);
         processAnnotatedProperties(clazz);
 
 
-        if (clazz.getAnnotation(ConfigurableClass.class) == null)
+        ConfigurableClass configClassAnno = (ConfigurableClass) clazz.getAnnotation(ConfigurableClass.class);
+        if (configClassAnno == null)
             throw new IllegalArgumentException("Class '"+clazz.getName()+"' is not a configurable class. Make sure the a dependency to org.dcm4che.conf.core-api exists.");
+
+        //// safeguards
+
+        // refs vs extensions
+        if (configClassAnno.referable() && ConfigurableClassExtension.class.isAssignableFrom(clazz))
+            throw new IllegalArgumentException("A configurable extension class MUST NOT be referable - violated by class " + clazz.getName());
+
+        // make sure there is at most one UUID and olockHash
+        int uuidProps = 0;
+        int olockProps = 0;
+        for (AnnotatedConfigurableProperty annotatedConfigurableProperty : getAllConfigurableFieldsAndSetterParameters(clazz)) {
+            if (annotatedConfigurableProperty.isUuid()) uuidProps++;
+            if (annotatedConfigurableProperty.isOlockHash()) olockProps++;
+        }
+        if (uuidProps>1)
+            throw new IllegalArgumentException("A configurable class MUST NOT have more than one UUID field - violated by class " + clazz.getName());
+        if (olockProps>1)
+            throw new IllegalArgumentException("A configurable class MUST NOT have more than one optimistic locking hash field - violated by class " + clazz.getName());
+
+
     }
 
 

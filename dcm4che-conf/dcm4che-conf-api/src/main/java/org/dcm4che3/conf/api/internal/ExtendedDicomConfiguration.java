@@ -67,8 +67,6 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
     @Deprecated
     void unregisterAETitle(String aet) throws ConfigurationException;
 
-    Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException;
-
     /**
      * Query for Devices with specified attributes.
      * 

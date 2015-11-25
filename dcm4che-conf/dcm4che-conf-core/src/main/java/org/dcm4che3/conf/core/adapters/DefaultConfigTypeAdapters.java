@@ -305,9 +305,6 @@ public class DefaultConfigTypeAdapters {
         }
 
 
-        public ConfigTypeAdapter getDecorated() {
-            return new NullToNullDecorator(this);
-        }
     }
 
     private static Object getDefaultIfNull(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {

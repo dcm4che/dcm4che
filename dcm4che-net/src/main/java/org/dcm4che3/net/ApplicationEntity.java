@@ -68,7 +68,7 @@ import java.util.*;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 @LDAP(objectClasses = {"dcmNetworkAE", "dicomNetworkAE" }, distinguishingField = "dicomAETitle")
-@ConfigurableClass
+@ConfigurableClass(referable = true)
 public class ApplicationEntity implements Serializable {
 
     private static final long serialVersionUID = 3883790997057469573L;

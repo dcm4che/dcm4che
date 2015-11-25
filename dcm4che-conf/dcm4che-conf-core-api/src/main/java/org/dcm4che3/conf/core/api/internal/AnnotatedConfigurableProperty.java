@@ -113,6 +113,10 @@ public class AnnotatedConfigurableProperty {
     public boolean isUuid() {
         return getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.UUID);
     }
+
+    public boolean isWeakReference() {
+        return getAnnotation(ConfigurableProperty.class).weakReference();
+    }
     ////////////////////////////////////////////
 
     public AnnotatedConfigurableProperty clone(){
@@ -124,18 +128,8 @@ public class AnnotatedConfigurableProperty {
         return property;
     }
 
-    public boolean isArrayOfConfObjects() {
-        return getRawClass().isArray() &&
-                        getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null;
-    }
-
     public Map<Type, Annotation> getAnnotations() {
         return annotations;
-    }
-
-    public boolean isCollectionOfConfObjects() {
-        return Collection.class.isAssignableFrom(getRawClass()) &&
-                        getPseudoPropertyForGenericsParamater(0).getRawClass().getAnnotation(ConfigurableClass.class) != null;
     }
 
     public Type getTypeForGenericsParameter(int genericParameterIndex) {
@@ -252,11 +246,22 @@ public class AnnotatedConfigurableProperty {
         return getRawClass().getAnnotation(ConfigurableClass.class) != null;
     }
 
-
     public boolean isMapOfConfObjects() {
-        return Map.class.isAssignableFrom(getRawClass()) &&
-                !isCollectionOfReferences() &&
-                getPseudoPropertyForGenericsParamater(1).isConfObject() &&
-                !isExtensionsProperty();
+        return Map.class.isAssignableFrom(getRawClass())
+                && getPseudoPropertyForGenericsParamater(1).isConfObject()
+                && !isCollectionOfReferences()
+                && !isExtensionsProperty();
+    }
+
+    public boolean isCollectionOfConfObjects() {
+        return Collection.class.isAssignableFrom(getRawClass())
+                &&  getPseudoPropertyForGenericsParamater(0).getRawClass().getAnnotation(ConfigurableClass.class) != null
+                && !isCollectionOfReferences();
+    }
+
+    public boolean isArrayOfConfObjects() {
+        return getRawClass().isArray()
+                && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
+                && !isCollectionOfConfObjects();
     }
 }

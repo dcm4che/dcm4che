@@ -65,7 +65,7 @@ public class GenericExtensionsTest {
         final SingleJsonFileConfigurationStorage storage = new SingleJsonFileConfigurationStorage("target/config.json");
         storage.persistNode("/", new HashMap<String, Object>(), null);
 
-        final DefaultBeanVitalizer vitalizer = new DefaultBeanVitalizer();
+        final BeanVitalizer vitalizer = new DefaultBeanVitalizer();
         vitalizer.registerContext(ConfigurationManager.class, new ConfigurationManager() {
             @Override
             public BeanVitalizer getVitalizer() {

@@ -45,125 +45,58 @@ import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.adapters.DefaultReferenceAdapter;
+import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.dicom.DicomPath;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
 
+import java.util.Iterator;
 
-public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter<T> {
+
+public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
+
     public DicomReferenceHandlerAdapter(BeanVitalizer vitalizer, Configuration config) {
         super(vitalizer, config);
     }
 
     @Override
-    public T fromConfigNode(String configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
-
-        // Connection of a device. Get the device (it will grab the current one from threadLocal), and get the connection from there
-        if (Connection.class.isAssignableFrom(property.getRawClass())) {
-
-            try {
-                String deviceName = null;
-                try {
-                    PathPattern.PathParser parser = DicomPath.ConnectionByCnRef.parse(configNode);
-                    deviceName = parser.getParam("deviceName");
-                } catch (IllegalArgumentException e) {
-                    //noop
-                }
-
-                try {
-                    PathPattern.PathParser parser = DicomPath.ConnectionByHostPortRef.parse(configNode);
-                    deviceName = parser.getParam("deviceName");
-                } catch (IllegalArgumentException e) {
-                    //noop
-                }
-
-                try {
-                    PathPattern.PathParser parser = DicomPath.ConnectionByHostRef.parse(configNode);
-                    deviceName = parser.getParam("deviceName");
-                } catch (IllegalArgumentException e) {
-                    //noop
-                }
-
-                if (deviceName == null) throw new IllegalArgumentException();
+    protected Object getReferencedConfigurableObject(String uuid, BeanVitalizer vitalizer, AnnotatedConfigurableProperty property) {
 
 
-                Device device = vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
-                Connection conn = (Connection) super.fromConfigNode(configNode, property, vitalizer, parent);
+        // if object already started being loaded - return it
+        Object instanceFromPool = vitalizer.getInstanceFromThreadLocalPoolByUUID(uuid, property.getRawClass());
 
-                return (T) device.connectionWithEqualsRDN(conn);
+        if (instanceFromPool != null) return instanceFromPool;
 
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot load referenced connection (" + configNode + ")", e);
-            }
-        } else if (Device.class.isAssignableFrom(property.getRawClass())) {
-            try {
-
-                PathPattern.PathParser parser = DicomPath.DeviceByNameRef.parse(configNode);
-                String deviceName = parser.getParam("deviceName");
-
-                return (T) vitalizer.getContext(DicomConfiguration.class).findDevice(deviceName);
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot load referenced device (" + configNode + ")", e);
-            }
-        } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
-            try {
-
-                PathPattern.PathParser parser = DicomPath.AEByTitleRef.parse(configNode);
-                String aeName = parser.getParam("aeName");
-
-                return (T) vitalizer.getContext(DicomConfiguration.class).findApplicationEntity(aeName);
-            } catch (Exception e) {
-                throw new ConfigurationException("Cannot load referenced AE (" + configNode + ")", e);
-            }
-
-
-        }
-
-        return super.fromConfigNode(configNode, property, vitalizer, parent);
-    }
-
-    @Override
-    public String toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
-
+        // find corresponding corresponding device
+        Configuration configuration = vitalizer.getContext(ConfigurationManager.class).getConfigurationStorage();
+        Iterator deviceNameIterator = configuration.search(DicomPath.DeviceUUIDByAnyUUID.set("UUID", uuid).path());
+        String deviceUUID;
         try {
-            // Reference connection of connection's device
-            if (Connection.class.isAssignableFrom(property.getRawClass())) {
-
-                Connection conn = (Connection) object;
-                String deviceName = conn.getDevice().getDeviceName();
-
-                if (conn.getCommonName() != null)
-
-                    return DicomPath.ConnectionByCnRef.
-                            set("deviceName", deviceName).
-                            set("cn", conn.getCommonName()).path();
-                else if (conn.isServer())
-                    return DicomPath.ConnectionByHostPortRef.
-                            set("deviceName", deviceName).
-                            set("hostName", conn.getHostname()).
-                            set("port", String.valueOf(conn.getPort())).path();
-                else
-                    return DicomPath.ConnectionByHostRef.
-                            set("deviceName", deviceName).
-                            set("hostName", conn.getHostname()).path();
-            } else if (Device.class.isAssignableFrom(property.getRawClass())) {
-
-                String deviceName = ((Device) object).getDeviceName();
-                return DicomPath.DeviceByNameRef.
-                        set("deviceName", deviceName).path();
-
-            } else if (ApplicationEntity.class.isAssignableFrom(property.getRawClass())) {
-
-                String aeTitle = ((ApplicationEntity) object).getAETitle();
-                return DicomPath.AEByTitleRef.set("aeName", aeTitle).path();
-
-            }
+            deviceUUID = (String) deviceNameIterator.next();
         } catch (Exception e) {
-            throw new ConfigurationException("Cannot create a reference for "+object, e);
+            throw new ConfigurationException("Cannot find a device that contains an object with UUID " + uuid, e);
         }
 
-        return super.toConfigNode(object, property, vitalizer);
+        Device device = vitalizer.getInstanceFromThreadLocalPoolByUUID(deviceUUID, Device.class);
+
+        // create instance and put it into the pool
+        // must be done after checking whether the device is in the pool since the instance might be that device itself
+        Object instance = vitalizer.newInstance(property.getRawClass());
+        vitalizer.registerInstanceInThreadLocalPool(uuid, instance);
+
+
+        // is this device already there?
+        // if yes, then this fresh instance will get populated later when the deserializer gets there (ReflectiveAdapter will find it in the pool)
+        // if no, then trigger then load correspondent device - same will happen - instance will be populated with properties
+        if (device == null) {
+            // call find device
+            vitalizer.getContext(DicomConfiguration.class).findDeviceByUUID(deviceUUID);
+        }
+
+        return instance;
     }
+
 }

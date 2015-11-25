@@ -99,4 +99,6 @@ public class SearchTest {
         Assert.assertTrue(search.next().equals("HL7RCV^DCM4CHEE") || search.next().equals("HL7RCV^DCM4CHEE"));
 
     }
+
+
 }

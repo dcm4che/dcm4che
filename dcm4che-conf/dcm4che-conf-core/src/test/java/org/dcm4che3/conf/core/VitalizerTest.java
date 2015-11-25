@@ -382,7 +382,7 @@ public class VitalizerTest {
     @Test
     public void testBackAndForthTestConfigClass() throws ConfigurationException {
         HashMap<String, Object> testConfigClassNode = getTestConfigClassMap();
-        BeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
+        DefaultBeanVitalizer beanVitalizer = new DefaultBeanVitalizer();
 
         TestConfigClass configuredInstance = beanVitalizer.newConfiguredInstance(testConfigClassNode, TestConfigClass.class);
         Object generatedNode = beanVitalizer.createConfigNodeFromInstance(configuredInstance);

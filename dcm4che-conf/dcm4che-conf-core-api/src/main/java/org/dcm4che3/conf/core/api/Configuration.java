@@ -41,6 +41,7 @@ package org.dcm4che3.conf.core.api;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Denotes a configuration source. Can be used by BeanVitalizer that creates POJOs, or configuration administration app that provides UI to edit configuration.
@@ -75,10 +76,13 @@ public interface Configuration extends BatchRunner {
     String OLOCK_HASH_KEY = "_.hash";
 
     /**
-     * A special property key that indicates that this property is a reference
-     * to a node with uuid that equals to the property's value
+     * A special property key that indicates that the container of this property is a reference
+     * to a node with uuid that equals to the property's value.
+     * Additionally if WEAK_REFERENCE_KEY:true is defined in the container node,
+     * this reference is considered to be a weak reference ({@link ConfigurableProperty#weakReference()})
      */
     String REFERENCE_KEY = "_.ref";
+    String WEAK_REFERENCE_KEY = "weakReference";
 
     enum ConfigStorageType {
         JSON_FILE,
@@ -155,4 +159,10 @@ public interface Configuration extends BatchRunner {
      */
     void lock();
 
+
+    class NodeFactory {
+        public static Map<String,Object> emptyNode() {
+            return new TreeMap<String, Object>();
+        }
+    }
 }

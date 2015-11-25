@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 @LDAP(objectClasses = {"dicomNetworkConnection", "dcmNetworkConnection"})
-@ConfigurableClass
+@ConfigurableClass(referable = true)
 public class Connection implements Serializable {
 
     private static final long serialVersionUID = -7814748788035232055L;

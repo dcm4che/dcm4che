@@ -74,7 +74,7 @@ import java.util.concurrent.TimeUnit;
 @LDAP(
         objectClasses = {"dcmDevice", "dicomDevice"},
         distinguishingField = "dicomDeviceName")
-@ConfigurableClass
+@ConfigurableClass(referable = true)
 public class Device implements Serializable {
 
     private static final long serialVersionUID = -5816872456184522866L;

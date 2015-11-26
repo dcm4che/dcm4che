@@ -72,6 +72,8 @@ import java.util.concurrent.TimeUnit;
 @ConfigurableClass
 public class AuditLogger extends DeviceExtension {
 
+    private static final String DICOM_PRIMARY_DEVICE_TYPE = "dicomPrimaryDeviceType";
+
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
     public enum SendStatus {
@@ -232,6 +234,9 @@ public class AuditLogger extends DeviceExtension {
 
     @ConfigurableProperty(name = "dcmAuditMessageFormatXML", defaultValue = "false")
     private boolean formatXML;
+
+    @ConfigurableProperty(name = "dcmAuditMessageRFC3881Schema", defaultValue = "false")
+    private boolean rcf3881;
 
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean auditLoggerInstalled;
@@ -456,14 +461,22 @@ public class AuditLogger extends DeviceExtension {
             } else
                 asi.setAuditEnterpriseSiteID(auditEnterpriseSiteID);
         }
-        for (String code : auditSourceTypeCodes) {
-            if (code.equals("dicomPrimaryDeviceType")) {
-                for (String type : device.getPrimaryDeviceTypes()) {
-                    AuditSourceTypeCode astc = new AuditSourceTypeCode(type, "DCM", "Dicom device type "+type);
-                    asi.getAuditSourceTypeCode().add(astc.toString());
+        if (auditSourceTypeCodes.length > 0) {
+            if (!auditSourceTypeCodes[0].equals(DICOM_PRIMARY_DEVICE_TYPE))
+                asi.setCode(auditSourceTypeCodes[0]);
+            for (int i = 1 ; i < auditSourceTypeCodes.length ; i++) {
+                if (auditSourceTypeCodes[i].equals(DICOM_PRIMARY_DEVICE_TYPE)) {
+                    for (String type : device.getPrimaryDeviceTypes()) {
+                        asi.getAuditSourceTypeCode().add(type+"^DCM");
+                        if (asi.getCode() == null) {
+                            asi.setCode(type);
+                            asi.setCodeSystemName("DCM");
+                            asi.setOriginalText("Dicom device type "+type);
+                        }
+                    }
+                } else {
+                    asi.getAuditSourceTypeCode().add(auditSourceTypeCodes[i]);
                 }
-            } else {
-                asi.getAuditSourceTypeCode().add(code);
             }
         }
         return asi;
@@ -518,6 +531,14 @@ public class AuditLogger extends DeviceExtension {
 
     public final void setFormatXML(boolean formatXML) {
         this.formatXML = formatXML;
+    }
+
+    public boolean isRcf3881() {
+        return rcf3881;
+    }
+
+    public void setRcf3881(boolean rcf3881) {
+        this.rcf3881 = rcf3881;
     }
 
     public boolean isInstalled() {
@@ -1058,7 +1079,11 @@ public class AuditLogger extends DeviceExtension {
             try {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
-                AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                if (!rcf3881) {
+                    AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                } else {
+                    AuditMessages.toRFC3881XML(msg, builder, formatXML, encoding, schemaURI);
+                }
             } catch (IOException e) {
                 assert false : e;
             }

@@ -53,6 +53,14 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che3.audit.Accession;
 import org.dcm4che3.audit.ActiveParticipant;
@@ -73,6 +81,7 @@ import org.dcm4che3.audit.SOPClass;
  */
 public class AuditMessages {
 
+    private static final String TO_RFC3881_XSL = "dicom2rfc3881.xsl";
     private static final Pattern IP4 =
             Pattern.compile("\\d+(\\.\\d+){3}");
     private static final Pattern IP6 =
@@ -685,10 +694,13 @@ public class AuditMessages {
         AuditSourceIdentification asi = new AuditSourceIdentification();
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
-        for (AuditSourceTypeCode type : types) {
-            asi.getAuditSourceTypeCode().add(type.code);
-            asi.setCodeSystemName(type.codeSystemName);
-            asi.setOriginalText(type.displayName);
+        if (types.length > 0) {
+            asi.setCode(types[0].code);
+            asi.setCodeSystemName(types[0].codeSystemName);
+            asi.setOriginalText(types[0].displayName);
+            for (int i = 1 ; i < types.length ; i++) {
+                asi.getAuditSourceTypeCode().add(types[i].toString());
+            }
         }
         return asi;
    }
@@ -815,6 +827,32 @@ public class AuditMessages {
             if (jbe.getLinkedException() instanceof IOException)
                 throw (IOException) jbe.getLinkedException();
             throw new IllegalStateException(jbe);
+        }
+    }
+
+    public static void toRFC3881XML(AuditMessage message, OutputStream os,
+            boolean format, String encoding, String schemaURI)
+            throws IOException {
+        try {
+            
+            TransformerFactory tf = TransformerFactory.newInstance();
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            StreamSource xslt = new StreamSource(cl.getResource(TO_RFC3881_XSL).toString());
+            Transformer transformer = tf.newTransformer(xslt);
+            JAXBSource source = new JAXBSource(jc, of.createAuditMessage(message));
+            StreamResult result = new StreamResult(os);
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.INDENT, format ? "yes" : "no");
+            transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
+            transformer.transform(source, result);
+        } catch( JAXBException jbe ){
+            if (jbe.getLinkedException() instanceof IOException)
+                throw (IOException) jbe.getLinkedException();
+            throw new IllegalStateException(jbe);
+        } catch (TransformerConfigurationException e) {
+            throw new IOException(e.getMessageAndLocation(), e);
+        } catch (TransformerException e) {
+            throw new IOException(e.getMessageAndLocation(), e);
         }
     }
 

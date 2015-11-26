@@ -40,6 +40,7 @@
 package org.dcm4che3.conf.core.adapters;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.ConfigurationUnserializableException;
@@ -82,19 +83,13 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
         if (!Map.class.isAssignableFrom(configNode.getClass()))
             throw new ConfigurationException("Provided configuration node is not a map (type " + clazz.getName() + ")");
 
-
         T confObj;
-
         // create instance or use provided when it was created for us
-        if (providedConfObj == null) {
-            try {
-                confObj = vitalizer.newInstance(clazz);
-            } catch (Exception e) {
-                throw new ConfigurationException("Error while instantiating config class " + clazz.getSimpleName()
-                        + ". Check whether null-arg constructor exists.", e);
-            }
-        } else
+        if (providedConfObj != null)
             confObj = providedConfObj;
+        else
+            confObj = getRelevantConfigurableInstance(configNode, vitalizer, clazz);
+
 
         // iterate and populate annotated fields
         for (AnnotatedConfigurableProperty fieldProperty : ConfigIterators.getAllConfigurableFields(clazz))
@@ -102,7 +97,7 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, vitalizer, confObj);
                 PropertyUtils.setSimpleProperty(confObj, fieldProperty.getName(), fieldValue);
             } catch (Exception e) {
-                throw new ConfigurationException("Error while reading configuration property '" + fieldProperty.getAnnotatedName() + "' (field "+fieldProperty.getName()+") in class " + clazz.getSimpleName(), e);
+                throw new ConfigurationException("Error while reading configuration property '" + fieldProperty.getAnnotatedName() + "' (field " + fieldProperty.getName() + ") in class " + clazz.getSimpleName(), e);
             }
 
         // iterate over setters
@@ -117,8 +112,50 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 // invoke setter
                 setter.getMethod().invoke(confObj, args);
             } catch (Exception e) {
-                throw new ConfigurationException("Error while trying to initialize the object with method '" + setter.getMethod().getName()+"'", e);
+                throw new ConfigurationException("Error while trying to initialize the object with method '" + setter.getMethod().getName() + "'", e);
             }
+        }
+
+        return confObj;
+    }
+
+    /**
+     * Either
+     * <ul>
+     * <li> uses the existing instance with this UUID from the pool </li>
+     * <li> creates new instance </li>
+     * </ul>
+     */
+    private static <T> T getRelevantConfigurableInstance(Map<String, Object> configNode, BeanVitalizer vitalizer, Class<T> clazz) {
+
+        String uuid = null;
+        try {
+            uuid = (String) configNode.get(Configuration.UUID_KEY);
+        } catch (Exception e) {
+            throw new ConfigurationException("UUID is malformed: " + configNode.get(Configuration.UUID_KEY));
+        }
+
+        // try to get from the pool
+        if (uuid != null) {
+
+            T instanceFromThreadLocalPoolByUUID = vitalizer.getInstanceFromThreadLocalPoolByUUID(uuid, clazz);
+
+            if (instanceFromThreadLocalPoolByUUID != null)
+                return instanceFromThreadLocalPoolByUUID;
+        }
+
+        T confObj;
+        try {
+            confObj = vitalizer.newInstance(clazz);
+        } catch (Exception e) {
+            throw new ConfigurationException("Error while instantiating config class " + clazz.getSimpleName()
+                    + ". Check whether null-arg constructor exists.", e);
+        }
+
+        // if uuid is defined, put into pool
+        if (uuid != null) {
+            // need to add this fresh instance to the pool
+            vitalizer.registerInstanceInThreadLocalPool(uuid, confObj);
         }
 
         return confObj;
@@ -193,9 +230,9 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
                 childPropertyMetadata.put("tags", configurableChildProperty.getTags());
 
             if (includeOrder)
-                childPropertyMetadata.put("uiOrder",propertyAnnotation.order());
+                childPropertyMetadata.put("uiOrder", propertyAnnotation.order());
 
-            childPropertyMetadata.put("uiGroup",propertyAnnotation.group());
+            childPropertyMetadata.put("uiGroup", propertyAnnotation.group());
 
             // also merge in the metadata from this child itself
             Map<String, Object> childMetaData = childAdapter.getSchema(configurableChildProperty, vitalizer);

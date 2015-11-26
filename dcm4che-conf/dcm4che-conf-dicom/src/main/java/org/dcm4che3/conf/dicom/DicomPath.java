@@ -57,22 +57,26 @@ public enum DicomPath {
     AllAETitles,
     DeviceNameByHL7AppName,
     AllHL7AppNames,
-    UniqueAETByName,
     ConfigRoot,
     DeviceByName,
-    AEExtension,
-    DeviceExtension,
-    HL7AppExtension,
+    TCGroups,
+    AllTCsOfAllAEsWithTCGroupExt,
+    DeviceNameByAEUUID,
+    DeviceNameByUUID,
+    DeviceUUIDByAnyUUID,
+
+
+    // obsolete/deprecated
+    UniqueAETByName,
     UniqueHL7AppByName,
     DeviceByNameRef,
     ConnectionByCnRef,
     ConnectionByHostRef,
     ConnectionByHostPortRef,
-    TCGroups,
-    AllTCsOfAllAEsWithTCGroupExt,
     AEByTitleRef,
-    DeviceNameByAEUUID,
-    DeviceNameByUUID;
+    AEExtension,
+    DeviceExtension,
+    HL7AppExtension;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -80,13 +84,6 @@ public enum DicomPath {
     static {
         // search
         PATHS.put(/**************/AllAETitles, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dicomAETitle | /dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE/*/dcmAETitleAliases");
-
-        // Note: I tried combining DeviceNameByAEName and DeviceNameByAENameAlias into one XPath like this:
-        // /dicomConfigurationRoot/dicomDevicesRoot/storescp[dicomNetworkAE[@name='{aeName}'] | dicomNetworkAE[*/dcmAETitleAliases='{aeName}']]/dicomDeviceName
-        // but it didn't work for AEs that did not have aliases defined at all.
-        // Strange thing, e.g. this seems to work: /dicomConfigurationRoot/dicomDevicesRoot/storescp[dicomNetworkAE[@name='STORESCP'] | dicomNetworkAE[*/dcmAETitleAliases='STORESCP']]/dicomDeviceName
-        // but this doesn't: /dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='STORESCP'] | dicomNetworkAE[*/dcmAETitleAliases='STORESCP']]/dicomDeviceName
-        // (in the case that there is no alias defined at all for the AE STORESCP)
 
         PATHS.put(/*******/DeviceNameByAEName, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[@name='{aeName}']]/dicomDeviceName");
         PATHS.put(/**/DeviceNameByAENameAlias, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE[*/dcmAETitleAliases='{aeNameAlias}']]/dicomDeviceName");
@@ -96,6 +93,9 @@ public enum DicomPath {
         PATHS.put(/***/DeviceNameByHL7AppName, "/dicomConfigurationRoot/dicomDevicesRoot/*[deviceExtensions/HL7DeviceExtension/hl7Apps/*[hl7ApplicationName='{hl7AppName}']]/dicomDeviceName");
         PATHS.put(/*******/DeviceNameByAEUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomNetworkAE/*[_.uuid='{aeUUID}']]/dicomDeviceName");
         PATHS.put(/*********/DeviceNameByUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[_.uuid='{deviceUUID}']/dicomDeviceName");
+
+        // Get device UUID of a device that contains (or itself is) an object with the specified UUID
+        PATHS.put(/******/DeviceUUIDByAnyUUID, "/dicomConfigurationRoot/dicomDevicesRoot/*[.//_.uuid='{UUID}']/_.uuid");
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
@@ -109,6 +109,7 @@ public enum DicomPath {
         // references (parsable, will be stored this way)
         PATHS.put(/*************/AEByTitleRef, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE[dicomAETitle='{aeName}']");
         PATHS.put(/**********/DeviceByNameRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']");
+
         PATHS.put(/********/ConnectionByCnRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[cn='{cn}']");
         PATHS.put(/******/ConnectionByHostRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}']");
         PATHS.put(/**/ConnectionByHostPortRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}' and dicomPort='{port}']");

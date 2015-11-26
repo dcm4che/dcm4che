@@ -58,8 +58,6 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
         super(configurationStorage, extensionsByClass);
     }
 
-    Collection<Class<? extends HL7ApplicationExtension>> hl7ApplicationExtensionClasses;
-
 
     @Override
     public boolean registerHL7Application(String name) throws ConfigurationException {

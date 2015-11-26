@@ -38,55 +38,24 @@
  *  ***** END LICENSE BLOCK *****
  */
 
-package org.dcm4che3.conf.dicom;
+package org.dcm4che3.conf.core;
 
-
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.dicom.configclasses.SomeDeviceExtension;
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Device;
+import org.dcm4che3.conf.core.api.Path;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Created by aprvf on 08.07.2015.
+ * @author Roman K
  */
-public class ReferencesTest {
+public class TypeSafeConfigurationTest {
 
     @Test
-    public void testAEReferenvce() throws ConfigurationException {
-
-        CommonDicomConfigurationWithHL7 commonDicomConfiguration = SimpleStorageTest.createCommonDicomConfiguration();
-
-        commonDicomConfiguration.purgeConfiguration();
-
-        Device oneDeviceWithAE = new Device("oneDeviceWithAE");
-        ApplicationEntity myAE = new ApplicationEntity("myAE");
-        oneDeviceWithAE.addApplicationEntity(myAE);
-
-        SomeDeviceExtension someDeviceExtension = new SomeDeviceExtension();
-        someDeviceExtension.setReferencedEntity(myAE);
-        oneDeviceWithAE.addDeviceExtension(someDeviceExtension);
-
-        Device anotherDeviceWithRef = new Device("anotherDeviceWithRef");
-        SomeDeviceExtension ext = new SomeDeviceExtension();
-        ext.setReferencedEntity(myAE);
-        anotherDeviceWithRef.addDeviceExtension(ext);
-
-
-        commonDicomConfiguration.persist(anotherDeviceWithRef);
-        commonDicomConfiguration.persist(oneDeviceWithAE);
-
-        Device loaded = commonDicomConfiguration.findDevice("anotherDeviceWithRef");
-
-        Device loadedWithSelfRef = commonDicomConfiguration.findDevice("oneDeviceWithAE");
-
-        ApplicationEntity referencedEntity = loaded.getDeviceExtension(SomeDeviceExtension.class).getReferencedEntity();
-        Assert.assertEquals(referencedEntity.getAETitle(), "myAE");
-
-        ApplicationEntity referencedEntity1 = loadedWithSelfRef.getDeviceExtension(SomeDeviceExtension.class).getReferencedEntity();
-        Assert.assertEquals(referencedEntity1.getAETitle(), "myAE");
-
+    public void simple() {
+        Assert.assertEquals(
+                new Path("dicomConfigurationRoot", "dicomDevicesRoot", "dcm4chee-arc").toSimpleEscapedXPath(),
+                "/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee-arc"
+        );
 
     }
+
 }

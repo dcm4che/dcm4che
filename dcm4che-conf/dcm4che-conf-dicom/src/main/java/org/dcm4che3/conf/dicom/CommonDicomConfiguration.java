@@ -124,14 +124,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         return list;
     }
 
-    /**
-     * Needed for avoiding infinite loops when dealing with extensions containing circular references
-     * e.g., one device extension references another device which has an extension that references the former device.
-     * Devices that have been created but not fully loaded are added to this threadlocal. See findDevice.
-     */
-    private final ThreadLocal<Map<String, Device>> currentlyLoadedDevicesLocal = new ThreadLocal<Map<String, Device>>();
-
-
     public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
         this.config = configurationStorage;
         this.extensionsByClass = extensionsByClass;
@@ -382,53 +374,22 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     public Device findDevice(String name) throws ConfigurationException {
         if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
-        // get the device cache for this loading phase
-        Map<String, Device> deviceCache = currentlyLoadedDevicesLocal.get();
-
-        // if there is none, create one for the current thread and remember that it should be cleaned up when the device is loaded
-        boolean doCleanUpCache = false;
-        if (deviceCache == null) {
-            doCleanUpCache = true;
-            deviceCache = new HashMap<String, Device>();
-            currentlyLoadedDevicesLocal.set(deviceCache);
-        }
-
-        // if a requested device is already being (was) loaded, do not load it again, just return existing Device object
-        if (deviceCache.containsKey(name))
-            return deviceCache.get(name);
-
         try {
+            Object deviceConfigurationNode = config.getConfigurationNode(deviceRef(name), Device.class);
+            if (deviceConfigurationNode == null)
+                throw new ConfigurationNotFoundException("Device " + name + " not found");
 
-            Device device;
-            try {
-                Object deviceConfigurationNode = config.getConfigurationNode(deviceRef(name), Device.class);
-                device = vitalizeDevice(name, deviceCache, deviceConfigurationNode);
-            } catch (Exception e) {
-                throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
-            }
+            Device device = vitalizer.newConfiguredInstance((Map<String, Object>) deviceConfigurationNode, Device.class);
 
-            if (device == null) throw new ConfigurationNotFoundException("Device " + name + " not found");
+            // perform alternative TC init in case an extension is present
+            new AlternativeTCLoader(this).initGroupBasedTCs(device);
+
             return device;
-
-        } finally {
-            // if this loadDevice call initialized the cache, then clean it up
-            if (doCleanUpCache) currentlyLoadedDevicesLocal.remove();
+        } catch (ConfigurationNotFoundException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
         }
-    }
-
-    @Override
-    public Device vitalizeDevice(String name, Map<String, Device> deviceCache, Object deviceConfigurationNode) throws ConfigurationException {
-        if (deviceConfigurationNode == null) return null;
-
-        Device device = new Device();
-        deviceCache.put(name, device);
-
-        vitalizer.configureInstance(device, (Map<String, Object>) deviceConfigurationNode, Device.class);
-
-        // perform alternative TC init in case an extension is present
-        new AlternativeTCLoader(this).initGroupBasedTCs(device);
-
-        return device;
     }
 
     @Override

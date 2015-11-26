@@ -51,6 +51,7 @@ import org.dcm4che3.conf.core.validation.ValidationException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 
@@ -304,9 +305,6 @@ public class DefaultConfigTypeAdapters {
         }
 
 
-        public ConfigTypeAdapter getDecorated() {
-            return new NullToNullDecorator(this);
-        }
     }
 
     private static Object getDefaultIfNull(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
@@ -465,7 +463,7 @@ public class DefaultConfigTypeAdapters {
         defaultTypeAdapters.put(Enum.class, new NullToNullDecorator(new EnumTypeAdapter()));
 
         defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeZoneTypeAdapter()));
-        defaultTypeAdapters.put(TimeZone.class, new NullToNullDecorator(new TimeUnitTypeAdapter()));
+        defaultTypeAdapters.put(TimeUnit.class, new NullToNullDecorator(new TimeUnitTypeAdapter()));
 
     }
 

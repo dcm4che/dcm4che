@@ -39,6 +39,7 @@
  */
 package org.dcm4che3.conf.dicom;
 
+import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
@@ -53,10 +54,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman K
@@ -69,6 +67,25 @@ public class SimpleStorageTest {
         CommonDicomConfigurationWithHL7 configurationWithHL7 = createCommonDicomConfiguration();
         return configurationWithHL7.getConfigurationStorage();
     }
+
+    public static CommonDicomConfigurationWithHL7 createCommonDicomConfiguration(List<ConfigurableClassExtension> extensions) throws ConfigurationException {
+        if (System.getProperty("org.dcm4che.conf.filename") == null)
+            System.setProperty("org.dcm4che.conf.filename", "target/config.json");
+
+
+        DicomConfigurationBuilder builder = DicomConfigurationBuilder.newConfigurationBuilder(System.getProperties());
+        builder.registerDeviceExtension(HL7DeviceExtension.class);
+        builder.registerAEExtension(TCGroupConfigAEExtension.class);
+        builder.registerDeviceExtension(SomeDeviceExtension.class);
+
+        for (ConfigurableClassExtension extension : extensions) {
+            builder.registerExtensionForBaseExtension(extension.getClass(), extension.getBaseClass());
+        }
+
+        return builder.build();
+
+    }
+
 
     public static CommonDicomConfigurationWithHL7 createCommonDicomConfiguration() throws ConfigurationException {
         if (System.getProperty("org.dcm4che.conf.filename") == null)
@@ -110,16 +127,15 @@ public class SimpleStorageTest {
 
         DeepEqualsDiffer.assertDeepEquals("Stored config node must be equal to the one loaded", p3, xCfg.getConfigurationNode("/", null));
 
-        xCfg.persistNode("/p2/newProp",p1,null);
+        xCfg.persistNode("/p2/newProp", p1, null);
 
         xCfg.removeNode("/p2/prop11");
 
         Iterator search = xCfg.search("/*[contains(prop2,'I am ')]");
-         Object o = search.next();
+        Object o = search.next();
         DeepEqualsDiffer.assertDeepEquals("Search should work. ", o, p1);
 
     }
-
 
 
     @Test
@@ -135,7 +151,6 @@ public class SimpleStorageTest {
         Configuration xCfg = getConfigurationStorage();
 
         // serialize to confignode
-
 
 
         Map<String, Object> pd = new HashMap<String, Object>();
@@ -155,7 +170,7 @@ public class SimpleStorageTest {
 
         xCfg.persistNode("/", p3, null);
 
-        Assert.assertEquals(xCfg.search("/dicomConfigurationRoot/dicomDevicesRoot/device1/_prop").next().toString(),"hey");
+        Assert.assertEquals(xCfg.search("/dicomConfigurationRoot/dicomDevicesRoot/device1/_prop").next().toString(), "hey");
 
     }
 }

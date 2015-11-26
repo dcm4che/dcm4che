@@ -51,4 +51,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ConfigurableClass {
+    /**
+     * Marks this class as a potential target for references.
+     * All reference target classes MUST be marked with this annotation property.
+     * A referable class MUST NOT be an extension class (i.e. MUST NOT extend {@link org.dcm4che3.conf.core.api.ConfigurableClassExtension}).
+     */
+    boolean referable() default false;
 }

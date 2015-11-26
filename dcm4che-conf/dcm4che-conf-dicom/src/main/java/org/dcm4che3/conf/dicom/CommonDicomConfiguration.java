@@ -385,6 +385,8 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             new AlternativeTCLoader(this).initGroupBasedTCs(device);
 
             return device;
+        } catch (ConfigurationNotFoundException e) {
+            throw e;
         } catch (RuntimeException e) {
             throw new ConfigurationException("Configuration for device " + name + " cannot be loaded", e);
         }

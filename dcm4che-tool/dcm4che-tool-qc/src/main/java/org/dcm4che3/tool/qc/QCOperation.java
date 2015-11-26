@@ -8,6 +8,5 @@ public enum QCOperation {
     UPDATE,
     DELETE,
     REJECT,
-    RESTORE,
-    PATIENT
+    RESTORE
 }

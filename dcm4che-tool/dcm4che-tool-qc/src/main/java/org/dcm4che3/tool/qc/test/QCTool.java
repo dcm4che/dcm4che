@@ -37,7 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.tool.qc.test;
 
-import org.apache.commons.cli.MissingArgumentException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.IDWithIssuer;
@@ -46,8 +48,6 @@ import org.dcm4che3.tool.common.test.TestTool;
 import org.dcm4che3.tool.qc.QC;
 import org.dcm4che3.tool.qc.QCOperation;
 import org.dcm4che3.tool.qc.QCUpdateScope;
-
-import java.util.ArrayList;
 
 /**
  * @author Hesham Elbadawi <bsdreko@gmail.com>
@@ -59,8 +59,7 @@ public class QCTool implements TestTool{
     private TestResult result;
 	public QCTool(String url , QCOperation operation
 			, Code code, String targetStudyUID) {
-		qc = new QC(url, code, operation);
-        qc.setTargetStudyUID(targetStudyUID);
+		qc = new QC(url, code, operation, targetStudyUID);
 	}
 	
     @Override
@@ -115,13 +114,7 @@ public class QCTool implements TestTool{
         QCResult tmpResult = qc.performOperation(testDescription, qc);
         init(tmpResult);
     }
-    public void delete(String testDescription, String deleteParams, boolean patient) {
-        if(patient)
-            try {
-                qc.setPid(QC.toIDWithIssuer(deleteParams));
-            }catch (MissingArgumentException e) {
-
-            }
+    public void delete(String testDescription, String deleteParams) {
         qc.setDeleteParams(deleteParams);
         QCResult tmpResult = qc.performOperation(testDescription, qc);
         init(tmpResult); 

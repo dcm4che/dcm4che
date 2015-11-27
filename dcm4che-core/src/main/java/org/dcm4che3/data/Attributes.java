@@ -1994,7 +1994,7 @@ public class Attributes implements Serializable {
             values[index] = value;
             return oldValue;
         }
-        insert(-index-1, tag, vr, value);
+        insert(-index - 1, tag, vr, value);
         return null;
     }
 
@@ -2448,23 +2448,32 @@ public class Attributes implements Serializable {
     public String toString() {
         return toString(TO_STRING_LIMIT, TO_STRING_WIDTH);
     }
-    
+
+    public String toString(boolean deidentify) {
+        return toString(TO_STRING_LIMIT, TO_STRING_WIDTH, deidentify);
+    }
+
     public String toString(int limit, int maxWidth) {
-        return toStringBuilder(limit, maxWidth, new StringBuilder(1024))
+        return toStringBuilder(limit, maxWidth, new StringBuilder(1024), false)
+                .toString();
+    }
+
+    public String toString(int limit, int maxWidth, boolean deidentify) {
+        return toStringBuilder(limit, maxWidth, new StringBuilder(1024), deidentify)
                 .toString();
     }
 
     public StringBuilder toStringBuilder(StringBuilder sb) {
-        return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb);
+        return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb, false);
     }
 
-    public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb) {
-        if (appendAttributes(limit, maxWidth, sb, "") > limit)
+    public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb, boolean deidentify) {
+        if (appendAttributes(limit, maxWidth, sb, "", deidentify) > limit)
             sb.append("...\n");
         return sb;
     }
 
-    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix, boolean deidentify) {
         int lines = 0;
         int creatorTag = 0;
         String privateCreator = null;
@@ -2483,31 +2492,31 @@ public class Attributes implements Serializable {
                 privateCreator = null;
             }
             Object value = values[i];
-            appendAttribute(privateCreator, tag, vrs[i], value,
-                    sb.length() + maxWidth, sb, prefix);
+            appendAttribute(privateCreator, tag, vrs[i], value, sb.length() + maxWidth, sb, prefix, deidentify);
             if (value instanceof Sequence)
-                lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>');
+                lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>', deidentify);
         }
         return lines;
     }
 
     private int appendItems(Sequence sq, int limit, int maxWidth, StringBuilder sb,
-            String prefix) {
+            String prefix, boolean deidentify) {
         int lines = 0;
         int itemNo = 0;
         for (Attributes item : sq) {
             if (++lines > limit)
                 break;
             sb.append(prefix).append("Item #").append(++itemNo).append('\n');
-            lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix);
+            lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix, deidentify);
         }
         return lines ;
     }
 
     private StringBuilder appendAttribute(String privateCreator, int tag, VR vr, Object value,
-            int maxLength, StringBuilder sb, String prefix) {
+            int maxLength, StringBuilder sb, String prefix, boolean deidentify) {
         sb.append(prefix).append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
-        if (vr.prompt(value, bigEndian, getSpecificCharacterSet(vr),
+        if (vr.prompt((deidentify ? deidentify(tag,vr,value):value), bigEndian,
+                getSpecificCharacterSet(vr),
                 maxLength - sb.length() - 1, sb)) {
             sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)
@@ -2515,6 +2524,17 @@ public class Attributes implements Serializable {
         }
         sb.append('\n');
         return sb;
+    }
+
+    private Object deidentify(int tag, VR vr, Object value) {
+        if (tag == Tag.PatientBirthDate ||
+            tag == Tag.PatientSex ||
+            tag == Tag.PatientAge ||
+            tag == Tag.PatientAddress ||
+            vr.equals(VR.PN))
+            return "XXX";
+        else
+            return value;
     }
 
     public int calcLength(DicomEncodingOptions encOpts, boolean explicitVR) {

@@ -75,7 +75,7 @@ import org.dcm4che3.image.Overlays;
 import org.dcm4che3.image.PhotometricInterpretation;
 import org.dcm4che3.image.StoredValue;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
-import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderParam;
+import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderItem;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageInputStream;
 import org.dcm4che3.imageio.stream.ImageInputStreamAdapter;
@@ -550,13 +550,12 @@ public class DicomImageReader extends ImageReader {
                     throw new IllegalArgumentException("Missing File Meta Information for Data Set with compressed Pixel Data");
                 
                 String tsuid = fmi.getString(Tag.TransferSyntaxUID);
-                ImageReaderParam param =
-                        ImageReaderFactory.getImageReaderParam(tsuid);
-                if (param == null)
+                ImageReaderItem readerItem = ImageReaderFactory.getImageReader(tsuid);
+                if (readerItem == null)
                     throw new UnsupportedOperationException("Unsupported Transfer Syntax: " + tsuid);
                 this.rle = tsuid.equals(UID.RLELossless);
-                this.decompressor = ImageReaderFactory.getImageReader(param);
-                this.patchJpegLS = param.patchJPEGLS;
+                this.decompressor = readerItem.getImageReader();
+                this.patchJpegLS = readerItem.getImageReaderParam().getPatchJPEGLS();
                 this.pixeldataFragments = (Fragments) pixeldata;
             }
         }

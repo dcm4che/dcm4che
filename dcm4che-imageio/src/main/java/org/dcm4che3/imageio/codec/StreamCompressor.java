@@ -43,6 +43,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
 import org.dcm4che3.image.Overlays;
+import org.dcm4che3.imageio.codec.ImageReaderFactory.ImageReaderItem;
+import org.dcm4che3.imageio.codec.ImageWriterFactory.ImageWriterItem;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
 import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLSImageOutputStream;
 import org.dcm4che3.io.DicomInputStream;
@@ -95,18 +97,18 @@ public class StreamCompressor extends StreamDecompressor {
         if (compressTsType == null)
             throw new IllegalArgumentException("Unknown Transfer Syntax: " + compressTsuid);
 
-        ImageWriterFactory.ImageWriterParam param =
+        ImageWriterItem writerItem =
                 ImageWriterFactory.getImageWriterParam(compressTsuid);
-        if (param == null)
+        if (writerItem == null)
             throw new UnsupportedOperationException(
                     "Unsupported Transfer Syntax: " + compressTsuid);
 
-        this.compressor = ImageWriterFactory.getImageWriter(param);
+        this.compressor = writerItem.getImageWriter();
         LOG.debug("Compressor: {}", compressor.getClass().getName());
-        this.compressPatchJPEGLS = param.patchJPEGLS;
+        this.compressPatchJPEGLS = writerItem.getImageWriterParam().getPatchJPEGLS();
         this.compressParam = compressor.getDefaultWriteParam();
         int count = 0;
-        for (Property property : cat(param.getImageWriteParams(), params)) {
+        for (Property property : cat(writerItem.getImageWriterParam().getImageWriteParams(), params)) {
             String name = property.getName();
             if (name.equals("maxPixelValueError"))
                 this.maxPixelValueError = ((Number) property.getValue()).intValue();
@@ -121,15 +123,12 @@ public class StreamCompressor extends StreamDecompressor {
         }
 
         if (maxPixelValueError >= 0) {
-            ImageReaderFactory.ImageReaderParam readerParam =
-                    ImageReaderFactory.getImageReaderParam(compressTsuid);
-            if (readerParam == null)
-                throw new UnsupportedOperationException(
-                        "Unsupported Transfer Syntax: " + compressTsuid);
-
-            this.verifier = ImageReaderFactory.getImageReader(readerParam);
-            this.verifyParam = verifier.getDefaultReadParam();
+            ImageReaderItem readerItem = ImageReaderFactory.getImageReader(compressTsuid);
+            if (readerItem == null)
+                throw new IllegalArgumentException("Unsupported Transfer Syntax: " + compressTsuid);
+            this.verifier = readerItem.getImageReader();
             LOG.debug("Verifier: {}", verifier.getClass().getName());
+            this.verifyParam = verifier.getDefaultReadParam();
         }
         decompress();
         return pixeldataProcessed;

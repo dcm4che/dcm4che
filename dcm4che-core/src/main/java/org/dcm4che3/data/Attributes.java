@@ -55,10 +55,7 @@ import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.io.DicomEncodingOptions;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomOutputStream;
-import org.dcm4che3.util.ByteUtils;
-import org.dcm4che3.util.DateUtils;
-import org.dcm4che3.util.StringUtils;
-import org.dcm4che3.util.TagUtils;
+import org.dcm4che3.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1994,7 +1991,7 @@ public class Attributes implements Serializable {
             values[index] = value;
             return oldValue;
         }
-        insert(-index-1, tag, vr, value);
+        insert(-index - 1, tag, vr, value);
         return null;
     }
 
@@ -2448,23 +2445,32 @@ public class Attributes implements Serializable {
     public String toString() {
         return toString(TO_STRING_LIMIT, TO_STRING_WIDTH);
     }
-    
+
+    public String toString(Deidentifier deidentifier) {
+        return toString(TO_STRING_LIMIT, TO_STRING_WIDTH, deidentifier);
+    }
+
     public String toString(int limit, int maxWidth) {
-        return toStringBuilder(limit, maxWidth, new StringBuilder(1024))
+        return toStringBuilder(limit, maxWidth, new StringBuilder(1024), null)
+                .toString();
+    }
+
+    public String toString(int limit, int maxWidth, Deidentifier deidentifier) {
+        return toStringBuilder(limit, maxWidth, new StringBuilder(1024), deidentifier)
                 .toString();
     }
 
     public StringBuilder toStringBuilder(StringBuilder sb) {
-        return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb);
+        return toStringBuilder(TO_STRING_LIMIT, TO_STRING_WIDTH, sb, null);
     }
 
-    public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb) {
-        if (appendAttributes(limit, maxWidth, sb, "") > limit)
+    public StringBuilder toStringBuilder(int limit, int maxWidth, StringBuilder sb, Deidentifier deidentifier) {
+        if (appendAttributes(limit, maxWidth, sb, "", deidentifier) > limit)
             sb.append("...\n");
         return sb;
     }
 
-    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix) {
+    private int appendAttributes(int limit, int maxWidth, StringBuilder sb, String prefix, Deidentifier deidentifier) {
         int lines = 0;
         int creatorTag = 0;
         String privateCreator = null;
@@ -2483,31 +2489,31 @@ public class Attributes implements Serializable {
                 privateCreator = null;
             }
             Object value = values[i];
-            appendAttribute(privateCreator, tag, vrs[i], value,
-                    sb.length() + maxWidth, sb, prefix);
+            appendAttribute(privateCreator, tag, vrs[i], value, sb.length() + maxWidth, sb, prefix, deidentifier);
             if (value instanceof Sequence)
-                lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>');
+                lines += appendItems((Sequence) value, limit - lines, maxWidth, sb, prefix + '>', deidentifier);
         }
         return lines;
     }
 
     private int appendItems(Sequence sq, int limit, int maxWidth, StringBuilder sb,
-            String prefix) {
+            String prefix, Deidentifier deidentifier) {
         int lines = 0;
         int itemNo = 0;
         for (Attributes item : sq) {
             if (++lines > limit)
                 break;
             sb.append(prefix).append("Item #").append(++itemNo).append('\n');
-            lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix);
+            lines += item.appendAttributes(limit - lines, maxWidth, sb, prefix, deidentifier);
         }
         return lines ;
     }
 
     private StringBuilder appendAttribute(String privateCreator, int tag, VR vr, Object value,
-            int maxLength, StringBuilder sb, String prefix) {
+            int maxLength, StringBuilder sb, String prefix, Deidentifier deidentifier) {
         sb.append(prefix).append(TagUtils.toString(tag)).append(' ').append(vr).append(" [");
-        if (vr.prompt(value, bigEndian, getSpecificCharacterSet(vr),
+        if (vr.prompt((deidentifier!=null ? deidentifier.deidentify(tag, vr, value) :value), bigEndian,
+                getSpecificCharacterSet(vr),
                 maxLength - sb.length() - 1, sb)) {
             sb.append("] ").append(ElementDictionary.keywordOf(tag, privateCreator));
             if (sb.length() > maxLength)

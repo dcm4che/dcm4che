@@ -99,18 +99,27 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
                 if (property.getDefaultValue().equals(String.valueOf(value))
                         || value == null) {
                     doDelete = true;
-                } // if that is an empty extension map or map
+                }
+                // if that is an empty extension map or map
                 else if ((property.isExtensionsProperty()
                         || property.isMap())
                         && ((Map) value).size() == 0) {
                     doDelete = true;
-                } // if that is an empty collection
+                }
+                // if that is an empty collection
                 else if ((property.isCollection() && ((Collection) value).size() == 0)) {
                     doDelete = true;
-                } // if that is an array and it equals the default value, then filter it out
+
+                } // if that is an array
                 else if (property.isArray()) {
+
+                    // it equals the default value, then filter it out
                     Object defaultNode = getDefaultValueFromClass(containerNodeClass, property);
                     if (value.equals(defaultNode)) {
+                        doDelete = true;
+                    }
+                    // if the default is null (i.e. no default) but the array is empty, then also remove it
+                    else if (defaultNode == null && ((Collection) value).size() == 0) {
                         doDelete = true;
                     }
                 }

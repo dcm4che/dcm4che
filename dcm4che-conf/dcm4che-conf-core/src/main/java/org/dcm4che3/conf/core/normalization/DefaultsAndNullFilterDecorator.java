@@ -124,7 +124,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
 
         // filter out defaults
         if (configurableClass != null)
-            ConfigNodeTraverser.traverseNodeTypesafe(configNode, configurableClass, filterDefaults, allExtensionClasses);
+            ConfigNodeTraverser.traverseNodeTypesafe(configNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, filterDefaults);
 
         super.persistNode(path, configNode, configurableClass);
     }
@@ -170,7 +170,7 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
         // fill in default values for properties that are null and have defaults
         Map<String, Object> node = (Map<String, Object>) super.getConfigurationNode(path, configurableClass);
         if (configurableClass != null && node != null)
-            ConfigNodeTraverser.traverseNodeTypesafe(node, configurableClass, applyDefaults, allExtensionClasses);
+            ConfigNodeTraverser.traverseNodeTypesafe(node, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, applyDefaults);
         return node;
     }
 

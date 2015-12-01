@@ -82,7 +82,7 @@ public class AnnotatedConfigurableProperty {
                     DummyConfigurableClass.class.getField("dummy").getAnnotation(ConfigurableProperty.class)
             );
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Unexpected error");
+            throw new RuntimeException("Unexpected error", e);
         }
 
     }

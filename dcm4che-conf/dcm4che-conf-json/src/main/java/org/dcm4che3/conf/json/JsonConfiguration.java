@@ -243,6 +243,7 @@ public class JsonConfiguration {
         if (extended) {
             gen.writeStartObject("dcmNetworkAE");
             JsonConfiguration.writeNotEmptyTo("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles(), gen);
+            JsonConfiguration.writeNotEmptyTo("dcmOtherAETitle", ae.getOtherAETitles(), gen);
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(ae, gen);
             gen.writeEnd();

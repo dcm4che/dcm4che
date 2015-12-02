@@ -808,6 +808,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
         objectclass.add("dcmNetworkAE");
         LdapUtils.storeNotEmpty(attrs, "dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+        LdapUtils.storeNotEmpty(attrs, "dcmOtherAETitle", ae.getOtherAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeTo(ae, attrs);
         return attrs;
@@ -1204,6 +1205,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             return;
 
         ae.setAcceptedCallingAETitles(LdapUtils.stringArray(attrs.get("dcmAcceptedCallingAETitle")));
+        ae.setOtherAETitles(LdapUtils.stringArray(attrs.get("dcmOtherAETitle")));
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.loadFrom(ae, attrs);
     }
@@ -1502,6 +1504,9 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         LdapUtils.storeDiff(mods, "dcmAcceptedCallingAETitle",
                 a.getAcceptedCallingAETitles(),
                 b.getAcceptedCallingAETitles());
+        LdapUtils.storeDiff(mods, "dcmOtherAETitle",
+                a.getOtherAETitles(),
+                b.getOtherAETitles());
         for (LdapDicomConfigurationExtension ext : extensions)
             ext.storeDiffs(a, b, mods);
         return mods;

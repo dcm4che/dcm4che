@@ -261,15 +261,19 @@ attributeTypes: ( 1.2.40.0.13.1.15.0.3.60 NAME 'dcmClientBindAddress'
   SUBSTR caseIgnoreSubstringsMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
-attributeTypes: ( 1.3.6.1.4.1.250.1.61 NAME 'dcmURI'
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.61 NAME 'dcmURI'
   DESC 'RFC2079: Uniform Resource Identifier'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
   SINGLE-VALUE )
-attributeTypes: ( 1.3.6.1.4.1.250.1.62 NAME 'dcmProperty'
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.62 NAME 'dcmProperty'
   DESC 'Property in format <name>=<value>'
   EQUALITY caseExactMatch
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+attributeTypes: ( 1.2.40.0.13.1.15.0.3.63 NAME 'dcmOtherAETitle'
+  DESC 'Additional AE Title of Network AE - will also accept Association RQs with such Called AE Title'
+  EQUALITY caseExactIA5Match
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 attributeTypes: ( 1.2.40.0.13.1.15.1.3.1 NAME 'dcmAuditSourceID'
   DESC 'RFC 3881 Audit Source ID; device name if absent'
   EQUALITY caseIgnoreMatch
@@ -464,7 +468,8 @@ objectClasses: ( 1.2.40.0.13.1.15.0.4.5 NAME 'dcmNetworkAE'
   DESC 'Extended DICOM Network AE related information'
   SUP top AUXILIARY
   MAY (
-    dcmAcceptedCallingAETitle ) )
+    dcmAcceptedCallingAETitle $
+    dcmOtherAETitle ) )
 objectClasses: ( 1.2.40.0.13.1.15.0.4.6 NAME 'dcmNetworkConnection'
   DESC 'Extended DICOM Network Connection information'
   SUP top AUXILIARY

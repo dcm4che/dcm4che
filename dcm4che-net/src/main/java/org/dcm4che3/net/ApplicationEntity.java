@@ -95,6 +95,8 @@ public class ApplicationEntity implements Serializable {
     private Boolean installed;
     private final LinkedHashSet<String> acceptedCallingAETs =
             new LinkedHashSet<String>();
+    private final LinkedHashSet<String> otherAETs =
+            new LinkedHashSet<String>();
     private final List<Connection> conns = new ArrayList<Connection>(1);
     private final HashMap<String, TransferCapability> scuTCs =
             new HashMap<String, TransferCapability>();
@@ -257,6 +259,20 @@ public class ApplicationEntity implements Serializable {
     public boolean isAcceptedCallingAETitle(String aet) {
         return acceptedCallingAETs.isEmpty()
                 || acceptedCallingAETs.contains(aet);
+    }
+
+    public String[] getOtherAETitles() {
+        return otherAETs.toArray(new String[otherAETs.size()]);
+    }
+
+    public void setOtherAETitles(String... aets) {
+        otherAETs.clear();
+        for (String name : aets)
+            otherAETs.add(name);
+    }
+
+    public boolean isOtherAETitle(String aet) {
+        return otherAETs.contains(aet);
     }
 
     /**
@@ -642,12 +658,6 @@ public class ApplicationEntity implements Serializable {
         setAssociationAcceptor(from.acceptor);
         setAssociationInitiator(from.initiator);
         setInstalled(from.installed);
-    }
-
-    public void setAcceptedCallingAETitles(
-            Collection<String> acceptedCallingAETs) {
-        acceptedCallingAETs.clear();
-        acceptedCallingAETs.addAll(acceptedCallingAETs);
     }
 
     public void addAEExtension(AEExtension ext) {

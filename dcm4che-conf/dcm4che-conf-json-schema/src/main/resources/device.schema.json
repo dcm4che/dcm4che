@@ -551,6 +551,14 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "dcmOtherAETitle": {
+                "title": "Other AE Title",
+                "description": "Additional AE Title of Network AE - will also accept Association RQs with such Called AE Title",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             }
           }

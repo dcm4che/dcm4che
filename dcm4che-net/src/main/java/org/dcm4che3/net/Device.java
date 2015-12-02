@@ -874,9 +874,17 @@ public class Device implements Serializable {
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
+        return aes.get(aet);
+    }
+
+    public ApplicationEntity getApplicationEntity(String aet, boolean matchOtherAETs) {
         ApplicationEntity ae = aes.get(aet);
         if (ae == null)
             ae = aes.get("*");
+        if (ae == null && matchOtherAETs)
+            for (ApplicationEntity ae1 : getApplicationEntities())
+                if (ae1.isOtherAETitle(aet))
+                    return ae1;
         return ae;
     }
 

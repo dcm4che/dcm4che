@@ -521,7 +521,7 @@ public class Association {
         this.rq = rq;
         enterState(State.Sta3);
         try {
-            ae = device.getApplicationEntity(rq.getCalledAET());
+            ae = device.getApplicationEntity(rq.getCalledAET(), true);
             ac = device.getAssociationHandler().negotiate(this, rq);
             initPCMap();
             maxOpsInvoked = ac.getMaxOpsPerformed();

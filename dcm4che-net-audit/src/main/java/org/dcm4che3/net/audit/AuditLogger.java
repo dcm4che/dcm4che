@@ -1063,7 +1063,7 @@ public class AuditLogger extends DeviceExtension {
                 writeHeader(severityOf(msg), timeStamp);
                 AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }
@@ -1075,7 +1075,7 @@ public class AuditLogger extends DeviceExtension {
                 writeHeader(severity, timeStamp);
                 write(data, off, len);
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }

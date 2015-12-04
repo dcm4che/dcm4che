@@ -107,6 +107,9 @@ public class ApplicationEntity implements Serializable {
 
     private transient DimseRQHandler dimseRQHandler;
 
+    public ApplicationEntity() {
+    }
+
     public ApplicationEntity(String aeTitle) {
         setAETitle(aeTitle);
     }
@@ -654,6 +657,7 @@ public class ApplicationEntity implements Serializable {
         setPreferredCalledAETitles(from.prefCalledAETs);
         setPreferredCallingAETitles(from.prefCallingAETs);
         setAcceptedCallingAETitles(from.getAcceptedCallingAETitles());
+        setOtherAETitles(from.getOtherAETitles());
         setSupportedCharacterSets(from.supportedCharacterSets);
         setAssociationAcceptor(from.acceptor);
         setAssociationInitiator(from.initiator);

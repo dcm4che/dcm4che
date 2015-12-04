@@ -140,6 +140,9 @@ public class Device implements Serializable {
     private transient volatile KeyManager km;
     private transient volatile TrustManager tm;
 
+    public Device() {
+    }
+
     public Device(String name) {
         setDeviceName(name);
     }

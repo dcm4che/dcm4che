@@ -42,9 +42,12 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.net.*;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.json.stream.JsonGenerator;
-import javax.naming.directory.BasicAttribute;
+import javax.json.stream.JsonParser;
+import javax.json.stream.JsonParsingException;
 import java.util.*;
 
 /**
@@ -52,6 +55,9 @@ import java.util.*;
  * @since Nov 2015
  */
 public class JsonConfiguration {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JsonConfiguration.class);
+    private static final int CONN_REF_INDEX_START = "/dicomNetworkConnection/".length();
 
     private boolean extended = true;
     private final List<JsonConfigurationExtension> extensions = new ArrayList<>();
@@ -76,263 +82,655 @@ public class JsonConfiguration {
     }
 
     public void writeTo(DeviceInfo deviceInfo, JsonGenerator gen) {
+        JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         gen.write("dicomDeviceName", deviceInfo.getDeviceName());
-        JsonConfiguration.writeNotNullTo("dicomDescription", deviceInfo.getDescription(), gen);
-        JsonConfiguration.writeNotNullTo("dicomManufacturer", deviceInfo.getManufacturer(), gen);
-        JsonConfiguration.writeNotNullTo("dicomManufacturerModelName", deviceInfo.getManufacturerModelName(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomSoftwareVersion", deviceInfo.getSoftwareVersions(), gen);
-        JsonConfiguration.writeNotNullTo("dicomStationName", deviceInfo.getStationName(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomInstitutionDepartmentName",
-                deviceInfo.getInstitutionalDepartmentNames(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes(), gen);
+        writer.writeNotNull("dicomDescription", deviceInfo.getDescription());
+        writer.writeNotNull("dicomManufacturer", deviceInfo.getManufacturer());
+        writer.writeNotNull("dicomManufacturerModelName", deviceInfo.getManufacturerModelName());
+        writer.writeNotEmpty("dicomSoftwareVersion", deviceInfo.getSoftwareVersions());
+        writer.writeNotNull("dicomStationName", deviceInfo.getStationName());
+        writer.writeNotEmpty("dicomInstitutionDepartmentName", deviceInfo.getInstitutionalDepartmentNames());
+        writer.writeNotEmpty("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes());
         gen.write("dicomInstalled", deviceInfo.getInstalled());
         gen.writeEnd();
     }
 
     public void writeTo(Device device, JsonGenerator gen) {
+        JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();
         gen.write("dicomDeviceName", device.getDeviceName());
-        JsonConfiguration.writeNotNullTo("dicomDescription", device.getDescription(), gen);
-        JsonConfiguration.writeNotNullTo("dicomManufacturer", device.getManufacturer(), gen);
-        JsonConfiguration.writeNotNullTo("dicomManufacturerModelName", device.getManufacturerModelName(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomSoftwareVersion", device.getSoftwareVersions(), gen);
-        JsonConfiguration.writeNotNullTo("dicomStationName", device.getStationName(), gen);
-        JsonConfiguration.writeNotNullTo("dicomDeviceSerialNumber", device.getDeviceSerialNumber(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfPatientID", device.getIssuerOfPatientID(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfAccessionNumber", device.getIssuerOfAccessionNumber(), gen);
-        JsonConfiguration.writeNotNullTo("dicomOrderPlacerIdentifier", device.getOrderPlacerIdentifier(), gen);
-        JsonConfiguration.writeNotNullTo("dicomOrderFillerIdentifier", device.getOrderFillerIdentifier(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfAdmissionID", device.getIssuerOfAdmissionID(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfServiceEpisodeID", device.getIssuerOfServiceEpisodeID(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfContainerIdentifier",
-                device.getIssuerOfContainerIdentifier(), gen);
-        JsonConfiguration.writeNotNullTo("dicomIssuerOfSpecimenIdentifier",
-                device.getIssuerOfSpecimenIdentifier(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomInstitutionName",
-                device.getInstitutionNames(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomInstitutionCode",
-                device.getInstitutionCodes(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomInstitutionAddress",
-                device.getInstitutionAddresses(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomInstitutionDepartmentName",
-                device.getInstitutionalDepartmentNames(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomPrimaryDeviceType",
-                device.getPrimaryDeviceTypes(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomRelatedDeviceReference",
-                device.getRelatedDeviceRefs(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomAuthorizedNodeCertificateReference",
-                device.getAuthorizedNodeCertificateRefs(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomThisNodeCertificateReference",
-                device.getThisNodeCertificateRefs(), gen);
+        writer.writeNotNull("dicomDescription", device.getDescription());
+        writer.writeNotNull("dicomManufacturer", device.getManufacturer());
+        writer.writeNotNull("dicomManufacturerModelName", device.getManufacturerModelName());
+        writer.writeNotEmpty("dicomSoftwareVersion", device.getSoftwareVersions());
+        writer.writeNotNull("dicomStationName", device.getStationName());
+        writer.writeNotNull("dicomDeviceSerialNumber", device.getDeviceSerialNumber());
+        writer.writeNotNull("dicomIssuerOfPatientID", device.getIssuerOfPatientID());
+        writer.writeNotNull("dicomIssuerOfAccessionNumber", device.getIssuerOfAccessionNumber());
+        writer.writeNotNull("dicomOrderPlacerIdentifier", device.getOrderPlacerIdentifier());
+        writer.writeNotNull("dicomOrderFillerIdentifier", device.getOrderFillerIdentifier());
+        writer.writeNotNull("dicomIssuerOfAdmissionID", device.getIssuerOfAdmissionID());
+        writer.writeNotNull("dicomIssuerOfServiceEpisodeID", device.getIssuerOfServiceEpisodeID());
+        writer.writeNotNull("dicomIssuerOfContainerIdentifier", device.getIssuerOfContainerIdentifier());
+        writer.writeNotNull("dicomIssuerOfSpecimenIdentifier", device.getIssuerOfSpecimenIdentifier());
+        writer.writeNotEmpty("dicomInstitutionName", device.getInstitutionNames());
+        writer.writeNotEmpty("dicomInstitutionCode", device.getInstitutionCodes());
+        writer.writeNotEmpty("dicomInstitutionAddress", device.getInstitutionAddresses());
+        writer.writeNotEmpty("dicomInstitutionDepartmentName", device.getInstitutionalDepartmentNames());
+        writer.writeNotEmpty("dicomPrimaryDeviceType", device.getPrimaryDeviceTypes());
+        writer.writeNotEmpty("dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
+        writer.writeNotEmpty("dicomAuthorizedNodeCertificateReference", device.getAuthorizedNodeCertificateRefs());
+        writer.writeNotEmpty("dicomThisNodeCertificateReference", device.getThisNodeCertificateRefs());
         gen.write("dicomInstalled", device.isInstalled());
-        writeConnectionsTo(device, gen);
-        writeApplicationAEsTo(device, gen);
+        writeConnectionsTo(device, writer);
+        writeApplicationAEsTo(device, writer);
 
         if (extended) {
             gen.writeStartObject("dcmDevice");
-            JsonConfiguration.writeNotDefTo("dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0, gen);
-            JsonConfiguration.writeNotNullTo("dcmTrustStoreURL", device.getTrustStoreURL(), gen);
-            JsonConfiguration.writeNotNullTo("dcmTrustStoreType", device.getTrustStoreType(), gen);
-            JsonConfiguration.writeNotNullTo("dcmTrustStorePin", device.getTrustStorePin(), gen);
-            JsonConfiguration.writeNotNullTo("dcmTrustStorePinProperty", device.getTrustStorePinProperty(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStoreURL", device.getKeyStoreURL(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStoreType", device.getKeyStoreType(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStorePin", device.getKeyStorePin(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStorePinProperty", device.getKeyStorePinProperty(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin(), gen);
-            JsonConfiguration.writeNotNullTo("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty(), gen);
-            JsonConfiguration.writeNotNullTo("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice(), gen);
+            writer.writeNotDef("dcmLimitOpenAssociations", device.getLimitOpenAssociations(), 0);
+            writer.writeNotNull("dcmTrustStoreURL", device.getTrustStoreURL());
+            writer.writeNotNull("dcmTrustStoreType", device.getTrustStoreType());
+            writer.writeNotNull("dcmTrustStorePin", device.getTrustStorePin());
+            writer.writeNotNull("dcmTrustStorePinProperty", device.getTrustStorePinProperty());
+            writer.writeNotNull("dcmKeyStoreURL", device.getKeyStoreURL());
+            writer.writeNotNull("dcmKeyStoreType", device.getKeyStoreType());
+            writer.writeNotNull("dcmKeyStorePin", device.getKeyStorePin());
+            writer.writeNotNull("dcmKeyStorePinProperty", device.getKeyStorePinProperty());
+            writer.writeNotNull("dcmKeyStoreKeyPin", device.getKeyStoreKeyPin());
+            writer.writeNotNull("dcmKeyStoreKeyPinProperty", device.getKeyStoreKeyPinProperty());
+            writer.writeNotNull("dcmTimeZoneOfDevice", device.getTimeZoneOfDevice());
             gen.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
-                ext.storeTo(device, gen);
+                ext.storeTo(device, writer);
         }
         gen.writeEnd();
     }
 
-    private void writeConnectionsTo(Device device, JsonGenerator gen) {
+    public Device loadDeviceFrom(JsonParser parser) {
+        Device device = new Device();
+        JsonReader reader = new JsonReader(parser);
+        reader.next();
+        reader.expect(JsonParser.Event.START_OBJECT);
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "dicomDeviceName":
+                    device.setDeviceName(reader.stringValue());
+                    break;
+                case "dicomDescription":
+                    device.setDescription(reader.stringValue());
+                    break;
+                case "dicomManufacturer":
+                    device.setManufacturer(reader.stringValue());
+                    break;
+                case "dicomManufacturerModelName":
+                    device.setManufacturerModelName(reader.stringValue());
+                    break;
+                case "dicomSoftwareVersion":
+                    device.setSoftwareVersions(reader.stringArray());
+                    break;
+                case "dicomStationName":
+                    device.setStationName(reader.stringValue());
+                    break;
+                case "dicomDeviceSerialNumber":
+                    device.setDeviceSerialNumber(reader.stringValue());
+                    break;
+                case "dicomIssuerOfPatientID":
+                    device.setIssuerOfPatientID(reader.issuerValue());
+                    break;
+                case "dicomIssuerOfAccessionNumber":
+                    device.setIssuerOfAccessionNumber(reader.issuerValue());
+                    break;
+                case "dicomOrderPlacerIdentifier":
+                    device.setOrderPlacerIdentifier(reader.issuerValue());
+                    break;
+                case "dicomOrderFillerIdentifier":
+                    device.setOrderFillerIdentifier(reader.issuerValue());
+                    break;
+                case "dicomIssuerOfAdmissionID":
+                    device.setIssuerOfAdmissionID(reader.issuerValue());
+                    break;
+                case "dicomIssuerOfServiceEpisodeID":
+                    device.setIssuerOfServiceEpisodeID(reader.issuerValue());
+                    break;
+                case "dicomIssuerOfContainerIdentifier":
+                    device.setIssuerOfContainerIdentifier(reader.issuerValue());
+                    break;
+                case "dicomIssuerOfSpecimenIdentifier":
+                    device.setIssuerOfSpecimenIdentifier(reader.issuerValue());
+                    break;
+                case "dicomInstitutionName":
+                    device.setInstitutionNames(reader.stringArray());
+                    break;
+                case "dicomInstitutionCode":
+                    device.setInstitutionCodes(reader.codeArray());
+                    break;
+                case "dicomInstitutionAddress":
+                    device.setInstitutionAddresses(reader.stringArray());
+                    break;
+                case "dicomInstitutionDepartmentName":
+                    device.setInstitutionalDepartmentNames(reader.stringArray());
+                    break;
+                case "dicomPrimaryDeviceType":
+                    device.setPrimaryDeviceTypes(reader.stringArray());
+                    break;
+                case "dicomRelatedDeviceReference":
+                    device.setRelatedDeviceRefs(reader.stringArray());
+                    break;
+                case "dicomAuthorizedNodeCertificateReference":
+                    for (String ref : reader.stringArray())
+                        device.setAuthorizedNodeCertificates(ref);
+                    break;
+                case "dicomThisNodeCertificateReference":
+                    for (String ref : reader.stringArray())
+                        device.setThisNodeCertificates(ref);
+                    break;
+                case "dicomInstalled":
+                    device.setInstalled(reader.booleanValue());
+                    break;
+                case "dcmDevice":
+                    reader.next();
+                    reader.expect(JsonParser.Event.START_OBJECT);
+                    while (reader.next() == JsonParser.Event.KEY_NAME) {
+                        switch (reader.getString()) {
+                            case "dcmLimitOpenAssociations":
+                                device.setLimitOpenAssociations(reader.intValue());
+                                break;
+                            case "dcmTrustStoreURL":
+                                device.setTrustStoreURL(reader.stringValue());
+                                break;
+                            case "dcmTrustStoreType":
+                                device.setTrustStoreType(reader.stringValue());
+                                break;
+                            case "dcmTrustStorePin":
+                                device.setTrustStorePin(reader.stringValue());
+                                break;
+                            case "dcmTrustStorePinProperty":
+                                device.setTrustStorePinProperty(reader.stringValue());
+                                break;
+                            case "dcmKeyStoreURL":
+                                device.setKeyStoreURL(reader.stringValue());
+                                break;
+                            case "dcmKeyStoreType":
+                                device.setKeyStoreType(reader.stringValue());
+                                break;
+                            case "dcmKeyStorePin":
+                                device.setKeyStorePin(reader.stringValue());
+                                break;
+                            case "dcmKeyStorePinProperty":
+                                device.setKeyStorePinProperty(reader.stringValue());
+                                break;
+                            case "dcmKeyStoreKeyPin":
+                                device.setKeyStoreKeyPin(reader.stringValue());
+                                break;
+                            case "dcmKeyStoreKeyPinProperty":
+                                device.setKeyStoreKeyPinProperty(reader.stringValue());
+                                break;
+                            case "dcmTimeZoneOfDevice":
+                                device.setTimeZoneOfDevice(reader.timeZoneValue());
+                                break;
+                            //// TODO: 03.12.15 load Device Extensions 
+                            default:
+                                unknownProperty(reader);
+                        }
+                    }
+                    reader.expect(JsonParser.Event.END_OBJECT);
+                    break;
+                case "dicomNetworkConnection":
+                    loadConnections(device, reader);
+                    break;
+                case "dicomNetworkAE":
+                    loadApplicationEntities(device, reader);
+                    break;
+                default:
+                    unknownProperty(reader);
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+        if (device.getDeviceName() == null)
+            throw new JsonParsingException("Missing property: dicomDeviceName", reader.getLocation());
+        return device;
+    }
+
+    private void unknownProperty(JsonReader reader) {
+        LOG.warn("Skip unknown property: {}", reader.getString());
+        reader.skipValue();
+    }
+
+    private void writeConnectionsTo(Device device, JsonWriter writer) {
         List<Connection> conns = device.listConnections();
         if (conns.isEmpty())
             return;
-        
-        gen.writeStartArray("dicomNetworkConnection");
+
+        writer.writeStartArray("dicomNetworkConnection");
         for (Connection conn : conns)
-            writeTo(conn, gen);
-        gen.writeEnd();
+            writeTo(conn, writer);
+        writer.writeEnd();
     }
 
-    private void writeTo(Connection conn, JsonGenerator gen) {
-        gen.writeStartObject();
-        JsonConfiguration.writeNotNullTo("cn", conn.getCommonName(), gen);
-        JsonConfiguration.writeNotNullTo("dicomHostname", conn.getHostname(), gen);
-        JsonConfiguration.writeNotDefTo("dicomPort", conn.getPort(), Connection.NOT_LISTENING, gen);
-        JsonConfiguration.writeNotEmptyTo("dicomTLSCipherSuite", conn.getTlsCipherSuites(), gen);
-        JsonConfiguration.writeNotNullTo("dicomInstalled", conn.getInstalled(), gen);
+    private void writeTo(Connection conn, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNull("cn", conn.getCommonName());
+        writer.writeNotNull("dicomHostname", conn.getHostname());
+        writer.writeNotDef("dicomPort", conn.getPort(), Connection.NOT_LISTENING);
+        writer.writeNotEmpty("dicomTLSCipherSuite", conn.getTlsCipherSuites());
+        writer.writeNotNull("dicomInstalled", conn.getInstalled());
         if (extended) {
-            gen.writeStartObject("dcmNetworkConnection");
-            JsonConfiguration.writeNotNullTo("dcmProtocol",
-                    StringUtils.nullify(conn.getProtocol(), Connection.Protocol.DICOM), gen);
-            JsonConfiguration.writeNotNullTo("dcmHTTPProxy", conn.getHttpProxy(), gen);
-            JsonConfiguration.writeNotEmptyTo("dcmBlacklistedHostname", conn.getBlacklist(), gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPBacklog", conn.getBacklog(), Connection.DEF_BACKLOG, gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPConnectTimeout",
-                    conn.getConnectTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmAARQTimeout",
-                    conn.getRequestTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmAAACTimeout",
-                    conn.getAcceptTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmARRPTimeout",
-                    conn.getReleaseTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmResponseTimeout",
-                    conn.getResponseTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmRetrieveTimeout",
-                    conn.getRetrieveTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmIdleTimeout", conn.getIdleTimeout(), Connection.NO_TIMEOUT, gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPCloseDelay",
-                    conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY, gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPSendBufferSize",
-                    conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE, gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPReceiveBufferSize",
-                    conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE, gen);
-            JsonConfiguration.writeNotDefTo("dcmTCPNoDelay", conn.isTcpNoDelay(), true, gen);
-            JsonConfiguration.writeNotNullTo("dcmBindAddress", conn.getBindAddress(), gen);
-            JsonConfiguration.writeNotNullTo("dcmClientBindAddress", conn.getClientBindAddress(), gen);
-            JsonConfiguration.writeNotDefTo("dcmSendPDULength",
-                    conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH, gen);
-            JsonConfiguration.writeNotDefTo("dcmReceivePDULength",
-                    conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH, gen);
-            JsonConfiguration.writeNotDefTo("dcmMaxOpsPerformed",
-                    conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE, gen);
-            JsonConfiguration.writeNotDefTo("dcmMaxOpsInvoked",
-                    conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE, gen);
-            JsonConfiguration.writeNotDefTo("dcmPackPDV", conn.isPackPDV(), true, gen);
+            writer.writeStartObject("dcmNetworkConnection");
+            writer.writeNotNull("dcmProtocol",
+                    StringUtils.nullify(conn.getProtocol(), Connection.Protocol.DICOM));
+            writer.writeNotNull("dcmHTTPProxy", conn.getHttpProxy());
+            writer.writeNotEmpty("dcmBlacklistedHostname", conn.getBlacklist());
+            writer.writeNotDef("dcmTCPBacklog", conn.getBacklog(), Connection.DEF_BACKLOG);
+            writer.writeNotDef("dcmTCPConnectTimeout",
+                    conn.getConnectTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmAARQTimeout",
+                    conn.getRequestTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmAAACTimeout",
+                    conn.getAcceptTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmARRPTimeout",
+                    conn.getReleaseTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmResponseTimeout",
+                    conn.getResponseTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmRetrieveTimeout",
+                    conn.getRetrieveTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmIdleTimeout", conn.getIdleTimeout(), Connection.NO_TIMEOUT);
+            writer.writeNotDef("dcmTCPCloseDelay",
+                    conn.getSocketCloseDelay(), Connection.DEF_SOCKETDELAY);
+            writer.writeNotDef("dcmTCPSendBufferSize",
+                    conn.getSendBufferSize(), Connection.DEF_BUFFERSIZE);
+            writer.writeNotDef("dcmTCPReceiveBufferSize",
+                    conn.getReceiveBufferSize(), Connection.DEF_BUFFERSIZE);
+            writer.writeNotDef("dcmTCPNoDelay", conn.isTcpNoDelay(), true);
+            writer.writeNotNull("dcmBindAddress", conn.getBindAddress());
+            writer.writeNotNull("dcmClientBindAddress", conn.getClientBindAddress());
+            writer.writeNotDef("dcmSendPDULength",
+                    conn.getSendPDULength(), Connection.DEF_MAX_PDU_LENGTH);
+            writer.writeNotDef("dcmReceivePDULength",
+                    conn.getReceivePDULength(), Connection.DEF_MAX_PDU_LENGTH);
+            writer.writeNotDef("dcmMaxOpsPerformed",
+                    conn.getMaxOpsPerformed(), Connection.SYNCHRONOUS_MODE);
+            writer.writeNotDef("dcmMaxOpsInvoked",
+                    conn.getMaxOpsInvoked(), Connection.SYNCHRONOUS_MODE);
+            writer.writeNotDef("dcmPackPDV", conn.isPackPDV(), true);
             if (conn.isTls()) {
-                JsonConfiguration.writeNotEmptyTo("dcmTLSProtocol", conn.getTlsProtocols(), gen);
-                JsonConfiguration.writeNotDefTo("dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true, gen);
+                writer.writeNotEmpty("dcmTLSProtocol", conn.getTlsProtocols());
+                writer.writeNotDef("dcmTLSNeedClientAuth", conn.isTlsNeedClientAuth(), true);
             }
-            gen.writeEnd();
+            writer.writeEnd();
         }
-        gen.writeEnd();
+        writer.writeEnd();
     }
 
-    private void writeApplicationAEsTo(Device device, JsonGenerator gen) {
+    private void loadConnections(Device device, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            Connection conn = new Connection();
+            loadFrom(conn, reader);
+            device.addConnection(conn);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+    }
+
+    private void loadFrom(Connection conn, JsonReader reader) {
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "cn":
+                    conn.setCommonName(reader.stringValue());
+                    break;
+                case "dicomHostname":
+                    conn.setHostname(reader.stringValue());
+                    break;
+                case "dicomPort":
+                    conn.setPort(reader.intValue());
+                    break;
+                case "dicomTLSCipherSuite":
+                    conn.setTlsCipherSuites(reader.stringArray());
+                    break;
+                case "dicomInstalled":
+                    conn.setInstalled(reader.booleanValue());
+                    break;
+                case "dcmNetworkConnection":
+                    reader.next();
+                    reader.expect(JsonParser.Event.START_OBJECT);
+                    while (reader.next() == JsonParser.Event.KEY_NAME) {
+                        switch (reader.getString()) {
+                            case "dcmProtocol":
+                                conn.setProtocol(Connection.Protocol.valueOf(reader.stringValue()));
+                                break;
+                            case "dcmHTTPProxy":
+                                conn.setHttpProxy(reader.stringValue());
+                                break;
+                            case "dcmBlacklistedHostname":
+                                conn.setBlacklist(reader.stringArray());
+                                break;
+                            case "dcmTCPBacklog":
+                                conn.setBacklog(reader.intValue());
+                                break;
+                            case "dcmTCPConnectTimeout":
+                                conn.setConnectTimeout(reader.intValue());
+                                break;
+                            case "dcmAARQTimeout":
+                                conn.setRequestTimeout(reader.intValue());
+                                break;
+                            case "dcmAAACTimeout":
+                                conn.setAcceptTimeout(reader.intValue());
+                                break;
+                            case "dcmARRPTimeout":
+                                conn.setReleaseTimeout(reader.intValue());
+                                break;
+                            case "dcmResponseTimeout":
+                                conn.setResponseTimeout(reader.intValue());
+                                break;
+                            case "dcmRetrieveTimeout":
+                                conn.setRetrieveTimeout(reader.intValue());
+                                break;
+                            case "dcmIdleTimeout":
+                                conn.setIdleTimeout(reader.intValue());
+                                break;
+                            case "dcmTCPCloseDelay":
+                                conn.setSocketCloseDelay(reader.intValue());
+                                break;
+                            case "dcmTCPSendBufferSize":
+                                conn.setSendBufferSize(reader.intValue());
+                                break;
+                            case "dcmTCPReceiveBufferSize":
+                                conn.setReceiveBufferSize(reader.intValue());
+                                break;
+                            case "dcmTCPNoDelay":
+                                conn.setTcpNoDelay(reader.booleanValue());
+                                break;
+                            case "dcmBindAddress":
+                                conn.setBindAddress(reader.stringValue());
+                                break;
+                            case "dcmClientBindAddress":
+                                conn.setClientBindAddress(reader.stringValue());
+                                break;
+                            case "dcmTLSNeedClientAuth":
+                                conn.setTlsNeedClientAuth(reader.booleanValue());
+                                break;
+                            case "dcmTLSProtocol":
+                                conn.setTlsProtocols(reader.stringArray());
+                                break;
+                            case "dcmSendPDULength":
+                                conn.setSendPDULength(reader.intValue());
+                                break;
+                            case "dcmReceivePDULength":
+                                conn.setReceivePDULength(reader.intValue());
+                                break;
+                            case "dcmMaxOpsPerformed":
+                                conn.setMaxOpsPerformed(reader.intValue());
+                                break;
+                            case "dcmMaxOpsInvoked":
+                                conn.setMaxOpsInvoked(reader.intValue());
+                                break;
+                            case "dcmPackPDV":
+                                conn.setPackPDV(reader.booleanValue());
+                                break;
+                            default:
+                                unknownProperty(reader);
+                        }
+                    }
+                    reader.expect(JsonParser.Event.END_OBJECT);
+                    break;
+                default:
+                    unknownProperty(reader);
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+    }
+
+    private void writeApplicationAEsTo(Device device, JsonWriter writer) {
         Collection<ApplicationEntity> aes = device.getApplicationEntities();
         if (aes.isEmpty())
             return;
 
         List<Connection> conns = device.listConnections();
-        gen.writeStartArray("dicomNetworkAE");
+        writer.writeStartArray("dicomNetworkAE");
         for (ApplicationEntity ae : aes)
-            writeTo(ae, conns, gen);
-        gen.writeEnd();
+            writeTo(ae, conns, writer);
+        writer.writeEnd();
     }
-
-    private void writeTo(ApplicationEntity ae, List<Connection> conns, JsonGenerator gen) {
-        gen.writeStartObject();
-        gen.write("dicomAETitle", ae.getAETitle());
-        JsonConfiguration.writeNotNullTo("dicomDescription", ae.getDescription(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomApplicationCluster", ae.getApplicationClusters(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles(), gen);
-        JsonConfiguration.writeNotEmptyTo("dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles(), gen);
-        gen.write("dicomAssociationInitiator", ae.isAssociationInitiator());
-        gen.write("dicomAssociationAcceptor", ae.isAssociationAcceptor());
-        writeConnRefs(ae, conns, gen);
-        JsonConfiguration.writeNotEmptyTo("dicomSupportedCharacterSet", ae.getSupportedCharacterSets(), gen);
-        JsonConfiguration.writeNotNullTo("dicomInstalled", ae.getInstalled(), gen);
-        writeTransferCapabilitiesTo(ae, gen);
+    
+    private void writeTo(ApplicationEntity ae, List<Connection> conns, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNull("dicomAETitle", ae.getAETitle());
+        writer.writeNotNull("dicomDescription", ae.getDescription());
+        writer.writeNotEmpty("dicomApplicationCluster", ae.getApplicationClusters());
+        writer.writeNotEmpty("dicomPreferredCallingAETitle", ae.getPreferredCallingAETitles());
+        writer.writeNotEmpty("dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
+        writer.write("dicomAssociationInitiator", ae.isAssociationInitiator());
+        writer.write("dicomAssociationAcceptor", ae.isAssociationAcceptor());
+        writeConnRefs(ae, conns, writer);
+        writer.writeNotEmpty("dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
+        writer.writeNotNull("dicomInstalled", ae.getInstalled());
+        writeTransferCapabilitiesTo(ae, writer);
         if (extended) {
-            gen.writeStartObject("dcmNetworkAE");
-            JsonConfiguration.writeNotEmptyTo("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles(), gen);
-            JsonConfiguration.writeNotEmptyTo("dcmOtherAETitle", ae.getOtherAETitles(), gen);
+            writer.writeStartObject("dcmNetworkAE");
+            writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
+            writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
             for (JsonConfigurationExtension ext : extensions)
-                ext.storeTo(ae, gen);
-            gen.writeEnd();
+                ext.storeTo(ae, writer);
+            writer.writeEnd();
         }
-        gen.writeEnd();
+        writer.writeEnd();
     }
 
-    private void writeTransferCapabilitiesTo(ApplicationEntity ae, JsonGenerator gen) {
-        gen.writeStartArray("dicomTransferCapability");
+    private void writeConnRefs(ApplicationEntity ae, List<Connection> conns, JsonWriter writer) {
+        writer.writeStartArray("dicomNetworkConnectionReference");
+        for (Connection conn : ae.getConnections())
+            writer.write("/dicomNetworkConnection/" + conns.indexOf(conn));
+        writer.writeEnd();
+    }
+    
+    private void loadApplicationEntities(Device device, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            ApplicationEntity ae = new ApplicationEntity();
+            loadFrom(ae, reader, device.listConnections());
+            device.addApplicationEntity(ae);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+    }
+
+    private void loadFrom(ApplicationEntity ae, JsonReader reader, List<Connection> conns) {
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "dicomAETitle":
+                    ae.setAETitle(reader.stringValue());
+                    break;
+                case "dicomDescription":
+                    ae.setDescription(reader.stringValue());
+                    break;
+                case "dicomApplicationCluster":
+                    ae.setApplicationClusters(reader.stringArray());
+                    break;
+                case "dicomPreferredCallingAETitle":
+                    ae.setPreferredCallingAETitles(reader.stringArray());
+                    break;
+                case "dicomPreferredCalledAETitle":
+                    ae.setPreferredCalledAETitles(reader.stringArray());
+                    break;
+                case "dicomAssociationInitiator":
+                    ae.setAssociationInitiator(reader.booleanValue());
+                    break;
+                case "dicomAssociationAcceptor":
+                    ae.setAssociationAcceptor(reader.booleanValue());
+                    break;
+                case "dicomSupportedCharacterSet":
+                    ae.setSupportedCharacterSets(reader.stringArray());
+                    break;
+                case "dicomInstalled":
+                    ae.setInstalled(reader.booleanValue());
+                    break;
+                case "dicomNetworkConnectionReference":
+                    for (String connRef : reader.stringArray())
+                        ae.addConnection(conns.get(Integer.parseInt(connRef.substring(CONN_REF_INDEX_START))));
+                    break;
+                case "dcmNetworkAE":
+                    reader.next();
+                    reader.expect(JsonParser.Event.START_OBJECT);
+                    while (reader.next() == JsonParser.Event.KEY_NAME) {
+                        switch (reader.getString()) {
+                            case "dcmAcceptedCallingAETitle":
+                                ae.setAcceptedCallingAETitles(reader.stringArray());
+                                break;
+                            case "dcmOtherAETitle":
+                                ae.setOtherAETitles(reader.stringArray());
+                                break;
+                            //// TODO: 03.12.15 load AE Extensions 
+                            default:
+                                unknownProperty(reader);
+                        }
+                    }
+                    reader.expect(JsonParser.Event.END_OBJECT);
+                    break;
+                case "dicomTransferCapability":
+                    loadTransferCapabilities(ae, reader);
+                    break;
+                default:
+                    unknownProperty(reader);
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
+        if (ae.getAETitle() == null)
+            throw new JsonParsingException("Missing property: dicomAETitle", reader.getLocation());
+    }
+
+    private void writeTransferCapabilitiesTo(ApplicationEntity ae, JsonWriter writer) {
+        writer.writeStartArray("dicomTransferCapability");
         for (TransferCapability tc : ae.getTransferCapabilities())
-            writeTo(tc, gen);
-        gen.writeEnd();
-        
-    }
+            writeTo(tc, writer);
+        writer.writeEnd();
 
-    private void writeTo(TransferCapability tc, JsonGenerator gen) {
-        gen.writeStartObject();
-        JsonConfiguration.writeNotNullTo("cn", tc.getCommonName(), gen);
-        gen.write("dicomSOPClass", tc.getSopClass());
-        gen.write("dicomTransferRole", tc.getRole().toString());
-        gen.writeStartArray("dicomTransferSyntax");
-        for (String ts : tc.getTransferSyntaxes())
-            gen.write(ts);
-        gen.writeEnd();
+    }
+    
+    private void writeTo(TransferCapability tc, JsonWriter writer) {
+        writer.writeStartObject();
+        writer.writeNotNull("cn", tc.getCommonName());
+        writer.writeNotNull("dicomSOPClass", tc.getSopClass());
+        writer.writeNotNull("dicomTransferRole", tc.getRole().toString());
+        writer.writeNotEmpty("dicomTransferSyntax", tc.getTransferSyntaxes());
         if (extended) {
             EnumSet<QueryOption> queryOpts = tc.getQueryOptions();
             StorageOptions storageOpts = tc.getStorageOptions();
             if (queryOpts != null || storageOpts != null) {
-                gen.writeStartObject("dcmTransferCapability");
+                writer.writeStartObject("dcmTransferCapability");
                 if (queryOpts != null) {
-                    JsonConfiguration.writeNotDefTo("dcmRelationalQueries",
-                            queryOpts.contains(QueryOption.RELATIONAL), false, gen);
-                    JsonConfiguration.writeNotDefTo("dcmCombinedDateTimeMatching",
-                            queryOpts.contains(QueryOption.DATETIME), false, gen);
-                    JsonConfiguration.writeNotDefTo("dcmFuzzySemanticMatching",
-                            queryOpts.contains(QueryOption.FUZZY), false, gen);
-                    JsonConfiguration.writeNotDefTo("dcmTimezoneQueryAdjustment",
-                            queryOpts.contains(QueryOption.TIMEZONE), false, gen);
+                    writer.writeNotDef("dcmRelationalQueries",
+                            queryOpts.contains(QueryOption.RELATIONAL), false);
+                    writer.writeNotDef("dcmCombinedDateTimeMatching",
+                            queryOpts.contains(QueryOption.DATETIME), false);
+                    writer.writeNotDef("dcmFuzzySemanticMatching",
+                            queryOpts.contains(QueryOption.FUZZY), false);
+                    writer.writeNotDef("dcmTimezoneQueryAdjustment",
+                            queryOpts.contains(QueryOption.TIMEZONE), false);
                 }
                 if (storageOpts != null) {
-                    gen.write("dcmStorageConformance", storageOpts.getLevelOfSupport().ordinal());
-                    gen.write("dcmDigitalSignatureSupport", storageOpts.getDigitalSignatureSupport().ordinal());
-                    gen.write("dcmDataElementCoercion", storageOpts.getElementCoercion().ordinal());
+                    writer.write("dcmStorageConformance", storageOpts.getLevelOfSupport().ordinal());
+                    writer.write("dcmDigitalSignatureSupport", storageOpts.getDigitalSignatureSupport().ordinal());
+                    writer.write("dcmDataElementCoercion", storageOpts.getElementCoercion().ordinal());
                 }
-                gen.writeEnd();
+                writer.writeEnd();
             }
         }
-        gen.writeEnd();
+        writer.writeEnd();
     }
 
-    private void writeConnRefs(ApplicationEntity ae, List<Connection> conns, JsonGenerator gen) {
-        gen.writeStartArray("dicomNetworkConnectionReference");
-        for (Connection conn : ae.getConnections())
-            gen.write("/dicomNetworkConnection/" + conns.indexOf(conn));
-        gen.writeEnd();
-    }
-
-    public static void writeNotNullTo(String name, Object value, JsonGenerator gen) {
-        if (value != null)
-            gen.write(name, value.toString());
-    }
-
-    public static void writeNotNullTo(String name, Boolean value, JsonGenerator gen) {
-        if (value != null)
-            gen.write(name, value.booleanValue());
-    }
-
-    private static void writeNotNullTo(String name, TimeZone value, JsonGenerator gen) {
-        if (value != null)
-            gen.write(name, value.getID());
-    }
-
-    public static void writeNotEmptyTo(String name, Object[] values, JsonGenerator gen) {
-        if (values.length != 0) {
-            gen.writeStartArray(name);
-            for (Object value : values)
-                gen.write(value.toString());
-            gen.writeEnd();
+    private void loadTransferCapabilities(ApplicationEntity ae, JsonReader reader) {
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            TransferCapability tc = new TransferCapability();
+            loadFrom(tc, reader);
+            ae.addTransferCapability(tc);
         }
+        reader.expect(JsonParser.Event.END_ARRAY);
     }
 
-    public static void writeNotDefTo(String name, int value, int defVal, JsonGenerator gen) {
-        if (value != defVal)
-            gen.write(name, value);
-    }
-
-    public static void writeNotDefTo(String name, boolean value, boolean defVal, JsonGenerator gen) {
-        if (value != defVal)
-            gen.write(name, value);
+    private void loadFrom(TransferCapability tc, JsonReader reader) {
+        while (reader.next() == JsonParser.Event.KEY_NAME) {
+            switch (reader.getString()) {
+                case "cn":
+                    tc.setCommonName(reader.stringValue());
+                    break;
+                case "dicomSOPClass":
+                    tc.setSopClass(reader.stringValue());
+                    break;
+                case "dicomTransferRole":
+                    tc.setRole(TransferCapability.Role.valueOf(reader.stringValue()));
+                    break;
+                case "dicomTransferSyntax":
+                    tc.setTransferSyntaxes(reader.stringArray());
+                    break;
+                case "dcmTransferCapability":
+                    EnumSet<QueryOption> queryOpts = null;
+                    StorageOptions storageOpts = null;
+                    reader.next();
+                    reader.expect(JsonParser.Event.START_OBJECT);
+                    while (reader.next() == JsonParser.Event.KEY_NAME) {
+                        switch (reader.getString()) {
+                            case "dcmRelationalQueries":
+                                if (reader.booleanValue()) {
+                                    if (queryOpts == null)
+                                        queryOpts = EnumSet.noneOf(QueryOption.class);
+                                    queryOpts.add(QueryOption.RELATIONAL);
+                                }
+                                break;
+                            case "dcmCombinedDateTimeMatching":
+                                if (reader.booleanValue()) {
+                                    if (queryOpts == null)
+                                        queryOpts = EnumSet.noneOf(QueryOption.class);
+                                    queryOpts.add(QueryOption.DATETIME);
+                                }
+                                break;
+                            case "dcmFuzzySemanticMatching":
+                                if (reader.booleanValue()) {
+                                    if (queryOpts == null)
+                                        queryOpts = EnumSet.noneOf(QueryOption.class);
+                                    queryOpts.add(QueryOption.FUZZY);
+                                }
+                                break;
+                            case "dcmTimezoneQueryAdjustment":
+                                if (reader.booleanValue()) {
+                                    if (queryOpts == null)
+                                        queryOpts = EnumSet.noneOf(QueryOption.class);
+                                    queryOpts.add(QueryOption.TIMEZONE);
+                                }
+                                break;
+                            case "dcmStorageConformance":
+                                if (storageOpts == null)
+                                    storageOpts = new StorageOptions();
+                                storageOpts.setLevelOfSupport(
+                                        StorageOptions.LevelOfSupport.valueOf(reader.intValue()));
+                                break;
+                            case "dcmDigitalSignatureSupport":
+                                if (storageOpts == null)
+                                    storageOpts = new StorageOptions();
+                                storageOpts.setDigitalSignatureSupport(
+                                        StorageOptions.DigitalSignatureSupport.valueOf(reader.intValue()));
+                                break;
+                            case "dcmDataElementCoercion":
+                                if (storageOpts == null)
+                                    storageOpts = new StorageOptions();
+                                storageOpts.setElementCoercion(
+                                        StorageOptions.ElementCoercion.valueOf(reader.intValue()));
+                                break;
+                            default:
+                                unknownProperty(reader);
+                        }
+                    }
+                    reader.expect(JsonParser.Event.END_OBJECT);
+                    tc.setQueryOptions(queryOpts);
+                    tc.setStorageOptions(storageOpts);
+                    break;
+                default:
+                    unknownProperty(reader);
+            }
+        }
+        reader.expect(JsonParser.Event.END_OBJECT);
     }
 
 }

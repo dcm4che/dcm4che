@@ -40,16 +40,84 @@
 
 package org.dcm4che3.conf.json;
 
-import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Device;
-
 import javax.json.stream.JsonGenerator;
+import java.util.TimeZone;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @since Nov 2015
+ * @since Dec 2015
  */
-public interface JsonConfigurationExtension {
-    void storeTo(Device device, JsonWriter writer);
-    void storeTo(ApplicationEntity ae, JsonWriter writer);
+public class JsonWriter {
+    private final JsonGenerator gen;
+
+    public JsonWriter(JsonGenerator gen) {
+        this.gen = gen;
+    }
+
+    public JsonGenerator writeStartObject() {
+        return gen.writeStartObject();
+    }
+
+    public JsonGenerator writeStartObject(String name) {
+        return gen.writeStartObject(name);
+    }
+
+    public JsonGenerator writeStartArray() {
+        return gen.writeStartArray();
+    }
+
+    public JsonGenerator writeStartArray(String name) {
+        return gen.writeStartArray(name);
+    }
+
+    public JsonGenerator write(String name, int value) {
+        return gen.write(name, value);
+    }
+
+    public JsonGenerator write(String name, boolean value) {
+        return gen.write(name, value);
+    }
+
+    public JsonGenerator writeEnd() {
+        return gen.writeEnd();
+    }
+
+    public JsonGenerator write(String value) {
+        return gen.write(value);
+    }
+
+    public void writeNotNull(String name, Object value) {
+        if (value != null)
+            gen.write(name, value.toString());
+    }
+
+    public void writeNotNull(String name, Boolean value) {
+        if (value != null)
+            gen.write(name, value.booleanValue());
+    }
+
+    public void writeNotNull(String name, TimeZone value) {
+        if (value != null)
+            gen.write(name, value.getID());
+    }
+
+    public void writeNotEmpty(String name, Object[] values) {
+        if (values.length != 0) {
+            gen.writeStartArray(name);
+            for (Object value : values)
+                gen.write(value.toString());
+            gen.writeEnd();
+        }
+    }
+
+    public void writeNotDef(String name, int value, int defVal) {
+        if (value != defVal)
+            gen.write(name, value);
+    }
+
+    public void writeNotDef(String name, boolean value, boolean defVal) {
+        if (value != defVal)
+            gen.write(name, value);
+    }
+
 }

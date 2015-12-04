@@ -46,10 +46,15 @@ import org.junit.Test;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -61,11 +66,56 @@ public class JsonConfigurationTest {
 
     @Test
     public void testWriteTo() throws Exception {
-        try (
-                OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream("target/device.json"));
-                JsonGenerator gen = Json.createGenerator(w)) {
+        StringWriter writer = new StringWriter();
+        try ( JsonGenerator gen = Json.createGenerator(writer)) {
             new JsonConfiguration().writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
         }
+        Path path = Paths.get("src/test/data/device.json");
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            assertEquals(reader.readLine(), writer.toString());
+        }
+    }
+
+    @Test
+    public void testLoadDevice() throws Exception {
+        Device device = null;
+        Path path = Paths.get("src/test/data/device.json");
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            device = new JsonConfiguration().loadDeviceFrom(Json.createParser(reader));
+        }
+        assertEquals("Test-Device-1", device.getDeviceName());
+        List<Connection> conns = device.listConnections();
+        assertEquals(1, conns.size());
+        Connection conn = conns.get(0);
+        assertEquals("host.dcm4che.org", conn.getHostname());
+        assertEquals(11112, conn.getPort());
+        Collection<ApplicationEntity> aes = device.getApplicationEntities();
+        assertEquals(1, aes.size());
+        ApplicationEntity ae = aes.iterator().next();
+        assertEquals("TEST-AET1", ae.getAETitle());
+        assertTrue(ae.isAssociationAcceptor());
+        assertFalse(ae.isAssociationInitiator());
+        List<Connection> aeconns = ae.getConnections();
+        assertEquals(1, aeconns.size());
+        assertSame(conn, aeconns.get(0));
+        assertEquals(3, ae.getTransferCapabilities().size());
+        TransferCapability echoSCP = ae.getTransferCapabilityFor(UID.VerificationSOPClass, TransferCapability.Role.SCP);
+        assertNotNull(echoSCP);
+        assertArrayEquals(new String[]{ UID.ImplicitVRLittleEndian }, echoSCP.getTransferSyntaxes());
+        assertNull(echoSCP.getCommonName());
+        assertNull(echoSCP.getQueryOptions());
+        assertNull(echoSCP.getStorageOptions());
+        TransferCapability ctSCP = ae.getTransferCapabilityFor(UID.CTImageStorage, TransferCapability.Role.SCP);
+        assertNotNull(ctSCP);
+        StorageOptions storageOptions = ctSCP.getStorageOptions();
+        assertNotNull(storageOptions);
+        assertEquals(StorageOptions.LevelOfSupport.LEVEL_2, storageOptions.getLevelOfSupport());
+        assertEquals(StorageOptions.DigitalSignatureSupport.LEVEL_1, storageOptions.getDigitalSignatureSupport());
+        assertEquals(StorageOptions.ElementCoercion.YES, storageOptions.getElementCoercion());
+        TransferCapability findSCP = ae.getTransferCapabilityFor(
+                UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
+        assertNotNull(findSCP);
+        assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
     }
 
     private static Device createDevice(String name, String aet) throws Exception {

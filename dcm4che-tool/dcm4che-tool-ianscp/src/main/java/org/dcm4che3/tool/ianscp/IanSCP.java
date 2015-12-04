@@ -50,101 +50,44 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.net.ApplicationEntity;
-import org.dcm4che3.net.Association;
-import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.Dimse;
-import org.dcm4che3.net.Status;
 import org.dcm4che3.net.TransferCapability;
-import org.dcm4che3.net.pdu.PresentationContext;
-import org.dcm4che3.net.service.AbstractDicomService;
-import org.dcm4che3.net.service.BasicCEchoSCP;
-import org.dcm4che3.net.service.DicomService;
-import org.dcm4che3.net.service.DicomServiceException;
-import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.SafeClose;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * Command line interface for {@link IanSCPTool}
  *
+ * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Hermann Czedik-Eysenberg <hermann-agfa@czedik.net>
  */
-public class IanSCP extends Device {
+public class IanSCP {
 
-   private static final Logger LOG = LoggerFactory.getLogger(IanSCP.class);
-
-   private static ResourceBundle rb =
+    private static ResourceBundle rb =
             ResourceBundle.getBundle("org.dcm4che3.tool.ianscp.messages");
 
-   private final ApplicationEntity ae = new ApplicationEntity("*");
-   private final Connection conn = new Connection();
-   private File storageDir;
-   private int status;
-
-   private final DicomService ianSCP =
-           new AbstractDicomService(UID.InstanceAvailabilityNotificationSOPClass) {
-
-            @Override
-            public void onDimseRQ(Association as, PresentationContext pc,
-                    Dimse dimse, Attributes cmd, Attributes data)
-                    throws IOException {
-                if (dimse != Dimse.N_CREATE_RQ)
-                    throw new DicomServiceException(Status.UnrecognizedOperation);
-                Attributes rsp = Commands.mkNCreateRSP(cmd, status);
-                Attributes rspAttrs = IanSCP.this.create(as, cmd, data);
-                as.tryWriteDimseRSP(pc, rsp, rspAttrs);
-            }
-   };
-
-   public IanSCP() throws IOException {
-       super("ianscp");
-       addConnection(conn);
-       addApplicationEntity(ae);
-       ae.setAssociationAcceptor(true);
-       ae.addConnection(conn);
-       DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
-       serviceRegistry.addDicomService(new BasicCEchoSCP());
-       serviceRegistry.addDicomService(ianSCP);
-       ae.setDimseRQHandler(serviceRegistry);
-   }
-
-   public void setStorageDirectory(File storageDir) {
-       if (storageDir != null)
-           storageDir.mkdirs();
-       this.storageDir = storageDir;
-   }
-
-   public File getStorageDirectory() {
-       return storageDir;
-   }
-
-   public void setStatus(int status) {
-       this.status = status;
-   }
-
-   public static void main(String[] args) {
+    public static void main(String[] args) {
        try {
            CommandLine cl = parseComandLine(args);
-           IanSCP main = new IanSCP();
-           CLIUtils.configureBindServer(main.conn, main.ae, cl);
-           CLIUtils.configure(main.conn, cl);
-           configureTransferCapability(main.ae, cl);
-           main.setStatus(CLIUtils.getIntOption(cl, "status", 0));
+           Device device = new Device("ianscp");
+           ApplicationEntity ae = new ApplicationEntity("*");
+           device.addApplicationEntity(ae);
+           Connection conn = new Connection();
+           device.addConnection(conn);
+           ae.addConnection(conn);
+           IanSCPTool main = new IanSCPTool(device, ae);
+           CLIUtils.configureBindServer(conn, ae, cl);
+           CLIUtils.configure(conn, cl);
+           configureTransferCapability(ae, cl);
+           main.setResponseStatus(CLIUtils.getIntOption(cl, "status", 0));
            main.setStorageDirectory(getStorageDirectory(cl));
            ExecutorService executorService = Executors.newCachedThreadPool();
            ScheduledExecutorService scheduledExecutorService = 
                    Executors.newSingleThreadScheduledExecutor();
-           main.setScheduledExecutor(scheduledExecutorService);
-           main.setExecutor(executorService);
-           main.bindConnections();
+           device.setScheduledExecutor(scheduledExecutorService);
+           device.setExecutor(executorService);
+           device.bindConnections();
        } catch (ParseException e) {
            System.err.println("ianscp: " + e.getMessage());
            System.err.println(rb.getString("try"));
@@ -221,30 +164,4 @@ public class IanSCP extends Device {
         }
     }
 
-    private Attributes create(Association as, Attributes rq, Attributes rqAttrs)
-            throws DicomServiceException {
-        if (storageDir == null)
-            return null;
-        String cuid = rq.getString(Tag.AffectedSOPClassUID);
-        String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
-        File file = new File(storageDir, iuid);
-        if (file.exists())
-            throw new DicomServiceException(Status.DuplicateSOPinstance).
-                setUID(Tag.AffectedSOPInstanceUID, iuid);
-        DicomOutputStream out = null;
-        LOG.info("{}: M-WRITE {}", as, file);
-        try {
-            out = new DicomOutputStream(file);
-            out.writeDataset(
-                    Attributes.createFileMetaInformation(iuid, cuid,
-                            UID.ExplicitVRLittleEndian),
-                    rqAttrs);
-        } catch (IOException e) {
-            LOG.warn(as + ": Failed to store Instance Available Notification:", e);
-            throw new DicomServiceException(Status.ProcessingFailure, e);
-        } finally {
-            SafeClose.close(out);
-        }
-        return null;
-    }
 }

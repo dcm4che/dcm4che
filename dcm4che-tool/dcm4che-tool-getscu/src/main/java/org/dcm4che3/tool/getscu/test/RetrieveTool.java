@@ -214,7 +214,7 @@ public class RetrieveTool implements TestTool{
 
     private void onCGetReponse(Association as, Attributes cmd, Attributes data) {
         int status = cmd.getInt(Tag.Status, -1);
-        if(status != Status.Pending) {
+        if(!Status.isPending(status)) {
             numCGetSuccess = cmd.getInt(Tag.NumberOfCompletedSuboperations,0);
             numCGetFailed = cmd.getInt(Tag.NumberOfFailedSuboperations,0);
             numCGetWarning = cmd.getInt(Tag.NumberOfWarningSuboperations,0);

@@ -138,25 +138,28 @@ public class ConfigNodeTraverser {
         }
     }
 
-    public static void traverseNodeTypesafe(Object node, Class nodeClass, ConfigNodeTypesafeFilter filter, List<Class> allExtensionClasses) throws ConfigurationException {
+    public static void traverseNodeTypesafe(Object node, AnnotatedConfigurableProperty containerProperty, List<Class> allExtensionClasses, ConfigNodeTypesafeFilter filter) throws ConfigurationException {
 
         // if because of any reason this is not a map (e.g. a reference or a custom adapter for a configurableclass),
-        // we don't care about defaults
+        // we don't go deeper
         if (!(node instanceof Map)) return;
+
+        // if that's a reference, don't traverse deeper
+        if (containerProperty.isReference()) return;
 
         Map<String, Object> containerNode = (Map<String, Object>) node;
 
-        List<AnnotatedConfigurableProperty> properties = ConfigIterators.getAllConfigurableFieldsAndSetterParameters(nodeClass);
+        List<AnnotatedConfigurableProperty> properties = ConfigIterators.getAllConfigurableFieldsAndSetterParameters(containerProperty.getRawClass());
         for (AnnotatedConfigurableProperty property : properties) {
             Object childNode = containerNode.get(property.getAnnotatedName());
 
-            if (filter.beforeNode(containerNode, nodeClass, property)) continue;
+            if (filter.beforeNode(containerNode, containerProperty.getRawClass(), property)) continue;
 
             if (childNode == null) continue;
 
             // if the property is a configclass
             if (property.isConfObject()) {
-                traverseNodeTypesafe(childNode, property.getRawClass(), filter, allExtensionClasses);
+                traverseNodeTypesafe(childNode, property, allExtensionClasses, filter);
                 continue;
             }
 
@@ -166,7 +169,7 @@ public class ConfigNodeTraverser {
                 Collection collection = (Collection) childNode;
 
                 for (Object object : collection) {
-                    traverseNodeTypesafe(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter, allExtensionClasses);
+                    traverseNodeTypesafe(object, property.getPseudoPropertyForConfigClassCollectionElement(), allExtensionClasses, filter);
                 }
 
                 continue;
@@ -179,7 +182,7 @@ public class ConfigNodeTraverser {
                     Map<String, Object> collection = (Map<String, Object>) childNode;
 
                     for (Object object : collection.values())
-                        traverseNodeTypesafe(object, property.getPseudoPropertyForConfigClassCollectionElement().getRawClass(), filter, allExtensionClasses);
+                        traverseNodeTypesafe(object, property.getPseudoPropertyForConfigClassCollectionElement(), allExtensionClasses, filter);
 
                 } catch (ClassCastException e) {
                     log.warn("Map is malformed", e);
@@ -196,10 +199,10 @@ public class ConfigNodeTraverser {
 
                     for (Entry<String, Object> entry : extensionsMap.entrySet()) {
                         try {
-                            traverseNodeTypesafe(entry.getValue(), Extensions.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses), filter, allExtensionClasses);
+                            traverseNodeTypesafe(entry.getValue(), new AnnotatedConfigurableProperty(Extensions.getExtensionClassBySimpleName(entry.getKey(), allExtensionClasses)), allExtensionClasses, filter);
                         } catch (ClassNotFoundException e) {
                             // noop
-                            log.debug("Extension class {} not found, parent node class {} ", entry.getKey(), nodeClass.getName());
+                            log.debug("Extension class {} not found, parent node class {} ", entry.getKey(), containerProperty.getRawClass().getName());
                         }
                     }
 

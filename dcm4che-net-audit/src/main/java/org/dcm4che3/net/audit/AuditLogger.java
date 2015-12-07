@@ -1085,7 +1085,7 @@ public class AuditLogger extends DeviceExtension {
                     AuditMessages.toRFC3881XML(msg, builder, formatXML, encoding, schemaURI);
                 }
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }
@@ -1097,7 +1097,7 @@ public class AuditLogger extends DeviceExtension {
                 writeHeader(severity, timeStamp);
                 write(data, off, len);
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }

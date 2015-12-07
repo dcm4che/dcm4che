@@ -97,7 +97,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
 
         // if called with no configurableClass, omit hashes
         if (configurableClass != null && configurationNode != null) {
-            ConfigNodeTraverser.traverseNodeTypesafe(configurationNode, configurableClass, new HashMarkingTypesafeNodeFilter(), allExtensionClasses);
+            ConfigNodeTraverser.traverseNodeTypesafe(configurationNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, new HashMarkingTypesafeNodeFilter());
             ConfigNodeTraverser.traverseMapNode(configurationNode, new OLockHashCalcFilter());
         }
 

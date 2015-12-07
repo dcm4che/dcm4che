@@ -141,7 +141,9 @@ public class MPPSSCPTool implements TestTool {
                 if (received.size() >= howMany) return;
 
             }
-            throw new RuntimeException("Timeout - did not receive all the expected MPPS messages");
+            throw new RuntimeException("Timeout - did not receive all the expected MPPS messages in "+timeoutInSeconds+" seconds:" +
+                    "\n Expected "+howMany+" messages" +
+                    "\n Received "+received.size()+" messages");
         } finally {
             stop();
         }

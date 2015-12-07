@@ -91,6 +91,8 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
     public SingleJsonFileConfigurationStorage(String fileName) {
         this.fileName = fileName;
+        if (System.getProperties().containsKey(USE_GIT_SYSPROP)) makeGitCommitOnPersist = true;
+
     }
 
     public void configure(Hashtable<?, ?> props) {

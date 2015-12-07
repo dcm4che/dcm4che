@@ -90,9 +90,15 @@ public class RetrieveTool implements TestTool{
     private final Device device;
     private final Connection conn;
     private final File retrieveDir;
+
+    private int numCGetFailed;
+    private int numCGetSuccess;
+    private int numCGetWarning;
+
     private int numCStores;
-    private int numSuccess;
-    private int numFailed;
+    private int numCStoreSuccess;
+    private int numCStoreFailed;
+
     private int expectedMatches = Integer.MIN_VALUE;
     private final Attributes retrieveatts = new Attributes();
     private final GetSCU retrievescu;
@@ -143,10 +149,13 @@ public class RetrieveTool implements TestTool{
         retrievescu.getAAssociateRQ().setCalledAET(aeTitle);
         retrievescu.getRemoteConnection().setHostname(host);
         retrievescu.getRemoteConnection().setPort(port);
-      //ensure secure connection
+
+        //ensure secure connection
         retrievescu.getRemoteConnection().setTlsCipherSuites(conn.getTlsCipherSuites());
         retrievescu.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
+
         retrievescu.setStorageDirectory(retrieveDir);
+
         registerSCPservice(retrieveDir);
         
         // add retrieve attrs
@@ -166,7 +175,7 @@ public class RetrieveTool implements TestTool{
         // open, send and wait for response
         try {
             retrievescu.open();
-            retrievescu.retrieve(new DimseRSPHandler(retrievescu.getAssociation().nextMessageID()));
+            retrievescu.retrieve(getResponseHandler());
         } catch (Exception exception){
             LOG.error("Error while retrieving", exception);
         } finally {
@@ -177,17 +186,39 @@ public class RetrieveTool implements TestTool{
 
         long timeEnd = System.currentTimeMillis();
         
-        if (this.expectedMatches >= 0)
-            assertTrue("test[" + testDescription 
+        if (this.expectedMatches >= 0) {
+            assertTrue("test[" + testDescription
                     + "] not returned expected result:" + this.expectedMatches
                     + " but:" + numCStores, numCStores == this.expectedMatches);
-        
-        assertTrue("test[" + testDescription
-                    + "] had failed responses:"+ numFailed, numFailed==0);
+        }
+
+        assertTrue("test[" + testDescription + "] had failed c-get responses: " + numCGetFailed, numCGetFailed == 0 );
+
+        assertTrue("test[" + testDescription + "] had failed c-store responses: " + numCStoreFailed, numCStoreFailed == 0);
         
         init(new RetrieveResult(testDescription, expectedMatches, numCStores,
-                numSuccess, numFailed,
+                numCStoreSuccess, numCStoreFailed,
                 (timeEnd - timeStart), response));
+    }
+
+    private DimseRSPHandler getResponseHandler() {
+        return new DimseRSPHandler(retrievescu.getAssociation().nextMessageID()) {
+            @Override
+            public void onDimseRSP(Association as, Attributes cmd, Attributes data) {
+                super.onDimseRSP(as, cmd, data);
+
+                onCGetReponse(as, cmd, data);
+            }
+        };
+    }
+
+    private void onCGetReponse(Association as, Attributes cmd, Attributes data) {
+        int status = cmd.getInt(Tag.Status, -1);
+        if(!Status.isPending(status)) {
+            numCGetSuccess = cmd.getInt(Tag.NumberOfCompletedSuboperations,0);
+            numCGetFailed = cmd.getInt(Tag.NumberOfFailedSuboperations,0);
+            numCGetWarning = cmd.getInt(Tag.NumberOfWarningSuboperations,0);
+        }
     }
 
     public void addOfferedStorageSOPClass(String cuid, String... tsuids) {
@@ -250,9 +281,9 @@ public class RetrieveTool implements TestTool{
     protected void onCStoreReq(Attributes cmd, Attributes data) {
         int status = cmd.getInt(Tag.Status, -1);
         if (data != null && !data.isEmpty())
-            ++numSuccess;
+            ++numCStoreSuccess;
         else
-            ++numFailed;
+            ++numCStoreFailed;
 
         if (rememberResultAttributes)
             response.add(data);

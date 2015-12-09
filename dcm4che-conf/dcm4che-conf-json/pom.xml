@@ -75,11 +75,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-net</artifactId>
-      <version>5.0.1-dcm4chee-arc-light-SNAPSHOT</version>
-    </dependency>
   </dependencies>
 
 

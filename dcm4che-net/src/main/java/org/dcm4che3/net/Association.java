@@ -789,7 +789,7 @@ public class Association {
         return tsMap;
     }
 
-    private PresentationContext pcFor(String cuid, String tsuid)
+    public PresentationContext pcFor(String cuid, String tsuid)
             throws NoPresentationContextException {
         HashMap<String, PresentationContext> tsMap = pcMap.get(cuid);
         if (tsMap == null)
@@ -1197,7 +1197,7 @@ public class Association {
         return rsp;
     }
 
-    private void invoke(PresentationContext pc, Attributes cmd,
+    public void invoke(PresentationContext pc, Attributes cmd,
             DataWriter data, DimseRSPHandler rspHandler, int rspTimeout)
             throws IOException, InterruptedException {
         stopTimeout();

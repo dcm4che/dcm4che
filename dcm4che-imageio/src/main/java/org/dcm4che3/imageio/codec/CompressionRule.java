@@ -76,14 +76,14 @@ public class CompressionRule
     }
 
     /**
-     * Device name is not supported.
+     * @deprecated Device name is not supported. Use the other constructor.
      */
     @Deprecated
     public CompressionRule(String commonName, String[] pmis, int[] bitsStored,
                            int pixelRepresentation, String[] aeTitles, String[] deviceNames,
                            String[] sopClasses, String[] imgTypes, String[] bodyPartExamined,
                            String tsuid, String... params) {
-    this(commonName, pmis, bitsStored, pixelRepresentation, aeTitles, sopClasses, imgTypes, bodyPartExamined, tsuid, params);
+        this(commonName, pmis, bitsStored, pixelRepresentation, aeTitles, sopClasses, imgTypes, bodyPartExamined, tsuid, params);
     }
 
     public CompressionRule(String commonName, String[] pmis, int[] bitsStored,

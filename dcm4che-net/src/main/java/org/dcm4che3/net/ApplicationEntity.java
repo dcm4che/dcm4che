@@ -42,13 +42,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.AAbort;
@@ -93,17 +87,12 @@ public class ApplicationEntity implements Serializable {
     private boolean acceptor = true;
     private boolean initiator = true;
     private Boolean installed;
-    private final LinkedHashSet<String> acceptedCallingAETs =
-            new LinkedHashSet<String>();
-    private final LinkedHashSet<String> otherAETs =
-            new LinkedHashSet<String>();
-    private final List<Connection> conns = new ArrayList<Connection>(1);
-    private final HashMap<String, TransferCapability> scuTCs =
-            new HashMap<String, TransferCapability>();
-    private final HashMap<String, TransferCapability> scpTCs =
-            new HashMap<String, TransferCapability>();
-    private final HashMap<Class<? extends AEExtension>,AEExtension> extensions =
-            new HashMap<Class<? extends AEExtension>,AEExtension>();
+    private final LinkedHashSet<String> acceptedCallingAETs = new LinkedHashSet<>();
+    private final LinkedHashSet<String> otherAETs = new LinkedHashSet<>();
+    private final List<Connection> conns = new ArrayList<>(1);
+    private final LinkedHashMap<String, TransferCapability> scuTCs = new LinkedHashMap<>();
+    private final LinkedHashMap<String, TransferCapability> scpTCs = new LinkedHashMap<>();
+    private final LinkedHashMap<Class<? extends AEExtension>,AEExtension> extensions = new LinkedHashMap<>();
 
     private transient DimseRQHandler dimseRQHandler;
 

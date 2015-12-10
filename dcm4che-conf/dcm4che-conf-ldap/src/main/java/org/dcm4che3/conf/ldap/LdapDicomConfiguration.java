@@ -133,15 +133,18 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     @SuppressWarnings("unchecked")
     public LdapDicomConfiguration(Hashtable<?,?> env)
             throws ConfigurationException {
+        Hashtable<String,String> map = new Hashtable();
+        for (Map.Entry<?, ?> entry : env.entrySet())
+            map.put((String) entry.getKey(),
+                    StringUtils.replaceSystemProperties((String) entry.getValue()));
+
         try {
             // split baseDN from LDAP URL
-            env = (Hashtable<?,?>) env.clone();
-            String s = (String) env.get(Context.PROVIDER_URL);
+            String s = map.get(Context.PROVIDER_URL);
             int end = s.lastIndexOf('/');
-            ((Hashtable<Object,Object>) env)
-                .put(Context.PROVIDER_URL, s.substring(0, end));
+            map.put(Context.PROVIDER_URL, s.substring(0, end));
             this.baseDN = s.substring(end+1);
-            this.ctx = new InitialDirContext(env);
+            this.ctx = new InitialDirContext(map);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }

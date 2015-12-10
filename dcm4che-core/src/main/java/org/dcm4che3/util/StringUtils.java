@@ -274,7 +274,9 @@ public class StringUtils {
                 j = i-1;
                 break;
             }
-            String val = System.getProperty(s.substring(i+2, j));
+            String val = s.startsWith("env.", i+2)
+                ? System.getenv(s.substring(i+6, j))
+                : System.getProperty(s.substring(i+2, j));
             sb.append(val != null ? val : s.substring(i, j+1));
             i = s.indexOf("${", j+1);
         } while (i != -1);

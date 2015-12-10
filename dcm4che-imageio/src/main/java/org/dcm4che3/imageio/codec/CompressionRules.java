@@ -136,13 +136,8 @@ public class CompressionRules
     }
 
     public CompressionRule findCompressionRule(String aeTitle, Attributes attrs) {
-        return findCompressionRule(null, aeTitle, attrs);
-    }
-
-    public CompressionRule findCompressionRule(String deviceName,
-            String aeTitle, Attributes attrs) {
         try {
-            return findCompressionRule(deviceName, aeTitle,
+            return findCompressionRule(aeTitle,
                     PhotometricInterpretation.fromString(
                             attrs.getString(Tag.PhotometricInterpretation)),
                     attrs.getInt(Tag.BitsStored, 0),
@@ -156,20 +151,12 @@ public class CompressionRules
     }
 
     public CompressionRule findCompressionRule(String aeTitle,
-            PhotometricInterpretation pmi,
-            int bitsStored, int pixelRepresentation, 
-            String sopClass, String[] imgTypes, String bodyPart) {
-        return findCompressionRule(null, aeTitle, pmi, bitsStored,
-                pixelRepresentation, sopClass, imgTypes, bodyPart);
-    }
-
-    public CompressionRule findCompressionRule(String deviceName, String aeTitle,
-            PhotometricInterpretation pmi,
-            int bitsStored, int pixelRepresentation, 
-            String sopClass, String[] imgTypes, String bodyPart) {
+                                               PhotometricInterpretation pmi,
+                                               int bitsStored, int pixelRepresentation,
+                                               String sopClass, String[] imgTypes, String bodyPart) {
         for (CompressionRule ac : weightedList)
             if (ac.matchesCondition(pmi, bitsStored, pixelRepresentation,
-                    aeTitle, deviceName, sopClass, imgTypes, bodyPart))
+                    aeTitle, sopClass, imgTypes, bodyPart))
                 return ac;
         return null;
     }

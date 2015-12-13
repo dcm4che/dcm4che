@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>5.0.1-dcm4chee-arc-light-SNAPSHOT</version>
+    <version>dcm4chee-arc-light-5.0.1.CR1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>dcm4che-tool-ianscp</artifactId>

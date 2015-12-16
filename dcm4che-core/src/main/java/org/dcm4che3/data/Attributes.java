@@ -1548,10 +1548,7 @@ public class Attributes implements Serializable {
     public void updateTimeZoneOfSpecificTag(TimeZone from, TimeZone to
             , String privateCreator, int tag) {
 
-        updateTimezone(from, to,
-                privateCreator == null ?
-                        indexOf(tag)
-                        : indexOf(privateCreator, tag));
+        updateTimezone(from, to,indexOf(privateCreator, tag));
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {

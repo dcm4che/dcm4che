@@ -1538,14 +1538,20 @@ public class Attributes implements Serializable {
     }
 
     /**
-     * Updates the time zone of a specific tag
+     * Updates the time zone of a specific standard or private tag
      *
      * @param from Time Zone from
      * @param to Time Zone to
+     * @param privateCreator private creator - null otherwise
      * @param Tag Attribute tag to update time zone
      */
-    public void updateTimeZoneOfSpecificTag(TimeZone from, TimeZone to, int tag) {
-        updateTimezone(from,to,indexOf(tag));
+    public void updateTimeZoneOfSpecificTag(TimeZone from, TimeZone to
+            , String privateCreator, int tag) {
+
+        updateTimezone(from, to,
+                privateCreator == null ?
+                        indexOf(tag)
+                        : indexOf(privateCreator, tag));
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {

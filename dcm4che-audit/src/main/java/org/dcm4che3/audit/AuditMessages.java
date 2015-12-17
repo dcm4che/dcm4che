@@ -681,9 +681,11 @@ public class AuditMessages {
         ap.setUserIsRequestor(requestor);
         ap.setNetworkAccessPointID(napID);
         ap.setNetworkAccessPointTypeCode(napTypeCode);
-        MediaIdentifier media = new MediaIdentifier();
-        media.setMediaType(mediaType);
-        ap.setMediaIdentifier(media);
+        if (mediaType != null) {
+            MediaIdentifier media = new MediaIdentifier();
+            media.setMediaType(mediaType);
+            ap.setMediaIdentifier(media);
+        }
         for (RoleIDCode roleID : roleIDs)
             ap.getRoleIDCode().add(roleID);
         return ap;

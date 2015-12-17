@@ -560,7 +560,7 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
 
         public ParticipantObjectIDTypeCode(String code) {
-            super.code = code;
+            this(code, "", "");//Use "" for codeSystemName and originalText to fit with DICOM schema (even that this is not defined in RFC-3881)
         }
 
         public ParticipantObjectIDTypeCode(String code, String codeSystemName,

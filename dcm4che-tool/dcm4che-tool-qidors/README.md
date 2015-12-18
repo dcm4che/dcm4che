@@ -60,6 +60,6 @@
     Examples:
     $ qidors --fuzzy --timezone -i MYPROPRIETARYATTR -m PatientName=Doe^John -m
     StudyDate=20110510 -m OtherPatientIDsSequence.00100020=11235813 
-	http://localhost:8080/dcm4che-arc/qidors/DCM4CHEE/studies
-    Query AE DCM4CHEE served on localhost port 8080 and registered
-    at dcm4che-arc with query path /qidors for a qidors response in XML
+    http://localhost:8080/dicom-web/DCM4CHEE/studies
+    Issues a QIDO-RS query against endpoint http://localhost:8080/dicom-web/DCM4CHEE/
+    and specifies that the response should be in XML

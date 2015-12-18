@@ -40,7 +40,7 @@
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="text" encoding="UTF-8" />
-  <xsl:param name="wado-url">http://localhost:8080/dcm4chee-arc/wado/DCM4CHEE</xsl:param>
+  <xsl:param name="wado-url">http://localhost:8080/dicom-web/DCM4CHEE</xsl:param>
   <xsl:param name="br"><xsl:text>&#10;</xsl:text></xsl:param>
   <xsl:variable name="sopRefs" select="/NativeDicomModel/DicomAttribute[@tag='0040A375' or @tag='0040A385']/Item
                    /DicomAttribute[@tag='00081115']/Item/DicomAttribute[@tag='00081199']/Item"/>

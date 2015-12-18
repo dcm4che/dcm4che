@@ -82,12 +82,12 @@
     -
     Examples:
     $ wadouri --object-id 1.2.3:1.2.3.4:1.2.3.4.5 --content-type image/jpeg
-    http://localhost:8080/dcm4che-arc/wado/DCM4CHEE
+    http://localhost:8080/dicom-web/DCM4CHEE
     Retrieves the bulk data for the instance 1.2.3.4.5 from series 1.2.3.4
     from study 1.2.3 as a JPEG image.
     -
     $ wadouri --object-id 1.2.3:1.2.3.4:1.2.3.4.5 --content-type application/dicom
     --transfer-syntax 1.2.840.10008.1.2.1
-    http://localhost:8080/dcm4che-arc/wado/DCM4CHEE
+    http://localhost:8080/dicom-web/DCM4CHEE
     Retrieves the DICOM representation for the instance 1.2.3.4.5 from series 1.2.3.4
     from study 1.2.3 encoded as Explicit VR little Endian.

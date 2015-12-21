@@ -2400,17 +2400,15 @@ public class Attributes implements Serializable {
 
     private boolean equalTemporalValue(Attributes other, int index, int otherIndex) {
         VR vr = vrs[index];
-        Object v1 =  decodeStringValue(index);
-        Object v2 =  other.decodeStringValue(otherIndex);
-        if(v1 == v2)
-            return true;
+        String v1 = (String) decodeStringValue(index);
+        String v2 = (String) other.decodeStringValue(otherIndex);
         switch (vr) {
 
             case DA:
-                return DateUtils.parseDA(null,(String) v1).equals(DateUtils.parseDA(null,(String) v2));
+                return DateUtils.parseDA(null, v1).equals(DateUtils.parseDA(null, v2));
             case TM:
-                return DateUtils.parseTM(null,(String) v1, new DatePrecision())
-                        .equals(DateUtils.parseTM(null,(String) v2, new DatePrecision()));
+                return DateUtils.parseTM(null, v1, new DatePrecision())
+                        .equals(DateUtils.parseTM(null, v2, new DatePrecision()));
             default:
                 return false;
         }

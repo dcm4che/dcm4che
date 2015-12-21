@@ -22,6 +22,7 @@
     </xsl:template>
     <xsl:template match="AuditSourceIdentification">
         <AuditSourceIdentification>
+            <xsl:attribute name="AuditSourceID"><xsl:value-of select="@AuditSourceID"/></xsl:attribute>
             <AuditSourceTypeCode>
                 <xsl:attribute name="code">
                     <xsl:value-of select="@code"/>

@@ -2376,8 +2376,6 @@ public class Attributes implements Serializable {
         VR vr = vrs[index];
         if (vr != other.vrs[otherIndex])
             return false;
-        if (vr.isTemporalType() && vr != VR.DT)
-            return equalTemporalValue(other, index, otherIndex);
         if (vr.isStringType())
             if (vr == VR.IS)
                 return equalISValues(other, index, otherIndex);
@@ -2396,22 +2394,6 @@ public class Attributes implements Serializable {
         } else
             return v1.equals(v2);
         return false;
-    }
-
-    private boolean equalTemporalValue(Attributes other, int index, int otherIndex) {
-        VR vr = vrs[index];
-        String v1 = (String) decodeStringValue(index);
-        String v2 = (String) other.decodeStringValue(otherIndex);
-        switch (vr) {
-
-            case DA:
-                return DateUtils.parseDA(null, v1).equals(DateUtils.parseDA(null, v2));
-            case TM:
-                return DateUtils.parseTM(null, v1, new DatePrecision())
-                        .equals(DateUtils.parseTM(null, v2, new DatePrecision()));
-            default:
-                return false;
-        }
     }
 
     private boolean equalISValues(Attributes other, int index, int otherIndex) {

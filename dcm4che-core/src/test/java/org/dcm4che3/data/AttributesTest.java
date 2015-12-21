@@ -38,14 +38,19 @@
 
 package org.dcm4che3.data;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Date;
+
 import org.dcm4che3.io.BulkDataDescriptor;
 import org.dcm4che3.util.ByteUtils;
 import org.dcm4che3.util.DateUtils;
 import org.junit.Test;
-
-import java.util.Date;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -175,25 +180,8 @@ public class AttributesTest {
         Attributes a2 = new Attributes();
         a2.setString(Tag.PixelSpacing, VR.DS, "+0.50", "5E-1");
         assertTrue(a1.equals(a2));
-        assertArrayEquals(new String[]{"0.5", "0.5"}, a1.getStrings(Tag.PixelSpacing));
-        assertArrayEquals(new String[]{"0.5", "0.5"}, a2.getStrings(Tag.PixelSpacing));
-    }
-
-    @Test
-    public void testEqualsTemporalDA() {
-        Attributes a1 = new Attributes();
-        a1.setString(Tag.StudyDate, VR.DA, "19950101");
-        Attributes a2 = new Attributes();
-        a2.setString(Tag.StudyDate, VR.DA, "1995.01.01");
-        assertTrue(a1.equals(a2));
-    }
-    @Test
-    public void testEqualsTemporalTM() {
-        Attributes a1 = new Attributes();
-        a1.setString(Tag.StudyDate, VR.TM, "101010.10");
-        Attributes a2 = new Attributes();
-        a2.setString(Tag.StudyDate, VR.TM, "10:10:10.10");
-        assertTrue(a1.equals(a2));
+        assertArrayEquals(new String[]{ "0.5","0.5" }, a1.getStrings(Tag.PixelSpacing));
+        assertArrayEquals(new String[]{ "0.5","0.5" }, a2.getStrings(Tag.PixelSpacing));
     }
 
     @Test

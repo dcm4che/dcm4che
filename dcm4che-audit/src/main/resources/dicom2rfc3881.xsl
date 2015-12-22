@@ -16,13 +16,24 @@
         </xsl:attribute>
     </xsl:template>
     <xsl:template match="*/*/@originalText">
-        <xsl:attribute name="displayName">
-            <xsl:value-of select="."/>
-        </xsl:attribute>
+        <xsl:if test="string-length() &gt; 0">
+            <xsl:attribute name="displayName">
+                <xsl:value-of select="."/>
+            </xsl:attribute>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="*/*/@codeSystemName">
+        <xsl:if test="string-length() &gt; 0">
+            <xsl:attribute name="codeSystemName">
+                <xsl:value-of select="."/>
+            </xsl:attribute>
+        </xsl:if>
     </xsl:template>
     <xsl:template match="AuditSourceIdentification">
         <AuditSourceIdentification>
-            <xsl:attribute name="AuditSourceID"><xsl:value-of select="@AuditSourceID"/></xsl:attribute>
+            <xsl:attribute name="AuditSourceID">
+                <xsl:value-of select="@AuditSourceID"/>
+            </xsl:attribute>
             <AuditSourceTypeCode>
                 <xsl:attribute name="code">
                     <xsl:value-of select="@code"/>
@@ -74,5 +85,16 @@
                 </xsl:otherwise>
             </xsl:choose>
         </AuditSourceTypeCode>
+    </xsl:template>
+    <xsl:template match="ParticipantObjectIdentification">
+        <ParticipantObjectIdentification>
+            <xsl:apply-templates
+                select="@*|ParticipantObjectIDTypeCode|ParticipantObjectName|ParticipantObjectQuery|ParticipantObjectDetail"/>
+            <xsl:if test="count(MPPS|Accession|SOPClass|ParticipantObjectContainsStudy) &gt; 0">
+                <ParticipantObjectDescription>
+                    <xsl:apply-templates select="MPPS|Accession|SOPClass|ParticipantObjectContainsStudy" />
+                </ParticipantObjectDescription>
+            </xsl:if>
+        </ParticipantObjectIdentification>
     </xsl:template>
 </xsl:stylesheet>

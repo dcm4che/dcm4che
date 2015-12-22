@@ -39,7 +39,6 @@
 package org.dcm4che3.net.audit;
 
 import org.dcm4che3.audit.*;
-import org.dcm4che3.audit.AuditMessages.AuditSourceTypeCode;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
@@ -235,8 +234,8 @@ public class AuditLogger extends DeviceExtension {
     @ConfigurableProperty(name = "dcmAuditMessageFormatXML", defaultValue = "false")
     private boolean formatXML;
 
-    @ConfigurableProperty(name = "dcmAuditMessageRFC3881Schema", defaultValue = "false")
-    private boolean rcf3881;
+    @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
+    private boolean supplement95;
 
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean auditLoggerInstalled;
@@ -533,12 +532,12 @@ public class AuditLogger extends DeviceExtension {
         this.formatXML = formatXML;
     }
 
-    public boolean isRcf3881() {
-        return rcf3881;
+    public boolean isSupplement95() {
+        return supplement95;
     }
 
-    public void setRcf3881(boolean rcf3881) {
-        this.rcf3881 = rcf3881;
+    public void setSupplement95(boolean sup95) {
+        this.supplement95 = sup95;
     }
 
     public boolean isInstalled() {
@@ -738,6 +737,7 @@ public class AuditLogger extends DeviceExtension {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
+        setSupplement95(from.isSupplement95());
         setSpoolDirectory(from.spoolDirectory);
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
@@ -1079,10 +1079,10 @@ public class AuditLogger extends DeviceExtension {
             try {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
-                if (!rcf3881) {
+                if (!supplement95) {
                     AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
                 } else {
-                    AuditMessages.toRFC3881XML(msg, builder, formatXML, encoding, schemaURI);
+                    AuditMessages.toSupplement95XML(msg, builder, formatXML, encoding, schemaURI);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

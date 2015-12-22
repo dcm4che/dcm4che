@@ -832,7 +832,7 @@ public class AuditMessages {
         }
     }
 
-    public static void toRFC3881XML(AuditMessage message, OutputStream os,
+    public static void toSupplement95XML(AuditMessage message, OutputStream os,
             boolean format, String encoding, String schemaURI)
             throws IOException {
         try {
@@ -841,7 +841,7 @@ public class AuditMessages {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             StreamSource xslt = new StreamSource(cl.getResource(TO_RFC3881_XSL).toString());
             Transformer transformer = tf.newTransformer(xslt);
-            JAXBSource source = new JAXBSource(jc, of.createAuditMessage(message));
+            JAXBSource source = new JAXBSource(jc(), of.createAuditMessage(message));
             StreamResult result = new StreamResult(os);
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.INDENT, format ? "yes" : "no");

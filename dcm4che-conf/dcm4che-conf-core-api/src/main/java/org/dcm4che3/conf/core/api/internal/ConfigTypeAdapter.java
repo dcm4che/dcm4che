@@ -68,8 +68,6 @@ public interface ConfigTypeAdapter<T, ST> {
      * Throws ConfigurationUnserializableException when the object allows configuration
      * with setters in which case it is impossible to trace the parameters used in the setters back.</p>
      * <p/>
-     * <p>This method should not be used generally, and the modifications to configuration should
-     * be made through the Configuration access API that performs validation, defaults handling, etc. </p>
      *
      * @param object
      * @param property

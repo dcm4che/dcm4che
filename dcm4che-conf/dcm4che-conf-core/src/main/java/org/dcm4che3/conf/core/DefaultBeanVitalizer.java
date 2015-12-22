@@ -98,7 +98,6 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
 
     /**
      * Creates a new instance.
-     * If the class is referencable, checks the threadlocal for an existing instance, registers the newly created instance if not
      *
      * @param clazz
      * @param <T>

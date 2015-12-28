@@ -106,7 +106,6 @@
           <descriptors>
             <descriptor>src/main/assembly/bin.xml</descriptor>
           </descriptors>
-          <attach>false</attach>
         </configuration>
         <executions>
           <execution>

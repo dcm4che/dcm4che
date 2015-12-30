@@ -1,0 +1,3 @@
+org.weasis.jpeg.NativeJLSImageReaderSpi
+org.weasis.jpeg.NativeJPEGImageReaderSpi
+org.weasis.openjpeg.NativeJ2kImageReaderSpi

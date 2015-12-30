@@ -182,6 +182,18 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio-codec</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+     <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-imageio-codec</artifactId>
+      <type>zip</type>
+      <classifier>native</classifier>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-imageio-rle</artifactId>
       <version>${project.version}</version>
     </dependency>

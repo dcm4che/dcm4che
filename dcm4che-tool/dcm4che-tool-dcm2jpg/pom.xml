@@ -20,10 +20,10 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>com.sun.media</groupId>
-      <artifactId>jai_imageio</artifactId>
-      <version>1.2-pre-dr-b04</version>
-      <scope>runtime</scope>
+    	<groupId>org.dcm4che</groupId>
+    	<artifactId>dcm4che-imageio-codec</artifactId>
+    	<version>${project.version}</version>
+    	<scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>

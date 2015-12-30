@@ -118,6 +118,7 @@
         <include>org.dcm4che:dcm4che-hl7</include>
         <include>org.dcm4che:dcm4che-image</include>
         <include>org.dcm4che:dcm4che-imageio</include>
+	    <include>org.dcm4che:dcm4che-imageio-codec:jar</include>
         <include>org.dcm4che:dcm4che-imageio-rle</include>
         <include>org.dcm4che:dcm4che-json</include>
         <include>org.dcm4che:dcm4che-mime</include>
@@ -169,8 +170,8 @@
         <!-- TODO fix configuration load
         <include>org.dcm4che.tool:dcm4che-tool-probetc</include> -->
         <include>org.dcm4che.tool.ihe:dcm4che-tool-ihe-modality</include>
-        <include>com.sun.media:jai_imageio</include>
-        <include>com.sun.media:clibwrapper_jiio</include>
+	    <!-- <include>com.sun.media:jai_imageio</include> -->
+	    <!-- <include>com.sun.media:clibwrapper_jiio</include> -->
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
         <include>log4j:log4j</include>
@@ -192,6 +193,14 @@
       <outputDirectory>lib</outputDirectory>
       <includes>
         <include>com.sun.media:clib_jiio</include>
+      </includes>
+      <unpack>true</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>org.dcm4che:dcm4che-imageio-codec:zip:native</include>
       </includes>
       <unpack>true</unpack>
       <useProjectArtifact>false</useProjectArtifact>

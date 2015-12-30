@@ -135,6 +135,7 @@
     <module>dcm4che-filecache</module>
     <module>dcm4che-image</module>
     <module>dcm4che-imageio</module>
+    <module>dcm4che-imageio-codec</module>
     <module>dcm4che-imageio-rle</module>
     <module>dcm4che-mime</module>
     <module>dcm4che-net</module>

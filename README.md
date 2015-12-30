@@ -1,3 +1,27 @@
+## This fork is an experimental build to test new image codecs ##
+
+* Embedded new codecs compiled for Windows 32/64-bit, Linux x86 32/64-bit and Mac OS X 64-bit.  
+	- jpeg-basline, jpeg-extended and jpeg-lossless: IJG 6b (reader and writer partially)  
+	- jpeg-ls: CharLS 1.0 (reader and writer)  
+	- jpeg2000: OpegJPEG 2.1 (reader)  
+* Allows to order the codecs by priority with a unique configuration for all the systems
+
+Advantages of the native readers:
+* Allows to return BufferedImage or RenderedImage (from readAsRenderedImage()).
+* Do not extract an image file from DICOM as most additional decoders, read directly from stream segments.
+* Handle a [unique configuration file](https://github.com/nroduit/dcm4che/blob/dcm4che-native-codec/dcm4che-imageio/src/main/resources/org/dcm4che3/imageio/codec/ImageReaderFactory.xml) for all the systems.  
+	Can be overwritten by a Java property: jnlp.weasis.org.dcm4che3.imageio.codec.ImageReaderFactory="http://server/context/ImageReaderFactory.xml"
+
+Fix issues of Sun codecs:
+* Fix multi-thread issue: https://java.net/jira/browse/JAI_IMAGEIO_CORE-126
+* Fix issues of the native jpeg2000 decoders: https://java.net/jira/browse/JAI_IMAGEIO_CORE-189
+* Fix another artifact issue of the native jpeg2000 decoders
+* No need to patch jpeg-ls anymore
+* Fix color issue of jpeg-ls sun reader
+* Fix convert signed data into unsigned data buffer
+
+
+
 dcm4che-3.x DICOM Toolkit
 =========================
 Sources: https://github.com/dcm4che/dcm4che  

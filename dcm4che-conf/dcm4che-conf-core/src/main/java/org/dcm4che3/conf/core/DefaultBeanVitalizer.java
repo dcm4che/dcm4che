@@ -56,11 +56,11 @@ import java.util.Map;
  */
 public class DefaultBeanVitalizer implements BeanVitalizer {
 
-    private Map<Class, Object> contextMap = new HashMap<Class, Object>();
-    private Map<Class, ConfigTypeAdapter> customConfigTypeAdapters = new HashMap<Class, ConfigTypeAdapter>();
+    private final Map<Class, Object> contextMap = new HashMap<Class, Object>();
+    private final Map<Class, ConfigTypeAdapter> customConfigTypeAdapters = new HashMap<Class, ConfigTypeAdapter>();
     private ConfigTypeAdapter referenceTypeAdapter;
 
-    private ArrayTypeAdapter arrayTypeAdapter = new ArrayTypeAdapter();
+    private final ArrayTypeAdapter arrayTypeAdapter = new ArrayTypeAdapter();
 
 
     /**
@@ -98,7 +98,6 @@ public class DefaultBeanVitalizer implements BeanVitalizer {
 
     /**
      * Creates a new instance.
-     * If the class is referencable, checks the threadlocal for an existing instance, registers the newly created instance if not
      *
      * @param clazz
      * @param <T>

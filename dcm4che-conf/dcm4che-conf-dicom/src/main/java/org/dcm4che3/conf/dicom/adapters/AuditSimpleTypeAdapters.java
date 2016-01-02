@@ -62,7 +62,7 @@ public class AuditSimpleTypeAdapters {
             EventTypeCode eventTypeCode = new EventTypeCode();
             eventTypeCode.setCode(code.getCodeValue());
             eventTypeCode.setCodeSystemName(code.getCodingSchemeDesignator());
-            eventTypeCode.setDisplayName(code.getCodeMeaning());
+            eventTypeCode.setOriginalText(code.getCodeMeaning());
 
             return eventTypeCode;
         }
@@ -73,7 +73,7 @@ public class AuditSimpleTypeAdapters {
                     object.getCode(),
                     object.getCodeSystemName(),
                     null,
-                    object.getDisplayName())
+                    object.getOriginalText())
                     .toString();
         }
     }
@@ -91,7 +91,7 @@ public class AuditSimpleTypeAdapters {
             EventID eventID = new EventID();
             eventID.setCode(code.getCodeValue());
             eventID.setCodeSystemName(code.getCodingSchemeDesignator());
-            eventID.setDisplayName(code.getCodeMeaning());
+            eventID.setOriginalText(code.getCodeMeaning());
 
             return eventID;
         }
@@ -102,7 +102,7 @@ public class AuditSimpleTypeAdapters {
                     object.getCode(),
                     object.getCodeSystemName(),
                     null,
-                    object.getDisplayName())
+                    object.getOriginalText())
                     .toString();
         }
     }
@@ -120,7 +120,7 @@ public class AuditSimpleTypeAdapters {
             RoleIDCode roleIDcode = new RoleIDCode();
             roleIDcode.setCode(code.getCodeValue());
             roleIDcode.setCodeSystemName(code.getCodingSchemeDesignator());
-            roleIDcode.setDisplayName(code.getCodeMeaning());
+            roleIDcode.setOriginalText(code.getCodeMeaning());
 
             return roleIDcode;
         }
@@ -131,7 +131,7 @@ public class AuditSimpleTypeAdapters {
                     object.getCode(),
                     object.getCodeSystemName(),
                     null,
-                    object.getDisplayName())
+                    object.getOriginalText())
                     .toString();
         }
     }

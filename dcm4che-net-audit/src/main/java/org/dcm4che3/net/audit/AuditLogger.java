@@ -71,6 +71,8 @@ import java.util.concurrent.TimeUnit;
 @ConfigurableClass
 public class AuditLogger extends DeviceExtension {
 
+    private static final String DICOM_PRIMARY_DEVICE_TYPE = "dicomPrimaryDeviceType";
+
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
     public enum SendStatus {
@@ -231,6 +233,9 @@ public class AuditLogger extends DeviceExtension {
 
     @ConfigurableProperty(name = "dcmAuditMessageFormatXML", defaultValue = "false")
     private boolean formatXML;
+
+    @ConfigurableProperty(name = "dcmAuditMessageSupplement95Schema", defaultValue = "false")
+    private boolean supplement95;
 
     @ConfigurableProperty(name = "dicomInstalled")
     private Boolean auditLoggerInstalled;
@@ -455,18 +460,22 @@ public class AuditLogger extends DeviceExtension {
             } else
                 asi.setAuditEnterpriseSiteID(auditEnterpriseSiteID);
         }
-        for (String code : auditSourceTypeCodes) {
-            if (code.equals("dicomPrimaryDeviceType")) {
-                for (String type : device.getPrimaryDeviceTypes()) {
-                    AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                    astc.setCode(type);
-                    astc.setCodeSystemName("DCM");
-                    asi.getAuditSourceTypeCode().add(astc);
+        if (auditSourceTypeCodes.length > 0) {
+            if (!auditSourceTypeCodes[0].equals(DICOM_PRIMARY_DEVICE_TYPE))
+                asi.setCode(auditSourceTypeCodes[0]);
+            for (int i = 1 ; i < auditSourceTypeCodes.length ; i++) {
+                if (auditSourceTypeCodes[i].equals(DICOM_PRIMARY_DEVICE_TYPE)) {
+                    for (String type : device.getPrimaryDeviceTypes()) {
+                        asi.getAuditSourceTypeCode().add(type+"^DCM");
+                        if (asi.getCode() == null) {
+                            asi.setCode(type);
+                            asi.setCodeSystemName("DCM");
+                            asi.setOriginalText("Dicom device type "+type);
+                        }
+                    }
+                } else {
+                    asi.getAuditSourceTypeCode().add(auditSourceTypeCodes[i]);
                 }
-            } else {
-                AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                astc.setCode(code);
-                asi.getAuditSourceTypeCode().add(astc);
             }
         }
         return asi;
@@ -521,6 +530,14 @@ public class AuditLogger extends DeviceExtension {
 
     public final void setFormatXML(boolean formatXML) {
         this.formatXML = formatXML;
+    }
+
+    public boolean isSupplement95() {
+        return supplement95;
+    }
+
+    public void setSupplement95(boolean sup95) {
+        this.supplement95 = sup95;
     }
 
     public boolean isInstalled() {
@@ -720,6 +737,7 @@ public class AuditLogger extends DeviceExtension {
         setTimestampInUTC(from.timestampInUTC);
         setIncludeBOM(from.includeBOM);
         setFormatXML(from.formatXML);
+        setSupplement95(from.isSupplement95());
         setSpoolDirectory(from.spoolDirectory);
         setSpoolFileNamePrefix(from.spoolFileNamePrefix);
         setSpoolFileNameSuffix(from.spoolFileNameSuffix);
@@ -1061,9 +1079,13 @@ public class AuditLogger extends DeviceExtension {
             try {
                 reset();
                 writeHeader(severityOf(msg), timeStamp);
-                AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                if (!supplement95) {
+                    AuditMessages.toXML(msg, builder, formatXML, encoding, schemaURI);
+                } else {
+                    AuditMessages.toSupplement95XML(msg, builder, formatXML, encoding, schemaURI);
+                }
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }
@@ -1075,7 +1097,7 @@ public class AuditLogger extends DeviceExtension {
                 writeHeader(severity, timeStamp);
                 write(data, off, len);
             } catch (IOException e) {
-                assert false : e;
+                throw new RuntimeException(e);
             }
             return new DatagramPacket(buf, 0, count);
         }

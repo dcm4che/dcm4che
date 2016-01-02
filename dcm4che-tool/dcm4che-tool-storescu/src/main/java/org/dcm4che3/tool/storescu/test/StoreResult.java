@@ -50,7 +50,7 @@ import java.util.ArrayList;
 public class StoreResult implements TestResult {
 
     private String testDescription;
-    private String fileName;
+    private String[] fileNames;
     private long size;
     private long time;
     private int filesSent;
@@ -58,11 +58,11 @@ public class StoreResult implements TestResult {
     private int failures;
     private ArrayList<Attributes> cStoreRSPAttributes;
 
-    public StoreResult(String testDescription, String fileName, long size,
+    public StoreResult(String testDescription, String[] fileNames, long size,
             long time, int filesSent, int warnings, int failures, ArrayList<Attributes> cmdRSP) {
         super();
         this.testDescription = testDescription;
-        this.fileName = fileName;
+        this.fileNames = fileNames;
         this.size = size;
         this.time = time;
         this.filesSent = filesSent;
@@ -74,8 +74,8 @@ public class StoreResult implements TestResult {
     public String getTestDescription() {
         return testDescription;
     }
-    public String getFileName() {
-        return fileName;
+    public String[] getFileNames() {
+        return fileNames;
     }
     public long getSize() {
         return size;

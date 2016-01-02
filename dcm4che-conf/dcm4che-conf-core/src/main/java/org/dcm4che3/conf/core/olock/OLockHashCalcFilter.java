@@ -179,4 +179,8 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
         stack.push(getHash(hashToString(listHash) + hashToString(listElementHash)));
     }
 
+    @Override
+    public void onPrimitiveListElement(Collection list, Object element) {
+        addHash(stack.peek(), getHash("collection_item_value=" + element));
+    }
 }

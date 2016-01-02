@@ -48,12 +48,12 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.BulkData;
 import org.dcm4che3.data.Fragments;
 import org.dcm4che3.data.PersonName;
-import org.dcm4che3.data.Value;
 import org.dcm4che3.data.PersonName.Group;
 import org.dcm4che3.data.Sequence;
 import org.dcm4che3.data.SpecificCharacterSet;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.VR;
+import org.dcm4che3.data.Value;
 import org.dcm4che3.io.DicomInputHandler;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
@@ -79,22 +79,26 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     public void write(Attributes attrs) {
-        final SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
         gen.writeStartObject();
-        try {
-            attrs.accept(new Attributes.Visitor(){
+        writeAttributes(attrs);
+        gen.writeEnd();
+    }
 
-                @Override
-                public boolean visit(Attributes attrs, int tag, VR vr, Object value)
-                        throws Exception {
-                     writeAttribute(tag, vr, value, cs, attrs);
-                     return true;
-                }},
-                false);
+    public void writeAttributes(Attributes attrs) {
+        final SpecificCharacterSet cs = attrs.getSpecificCharacterSet();
+        try {
+            attrs.accept(new Attributes.Visitor() {
+                             @Override
+                             public boolean visit(Attributes attrs, int tag, VR vr, Object value)
+                                     throws Exception {
+                                 writeAttribute(tag, vr, value, cs, attrs);
+                                 return true;
+                             }
+                         },
+                    false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        gen.writeEnd();
     }
 
     private void writeAttribute(int tag, VR vr, Object value,

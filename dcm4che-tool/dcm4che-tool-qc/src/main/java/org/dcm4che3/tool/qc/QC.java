@@ -133,7 +133,6 @@ public class QC {
                 return sendRequest(opDescription, qc, qcMessage);
             case DELETE:
                 if (checkDelete(qc)) {
-                    qc.setUrl(adjustDeleteURL(qc).replace(" ", "%20"));
                     return sendDeleteRequest(opDescription, qc);
                 }
             case PATIENT_LINK:
@@ -180,7 +179,7 @@ public class QC {
         String bfr = "";
         QCResult result = null;
         try {
-            URL url = new URL(qc.getUrl());
+            URL url = new URL(adjustDeleteURL(qc).replace(" ", "%20"));
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoOutput(true);
@@ -271,16 +270,16 @@ public class QC {
     }
 
     private static void writeMessage(HttpURLConnection connection,
-            JsonStructure qcMessage) throws Exception {
+                                     JsonStructure qcMessage) throws Exception {
         DataOutputStream wr;
         wr = new DataOutputStream(connection.getOutputStream());
         // wr.writeBytes("Content-Type: application/json" + " \r\n");
         // wr.writeBytes("\r\n");
         JsonWriter writer = Json.createWriter(wr);
         if(qcMessage instanceof JsonObject)
-        writer.writeObject((JsonObject) qcMessage);
+            writer.writeObject((JsonObject) qcMessage);
         else
-        writer.writeArray((JsonArray)qcMessage);
+            writer.writeArray((JsonArray)qcMessage);
 
         writer.close();
         wr.close();
@@ -305,7 +304,7 @@ public class QC {
                         toAttributesObject(qc.getTargetStudyAttrs()))
                 .add("updateData", toAttributesObject(qc.getUpdateAttrs()));
         if(qc.getPid() != null)
-                builder.add("pid", toIDWithIssuerObject(qc.getPid()));
+            builder.add("pid", toIDWithIssuerObject(qc.getPid()));
         return builder.build();
     }
 
@@ -337,10 +336,10 @@ public class QC {
                 .add("localNamespaceEntityID",
                         emptyIfNull(issuer.getLocalNamespaceEntityID()));
         if(issuer.getUniversalEntityID()!=null)
-                builder.add("universalEntityID",
-                        emptyIfNull(issuer.getUniversalEntityID()))
-                .add("universalEntityIDType",
-                        emptyIfNull(issuer.getUniversalEntityIDType()));
+            builder.add("universalEntityID",
+                    emptyIfNull(issuer.getUniversalEntityID()))
+                    .add("universalEntityIDType",
+                            emptyIfNull(issuer.getUniversalEntityIDType()));
         return builder.build();
     }
 
@@ -473,7 +472,7 @@ public class QC {
         String operation = (String) cl.getArgList().get(1);
 
         if(cl.getArgList().size() > 2)
-        codeComponents = (String) cl.getArgList().get(2);
+            codeComponents = (String) cl.getArgList().get(2);
 
         QC qc = new QC(parsedURL, codeComponents!=null?toCode(codeComponents):null,
                 QCOperation.valueOf(operation.toUpperCase()));

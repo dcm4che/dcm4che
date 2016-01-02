@@ -46,6 +46,7 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -108,21 +109,24 @@ public class StoreTool implements TestTool {
         this.conn = conn;
     }
 
-    public void store(String testDescription, String fileName)
+    public void store(String testDescription, String... fileNames)
             throws IOException, InterruptedException,
             IncompatibleConnectionException, GeneralSecurityException {
 
         long t2;
-        Path p = Paths.get(fileName);
-        if(!p.isAbsolute() && baseDirectory == null)
-            throw new IllegalArgumentException("No base Directory and file"
-                    + " to send is provided as a relative path");
 
-        File file = p.isAbsolute()? new File(fileName):new File(baseDirectory, fileName);
+        List<String> absoluteFileNames = new ArrayList<String>(fileNames.length);
+        for(String fileName : fileNames) {
+            Path p = Paths.get(fileName);
+            if (!p.isAbsolute() && baseDirectory == null)
+                throw new IllegalArgumentException("No base Directory and file to send is provided as a relative path");
 
-        assertTrue(
-                "file or directory does not exists: " + file.getAbsolutePath(),
-                file.exists());
+            File file = p.isAbsolute() ? new File(fileName) : new File(baseDirectory, fileName);
+
+            assertTrue("file or directory does not exists: " + file.getAbsolutePath(), file.exists());
+
+            absoluteFileNames.add(file.getAbsolutePath());
+        }
 
         device.setInstalled(true);
         ApplicationEntity ae = new ApplicationEntity(sourceAETitle);
@@ -161,7 +165,7 @@ public class StoreTool implements TestTool {
         main.getRemoteConnection().setTlsProtocols(conn.getTlsProtocols());
         main.setAttributes(new Attributes());
         // scan
-        main.scanFiles(Arrays.asList(file.getAbsolutePath()), false);
+        main.scanFiles(absoluteFileNames, false);
         // create executor
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         ScheduledExecutorService scheduledExecutorService = Executors
@@ -181,7 +185,7 @@ public class StoreTool implements TestTool {
             executorService.shutdown();
             scheduledExecutorService.shutdown();
         }
-        init(new StoreResult(testDescription, fileName, totalSize, (t2 - timeStarted),
+        init(new StoreResult(testDescription, fileNames, totalSize, (t2 - timeStarted),
                 filesSent, warnings, failures, cmdRSP));
     }
 

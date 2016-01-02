@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -51,6 +53,14 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che3.audit.Accession;
 import org.dcm4che3.audit.ActiveParticipant;
@@ -61,7 +71,6 @@ import org.dcm4che3.audit.Instance;
 import org.dcm4che3.audit.MPPS;
 import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.ParticipantObjectContainsStudy;
-import org.dcm4che3.audit.ParticipantObjectDescription;
 import org.dcm4che3.audit.ParticipantObjectDetail;
 import org.dcm4che3.audit.ParticipantObjectIdentification;
 import org.dcm4che3.audit.SOPClass;
@@ -72,6 +81,7 @@ import org.dcm4che3.audit.SOPClass;
  */
 public class AuditMessages {
 
+    private static final String TO_RFC3881_XSL = "dicom2rfc3881.xsl";
     private static final Pattern IP4 =
             Pattern.compile("\\d+(\\.\\d+){3}");
     private static final Pattern IP6 =
@@ -170,7 +180,7 @@ public class AuditMessages {
         EventID(String code, String codeSystemName, String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -185,11 +195,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -288,7 +293,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -307,20 +312,20 @@ public class AuditMessages {
         }
 
         @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setCodeSystemName(String value) {
             throw new UnsupportedOperationException();
         }
 
     }
 
-    public static final class AuditSourceTypeCode
-            extends org.dcm4che3.audit.AuditSourceTypeCode {
+    public static final class AuditSourceTypeCode {
 
+        private String code;
+
+        private String codeSystemName;
+
+        private String displayName;
+        
         public static final AuditSourceTypeCode EndUserDisplayDevice = 
                 new AuditSourceTypeCode("1");
         public static final AuditSourceTypeCode DataAcquisitionDevice = 
@@ -341,39 +346,19 @@ public class AuditMessages {
                 new AuditSourceTypeCode("9");
 
         public AuditSourceTypeCode(String code) {
-            super.code = code;
+            this.code = code;
         }
 
         public AuditSourceTypeCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
-            super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            this.code = code;
+            this.codeSystemName = codeSystemName;
+            this.displayName = displayName;
         }
-
+        
         @Override
-        public void setCode(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setDisplayName(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystemName(String value) {
-            throw new UnsupportedOperationException();
+        public String toString() {
+            return codeSystemName == null ? code : code+"^"+codeSystemName;
         }
 
     }
@@ -385,9 +370,9 @@ public class AuditMessages {
         public static final RoleIDCode ApplicationLauncher = 
                 new RoleIDCode("110151","DCM","Application Launcher");
         public static final RoleIDCode Destination = 
-                new RoleIDCode("110152","DCM","Destination");
+                new RoleIDCode("110152","DCM","Destination Role ID");
         public static final RoleIDCode Source = 
-                new RoleIDCode("110153","DCM","Source");
+                new RoleIDCode("110153","DCM","Source Role ID");
         public static final RoleIDCode DestinationMedia = 
                 new RoleIDCode("110154","DCM","Destination Media");
         public static final RoleIDCode SourceMedia = 
@@ -397,7 +382,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -412,11 +397,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -454,7 +434,7 @@ public class AuditMessages {
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -469,11 +449,6 @@ public class AuditMessages {
 
         @Override
         public void setOriginalText(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void setCodeSystem(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -585,14 +560,14 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
 
         public ParticipantObjectIDTypeCode(String code) {
-            super.code = code;
+            this(code, "", "");//Use "" for codeSystemName and originalText to fit with DICOM schema (even that this is not defined in RFC-3881)
         }
 
         public ParticipantObjectIDTypeCode(String code, String codeSystemName,
                 String displayName) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = displayName;
         }
 
         @Override
@@ -611,17 +586,75 @@ public class AuditMessages {
         }
 
         @Override
-        public void setCodeSystem(String value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setCodeSystemName(String value) {
             throw new UnsupportedOperationException();
         }
 
     }
 
+    public static final class ParticipantObjectDescription {
+
+        protected List<String> description;
+        protected List<MPPS> mpps;
+        protected List<Accession> accession;
+        protected List<SOPClass> sopClass;
+        protected List<ParticipantObjectContainsStudy> participantObjectContainsStudy;
+        protected Boolean encrypted;
+        protected Boolean anonymized;
+
+        public List<String> getDescriptions() {
+            if (description == null) {
+                description = new ArrayList<String>();
+            }
+            return this.description;
+        }
+        
+        public List<MPPS> getMPPS() {
+            if (mpps == null) {
+                mpps = new ArrayList<MPPS>();
+            }
+            return this.mpps;
+        }
+
+        public List<Accession> getAccession() {
+            if (accession == null) {
+                accession = new ArrayList<Accession>();
+            }
+            return this.accession;
+        }
+
+        public List<SOPClass> getSOPClass() {
+            if (sopClass == null) {
+                sopClass = new ArrayList<SOPClass>();
+            }
+            return this.sopClass;
+        }
+
+        public List<ParticipantObjectContainsStudy> getParticipantObjectContainsStudy() {
+            if (participantObjectContainsStudy == null) {
+                participantObjectContainsStudy = new ArrayList<ParticipantObjectContainsStudy>();
+            }
+            return this.participantObjectContainsStudy;
+        }
+
+        public Boolean isEncrypted() {
+            return encrypted;
+        }
+
+        public void setEncrypted(Boolean value) {
+            this.encrypted = value;
+        }
+
+        public Boolean isAnonymized() {
+            return anonymized;
+        }
+
+        public void setAnonymized(Boolean value) {
+            this.anonymized = value;
+        }
+
+    }
+    
     public static EventIdentification createEventIdentification(
             EventID eventID, String action, Calendar eventDateTime,
             String outcome, String outcomeDescription, org.dcm4che3.audit.EventTypeCode... types) {
@@ -648,7 +681,11 @@ public class AuditMessages {
         ap.setUserIsRequestor(requestor);
         ap.setNetworkAccessPointID(napID);
         ap.setNetworkAccessPointTypeCode(napTypeCode);
-        ap.setMediaType(mediaType);
+        if (mediaType != null) {
+            MediaIdentifier media = new MediaIdentifier();
+            media.setMediaType(mediaType);
+            ap.setMediaIdentifier(media);
+        }
         for (RoleIDCode roleID : roleIDs)
             ap.getRoleIDCode().add(roleID);
         return ap;
@@ -659,8 +696,14 @@ public class AuditMessages {
         AuditSourceIdentification asi = new AuditSourceIdentification();
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
-        for (AuditSourceTypeCode type : types)
-            asi.getAuditSourceTypeCode().add(type);
+        if (types.length > 0) {
+            asi.setCode(types[0].code);
+            asi.setCodeSystemName(types[0].codeSystemName);
+            asi.setOriginalText(types[0].displayName);
+            for (int i = 1 ; i < types.length ; i++) {
+                asi.getAuditSourceTypeCode().add(types[i].toString());
+            }
+        }
         return asi;
    }
 
@@ -677,8 +720,17 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCode(type);
         poi.setParticipantObjectTypeCodeRole(role);
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
-        poi.setParticipantObjectSensitivity(sensitivity);
-        poi.setParticipantObjectDescription(description);
+        poi.setParticipantObjectSensistity(sensitivity);
+        if (description != null) {
+            poi.getParticipantObjectDescription().addAll(description.getDescriptions());
+            poi.setAnonymized(description.isAnonymized());
+            poi.setEncrypted(description.isEncrypted());
+            poi.getAccession().addAll(description.getAccession());
+            poi.getMPPS().addAll(description.getMPPS());
+            poi.getSOPClass().addAll(description.getSOPClass());
+            if (description.getParticipantObjectContainsStudy().size() > 0)
+                poi.setParticipantObjectContainsStudy(description.getParticipantObjectContainsStudy().get(0));
+        }
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;
@@ -722,7 +774,9 @@ public class AuditMessages {
     public static ParticipantObjectContainsStudy
             createParticipantObjectContainsStudy(String uid) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
-        study.setUID(uid);
+        StudyIDs studyId = new StudyIDs();
+        studyId.setUID(uid);
+        study.getStudyIDs().add(studyId );
         return study;
     }
 
@@ -775,6 +829,32 @@ public class AuditMessages {
             if (jbe.getLinkedException() instanceof IOException)
                 throw (IOException) jbe.getLinkedException();
             throw new IllegalStateException(jbe);
+        }
+    }
+
+    public static void toSupplement95XML(AuditMessage message, OutputStream os,
+            boolean format, String encoding, String schemaURI)
+            throws IOException {
+        try {
+            
+            TransformerFactory tf = TransformerFactory.newInstance();
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            StreamSource xslt = new StreamSource(cl.getResource(TO_RFC3881_XSL).toString());
+            Transformer transformer = tf.newTransformer(xslt);
+            JAXBSource source = new JAXBSource(jc(), of.createAuditMessage(message));
+            StreamResult result = new StreamResult(os);
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.INDENT, format ? "yes" : "no");
+            transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
+            transformer.transform(source, result);
+        } catch( JAXBException jbe ){
+            if (jbe.getLinkedException() instanceof IOException)
+                throw (IOException) jbe.getLinkedException();
+            throw new IllegalStateException(jbe);
+        } catch (TransformerConfigurationException e) {
+            throw new IOException(e.getMessageAndLocation(), e);
+        } catch (TransformerException e) {
+            throw new IOException(e.getMessageAndLocation(), e);
         }
     }
 

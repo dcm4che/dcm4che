@@ -52,6 +52,7 @@ import java.util.*;
 
 /**
  * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
+ *
  * @author Roman K
  */
 @LDAP
@@ -61,11 +62,29 @@ public class AnnotatedConfigurableProperty {
     private Type type;
     private String name;
 
+    @ConfigurableClass
+    public static class DummyConfigurableClass {
+        @ConfigurableProperty
+        public int dummy;
+    }
+
+
     public AnnotatedConfigurableProperty() {
     }
 
     public AnnotatedConfigurableProperty(Type type) {
         setType(type);
+
+        // create dummy annotation
+        try {
+            annotations.put(
+                    ConfigurableProperty.class,
+                    DummyConfigurableClass.class.getField("dummy").getAnnotation(ConfigurableProperty.class)
+            );
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("Unexpected error", e);
+        }
+
     }
 
     //////// wrapping annotations, otherwise it gets too unDRY ///////////////
@@ -94,7 +113,7 @@ public class AnnotatedConfigurableProperty {
     }
 
     public List<ConfigurableProperty.Tag> getTags() {
-        if (getAnnotation(ConfigurableProperty.class)==null)
+        if (getAnnotation(ConfigurableProperty.class) == null)
             return new ArrayList<ConfigurableProperty.Tag>();
 
         return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
@@ -119,7 +138,7 @@ public class AnnotatedConfigurableProperty {
     }
     ////////////////////////////////////////////
 
-    public AnnotatedConfigurableProperty clone(){
+    public AnnotatedConfigurableProperty clone() {
 
         AnnotatedConfigurableProperty property = new AnnotatedConfigurableProperty();
         property.setAnnotations(getAnnotations());
@@ -147,19 +166,21 @@ public class AnnotatedConfigurableProperty {
 
     /**
      * get type of generic/component for collection/Array, Value type for map
+     *
      * @return
      */
     public AnnotatedConfigurableProperty getPseudoPropertyForConfigClassCollectionElement() {
 
         Type type;
         if (isMapOfConfObjects())
-            type = getTypeForGenericsParameter(1); else
-        if (isCollectionOfConfObjects())
-            type = getTypeForGenericsParameter(0); else
-        if (isArrayOfConfObjects())
-            type = getRawClass().getComponentType(); else
-        return null;
-            //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
+            type = getTypeForGenericsParameter(1);
+        else if (isCollectionOfConfObjects())
+            type = getTypeForGenericsParameter(0);
+        else if (isArrayOfConfObjects())
+            type = getRawClass().getComponentType();
+        else
+            return null;
+        //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
         AnnotatedConfigurableProperty clone = clone();
         clone.setType(type);
@@ -169,17 +190,19 @@ public class AnnotatedConfigurableProperty {
     /**
      * get type of generic/component for collection/Array, Value type for map
      * Just copies other annotation parameters.
+     *
      * @return null if not a collection/map
      */
     public AnnotatedConfigurableProperty getPseudoPropertyForCollectionElement() {
 
         Type type;
         if (Map.class.isAssignableFrom(getRawClass()))
-            type = getTypeForGenericsParameter(1); else
-        if (Collection.class.isAssignableFrom(getRawClass()) )
-            type = getTypeForGenericsParameter(0); else
-        if (getRawClass().isArray())
-            type = getRawClass().getComponentType(); else
+            type = getTypeForGenericsParameter(1);
+        else if (Collection.class.isAssignableFrom(getRawClass()))
+            type = getTypeForGenericsParameter(0);
+        else if (getRawClass().isArray())
+            type = getRawClass().getComponentType();
+        else
             return null;
         //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
@@ -231,10 +254,9 @@ public class AnnotatedConfigurableProperty {
     @SuppressWarnings("unchecked")
     public <T> T getAnnotation(Class<T> annotationType) {
         T t = (T) annotations.get(annotationType);
-        if (t==null && annotationType.equals(LDAP.class)) {
+        if (t == null && annotationType.equals(LDAP.class)) {
             return (T) AnnotatedConfigurableProperty.class.getAnnotation(LDAP.class);
         }
-
         return t;
     }
 
@@ -255,13 +277,13 @@ public class AnnotatedConfigurableProperty {
 
     public boolean isCollectionOfConfObjects() {
         return Collection.class.isAssignableFrom(getRawClass())
-                &&  getPseudoPropertyForGenericsParamater(0).getRawClass().getAnnotation(ConfigurableClass.class) != null
+                && getPseudoPropertyForGenericsParamater(0).getRawClass().getAnnotation(ConfigurableClass.class) != null
                 && !isCollectionOfReferences();
     }
 
     public boolean isArrayOfConfObjects() {
         return getRawClass().isArray()
                 && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
-                && !isCollectionOfConfObjects();
+                && !isCollectionOfReferences();
     }
 }

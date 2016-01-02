@@ -38,17 +38,6 @@
 
 package org.dcm4che3.data;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.regex.Pattern;
-
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.BulkDataDescriptor;
@@ -58,6 +47,13 @@ import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -1539,6 +1535,20 @@ public class Attributes implements Serializable {
                     DateUtils.formatTimezoneOffsetFromUTC(tz));
         }
         this.tz = tz;
+    }
+
+    /**
+     * Updates the time zone of a specific standard or private tag
+     *
+     * @param from Time Zone from
+     * @param to Time Zone to
+     * @param privateCreator private creator - null otherwise
+     * @param Tag Attribute tag to update time zone
+     */
+    public void updateTimeZoneOfSpecificTag(TimeZone from, TimeZone to
+            , String privateCreator, int tag) {
+
+        updateTimezone(from, to,indexOf(privateCreator, tag));
     }
 
     private void updateTimezone(TimeZone from, TimeZone to) {

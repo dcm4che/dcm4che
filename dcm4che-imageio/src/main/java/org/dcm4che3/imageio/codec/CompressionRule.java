@@ -75,14 +75,24 @@ public class CompressionRule
     public CompressionRule() {
     }
 
+    /**
+     * @deprecated Device name is not supported. Use the other constructor.
+     */
+    @Deprecated
     public CompressionRule(String commonName, String[] pmis, int[] bitsStored,
-            int pixelRepresentation, String[] aeTitles, String[] deviceNames,
-            String[] sopClasses, String[] imgTypes, String[] bodyPartExamined,
-            String tsuid, String... params) {
+                           int pixelRepresentation, String[] aeTitles, String[] deviceNames,
+                           String[] sopClasses, String[] imgTypes, String[] bodyPartExamined,
+                           String tsuid, String... params) {
+        this(commonName, pmis, bitsStored, pixelRepresentation, aeTitles, sopClasses, imgTypes, bodyPartExamined, tsuid, params);
+    }
+
+    public CompressionRule(String commonName, String[] pmis, int[] bitsStored,
+                           int pixelRepresentation, String[] aeTitles,
+                           String[] sopClasses, String[] imgTypes, String[] bodyPartExamined,
+                           String tsuid, String... params) {
         this.commonName = commonName;
         this.condition = new Condition(pmis, bitsStored, pixelRepresentation,
                 StringUtils.maskNull(aeTitles),
-                StringUtils.maskNull(deviceNames),
                 StringUtils.maskNull(sopClasses),
                 StringUtils.maskNull(imgTypes),
                 StringUtils.maskNull(bodyPartExamined));
@@ -151,12 +161,12 @@ public class CompressionRule
         return imageWriteParams;
     }
 
-    public boolean matchesCondition(PhotometricInterpretation pmi, 
-            int bitsStored, int pixelRepresentation, String aeTitle,
-            String deviceName, String sopClass, String[] imgTypes,
-            String bodyPart) {
+    public boolean matchesCondition(PhotometricInterpretation pmi,
+                                    int bitsStored, int pixelRepresentation, String aeTitle,
+                                    String sopClass, String[] imgTypes,
+                                    String bodyPart) {
         return condition.matches(pmi, bitsStored, pixelRepresentation, aeTitle,
-                deviceName, sopClass, imgTypes, bodyPart);
+                sopClass, imgTypes, bodyPart);
     }
 
     @Override
@@ -187,9 +197,6 @@ public class CompressionRule
                 defaultValue = "-1")
         int pixelRepresentation = -1;
 
-        @ConfigurableProperty(name = "dcmDeviceName")
-        String[] deviceNames;
-
         @ConfigurableProperty(name = "dcmAETitle")
         String[] aeTitles;
 
@@ -208,15 +215,14 @@ public class CompressionRule
         }
 
         Condition(String[] pmis, int[] bitsStored, int pixelRepresentation,
-                String[] aeTitles, String[] deviceNames, String[] sopClasses,
-                String[] imgTypes, String[] bodyPartExamined) {
+                  String[] aeTitles, String[] sopClasses,
+                  String[] imgTypes, String[] bodyPartExamined) {
             
             this.pmis = EnumSet.noneOf(PhotometricInterpretation.class);
             for (String pmi : pmis)
                 this.pmis.add(PhotometricInterpretation.fromString(pmi));
 
             this.bitsStoredMask = toBitsStoredMask(bitsStored);
-            this.setDeviceNames(deviceNames);
             this.aeTitles = aeTitles;
             this.sopClasses = sopClasses;
             this.imageType = imgTypes;
@@ -227,7 +233,6 @@ public class CompressionRule
 
         public void calcWeight() {
             this.weight = (aeTitles.length != 0 ? 16 : 0)
-                    + (deviceNames.length != 0 ? 8 : 0)
                     + (sopClasses.length != 0 ? 4 : 0)
                     + (bodyPartExamined.length != 0 ? 2 : 0)
                     + (imageType.length != 0 ? 1 : 0);
@@ -255,14 +260,6 @@ public class CompressionRule
 
         public void setPixelRepresentation(int pixelRepresentation) {
             this.pixelRepresentation = pixelRepresentation;
-        }
-
-        public String[] getDeviceNames() {
-            return deviceNames;
-        }
-
-        public void setDeviceNames(String[] deviceNames) {
-            this.deviceNames = deviceNames;
         }
 
         public String[] getAeTitles() {
@@ -337,14 +334,13 @@ public class CompressionRule
             return o.weight - weight;
         }
 
-        public boolean matches(PhotometricInterpretation pmi, 
-                int bitsStored, int pixelRepresentation, 
-                String aeTitle, String deviceName,
-                String sopClass, String[] imgTypes, String bodyPart) {
+        public boolean matches(PhotometricInterpretation pmi,
+                               int bitsStored, int pixelRepresentation,
+                               String aeTitle,
+                               String sopClass, String[] imgTypes, String bodyPart) {
             return pmis.contains(pmi)
                     && matchBitStored(bitsStored)
                     && matchPixelRepresentation(pixelRepresentation)
-                    && isEmptyOrContains(this.deviceNames, deviceName)
                     && isEmptyOrContains(this.aeTitles, aeTitle)
                     && isEmptyOrContains(this.sopClasses, sopClass)
                     && isEmptyOrContains(this.imageType, imgTypes)

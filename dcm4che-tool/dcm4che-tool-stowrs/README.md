@@ -26,13 +26,13 @@
     img.dcm DICOM file while overriding PatientName.
     
     -
-    Example: stowrs -u http://localhost:8080/dcm4chee-arc/stow/DCM4CHEE/studies
+    Example: stowrs -u http://localhost:8080/dicom-web/DCM4CHEE/studies
      -t XML -f /somepath/image-metadata.xml
     => Send stow request to stowRS Receiver as metadata in dicom xml and 
     bulk data referenced in the metadata file.
     
     -
-    Example: stowrs -u http://localhost:8080/dcm4chee-arc/stow/DCM4CHEE/studies
+    Example: stowrs -u http://localhost:8080/dicom-web/DCM4CHEE/studies
      -t JSON -f /somepath/image-metadata.json
     => Send stow request to stowRS Receiver as metadata in dicom json and 
     bulk data referenced in the metadata file.

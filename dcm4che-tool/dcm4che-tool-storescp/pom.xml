@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>dcm4chee-arc-light-5.0.1</version>
+    <version>dcm4chee-arc-light-5.0.2</version>
   </parent>
   <artifactId>dcm4che-tool-storescp</artifactId>
   <name>dcm4che-tool-storescp</name>

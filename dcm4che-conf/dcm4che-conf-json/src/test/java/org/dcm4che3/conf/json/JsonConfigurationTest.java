@@ -40,8 +40,16 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.conf.json.audit.JsonAuditRecordRepositoryConfiguration;
+import org.dcm4che3.conf.json.imageio.JsonImageReaderConfiguration;
+import org.dcm4che3.conf.json.imageio.JsonImageWriterConfiguration;
 import org.dcm4che3.data.UID;
+import org.dcm4che3.imageio.codec.ImageReaderFactory;
+import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.*;
+import org.dcm4che3.net.audit.AuditRecordRepository;
+import org.dcm4che3.net.imageio.ImageReaderExtension;
+import org.dcm4che3.net.imageio.ImageWriterExtension;
 import org.junit.Test;
 
 import javax.json.Json;
@@ -53,7 +61,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -68,9 +75,31 @@ public class JsonConfigurationTest {
     public void testWriteTo() throws Exception {
         StringWriter writer = new StringWriter();
         try ( JsonGenerator gen = Json.createGenerator(writer)) {
-            new JsonConfiguration().writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
+            JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
+            config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
+            config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
+            config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
         }
-        Path path = Paths.get("src/test/data/device.json");
+        Path path = Paths.get("target/device.json");
+        try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
+            w.write(writer.toString());
+        }
+//        Path path = Paths.get("src/test/data/device.json");
+//        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+//            assertEquals(reader.readLine(), writer.toString());
+//        }
+    }
+
+    @Test
+    public void testWriteARRTo() throws Exception {
+        StringWriter writer = new StringWriter();
+        try (JsonGenerator gen = Json.createGenerator(writer)) {
+            JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
+            config.writeTo(createARRDevice("TestAuditRecordRepository"), gen);
+        }
+        Path path = Paths.get("src/test/data/arrdevice.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
             assertEquals(reader.readLine(), writer.toString());
         }
@@ -124,6 +153,8 @@ public class JsonConfigurationTest {
         device.addConnection(conn);
         ApplicationEntity ae = createAE(aet, conn);
         device.addApplicationEntity(ae);
+        device.addDeviceExtension(new ImageReaderExtension(ImageReaderFactory.getDefault()));
+        device.addDeviceExtension(new ImageWriterExtension(ImageWriterFactory.getDefault()));
         return device ;
     }
 
@@ -167,5 +198,25 @@ public class JsonConfigurationTest {
         ae.addTransferCapability(ctSCP());
         ae.addTransferCapability(findSCP());
         return ae;
+    }
+
+    private static Device createARRDevice(String name) {
+        Device device = new Device(name);
+        Connection udp = new Connection("audit-udp", "host.dcm4che.org", 514);
+        udp.setProtocol(Connection.Protocol.SYSLOG_UDP);
+        Connection tls = new Connection("audit-tls", "host.dcm4che.org", 6514);
+        tls.setProtocol(Connection.Protocol.SYSLOG_TLS);
+        tls.setTlsCipherSuites("TLS_RSA_WITH_AES_128_CBC_SHA");
+        device.addConnection(udp);
+        device.addConnection(tls);
+        addAuditRecordRepository(device, udp, tls);
+        return device ;
+    }
+
+    private static void addAuditRecordRepository(Device device, Connection udp, Connection tls) {
+        AuditRecordRepository arr = new AuditRecordRepository();
+        device.addDeviceExtension(arr);
+        arr.addConnection(udp);
+        arr.addConnection(tls);
     }
 }

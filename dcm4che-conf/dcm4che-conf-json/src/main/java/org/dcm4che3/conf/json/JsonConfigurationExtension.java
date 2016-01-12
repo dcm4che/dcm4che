@@ -49,7 +49,7 @@ import javax.json.stream.JsonGenerator;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Nov 2015
  */
-public interface JsonConfigurationExtension {
-    void storeTo(Device device, JsonWriter writer);
-    void storeTo(ApplicationEntity ae, JsonWriter writer);
+public class JsonConfigurationExtension {
+    protected void storeTo(Device device, JsonWriter writer) {}
+    protected void storeTo(ApplicationEntity ae, JsonWriter writer) {};
 }

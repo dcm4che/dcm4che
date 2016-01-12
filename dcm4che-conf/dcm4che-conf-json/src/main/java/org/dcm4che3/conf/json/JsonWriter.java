@@ -119,5 +119,4 @@ public class JsonWriter {
         if (value != defVal)
             gen.write(name, value);
     }
-
 }

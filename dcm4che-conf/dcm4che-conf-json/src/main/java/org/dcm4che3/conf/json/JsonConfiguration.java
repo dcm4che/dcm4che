@@ -98,8 +98,8 @@ public class JsonConfiguration {
 
     public void writeTo(Device device, JsonGenerator gen) {
         JsonWriter writer = new JsonWriter(gen);
-        gen.writeStartObject();
-        gen.write("dicomDeviceName", device.getDeviceName());
+        writer.writeStartObject();
+        writer.writeNotNull("dicomDeviceName", device.getDeviceName());
         writer.writeNotNull("dicomDescription", device.getDescription());
         writer.writeNotNull("dicomManufacturer", device.getManufacturer());
         writer.writeNotNull("dicomManufacturerModelName", device.getManufacturerModelName());
@@ -122,7 +122,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dicomRelatedDeviceReference", device.getRelatedDeviceRefs());
         writer.writeNotEmpty("dicomAuthorizedNodeCertificateReference", device.getAuthorizedNodeCertificateRefs());
         writer.writeNotEmpty("dicomThisNodeCertificateReference", device.getThisNodeCertificateRefs());
-        gen.write("dicomInstalled", device.isInstalled());
+        writer.write("dicomInstalled", device.isInstalled());
         writeConnectionsTo(device, writer);
         writeApplicationAEsTo(device, writer);
 

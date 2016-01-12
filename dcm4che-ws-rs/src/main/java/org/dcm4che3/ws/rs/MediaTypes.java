@@ -215,7 +215,7 @@ public class MediaTypes {
             new MediaType("application", "zip");
 
     /**
-     * "application/dicom+xml"
+     * "application/vnd.sun.wadl+xml"
      */
     public final static MediaType APPLICATION_WADL_TYPE =
             new MediaType("application", "vnd.sun.wadl+xml");

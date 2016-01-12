@@ -1,11 +1,11 @@
     usage: movescu [options] -c <aet>@<host>:<port> --dest <aet>
                    [dcmfile_in...]
     
-    The movescu application implements a Service Class User (SCU) for the Query/Retrieve, the \
-    Composite Instance Root Retrieve, the Composite Instance Retrieve Without Bulk Data, the \
-    Hanging Protocol Query/Retrieve and the Color Palette Query/Retrieve Service Class. movescu \
-    only supports retrieve functionality using the C-MOVE message. It sends matching keys to an \
-    Service Class Provider (SCP) and waits for responses. Matching keys can be specified in \
+    The movescu application implements a Service Class User (SCU) for the Query/Retrieve, the 
+    Composite Instance Root Retrieve, the Composite Instance Retrieve Without Bulk Data, the 
+    Hanging Protocol Query/Retrieve and the Color Palette Query/Retrieve Service Class. movescu 
+    only supports retrieve functionality using the C-MOVE message. It sends matching keys to an 
+    Service Class Provider (SCP) and waits for responses. Matching keys can be specified in 
     DICOM file(s) dcmfile_in or by options -m.
     -
     Options:

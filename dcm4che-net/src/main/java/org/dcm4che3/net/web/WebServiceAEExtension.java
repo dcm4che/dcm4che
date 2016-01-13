@@ -69,6 +69,9 @@ public class WebServiceAEExtension extends AEExtension {
 
     @ConfigurableProperty(name = "dcmRsCapabilitiesBaseURL")
     private String rsCapabilitiesBaseURL;
+    
+    @ConfigurableProperty(name = "dcmStowQidoVerificationDelaySec", defaultValue = "60")
+    private int stowQidoVerificationDelaySec;
 
     public String getWadoRSBaseURL() {
         return wadoRSBaseURL;
@@ -109,6 +112,14 @@ public class WebServiceAEExtension extends AEExtension {
     public void setRsCapabilitiesBaseURL(String rsCapabilitiesBaseURL) {
         this.rsCapabilitiesBaseURL = rsCapabilitiesBaseURL;
     }
+    
+    public int getStowQidoVerificationDelaySec() {
+        return stowQidoVerificationDelaySec;
+    }
+
+    public void setStowQidoVerificationDelaySec(int stowQidoVerificationDelaySec) {
+        this.stowQidoVerificationDelaySec = stowQidoVerificationDelaySec;
+    }
 
     @Override
     public void reconfigure(AEExtension from) {
@@ -118,5 +129,6 @@ public class WebServiceAEExtension extends AEExtension {
         setStowRSBaseURL(webServiceAEExtension.getStowRSBaseURL());
         setWadoRSBaseURL(webServiceAEExtension.getWadoRSBaseURL());
         setWadoURIBaseURL(webServiceAEExtension.getWadoURIBaseURL());
+        setStowQidoVerificationDelaySec(webServiceAEExtension.getStowQidoVerificationDelaySec());
     }
 }

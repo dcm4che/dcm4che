@@ -81,7 +81,7 @@ public class JsonConfigurationTest {
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
             config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
         }
-        Path path = Paths.get("target/device.json");
+        Path path = Paths.get("target/device_t.json");
         try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
             w.write(writer.toString());
         }

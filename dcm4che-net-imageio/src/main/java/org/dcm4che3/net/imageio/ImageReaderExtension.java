@@ -39,7 +39,13 @@
 package org.dcm4che3.net.imageio;
 
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
+import org.dcm4che3.imageio.codec.jpeg.PatchJPEGLS;
+import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.DeviceExtension;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -60,4 +66,5 @@ public class ImageReaderExtension extends DeviceExtension {
     public final ImageReaderFactory getImageReaderFactory() {
         return factory;
     }
+
 }

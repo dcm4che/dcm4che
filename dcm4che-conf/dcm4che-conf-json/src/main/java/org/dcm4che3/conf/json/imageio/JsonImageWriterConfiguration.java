@@ -2,13 +2,11 @@ package org.dcm4che3.conf.json.imageio;
 
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
 import org.dcm4che3.conf.json.JsonWriter;
-import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
+import org.dcm4che3.util.Property;
 
-import javax.imageio.ImageWriter;
 import java.util.Map;
 
 /**
@@ -22,15 +20,23 @@ public class JsonImageWriterConfiguration extends JsonConfigurationExtension {
         if (ext == null)
             return;
 
-        writer.writeStartArray("dcmImageReader");
+        writer.writeStartArray("dcmImageWriter");
         for (Map.Entry<String, ImageWriterFactory.ImageWriterParam> entry : ext.getImageWriterFactory().getEntries()) {
             writer.writeStartObject();
             String tsuid = entry.getKey();
             ImageWriterFactory.ImageWriterParam param = entry.getValue();
             //TODO
+            writer.writeNotNull("dicomTransferSyntax", tsuid);
+            writer.writeNotNull("dcmIIOFormatName", param.formatName);
+            writer.writeNotNull("dcmJavaClassName", param.className);
+            writer.writeNotNull("dcmPatchJPEGLS", param.patchJPEGLS);
+            writer.writeNotEmpty("dcmImageWriteParam", param.imageWriteParams);
+
             writer.writeEnd();
         }
 
         writer.writeEnd();
     }
+
+
 }

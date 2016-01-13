@@ -25,6 +25,10 @@ public class JsonImageReaderConfiguration extends JsonConfigurationExtension {
             String tsuid = entry.getKey();
             ImageReaderFactory.ImageReaderParam param = entry.getValue();
             //TODO
+            writer.writeNotNull("dicomTransferSyntax", tsuid);
+            writer.writeNotNull("dcmIIOFormatName", param.formatName);
+            writer.writeNotNull("dcmJavaClassName", param.className);
+            writer.writeNotNull("dcmPatchJPEGLS", param.patchJPEGLS);
             writer.writeEnd();
         }
 

@@ -12,12 +12,6 @@ import static org.dcm4che3.net.TransferCapability.Role.SCU;
 /**
  * Alternative representation of Transfer Capabilities for an application entity
  *
- * TCGroupConfigAEExtension.getTCsForDefaultGroup() is only for default groups.
- * However one can use any extra group names/fully customize what a group contains:
- * this is read/written through org.dcm4che3.net.TCGroupConfigAEExtension#getScuTCs / #getScpTCs,
- * where the map key is the Group name (it could be either a default group, so it's name will match one of the enum's toString values,
- * or it could be a custom arbitrary group), and the value TCGroupDetails describes which tcs/tss are supported by this group.
- *
  * @author Roman K
  */
 @ConfigurableClass

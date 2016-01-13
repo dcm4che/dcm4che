@@ -42,22 +42,20 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.net.*;
 import org.dcm4che3.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParsingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Nov 2015
  */
 public class JsonConfiguration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JsonConfiguration.class);
-    private static final int CONN_REF_INDEX_START = "/dicomNetworkConnection/".length();
 
     private boolean extended = true;
     private final List<JsonConfigurationExtension> extensions = new ArrayList<>();
@@ -269,9 +267,8 @@ public class JsonConfiguration {
                             case "dcmTimeZoneOfDevice":
                                 device.setTimeZoneOfDevice(reader.timeZoneValue());
                                 break;
-                            //// TODO: 03.12.15 load Device Extensions 
                             default:
-                                unknownProperty(reader);
+                                reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
@@ -283,7 +280,8 @@ public class JsonConfiguration {
                     loadApplicationEntities(device, reader);
                     break;
                 default:
-                    unknownProperty(reader);
+                    if (!loadDeviceExtension(device, reader))
+                        reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);
@@ -292,9 +290,12 @@ public class JsonConfiguration {
         return device;
     }
 
-    private void unknownProperty(JsonReader reader) {
-        LOG.warn("Skip unknown property: {}", reader.getString());
-        reader.skipValue();
+
+    private boolean loadDeviceExtension(Device device, JsonReader reader) {
+        for (JsonConfigurationExtension ext : extensions)
+            if (ext.loadDeviceExtension(device, reader))
+                return true;
+        return false;
     }
 
     private void writeConnectionsTo(Device device, JsonWriter writer) {
@@ -469,13 +470,13 @@ public class JsonConfiguration {
                                 conn.setPackPDV(reader.booleanValue());
                                 break;
                             default:
-                                unknownProperty(reader);
+                                reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
                     break;
                 default:
-                    unknownProperty(reader);
+                    reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);
@@ -567,7 +568,7 @@ public class JsonConfiguration {
                     break;
                 case "dicomNetworkConnectionReference":
                     for (String connRef : reader.stringArray())
-                        ae.addConnection(conns.get(Integer.parseInt(connRef.substring(CONN_REF_INDEX_START))));
+                        ae.addConnection(conns.get(JsonReader.toConnectionIndex(connRef)));
                     break;
                 case "dcmNetworkAE":
                     reader.next();
@@ -580,9 +581,8 @@ public class JsonConfiguration {
                             case "dcmOtherAETitle":
                                 ae.setOtherAETitles(reader.stringArray());
                                 break;
-                            //// TODO: 03.12.15 load AE Extensions 
                             default:
-                                unknownProperty(reader);
+                                reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
@@ -591,12 +591,20 @@ public class JsonConfiguration {
                     loadTransferCapabilities(ae, reader);
                     break;
                 default:
-                    unknownProperty(reader);
+                    if (!loadApplicationEntityExtension(ae, reader))
+                        reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);
         if (ae.getAETitle() == null)
             throw new JsonParsingException("Missing property: dicomAETitle", reader.getLocation());
+    }
+
+    private boolean loadApplicationEntityExtension(ApplicationEntity ae, JsonReader reader) {
+        for (JsonConfigurationExtension ext : extensions)
+            if (ext.loadApplicationEntityExtension(ae, reader))
+                return true;
+        return false;
     }
 
     private void writeTransferCapabilitiesTo(ApplicationEntity ae, JsonWriter writer) {
@@ -719,7 +727,7 @@ public class JsonConfiguration {
                                         StorageOptions.ElementCoercion.valueOf(reader.intValue()));
                                 break;
                             default:
-                                unknownProperty(reader);
+                                reader.skipUnknownProperty();
                         }
                     }
                     reader.expect(JsonParser.Event.END_OBJECT);
@@ -727,7 +735,7 @@ public class JsonConfiguration {
                     tc.setStorageOptions(storageOpts);
                     break;
                 default:
-                    unknownProperty(reader);
+                    reader.skipUnknownProperty();
             }
         }
         reader.expect(JsonParser.Event.END_OBJECT);

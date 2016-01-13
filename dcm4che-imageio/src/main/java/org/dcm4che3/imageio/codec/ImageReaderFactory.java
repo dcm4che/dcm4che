@@ -82,6 +82,35 @@ public class ImageReaderFactory implements Serializable {
                     .valueOf(patchJPEGLS) : null;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ImageReaderParam that = (ImageReaderParam) o;
+
+            if (!formatName.equals(that.formatName)) return false;
+            if (className != null ? !className.equals(that.className) : that.className != null) return false;
+            return patchJPEGLS == that.patchJPEGLS;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = formatName.hashCode();
+            result = 31 * result + (className != null ? className.hashCode() : 0);
+            result = 31 * result + (patchJPEGLS != null ? patchJPEGLS.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "ImageReaderParam{" +
+                    "formatName='" + formatName + '\'' +
+                    ", className='" + className + '\'' +
+                    ", patchJPEGLS=" + patchJPEGLS +
+                    '}';
+        }
     }
 
     private static String nullify(String s) {

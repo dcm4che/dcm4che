@@ -52,4 +52,12 @@ import javax.json.stream.JsonGenerator;
 public class JsonConfigurationExtension {
     protected void storeTo(Device device, JsonWriter writer) {}
     protected void storeTo(ApplicationEntity ae, JsonWriter writer) {};
+
+    public boolean loadDeviceExtension(Device device, JsonReader reader) {
+        return false;
+    }
+
+    public boolean loadApplicationEntityExtension(ApplicationEntity ae, JsonReader reader) {
+        return false;
+    }
 }

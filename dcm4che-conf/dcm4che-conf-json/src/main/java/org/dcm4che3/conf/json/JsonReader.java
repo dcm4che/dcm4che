@@ -43,6 +43,8 @@ package org.dcm4che3.conf.json;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.json.stream.JsonLocation;
 import javax.json.stream.JsonParser;
@@ -55,13 +57,20 @@ import java.util.TimeZone;
  * @since Dec 2015
  */
 public class JsonReader {
+    private static final Logger LOG = LoggerFactory.getLogger(JsonConfiguration.class);
     private static final Code[] EMPTY_CODES = {};
+    private static final int CONN_REF_INDEX_START = "/dicomNetworkConnection/".length();
+
     private final JsonParser parser;
     private JsonParser.Event event;
     private String s;
 
     public JsonReader(JsonParser parser) {
         this.parser = parser;
+    }
+
+    public static int toConnectionIndex(String connRef) {
+        return Integer.parseInt(connRef.substring(CONN_REF_INDEX_START));
     }
 
     public JsonParser.Event next() {
@@ -140,7 +149,12 @@ public class JsonReader {
         return TimeZone.getTimeZone(stringValue());
     }
 
-    public void skipValue() {
+    public void skipUnknownProperty() {
+        LOG.warn("Skip unknown property: {}", s);
+        skipValue();
+    }
+
+    private void skipValue() {
         int level = 0;
         do {
             switch (next()) {

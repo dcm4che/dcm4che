@@ -96,6 +96,39 @@ public class ImageWriterFactory implements Serializable {
         public Property[] getImageWriteParams() {
             return imageWriteParams;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ImageWriterParam that = (ImageWriterParam) o;
+
+            if (!formatName.equals(that.formatName)) return false;
+            if (className != null ? !className.equals(that.className) : that.className != null) return false;
+            if (patchJPEGLS != that.patchJPEGLS) return false;
+            return Arrays.equals(imageWriteParams, that.imageWriteParams);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = formatName.hashCode();
+            result = 31 * result + (className != null ? className.hashCode() : 0);
+            result = 31 * result + (patchJPEGLS != null ? patchJPEGLS.hashCode() : 0);
+            result = 31 * result + Arrays.hashCode(imageWriteParams);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "ImageWriterParam{" +
+                    "formatName='" + formatName + '\'' +
+                    ", className='" + className + '\'' +
+                    ", patchJPEGLS=" + patchJPEGLS +
+                    ", imageWriteParams=" + Arrays.toString(imageWriteParams) +
+                    '}';
+        }
     }
 
     private static String nullify(String s) {

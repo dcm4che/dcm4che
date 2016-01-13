@@ -59,9 +59,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -106,11 +104,30 @@ public class JsonConfigurationTest {
     }
 
     @Test
+    public void testLoadARRTo() throws Exception {
+        Device device = null;
+        Path path = Paths.get("src/test/data/arrdevice.json");
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
+            device = config.loadDeviceFrom(Json.createParser(reader));
+        }
+        AuditRecordRepository arr = device.getDeviceExtension(AuditRecordRepository.class);
+        assertNotNull(arr);
+        List<Connection> conns = arr.getConnections();
+        assertEquals(2, conns.size());
+    }
+
+    @Test
     public void testLoadDevice() throws Exception {
         Device device = null;
         Path path = Paths.get("src/test/data/device.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
-            device = new JsonConfiguration().loadDeviceFrom(Json.createParser(reader));
+            JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
+            config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
+            config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
+            device = config.loadDeviceFrom(Json.createParser(reader));
         }
         assertEquals("Test-Device-1", device.getDeviceName());
         List<Connection> conns = device.listConnections();
@@ -145,6 +162,32 @@ public class JsonConfigurationTest {
                 UID.StudyRootQueryRetrieveInformationModelFIND, TransferCapability.Role.SCP);
         assertNotNull(findSCP);
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
+        assertImageReaderExtension(device.getDeviceExtension(ImageReaderExtension.class));
+        assertImageWriterExtension(device.getDeviceExtension(ImageWriterExtension.class));
+    }
+
+    private void assertImageWriterExtension(ImageWriterExtension ext) {
+        assertNotNull(ext);
+        ImageWriterFactory factory = ext.getImageWriterFactory();
+        assertNotNull(factory);
+        Set<Map.Entry<String, ImageWriterFactory.ImageWriterParam>> expectedEntries =
+                ImageWriterFactory.getDefault().getEntries();
+        assertEquals(expectedEntries.size(), factory.getEntries().size());
+        for (Map.Entry<String, ImageWriterFactory.ImageWriterParam> expected : expectedEntries) {
+            assertEquals(expected.getValue(), factory.get(expected.getKey()));
+        }
+    }
+
+    private void assertImageReaderExtension(ImageReaderExtension ext) {
+        assertNotNull(ext);
+        ImageReaderFactory factory = ext.getImageReaderFactory();
+        assertNotNull(factory);
+        Set<Map.Entry<String, ImageReaderFactory.ImageReaderParam>> expectedEntries =
+                ImageReaderFactory.getDefault().getEntries();
+        assertEquals(expectedEntries.size(), factory.getEntries().size());
+        for (Map.Entry<String, ImageReaderFactory.ImageReaderParam> expected : expectedEntries) {
+            assertEquals(expected.getValue(), factory.get(expected.getKey()));
+        }
     }
 
     private static Device createDevice(String name, String aet) throws Exception {

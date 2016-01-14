@@ -40,6 +40,10 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.audit.AuditMessage;
+import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.audit.EventID;
+import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.json.audit.JsonAuditLoggerConfiguration;
@@ -52,6 +56,7 @@ import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.*;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditRecordRepository;
+import org.dcm4che3.net.audit.AuditSuppressCriteria;
 import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
 import org.junit.Test;
@@ -306,5 +311,20 @@ public class JsonConfigurationTest {
         auditLogger.addConnection(auditUDP);
         auditLogger.setAuditSourceTypeCodes("4");
         auditLogger.setAuditRecordRepositoryDevice(arrDevice);
+        auditLogger.setAuditSuppressCriteriaList(createSuppressCriteriaList());
+    }
+
+    private static List<AuditSuppressCriteria> createSuppressCriteriaList() {
+        AuditSuppressCriteria asc = new AuditSuppressCriteria("cn");
+        asc.setEventIDs(AuditMessages.EventID.HealthServicesProvisionEvent, AuditMessages.EventID.MedicationEvent);
+        asc.setEventTypeCodes(AuditMessages.EventTypeCode.ApplicationStart, AuditMessages.EventTypeCode.ApplicationStop);
+        asc.setEventActionCodes(AuditMessages.EventActionCode.Create, AuditMessages.EventActionCode.Delete);
+        asc.setEventOutcomeIndicators(AuditMessages.EventOutcomeIndicator.MajorFailure, AuditMessages.EventOutcomeIndicator.MinorFailure);
+        asc.setUserIDs("4", "2", "0");
+        asc.setAlternativeUserIDs("XYZ", "XYZ", "XYZ");
+        asc.setUserRoleIDCodes(AuditMessages.RoleIDCode.Application, AuditMessages.RoleIDCode.ApplicationLauncher);
+        asc.setNetworkAccessPointIDs(AuditMessages.NetworkAccessPointTypeCode.EmailAddress, AuditMessages.NetworkAccessPointTypeCode.IPAddress);
+        asc.setUserIsRequestor(true);
+        return Collections.singletonList(asc);
     }
 }

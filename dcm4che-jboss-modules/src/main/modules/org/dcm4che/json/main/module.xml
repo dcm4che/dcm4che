@@ -8,9 +8,9 @@
         <module name="org.dcm4che.conf.api" export="true"/>
         <module name="org.dcm4che.core" export="true"/>
         <module name="org.dcm4che.net" export="true"/>
-        <module name="org.dcm4che.net.audit" export="true"/>
-        <module name="org.dcm4che.net.hl7" export="true"/>
-        <module name="org.dcm4che.net.imageio" export="true"/>
+        <module name="org.dcm4che.net-audit" export="true"/>
+        <module name="org.dcm4che.net-hl7" export="true"/>
+        <module name="org.dcm4che.net-imageio" export="true"/>
         <module name="javax.json.api" export="true"/>
         <module name="javax.api"/>
         <module name="org.slf4j"/>

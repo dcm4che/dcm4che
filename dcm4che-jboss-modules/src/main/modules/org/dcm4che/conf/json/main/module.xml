@@ -45,6 +45,7 @@
   </resources>
 
   <dependencies>
+    <module name="org.dcm4che.conf.api" export="true"/>
     <module name="org.dcm4che.net" export="true"/>
     <module name="org.dcm4che.net-audit" export="true"/>
     <module name="org.dcm4che.net-hl7" export="true"/>

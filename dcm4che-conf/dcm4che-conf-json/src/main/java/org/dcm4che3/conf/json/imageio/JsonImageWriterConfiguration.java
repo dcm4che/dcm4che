@@ -1,16 +1,14 @@
 package org.dcm4che3.conf.json.imageio;
 
+import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
 import org.dcm4che3.conf.json.JsonWriter;
 import org.dcm4che3.conf.json.JsonReader;
-import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.Device;
-import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
 
 import javax.json.stream.JsonParser;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -29,7 +27,6 @@ public class JsonImageWriterConfiguration extends JsonConfigurationExtension {
             writer.writeStartObject();
             String tsuid = entry.getKey();
             ImageWriterFactory.ImageWriterParam param = entry.getValue();
-            //TODO
             writer.writeNotNull("dicomTransferSyntax", tsuid);
             writer.writeNotNull("dcmIIOFormatName", param.formatName);
             writer.writeNotNull("dcmJavaClassName", param.className);
@@ -43,7 +40,7 @@ public class JsonImageWriterConfiguration extends JsonConfigurationExtension {
     }
 
     @Override
-    public boolean loadDeviceExtension(Device device, JsonReader reader) {
+    public boolean loadDeviceExtension(Device device, JsonReader reader, ConfigurationDelegate config) {
         if (!reader.getString().equals("dcmImageWriter"))
             return false;
 

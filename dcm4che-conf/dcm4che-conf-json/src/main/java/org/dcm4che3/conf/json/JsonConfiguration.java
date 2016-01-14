@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.*;
 import org.dcm4che3.util.StringUtils;
 
@@ -145,7 +146,8 @@ public class JsonConfiguration {
         gen.writeEnd();
     }
 
-    public Device loadDeviceFrom(JsonParser parser) {
+    public Device loadDeviceFrom(JsonParser parser, ConfigurationDelegate config)
+            throws ConfigurationException {
         Device device = new Device();
         JsonReader reader = new JsonReader(parser);
         reader.next();
@@ -280,7 +282,7 @@ public class JsonConfiguration {
                     loadApplicationEntities(device, reader);
                     break;
                 default:
-                    if (!loadDeviceExtension(device, reader))
+                    if (!loadDeviceExtension(device, reader, config))
                         reader.skipUnknownProperty();
             }
         }
@@ -291,9 +293,10 @@ public class JsonConfiguration {
     }
 
 
-    private boolean loadDeviceExtension(Device device, JsonReader reader) {
+    private boolean loadDeviceExtension(Device device, JsonReader reader, ConfigurationDelegate config)
+            throws ConfigurationException {
         for (JsonConfigurationExtension ext : extensions)
-            if (ext.loadDeviceExtension(device, reader))
+            if (ext.loadDeviceExtension(device, reader, config))
                 return true;
         return false;
     }
@@ -503,7 +506,7 @@ public class JsonConfiguration {
         writer.writeNotEmpty("dicomPreferredCalledAETitle", ae.getPreferredCalledAETitles());
         writer.write("dicomAssociationInitiator", ae.isAssociationInitiator());
         writer.write("dicomAssociationAcceptor", ae.isAssociationAcceptor());
-        writeConnRefs(ae, conns, writer);
+        writer.writeConnRefs(conns, ae.getConnections());
         writer.writeNotEmpty("dicomSupportedCharacterSet", ae.getSupportedCharacterSets());
         writer.writeNotNull("dicomInstalled", ae.getInstalled());
         writeTransferCapabilitiesTo(ae, writer);
@@ -518,13 +521,6 @@ public class JsonConfiguration {
         writer.writeEnd();
     }
 
-    private void writeConnRefs(ApplicationEntity ae, List<Connection> conns, JsonWriter writer) {
-        writer.writeStartArray("dicomNetworkConnectionReference");
-        for (Connection conn : ae.getConnections())
-            writer.write("/dicomNetworkConnection/" + conns.indexOf(conn));
-        writer.writeEnd();
-    }
-    
     private void loadApplicationEntities(Device device, JsonReader reader) {
         reader.next();
         reader.expect(JsonParser.Event.START_ARRAY);

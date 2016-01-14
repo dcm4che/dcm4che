@@ -1,5 +1,6 @@
 package org.dcm4che3.conf.json.audit;
 
+import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
 import org.dcm4che3.conf.json.JsonReader;
 import org.dcm4che3.conf.json.JsonWriter;
@@ -22,20 +23,13 @@ public class JsonAuditRecordRepositoryConfiguration extends JsonConfigurationExt
             return;
 
         writer.writeStartObject("dcmAuditRecordRepository");
-        writeConnRefs(arr, device.listConnections(), writer);
+        writer.writeConnRefs(device.listConnections(), arr.getConnections());
         writer.writeNotNull("dicomInstalled", arr.getInstalled());
         writer.writeEnd();
     }
 
-    private void writeConnRefs(AuditRecordRepository arr, List<Connection> conns, JsonWriter writer) {
-        writer.writeStartArray("dicomNetworkConnectionReference");
-        for (Connection conn : arr.getConnections())
-            writer.write("/dicomNetworkConnection/" + conns.indexOf(conn));
-        writer.writeEnd();
-    }
-
     @Override
-    public boolean loadDeviceExtension(Device device, JsonReader reader) {
+    public boolean loadDeviceExtension(Device device, JsonReader reader, ConfigurationDelegate config) {
         if (!reader.getString().equals("dcmAuditRecordRepository"))
             return false;
 

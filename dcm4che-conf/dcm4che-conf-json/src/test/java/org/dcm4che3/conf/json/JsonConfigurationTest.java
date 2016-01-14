@@ -40,6 +40,9 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.conf.api.ConfigurationException;
+import org.dcm4che3.conf.api.ConfigurationNotFoundException;
+import org.dcm4che3.conf.json.audit.JsonAuditLoggerConfiguration;
 import org.dcm4che3.conf.json.audit.JsonAuditRecordRepositoryConfiguration;
 import org.dcm4che3.conf.json.imageio.JsonImageReaderConfiguration;
 import org.dcm4che3.conf.json.imageio.JsonImageWriterConfiguration;
@@ -47,6 +50,7 @@ import org.dcm4che3.data.UID;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageWriterFactory;
 import org.dcm4che3.net.*;
+import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditRecordRepository;
 import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
@@ -74,6 +78,7 @@ public class JsonConfigurationTest {
         StringWriter writer = new StringWriter();
         try ( JsonGenerator gen = Json.createGenerator(writer)) {
             JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditLoggerConfiguration());
             config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
             config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
@@ -104,19 +109,36 @@ public class JsonConfigurationTest {
     }
 
     @Test
-    public void testLoadARRTo() throws Exception {
-        Device device = null;
-        Path path = Paths.get("src/test/data/arrdevice.json");
-        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
-            JsonConfiguration config = new JsonConfiguration();
-            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
-            device = config.loadDeviceFrom(Json.createParser(reader));
-        }
+    public void testLoadARR() throws Exception {
+        Device device = loadARR();
         AuditRecordRepository arr = device.getDeviceExtension(AuditRecordRepository.class);
         assertNotNull(arr);
         List<Connection> conns = arr.getConnections();
         assertEquals(2, conns.size());
     }
+
+    private static Device loadARR() throws IOException, ConfigurationException {
+        Path path = Paths.get("src/test/data/arrdevice.json");
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
+            return config.loadDeviceFrom(Json.createParser(reader), null);
+        }
+    }
+
+    private static final ConfigurationDelegate configDelegate = new ConfigurationDelegate() {
+        @Override
+        public Device findDevice(String name) throws ConfigurationException {
+            if (!name.equals("TestAuditRecordRepository"))
+                throw new ConfigurationNotFoundException("Unknown Device: " + name);
+            try {
+                return loadARR();
+            } catch (IOException e) {
+                throw new ConfigurationException(e);
+            }
+        }
+
+    };
 
     @Test
     public void testLoadDevice() throws Exception {
@@ -124,14 +146,15 @@ public class JsonConfigurationTest {
         Path path = Paths.get("src/test/data/device.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
             JsonConfiguration config = new JsonConfiguration();
+            config.addJsonConfigurationExtension(new JsonAuditLoggerConfiguration());
             config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
             config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
-            device = config.loadDeviceFrom(Json.createParser(reader));
+            device = config.loadDeviceFrom(Json.createParser(reader), configDelegate);
         }
         assertEquals("Test-Device-1", device.getDeviceName());
         List<Connection> conns = device.listConnections();
-        assertEquals(1, conns.size());
+        assertEquals(2, conns.size());
         Connection conn = conns.get(0);
         assertEquals("host.dcm4che.org", conn.getHostname());
         assertEquals(11112, conn.getPort());
@@ -164,6 +187,15 @@ public class JsonConfigurationTest {
         assertEquals(EnumSet.of(QueryOption.RELATIONAL), findSCP.getQueryOptions());
         assertImageReaderExtension(device.getDeviceExtension(ImageReaderExtension.class));
         assertImageWriterExtension(device.getDeviceExtension(ImageWriterExtension.class));
+        assertAuditLogger(device.getDeviceExtension(AuditLogger.class));
+    }
+
+    private void assertAuditLogger(AuditLogger auditLogger) {
+        assertNotNull(auditLogger);
+        assertNotNull(auditLogger.getAuditRecordRepositoryDevice());
+        List<Connection> conns = auditLogger.getConnections();
+        assertEquals(1, conns.size());
+        //TODO
     }
 
     private void assertImageWriterExtension(ImageWriterExtension ext) {
@@ -198,6 +230,7 @@ public class JsonConfigurationTest {
         device.addApplicationEntity(ae);
         device.addDeviceExtension(new ImageReaderExtension(ImageReaderFactory.getDefault()));
         device.addDeviceExtension(new ImageWriterExtension(ImageWriterFactory.getDefault()));
+        addAuditLogger(device, createARRDevice("TestAuditRecordRepository"));
         return device ;
     }
 
@@ -261,5 +294,17 @@ public class JsonConfigurationTest {
         device.addDeviceExtension(arr);
         arr.addConnection(udp);
         arr.addConnection(tls);
+    }
+
+    private static void addAuditLogger(Device device, Device arrDevice) {
+        Connection auditUDP = new Connection("audit-udp", "localhost");
+        auditUDP.setProtocol(Connection.Protocol.SYSLOG_UDP);
+        device.addConnection(auditUDP);
+
+        AuditLogger auditLogger = new AuditLogger();
+        device.addDeviceExtension(auditLogger);
+        auditLogger.addConnection(auditUDP);
+        auditLogger.setAuditSourceTypeCodes("4");
+        auditLogger.setAuditRecordRepositoryDevice(arrDevice);
     }
 }

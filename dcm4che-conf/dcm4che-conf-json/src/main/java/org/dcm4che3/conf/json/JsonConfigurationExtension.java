@@ -40,10 +40,9 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
-
-import javax.json.stream.JsonGenerator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,7 +52,8 @@ public class JsonConfigurationExtension {
     protected void storeTo(Device device, JsonWriter writer) {}
     protected void storeTo(ApplicationEntity ae, JsonWriter writer) {};
 
-    public boolean loadDeviceExtension(Device device, JsonReader reader) {
+    public boolean loadDeviceExtension(Device device, JsonReader reader, ConfigurationDelegate config)
+            throws ConfigurationException {
         return false;
     }
 

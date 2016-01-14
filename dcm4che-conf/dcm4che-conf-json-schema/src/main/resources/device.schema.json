@@ -762,7 +762,7 @@
       "type": "object",
       "required": [
         "dicomNetworkConnectionReference",
-        "dcmAuditRecordRepositoryDeviceReference"
+        "dcmAuditRecordRepositoryDeviceName"
       ],
       "properties": {
         "dicomNetworkConnectionReference": {

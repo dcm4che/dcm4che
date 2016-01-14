@@ -40,7 +40,11 @@
 
 package org.dcm4che3.conf.json;
 
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+
 import javax.json.stream.JsonGenerator;
+import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -118,5 +122,12 @@ public class JsonWriter {
     public void writeNotDef(String name, boolean value, boolean defVal) {
         if (value != defVal)
             gen.write(name, value);
+    }
+
+    public void writeConnRefs(List<Connection> conns, List<Connection> refs) {
+        writeStartArray("dicomNetworkConnectionReference");
+        for (Connection ref : refs)
+            write("/dicomNetworkConnection/" + conns.indexOf(ref));
+        writeEnd();
     }
 }

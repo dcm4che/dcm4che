@@ -149,6 +149,7 @@ public class JsonConfigurationTest {
     public void testLoadDevice() throws Exception {
         Device device = null;
         Path path = Paths.get("src/test/data/device.json");
+//          Path path = Paths.get("target/device.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
             JsonConfiguration config = new JsonConfiguration();
             config.addJsonConfigurationExtension(new JsonAuditLoggerConfiguration());

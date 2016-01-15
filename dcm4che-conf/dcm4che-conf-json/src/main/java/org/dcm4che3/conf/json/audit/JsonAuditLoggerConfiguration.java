@@ -1,5 +1,6 @@
 package org.dcm4che3.conf.json.audit;
 
+import org.dcm4che3.audit.EventID;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
@@ -102,9 +103,103 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                     logger.setInstalled(reader.booleanValue());
                     break;
                 //TODO
+                case "dcmAuditSourceID":
+                    logger.setAuditSourceID(reader.stringValue());
+                    break;
+                case "dcmAuditEnterpriseSiteID":
+                    logger.setAuditEnterpriseSiteID(reader.stringValue());
+                    break;
+                case "dcmAuditSourceTypeCode":
+                    logger.setAuditSourceTypeCodes(reader.stringArray());
+                    break;
+                case "dcmAuditFacility":
+                    logger.setFacility(AuditLogger.Facility.valueOf(reader.stringValue()));
+                    break;
+                case "dcmAuditSuccessSeverity":
+                    logger.setSuccessSeverity(AuditLogger.Severity.valueOf(reader.stringValue()));
+                    break;
+                case "dcmAuditMinorFailureSeverity":
+                    logger.setMinorFailureSeverity(AuditLogger.Severity.valueOf(reader.stringValue()));
+                    break;
+                case "dcmAuditSeriousFailureSeverity":
+                    logger.setSeriousFailureSeverity(AuditLogger.Severity.valueOf(reader.stringValue()));
+                    break;
+                case "dcmAuditMajorFailureSeverity":
+                    logger.setMajorFailureSeverity((AuditLogger.Severity.valueOf(reader.stringValue())));
+                    break;
+                case "dcmAuditApplicationName":
+                    logger.setApplicationName(reader.stringValue());
+                    break;
+                case "dcmAuditMessageID":
+                    logger.setMessageID(reader.stringValue());
+                    break;
+                case "dcmAuditMessageEncoding":
+                    logger.setEncoding(reader.stringValue());
+                    break;
+                case "dcmAuditMessageBOM":
+                    logger.setIncludeBOM(reader.booleanValue());
+                    break;
+                case "dcmAuditTimestampInUTC":
+                    logger.setTimestampInUTC(reader.booleanValue());
+                    break;
+                case "dcmAuditMessageFormatXML":
+                    logger.setFormatXML(reader.booleanValue());
+                    break;
+                case "dcmAuditMessageSchemaURI":
+                    logger.setSchemaURI(reader.stringValue());
+                    break;
+                case "dcmAuditIncludeInstanceUID":
+                    logger.setIncludeInstanceUID(reader.booleanValue());
+                    break;
+                case "dcmAuditLoggerSpoolDirectoryURI":
+                    logger.setSpoolDirectoryURI(reader.stringValue());
+                    break;
+                case "dcmAuditLoggerRetryInterval":
+                    logger.setRetryInterval(Integer.parseInt(reader.stringValue()));
+                    break;
+//                case "dcmAuditSuppressCriteria":
+//                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
+//                    reader.next();
+//                    reader.expect(JsonParser.Event.START_ARRAY);
+//                    while (reader.next() == JsonParser.Event.START_OBJECT) {
+//                        reader.expect(JsonParser.Event.START_OBJECT);
+//                        while (reader.next() == JsonParser.Event.KEY_NAME) {
+//                            switch (reader.getString()) {
+//                                case "cn":
+//                                    break;
+////                            case "dcmAuditEventID":
+////                                ct.setEventIDs(reader.stringArray());
+////                                break;
+//                                case "dcmAuditUserIsRequestor":
+//                                    ct.setUserIsRequestor(reader.booleanValue());
+//                                    break;
+//                                default:
+//                                    reader.skipUnknownProperty();
+//                            }
+//                        }
+//                    }
+//                    break;
                 default:
                     reader.skipUnknownProperty();
             }
         }
     }
 }
+
+//                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
+//                    reader.next();
+//                    reader.expect(JsonParser.Event.START_ARRAY);
+//                    while (reader.next() == JsonParser.Event.KEY_NAME) {
+//                        switch (reader.getString()) {
+//                            case "cn":
+//                                break;
+////                            case "dcmAuditEventID":
+////                                ct.setEventIDs((AuditMessages.EventID) reader.stringArray());
+////                                break;
+//                            case "dcmAuditUserIsRequestor":
+//                                ct.setUserIsRequestor(reader.booleanValue());
+//                                break;
+//                            default:
+//                                reader.skipUnknownProperty();
+//                        }
+//                    }

@@ -1,6 +1,6 @@
 package org.dcm4che3.conf.json.audit;
 
-import org.dcm4che3.audit.EventID;
+import org.dcm4che3.audit.*;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
@@ -65,7 +65,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
             writer.writeNotEmpty("dcmAuditEventOutcomeIndicator", suppressCriteria.getEventOutcomeIndicators());
             writer.writeNotEmpty("dcmAuditUserID", suppressCriteria.getUserIDs());
             writer.writeNotEmpty("dcmAuditAlternativeUserID", suppressCriteria.getAlternativeUserIDs());
-            writer.writeNotEmpty("dcmAuditUserRoleIDCode", suppressCriteria.getUserRoleIDCodes());
+            writer.writeNotEmpty("dcmAuditUserRoleIDCode", suppressCriteria.getUserRoleIDCodesAsStringArray());
             writer.writeNotEmpty("dcmAuditNetworkAccessPointID", suppressCriteria.getNetworkAccessPointIDs());
             writer.writeNotNull("dcmAuditUserIsRequestor", suppressCriteria.getUserIsRequestor());
             writer.writeEnd();
@@ -157,28 +157,40 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                 case "dcmAuditLoggerRetryInterval":
                     logger.setRetryInterval(Integer.parseInt(reader.stringValue()));
                     break;
-//                case "dcmAuditSuppressCriteria":
-//                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
-//                    reader.next();
-//                    reader.expect(JsonParser.Event.START_ARRAY);
-//                    while (reader.next() == JsonParser.Event.START_OBJECT) {
-//                        reader.expect(JsonParser.Event.START_OBJECT);
-//                        while (reader.next() == JsonParser.Event.KEY_NAME) {
-//                            switch (reader.getString()) {
+                case "dcmAuditSuppressCriteria":
+                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
+                    reader.next();
+                    reader.expect(JsonParser.Event.START_ARRAY);
+                    while (reader.next() == JsonParser.Event.START_OBJECT) {
+                        reader.expect(JsonParser.Event.START_OBJECT);
+                        while (reader.next() == JsonParser.Event.KEY_NAME) {
+                            switch (reader.getString()) {
 //                                case "cn":
+//                                    ct.getCommonName()
 //                                    break;
-////                            case "dcmAuditEventID":
-////                                ct.setEventIDs(reader.stringArray());
-////                                break;
-//                                case "dcmAuditUserIsRequestor":
-//                                    ct.setUserIsRequestor(reader.booleanValue());
-//                                    break;
-//                                default:
-//                                    reader.skipUnknownProperty();
-//                            }
-//                        }
-//                    }
-//                    break;
+                            case "dcmAuditUserID":
+                                ct.setUserIDs(reader.stringArray());
+                                break;
+                            case "dcmAuditAlternativeUserID":
+                                ct.setAlternativeUserIDs(reader.stringArray());
+                                break;
+                            case "dcmAuditUserRoleIDCode":
+                                ct.setUserRoleIDCodesAsStringArray(reader.stringArray());
+                                break;
+                            case "dcmAuditNetworkAccessPointID":
+                                ct.setNetworkAccessPointIDs(reader.stringArray());
+                                break;
+                            case "dcmAuditUserIsRequestor":
+                                ct.setUserIsRequestor(reader.booleanValue());
+                                break;
+                            default:
+                                reader.skipUnknownProperty();
+                            }
+                        }
+                        reader.expect(JsonParser.Event.END_OBJECT);
+                    }
+                    reader.expect(JsonParser.Event.END_ARRAY);
+                    break;
                 default:
                     reader.skipUnknownProperty();
             }

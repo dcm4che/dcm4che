@@ -66,8 +66,10 @@ import org.dcm4che3.data.Code;
  *
  */
 public class AuditSuppressCriteria {
+    public AuditSuppressCriteria() {
+    }
 
-    private final String commonName;
+    private String commonName;
     private EventID[] eventIDs = {};
     private EventTypeCode[] eventTypeCodes = {};
     private String eventActionCodes[] = {};
@@ -79,9 +81,13 @@ public class AuditSuppressCriteria {
     private Boolean userIsRequestor;
 
     public AuditSuppressCriteria(String cn) {
-        if (cn.isEmpty())
+        setCommonName(cn);
+    }
+
+    public void setCommonName(String commonName) {
+        if (commonName.isEmpty())
             throw new IllegalArgumentException("cn must not be empty");
-        this.commonName = cn;
+        this.commonName = commonName;
     }
 
     public String getCommonName() {

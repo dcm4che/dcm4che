@@ -165,9 +165,21 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                         reader.expect(JsonParser.Event.START_OBJECT);
                         while (reader.next() == JsonParser.Event.KEY_NAME) {
                             switch (reader.getString()) {
-//                                case "cn":
-//                                    ct.getCommonName()
-//                                    break;
+                            case "cn":
+                                ct.setCommonName(reader.stringValue());
+                                break;
+                            case "dcmAuditEventID":
+                                ct.setEventIDsAsStringArray(reader.stringArray());
+                                break;
+                            case "dcmAuditEventTypeCode":
+                                ct.setEventTypeCodesAsStringArray(reader.stringArray());
+                                break;
+                            case "dcmAuditEventActionCode":
+                                ct.setEventActionCodes(reader.stringArray());
+                                break;
+                            case "dcmAuditEventOutcomeIndicator":
+                                ct.setEventOutcomeIndicators(reader.stringArray());
+                                break;
                             case "dcmAuditUserID":
                                 ct.setUserIDs(reader.stringArray());
                                 break;

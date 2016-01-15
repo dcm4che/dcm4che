@@ -200,7 +200,22 @@ public class JsonConfigurationTest {
         assertNotNull(auditLogger.getAuditRecordRepositoryDevice());
         List<Connection> conns = auditLogger.getConnections();
         assertEquals(1, conns.size());
-        //TODO
+        assertEquals("SourceID", auditLogger.getAuditSourceID());
+        assertEquals("EnterpriseID", auditLogger.getAuditEnterpriseSiteID());
+//        assertEquals("4", auditLogger.getAuditSourceTypeCodes());
+//        assertEquals(AuditLogger.Facility.authpriv, auditLogger.getFacility());
+//        assertEquals(AuditLogger.Severity.notice, auditLogger.getSuccessSeverity());
+//        assertEquals(AuditLogger.Severity.warning, auditLogger.getMinorFailureSeverity());
+//        assertEquals(AuditLogger.Severity.err, auditLogger.getSeriousFailureSeverity());
+//        assertEquals(AuditLogger.Severity.crit, auditLogger.getMajorFailureSeverity());
+        assertEquals("DICOM+RFC3881", auditLogger.getMessageID());
+        assertEquals("UTF-8", auditLogger.getEncoding());
+        assertEquals(true, auditLogger.isIncludeBOM());
+        assertEquals(false, auditLogger.isTimestampInUTC());
+        assertEquals(false, auditLogger.isFormatXML());
+//        assertEquals("file:/D:/tmp/spoolDirectory", auditLogger.getSchemaURI());
+        assertEquals(false, auditLogger.isIncludeInstanceUID());
+        assertEquals(0, auditLogger.getRetryInterval());
     }
 
     private void assertImageWriterExtension(ImageWriterExtension ext) {
@@ -309,7 +324,11 @@ public class JsonConfigurationTest {
         AuditLogger auditLogger = new AuditLogger();
         device.addDeviceExtension(auditLogger);
         auditLogger.addConnection(auditUDP);
+        auditLogger.setAuditSourceID("SourceID");
+        auditLogger.setAuditEnterpriseSiteID("EnterpriseID");
         auditLogger.setAuditSourceTypeCodes("4");
+        auditLogger.setApplicationName("applicationName");
+        auditLogger.setSpoolDirectoryURI("file:///tmp/spoolDirectory");
         auditLogger.setAuditRecordRepositoryDevice(arrDevice);
         auditLogger.setAuditSuppressCriteriaList(createSuppressCriteriaList());
     }

@@ -195,7 +195,7 @@ public class AuditLogger extends DeviceExtension {
     private String schemaURI = AuditMessages.SCHEMA_URI;
     private boolean timestampInUTC = false;
     private boolean includeBOM = true;
-    private boolean formatXML;
+    private boolean formatXML = false;
     private Boolean installed;
     private Boolean includeInstanceUID = false;
     private File spoolDirectory;

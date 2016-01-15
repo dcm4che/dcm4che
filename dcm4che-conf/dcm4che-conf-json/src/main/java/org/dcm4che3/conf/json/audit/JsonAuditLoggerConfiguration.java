@@ -41,11 +41,11 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         writer.writeNotNull("dcmAuditApplicationName", auditLogger.getApplicationName());
         writer.writeNotNull("dcmAuditMessageID", auditLogger.getMessageID());
         writer.writeNotNull("dcmAuditMessageEncoding", auditLogger.getEncoding());
-        writer.writeNotNull("dcmAuditMessageBOM", auditLogger.isIncludeBOM());
-        writer.writeNotNull("dcmAuditTimestampInUTC", auditLogger.isTimestampInUTC());
-        writer.writeNotNull("dcmAuditMessageFormatXML", auditLogger.isFormatXML());
+        writer.writeNotDef("dcmAuditMessageBOM", auditLogger.isIncludeBOM(), true);
+        writer.writeNotDef("dcmAuditTimestampInUTC", auditLogger.isTimestampInUTC(), false);
+        writer.writeNotDef("dcmAuditMessageFormatXML", auditLogger.isFormatXML(), false);
         writer.writeNotNull("dcmAuditMessageSchemaURI", auditLogger.getSchemaURI());
-        writer.writeNotNull("dcmAuditIncludeInstanceUID", auditLogger.isIncludeInstanceUID());
+        writer.writeNotDef("dcmAuditIncludeInstanceUID", auditLogger.isIncludeInstanceUID(), false);
         writer.writeNotNull("dcmAuditLoggerSpoolDirectoryURI", auditLogger.getSpoolDirectoryURI());
         writer.writeNotNull("dcmAuditLoggerRetryInterval", auditLogger.getRetryInterval());
         writeAuditSuppressCriteriaList(writer, auditLogger.getAuditSuppressCriteriaList());
@@ -102,7 +102,6 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                 case "dicomInstalled":
                     logger.setInstalled(reader.booleanValue());
                     break;
-                //TODO
                 case "dcmAuditSourceID":
                     logger.setAuditSourceID(reader.stringValue());
                     break;

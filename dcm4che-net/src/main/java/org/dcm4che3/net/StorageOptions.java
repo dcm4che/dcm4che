@@ -199,4 +199,8 @@ public class StorageOptions implements Serializable {
                 + ", digitalSignatureSupport=" + digitalSignatureSupport.ordinal()
                 + ", elementCoercion=" + elementCoercion.ordinal() + "]";
     }
+
+    public StorageOptions copy() {
+        return new StorageOptions(getLevelOfSupport(),getDigitalSignatureSupport(),getElementCoercion());
+    }
 }

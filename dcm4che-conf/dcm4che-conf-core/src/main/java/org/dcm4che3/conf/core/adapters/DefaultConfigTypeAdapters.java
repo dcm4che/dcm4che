@@ -309,7 +309,7 @@ public class DefaultConfigTypeAdapters {
 
     private static Object getDefaultIfNull(Object configNode, AnnotatedConfigurableProperty property) throws ConfigurationException {
         if (configNode == null) {
-            configNode = property.getAnnotation(ConfigurableProperty.class).defaultValue();
+            configNode = property.getDefaultValue();
             if (configNode.equals(""))
                 throw new ValidationException("Property " + property.getAnnotatedName() + " must have a value");
         }

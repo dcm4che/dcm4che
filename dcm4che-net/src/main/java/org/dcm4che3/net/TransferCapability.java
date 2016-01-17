@@ -234,19 +234,15 @@ public class TransferCapability implements Serializable {
     }
 
     public TransferCapability deepCopy() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(this);
+        TransferCapability newTc = new TransferCapability();
 
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            return (TransferCapability) ois.readObject();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        newTc.setCommonName(getCommonName());
+        newTc.setQueryOptions(EnumSet.copyOf(getQueryOptions()));
+        newTc.setRole(getRole());
+        newTc.setStorageOptions(getStorageOptions() == null ? null : getStorageOptions().copy());
+        newTc.setSopClass(getSopClass());
+
+        return newTc;
     }
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {

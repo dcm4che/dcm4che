@@ -1,17 +1,12 @@
     usage: movescu [options] -c <aet>@<host>:<port> --dest <aet>
                    [dcmfile_in...]
     
-    The mppsscu application implements a Service Class User (SCU) for the
-    Modality Performed Procedure Step (MPPS) SOP Class and for the
-    Verification SOP Class. DICOM files specified on the command line may
-    contain MPPS or Composite Objects. Files with filename extension '.xml'
-    are parsed as XML Infoset of the native DICOM Model specified in DICOM
-    Part 19. Specified MPPS objects are sent verbatim by one MPPS N-CREATE and
-    one MPPS N-SET message to a Service Class Provider (SCP) of the MPPS SOP
-    Class. For Composite Objects for each different Study a MPPS N-CREATE and
-    a MPPS N-SET message referencing the SOP Instances is sent to the MPPS
-    SCP. If no DICOM file is specified, it sends a DICOM C-ECHO message and
-    waits for a response.
+    The movescu application implements a Service Class User (SCU) for the Query/Retrieve, the 
+    Composite Instance Root Retrieve, the Composite Instance Retrieve Without Bulk Data, the 
+    Hanging Protocol Query/Retrieve and the Color Palette Query/Retrieve Service Class. movescu 
+    only supports retrieve functionality using the C-MOVE message. It sends matching keys to an 
+    Service Class Provider (SCP) and waits for responses. Matching keys can be specified in 
+    DICOM file(s) dcmfile_in or by options -m.
     -
     Options:
         --accept-timeout <ms>                 timeout in ms for receiving

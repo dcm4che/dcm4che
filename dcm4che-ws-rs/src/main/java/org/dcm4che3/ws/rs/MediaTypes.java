@@ -215,6 +215,12 @@ public class MediaTypes {
             new MediaType("application", "zip");
 
     /**
+     * "application/vnd.sun.wadl+xml"
+     */
+    public final static MediaType APPLICATION_WADL_TYPE =
+            new MediaType("application", "vnd.sun.wadl+xml");
+
+    /**
      * "multipart/related"
      */
     public final static String MULTIPART_RELATED = "multipart/related";

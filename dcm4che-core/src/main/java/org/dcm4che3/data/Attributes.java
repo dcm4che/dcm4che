@@ -145,6 +145,13 @@ public class Attributes implements Serializable {
         addSelected(other, selection);
     }
 
+    public Attributes(Attributes other, Attributes selection) {
+        this(selection.size());
+        if (other.properties != null)
+            properties = new HashMap<String, Object>(other.properties);
+        addSelected(other, selection);
+    }
+
     public Attributes(Attributes other, boolean bigEndian, Attributes selection) {
         this(bigEndian, selection.size());
         if (other.properties != null)

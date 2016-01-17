@@ -69,7 +69,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     private MessageDigest cript;
 
     public OLockHashCalcFilter() {
-        stack.push(getHash("node"));
+        stack.push(new byte[20]);
 
     }
 
@@ -118,7 +118,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
 
         // add up to hash
-        addHash(stack.peek(), getHash("value=" + value));
+        addHash(stack.peek(), getHash(String.valueOf(value)));
 
     }
 
@@ -133,7 +133,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
     @Override
     public void beforeNode(Map<String, Object> node) {
-        stack.push(getHash("node"));
+        stack.push(new byte[20]);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
     @Override
     public void beforeNodeElement(Map<String, Object> containerNode, String key, Object value) {
-        stack.push(getHash("element"));
+        stack.push(new byte[20]);
     }
 
     @Override
@@ -169,7 +169,7 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
     @Override
     public void beforeListElement(Collection list, Object element) {
-        stack.push(getHash("List element"));
+        stack.push(new byte[20]);
     }
 
     @Override
@@ -181,6 +181,6 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 
     @Override
     public void onPrimitiveListElement(Collection list, Object element) {
-        addHash(stack.peek(), getHash("collection_item_value=" + element));
+        addHash(stack.peek(), getHash(String.valueOf(element)));
     }
 }

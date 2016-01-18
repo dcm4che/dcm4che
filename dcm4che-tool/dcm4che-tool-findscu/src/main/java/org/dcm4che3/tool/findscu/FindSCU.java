@@ -154,6 +154,8 @@ public class FindSCU {
 
     private Association as;
     private final AtomicInteger totNumMatches = new AtomicInteger();
+    
+    private long tStartCFind;
 
     public FindSCU() throws IOException {
         device.addConnection(conn);
@@ -372,7 +374,10 @@ public class FindSCU {
             main.device.setExecutor(executorService);
             main.device.setScheduledExecutor(scheduledExecutorService);
             try {
+                long t1 = System.currentTimeMillis();
                 main.open();
+                long t2 = System.currentTimeMillis();
+                System.out.println("Association opened in "+(t2-t1)+"ms");
                 List<String> argList = cl.getArgList();
                 if (argList.isEmpty())
                     main.query();
@@ -510,6 +515,7 @@ public class FindSCU {
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
+                System.out.println("####### DimesRSP received after "+(System.currentTimeMillis()-tStartCFind)+"ms");
                 super.onDimseRSP(as, cmd, data);
                 int status = cmd.getInt(Tag.Status, -1);
                 if (Status.isPending(status)) {
@@ -541,7 +547,10 @@ public class FindSCU {
                 cuid = modelUIDandTS[0];
             }
         }
+        tStartCFind = System.currentTimeMillis();
         as.cfind(cuid, priority, keys, null, rspHandler);
+        long t2 = System.currentTimeMillis();
+        System.out.println("C-FIND Request done in "+(t2-tStartCFind)+"ms!");
     }
     
     private void onResult(Attributes data) {

@@ -208,21 +208,3 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
         }
     }
 }
-
-//                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
-//                    reader.next();
-//                    reader.expect(JsonParser.Event.START_ARRAY);
-//                    while (reader.next() == JsonParser.Event.KEY_NAME) {
-//                        switch (reader.getString()) {
-//                            case "cn":
-//                                break;
-////                            case "dcmAuditEventID":
-////                                ct.setEventIDs((AuditMessages.EventID) reader.stringArray());
-////                                break;
-//                            case "dcmAuditUserIsRequestor":
-//                                ct.setUserIsRequestor(reader.booleanValue());
-//                                break;
-//                            default:
-//                                reader.skipUnknownProperty();
-//                        }
-//                    }

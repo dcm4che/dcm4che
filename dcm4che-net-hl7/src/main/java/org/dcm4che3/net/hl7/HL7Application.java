@@ -80,6 +80,9 @@ public class HL7Application implements Serializable {
             new HashMap<Class<? extends HL7ApplicationExtension>,HL7ApplicationExtension>();
     private transient HL7MessageListener hl7MessageListener;
 
+    public HL7Application() {
+    }
+
     public HL7Application(String name) {
         setApplicationName(name);
     }

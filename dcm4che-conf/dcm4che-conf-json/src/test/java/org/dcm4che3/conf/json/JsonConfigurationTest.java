@@ -40,14 +40,12 @@
 
 package org.dcm4che3.conf.json;
 
-import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.AuditMessages;
-import org.dcm4che3.audit.EventID;
-import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.json.audit.JsonAuditLoggerConfiguration;
 import org.dcm4che3.conf.json.audit.JsonAuditRecordRepositoryConfiguration;
+import org.dcm4che3.conf.json.hl7.JsonHL7Configuration;
 import org.dcm4che3.conf.json.imageio.JsonImageReaderConfiguration;
 import org.dcm4che3.conf.json.imageio.JsonImageWriterConfiguration;
 import org.dcm4che3.data.UID;
@@ -57,13 +55,17 @@ import org.dcm4che3.net.*;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditRecordRepository;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
+import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7DeviceExtension;
 import org.dcm4che3.net.imageio.ImageReaderExtension;
 import org.dcm4che3.net.imageio.ImageWriterExtension;
 import org.junit.Test;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,6 +80,17 @@ import static org.junit.Assert.*;
  */
 public class JsonConfigurationTest {
 
+    static final String HL7_DEFAULT_CHARACTER_SET = "8859/1";
+    static final String[] HL7_MESSAGE_TYPES = {
+            "ADT^A02",
+            "ADT^A03",
+            "ADT^A06",
+            "ADT^A07",
+            "ADT^A08",
+            "ADT^A40",
+            "ORM^O01"
+    };
+
     @Test
     public void testWriteTo() throws Exception {
         StringWriter writer = new StringWriter();
@@ -87,13 +100,13 @@ public class JsonConfigurationTest {
             config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
             config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
+            config.addJsonConfigurationExtension(new JsonHL7Configuration());
             config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
         }
-//        Path path = Paths.get("target/device.json");
+        Path path = Paths.get("src/test/data/device.json");
 //        try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
 //            w.write(writer.toString());
 //        }
-        Path path = Paths.get("src/test/data/device.json");
         try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
             assertEquals(reader.readLine(), writer.toString());
         }
@@ -155,11 +168,12 @@ public class JsonConfigurationTest {
             config.addJsonConfigurationExtension(new JsonAuditRecordRepositoryConfiguration());
             config.addJsonConfigurationExtension(new JsonImageReaderConfiguration());
             config.addJsonConfigurationExtension(new JsonImageWriterConfiguration());
+            config.addJsonConfigurationExtension(new JsonHL7Configuration());
             device = config.loadDeviceFrom(Json.createParser(reader), configDelegate);
         }
         assertEquals("Test-Device-1", device.getDeviceName());
         List<Connection> conns = device.listConnections();
-        assertEquals(2, conns.size());
+        assertEquals(3, conns.size());
         Connection conn = conns.get(0);
         assertEquals("host.dcm4che.org", conn.getHostname());
         assertEquals(11112, conn.getPort());
@@ -193,6 +207,7 @@ public class JsonConfigurationTest {
         assertImageReaderExtension(device.getDeviceExtension(ImageReaderExtension.class));
         assertImageWriterExtension(device.getDeviceExtension(ImageWriterExtension.class));
         assertAuditLogger(device.getDeviceExtension(AuditLogger.class));
+        assertHL7DeviceExtension(device.getDeviceExtension(HL7DeviceExtension.class));
     }
 
     private void assertAuditLogger(AuditLogger auditLogger) {
@@ -213,7 +228,6 @@ public class JsonConfigurationTest {
         assertEquals(true, auditLogger.isIncludeBOM());
         assertEquals(false, auditLogger.isTimestampInUTC());
         assertEquals(false, auditLogger.isFormatXML());
-        assertEquals("file:/D:/tmp/spoolDirectory", auditLogger.getSpoolDirectoryURI());
         assertEquals(false, auditLogger.isIncludeInstanceUID());
         assertEquals(0, auditLogger.getRetryInterval());
     }
@@ -251,6 +265,7 @@ public class JsonConfigurationTest {
         device.addDeviceExtension(new ImageReaderExtension(ImageReaderFactory.getDefault()));
         device.addDeviceExtension(new ImageWriterExtension(ImageWriterFactory.getDefault()));
         addAuditLogger(device, createARRDevice("TestAuditRecordRepository"));
+        addHL7DeviceExtension(device);
         return device ;
     }
 
@@ -328,7 +343,6 @@ public class JsonConfigurationTest {
         auditLogger.setAuditEnterpriseSiteID("EnterpriseID");
         auditLogger.setAuditSourceTypeCodes("4");
         auditLogger.setApplicationName("applicationName");
-        auditLogger.setSpoolDirectoryURI("file:///tmp/spoolDirectory");
         auditLogger.setAuditRecordRepositoryDevice(arrDevice);
         auditLogger.setAuditSuppressCriteriaList(createSuppressCriteriaList());
     }
@@ -346,4 +360,35 @@ public class JsonConfigurationTest {
         asc.setUserIsRequestor(true);
         return Collections.singletonList(asc);
     }
+
+    private static void addHL7DeviceExtension(Device device) {
+        Connection hl7 = new Connection("hl7", "localhost", 2575);
+        hl7.setBindAddress("0.0.0.0");
+        hl7.setClientBindAddress("0.0.0.0");
+        hl7.setProtocol(Connection.Protocol.HL7);
+        device.addConnection(hl7);
+
+        HL7DeviceExtension ext = new HL7DeviceExtension();
+        device.addDeviceExtension(ext);
+        HL7Application hl7App = new HL7Application("*");
+        ext.addHL7Application(hl7App);
+        hl7App.addConnection(hl7);
+        hl7App.setHL7DefaultCharacterSet(HL7_DEFAULT_CHARACTER_SET);
+        hl7App.setAcceptedMessageTypes(HL7_MESSAGE_TYPES);
+        //TODO
+
+    }
+
+    private void assertHL7DeviceExtension(HL7DeviceExtension ext) {
+        assertNotNull(ext);
+        Collection<HL7Application> hl7Apps = ext.getHL7Applications();
+        assertEquals(1, hl7Apps.size());
+        HL7Application hl7App = hl7Apps.iterator().next();
+        assertEquals("*", hl7App.getApplicationName());
+        assertEquals(1, hl7App.getConnections().size());
+        assertEquals(HL7_DEFAULT_CHARACTER_SET, hl7App.getHL7DefaultCharacterSet());
+        assertArrayEquals(HL7_MESSAGE_TYPES, hl7App.getAcceptedMessageTypes());
+        //TODO
+    }
+
 }

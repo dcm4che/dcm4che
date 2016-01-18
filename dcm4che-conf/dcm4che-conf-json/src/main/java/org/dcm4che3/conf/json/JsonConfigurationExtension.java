@@ -57,7 +57,7 @@ public class JsonConfigurationExtension {
         return false;
     }
 
-    public boolean loadApplicationEntityExtension(ApplicationEntity ae, JsonReader reader) {
+    public boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader) {
         return false;
     }
 }

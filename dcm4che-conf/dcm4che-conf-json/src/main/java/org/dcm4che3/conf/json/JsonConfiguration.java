@@ -526,13 +526,14 @@ public class JsonConfiguration {
         reader.expect(JsonParser.Event.START_ARRAY);
         while (reader.next() == JsonParser.Event.START_OBJECT) {
             ApplicationEntity ae = new ApplicationEntity();
-            loadFrom(ae, reader, device.listConnections());
+            loadFrom(ae, reader, device);
             device.addApplicationEntity(ae);
         }
         reader.expect(JsonParser.Event.END_ARRAY);
     }
 
-    private void loadFrom(ApplicationEntity ae, JsonReader reader, List<Connection> conns) {
+    private void loadFrom(ApplicationEntity ae, JsonReader reader, Device device) {
+        List<Connection> conns = device.listConnections();
         while (reader.next() == JsonParser.Event.KEY_NAME) {
             switch (reader.getString()) {
                 case "dicomAETitle":
@@ -587,7 +588,7 @@ public class JsonConfiguration {
                     loadTransferCapabilities(ae, reader);
                     break;
                 default:
-                    if (!loadApplicationEntityExtension(ae, reader))
+                    if (!loadApplicationEntityExtension(device, ae, reader))
                         reader.skipUnknownProperty();
             }
         }
@@ -596,9 +597,9 @@ public class JsonConfiguration {
             throw new JsonParsingException("Missing property: dicomAETitle", reader.getLocation());
     }
 
-    private boolean loadApplicationEntityExtension(ApplicationEntity ae, JsonReader reader) {
+    private boolean loadApplicationEntityExtension(Device device, ApplicationEntity ae, JsonReader reader) {
         for (JsonConfigurationExtension ext : extensions)
-            if (ext.loadApplicationEntityExtension(ae, reader))
+            if (ext.loadApplicationEntityExtension(device, ae, reader))
                 return true;
         return false;
     }

@@ -97,6 +97,48 @@ public class JsonConfigurationTest {
             "MAS1TLN^TALLINN"
     };
 
+    static final String[] AUDIT_LOGGER_EVENT_IDS = {
+            AuditMessages.EventID.HealthServicesProvisionEvent.toString(),
+            AuditMessages.EventID.MedicationEvent.toString()
+    };
+
+    static final String[] AUDIT_LOGGER_EVENT_TYPE_CODES = {
+            AuditMessages.EventTypeCode.ApplicationStart.toString(),
+            AuditMessages.EventTypeCode.ApplicationStop.toString()
+    };
+
+    static final String[] AUDIT_LOGGER_EVENT_ACTION_CODES = {
+            AuditMessages.EventActionCode.Create,
+            AuditMessages.EventActionCode.Delete
+    };
+
+    static final String[] AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS = {
+            AuditMessages.EventOutcomeIndicator.MajorFailure,
+            AuditMessages.EventOutcomeIndicator.MinorFailure
+    };
+
+    static final String[] AUDIT_LOGGER_USER_IDS = {
+            "4",
+            "2",
+            "0"
+    };
+
+    static final String[] AUDIT_LOGGER_ALTERNATIVE_USER_IDS = {
+            "XYZ",
+            "XYZ",
+            "XYZ"
+    };
+
+    static final String[] AUDIT_LOGGER_ROLE_ID_CODES = {
+            AuditMessages.RoleIDCode.Application.toString(),
+            AuditMessages.RoleIDCode.ApplicationLauncher.toString()
+    };
+
+    static final String[] AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS = {
+            AuditMessages.NetworkAccessPointTypeCode.EmailAddress,
+            AuditMessages.NetworkAccessPointTypeCode.IPAddress
+    };
+
     @Test
     public void testWriteTo() throws Exception {
         StringWriter writer = new StringWriter();
@@ -236,6 +278,20 @@ public class JsonConfigurationTest {
         assertEquals(false, auditLogger.isFormatXML());
         assertEquals(false, auditLogger.isIncludeInstanceUID());
         assertEquals(0, auditLogger.getRetryInterval());
+        assertSuppressCriteria(auditLogger.getAuditSuppressCriteriaList());
+    }
+
+    private void assertSuppressCriteria(List<AuditSuppressCriteria> ct) {
+        assertEquals("cn", ct.get(0).getCommonName());
+//        assertArrayEquals(AUDIT_LOGGER_EVENT_IDS, ct.get(0).getEventIDsAsStringArray());
+//        assertArrayEquals(AUDIT_LOGGER_EVENT_TYPE_CODES, ct.get(0).getEventTypeCodesAsStringArray());
+        assertArrayEquals(AUDIT_LOGGER_EVENT_ACTION_CODES, ct.get(0).getEventActionCodes());
+        assertArrayEquals(AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS, ct.get(0).getEventOutcomeIndicators());
+        assertArrayEquals(AUDIT_LOGGER_USER_IDS, ct.get(0).getUserIDs());
+        assertArrayEquals(AUDIT_LOGGER_ALTERNATIVE_USER_IDS, ct.get(0).getAlternativeUserIDs());
+//        assertArrayEquals(AUDIT_LOGGER_ROLE_ID_CODES, ct.get(0).getUserRoleIDCodesAsStringArray());
+        assertArrayEquals(AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS, ct.get(0).getNetworkAccessPointIDs());
+        assertEquals(true, ct.get(0).getUserIsRequestor());
     }
 
     private void assertImageWriterExtension(ImageWriterExtension ext) {
@@ -341,7 +397,6 @@ public class JsonConfigurationTest {
         Connection auditUDP = new Connection("audit-udp", "localhost");
         auditUDP.setProtocol(Connection.Protocol.SYSLOG_UDP);
         device.addConnection(auditUDP);
-
         AuditLogger auditLogger = new AuditLogger();
         device.addDeviceExtension(auditLogger);
         auditLogger.addConnection(auditUDP);
@@ -357,12 +412,12 @@ public class JsonConfigurationTest {
         AuditSuppressCriteria asc = new AuditSuppressCriteria("cn");
         asc.setEventIDs(AuditMessages.EventID.HealthServicesProvisionEvent, AuditMessages.EventID.MedicationEvent);
         asc.setEventTypeCodes(AuditMessages.EventTypeCode.ApplicationStart, AuditMessages.EventTypeCode.ApplicationStop);
-        asc.setEventActionCodes(AuditMessages.EventActionCode.Create, AuditMessages.EventActionCode.Delete);
-        asc.setEventOutcomeIndicators(AuditMessages.EventOutcomeIndicator.MajorFailure, AuditMessages.EventOutcomeIndicator.MinorFailure);
-        asc.setUserIDs("4", "2", "0");
-        asc.setAlternativeUserIDs("XYZ", "XYZ", "XYZ");
+        asc.setEventActionCodes(AUDIT_LOGGER_EVENT_ACTION_CODES);
+        asc.setEventOutcomeIndicators(AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS);
+        asc.setUserIDs(AUDIT_LOGGER_USER_IDS);
+        asc.setAlternativeUserIDs(AUDIT_LOGGER_ALTERNATIVE_USER_IDS);
         asc.setUserRoleIDCodes(AuditMessages.RoleIDCode.Application, AuditMessages.RoleIDCode.ApplicationLauncher);
-        asc.setNetworkAccessPointIDs(AuditMessages.NetworkAccessPointTypeCode.EmailAddress, AuditMessages.NetworkAccessPointTypeCode.IPAddress);
+        asc.setNetworkAccessPointIDs(AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS);
         asc.setUserIsRequestor(true);
         return Collections.singletonList(asc);
     }

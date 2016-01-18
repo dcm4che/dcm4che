@@ -1,6 +1,6 @@
 package org.dcm4che3.conf.json.audit;
 
-import org.dcm4che3.audit.*;
+
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.json.ConfigurationDelegate;
 import org.dcm4che3.conf.json.JsonConfigurationExtension;
@@ -12,6 +12,7 @@ import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.net.audit.AuditSuppressCriteria;
 
 import javax.json.stream.JsonParser;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -201,6 +202,7 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                         reader.expect(JsonParser.Event.END_OBJECT);
                     }
                     reader.expect(JsonParser.Event.END_ARRAY);
+                    logger.setAuditSuppressCriteriaList(Collections.singletonList(ct));
                     break;
                 default:
                     reader.skipUnknownProperty();

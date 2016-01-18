@@ -64,6 +64,7 @@ import org.junit.Test;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -89,6 +90,11 @@ public class JsonConfigurationTest {
             "ADT^A08",
             "ADT^A40",
             "ORM^O01"
+    };
+
+    static final String[] HL7_ACCEPTED_SENDING_APPLICATIONS = {
+            "DCM4CHEE^J4CARE",
+            "MAS1TLN^TALLINN"
     };
 
     @Test
@@ -375,8 +381,7 @@ public class JsonConfigurationTest {
         hl7App.addConnection(hl7);
         hl7App.setHL7DefaultCharacterSet(HL7_DEFAULT_CHARACTER_SET);
         hl7App.setAcceptedMessageTypes(HL7_MESSAGE_TYPES);
-        //TODO
-
+        hl7App.setAcceptedSendingApplications(HL7_ACCEPTED_SENDING_APPLICATIONS);
     }
 
     private void assertHL7DeviceExtension(HL7DeviceExtension ext) {
@@ -388,7 +393,7 @@ public class JsonConfigurationTest {
         assertEquals(1, hl7App.getConnections().size());
         assertEquals(HL7_DEFAULT_CHARACTER_SET, hl7App.getHL7DefaultCharacterSet());
         assertArrayEquals(HL7_MESSAGE_TYPES, hl7App.getAcceptedMessageTypes());
-        //TODO
+        assertArrayEquals(HL7_ACCEPTED_SENDING_APPLICATIONS, hl7App.getAcceptedSendingApplications());
     }
 
 }

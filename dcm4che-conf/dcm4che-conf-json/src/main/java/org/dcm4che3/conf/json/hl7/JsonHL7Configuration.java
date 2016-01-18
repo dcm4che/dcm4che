@@ -63,7 +63,9 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
         writer.writeNotNull("hl7ApplicationName", hl7App.getApplicationName());
         writer.writeNotNull("dicomInstalled", hl7App.getInstalled());
         writer.writeConnRefs(device.listConnections(), hl7App.getConnections());
-        //TODO
+        writer.writeNotEmpty("hl7AcceptedSendingApplication", hl7App.getAcceptedSendingApplications());
+        writer.writeNotEmpty("hl7AcceptedMessageType", hl7App.getAcceptedMessageTypes());
+        writer.writeNotNull("hl7DefaultCharacterSet", hl7App.getHL7DefaultCharacterSet());
         for (JsonHL7ConfigurationExtension ext : extensions)
             ext.storeTo(hl7App, device, writer);
         writer.writeEnd();
@@ -79,6 +81,7 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
             reader.expect(JsonParser.Event.END_OBJECT);
             ext.addHL7Application(hl7App);
         }
+        reader.expect(JsonParser.Event.END_ARRAY);
     }
 
     private void loadFrom(HL7Application hl7App, JsonReader reader, Device device, List<Connection> conns) {
@@ -94,7 +97,15 @@ public class JsonHL7Configuration extends JsonConfigurationExtension {
                     for (String connRef : reader.stringArray())
                         hl7App.addConnection(conns.get(JsonReader.toConnectionIndex(connRef)));
                     break;
-                //TODO
+                case "hl7AcceptedSendingApplication":
+                    hl7App.setAcceptedSendingApplications(reader.stringArray());
+                    break;
+                case "hl7AcceptedMessageType":
+                    hl7App.setAcceptedMessageTypes(reader.stringArray());
+                    break;
+                case "hl7DefaultCharacterSet":
+                    hl7App.setHL7DefaultCharacterSet(reader.stringValue());
+                    break;
                 default:
                     if (!loadHL7ApplicationExtension(device, hl7App, reader))
                         reader.skipUnknownProperty();

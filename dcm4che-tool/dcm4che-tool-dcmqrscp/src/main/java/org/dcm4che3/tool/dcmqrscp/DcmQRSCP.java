@@ -513,7 +513,6 @@ public class DcmQRSCP<T extends InstanceLocator> {
         try {
             CommandLine cl = parseComandLine(args);
             DcmQRSCP<InstanceLocator> main = new DcmQRSCP<InstanceLocator>();
-            main.init();
             CLIUtils.configure(main.fsInfo, cl);
             CLIUtils.configureBindServer(main.conn, main.ae, cl);
             CLIUtils.configure(main.conn, cl);
@@ -523,6 +522,7 @@ public class DcmQRSCP<T extends InstanceLocator> {
             configureStgCmt(main, cl);
             configureSendPending(main, cl);
             configureRemoteConnections(main, cl);
+            main.init();
             ExecutorService executorService = Executors.newCachedThreadPool();
             ScheduledExecutorService scheduledExecutorService = Executors
                     .newSingleThreadScheduledExecutor();

@@ -202,18 +202,18 @@ public class JsonConfigurationTest {
         assertEquals(1, conns.size());
         assertEquals("SourceID", auditLogger.getAuditSourceID());
         assertEquals("EnterpriseID", auditLogger.getAuditEnterpriseSiteID());
-//        assertEquals("4", auditLogger.getAuditSourceTypeCodes());
-//        assertEquals(AuditLogger.Facility.authpriv, auditLogger.getFacility());
-//        assertEquals(AuditLogger.Severity.notice, auditLogger.getSuccessSeverity());
-//        assertEquals(AuditLogger.Severity.warning, auditLogger.getMinorFailureSeverity());
-//        assertEquals(AuditLogger.Severity.err, auditLogger.getSeriousFailureSeverity());
-//        assertEquals(AuditLogger.Severity.crit, auditLogger.getMajorFailureSeverity());
+        assertEquals("[4]", Arrays.toString(auditLogger.getAuditSourceTypeCodes()));
+        assertEquals(AuditLogger.Facility.authpriv.toString(), auditLogger.getFacility().toString());
+        assertEquals(AuditLogger.Severity.notice.toString(), auditLogger.getSuccessSeverity().toString());
+        assertEquals(AuditLogger.Severity.warning.toString(), auditLogger.getMinorFailureSeverity().toString());
+        assertEquals(AuditLogger.Severity.err.toString(), auditLogger.getSeriousFailureSeverity().toString());
+        assertEquals(AuditLogger.Severity.crit.toString(), auditLogger.getMajorFailureSeverity().toString());
         assertEquals("DICOM+RFC3881", auditLogger.getMessageID());
         assertEquals("UTF-8", auditLogger.getEncoding());
         assertEquals(true, auditLogger.isIncludeBOM());
         assertEquals(false, auditLogger.isTimestampInUTC());
         assertEquals(false, auditLogger.isFormatXML());
-//        assertEquals("file:/D:/tmp/spoolDirectory", auditLogger.getSchemaURI());
+        assertEquals("file:/D:/tmp/spoolDirectory", auditLogger.getSpoolDirectoryURI());
         assertEquals(false, auditLogger.isIncludeInstanceUID());
         assertEquals(0, auditLogger.getRetryInterval());
     }

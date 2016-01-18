@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,6 +80,7 @@ import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
+import org.dcm4che3.util.StringUtils;
 
 /**
  * The findscu application implements a Service Class User (SCU) for the
@@ -134,7 +136,8 @@ public class FindSCU {
     private int priority;
     private int cancelAfter;
     private InformationModel model;
-
+    private static String[] modelUIDandTS;
+    
     private File outDir;
     private DecimalFormat outFileFormat;
     private int[] inFilter;
@@ -250,6 +253,7 @@ public class FindSCU {
                 .withDescription(rb.getString("model"))
                 .create("M"));
         CLIUtils.addTransferSyntaxOptions(opts);
+        opts.addOption(null, "model-uid", true, rb.getString("model-uid"));
         opts.addOption(null, "relational", false, rb.getString("relational"));
         opts.addOption(null, "datetime", false, rb.getString("datetime"));
         opts.addOption(null, "fuzzy", false, rb.getString("fuzzy"));
@@ -436,6 +440,16 @@ public class FindSCU {
     private static void configureServiceClass(FindSCU main, CommandLine cl) throws ParseException {
         main.setInformationModel(informationModelOf(cl), 
                 CLIUtils.transferSyntaxesOf(cl), queryOptionsOf(main, cl));
+        if (cl.hasOption("model-uid")) {
+            String cuidAndTS = cl.getOptionValue("model-uid");
+            modelUIDandTS = StringUtils.split(cuidAndTS, '|');
+            main.rq.addPresentationContext(new PresentationContext(3, modelUIDandTS[0], UID.ImplicitVRLittleEndian));
+            main.rq.addPresentationContext(new PresentationContext(5, modelUIDandTS[0], UID.ExplicitVRLittleEndian));
+            for (int i = 1, pcid = 7 ; i < modelUIDandTS.length ; i++) {
+                main.rq.addPresentationContext(new PresentationContext(pcid, modelUIDandTS[0], modelUIDandTS[i]));
+                pcid += 2;
+            }
+        }
     }
 
     private static InformationModel informationModelOf(CommandLine cl) throws ParseException {
@@ -520,7 +534,14 @@ public class FindSCU {
     }
     
     private void query(Attributes keys, DimseRSPHandler rspHandler) throws IOException, InterruptedException {
-        as.cfind(model.cuid, priority, keys, null, rspHandler);
+        String cuid = model.cuid;
+        if (modelUIDandTS != null) {
+            Set<String> ts = as.getTransferSyntaxesFor(modelUIDandTS[0]);
+            if (ts.size() > 0) {
+                cuid = modelUIDandTS[0];
+            }
+        }
+        as.cfind(cuid, priority, keys, null, rspHandler);
     }
     
     private void onResult(Attributes data) {

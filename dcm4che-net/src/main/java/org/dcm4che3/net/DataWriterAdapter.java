@@ -41,6 +41,7 @@ package org.dcm4che3.net;
 import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.UID;
 import org.dcm4che3.io.DicomOutputStream;
 
 /**
@@ -65,6 +66,7 @@ public class DataWriterAdapter implements DataWriter {
     public void writeTo(PDVOutputStream out, String tsuid) throws IOException {
         DicomOutputStream dos = new DicomOutputStream(out, tsuid);
         dos.writeDataset(null, data);
+        dos.finish();
     }
 
     public final Attributes getDataset() {

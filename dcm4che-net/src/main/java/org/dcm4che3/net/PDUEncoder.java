@@ -38,6 +38,7 @@
 
 package org.dcm4che3.net;
 
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +79,7 @@ class PDUEncoder extends PDVOutputStream {
 
     public PDUEncoder(Association as, OutputStream out) {
         this.as = as;
-        this.out = out;
+        this.out = (out instanceof BufferedOutputStream) ? out : new BufferedOutputStream(out);
     }
 
     public void write(AAssociateRQ rq) throws IOException {

@@ -514,9 +514,9 @@ public class JsonConfiguration {
             writer.writeStartObject("dcmNetworkAE");
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
+            writer.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(ae, writer);
-            writer.writeEnd();
         }
         writer.writeEnd();
     }

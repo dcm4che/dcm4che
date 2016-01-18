@@ -83,6 +83,7 @@ public interface Configuration extends BatchRunner {
      */
     String REFERENCE_KEY = "_.ref";
     String WEAK_REFERENCE_KEY = "weakReference";
+    String REFERENCE_BY_UUID_PATTERN = "//*[_.uuid='{uuid}']";
 
     enum ConfigStorageType {
         JSON_FILE,

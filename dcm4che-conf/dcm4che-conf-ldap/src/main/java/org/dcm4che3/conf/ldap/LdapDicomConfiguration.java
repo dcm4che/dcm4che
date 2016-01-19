@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.naming.Context;
 import javax.naming.NameAlreadyBoundException;
@@ -64,7 +63,6 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -105,7 +103,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
     private static final String USER_CERTIFICATE_BINARY = "userCertificate;binary";
     private static final X509Certificate[] EMPTY_X509_CERTIFICATES = {};
 
-    private final DirContext ctx;
+    private final ReconnectDirContext ctx;
     private final String baseDN;
     private String configurationDN;
     private String devicesDN;
@@ -144,7 +142,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
             int end = s.lastIndexOf('/');
             map.put(Context.PROVIDER_URL, s.substring(0, end));
             this.baseDN = s.substring(end+1);
-            this.ctx = new InitialDirContext(map);
+            this.ctx = new ReconnectDirContext(map);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
@@ -217,7 +215,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     @Override
     public synchronized void close() {
-        safeClose(ctx);
+        ctx.close();
     }
 
     @Override
@@ -585,7 +583,7 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
 
     public synchronized void createSubcontext(String name, Attributes attrs)
             throws NamingException {
-        safeClose(ctx.createSubcontext(name, attrs));
+        ctx.createSubcontextAndClose(name, attrs);
     }
 
     public synchronized void destroySubcontext(String dn) throws NamingException {
@@ -1733,14 +1731,6 @@ public final class LdapDicomConfiguration implements DicomConfiguration {
         for (byte[] val : vals)
             attr.add(val);
         return attr;
-    }
-
-    private static void safeClose(Context ctx) {
-        if (ctx != null)
-            try {
-                ctx.close();
-            } catch (NamingException e) {
-            }
     }
 
     public void store(AttributeCoercions coercions, String parentDN)

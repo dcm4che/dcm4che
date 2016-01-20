@@ -87,7 +87,7 @@ public class PDUTest {
     private void test(String cfindTS) throws Exception {
         ApplicationEntity aeScp = createAE("FIND_SCP", TransferCapability.Role.SCP);
         aeScp.setAssociationAcceptor(true);
-        Connection connScp = new Connection("dicom", "localhost", 11222);
+        Connection connScp = new Connection("dicom", "localhost", 11122);
         Device deviceScp = createDevice("findSCP", aeScp, connScp);
         deviceScp.setDimseRQHandler(new AbstractDicomService(UID.PatientRootQueryRetrieveInformationModelFIND) {
             @Override

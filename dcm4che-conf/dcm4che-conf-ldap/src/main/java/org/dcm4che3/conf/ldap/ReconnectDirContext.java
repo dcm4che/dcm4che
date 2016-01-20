@@ -1,5 +1,8 @@
 package org.dcm4che3.conf.ldap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.naming.*;
 import javax.naming.directory.*;
 import java.io.Closeable;
@@ -10,15 +13,19 @@ import java.util.Hashtable;
  * @since Jan 2016
  */
 class ReconnectDirContext implements Closeable {
+
+    static final Logger LOG = LoggerFactory.getLogger(ReconnectDirContext.class);
+
     private final Hashtable env;
     private DirContext ctx;
 
     public ReconnectDirContext(Hashtable<?,?> env) throws NamingException {
         this.env = (Hashtable) env.clone();
-        reconnect();
+        this.ctx = new InitialDirContext(env);
     }
 
     private void reconnect() throws NamingException {
+        LOG.info("Connection to {} broken - reconnect", env.get(Context.PROVIDER_URL));
         close();
         ctx = new InitialDirContext(env);
     }

@@ -66,12 +66,15 @@ import org.dcm4che3.net.Device;
 import org.dcm4che3.net.DimseRSPHandler;
 import org.dcm4che3.net.IncompatibleConnectionException;
 import org.dcm4che3.net.QueryOption;
+import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.ExtendedNegotiation;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.tool.common.CLIUtils;
 import org.dcm4che3.util.SafeClose;
 import org.dcm4che3.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -109,6 +112,8 @@ public class MoveSCU {
         Tag.SeriesInstanceUID
     };
 
+    private static final Logger LOG = LoggerFactory.getLogger(MoveSCU.class);
+    
     private ApplicationEntity ae = new ApplicationEntity("MOVESCU");
     private final Connection conn = new Connection();
     private final Connection remote = new Connection();
@@ -120,6 +125,8 @@ public class MoveSCU {
     private Attributes keys = new Attributes();
     private int[] inFilter = DEF_IN_FILTER;
     private Association as;
+    private int idleRetrieveTimeout;
+    private int exitCode;
 
     public MoveSCU() throws IOException {
         this.device = new Device("movescu");
@@ -195,6 +202,7 @@ public class MoveSCU {
             addKeyOptions(opts);
             addRetrieveLevelOption(opts);
             addDestinationOption(opts);
+            addTimeoutOption(opts);
             CLIUtils.addConnectOption(opts);
             CLIUtils.addBindOption(opts, "MOVESCU");
             CLIUtils.addAEOptions(opts);
@@ -222,6 +230,16 @@ public class MoveSCU {
                 .withDescription(rb.getString("dest"))
                 .create());
         
+    }
+
+    @SuppressWarnings("static-access")
+    private static void addTimeoutOption(Options opts) {
+        opts.addOption(OptionBuilder
+                .hasArg()
+                .withArgName("ms")
+                .withDescription(rb.getString("idle-retrieve-timeout"))
+                .withLongOpt("idle-retrieve-timeout")
+                .create(null));
     }
 
     @SuppressWarnings("static-access")
@@ -264,6 +282,7 @@ public class MoveSCU {
             configureKeys(main, cl);
             main.setPriority(CLIUtils.priorityOf(cl));
             main.setDestination(destinationOf(cl));
+            main.idleRetrieveTimeout = CLIUtils.getIntOption(cl, "idle-retrieve-timeout", -1);
             ExecutorService executorService =
                     Executors.newSingleThreadExecutor();
             ScheduledExecutorService scheduledExecutorService =
@@ -283,6 +302,7 @@ public class MoveSCU {
                 executorService.shutdown();
                 scheduledExecutorService.shutdown();
             }
+            System.exit(main.exitCode);
        } catch (ParseException e) {
             System.err.println("movescu: " + e.getMessage());
             System.err.println(rb.getString("try"));
@@ -359,11 +379,34 @@ public class MoveSCU {
 
     private void retrieve(Attributes keys) throws IOException, InterruptedException {
          DimseRSPHandler rspHandler = new DimseRSPHandler(as.nextMessageID()) {
-
+            int lastRemaining = -1;
+            long lastChanged;
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
                     Attributes data) {
                 super.onDimseRSP(as, cmd, data);
+                if (idleRetrieveTimeout != -1 && Status.isPending(cmd.getInt(Tag.Status, -1))) {
+                    int remaining = cmd.getInt(Tag.NumberOfRemainingSuboperations, -1);
+                    if(remaining > 0) {
+                        if(lastRemaining != remaining) {
+                            lastRemaining = remaining;
+                            lastChanged = System.currentTimeMillis();
+                        } else {
+                            long idleTime = System.currentTimeMillis()-lastChanged;
+                            if (idleTime > idleRetrieveTimeout){
+                                LOG.warn("Cancel C-MOVE request after "+idleTime+"ms of idle time! response:"+cmd);
+                                try {
+                                    exitCode = 3;
+                                    cancel(as);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                LOG.info("C_MOVE Request is idle for "+idleTime+"ms! idleRetrieveTimeout="+idleRetrieveTimeout);
+                            }
+                        }
+                    }
+                }
             }
         };
 

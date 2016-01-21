@@ -38,42 +38,16 @@
 
 package org.dcm4che3.audit;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
+import javax.xml.bind.*;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.transform.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBSource;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.dcm4che3.audit.Accession;
-import org.dcm4che3.audit.ActiveParticipant;
-import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.AuditSourceIdentification;
-import org.dcm4che3.audit.EventIdentification;
-import org.dcm4che3.audit.Instance;
-import org.dcm4che3.audit.MPPS;
-import org.dcm4che3.audit.ObjectFactory;
-import org.dcm4che3.audit.ParticipantObjectContainsStudy;
-import org.dcm4che3.audit.ParticipantObjectDetail;
-import org.dcm4che3.audit.ParticipantObjectIdentification;
-import org.dcm4che3.audit.SOPClass;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -601,6 +575,7 @@ public class AuditMessages {
         protected List<ParticipantObjectContainsStudy> participantObjectContainsStudy;
         protected Boolean encrypted;
         protected Boolean anonymized;
+        protected List<String> instances;
 
         public List<String> getDescriptions() {
             if (description == null) {
@@ -653,6 +628,13 @@ public class AuditMessages {
             this.anonymized = value;
         }
 
+        public List<String> getInstances() {
+            return instances;
+        }
+
+        public void setInstances(List<String> instances) {
+            this.instances = instances;
+        }
     }
     
     public static EventIdentification createEventIdentification(

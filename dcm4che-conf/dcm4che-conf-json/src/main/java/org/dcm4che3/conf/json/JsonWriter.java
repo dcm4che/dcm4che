@@ -114,6 +114,15 @@ public class JsonWriter {
         }
     }
 
+    public void writeNotEmpty(String name, int[] values) {
+        if (values.length != 0) {
+            gen.writeStartArray(name);
+            for (int value : values)
+                gen.write(value);
+            gen.writeEnd();
+        }
+    }
+
     public void writeNotDef(String name, int value, int defVal) {
         if (value != defVal)
             gen.write(name, value);

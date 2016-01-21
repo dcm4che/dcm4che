@@ -120,6 +120,21 @@ public class JsonReader {
         return Integer.parseInt(getString());
     }
 
+    public int[] intArray() {
+        next();
+        expect(JsonParser.Event.START_ARRAY);
+        ArrayList<String> a = new ArrayList<>();
+        while (next() == JsonParser.Event.VALUE_NUMBER) {
+            a.add(getString());
+        }
+        expect(JsonParser.Event.END_ARRAY);
+        int[] is = new int[a.size()];
+        for (int i = 0; i < is.length; i++) {
+            is[i] = Integer.parseInt(a.get(i));
+        }
+        return is;
+    }
+
     public boolean booleanValue() {
         switch (next()) {
             case VALUE_FALSE:

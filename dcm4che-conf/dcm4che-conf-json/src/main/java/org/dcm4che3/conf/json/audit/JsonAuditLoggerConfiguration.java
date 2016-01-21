@@ -198,55 +198,59 @@ public class JsonAuditLoggerConfiguration extends JsonConfigurationExtension {
                     logger.setRetryInterval(Integer.parseInt(reader.stringValue()));
                     break;
                 case "dcmAuditSuppressCriteria":
-                    AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
-                    reader.next();
-                    reader.expect(JsonParser.Event.START_ARRAY);
-                    while (reader.next() == JsonParser.Event.START_OBJECT) {
-                        reader.expect(JsonParser.Event.START_OBJECT);
-                        while (reader.next() == JsonParser.Event.KEY_NAME) {
-                            switch (reader.getString()) {
-                            case "cn":
-                                ct.setCommonName(reader.stringValue());
-                                break;
-                            case "dcmAuditEventID":
-                                ct.setEventIDsAsStringArray(reader.stringArray());
-                                break;
-                            case "dcmAuditEventTypeCode":
-                                ct.setEventTypeCodesAsStringArray(reader.stringArray());
-                                break;
-                            case "dcmAuditEventActionCode":
-                                ct.setEventActionCodes(reader.stringArray());
-                                break;
-                            case "dcmAuditEventOutcomeIndicator":
-                                ct.setEventOutcomeIndicators(reader.stringArray());
-                                break;
-                            case "dcmAuditUserID":
-                                ct.setUserIDs(reader.stringArray());
-                                break;
-                            case "dcmAuditAlternativeUserID":
-                                ct.setAlternativeUserIDs(reader.stringArray());
-                                break;
-                            case "dcmAuditUserRoleIDCode":
-                                ct.setUserRoleIDCodesAsStringArray(reader.stringArray());
-                                break;
-                            case "dcmAuditNetworkAccessPointID":
-                                ct.setNetworkAccessPointIDs(reader.stringArray());
-                                break;
-                            case "dcmAuditUserIsRequestor":
-                                ct.setUserIsRequestor(reader.booleanValue());
-                                break;
-                            default:
-                                reader.skipUnknownProperty();
-                            }
-                        }
-                        reader.expect(JsonParser.Event.END_OBJECT);
-                    }
-                    reader.expect(JsonParser.Event.END_ARRAY);
-                    logger.setAuditSuppressCriteriaList(Collections.singletonList(ct));
+                    loadAuditSuppressCriteriaListFrom(logger, reader);
                     break;
                 default:
                     reader.skipUnknownProperty();
             }
         }
+    }
+
+    private void loadAuditSuppressCriteriaListFrom(AuditLogger logger, JsonReader reader) {
+        AuditSuppressCriteria ct = new AuditSuppressCriteria("cn");
+        reader.next();
+        reader.expect(JsonParser.Event.START_ARRAY);
+        while (reader.next() == JsonParser.Event.START_OBJECT) {
+            reader.expect(JsonParser.Event.START_OBJECT);
+            while (reader.next() == JsonParser.Event.KEY_NAME) {
+                switch (reader.getString()) {
+                    case "cn":
+                        ct.setCommonName(reader.stringValue());
+                        break;
+                    case "dcmAuditEventID":
+                        ct.setEventIDsAsStringArray(reader.stringArray());
+                        break;
+                    case "dcmAuditEventTypeCode":
+                        ct.setEventTypeCodesAsStringArray(reader.stringArray());
+                        break;
+                    case "dcmAuditEventActionCode":
+                        ct.setEventActionCodes(reader.stringArray());
+                        break;
+                    case "dcmAuditEventOutcomeIndicator":
+                        ct.setEventOutcomeIndicators(reader.stringArray());
+                        break;
+                    case "dcmAuditUserID":
+                        ct.setUserIDs(reader.stringArray());
+                        break;
+                    case "dcmAuditAlternativeUserID":
+                        ct.setAlternativeUserIDs(reader.stringArray());
+                        break;
+                    case "dcmAuditUserRoleIDCode":
+                        ct.setUserRoleIDCodesAsStringArray(reader.stringArray());
+                        break;
+                    case "dcmAuditNetworkAccessPointID":
+                        ct.setNetworkAccessPointIDs(reader.stringArray());
+                        break;
+                    case "dcmAuditUserIsRequestor":
+                        ct.setUserIsRequestor(reader.booleanValue());
+                        break;
+                    default:
+                        reader.skipUnknownProperty();
+                }
+            }
+            reader.expect(JsonParser.Event.END_OBJECT);
+        }
+        reader.expect(JsonParser.Event.END_ARRAY);
+        logger.setAuditSuppressCriteriaList(Collections.singletonList(ct));
     }
 }

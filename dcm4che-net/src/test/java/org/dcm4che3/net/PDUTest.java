@@ -53,7 +53,6 @@ import org.dcm4che3.net.TransferCapability.Role;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.AbstractDicomService;
-import org.dcm4che3.net.service.DicomServiceRegistry;
 import org.junit.Test;
 
 /**
@@ -106,7 +105,7 @@ public class PDUTest {
         
         Connection connScu = new Connection("dicom-scu", "localhost", 0);
         ApplicationEntity aeScu = createAE("FIND_SCU", TransferCapability.Role.SCU);
-        Device deviceScu = createDevice("FindSCU", aeScu, connScu);
+        createDevice("FindSCU", aeScu, connScu);
         
         AAssociateRQ rq = getAssocReq(aeScp);
         
@@ -125,13 +124,13 @@ public class PDUTest {
         };
 
         as.cfind(UID.PatientRootQueryRetrieveInformationModelFIND, 0, keys, cfindTS, rspHandler);
-        System.out.println("CFIND call finished");
         if (as.isReadyForDataTransfer()) {
             as.waitForOutstandingRSP();
             as.release();
         }
         assertEquals("Status SUCCESS", 0, status);
         deviceScp.unbindConnections();
+        Thread.sleep(300);
     }
 
     public AAssociateRQ getAssocReq(ApplicationEntity aeScp) {

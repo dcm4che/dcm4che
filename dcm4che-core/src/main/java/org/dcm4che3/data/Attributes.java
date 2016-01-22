@@ -1550,7 +1550,7 @@ public class Attributes implements Serializable {
      * @param from Time Zone from
      * @param to Time Zone to
      * @param privateCreator private creator - null otherwise
-     * @param Tag Attribute tag to update time zone
+     * @param tag Attribute tag to update time zone
      */
     public void updateTimeZoneOfSpecificTag(TimeZone from, TimeZone to
             , String privateCreator, int tag) {
@@ -2030,6 +2030,88 @@ public class Attributes implements Serializable {
     public boolean addAll(Attributes other) {
         return add(other, null, null, 0, 0, null, false, false, false, null);
     }
+
+    /**
+     * Updates this Attributes object with all the attributes of
+     * the "other" object, applying the same behaviour recursively
+     * to the items of the Sequences (if the "other" attributes has
+     * a sequence with only a part of the attributes, only those will
+     * be updated in the original Sequence).
+     *
+     * Note: recursion will be applied only with Sequences containing one
+     * item and having the original item not null. If this condition
+     * is not supported, the complete sequence of the "other" Attributes
+     * will be set to this one, as in addAll(Attributes other).
+     *
+     * Tests if {@link #updateSelected} would modify attributes, without actually
+     * modifying this attributes
+     *
+     * @param other the other Attributes object
+     * @return <tt>true</tt> if one ore more attribute would be added or
+     *          overwritten with a different value
+     */
+    public boolean updateRecursive (Attributes other) {
+
+        boolean toggleEndian = bigEndian != other.bigEndian;
+        final int otherSize = other.size;
+        int numAdd = 0;
+        String privateCreator = null;
+        int creatorTag = 0;
+        for (int i = 0; i < otherSize; i++) {
+
+            int tag = other.tags[i];
+            VR vr = other.vrs[i];
+            Object value = other.values[i];
+
+            if (TagUtils.isPrivateCreator(tag)) {
+                continue; // private creators will be automatically added with the private tags
+            }
+
+            if (TagUtils.isPrivateTag(tag)) {
+                int tmp = TagUtils.creatorTagOf(tag);
+                if (creatorTag != tmp) {
+                    creatorTag = tmp;
+                    privateCreator = other.privateCreatorOf(tag);
+                }
+            } else {
+                creatorTag = 0;
+                privateCreator = null;
+            }
+
+            if (value instanceof Sequence) {
+
+                int indexOfOriginalSequence = indexOf(tag);
+
+                if (indexOfOriginalSequence < 0) {
+                    //Trying to recursively update an empty sequence, fallback to whole copy
+                    set(privateCreator, tag, (Sequence) value, null);
+                } else {
+
+                    Sequence original = (Sequence) values[indexOfOriginalSequence];
+                    Attributes updated = ((Sequence) value).get(0);
+
+                    if (updated==null)
+                        continue;
+
+                    if (original.size() > 1 || updated.size()>1)
+                        //Trying to recursively update a sequence with more than 1 item: fallback to whole copy
+                        set(privateCreator, tag, (Sequence) value, null);
+                    else
+                        //both original and updated sequences have 1 item
+                            original.get(0).updateRecursive(updated);
+                }
+            } else if (value instanceof Fragments) {
+                set(privateCreator, tag, (Fragments) value);
+            } else {
+                set(privateCreator, tag, vr,
+                        toggleEndian(vr, value, toggleEndian));
+            }
+            numAdd++;
+        }
+        return numAdd != 0;
+    }
+
+
 
     public boolean merge(Attributes other) {
         return add(other, null, null, 0, 0, null, true, false, false, null);

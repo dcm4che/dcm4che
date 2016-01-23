@@ -42,6 +42,8 @@ package org.dcm4che3.conf.json;
 
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.audit.EventID;
+import org.dcm4che3.audit.EventTypeCode;
+import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.json.audit.JsonAuditLoggerConfiguration;
@@ -49,6 +51,7 @@ import org.dcm4che3.conf.json.audit.JsonAuditRecordRepositoryConfiguration;
 import org.dcm4che3.conf.json.hl7.JsonHL7Configuration;
 import org.dcm4che3.conf.json.imageio.JsonImageReaderConfiguration;
 import org.dcm4che3.conf.json.imageio.JsonImageWriterConfiguration;
+import org.dcm4che3.data.Code;
 import org.dcm4che3.data.UID;
 import org.dcm4che3.imageio.codec.ImageReaderFactory;
 import org.dcm4che3.imageio.codec.ImageWriterFactory;
@@ -99,13 +102,13 @@ public class JsonConfigurationTest {
     };
 
     static final EventID[] AUDIT_LOGGER_EVENT_IDS = {
-            AuditMessages.EventID.HealthServicesProvisionEvent
-//            AuditMessages.EventID.MedicationEvent.toString()
+            AuditMessages.EventID.HealthServicesProvisionEvent,
+            AuditMessages.EventID.MedicationEvent,
     };
 
-    static final String[] AUDIT_LOGGER_EVENT_TYPE_CODES = {
-            AuditMessages.EventTypeCode.ApplicationStart.toString(),
-            AuditMessages.EventTypeCode.ApplicationStop.toString()
+    static final EventTypeCode[] AUDIT_LOGGER_EVENT_TYPE_CODES = {
+            AuditMessages.EventTypeCode.ApplicationStart,
+            AuditMessages.EventTypeCode.ApplicationStop
     };
 
     static final String[] AUDIT_LOGGER_EVENT_ACTION_CODES = {
@@ -130,9 +133,9 @@ public class JsonConfigurationTest {
             "XYZ"
     };
 
-    static final String[] AUDIT_LOGGER_ROLE_ID_CODES = {
-            AuditMessages.RoleIDCode.Application.toString(),
-            AuditMessages.RoleIDCode.ApplicationLauncher.toString()
+    static final RoleIDCode[] AUDIT_LOGGER_ROLE_ID_CODES = {
+            AuditMessages.RoleIDCode.Application,
+            AuditMessages.RoleIDCode.ApplicationLauncher
     };
 
     static final String[] AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS = {
@@ -282,17 +285,58 @@ public class JsonConfigurationTest {
         assertSuppressCriteria(auditLogger.getAuditSuppressCriteriaList());
     }
 
-    private void assertSuppressCriteria(List<AuditSuppressCriteria> ct) {
-        assertEquals("cn", ct.get(0).getCommonName());
-//        assertArrayEquals(AUDIT_LOGGER_EVENT_IDS, ct.get(0).getEventIDs());
-//        assertArrayEquals(AUDIT_LOGGER_EVENT_TYPE_CODES, ct.get(0).getEventTypeCodesAsStringArray());
-        assertArrayEquals(AUDIT_LOGGER_EVENT_ACTION_CODES, ct.get(0).getEventActionCodes());
-        assertArrayEquals(AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS, ct.get(0).getEventOutcomeIndicators());
-        assertArrayEquals(AUDIT_LOGGER_USER_IDS, ct.get(0).getUserIDs());
-        assertArrayEquals(AUDIT_LOGGER_ALTERNATIVE_USER_IDS, ct.get(0).getAlternativeUserIDs());
-//        assertArrayEquals(AUDIT_LOGGER_ROLE_ID_CODES, ct.get(0).getUserRoleIDCodesAsStringArray());
-        assertArrayEquals(AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS, ct.get(0).getNetworkAccessPointIDs());
-        assertEquals(true, ct.get(0).getUserIsRequestor());
+    private void assertSuppressCriteria(List<AuditSuppressCriteria> auditSuppressCriteriaList) {
+        for (AuditSuppressCriteria asc : auditSuppressCriteriaList) {
+            assertEquals("cn", asc.getCommonName());
+            assertArrayEquals(eventIDsToStringArray(AUDIT_LOGGER_EVENT_IDS), asc.getEventIDsAsStringArray());
+            assertArrayEquals(eventCodesToStringArray(AUDIT_LOGGER_EVENT_TYPE_CODES), asc.getEventTypeCodesAsStringArray());
+            assertArrayEquals(AUDIT_LOGGER_EVENT_ACTION_CODES, asc.getEventActionCodes());
+            assertArrayEquals(AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS, asc.getEventOutcomeIndicators());
+            assertArrayEquals(AUDIT_LOGGER_USER_IDS, asc.getUserIDs());
+            assertArrayEquals(AUDIT_LOGGER_ALTERNATIVE_USER_IDS, asc.getAlternativeUserIDs());
+            assertArrayEquals(roleIDCodesToStringArray(AUDIT_LOGGER_ROLE_ID_CODES), asc.getUserRoleIDCodesAsStringArray());
+            assertArrayEquals(AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS, asc.getNetworkAccessPointIDs());
+            assertEquals(true, asc.getUserIsRequestor());
+        }
+    }
+
+    private static String[] eventIDsToStringArray(EventID... a) {
+        String[] ss = new String[a.length];
+        for (int i = 0; i < a.length; i++) {
+            ss[i] = new Code(
+                    a[i].getCode(),
+                    a[i].getCodeSystemName(),
+                    null,
+                    a[i].getDisplayName())
+                    .toString();
+        }
+        return ss;
+    }
+
+    private static String[] eventCodesToStringArray(EventTypeCode... a) {
+        String[] ss = new String[a.length];
+        for (int i = 0; i < a.length; i++) {
+            ss[i] = new Code(
+                    a[i].getCode(),
+                    a[i].getCodeSystemName(),
+                    null,
+                    a[i].getDisplayName())
+                    .toString();
+        }
+        return ss;
+    }
+
+    private static String[] roleIDCodesToStringArray(RoleIDCode... a) {
+        String[] ss = new String[a.length];
+        for (int i = 0; i < a.length; i++) {
+            ss[i] = new Code(
+                    a[i].getCode(),
+                    a[i].getCodeSystemName(),
+                    null,
+                    a[i].getDisplayName())
+                    .toString();
+        }
+        return ss;
     }
 
     private void assertImageWriterExtension(ImageWriterExtension ext) {
@@ -412,12 +456,12 @@ public class JsonConfigurationTest {
     private static List<AuditSuppressCriteria> createSuppressCriteriaList() {
         AuditSuppressCriteria asc = new AuditSuppressCriteria("cn");
         asc.setEventIDs(AUDIT_LOGGER_EVENT_IDS);
-        asc.setEventTypeCodes(AuditMessages.EventTypeCode.ApplicationStart, AuditMessages.EventTypeCode.ApplicationStop);
+        asc.setEventTypeCodes(AUDIT_LOGGER_EVENT_TYPE_CODES);
         asc.setEventActionCodes(AUDIT_LOGGER_EVENT_ACTION_CODES);
         asc.setEventOutcomeIndicators(AUDIT_LOGGER_EVENT_OUTCOME_INDICATORS);
         asc.setUserIDs(AUDIT_LOGGER_USER_IDS);
         asc.setAlternativeUserIDs(AUDIT_LOGGER_ALTERNATIVE_USER_IDS);
-        asc.setUserRoleIDCodes(AuditMessages.RoleIDCode.Application, AuditMessages.RoleIDCode.ApplicationLauncher);
+        asc.setUserRoleIDCodes(AUDIT_LOGGER_ROLE_ID_CODES);
         asc.setNetworkAccessPointIDs(AUDIT_LOGGER_NETWORK_ACCESS_POINT_IDS);
         asc.setUserIsRequestor(true);
         return Collections.singletonList(asc);

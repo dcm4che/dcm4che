@@ -156,12 +156,12 @@ public class JsonConfigurationTest {
             config.writeTo(createDevice("Test-Device-1", "TEST-AET1"), gen);
         }
         Path path = Paths.get("src/test/data/device.json");
-        try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
-            w.write(writer.toString());
-        }
-//        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
-//            assertEquals(reader.readLine(), writer.toString());
+//        try (BufferedWriter w = Files.newBufferedWriter(path, Charset.forName("UTF-8"))) {
+//            w.write(writer.toString());
 //        }
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.forName("UTF-8"))) {
+            assertEquals(reader.readLine(), writer.toString());
+        }
     }
 
     @Test

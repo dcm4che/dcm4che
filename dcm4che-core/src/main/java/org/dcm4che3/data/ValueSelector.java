@@ -58,6 +58,7 @@ public class ValueSelector implements Serializable {
     public final VR vr;
     public final int valueIndex;
     public final ItemPointer[] itemPointers;
+    public String str;
 
     public ValueSelector(int tag, String privateCreator, VR vr, int index,
             ItemPointer... itemPointers) {
@@ -75,6 +76,12 @@ public class ValueSelector implements Serializable {
 
     @Override
     public String toString() {
+        if (str == null)
+            str = buildString();
+        return str;
+    }
+
+    private String buildString() {
         StringBuilder sb = new StringBuilder(32);
         for (ItemPointer ip : itemPointers)
             appendTo(ip.sequenceTag, ip.privateCreator, ip.itemIndex,
@@ -154,4 +161,16 @@ public class ValueSelector implements Serializable {
         return s.substring(beginIndex, s.indexOf(s.charAt(quotePos), beginIndex));
     }
 
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ValueSelector))
+            return false;
+
+        return toString().equals(obj.toString());
+    }
 }

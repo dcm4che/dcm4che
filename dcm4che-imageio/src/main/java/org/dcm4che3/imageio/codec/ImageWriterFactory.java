@@ -138,7 +138,7 @@ public class ImageWriterFactory implements Serializable {
     private static ImageWriterFactory defaultFactory;
 
     private PatchJPEGLS patchJPEGLS;
-    private final HashMap<String, ImageWriterParam> map = new HashMap<String, ImageWriterParam>();
+    private final TreeMap<String, ImageWriterParam> map = new TreeMap<>();
 
     public static ImageWriterFactory getDefault() {
         if (defaultFactory == null)

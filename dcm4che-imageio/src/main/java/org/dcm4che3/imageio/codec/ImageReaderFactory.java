@@ -119,7 +119,7 @@ public class ImageReaderFactory implements Serializable {
 
     private static ImageReaderFactory defaultFactory;
 
-    private final HashMap<String, ImageReaderParam> map = new HashMap<String, ImageReaderParam>();
+    private final TreeMap<String, ImageReaderParam> map = new TreeMap<>();
 
     public static ImageReaderFactory getDefault() {
         if (defaultFactory == null)

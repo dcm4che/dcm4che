@@ -69,7 +69,7 @@
     <uid value="1.3.46.670589.2.3.1.1" keyword="PrivatePhilipsSpecialisedXAStorage" type="SOPClass">Private Philips Specialised XA Storage</uid>
     <uid value="1.3.46.670589.2.4.1.1" keyword="PrivatePhilipsCXImageStorage" type="SOPClass">Private Philips CX Image Storage</uid>
     <uid value="1.3.46.670589.2.5.1.1" keyword="PrivatePhilips3DPresentationStateStorage" type="SOPClass">Private Philips 3D Presentation State Storage</uid>
-    <uid value="1.3.46.670589.2.8.1.1 " keyword="PrivatePhilipsVRMLStorage" type="SOPClass">Private Philips VRML Storage</uid>
+    <uid value="1.3.46.670589.2.8.1.1" keyword="PrivatePhilipsVRMLStorage" type="SOPClass">Private Philips VRML Storage</uid>
     <uid value="1.3.46.670589.2.11.1.1" keyword="PrivatePhilipsVolumeSetStorage" type="SOPClass">Private Philips Volume Set Storage</uid>
     <uid value="1.3.46.670589.5.0.1" keyword="PrivatePhilipsVolumeStorageRetired" type="SOPClass">Private Philips Volume Storage (Retired)</uid>
     <uid value="1.3.46.670589.5.0.1.1" keyword="PrivatePhilipsVolumeStorage" type="SOPClass">Private Philips Volume Storage</uid>

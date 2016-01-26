@@ -224,6 +224,7 @@
               "dcmProtocol": {
                 "title": "Protocol",
                 "description": "Protocol of Network Connection: DICOM, HL7, SYSLOG_TLS or SYSLOG_UDP; DICOM if absent",
+                "type": "string",
                 "enum": [
                   "DICOM",
                   "HL7",
@@ -244,7 +245,8 @@
               "dcmTLSProtocol": {
                 "title": "TLS Protocol",
                 "description": "The Supported TLS Protocols; TLSv1, SSLv3 if absent",
-                "type": [
+                "type": "string",
+                "enum": [
                   "TLSv1",
                   "SSLv3"
                 ]
@@ -481,6 +483,7 @@
                 "dicomTransferRole": {
                   "title": "Transfer Role",
                   "description": "Either SCU or SCP",
+                  "type": "string",
                   "enum": [ "SCP",  "SCU" ]
                 },
                 "dicomTransferSyntax": {
@@ -584,6 +587,7 @@
         "dcmTrustStoreType": {
           "title": "Trust Store Type",
           "description": "Key Store Type of Trust Store specified by dcmTrustStoreURL. JKS or PKCS12",
+          "type": "string",
           "enum": [ "JKS", "PKCS12" ]
         },
         "dcmTrustStorePin": {
@@ -604,6 +608,7 @@
         "dcmKeyStoreType": {
           "title": "Key Store Type",
           "description": "Key Store Type of Key Store specified by Key Store URL. JKS or PKCS12",
+          "type": "string",
           "enum": [ "JKS", "PKCS12" ]
         },
         "dcmKeyStorePin": {
@@ -709,6 +714,7 @@
           "dcmPatchJPEGLS": {
             "title": "Patch JPEG-LS",
             "description": "Patch JPEG-LS before decompressing: JAI2ISO, ISO2JAI or ISO2JAI_IF_APP_OR_COM",
+            "type": "string",
             "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
           }
         }
@@ -743,6 +749,7 @@
           "dcmPatchJPEGLS": {
             "title": "Patch JPEG-LS",
             "description": "Patch JPEG-LS after compressing: JAI2ISO, ISO2JAI or ISO2JAI_IF_APP_OR_COM",
+            "type": "string",
             "enum": ["JAI2ISO", "ISO2JAI", "ISO2JAI_IF_APP_OR_COM"]
           },
           "dcmImageWriteParam": {

@@ -575,7 +575,6 @@ public class AuditMessages {
         protected List<ParticipantObjectContainsStudy> participantObjectContainsStudy;
         protected Boolean encrypted;
         protected Boolean anonymized;
-        protected List<String> instances;
 
         public List<String> getDescriptions() {
             if (description == null) {
@@ -627,14 +626,7 @@ public class AuditMessages {
         public void setAnonymized(Boolean value) {
             this.anonymized = value;
         }
-
-        public List<String> getInstances() {
-            return instances;
-        }
-
-        public void setInstances(List<String> instances) {
-            this.instances = instances;
-        }
+        
     }
     
     public static EventIdentification createEventIdentification(

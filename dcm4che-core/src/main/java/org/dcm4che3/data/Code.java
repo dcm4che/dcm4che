@@ -110,15 +110,15 @@ public class Code implements Serializable {
 
     protected Code() {} // needed for JPA
 
-    public final String getCodeValue() {
+    public String getCodeValue() {
         return codeValue;
     }
 
-    public final String getCodingSchemeDesignator() {
+    public String getCodingSchemeDesignator() {
         return codingSchemeDesignator;
     }
 
-    public final String getCodingSchemeVersion() {
+    public String getCodingSchemeVersion() {
         return codingSchemeVersion;
     }
 

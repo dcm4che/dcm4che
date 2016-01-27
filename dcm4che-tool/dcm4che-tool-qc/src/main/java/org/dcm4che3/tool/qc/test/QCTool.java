@@ -237,4 +237,34 @@ public class QCTool implements TestTool {
         init(tmpResult);
     }
 
+    /**
+     * reject.
+     * Calls the tool to reject studies, series or instance
+     *
+     * @param testDescription
+     *            the test description
+     * @param rOrUIDs
+     *            the list of SOPUIDs
+     */
+    public void reject(String testDescription, ArrayList<String> rOrUIDs) {
+        qc.setRrUIDs(rOrUIDs);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
+
+    /**
+     * restore.
+     * Calls the tool to restore a set of instances from being rejected.
+     * Configuration of the archive must allow this code to override previous one.
+     *
+     * @param testDescription
+     *            the test description
+     * @param rOrUIDs
+     *            the list of SOPUIDs
+     */
+    public void restore(String testDescription, ArrayList<String> rOrUIDs) {
+        qc.setRrUIDs(rOrUIDs);
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
 }

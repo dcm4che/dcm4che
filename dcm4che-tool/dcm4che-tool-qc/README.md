@@ -1,4 +1,4 @@
-    usage: qc <qcurl> [OPTIONS] <SPLIT|MERGE|SEGMENT|UPDATE|DELETE|REJECT> <targetstudyuid> \
+    usage: qc <qcurl> [OPTIONS] <SPLIT|MERGE|SEGMENT|UPDATE|DELETE|REJECT|RESTORE> <targetstudyuid> \
                                 <codevalue:codeschemedesignator:codemeaning:codeversion>
     
     The QC tool provides a way to perform QC operations on a dcm4che archive. 

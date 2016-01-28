@@ -275,7 +275,7 @@ public class Transcoder implements Closeable {
         SafeClose.close(dis);
         for (File tmpFile : dis.getBulkDataFiles())
             tmpFile.delete();
-        if (closeOutputStream)
+        if (closeOutputStream && dos != null)
             dos.close();
     }
 

@@ -313,9 +313,13 @@ public class Transcoder implements Closeable {
 
         @Override
         public void readValue(DicomInputStream dis, Fragments frags) throws IOException {
-            int length = dis.length();
-            dos.writeHeader(Tag.Item, null, length);
-            StreamUtils.copy(dis, dos, length, buffer());
+            if (dos == null) {
+                dis.readValue(dis, frags);
+            } else {
+                int length = dis.length();
+                dos.writeHeader(Tag.Item, null, length);
+                StreamUtils.copy(dis, dos, length, buffer());
+            }
         }
 
         @Override

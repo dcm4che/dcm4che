@@ -40,21 +40,19 @@
 
 package org.dcm4che3.conf.core.genericextensions;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.core.misc.DeepEquals;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.swing.BakedArrayList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GenericExtensionsTest {
 

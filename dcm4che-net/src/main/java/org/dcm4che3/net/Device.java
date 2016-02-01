@@ -1054,6 +1054,11 @@ public class Device implements Serializable {
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {
+
+        if(aet == null){
+            throw new IllegalArgumentException("Application Entity Title (aet) is null");
+        }
+
         ApplicationEntity ae = aliasApplicationEntitiesMap.get(aet);
 
         // special fallback: if one ApplicationEntity defines "*" as an alias AET (or even the main AET), it will get used as a fallback for unknown AETs

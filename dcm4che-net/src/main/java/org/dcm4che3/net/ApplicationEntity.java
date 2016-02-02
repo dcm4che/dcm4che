@@ -400,10 +400,13 @@ public class ApplicationEntity implements Serializable {
     }
 
     public void addConnection(Connection conn) {
-        if (conn.getProtocol() != Connection.Protocol.DICOM || conn.getProtocol() != Connection.Protocol.HL7
-                || conn.getProtocol() != Connection.Protocol.SYSLOG_TLS || conn.getProtocol() != Connection.Protocol.SYSLOG_UDP)
+        if (conn.getProtocol() == Connection.Protocol.DICOM || conn.getProtocol() == Connection.Protocol.HL7
+                || conn.getProtocol() == Connection.Protocol.SYSLOG_TLS || conn.getProtocol() == Connection.Protocol.SYSLOG_UDP) {
+            LOG.debug("New connection added has protocol DICOM or HL7 or SYSLOG_TLS or SYSLOG_UDP");
+        } else {
             throw new IllegalArgumentException(
                     "protocol != DICOM or HL7 or SYSLOG_TLS or SYSLOG_UDP - " + conn.getProtocol());
+        }
 
         if (device != null && device != conn.getDevice())
             throw new IllegalStateException(conn + " not contained by Device: " + 

@@ -142,6 +142,9 @@ public class QC {
                 JsonArray qcPatientMessage = initPatientObject(qc);
                 qc.setUrl(adjustPatientURL(qc).replace(" ", "%20"));
                 return sendRequest(opDescription, qc, qcPatientMessage);
+            case LINK2MWL:
+                JsonObject qfLinkMessage = initQCObject(qc);
+                return sendRequest(opDescription, qc, qfLinkMessage);
             default:
                 throw new IllegalArgumentException("Incorrect Operation specified");
         }

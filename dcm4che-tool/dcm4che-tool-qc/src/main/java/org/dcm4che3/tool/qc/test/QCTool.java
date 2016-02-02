@@ -267,4 +267,26 @@ public class QCTool implements TestTool {
         QCResult tmpResult = qc.performOperation(testDescription, qc);
         init(tmpResult);
     }
+    
+    /**
+     * updateAttributes.
+     * Calls the tool to update instances identified by their uids
+     * in the updateData with metadata also specified in the updateData.
+     * Will not update UIDS.
+     *
+     * @param testDescription
+     *            the test description
+     * @param updateScope
+     *            the scope can be any scope specified in QCUpdateScope
+     * @param updateData
+     *            Attributes used to identify and update objects
+     */
+    public void quickFixLinkMWL(String testDescription, Attributes mwlAttributes, IDWithIssuer pid) {
+        qc.setUpdateAttrs(mwlAttributes);
+        qc.setPid(pid);
+
+        QCResult tmpResult = qc.performOperation(testDescription, qc);
+        init(tmpResult);
+    }
+
 }

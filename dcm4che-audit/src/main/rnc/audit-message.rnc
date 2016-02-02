@@ -38,8 +38,8 @@ EventIdentificationType =
     "12"
   }
 
-#  Note: This includes one constraint that cannot be represented yet in RNC.  The use of a token other
-#    than the specified codes is permitted only if a CodeSystem is specified by its name or OID
+#  Define AuditSourceTypeCode so that an isolated single digit value is acceptable, 
+#    or a token with other csd attributes so that any controlled terminology can also be used.
 AuditSourceIdentificationType =
   element AuditSourceTypeCode {
     attribute code {
@@ -121,7 +121,7 @@ ParticipantObjectIdentificationType =
   (element ParticipantObjectName { xsd:string }
    | element ParticipantObjectQuery { xsd:base64Binary })?,
   element ParticipantObjectDetail { TypeValuePairType }*,
-  element ParticipantObjectDescription { ParticipantObjectDescriptionType }?, # DICOM extension to RFC-3881 schema
+  element ParticipantObjectDescription { ParticipantObjectDescriptionType }?,
   attribute ParticipantObjectID { xsd:string },
   attribute ParticipantObjectTypeCode {
     ## Person
@@ -217,7 +217,7 @@ ParticipantObjectIdentificationType =
   }?,
   attribute ParticipantObjectSensitivity { xsd:string }?
 
-# DICOM extension to RFC-3881 schema for use describing DICOM objects
+
 ParticipantObjectDescriptionType =
   element MPPS {
     attribute UID { OID }

@@ -90,8 +90,8 @@
   </xs:element>
   <xs:element name="EventOutcomeDescription" type="xs:string"/>
   <!--
-     Note: This includes one constraint that cannot be represented yet in RNC.  The use of a token other
-           than the specified codes is permitted only if a CodeSystem is specified by its name or OID
+     Define AuditSourceTypeCode so that an isolated single digit value is acceptable, 
+       or a token with other csd attributes so that any controlled terminology can also be used.
   -->
   <xs:complexType name="AuditSourceIdentificationType">
     <xs:sequence>
@@ -545,7 +545,6 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="ParticipantObjectDescription" type="ParticipantObjectDescriptionType"/>
-  <!-- DICOM extension to RFC-3881 schema for use describing DICOM objects -->
   <xs:complexType name="ParticipantObjectDescriptionType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>

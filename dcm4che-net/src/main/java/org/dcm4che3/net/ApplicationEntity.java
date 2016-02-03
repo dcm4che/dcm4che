@@ -400,7 +400,7 @@ public class ApplicationEntity implements Serializable {
     }
 
     public void addConnection(Connection conn) {
-        if (conn.getProtocol() == Connection.Protocol.DICOM)
+        if (conn.getProtocol() != Connection.Protocol.DICOM)
             throw new IllegalArgumentException(
                     "protocol != DICOM - " + conn.getProtocol());
 

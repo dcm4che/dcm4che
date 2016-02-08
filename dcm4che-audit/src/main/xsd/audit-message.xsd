@@ -154,9 +154,10 @@
         </xs:simpleType>
       </xs:attribute>
       <xs:attribute name="csd-code" type="xs:string"/>
-      <xs:attributeGroup ref="CodeSystem"/>
       <xs:attribute name="displayName" type="xs:string"/>
       <xs:attribute name="originalText" type="xs:string"/>
+      <xs:attribute name="codeSystem" type="OID"/>
+      <xs:attribute name="codeSystemName" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:complexType name="ActiveParticipantType">
@@ -460,7 +461,11 @@
   </xs:complexType>
   <xs:element name="ParticipantObjectIDTypeCode">
     <xs:complexType>
-      <xs:attributeGroup ref="CodedValueType"/>
+      <xs:attribute name="csd-code" use="required" type="xs:string"/>
+      <xs:attribute name="displayName" type="xs:string"/>
+      <xs:attribute name="originalText" use="required" type="xs:string"/>
+      <xs:attribute name="codeSystem" type="OID"/>
+      <xs:attribute name="codeSystemName" use="required" type="xs:string"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="ParticipantObjectName" type="xs:string"/>
@@ -524,6 +529,7 @@
     <xs:attribute name="displayName" type="xs:string"/>
     <xs:attribute name="originalText" type="xs:string"/>
   </xs:attributeGroup>
+  <!-- Note: this corresponds to DICOM "Code Meaning" -->
   <xs:attributeGroup name="TypeValuePairType">
     <xs:attribute name="type" use="required" type="xs:string"/>
     <xs:attribute name="value" use="required" type="xs:base64Binary"/>

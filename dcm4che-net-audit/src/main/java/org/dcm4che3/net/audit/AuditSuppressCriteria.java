@@ -431,7 +431,7 @@ public class AuditSuppressCriteria {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -444,7 +444,7 @@ public class AuditSuppressCriteria {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -457,7 +457,7 @@ public class AuditSuppressCriteria {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                 .toString();
         }
         return ss;
@@ -470,7 +470,7 @@ public class AuditSuppressCriteria {
             a[i] = new EventID();
             a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }
@@ -482,7 +482,7 @@ public class AuditSuppressCriteria {
             a[i] = new EventTypeCode();
             a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }
@@ -494,7 +494,7 @@ public class AuditSuppressCriteria {
             a[i] = new RoleIDCode();
             a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
-            a[i].setDisplayName(code.getCodeMeaning());
+            a[i].setOriginalText(code.getCodeMeaning());
         }
         return a;
     }

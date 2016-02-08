@@ -62,7 +62,12 @@ AuditSourceIdentificationType =
       ## External source, other or unknown type
       "9"
     } | #  other code values are allowed if a CodeSystem is specified by its name or OID
-    CodedValueType
+#    CodedValueType
+    attribute csd-code { xsd:string } |
+    attribute displayName { xsd:string }? |
+    attribute originalText { xsd:string } | # declared as required by CP-ITI-731-01 # Note: this corresponds to DICOM "Code Meaning"
+    attribute codeSystem { OID }? |
+    attribute codeSystemName { xsd:string } # declared as required by CP-ITI-731-01
   }*,
   attribute AuditEnterpriseSiteID { xsd:string }?,
   attribute AuditSourceID { xsd:string }
@@ -116,7 +121,12 @@ ParticipantObjectIdentificationType =
 #      ## URI
 #      "12"
 #    } | # other code values are allowed if a CodeSystem is specified by its name or OID
-    CodedValueType
+#    CodedValueType,
+    attribute csd-code { xsd:string },
+    attribute displayName { xsd:string }?,
+    attribute originalText { xsd:string }, # declared as required by CP-ITI-731-01 # Note: this corresponds to DICOM "Code Meaning"
+    attribute codeSystem { OID }?,
+    attribute codeSystemName { xsd:string } # declared as required by CP-ITI-731-01
   },
   (element ParticipantObjectName { xsd:string }
    | element ParticipantObjectQuery { xsd:base64Binary })?,
@@ -244,8 +254,8 @@ ParticipantObjectDescriptionType =
 CodedValueType =
   attribute csd-code { xsd:string },
   CodeSystem,
-  attribute displayName { xsd:string }?, # Note: this corresponds to DICOM "Code Meaning"
-  attribute originalText { xsd:string }?
+  attribute displayName { xsd:string }?,
+  attribute originalText { xsd:string }? # Note: this corresponds to DICOM "Code Meaning"
 
 TypeValuePairType =
   attribute type { xsd:string },

@@ -236,8 +236,8 @@ public class PreferencesAuditLoggerConfigurationTest {
                 eventIDs[0].getCsdCode());
         assertEquals(AuditMessages.EventID.ApplicationActivity.getCodeSystemName(),
                 eventIDs[0].getCodeSystemName());
-        assertEquals(AuditMessages.EventID.ApplicationActivity.getDisplayName(),
-                eventIDs[0].getDisplayName());
+        assertEquals(AuditMessages.EventID.ApplicationActivity.getOriginalText(),
+                eventIDs[0].getOriginalText());
         String[] eventActionCodes = criteria.getEventActionCodes();
         assertEquals(1, eventActionCodes.length);
         assertEquals(AuditMessages.EventActionCode.Execute, eventActionCodes[0]);
@@ -261,8 +261,8 @@ public class PreferencesAuditLoggerConfigurationTest {
                 userRoleIDCodes[0].getCsdCode());
         assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCodeSystemName(),
                 userRoleIDCodes[0].getCodeSystemName());
-        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getDisplayName(),
-                userRoleIDCodes[0].getDisplayName());
+        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getOriginalText(),
+                userRoleIDCodes[0].getOriginalText());
         assertEquals(true, criteria.getUserIsRequestor());
     }
 

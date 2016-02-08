@@ -167,10 +167,10 @@ public class AuditMessages {
         public static final EventID PatientCareProtocol = 
                 new EventID("IHE0005", "IHE", "Patient Care Protocol");
 
-        EventID(String code, String codeSystemName, String displayName) {
+        EventID(String code, String codeSystemName, String originalText) {
             super.csdCode = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override
@@ -285,10 +285,10 @@ public class AuditMessages {
             new EventTypeCode("ITI-63", "IHE Transactions", "XCF Fetch");
 
         public EventTypeCode(String code, String codeSystemName,
-                String displayName) {
+                String originalText) {
             super.csdCode = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override
@@ -345,10 +345,10 @@ public class AuditMessages {
         }
 
         public AuditSourceTypeCode(String code, String codeSystemName,
-                String displayName) {
+                String originalText) {
             super.code = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override
@@ -394,10 +394,10 @@ public class AuditMessages {
                 new RoleIDCode("110155","DCM","Source Media");
 
         public RoleIDCode(String code, String codeSystemName,
-                String displayName) {
+                String originalText) {
             super.csdCode = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override
@@ -451,10 +451,10 @@ public class AuditMessages {
                 new MediaType("110038", "DCM", "Paper Document");
 
         public MediaType(String code, String codeSystemName,
-                String displayName) {
+                String originalText) {
             super.csdCode = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override
@@ -589,10 +589,10 @@ public class AuditMessages {
         }
 
         public ParticipantObjectIDTypeCode(String code, String codeSystemName,
-                String displayName) {
+                String originalText) {
             super.csdCode = code;
             super.codeSystemName = codeSystemName;
-            super.displayName = displayName;
+            super.originalText = originalText;
         }
 
         @Override

@@ -90,38 +90,39 @@ ActiveParticipantType =
 
 ParticipantObjectIdentificationType =
   element ParticipantObjectIDTypeCode {
-    attribute code {
-      ##  Medical Record Number
-      "1" |
-      ## Patient Number
-      "2" |
-      ## Encounter Number
-      "3" |
-      ## Enrollee Number
-      "4" |
-      ## Social Security Number
-      "5" |
-      ## Account Number
-      "6" |
-      ## Guarantor Number
-      "7" |
-      ## Report Name
-      "8" |
-      ## Report Number
-      "9" |
-      ## Search Criteria
-      "10" |
-      ##  User Identifier
-      "11" |
-      ## URI
-      "12"
-    } | # other code values are allowed if a CodeSystem is specified by its name or OID
+#    attribute code {
+#      ##  Medical Record Number
+#      "1" |
+#      ## Patient Number
+#      "2" |
+#      ## Encounter Number
+#      "3" |
+#      ## Enrollee Number
+#      "4" |
+#      ## Social Security Number
+#      "5" |
+#      ## Account Number
+#      "6" |
+#      ## Guarantor Number
+#      "7" |
+#      ## Report Name
+#      "8" |
+#      ## Report Number
+#      "9" |
+#      ## Search Criteria
+#      "10" |
+#      ##  User Identifier
+#      "11" |
+#      ## URI
+#      "12"
+#    } | # other code values are allowed if a CodeSystem is specified by its name or OID
     CodedValueType
   },
   (element ParticipantObjectName { xsd:string }
    | element ParticipantObjectQuery { xsd:base64Binary })?,
   element ParticipantObjectDetail { TypeValuePairType }*,
-  element ParticipantObjectDescription { ParticipantObjectDescriptionType }?,
+  element ParticipantObjectDescription { xsd:string },
+  element ParticipantObjectDescriptionType { ParticipantObjectDescriptionType },
   attribute ParticipantObjectID { xsd:string },
   attribute ParticipantObjectTypeCode {
     ## Person
@@ -233,13 +234,15 @@ ParticipantObjectDescriptionType =
     attribute NumberOfInstances { xsd:int }?
   }*,
   element ParticipantObjectContainsStudy {
-    attribute UID { OID }
-  }*,
+    element StudyIDs {
+        attribute UID { OID }
+    }*
+  },
   attribute Encrypted { xsd:boolean }?,
   attribute Anonymized { xsd:boolean }?
 
 CodedValueType =
-  attribute code { xsd:string },
+  attribute csd-code { xsd:string },
   CodeSystem,
   attribute displayName { xsd:string }?, # Note: this corresponds to DICOM "Code Meaning"
   attribute originalText { xsd:string }?

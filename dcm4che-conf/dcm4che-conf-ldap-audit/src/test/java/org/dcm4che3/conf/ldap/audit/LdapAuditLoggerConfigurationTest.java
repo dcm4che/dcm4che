@@ -228,8 +228,8 @@ public class LdapAuditLoggerConfigurationTest {
         assertEquals("AuditSuppressCriteria", criteria.getCommonName());
         EventID[] eventIDs = criteria.getEventIDs();
         assertEquals(1, eventIDs.length);
-        assertEquals(AuditMessages.EventID.ApplicationActivity.getCode(),
-                eventIDs[0].getCode());
+        assertEquals(AuditMessages.EventID.ApplicationActivity.getCsdCode(),
+                eventIDs[0].getCsdCode());
         assertEquals(AuditMessages.EventID.ApplicationActivity.getCodeSystemName(),
                 eventIDs[0].getCodeSystemName());
         assertEquals(AuditMessages.EventID.ApplicationActivity.getDisplayName(),
@@ -253,8 +253,8 @@ public class LdapAuditLoggerConfigurationTest {
         assertEquals("127.0.0.1", networkAccessPointIDs[0]);
         RoleIDCode[] userRoleIDCodes = criteria.getUserRoleIDCodes();
         assertEquals(1, userRoleIDCodes.length);
-        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCode(),
-                userRoleIDCodes[0].getCode());
+        assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCsdCode(),
+                userRoleIDCodes[0].getCsdCode());
         assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getCodeSystemName(),
                 userRoleIDCodes[0].getCodeSystemName());
         assertEquals(AuditMessages.RoleIDCode.ApplicationLauncher.getDisplayName(),

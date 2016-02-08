@@ -22,7 +22,7 @@
       <class name="ParticipantObjectIdentification" />
     </bindings>
     <bindings node="//xs:complexType[@name='ParticipantObjectDescriptionType']">
-      <class name="ParticipantObjectDescription" />
+      <class name="ParticipantObjectDescriptionType" />
     </bindings>
   </bindings>
 </bindings>

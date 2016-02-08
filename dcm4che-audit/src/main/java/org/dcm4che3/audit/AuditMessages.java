@@ -61,7 +61,7 @@ import org.dcm4che3.audit.Instance;
 import org.dcm4che3.audit.MPPS;
 import org.dcm4che3.audit.ObjectFactory;
 import org.dcm4che3.audit.ParticipantObjectContainsStudy;
-import org.dcm4che3.audit.ParticipantObjectDescription;
+import org.dcm4che3.audit.ParticipantObjectDescriptionType;
 import org.dcm4che3.audit.ParticipantObjectDetail;
 import org.dcm4che3.audit.ParticipantObjectIdentification;
 import org.dcm4che3.audit.SOPClass;
@@ -168,13 +168,13 @@ public class AuditMessages {
                 new EventID("IHE0005", "IHE", "Patient Care Protocol");
 
         EventID(String code, String codeSystemName, String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -286,13 +286,13 @@ public class AuditMessages {
 
         public EventTypeCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -395,13 +395,13 @@ public class AuditMessages {
 
         public RoleIDCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -452,13 +452,13 @@ public class AuditMessages {
 
         public MediaType(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -585,18 +585,18 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
 
         public ParticipantObjectIDTypeCode(String code) {
-            super.code = code;
+            super.csdCode = code;
         }
 
         public ParticipantObjectIDTypeCode(String code, String codeSystemName,
                 String displayName) {
-            super.code = code;
+            super.csdCode = code;
             super.codeSystemName = codeSystemName;
             super.displayName = displayName;
         }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -667,7 +667,8 @@ public class AuditMessages {
     public static ParticipantObjectIdentification createParticipantObjectIdentification(
             String id, ParticipantObjectIDTypeCode idType, String name,
             byte[] query, String type, String role, String lifeCycle,
-            String sensitivity, ParticipantObjectDescription description,
+            String sensitivity, String description,
+            ParticipantObjectDescriptionType descriptionType,
             ParticipantObjectDetail... details) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
         poi.setParticipantObjectID(id);
@@ -679,17 +680,18 @@ public class AuditMessages {
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
         poi.setParticipantObjectSensitivity(sensitivity);
         poi.setParticipantObjectDescription(description);
+        poi.setParticipantObjectDescriptionType(descriptionType);
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;
     }
    
-    public static ParticipantObjectDescription createParticipantObjectDescription(
+    public static ParticipantObjectDescriptionType createParticipantObjectDescription(
             Boolean encrypted, Boolean anonymized) {
-        ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        pod.setEncrypted(encrypted);
-        pod.setAnonymized(anonymized);
-        return pod;
+        ParticipantObjectDescriptionType podt = new ParticipantObjectDescriptionType();
+        podt.setEncrypted(encrypted);
+        podt.setAnonymized(anonymized);
+        return podt;
     }
 
     public static ParticipantObjectDetail createParticipantObjectDetail(
@@ -720,9 +722,10 @@ public class AuditMessages {
     }
 
     public static ParticipantObjectContainsStudy
-            createParticipantObjectContainsStudy(String uid) {
+            createParticipantObjectContainsStudy(org.dcm4che3.audit.StudyIDs... studyIDs) {
         ParticipantObjectContainsStudy study = new ParticipantObjectContainsStudy();
-        study.setUID(uid);
+        for (org.dcm4che3.audit.StudyIDs studyID : studyIDs)
+            study.getStudyIDs().add(studyID);
         return study;
     }
 

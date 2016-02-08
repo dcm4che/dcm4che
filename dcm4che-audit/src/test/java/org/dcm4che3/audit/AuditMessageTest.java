@@ -42,7 +42,7 @@ package org.dcm4che3.audit;
 import java.io.StringReader;
 
 import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.ParticipantObjectDescription;
+import org.dcm4che3.audit.ParticipantObjectDescriptionType;
 import org.dcm4che3.audit.AuditMessages;
 import org.junit.Test;
 
@@ -171,12 +171,12 @@ public class AuditMessageTest {
                     "Hospital",
                     "ReadingRoom",
                     AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
-        ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        pod.getMPPS().add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
-        pod.getAccession().add(AuditMessages.createAccession("12341234"));
-        pod.getSOPClass().add(AuditMessages.createSOPClass(
+        ParticipantObjectDescriptionType podt = new ParticipantObjectDescriptionType();
+        podt.getMPPS().add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
+        podt.getAccession().add(AuditMessages.createAccession("12341234"));
+        podt.getSOPClass().add(AuditMessages.createSOPClass(
                 "1.2.840.10008.5.1.4.1.1.2", 1500));
-        pod.getSOPClass().add(AuditMessages.createSOPClass(
+        podt.getSOPClass().add(AuditMessages.createSOPClass(
                 "1.2.840.10008.5.1.4.1.1.11.1", 3));
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
@@ -188,7 +188,8 @@ public class AuditMessageTest {
                         AuditMessages.ParticipantObjectTypeCodeRole.Resource,
                         AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation,
                         null,
-                        pod));
+                        "description1",
+                        podt));
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
                         "ptid12345",
@@ -199,6 +200,7 @@ public class AuditMessageTest {
                         AuditMessages.ParticipantObjectTypeCodeRole.Patient,
                         null,
                         null,
+                        "description2",
                         null));
         AuditMessages.toXML(msg, System.out, true);
     }

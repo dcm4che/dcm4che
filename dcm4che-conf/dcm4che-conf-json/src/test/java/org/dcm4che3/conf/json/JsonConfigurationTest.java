@@ -304,7 +304,7 @@ public class JsonConfigurationTest {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
                     a[i].getDisplayName())
@@ -317,7 +317,7 @@ public class JsonConfigurationTest {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
                     a[i].getDisplayName())
@@ -330,7 +330,7 @@ public class JsonConfigurationTest {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
                     a[i].getDisplayName())

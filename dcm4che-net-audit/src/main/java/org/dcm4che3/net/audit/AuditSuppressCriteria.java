@@ -328,7 +328,7 @@ public class AuditSuppressCriteria {
             return true;
 
         for (EventID eventyID : eventIDs) {
-            if (eventyID.getCode().equals(o.getCode())
+            if (eventyID.getCsdCode().equals(o.getCsdCode())
                  && equals(eventyID.getCodeSystemName(), o.getCodeSystemName())
                  && equals(eventyID.getCodeSystem(), o.getCodeSystem()))
                 return true;
@@ -346,7 +346,7 @@ public class AuditSuppressCriteria {
 
         for (EventTypeCode o : list) {
             for (EventTypeCode eventTypeCode : eventTypeCodes) {
-                if (eventTypeCode.getCode().equals(o.getCode())
+                if (eventTypeCode.getCsdCode().equals(o.getCsdCode())
                      && equals(eventTypeCode.getCodeSystemName(), o.getCodeSystemName())
                      && equals(eventTypeCode.getCodeSystem(), o.getCodeSystem()))
                     return true;
@@ -392,7 +392,7 @@ public class AuditSuppressCriteria {
 
         for (RoleIDCode o : list) {
             for (RoleIDCode roleIDCode : roleIDCodes) {
-                if (roleIDCode.getCode().equals(o.getCode())
+                if (roleIDCode.getCsdCode().equals(o.getCsdCode())
                      && equals(roleIDCode.getCodeSystemName(), o.getCodeSystemName())
                      && equals(roleIDCode.getCodeSystem(), o.getCodeSystem()))
                     return true;
@@ -428,7 +428,7 @@ public class AuditSuppressCriteria {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
                     a[i].getDisplayName())
@@ -441,7 +441,7 @@ public class AuditSuppressCriteria {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
                     a[i].getDisplayName())
@@ -454,7 +454,7 @@ public class AuditSuppressCriteria {
         String[] ss = new String[a.length];
         for (int i = 0; i < a.length; i++) {
             ss[i] = new Code(
-                    a[i].getCode(),
+                    a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null, 
                     a[i].getDisplayName())
@@ -468,7 +468,7 @@ public class AuditSuppressCriteria {
         for (int i = 0; i < ss.length; i++) {
             Code code = new Code(ss[i]);
             a[i] = new EventID();
-            a[i].setCode(code.getCodeValue());
+            a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
             a[i].setDisplayName(code.getCodeMeaning());
         }
@@ -480,7 +480,7 @@ public class AuditSuppressCriteria {
         for (int i = 0; i < ss.length; i++) {
             Code code = new Code(ss[i]);
             a[i] = new EventTypeCode();
-            a[i].setCode(code.getCodeValue());
+            a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
             a[i].setDisplayName(code.getCodeMeaning());
         }
@@ -492,7 +492,7 @@ public class AuditSuppressCriteria {
         for (int i = 0; i < ss.length; i++) {
             Code code = new Code(ss[i]);
             a[i] = new RoleIDCode();
-            a[i].setCode(code.getCodeValue());
+            a[i].setCsdCode(code.getCodeValue());
             a[i].setCodeSystemName(code.getCodingSchemeDesignator());
             a[i].setDisplayName(code.getCodeMeaning());
         }

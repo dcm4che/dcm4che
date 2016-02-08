@@ -102,61 +102,58 @@
   </xs:complexType>
   <xs:element name="AuditSourceTypeCode">
     <xs:complexType>
-      <xs:attribute name="code" use="required">
+      <xs:attribute name="code">
         <xs:simpleType>
-          <xs:union memberTypes="xs:string">
-            <xs:simpleType>
-              <xs:restriction base="xs:token">
-                <xs:enumeration value="1">
-                  <xs:annotation>
-                    <xs:documentation> End-user display device, diagnostic display</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="2">
-                  <xs:annotation>
-                    <xs:documentation>Data acquisition device or instrument</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="3">
-                  <xs:annotation>
-                    <xs:documentation>Web server process</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="4">
-                  <xs:annotation>
-                    <xs:documentation>Application server process</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="5">
-                  <xs:annotation>
-                    <xs:documentation>Database server process</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="6">
-                  <xs:annotation>
-                    <xs:documentation>Security server, e.g., a domain controller</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="7">
-                  <xs:annotation>
-                    <xs:documentation>ISO level 1-3 network component</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="8">
-                  <xs:annotation>
-                    <xs:documentation>ISO level 4-6 operating software</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="9">
-                  <xs:annotation>
-                    <xs:documentation>External source, other or unknown type</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-              </xs:restriction>
-            </xs:simpleType>
-          </xs:union>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="1">
+              <xs:annotation>
+                <xs:documentation> End-user display device, diagnostic display</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+              <xs:annotation>
+                <xs:documentation>Data acquisition device or instrument</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+              <xs:annotation>
+                <xs:documentation>Web server process</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+              <xs:annotation>
+                <xs:documentation>Application server process</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+              <xs:annotation>
+                <xs:documentation>Database server process</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+              <xs:annotation>
+                <xs:documentation>Security server, e.g., a domain controller</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+              <xs:annotation>
+                <xs:documentation>ISO level 1-3 network component</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+              <xs:annotation>
+                <xs:documentation>ISO level 4-6 operating software</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+              <xs:annotation>
+                <xs:documentation>External source, other or unknown type</xs:documentation>
+              </xs:annotation>
+            </xs:enumeration>
+          </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
+      <xs:attribute name="csd-code" type="xs:string"/>
       <xs:attributeGroup ref="CodeSystem"/>
       <xs:attribute name="displayName" type="xs:string"/>
       <xs:attribute name="originalText" type="xs:string"/>
@@ -222,7 +219,8 @@
         <xs:element ref="ParticipantObjectQuery"/>
       </xs:choice>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
-      <xs:element minOccurs="0" ref="ParticipantObjectDescription"/>
+      <xs:element ref="ParticipantObjectDescription"/>
+      <xs:element ref="ParticipantObjectDescriptionType"/>
     </xs:sequence>
     <xs:attribute name="ParticipantObjectID" use="required" type="xs:string"/>
     <xs:attribute name="ParticipantObjectTypeCode">
@@ -462,79 +460,7 @@
   </xs:complexType>
   <xs:element name="ParticipantObjectIDTypeCode">
     <xs:complexType>
-      <xs:attribute name="code" use="required">
-        <xs:simpleType>
-          <xs:union memberTypes="xs:string">
-            <xs:simpleType>
-              <xs:restriction base="xs:token">
-                <xs:enumeration value="1">
-                  <xs:annotation>
-                    <xs:documentation> Medical Record Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="2">
-                  <xs:annotation>
-                    <xs:documentation>Patient Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="3">
-                  <xs:annotation>
-                    <xs:documentation>Encounter Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="4">
-                  <xs:annotation>
-                    <xs:documentation>Enrollee Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="5">
-                  <xs:annotation>
-                    <xs:documentation>Social Security Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="6">
-                  <xs:annotation>
-                    <xs:documentation>Account Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="7">
-                  <xs:annotation>
-                    <xs:documentation>Guarantor Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="8">
-                  <xs:annotation>
-                    <xs:documentation>Report Name</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="9">
-                  <xs:annotation>
-                    <xs:documentation>Report Number</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="10">
-                  <xs:annotation>
-                    <xs:documentation>Search Criteria</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="11">
-                  <xs:annotation>
-                    <xs:documentation> User Identifier</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-                <xs:enumeration value="12">
-                  <xs:annotation>
-                    <xs:documentation>URI</xs:documentation>
-                  </xs:annotation>
-                </xs:enumeration>
-              </xs:restriction>
-            </xs:simpleType>
-          </xs:union>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attributeGroup ref="CodeSystem"/>
-      <xs:attribute name="displayName" type="xs:string"/>
-      <xs:attribute name="originalText" type="xs:string"/>
+      <xs:attributeGroup ref="CodedValueType"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="ParticipantObjectName" type="xs:string"/>
@@ -544,13 +470,14 @@
       <xs:attributeGroup ref="TypeValuePairType"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="ParticipantObjectDescription" type="ParticipantObjectDescriptionType"/>
+  <xs:element name="ParticipantObjectDescription" type="xs:string"/>
+  <xs:element name="ParticipantObjectDescriptionType" type="ParticipantObjectDescriptionType"/>
   <xs:complexType name="ParticipantObjectDescriptionType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
-      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectContainsStudy"/>
+      <xs:element ref="ParticipantObjectContainsStudy"/>
     </xs:sequence>
     <xs:attribute name="Encrypted" type="xs:boolean"/>
     <xs:attribute name="Anonymized" type="xs:boolean"/>
@@ -581,11 +508,18 @@
   </xs:element>
   <xs:element name="ParticipantObjectContainsStudy">
     <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="StudyIDs"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StudyIDs">
+    <xs:complexType>
       <xs:attribute name="UID" use="required" type="OID"/>
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="CodedValueType">
-    <xs:attribute name="code" use="required" type="xs:string"/>
+    <xs:attribute name="csd-code" use="required" type="xs:string"/>
     <xs:attributeGroup ref="CodeSystem"/>
     <xs:attribute name="displayName" type="xs:string"/>
     <xs:attribute name="originalText" type="xs:string"/>

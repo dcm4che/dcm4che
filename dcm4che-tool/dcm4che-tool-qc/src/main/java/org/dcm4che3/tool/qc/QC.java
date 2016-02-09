@@ -256,13 +256,13 @@ public class QC {
             connection.setUseCaches(false);
 
             writeMessage(connection, (JsonStructure) qcMessage);
-
-            InputStream in = connection.getInputStream();
+            int rspCode = connection.getResponseCode();
+            InputStream in = rspCode == 200 ? connection.getInputStream() : connection.getErrorStream();
 
             BufferedReader rdr = new BufferedReader(new InputStreamReader(in));
             while (rdr.ready())
                 bfr += rdr.readLine();
-            result = new QCResult(desc, bfr, connection.getResponseCode());
+            result = new QCResult(desc, bfr, rspCode);
             return result;
         } catch (Exception e) {
             System.out.println("Error preparing request or "
@@ -329,12 +329,15 @@ public class QC {
     }
 
     private static JsonObject toIDWithIssuerObject(IDWithIssuer pid) {
-        return Json.createObjectBuilder().add("id", emptyIfNull(pid.getID()))
-                .add("issuer", toIssuerObject(pid.getIssuer())).build();
+        JsonObjectBuilder builder = Json.createObjectBuilder().add("id", emptyIfNull(pid.getID()));
+        if (pid.getIssuer() != null) {
+            builder.add("issuer", toIssuerObject(pid.getIssuer()));
+        }
+        return builder.build();
     }
 
     private static JsonObject toIssuerObject(Issuer issuer) {
-        JsonObjectBuilder builder=  Json
+        JsonObjectBuilder builder =  Json
                 .createObjectBuilder()
                 .add("localNamespaceEntityID",
                         emptyIfNull(issuer.getLocalNamespaceEntityID()));

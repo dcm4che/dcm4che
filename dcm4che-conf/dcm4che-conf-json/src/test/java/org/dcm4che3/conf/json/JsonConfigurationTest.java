@@ -307,7 +307,7 @@ public class JsonConfigurationTest {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                     .toString();
         }
         return ss;
@@ -320,7 +320,7 @@ public class JsonConfigurationTest {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                     .toString();
         }
         return ss;
@@ -333,7 +333,7 @@ public class JsonConfigurationTest {
                     a[i].getCsdCode(),
                     a[i].getCodeSystemName(),
                     null,
-                    a[i].getDisplayName())
+                    a[i].getOriginalText())
                     .toString();
         }
         return ss;

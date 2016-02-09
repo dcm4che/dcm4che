@@ -565,7 +565,7 @@ public class ApplicationEntity implements Serializable {
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
                 return conn;
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remoteConn + " available on " + this);
+                "No compatible connection to " + remoteConn + " available on " + aet);
     }
 
     public CompatibleConnection findCompatibelConnection(ApplicationEntity remote)
@@ -576,7 +576,7 @@ public class ApplicationEntity implements Serializable {
                     if (conn.isInstalled() && conn.isCompatible(remoteConn))
                         return new CompatibleConnection(conn, remoteConn);
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remote + " available on " + this);
+                "No compatible connection to " + remote.getAETitle() + " available on " + aet);
     }
 
     public Association connect(ApplicationEntity remote, AAssociateRQ rq)

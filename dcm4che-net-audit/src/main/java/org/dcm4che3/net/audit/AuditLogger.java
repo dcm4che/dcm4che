@@ -885,7 +885,8 @@ public class AuditLogger extends DeviceExtension {
                                 : new UDPConnection(conn, remoteConn));
                      }
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + arr + " available on " + this);
+                "No compatible connection to AuditRecordRepository @ Device " + arr.getDevice().getDeviceName()
+                        + " available on AuditLogger @ Device " + getDevice().getDeviceName());
     }
 
 

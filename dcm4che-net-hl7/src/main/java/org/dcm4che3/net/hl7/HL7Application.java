@@ -246,7 +246,7 @@ public class HL7Application implements Serializable {
                     if (conn.isInstalled() && conn.isCompatible(remoteConn))
                         return new CompatibleConnection(conn, remoteConn);
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remote + " available on " + this);
+                "No compatible connection to " + remote.getApplicationName() + " available on " + name);
     }
 
     public Connection findCompatibelConnection(Connection remoteConn)
@@ -255,7 +255,7 @@ public class HL7Application implements Serializable {
             if (conn.isInstalled() && conn.isCompatible(remoteConn))
                 return conn;
         throw new IncompatibleConnectionException(
-                "No compatible connection to " + remoteConn + " available on " + this);
+                "No compatible connection to " + remoteConn + " available on " + name);
     }
 
     private void checkInstalled() {

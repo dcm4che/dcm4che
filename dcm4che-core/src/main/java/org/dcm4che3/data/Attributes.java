@@ -2041,13 +2041,10 @@ public class Attributes implements Serializable {
      * Note: recursion will be applied only with Sequences containing one
      * item and having the original item not null. If this condition
      * is not supported, the complete sequence of the "other" Attributes
-     * will be set to this one, as in addAll(Attributes other).
-     *
-     * Tests if {@link #updateSelected} would modify attributes, without actually
-     * modifying this attributes
+     * will be set to this one, as in addAll(Attributes other)
      *
      * @param other the other Attributes object
-     * @return <tt>true</tt> if one ore more attribute would be added or
+     * @return <tt>true</tt> if one ore more attribute are added or
      *          overwritten with a different value
      */
     public boolean updateRecursive (Attributes other) {
@@ -2111,7 +2108,50 @@ public class Attributes implements Serializable {
         return numAdd != 0;
     }
 
+    /**
+     * Filters this Attributes object returning an Attributes containing
+     * all the properties found in the selection object and the relative
+     * ancestors, if any.
+     *
+     * Example:
+     *
+     * original:
+     * (0010,0020) LO [PatientID] PatientID
+     * (0010,0021) LO [IssuerOfPatientID] IssuerOfPatientID
+     * (0010,1002) SQ [1 Items] OtherPatientIDsSequence
+     * >Item #1
+     * >(0010,0020) LO [OtherPatientID] PatientID
+     * >(0010,0021) LO [OtherIssuerOfPatientID] IssuerOfPatientID
+     *
+     * selection:
+     * (0010,0020) LO [OtherPatientID] PatientID
+     *
+     * result:
+     * (0010,1002) SQ [1 Items] OtherPatientIDsSequence
+     * >Item #1
+     * >(0010,0020) LO [OtherPatientID] PatientID
+     *
+     * @param selection selection filter
+     * @return filtered Attributes
+     */
+    public Attributes filter (Attributes selection) {
 
+        Attributes filtered = new Attributes();
+        for (int tag : tags()) {
+            if (selection.contains(tag)) {
+                if (selection.getValue(tag).equals(getValue(tag)))
+                    filtered.setValue(tag, getVR(tag), getValue(tag));
+            }
+            if (getVR(tag) == VR.SQ) {
+                Attributes seq = getNestedDataset(tag).filter(selection);
+                if (seq.size()>0) {
+                    Sequence sequence = filtered.newSequence(tag,seq.size());
+                    sequence.add(0,seq);
+                }
+            }
+        }
+        return filtered;
+    }
 
     public boolean merge(Attributes other) {
         return add(other, null, null, 0, 0, null, true, false, false, null);

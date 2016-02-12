@@ -53,6 +53,7 @@ import org.dcm4che3.net.TransferCapability.Role;
 import org.dcm4che3.net.pdu.AAssociateRQ;
 import org.dcm4che3.net.pdu.PresentationContext;
 import org.dcm4che3.net.service.AbstractDicomService;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -64,21 +65,25 @@ public class PDUTest {
     int status;
     
     @Test
+    @Ignore("Test needs a DICOM listener and may therefore fail in some environments. The Test was introduced to debug/fix a problem with deflated TS and must not be performed regulary!")
     public void testEVRLE() throws Exception {
         test(UID.ExplicitVRLittleEndian);
     }
 
     @Test
+    @Ignore("Test needs a DICOM listener and may therefore fail in some environments. The Test was introduced to debug/fix a problem with deflated TS and must not be performed regulary!")
     public void testIVRLE() throws Exception {
         test(UID.ImplicitVRLittleEndian);
     }
 
     @Test
+    @Ignore("Test needs a DICOM listener and may therefore fail in some environments. The Test was introduced to debug/fix a problem with deflated TS and must not be performed regulary!")
     public void testEVRBE_retired() throws Exception {
         test(UID.ExplicitVRBigEndianRetired);
     }
     
     @Test
+    @Ignore("Test needs a DICOM listener and may therefore fail in some environments. The Test was introduced to debug/fix a problem with deflated TS and must not be performed regulary!")
     public void testDeflated() throws Exception {
         test(UID.DeflatedExplicitVRLittleEndian);
     }

@@ -680,7 +680,7 @@ public class AuditMessages {
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
         poi.setParticipantObjectSensitivity(sensitivity);
         poi.setParticipantObjectDescription(description);
-        poi.setParticipantObjectDescriptionType(descriptionType);
+        poi.getParticipantObjectDescriptionType().add(descriptionType);
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;

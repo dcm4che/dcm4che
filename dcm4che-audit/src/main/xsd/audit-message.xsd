@@ -221,7 +221,7 @@
       </xs:choice>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
       <xs:element ref="ParticipantObjectDescription"/>
-      <xs:element ref="ParticipantObjectDescriptionType"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDescriptionType"/>
     </xs:sequence>
     <xs:attribute name="ParticipantObjectID" use="required" type="xs:string"/>
     <xs:attribute name="ParticipantObjectTypeCode">

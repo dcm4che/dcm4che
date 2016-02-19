@@ -1135,7 +1135,7 @@ public class Connection implements Serializable {
             if (monitor != null)
                 monitor.onConnectionFailed(this, remoteConn, s, e);
             SafeClose.close(s);
-            throw e;
+            throw new IOException("Error while trying to establish connection "+getHostname()+" -> "+remoteHostname+":"+remotePort,e);
         }
     }
 

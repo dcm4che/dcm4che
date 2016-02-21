@@ -91,7 +91,7 @@ DCM4CHE.elementName = (function (dictionary) {
   }
 }({
 "privateCreator":undefined</xsl:text>
-    <xsl:apply-templates select="//el"/>
+    <xsl:apply-templates select="//el[@keyword!='']"/>
     <xsl:text>
 }));
 </xsl:text>

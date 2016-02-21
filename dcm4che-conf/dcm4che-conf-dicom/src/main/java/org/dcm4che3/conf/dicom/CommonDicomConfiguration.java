@@ -288,22 +288,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public boolean registerAETitle(String aet) throws ConfigurationException {
-
-        final String path = DicomPath.UniqueAETByName.set("aeName", aet).path();
-        if (config.nodeExists(path)) return false;
-
-        final HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("dicomAETitle", aet);
-
-        config.persistNode(path, map, AETitleItem.class);
         return true;
-
     }
 
 
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
-        config.removeNode(DicomPath.UniqueAETByName.set("aeName", aet).path());
     }
 
     @Override

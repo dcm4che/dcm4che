@@ -296,40 +296,40 @@ public class StandardElementDictionary extends ElementDictionary {
                 &amp;&amp; (tag &amp; 0xFFFF0000) != 0x7FE00000)
             tag &amp;= 0xFF00FFFF;
         switch (tag) {</xsl:text>
-    <xsl:apply-templates select="//el[@vr='AE']"/>
-    <xsl:apply-templates select="//el[@vr='AS']"/>
-    <xsl:apply-templates select="//el[@vr='AT']"/>
-    <xsl:apply-templates select="//el[@vr='CS' and @keyword!='SourceImageIDs']"/>
-    <xsl:apply-templates select="//el[@vr='DA']"/>
-    <xsl:apply-templates select="//el[@vr='DS']"/>
-    <xsl:apply-templates select="//el[@vr='DT']"/>
-    <xsl:apply-templates select="//el[@vr='FL']"/>
-    <xsl:apply-templates select="//el[@vr='FD']"/>
-    <xsl:apply-templates select="//el[@vr='IS']"/>
-    <xsl:apply-templates select="//el[@vr='LO']"/>
-    <xsl:apply-templates select="//el[@vr='LT']"/>
-    <xsl:apply-templates select="//el[@vr='OB']"/>
-    <xsl:apply-templates select="//el[@vr='OD']"/>
-    <xsl:apply-templates select="//el[@vr='OF']"/>
-    <xsl:apply-templates select="//el[@vr='OL']"/>
-    <xsl:apply-templates select="//el[contains(@vr,'OW')]">
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='AE']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='AS']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='AT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='CS' and @keyword!='SourceImageIDs']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='DA']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='DS']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='DT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='FL']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='FD']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='IS']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='LO']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='LT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='OB']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='OD']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='OF']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='OL']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and contains(@vr,'OW')]">
         <xsl:with-param name="vr">OW</xsl:with-param>
     </xsl:apply-templates>
-    <xsl:apply-templates select="//el[@vr='PN']"/>
-    <xsl:apply-templates select="//el[@vr='SH']"/>
-    <xsl:apply-templates select="//el[@vr='SL']"/>
-    <xsl:apply-templates select="//el[@vr='SQ']"/>
-    <xsl:apply-templates select="//el[contains(@vr,'SS') and not(contains(@vr,'OW'))]">
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='PN']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='SH']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='SL']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='SQ']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and contains(@vr,'SS') and not(contains(@vr,'OW'))]">
         <xsl:with-param name="vr">SS</xsl:with-param>
     </xsl:apply-templates>
-    <xsl:apply-templates select="//el[@vr='ST']"/>
-    <xsl:apply-templates select="//el[@vr='TM']"/>
-    <xsl:apply-templates select="//el[@vr='UC']"/>
-    <xsl:apply-templates select="//el[@vr='UI']"/>
-    <xsl:apply-templates select="//el[@vr='UL']"/>
-    <xsl:apply-templates select="//el[@vr='UR']"/>
-    <xsl:apply-templates select="//el[@vr='US']"/>
-    <xsl:apply-templates select="//el[@vr='UT']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='ST']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='TM']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UC']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UI']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UL']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UR']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='US']"/>
+    <xsl:apply-templates select="//el[@keyword!='' and @vr='UT']"/>
 <xsl:text>
         }
         return VR.UN;

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2015c - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2016a - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
     </author>
     <copyright>
-      <year>2015</year>
+      <year>2016</year>
       <holder>NEMA</holder>
     </copyright>
   </info>
@@ -50,10 +50,13 @@
     <title>Foreword</title>
     <para xml:id="para_8a77ef2c-fa98-4acb-aebb-abf2cdc38f94">This DICOM Standard was developed according to the procedures of the DICOM Standards Committee.</para>
     <para xml:id="para_7eee8c6b-a8c7-48e3-846a-f7eff9f48b79">The DICOM Standard is structured as a multi-part document using the guidelines established in <xref linkend="biblio_ISODirectives3"/>.</para>
+    <para xml:id="para_e5d14809-cf0b-4a0f-a292-746843498678">DICOM® is the registered trademark of the National Electrical Manufacturers Association for its standards publications relating to digital communications of medical information, all rights reserved.</para>
+    <para xml:id="para_836a4e2b-f5ac-47c9-b589-9a1888a4e719">HL7® and CDA® are the registered trademarks of Health Level Seven International, all rights reserved.</para>
+    <para xml:id="para_7de7b970-2fbc-43f0-836f-8e77dc1ea3e1">SNOMED®, SNOMED Clinical Terms®, SNOMED CT® are the registered trademarks of the International Health Terminology Standards Development <foreignphrase xml:lang="en-GB">Organisation</foreignphrase> (IHTSDO), all rights reserved.</para>
+    <para xml:id="para_e48e619a-16fd-4e3a-ba06-08042871a0ba">LOINC® is the registered trademark of Regenstrief Institute, Inc, all rights reserved.</para>
   </chapter>
   <chapter label="1" status="1" xml:id="chapter_1">
     <title>Scope and Field of Application</title>
-  
   <para xml:id="para_74fed3f7-552e-4542-ac8c-c87ddc075815">This Part of the DICOM Standard specifies the DICOM Message Service Element (DIMSE). The DIMSE defines an Application Service Element (both the service and protocol) used by peer DICOM Application Entities for the purpose of exchanging medical images and related information.</para>
   <para xml:id="para_fc97dd66-473b-46c2-a594-0cf24914e078">The DIMSE provides its services by relying on the DIMSE protocol. The DIMSE protocol defines the encoding rules necessary to construct Messages. A Message is composed of a Command Set (defined in this part of the DICOM Standard) followed by a conditional Data Set (defined in <olink targetdoc="PS3.5" targetptr="PS3.5" xrefstyle="select: labelnumber"/>).</para>
   <para xml:id="para_6703a7d3-0abe-4776-90ec-6f80164b40cb">This Part specifies:</para>

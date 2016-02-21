@@ -64,13 +64,19 @@
         <xsl:value-of select="$uid"/>
       </xsl:attribute>
       <xsl:variable name="name">
-        <xsl:call-template name="skipAfterColon">
-          <xsl:with-param name="name">
-            <xsl:call-template name="para2str">
-              <xsl:with-param name="para" select="doc:td[2]/doc:para"/>
+        <xsl:choose>
+          <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.40'">MR Image Storage Zero Padded (Retired)</xsl:when>
+          <xsl:when test="$uid='1.2.840.10008.5.1.4.1.1.12.77'">Zeiss OPT File (Retired)</xsl:when>
+          <xsl:otherwise>
+            <xsl:call-template name="skipAfterColon">
+              <xsl:with-param name="name">
+                <xsl:call-template name="para2str">
+                  <xsl:with-param name="para" select="doc:td[2]/doc:para"/>
+                </xsl:call-template>
+              </xsl:with-param>
             </xsl:call-template>
-          </xsl:with-param>
-        </xsl:call-template>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:variable>
       <xsl:attribute name="keyword">
         <xsl:choose>

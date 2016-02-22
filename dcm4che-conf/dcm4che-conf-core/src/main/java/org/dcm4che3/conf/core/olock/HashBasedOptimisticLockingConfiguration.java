@@ -8,7 +8,7 @@ import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ConfigNodeTypesafeFilter;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
             public void run() {
 
 
-                Map<String, Object> nodeBeingPersisted = (Map<String, Object>) ConfigNodeUtil.deepCloneNode(configNode);
+                Map<String, Object> nodeBeingPersisted = (Map<String, Object>) Nodes.deepCloneNode(configNode);
 
                 // get existing node from storage
                 Map<String, Object> nodeInStorage = (Map<String, Object>) getConfigurationNode(path, configurableClass);

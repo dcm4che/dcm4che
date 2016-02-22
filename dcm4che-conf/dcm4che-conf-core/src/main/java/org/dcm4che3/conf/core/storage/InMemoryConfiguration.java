@@ -42,7 +42,7 @@ package org.dcm4che3.conf.core.storage;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -70,12 +70,12 @@ public class InMemoryConfiguration implements Configuration {
 
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return ConfigNodeUtil.deepCloneNode(ConfigNodeUtil.getNode(root, path));
+        return Nodes.deepCloneNode(Nodes.getNode(root, path));
     }
 
     @Override
     public boolean nodeExists(String path) throws ConfigurationException {
-        return ConfigNodeUtil.nodeExists(root, path);
+        return Nodes.nodeExists(root, path);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class InMemoryConfiguration implements Configuration {
     @Override
     public void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         if (!path.equals("/"))
-            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, ConfigNodeUtil.deepCloneNode(configNode));
+            Nodes.replaceNode(getConfigurationRoot(), path, Nodes.deepCloneNode(configNode));
         else {
             root.clear();
             root.putAll(configNode);
@@ -94,12 +94,12 @@ public class InMemoryConfiguration implements Configuration {
 
     @Override
     public void removeNode(String path) throws ConfigurationException {
-        ConfigNodeUtil.removeNodes(getConfigurationRoot(), path);
+        Nodes.removeNodes(getConfigurationRoot(), path);
     }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        final Iterator search = ConfigNodeUtil.search(root, liteXPathExpression);
+        final Iterator search = Nodes.search(root, liteXPathExpression);
         return new Iterator() {
             @Override
             public boolean hasNext() {
@@ -108,7 +108,7 @@ public class InMemoryConfiguration implements Configuration {
 
             @Override
             public Object next() {
-                return ConfigNodeUtil.deepCloneNode(search.next());
+                return Nodes.deepCloneNode(search.next());
             }
 
             @Override

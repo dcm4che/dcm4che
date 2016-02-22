@@ -52,7 +52,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +109,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
     @Override
     public synchronized boolean nodeExists(String path) throws ConfigurationException {
-        return ConfigNodeUtil.nodeExists(getConfigurationRoot(), path);
+        return Nodes.nodeExists(getConfigurationRoot(), path);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 
     @Override
     public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
+        Object node = Nodes.getNode(getConfigurationRoot(), path);
         return node;
     }
 
@@ -138,7 +138,7 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
 //            configNode.put("#class", configurableClass.getName());
 
         if (!path.equals("/")) {
-            ConfigNodeUtil.replaceNode(configurationRoot, path, configNode);
+            Nodes.replaceNode(configurationRoot, path, configNode);
         } else
             configurationRoot = configNode;
 
@@ -195,14 +195,14 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
     public synchronized void removeNode(String path) throws ConfigurationException {
 
         Map<String, Object> configurationRoot = getConfigurationRoot();
-        ConfigNodeUtil.removeNodes(configurationRoot, path);
+        Nodes.removeNodes(configurationRoot, path);
         persistNode("/", configurationRoot, null);
 
     }
 
     @Override
     public synchronized Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        return ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
+        return Nodes.search(getConfigurationRoot(), liteXPathExpression);
     }
 
     @Override

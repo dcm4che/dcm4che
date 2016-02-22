@@ -467,7 +467,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public String deviceRef(String name) {
-        return DicomPath.DeviceByName.set("deviceName", name).path();
+        return DicomPath.DeviceByNameForWrite.set("deviceName", name).path();
     }
 
     @Override

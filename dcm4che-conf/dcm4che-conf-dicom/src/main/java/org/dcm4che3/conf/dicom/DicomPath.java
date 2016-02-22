@@ -58,12 +58,13 @@ public enum DicomPath {
     DeviceNameByHL7AppName,
     AllHL7AppNames,
     ConfigRoot,
-    DeviceByName,
     TCGroups,
     AllTCsOfAllAEsWithTCGroupExt,
     DeviceNameByAEUUID,
     DeviceNameByUUID,
-    DeviceUUIDByAnyUUID;
+    DeviceUUIDByAnyUUID,
+    DeviceByNameForWrite,
+    DeviceByNameForRead;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -86,7 +87,9 @@ public enum DicomPath {
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
-        PATHS.put(/*************/DeviceByName, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
+        PATHS.put(/*************/DeviceByNameForWrite, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
+
+        PATHS.put(/*************/DeviceByNameForRead, "/dicomConfigurationRoot/dicomDevicesRoot/{deviceName}");
 
         // Transfer capabilities
         PATHS.put(/*****************/TCGroups, "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities");

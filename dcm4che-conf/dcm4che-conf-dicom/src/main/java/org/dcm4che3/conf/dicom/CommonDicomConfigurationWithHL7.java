@@ -69,14 +69,6 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
     }
 
     @Override
-    protected HashMap<String, Object> createInitialConfigRootNode() {
-        HashMap<String, Object> rootNode = super.createInitialConfigRootNode();
-        rootNode.put("hl7UniqueApplicationNamesRegistryRoot", new HashMap<String, Object>());
-
-        return rootNode;
-    }
-
-    @Override
     public HL7Application findHL7Application(String name) throws ConfigurationException {
         String pathForDeviceName = DicomPath.DeviceNameByHL7AppName.set("hl7AppName", name).path();
 

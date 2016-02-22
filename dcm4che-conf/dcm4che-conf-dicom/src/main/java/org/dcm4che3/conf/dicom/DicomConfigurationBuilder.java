@@ -38,14 +38,13 @@
 
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
 import org.dcm4che3.conf.core.storage.SingleJsonFileConfigurationStorage;
-import org.dcm4che3.conf.dicom.ldap.LdapConfigurationStorage;
-import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.net.AEExtension;
 import org.dcm4che3.net.DeviceExtension;
 import org.dcm4che3.net.hl7.HL7ApplicationExtension;
@@ -163,7 +162,7 @@ public class DicomConfigurationBuilder {
         if (configurationStorage == null) {
             String configType = ConfigurationSettingsLoader.getPropertyWithNotice(props,
                     Configuration.CONF_STORAGE_SYSTEM_PROP, "json_file",
-                    " Possible values: 'json_file', 'ldap'.");
+                    " Possible values: 'json_file'.");
 
             switch (Configuration.ConfigStorageType.valueOf(configType.toUpperCase().trim())) {
                 case JSON_FILE:
@@ -171,18 +170,6 @@ public class DicomConfigurationBuilder {
                     jsonConfigurationStorage.configure(props);
                     configurationStorage = jsonConfigurationStorage;
                     break;
-                case LDAP:
-                    // init LDAP props if were not yet inited by the builder
-                    if (ldapProps == null) ldapProps = LdapConfigurationStorage.collectLDAPProps(props);
-
-                    LdapConfigurationStorage ldapConfigurationStorage = createLdapConfigurationStorage();
-                    ldapConfigurationStorage.setEnvironment(ldapProps);
-                    ldapConfigurationStorage.setExtensions(allExtensions);
-
-                    configurationStorage = ldapConfigurationStorage;
-
-                    break;
-
                 default:
                     throw new RuntimeException("Not implemented");
             }
@@ -199,10 +186,6 @@ public class DicomConfigurationBuilder {
                 allExtensions, CommonDicomConfiguration.createDefaultDicomVitalizer());
 
         return configurationStorage;
-    }
-
-    protected LdapConfigurationStorage createLdapConfigurationStorage() {
-        return new LdapConfigurationStorage();
     }
 
     protected SingleJsonFileConfigurationStorage createJsonFileConfigurationStorage() {

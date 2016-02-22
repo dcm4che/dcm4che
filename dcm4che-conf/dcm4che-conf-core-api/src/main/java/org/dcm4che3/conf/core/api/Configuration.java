@@ -87,7 +87,6 @@ public interface Configuration extends BatchRunner {
 
     enum ConfigStorageType {
         JSON_FILE,
-        LDAP,
         DB_BLOBS;
     }
 

@@ -59,6 +59,7 @@ import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
@@ -144,7 +145,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         // quick init
         try {
             if (!configurationExists()) {
-                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), DicomConfigurationRootNode.class);
+                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), null);
 
             }
         } catch (ConfigurationException e) {
@@ -174,7 +175,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
-        rootNode.put("dicomUniqueAETitlesRegistryRoot", new HashMap<String, Object>());
+        Nodes.replaceNode(rootNode, new HashMap(), Nodes.fromSimpleEscapedPath(METADATA_ROOT_PATH));
         return rootNode;
     }
 

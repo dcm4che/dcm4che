@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Created by aprvf on 13/10/2014.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE,ElementType.FIELD})
 public @interface LDAP {

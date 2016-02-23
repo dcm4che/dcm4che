@@ -39,6 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -241,6 +242,7 @@ public class TransferCapability implements Serializable {
         newTc.setRole(getRole());
         newTc.setStorageOptions(getStorageOptions() == null ? null : getStorageOptions().copy());
         newTc.setSopClass(getSopClass());
+        newTc.setTransferSyntaxes(Arrays.copyOf(getTransferSyntaxes(),getTransferSyntaxes().length));
 
         return newTc;
     }

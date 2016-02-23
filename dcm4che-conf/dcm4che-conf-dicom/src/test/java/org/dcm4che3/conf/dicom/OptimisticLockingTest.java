@@ -201,7 +201,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter());
 
         // consistent?
-        String originalHash = "VIegnOfZrq1ZdZqHMUhnJBBIG0Q=";
+        String originalHash = "HRci3v11AErGV1sHTG5fEtrS5ow=";
         Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
         // remember old hash, change smth, check

@@ -13,5 +13,6 @@ public enum QCOperation {
     PATIENT_MERGE,
     PATIENT_UNLINK,
     PATIENT_UPDATE_ID,
-    LINK2MWL
+    LINK2MWL,
+    UPDATE_STUDY_SERIES
 }

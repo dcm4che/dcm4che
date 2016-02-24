@@ -38,6 +38,10 @@
 
 package org.dcm4che3.net.service;
 
+import org.dcm4che3.net.Status;
+
+import java.util.Arrays;
+
 /**
  * @author Umberto Cappellini <umberto.cappellini@agfa.com>
  *
@@ -80,5 +84,26 @@ public class BasicCStoreSCUResp {
     public void setFailedUIDs(String[] failedUIDs) {
         this.failedUIDs = failedUIDs;
     }
-    
+
+    public void extendResponse(BasicCStoreSCUResp addendumResponse) {
+
+        if (getStatus() != addendumResponse.getStatus()) {
+            setStatus(Status.OneOrMoreFailures);
+        }
+
+        setCompleted(getCompleted() + addendumResponse.getCompleted());
+        setFailed(getFailed() + addendumResponse.getFailed());
+        setWarning(getWarning() + addendumResponse.getWarning());
+
+        String[] currentFailedUIDs = getFailedUIDs();
+        String[] newFailedUIDs = addendumResponse.getFailedUIDs();
+        if (currentFailedUIDs == null) {
+            setFailedUIDs(newFailedUIDs);
+        } else if (newFailedUIDs != null) {
+            String[] failedUIDs = Arrays.copyOf(currentFailedUIDs, currentFailedUIDs.length + newFailedUIDs.length);
+            System.arraycopy(newFailedUIDs, 0, failedUIDs, currentFailedUIDs.length, newFailedUIDs.length);
+            setFailedUIDs(failedUIDs);
+        }
+
+    }
 }

@@ -1,19 +1,26 @@
 package org.dcm4che3.conf.core.util;
 
+import org.dcm4che3.conf.core.Nodes;
+
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class SplittedPath {
     private final int level;
-    private String path;
     private List<String> outerPathItems;
     private List<String> innerPathitems;
     private int i;
+    private List<String> pathItems;
 
     public SplittedPath(String path, int level) {
-        this.path = path;
+        this(Nodes.getPathItems(path), level);
+    }
+
+    public SplittedPath(List<String> pathItems, int level) {
         this.level = level;
+        this.pathItems = pathItems;
+        calc();
     }
 
     public List<String> getOuterPathItems() {
@@ -32,7 +39,7 @@ public class SplittedPath {
         setOuterPathItems(new ArrayList<String>());
         setInnerPathitems(new ArrayList<String>());
         i = 1;
-        for (String name : SimpleConfigNodeUtil.getPathItems(path)) {
+        for (String name : pathItems) {
             if (i++ <= level)
                 getOuterPathItems().add(name);
             else
@@ -41,11 +48,11 @@ public class SplittedPath {
         return this;
     }
 
-    public void setOuterPathItems(List<String> outerPathItems) {
+    private void setOuterPathItems(List<String> outerPathItems) {
         this.outerPathItems = outerPathItems;
     }
 
-    public void setInnerPathitems(List<String> innerPathitems) {
+    private void setInnerPathitems(List<String> innerPathitems) {
         this.innerPathitems = innerPathitems;
     }
 }

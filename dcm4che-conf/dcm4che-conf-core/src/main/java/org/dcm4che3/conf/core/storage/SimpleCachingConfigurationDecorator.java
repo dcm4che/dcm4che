@@ -42,7 +42,7 @@ package org.dcm4che3.conf.core.storage;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,13 +114,13 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
      */
     @Override
     public synchronized Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        Object node = ConfigNodeUtil.getNode(getConfigurationRoot(), path);
+        Object node = Nodes.getNode(getConfigurationRoot(), path);
 
         if (node == null) return null;
 
         try {
 
-            return ConfigNodeUtil.deepCloneNode(node);
+            return Nodes.deepCloneNode(node);
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
@@ -130,7 +130,7 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
     public synchronized void persistNode(String path, Map<String, Object> configNode, Class configurableClass) throws ConfigurationException {
         if (!readOnly) delegate.persistNode(path, configNode, configurableClass);
         if (!path.equals("/"))
-            ConfigNodeUtil.replaceNode(getConfigurationRoot(), path, configNode);
+            Nodes.replaceNode(getConfigurationRoot(), path, configNode);
         else
             cachedConfigurationRoot = configNode;
     }
@@ -145,13 +145,13 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
 
     @Override
     public synchronized boolean nodeExists(String path) throws ConfigurationException {
-        return ConfigNodeUtil.nodeExists(getConfigurationRoot(), path);
+        return Nodes.nodeExists(getConfigurationRoot(), path);
     }
 
     @Override
     public synchronized void removeNode(String path) throws ConfigurationException {
         if (!readOnly) delegate.removeNode(path);
-        ConfigNodeUtil.removeNodes(getConfigurationRoot(), path);
+        Nodes.removeNodes(getConfigurationRoot(), path);
     }
 
     @Override
@@ -159,9 +159,9 @@ public class SimpleCachingConfigurationDecorator extends DelegatingConfiguration
 
         // fully iterate and make copies of all returned results to ensure the consistency and isolation
         List l = new ArrayList();
-        final Iterator origIterator = ConfigNodeUtil.search(getConfigurationRoot(), liteXPathExpression);
+        final Iterator origIterator = Nodes.search(getConfigurationRoot(), liteXPathExpression);
 
-        while (origIterator.hasNext()) l.add(ConfigNodeUtil.deepCloneNode(origIterator.next()));
+        while (origIterator.hasNext()) l.add(Nodes.deepCloneNode(origIterator.next()));
 
         return l.iterator();
     }

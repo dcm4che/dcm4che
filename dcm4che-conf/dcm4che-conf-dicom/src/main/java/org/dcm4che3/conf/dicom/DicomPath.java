@@ -58,25 +58,13 @@ public enum DicomPath {
     DeviceNameByHL7AppName,
     AllHL7AppNames,
     ConfigRoot,
-    DeviceByName,
     TCGroups,
     AllTCsOfAllAEsWithTCGroupExt,
     DeviceNameByAEUUID,
     DeviceNameByUUID,
     DeviceUUIDByAnyUUID,
-
-
-    // obsolete/deprecated
-    UniqueAETByName,
-    UniqueHL7AppByName,
-    DeviceByNameRef,
-    ConnectionByCnRef,
-    ConnectionByHostRef,
-    ConnectionByHostPortRef,
-    AEByTitleRef,
-    AEExtension,
-    DeviceExtension,
-    HL7AppExtension;
+    DeviceByNameForWrite,
+    DeviceByNameForRead;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -99,21 +87,9 @@ public enum DicomPath {
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
-        PATHS.put(/*************/DeviceByName, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
-        PATHS.put(/**************/AEExtension, "/dicomNetworkAE[@name='{aeName}']/aeExtensions/{extensionName}");
-        PATHS.put(/**********/DeviceExtension, "/deviceExtensions/{extensionName}");
-        PATHS.put(/**********/HL7AppExtension, "/deviceExtensions/HL7DeviceExtension/hl7Apps[@name='{hl7AppName}']/hl7AppExtensions/{extensionName}");
-        PATHS.put(/**********/UniqueAETByName, "/dicomConfigurationRoot/dicomUniqueAETitlesRegistryRoot[@name='{aeName}']");
-        PATHS.put(/*******/UniqueHL7AppByName, "/dicomConfigurationRoot/hl7UniqueApplicationNamesRegistryRoot[@name='{hl7AppName}']");
+        PATHS.put(/*************/DeviceByNameForWrite, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
 
-        // references (parsable, will be stored this way)
-        PATHS.put(/*************/AEByTitleRef, "/dicomConfigurationRoot/dicomDevicesRoot/*/dicomNetworkAE[dicomAETitle='{aeName}']");
-        PATHS.put(/**********/DeviceByNameRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']");
-
-        PATHS.put(/********/ConnectionByCnRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[cn='{cn}']");
-        PATHS.put(/******/ConnectionByHostRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}']");
-        PATHS.put(/**/ConnectionByHostPortRef, "/dicomConfigurationRoot/dicomDevicesRoot/*[dicomDeviceName='{deviceName}']/dicomConnection[dicomHostname='{hostName}' and dicomPort='{port}']");
-
+        PATHS.put(/*************/DeviceByNameForRead, "/dicomConfigurationRoot/dicomDevicesRoot/{deviceName}");
 
         // Transfer capabilities
         PATHS.put(/*****************/TCGroups, "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities");

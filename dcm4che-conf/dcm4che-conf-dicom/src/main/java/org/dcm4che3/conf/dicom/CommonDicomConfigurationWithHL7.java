@@ -61,34 +61,11 @@ public class CommonDicomConfigurationWithHL7 extends CommonDicomConfiguration im
 
     @Override
     public boolean registerHL7Application(String name) throws ConfigurationException {
-
-        String path = getHL7UniqueAppItemPath(name);
-
-        if (config.nodeExists(path)) return false;
-
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("hl7ApplicationName", name);
-
-        config.persistNode(path, map, HL7UniqueAppRegistryItem.class);
-
         return true;
     }
 
     @Override
-    protected HashMap<String, Object> createInitialConfigRootNode() {
-        HashMap<String, Object> rootNode = super.createInitialConfigRootNode();
-        rootNode.put("hl7UniqueApplicationNamesRegistryRoot", new HashMap<String, Object>());
-
-        return rootNode;
-    }
-
-    private String getHL7UniqueAppItemPath(String name) {
-        return DicomPath.UniqueHL7AppByName.set("hl7AppName", name).path();
-    }
-
-    @Override
     public void unregisterHL7Application(String name) throws ConfigurationException {
-        config.removeNode(getHL7UniqueAppItemPath(name));
     }
 
     @Override

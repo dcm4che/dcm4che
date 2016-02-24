@@ -55,96 +55,117 @@ import java.util.*;
  *
  * @author Roman K
  */
-@LDAP
+
 public class AnnotatedConfigurableProperty {
 
-    private Map<Type, Annotation> annotations = new HashMap<Type, Annotation>();
-    private Type type;
-    private String name;
+    private static final LDAP dummyLdapAnno = DummyConfigurableClass.class.getAnnotation(LDAP.class);
+    private static final Map<Type, Annotation> dummyAnnotations = new HashMap<Type, Annotation>();
 
-    @ConfigurableClass
-    public static class DummyConfigurableClass {
-        @ConfigurableProperty
-        public int dummy;
+    static {
+        try {
+            ConfigurableProperty configurableProperty = DummyConfigurableClass.class.getField("dummy").getAnnotation(ConfigurableProperty.class);
+            dummyAnnotations.put(ConfigurableProperty.class, configurableProperty);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("That was unexpected");
+        }
     }
+
+    private Map<Type, Annotation> annotations = new HashMap<Type, Annotation>();
+
+    private ConfigurableProperty configurablePropertyAnnotation;
+    private LDAP ldapAnnotation;
+
+    private Type type;
+    private Class rawType;
+
+    private String name;
+    private String annotatedName;
+
+    private boolean isReference;
+    private boolean isUuid;
+    private boolean isCollectionOfConfObjects;
+    private boolean isMapOfConfObjects;
+    private boolean isOlockHash;
+    private boolean isExtensionsProperty;
+    private boolean isConfObject;
+    private boolean isCollection;
+    private boolean isCollectionOfReferences;
+    private boolean isArrayOfConfObjects;
+    private boolean isArray;
 
 
     public AnnotatedConfigurableProperty() {
     }
 
+    public AnnotatedConfigurableProperty(Map<Type, Annotation> annotations, String name, Type type) {
+        this.annotations = annotations;
+        this.name = name;
+        this.type = type;
+        init();
+    }
+
     public AnnotatedConfigurableProperty(Type type) {
-        setType(type);
+        this.type = type;
+        this.annotations = dummyAnnotations;
+        this.name = "dummy";
+        init();
+    }
 
-        // create dummy annotation
-        try {
-            annotations.put(
-                    ConfigurableProperty.class,
-                    DummyConfigurableClass.class.getField("dummy").getAnnotation(ConfigurableProperty.class)
-            );
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException("Unexpected error", e);
-        }
-
+    public AnnotatedConfigurableProperty(Map<Type, Annotation> annotations, Type type) {
+        this.annotations = annotations;
+        this.type = type;
+        this.name = "dummy";
+        init();
     }
 
     //////// wrapping annotations, otherwise it gets too unDRY ///////////////
 
     public boolean isExtensionsProperty() {
-        return getAnnotation(ConfigurableProperty.class).isExtensionsProperty() ||
-                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.ExtensionsProperty);
+        return isExtensionsProperty;
     }
 
     public String getDefaultValue() {
-        return getAnnotation(ConfigurableProperty.class).defaultValue();
+        return configurablePropertyAnnotation.defaultValue();
     }
 
     public boolean isOlockHash() {
-        return getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.OptimisticLockingHash);
+        return isOlockHash;
     }
 
     public boolean isCollectionOfReferences() {
-        return getAnnotation(ConfigurableProperty.class).collectionOfReferences() ||
-                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.CollectionOfReferences);
+        return isCollectionOfReferences;
     }
 
     public boolean isReference() {
-        return getAnnotation(ConfigurableProperty.class).isReference() ||
-                getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.Reference);
+        return isReference;
     }
 
     public List<ConfigurableProperty.Tag> getTags() {
-        if (getAnnotation(ConfigurableProperty.class) == null)
+        if (configurablePropertyAnnotation == null)
             return new ArrayList<ConfigurableProperty.Tag>();
 
-        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(getAnnotation(ConfigurableProperty.class).tags()));
+        return new ArrayList<ConfigurableProperty.Tag>(Arrays.asList(configurablePropertyAnnotation.tags()));
     }
 
     public String getAnnotatedName() throws ConfigurationException {
-
-        String name = getAnnotation(ConfigurableProperty.class).name();
-        if (!name.equals("")) return name;
-        name = this.name;
-        if (name != null) return name;
-        throw new ConfigurationException("Property name not specified");
-
+        return annotatedName;
     }
 
     public boolean isUuid() {
-        return getAnnotation(ConfigurableProperty.class).type().equals(ConfigurablePropertyType.UUID);
+        return isUuid;
     }
 
     public boolean isWeakReference() {
-        return getAnnotation(ConfigurableProperty.class).weakReference();
+        return configurablePropertyAnnotation.weakReference();
     }
     ////////////////////////////////////////////
 
     public AnnotatedConfigurableProperty clone() {
-
-        AnnotatedConfigurableProperty property = new AnnotatedConfigurableProperty();
-        property.setAnnotations(getAnnotations());
-        property.setType(getType());
-        property.setName(getName());
-        return property;
+        return new AnnotatedConfigurableProperty(
+                getAnnotations(),
+                getName(),
+                getType()
+        );
     }
 
     public Map<Type, Annotation> getAnnotations() {
@@ -159,9 +180,11 @@ public class AnnotatedConfigurableProperty {
     public AnnotatedConfigurableProperty getPseudoPropertyForGenericsParamater(int genericParameterIndex) {
 
         Type typeForGenericsParameter = getTypeForGenericsParameter(genericParameterIndex);
-        AnnotatedConfigurableProperty clone = clone();
-        clone.setType(typeForGenericsParameter);
-        return clone;
+
+        return new AnnotatedConfigurableProperty(
+                annotations,
+                typeForGenericsParameter
+        );
     }
 
     /**
@@ -182,9 +205,7 @@ public class AnnotatedConfigurableProperty {
             return null;
         //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
-        AnnotatedConfigurableProperty clone = clone();
-        clone.setType(type);
-        return clone;
+        return new AnnotatedConfigurableProperty(annotations, type);
     }
 
     /**
@@ -207,20 +228,16 @@ public class AnnotatedConfigurableProperty {
         //throw new IllegalArgumentException("This property is not a collection/array/map - "+getType());
 
         // TODO: only specific params shold be cloned...
-        AnnotatedConfigurableProperty clone = clone();
-        clone.setType(type);
-        return clone;
+
+
+        return new AnnotatedConfigurableProperty(
+                annotations,
+                type
+        );
     }
 
     public Class getRawClass() {
-        Class clazz;
-
-        if (type instanceof ParameterizedType)
-            clazz = (Class) ((ParameterizedType) type).getRawType();
-        else {
-            clazz = (Class) type;
-        }
-        return clazz;
+        return rawType;
     }
 
     public boolean isMap() {
@@ -235,16 +252,78 @@ public class AnnotatedConfigurableProperty {
         return getRawClass().isArray();
     }
 
-    public void setAnnotations(Map<Type, Annotation> annotations) {
-        this.annotations = annotations;
+    // init faster access
+    private void init() {
+
+        if (annotatedName != null) return;
+
+        // conf prop
+        configurablePropertyAnnotation = (ConfigurableProperty) annotations.get(ConfigurableProperty.class);
+        ldapAnnotation = (LDAP) annotations.get(LDAP.class);
+
+        if (ldapAnnotation == null)
+            ldapAnnotation = dummyLdapAnno;
+
+
+        // annotated name
+        annotatedName = configurablePropertyAnnotation.name();
+        if (annotatedName.isEmpty()) {
+            annotatedName = this.name;
+            if (annotatedName == null)
+                throw new ConfigurationException("Property name not specified");
+        }
+
+        // type
+        if (this.type instanceof ParameterizedType)
+            this.rawType  = (Class) ((ParameterizedType) this.type).getRawType();
+        else {
+            this.rawType  = (Class) this.type;
+        }
+
+
+        if (configurablePropertyAnnotation != null) {
+
+            isReference = configurablePropertyAnnotation.isReference() ||
+                    configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.Reference);
+
+            isExtensionsProperty = configurablePropertyAnnotation.isExtensionsProperty() ||
+                    configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.ExtensionsProperty);
+
+            isOlockHash = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.OptimisticLockingHash);
+
+            isConfObject = ConfigIterators.isConfigurableClass(getRawClass());
+
+            isCollection = Collection.class.isAssignableFrom(getRawClass());
+
+
+            isCollectionOfReferences = configurablePropertyAnnotation.collectionOfReferences()
+                    || configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.CollectionOfReferences);
+
+
+            isMapOfConfObjects = Map.class.isAssignableFrom(getRawClass())
+                    && getPseudoPropertyForGenericsParamater(1).isConfObject()
+                    && !isCollectionOfReferences()
+                    && !isExtensionsProperty();
+
+            isCollectionOfConfObjects = Collection.class.isAssignableFrom(getRawClass())
+                    && ConfigIterators.isConfigurableClass(getPseudoPropertyForGenericsParamater(0).getRawClass())
+                    && !isCollectionOfReferences();
+
+            isUuid = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.UUID);
+
+
+            isArrayOfConfObjects = getRawClass().isArray()
+                    && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
+                    && !isCollectionOfReferences();
+
+            isArray = isArray();
+
+        }
+
     }
 
     public Type getType() {
         return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public String getName() {
@@ -253,11 +332,13 @@ public class AnnotatedConfigurableProperty {
 
     @SuppressWarnings("unchecked")
     public <T> T getAnnotation(Class<T> annotationType) {
-        T t = (T) annotations.get(annotationType);
-        if (t == null && annotationType.equals(LDAP.class)) {
-            return (T) AnnotatedConfigurableProperty.class.getAnnotation(LDAP.class);
-        }
-        return t;
+        if (annotationType.equals(ConfigurableProperty.class))
+            return (T) configurablePropertyAnnotation;
+
+        if (annotationType.equals(LDAP.class))
+            return (T) ldapAnnotation;
+
+        return (T) annotations.get(annotationType);
     }
 
     public void setName(String name) {
@@ -265,25 +346,18 @@ public class AnnotatedConfigurableProperty {
     }
 
     public boolean isConfObject() {
-        return getRawClass().getAnnotation(ConfigurableClass.class) != null;
+        return isConfObject;
     }
 
     public boolean isMapOfConfObjects() {
-        return Map.class.isAssignableFrom(getRawClass())
-                && getPseudoPropertyForGenericsParamater(1).isConfObject()
-                && !isCollectionOfReferences()
-                && !isExtensionsProperty();
+        return isMapOfConfObjects;
     }
 
     public boolean isCollectionOfConfObjects() {
-        return Collection.class.isAssignableFrom(getRawClass())
-                && getPseudoPropertyForGenericsParamater(0).getRawClass().getAnnotation(ConfigurableClass.class) != null
-                && !isCollectionOfReferences();
+        return isCollectionOfConfObjects;
     }
 
     public boolean isArrayOfConfObjects() {
-        return getRawClass().isArray()
-                && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
-                && !isCollectionOfReferences();
+        return isArrayOfConfObjects;
     }
 }

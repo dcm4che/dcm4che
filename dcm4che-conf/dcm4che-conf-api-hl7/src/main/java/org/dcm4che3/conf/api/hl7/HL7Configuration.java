@@ -50,8 +50,9 @@ import java.util.Collection;
  */
 public interface HL7Configuration {
 
+    @Deprecated
     boolean registerHL7Application(String name) throws ConfigurationException;
-
+    @Deprecated
     void unregisterHL7Application(String name) throws ConfigurationException;
 
     HL7Application findHL7Application(String name) throws ConfigurationException;

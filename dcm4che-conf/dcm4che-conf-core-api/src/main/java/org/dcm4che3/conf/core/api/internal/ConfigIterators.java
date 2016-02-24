@@ -204,9 +204,17 @@ public class ConfigIterators {
 
                 thisMethodIsNotASetter = false;
 
-                AnnotatedConfigurableProperty property = new AnnotatedConfigurableProperty();
-                property.setAnnotations(annotationsArrayToMap(parameterAnnotations[i]));
-                property.setType(genericParameterTypes[i]);
+                AnnotatedConfigurableProperty property = null;
+                try {
+                    property = new AnnotatedConfigurableProperty(
+                            annotationsArrayToMap(parameterAnnotations[i]),
+                            genericParameterTypes[i]
+                    );
+                } catch (Exception e) {
+                    // dirty..
+                    thisMethodIsNotASetter = true;
+                    break;
+                }
 
                 annotatedSetter.getParameters().add(property);
 
@@ -237,11 +245,11 @@ public class ConfigIterators {
         for (Field field : getFieldsUpTo(clazz, null)) {
             if (field.getAnnotation(ConfigurableProperty.class) != null) {
 
-                AnnotatedConfigurableProperty ap = new AnnotatedConfigurableProperty();
-                ap.setAnnotations(annotationsArrayToMap(field.getAnnotations()));
-                ap.setType(field.getGenericType());
-                ap.setName(field.getName());
-
+                AnnotatedConfigurableProperty ap = new AnnotatedConfigurableProperty(
+                        annotationsArrayToMap(field.getAnnotations()),
+                        field.getName(),
+                        field.getGenericType()
+                );
                 l.add(ap);
             }
         }

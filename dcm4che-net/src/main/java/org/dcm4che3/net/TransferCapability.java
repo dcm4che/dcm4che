@@ -39,6 +39,7 @@
 package org.dcm4che3.net;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -234,19 +235,16 @@ public class TransferCapability implements Serializable {
     }
 
     public TransferCapability deepCopy() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(this);
+        TransferCapability newTc = new TransferCapability();
 
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            return (TransferCapability) ois.readObject();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        newTc.setCommonName(getCommonName());
+        newTc.setQueryOptions(EnumSet.copyOf(getQueryOptions()));
+        newTc.setRole(getRole());
+        newTc.setStorageOptions(getStorageOptions() == null ? null : getStorageOptions().copy());
+        newTc.setSopClass(getSopClass());
+        newTc.setTransferSyntaxes(Arrays.copyOf(getTransferSyntaxes(),getTransferSyntaxes().length));
+
+        return newTc;
     }
 
     public StringBuilder promptTo(StringBuilder sb, String indent) {

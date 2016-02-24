@@ -122,8 +122,22 @@ public class PathPattern {
         return new PathParser(path);
     }
 
+    public PathParser parseIfMatches(String path) {
+        Matcher matcher = compiledPattern.matcher(path);
+
+        if (matcher.matches())
+            return new PathParser(matcher);
+        else
+            return null;
+
+    }
+
     public class PathParser {
         private final Matcher matcher;
+
+        public PathParser(Matcher matcher) {
+            this.matcher = matcher;
+        }
 
         public PathParser(String path) {
             matcher = compiledPattern.matcher(path);

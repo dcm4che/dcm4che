@@ -59,6 +59,7 @@ import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
@@ -144,7 +145,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         // quick init
         try {
             if (!configurationExists()) {
-                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), DicomConfigurationRootNode.class);
+                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), null);
 
             }
         } catch (ConfigurationException e) {
@@ -174,7 +175,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
-        rootNode.put("dicomUniqueAETitlesRegistryRoot", new HashMap<String, Object>());
+        Nodes.replaceNode(rootNode, new HashMap(), Nodes.fromSimpleEscapedPath(METADATA_ROOT_PATH));
         return rootNode;
     }
 
@@ -288,22 +289,12 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public boolean registerAETitle(String aet) throws ConfigurationException {
-
-        final String path = DicomPath.UniqueAETByName.set("aeName", aet).path();
-        if (config.nodeExists(path)) return false;
-
-        final HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("dicomAETitle", aet);
-
-        config.persistNode(path, map, AETitleItem.class);
         return true;
-
     }
 
 
     @Override
     public void unregisterAETitle(String aet) throws ConfigurationException {
-        config.removeNode(DicomPath.UniqueAETByName.set("aeName", aet).path());
     }
 
     @Override
@@ -477,7 +468,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public String deviceRef(String name) {
-        return DicomPath.DeviceByName.set("deviceName", name).path();
+        return DicomPath.DeviceByNameForWrite.set("deviceName", name).path();
     }
 
     @Override

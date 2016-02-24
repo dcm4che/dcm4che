@@ -45,7 +45,7 @@ package org.dcm4che3.conf.core.olock;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.OptimisticLockException;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser.ADualNodeFilter;
-import org.dcm4che3.conf.core.util.SimpleConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 
 import java.util.*;
 
@@ -100,7 +100,7 @@ class OLockMergeDualFilter extends ADualNodeFilter {
                     isMerging.push(false);
                 } else {
                     // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception
-                    throw new OptimisticLockException(SimpleConfigNodeUtil.toSimpleEscapedPath(path.descendingIterator()));
+                    throw new OptimisticLockException(Nodes.toSimpleEscapedPath(path.descendingIterator()));
                 }
             }
         } else {
@@ -121,7 +121,7 @@ class OLockMergeDualFilter extends ADualNodeFilter {
                     swap(actualOldNode, actualNewNode);
                 } else {
                     // If we met a olocked node where new node changed, and the hash in old node has also changed - that's an exception
-                    throw new OptimisticLockException(SimpleConfigNodeUtil.toSimpleEscapedPath(path.descendingIterator()));
+                    throw new OptimisticLockException(Nodes.toSimpleEscapedPath(path.descendingIterator()));
                 }
             }
         }

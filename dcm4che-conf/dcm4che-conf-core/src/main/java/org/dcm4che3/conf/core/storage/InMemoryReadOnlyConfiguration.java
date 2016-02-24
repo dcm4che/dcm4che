@@ -42,7 +42,7 @@ package org.dcm4che3.conf.core.storage;
 
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -65,12 +65,12 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
-        return ConfigNodeUtil.getNode(root, path);
+        return Nodes.getNode(root, path);
     }
 
     @Override
     public boolean nodeExists(String path) throws ConfigurationException {
-        return ConfigNodeUtil.nodeExists(root, path);
+        return Nodes.nodeExists(root, path);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class InMemoryReadOnlyConfiguration implements Configuration {
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
-        return ConfigNodeUtil.search(root, liteXPathExpression);
+        return Nodes.search(root, liteXPathExpression);
     }
 
     @Override

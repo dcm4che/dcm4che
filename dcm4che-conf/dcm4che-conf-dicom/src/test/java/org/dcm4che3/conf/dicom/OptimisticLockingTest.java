@@ -54,7 +54,7 @@ import org.dcm4che3.conf.core.olock.OLockCopyFilter;
 import org.dcm4che3.conf.core.olock.OLockHashCalcFilter;
 import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.net.Device;
 import org.junit.Assert;
 import org.junit.Test;
@@ -201,7 +201,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter());
 
         // consistent?
-        String originalHash = "VIegnOfZrq1ZdZqHMUhnJBBIG0Q=";
+        String originalHash = "HRci3v11AErGV1sHTG5fEtrS5ow=";
         Assert.assertEquals(originalHash, oldNode.get(Configuration.OLOCK_HASH_KEY));
 
         // remember old hash, change smth, check
@@ -213,12 +213,12 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         ConfigNodeTraverser.traverseMapNode(newNode, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("node changed",
-                ConfigNodeUtil.getNode(oldNode, "/parties/p2/"+Configuration.OLOCK_HASH_KEY),
-                ConfigNodeUtil.getNode(newNode, "/parties/p2/"+Configuration.OLOCK_HASH_KEY));
+                Nodes.getNode(oldNode, "/parties/p2/" + Configuration.OLOCK_HASH_KEY),
+                Nodes.getNode(newNode, "/parties/p2/" + Configuration.OLOCK_HASH_KEY));
 
         Assert.assertEquals("node not changed",
-                ConfigNodeUtil.getNode(oldNode, "/parties/p1/"+Configuration.OLOCK_HASH_KEY),
-                ConfigNodeUtil.getNode(newNode, "/parties/p1/"+Configuration.OLOCK_HASH_KEY));
+                Nodes.getNode(oldNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY),
+                Nodes.getNode(newNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY));
         
         Assert.assertEquals("parent should not change",
                 oldNode.get(Configuration.OLOCK_HASH_KEY),
@@ -238,8 +238,8 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
                 nodeWithMapChanged.get(Configuration.OLOCK_HASH_KEY));
 
         Assert.assertEquals("map entry hash should not change",
-                ConfigNodeUtil.getNode(newNode, "/parties/p1/"+ Configuration.OLOCK_HASH_KEY),
-                ConfigNodeUtil.getNode(nodeWithMapChanged, "/parties/aNewOldParty/"+ Configuration.OLOCK_HASH_KEY));
+                Nodes.getNode(newNode, "/parties/p1/" + Configuration.OLOCK_HASH_KEY),
+                Nodes.getNode(nodeWithMapChanged, "/parties/aNewOldParty/" + Configuration.OLOCK_HASH_KEY));
 
 
 
@@ -264,17 +264,17 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 //    public void testConnectionOlockHash() throws IOException {
 //
 //        Configuration mockDicomConfStorage = SimpleStorageTest.getMockDicomConfStorage();
-//        Map<String,Object> configurationNode1 = (Map<String, Object>) mockDicomConfStorage.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
+//        Map<String,Object> configurationNode1 = (Map<String, Object>) mockDicomConfStorage.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
 //
 //        new DicomNodeTraverser(new ArrayList<Class<?>>()).traverseTree(configurationNode1, Device.class, new OLockHashCalcFilter());
 //
-//        Assert.assertEquals("BA7C7621709912234F89C4D9BD96A3DD5FB29417", ConfigNodeUtil.getNode(configurationNode1,"/dicomConnection[cn='dicom']/oLock"));
+//        Assert.assertEquals("BA7C7621709912234F89C4D9BD96A3DD5FB29417", Nodes.getNode(configurationNode1,"/dicomConnection[cn='dicom']/oLock"));
 //
 //        // extract in '_old_olock' in node being persisted
 //        new DicomNodeTraverser(new ArrayList<Class<?>>()).traverseTree(configurationNode1, Device.class, new OLockExtractingFilter("_old_olock"));
 //        new DicomNodeTraverser(new ArrayList<Class<?>>()).traverseTree(configurationNode1, Device.class, new OLockHashCalcFilter());
 //
-//        Assert.assertEquals("BA7C7621709912234F89C4D9BD96A3DD5FB29417", ConfigNodeUtil.getNode(configurationNode1,"/dicomConnection[cn='dicom']/oLock"));
+//        Assert.assertEquals("BA7C7621709912234F89C4D9BD96A3DD5FB29417", Nodes.getNode(configurationNode1,"/dicomConnection[cn='dicom']/oLock"));
 //
 //        new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(System.out, configurationNode1);
 //
@@ -291,46 +291,46 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         // imitate 3 users simultaneously getting the same node
 
-        Map<String,Object> configurationNode1 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
-        Map<String,Object> configurationNode2 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
-        Map<String,Object> configurationNode3 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String,Object> configurationNode1 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String,Object> configurationNode2 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String,Object> configurationNode3 = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
 
         // imitate simultaneous changes
 
-        ConfigNodeUtil.replaceNode(configurationNode1,"/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor", false);
-        ConfigNodeUtil.replaceNode(configurationNode2,"/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator", false);
-        ConfigNodeUtil.replaceNode(configurationNode3,"/dcmKeyStorePin", "12345");
+        Nodes.replaceNode(configurationNode1, "/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor", false);
+        Nodes.replaceNode(configurationNode2, "/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator", false);
+        Nodes.replaceNode(configurationNode3, "/dcmKeyStorePin", "12345");
         
         // persist some changes from 1st user
-        lockedConfig.persistNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), configurationNode1, Device.class);
+        lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode1, Device.class);
 
         // persist some conflicting changes from 2nd user - should fail
         try {
-            lockedConfig.persistNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), configurationNode2, Device.class);
+            lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode2, Device.class);
             throw new AssertionFailedError("Should have failed!");
         } catch (Exception e) {
             // its ok
         }
 
         // persist some non-conflicting changes from 3rd user - should be fine
-        lockedConfig.persistNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), configurationNode3, Device.class);
+        lockedConfig.persistNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), configurationNode3, Device.class);
 
         
         
         // assert the changes that were supposed to be persisted
-        Map<String,Object> newNode = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByName.set("deviceName", "dcmqrscp").path(), Device.class);
+        Map<String,Object> newNode = (Map<String, Object>) lockedConfig.getConfigurationNode(DicomPath.DeviceByNameForWrite.set("deviceName", "dcmqrscp").path(), Device.class);
 
         Assert.assertEquals(
                 "12345",
-                ConfigNodeUtil.getNode(newNode, "/dcmKeyStorePin"));
+                Nodes.getNode(newNode, "/dcmKeyStorePin"));
 
         Assert.assertEquals(
                 false,
-                ConfigNodeUtil.getNode(newNode, "/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor"));
+                Nodes.getNode(newNode, "/dicomNetworkAE/DCMQRSCP/dicomAssociationAcceptor"));
 
         Assert.assertEquals(
                 true,
-                ConfigNodeUtil.getNode(newNode, "/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator"));
+                Nodes.getNode(newNode, "/dicomNetworkAE/DCMQRSCP/dicomAssociationInitiator"));
 
 
     }

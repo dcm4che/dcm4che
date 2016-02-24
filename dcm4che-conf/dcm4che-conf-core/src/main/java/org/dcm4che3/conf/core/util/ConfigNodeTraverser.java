@@ -39,6 +39,7 @@
  */
 package org.dcm4che3.conf.core.util;
 
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
@@ -230,7 +231,7 @@ public class ConfigNodeTraverser {
 
                 filter.beforeNodeElement(map, key, value);
 
-                if (ConfigNodeUtil.isPrimitive(value))
+                if (Nodes.isPrimitive(value))
                     filter.onPrimitiveNodeElement(map, key, value);
                 else if (value instanceof Map) traverseMapNode(value, filter);
                 else if (value instanceof Collection) {
@@ -240,7 +241,7 @@ public class ConfigNodeTraverser {
                     for (Object o : collection) {
                         filter.beforeListElement(collection, o);
 
-                        if (ConfigNodeUtil.isPrimitive(o))
+                        if (Nodes.isPrimitive(o))
                             filter.onPrimitiveListElement(collection, o);
                         else if (o instanceof Map) traverseMapNode(o, filter);
                         else throw new IllegalArgumentException("List of lists is not allowed");

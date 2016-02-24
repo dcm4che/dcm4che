@@ -52,6 +52,8 @@ import java.util.Map;
  */
 public interface DicomConfigurationManager extends ExtendedDicomConfiguration, ConfigurationManager{
 
+    String METADATA_ROOT_PATH = "/dicomConfigurationRoot/metadataRoot/versioning";
+
     /**
      * Remembers a weak reference to the provided device so that any subsequent call to
      * persist or merge for this specific instance is made, an error is logged.

@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Immutable
  * @author Roman K
  */
 public class Path {

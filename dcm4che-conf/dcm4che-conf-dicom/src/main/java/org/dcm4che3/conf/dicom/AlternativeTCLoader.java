@@ -44,7 +44,7 @@ import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.util.ConfigNodeUtil;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
@@ -146,6 +146,6 @@ public class AlternativeTCLoader {
     }
 
     public void cleanUpTransferCapabilitiesInDeviceNode(Device device, Map<String, Object> deviceNode) {
-        ConfigNodeUtil.removeNodes(deviceNode, DicomPath.AllTCsOfAllAEsWithTCGroupExt.path());
+        Nodes.removeNodes(deviceNode, DicomPath.AllTCsOfAllAEsWithTCGroupExt.path());
     }
 }

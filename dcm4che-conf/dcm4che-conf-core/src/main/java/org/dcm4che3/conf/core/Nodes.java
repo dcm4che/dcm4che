@@ -37,20 +37,24 @@
  *
  *  ***** END LICENSE BLOCK *****
  */
-package org.dcm4che3.conf.core.util;
+package org.dcm4che3.conf.core;
 
 import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.apache.commons.jxpath.Pointer;
+import org.dcm4che3.conf.core.util.XNodeUtil;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ConfigNodeUtil {
+public class Nodes {
 
+
+    private static Pattern itemPattern = Pattern.compile("/(?<item>(\\\\/|[^/])*)");
+    private static Pattern simplePathPattern = Pattern.compile("(" + itemPattern + ")*");
 
     public static String concat(String path1, String path2) {
         String res = path1 + "/" + path2;
@@ -99,10 +103,6 @@ public class ConfigNodeUtil {
 
     }
 
-    public static boolean validatePath(String path) {
-        return true;
-    }
-
     /**
      * Clones structure but re-uses primitives
      * @param node
@@ -131,14 +131,6 @@ public class ConfigNodeUtil {
         }
 
         throw new IllegalArgumentException("Unexpected node type " + node.getClass());
-
-//        // clone
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        try {
-//            return objectMapper.treeToValue(objectMapper.valueToTree(node), node.getClass());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     public static boolean isPrimitive(Object value) {
@@ -148,110 +140,112 @@ public class ConfigNodeUtil {
                 value instanceof Boolean;
     }
 
-    public String[] split(String path) {
-        // TODO: support slash as a symbol with escaping?
-        return path.split("/");
-    }
-
-    public static String escape(String str) {
-        // TODO: implement validation, as we do not allow slashes, commas quotes etc
-        // TODO: implement escaping
-        return str;
-    }
-
-    private final static String IDENTIFIER = "@?[a-zA-Z\\d_]+";
-    private static final String VALUE = "(('.+?')|(\\-?[\\d]+)|true|false)";
-    private final static String IDENTIFIER_NAMED = "(?<identifier>" + IDENTIFIER + ")";
-    private static final String VALUE_NAMED = "(('(?<strvalue>.+?)')|(?<intvalue>\\-?[\\d]+)|(?<boolvalue>true|false))";
-    private static final String AND = " and ";
-    private static final String APOS = "&apos;";
-
-
-    private final static String XPREDICATE = "(" + IDENTIFIER + "=" + VALUE + ")";
-    private final static String XPREDICATENAMED = "(" + IDENTIFIER_NAMED + "=" + VALUE_NAMED + ")";
-
-    private final static String XPATHNODE = "/(?<nodename>" + IDENTIFIER + "|\\*)" + "(\\[(?<predicates>" + XPREDICATE + "( and " + XPREDICATE + ")*)\\])?";
-    private final static String XPATH = "(" + XPATHNODE + ")*";
-
-    public final static Pattern xPathPattern = Pattern.compile(XPATH);
-    public final static Pattern xPathNodePattern = Pattern.compile(XPATHNODE);
-    private final static Pattern xPredicatePattern = Pattern.compile(XPREDICATE);
-    private final static Pattern xNamedPredicatePattern = Pattern.compile(XPREDICATENAMED);
-    private final static Pattern xAndPattern = Pattern.compile(AND);
-    private final static Pattern aposPattern = Pattern.compile(APOS);
 
     /**
-     * Returns list of path elements.
-     * $name - name of the node (not @name, which is a predicate)
-     * other entries are just key - value
+     * traverses nodenames and also @name predicates, so something like this
+     * /dicomConfigurationRoot/dicomDevicesRoot[@name='deviceName']/deviceExtensions
+     * will return
+     * dicomConfigurationRoot,dicomDevicesRoot,deviceName,deviceExtensions
      *
-     * @param s
+     * @param path
      * @return
      */
-    public static List<Map<String, Object>> parseReference(String s) {
+    public static List<String> getPathItems(String path) {
+        List<Map<String, Object>> refItems = XNodeUtil.parseReference(path);
+        List<String> names = new ArrayList<String>();
 
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-
-        //special case
-        if (s.equals("/")) return list;
-
-        if (!xPathPattern.matcher(s).matches()) {
-            throw new IllegalArgumentException("Failed to parse provided reference (" + s + ")");
+        for (Map<String, Object> refItem : refItems) {
+            names.add((String) refItem.get("$name"));
+            if (refItem.containsKey("@name"))
+                names.add((String) refItem.get("@name"));
         }
 
+        return names;
+    }
 
-        Matcher nodeMatcher = xPathNodePattern.matcher(s);
-        while (nodeMatcher.find()) {
+    public static String toSimpleEscapedPath(Iterator<String> items) {
+        ArrayList<String> strings = new ArrayList<String>();
+        while (items.hasNext())
+            strings.add(items.next());
+        return toSimpleEscapedPath(strings);
+    }
 
-            Map<String, Object> propMap = new HashMap<String, Object>();
-            list.add(propMap);
+    public static String toSimpleEscapedPath(Iterable<String> items) {
+        String s = "";
+        for (String item : items) s += "/" + item.replace("/", "\\/");
+        return s;
+    }
 
-            String node = nodeMatcher.group();
+    public static List<String> fromSimpleEscapedPath(String path) {
+        List<String> strings = fromSimpleEscapedPathOrNull(path);
+        if (strings == null)
+            throw new IllegalArgumentException("Simple path " + path + " is invalid");
+        return strings;
+    }
 
-            // nodename $name
-            String nodeName = nodeMatcher.group("nodename");
-            propMap.put("$name", nodeName);
+    public static List<String> fromSimpleEscapedPathOrNull(String path) {
 
-            // now key-value
-            String predicatesStr = nodeMatcher.group("predicates");
-            if (predicatesStr != null) {
-                String[] predicates = xAndPattern.split(predicatesStr);
+        if (!simplePathPattern.matcher(path).matches())
+            return null;
 
-                for (String p : predicates) {
-                    Matcher matcher = xNamedPredicatePattern.matcher(p);
-                    if (!matcher.find()) throw new RuntimeException("Unexpected error");
+        Matcher matcher = itemPattern.matcher(path);
 
-
-                    String boolvalue = matcher.group("boolvalue");
-                    String intvalue = matcher.group("intvalue");
-                    String strvalue = matcher.group("strvalue");
-
-                    Object value;
-                    if (boolvalue != null)
-                        value = Boolean.parseBoolean(boolvalue);
-                    else if (intvalue != null)
-                        value = Integer.parseInt(intvalue);
-                    else if (strvalue != null)
-                        value = strvalue.replace(APOS, "'");
-                    else throw new RuntimeException("Unexpected error: no value");
-
-
-                    String identifier = matcher.group("identifier");
-                    propMap.put(identifier, value);
-
-                }
-
-            }
+        List<String> list = new ArrayList<String>();
+        while (matcher.find()) {
+            list.add(matcher.group("item").replace("\\/", "/"));
         }
 
         return list;
     }
 
-    public static String escapeApos(String name) {
-        return name.replace("'", "&apos;");
+    public static Map<String, Object> replaceNode(Map<String, Object> map, Map replacement, List<String> pathItems) {
+        Map<String, Object> m = map;
+        Map<String, Object> subm = m;
+        String name = null;
+
+        if (pathItems.isEmpty())
+            return replacement;
+
+        for (String pathItem : pathItems) {
+            name = pathItem;
+            m = subm;
+            subm = (Map<String, Object>) m.get(name);
+            if (subm == null) {
+                subm = new HashMap<String, Object>();
+                m.put(name, subm);
+            }
+        }
+
+        m.put(name, replacement);
+        return map;
     }
 
-    public static String unescapeApos(String value) {
-        return value.replace("&apos;", "'");
+    public static void removeNode(Map<String, Object> map, List<String> pathItems) {
+        Map<String, Object> m = map;
+        Map<String, Object> subm = m;
+        String name = null;
+
+        for (String pathItem : pathItems) {
+            name = pathItem;
+            m = subm;
+            subm = (Map<String, Object>) m.get(name);
+            if (subm == null) return;
+        }
+
+        // remove leaf
+        m.remove(name);
+    }
+
+    public static boolean nodeExists(Map<String, Object> map, List<String> pathItems) {
+        Map<String, Object> m = map;
+        Map<String, Object> subm;
+
+        for (String pathItem : pathItems) {
+
+            subm = (Map<String, Object>) m.get(pathItem);
+            if (subm == null) return false;
+            m = subm;
+        }
+        return true;
     }
 }

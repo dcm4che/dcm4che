@@ -44,6 +44,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -52,23 +54,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.dcm4che3.audit.Accession;
-import org.dcm4che3.audit.ActiveParticipant;
-import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.AuditSourceIdentification;
-import org.dcm4che3.audit.EventIdentification;
-import org.dcm4che3.audit.Instance;
-import org.dcm4che3.audit.MPPS;
-import org.dcm4che3.audit.ObjectFactory;
-import org.dcm4che3.audit.ParticipantObjectContainsStudy;
-import org.dcm4che3.audit.ParticipantObjectDescriptionType;
-import org.dcm4che3.audit.ParticipantObjectDetail;
-import org.dcm4che3.audit.ParticipantObjectIdentification;
-import org.dcm4che3.audit.SOPClass;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Michael Backhaus <michael.backhaus@agfa.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class AuditMessages {
 
@@ -319,7 +308,7 @@ public class AuditMessages {
     }
 
     public static final class AuditSourceTypeCode
-            extends org.dcm4che3.audit.AuditSourceTypeCode {
+            extends org.dcm4che3.audit.AuditSourceIdentification {
 
         public static final AuditSourceTypeCode EndUserDisplayDevice = 
                 new AuditSourceTypeCode("1");
@@ -550,7 +539,7 @@ public class AuditMessages {
         public static final ParticipantObjectIDTypeCode MedicalRecordNumber = 
                 new ParticipantObjectIDTypeCode("1");
         public static final ParticipantObjectIDTypeCode PatientNumber =
-                new ParticipantObjectIDTypeCode("2");
+                new ParticipantObjectIDTypeCode("2", "RFC-3881","Patient Number");
         public static final ParticipantObjectIDTypeCode EncounterNumber =
                 new ParticipantObjectIDTypeCode("3");
         public static final ParticipantObjectIDTypeCode EnrolleeNumber =
@@ -564,7 +553,7 @@ public class AuditMessages {
         public static final ParticipantObjectIDTypeCode ReportName =
                 new ParticipantObjectIDTypeCode("8");    
         public static final ParticipantObjectIDTypeCode ReportNumber =
-                new ParticipantObjectIDTypeCode("9");
+                new ParticipantObjectIDTypeCode("9", "RFC-3881","Report Number");
         public static final ParticipantObjectIDTypeCode SearchCriteria =
                 new ParticipantObjectIDTypeCode("10");
         public static final ParticipantObjectIDTypeCode UserIdentifier =
@@ -577,10 +566,6 @@ public class AuditMessages {
                 new ParticipantObjectIDTypeCode("110181","DCM","SOP Class UID");
         public static final ParticipantObjectIDTypeCode NodeID = 
                 new ParticipantObjectIDTypeCode("110182","DCM","Node ID");
-        public static final ParticipantObjectIDTypeCode ITI_PatientNumber = 
-                new ParticipantObjectIDTypeCode("2","RFC-3881","Patient Number");
-        public static final ParticipantObjectIDTypeCode ITI_ReportNumber = 
-                new ParticipantObjectIDTypeCode("9","RFC-3881","Report Number");
         public static final ParticipantObjectIDTypeCode ITI_PIXQuery = 
                 new ParticipantObjectIDTypeCode("ITI-9","IHE Transactions","PIX Query");
 
@@ -660,16 +645,16 @@ public class AuditMessages {
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
         for (AuditSourceTypeCode type : types)
-            asi.getAuditSourceTypeCode().add(type);
+            asi.getAuditSourceTypeCode().add(type.toString());
         return asi;
    }
 
     public static ParticipantObjectIdentification createParticipantObjectIdentification(
             String id, ParticipantObjectIDTypeCode idType, String name,
             byte[] query, String type, String role, String lifeCycle,
-            String sensitivity, String description,
-            ParticipantObjectDescriptionType descriptionType,
-            ParticipantObjectDetail... details) {
+            String sensitivity, List<String> desc, HashSet<Accession> accessionList, HashSet<MPPS> mppsList,
+            HashSet<SOPClass> sopClasses, Boolean encrypted, Boolean anonymized,
+            ParticipantObjectContainsStudy pocs, ParticipantObjectDetail... details) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
         poi.setParticipantObjectID(id);
         poi.setParticipantObjectIDTypeCode(idType);
@@ -679,19 +664,24 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCodeRole(role);
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
         poi.setParticipantObjectSensitivity(sensitivity);
-        poi.setParticipantObjectDescription(description);
-        poi.setParticipantObjectDescriptionType(descriptionType);
+        if (null != desc)
+            for (String pod : desc)
+                poi.getParticipantObjectDescription().add(pod);
+        if (null != accessionList)
+            for (Accession acc : accessionList)
+                poi.getAccession().add(acc);
+        if (null != mppsList)
+            for (MPPS mpps : mppsList)
+                poi.getMPPS().add(mpps);
+        if (null != sopClasses)
+            for (SOPClass sopC : sopClasses)
+                poi.getSOPClass().add(sopC);
+        poi.setEncrypted(encrypted);
+        poi.setAnonymized(anonymized);
+        poi.setParticipantObjectContainsStudy(pocs);
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;
-    }
-   
-    public static ParticipantObjectDescriptionType createParticipantObjectDescription(
-            Boolean encrypted, Boolean anonymized) {
-        ParticipantObjectDescriptionType podt = new ParticipantObjectDescriptionType();
-        podt.setEncrypted(encrypted);
-        podt.setAnonymized(anonymized);
-        return podt;
     }
 
     public static ParticipantObjectDetail createParticipantObjectDetail(
@@ -733,6 +723,12 @@ public class AuditMessages {
         Accession accession = new Accession();
         accession.setNumber(accessionNumber);
         return accession;
+    }
+
+    public static StudyIDs createStudyIDs(String studyID) {
+        StudyIDs sID = new StudyIDs();
+        sID.setUID(studyID);
+        return sID;
     }
 
     public static String alternativeUserIDForAETitle(String... aets) {

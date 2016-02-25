@@ -75,7 +75,6 @@ import javax.net.ssl.SSLContext;
 import org.dcm4che3.audit.ActiveParticipant;
 import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.AuditSourceIdentification;
-import org.dcm4che3.audit.AuditSourceTypeCode;
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.net.Connection;
@@ -90,6 +89,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Michael Backhaus <michael.backhaus@agfa.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  */
 public class AuditLogger extends DeviceExtension {
 
@@ -379,15 +379,11 @@ public class AuditLogger extends DeviceExtension {
         for (String code : auditSourceTypeCodes) {
             if (code.equals("dicomPrimaryDeviceType")) {
                 for (String type : device.getPrimaryDeviceTypes()) {
-                    AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                    astc.setCode(type);
-                    astc.setCodeSystemName("DCM");
-                    asi.getAuditSourceTypeCode().add(astc);
+                    asi.setCode(type);
+                    asi.setCodeSystemName("DCM");
                 }
             } else {
-                AuditSourceTypeCode astc = new AuditSourceTypeCode();
-                astc.setCode(code);
-                asi.getAuditSourceTypeCode().add(astc );
+                asi.setCode(code);
             }
         }
         return asi ;

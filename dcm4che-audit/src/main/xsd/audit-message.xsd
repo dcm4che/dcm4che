@@ -97,69 +97,122 @@
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="AuditSourceTypeCode"/>
     </xs:sequence>
-    <xs:attribute name="AuditEnterpriseSiteID" type="xs:string"/>
+    <xs:attribute name="code" use="required">
+      <xs:simpleType>
+        <xs:union>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="1">
+                <xs:annotation>
+                  <xs:documentation> End-user display device, diagnostic display</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="2">
+                <xs:annotation>
+                  <xs:documentation>Data acquisition device or instrument</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="3">
+                <xs:annotation>
+                  <xs:documentation>Web server process</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="4">
+                <xs:annotation>
+                  <xs:documentation>Application server process</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="5">
+                <xs:annotation>
+                  <xs:documentation>Database server process</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="6">
+                <xs:annotation>
+                  <xs:documentation>Security server, e.g., a domain controller</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="7">
+                <xs:annotation>
+                  <xs:documentation>ISO level 1-3 network component</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="8">
+                <xs:annotation>
+                  <xs:documentation>ISO level 4-6 operating software</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="9">
+                <xs:annotation>
+                  <xs:documentation>External source, other or unknown type</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token"/>
+          </xs:simpleType>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attributeGroup ref="other-csd-attributes"/>
+    <xs:attribute name="AuditEnterpriseSiteID" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If these are present, they define the meaning of code</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="AuditSourceID" use="required" type="xs:string"/>
   </xs:complexType>
-  <xs:element name="AuditSourceTypeCode">
-    <xs:complexType>
-      <xs:attribute name="code">
-        <xs:simpleType>
-          <xs:restriction base="xs:token">
-            <xs:enumeration value="1">
-              <xs:annotation>
-                <xs:documentation> End-user display device, diagnostic display</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="2">
-              <xs:annotation>
-                <xs:documentation>Data acquisition device or instrument</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="3">
-              <xs:annotation>
-                <xs:documentation>Web server process</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="4">
-              <xs:annotation>
-                <xs:documentation>Application server process</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="5">
-              <xs:annotation>
-                <xs:documentation>Database server process</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="6">
-              <xs:annotation>
-                <xs:documentation>Security server, e.g., a domain controller</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="7">
-              <xs:annotation>
-                <xs:documentation>ISO level 1-3 network component</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="8">
-              <xs:annotation>
-                <xs:documentation>ISO level 4-6 operating software</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-            <xs:enumeration value="9">
-              <xs:annotation>
-                <xs:documentation>External source, other or unknown type</xs:documentation>
-              </xs:annotation>
-            </xs:enumeration>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="csd-code" type="xs:string"/>
-      <xs:attribute name="displayName" type="xs:string"/>
-      <xs:attribute name="originalText" type="xs:string"/>
-      <xs:attribute name="codeSystem" type="OID"/>
-      <xs:attribute name="codeSystemName" type="xs:string"/>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="AuditSourceTypeCode" type="xs:string"/>
+  <!--
+    Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
+    so that any controlled terminology can also be used.
+    AuditSourceTypeCodeContent =
+       attribute csd-code {
+        "1" | ## End-user display device, diagnostic device
+        "2" | ## Data acquisition device or instrument
+        "3" | ## Web Server process or thread
+        "4" | ## Application Server process or thread
+        "5" | ## Database Server process or thread
+        "6" | ## Security server, e.g., a domain controller
+        "7" | ## ISO level 1-3 network component
+        "8" | ## ISO level 4-6 operating software
+        "9" | ## other
+        token }, ## other values are allowed if a codeSystemName is present
+        other-csd-attributes? ## If these are present, they define the meaning of code
+  -->
   <xs:complexType name="ActiveParticipantType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="RoleIDCode"/>
@@ -220,9 +273,10 @@
         <xs:element ref="ParticipantObjectQuery"/>
       </xs:choice>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
-      <xs:element ref="ParticipantObjectDescription"/>
-      <xs:element ref="ParticipantObjectDescriptionType"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDescription"/>
+      <xs:group ref="ParticipantObjectDescriptionType"/>
     </xs:sequence>
+    <xs:attributeGroup ref="ParticipantObjectDescriptionType"/>
     <xs:attribute name="ParticipantObjectID" use="required" type="xs:string"/>
     <xs:attribute name="ParticipantObjectTypeCode">
       <xs:simpleType>
@@ -476,17 +530,14 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="ParticipantObjectDescription" type="xs:string"/>
-  <xs:element name="ParticipantObjectDescriptionType" type="ParticipantObjectDescriptionType"/>
-  <xs:complexType name="ParticipantObjectDescriptionType">
+  <xs:group name="ParticipantObjectDescriptionType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
       <xs:element ref="ParticipantObjectContainsStudy"/>
     </xs:sequence>
-    <xs:attribute name="Encrypted" type="xs:boolean"/>
-    <xs:attribute name="Anonymized" type="xs:boolean"/>
-  </xs:complexType>
+  </xs:group>
   <xs:element name="MPPS">
     <xs:complexType>
       <xs:attribute name="UID" use="required" type="OID"/>
@@ -523,21 +574,35 @@
       <xs:attribute name="UID" use="required" type="OID"/>
     </xs:complexType>
   </xs:element>
+  <xs:attributeGroup name="ParticipantObjectDescriptionType">
+    <xs:attribute name="Encrypted" type="xs:boolean"/>
+    <xs:attribute name="Anonymized" type="xs:boolean"/>
+  </xs:attributeGroup>
   <xs:attributeGroup name="CodedValueType">
     <xs:attribute name="csd-code" use="required" type="xs:string"/>
-    <xs:attributeGroup ref="CodeSystem"/>
-    <xs:attribute name="displayName" type="xs:string"/>
-    <xs:attribute name="originalText" type="xs:string"/>
+    <xs:attributeGroup ref="other-csd-attributes"/>
   </xs:attributeGroup>
-  <!-- Note: this corresponds to DICOM "Code Meaning" -->
+  <!--
+     CodeSystem,
+     attribute displayName { xsd:string }?,
+     attribute originalText { xsd:string }? # Note: this corresponds to DICOM "Code Meaning"
+  -->
   <xs:attributeGroup name="TypeValuePairType">
     <xs:attribute name="type" use="required" type="xs:string"/>
     <xs:attribute name="value" use="required" type="xs:base64Binary"/>
   </xs:attributeGroup>
-  <xs:attributeGroup name="CodeSystem">
+  <!--
+    CodeSystem =
+     attribute codeSystem { OID }?,
+     attribute codeSystemName { xsd:string }?
+  -->
+  <xs:attributeGroup name="other-csd-attributes">
     <xs:attribute name="codeSystem" type="OID"/>
     <xs:attribute name="codeSystemName" type="xs:string"/>
+    <xs:attribute name="displayName" type="xs:string"/>
+    <xs:attribute name="originalText" type="xs:string"/>
   </xs:attributeGroup>
+  <!-- Note: this corresponds to DICOM "Code Meaning" -->
   <xs:simpleType name="OID">
     <xs:restriction base="xs:string">
       <xs:pattern value="[0-2]((\.0)|(\.[1-9][0-9]*))*"/>

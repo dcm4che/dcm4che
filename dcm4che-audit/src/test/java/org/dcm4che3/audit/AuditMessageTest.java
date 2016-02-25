@@ -40,14 +40,17 @@ package org.dcm4che3.audit;
 
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.ParticipantObjectDescriptionType;
 import org.dcm4che3.audit.AuditMessages;
 import org.junit.Test;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Vrinda Nayak <vrinda.nayak@j4care.com>
  *
  */
 public class AuditMessageTest {
@@ -171,13 +174,17 @@ public class AuditMessageTest {
                     "Hospital",
                     "ReadingRoom",
                     AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
-        ParticipantObjectDescriptionType podt = new ParticipantObjectDescriptionType();
-        podt.getMPPS().add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
-        podt.getAccession().add(AuditMessages.createAccession("12341234"));
-        podt.getSOPClass().add(AuditMessages.createSOPClass(
-                "1.2.840.10008.5.1.4.1.1.2", 1500));
-        podt.getSOPClass().add(AuditMessages.createSOPClass(
-                "1.2.840.10008.5.1.4.1.1.11.1", 3));
+        List<String> desc = new ArrayList<>();
+        HashSet<Accession> acc = new HashSet<>();
+        HashSet<MPPS> mpps = new HashSet<>();
+        HashSet<SOPClass> sopC = new HashSet<>();
+        desc.add("description1");
+        acc.add(AuditMessages.createAccession("12341234"));
+        mpps.add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
+        sopC.add(AuditMessages.createSOPClass("1.2.840.10008.5.1.4.1.1.2", 1500));
+        sopC.add(AuditMessages.createSOPClass("1.2.840.10008.5.1.4.1.1.11.1", 3));
+        ParticipantObjectContainsStudy pocs = new ParticipantObjectContainsStudy();
+        pocs.getStudyIDs().add(AuditMessages.createStudyIDs("1.2.840.10008.2.3.4.5.6.7.78.8"));
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
                         "1.2.840.10008.2.3.4.5.6.7.78.8",
@@ -187,21 +194,15 @@ public class AuditMessageTest {
                         AuditMessages.ParticipantObjectTypeCode.SystemObject,
                         AuditMessages.ParticipantObjectTypeCodeRole.Resource,
                         AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation,
-                        null,
-                        "description1",
-                        podt));
+                        null, desc, acc, mpps, sopC, null, null, pocs));
+        desc.clear();
+        desc.add("description2");
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
-                        "ptid12345",
-                        AuditMessages.ParticipantObjectIDTypeCode.PatientNumber,
-                        "John Doe",
-                        null,
-                        AuditMessages.ParticipantObjectTypeCode.Person,
+                        "ptid12345", AuditMessages.ParticipantObjectIDTypeCode.PatientNumber,
+                        "John Doe", null, AuditMessages.ParticipantObjectTypeCode.Person,
                         AuditMessages.ParticipantObjectTypeCodeRole.Patient,
-                        null,
-                        null,
-                        "description2",
-                        null));
+                        null, null, desc, null, null, null, null, null, null));
         AuditMessages.toXML(msg, System.out, true);
     }
 

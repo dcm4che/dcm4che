@@ -1,13 +1,16 @@
 package org.dcm4che3.conf.core.storage;
 
 import org.dcm4che3.conf.core.DelegatingConfiguration;
+import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.PathPattern;
+import org.dcm4che3.conf.core.util.PathTrackingConfigNodeFilter;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,10 +22,11 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     static PathPattern referencePattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 
-    Map<String, Object> uuidToReferableIndex = Collections.synchronizedMap(new HashMap<String, Object>());
+    protected HashMap<String, Path> uuidToReferableIndex;
 
-    public ReferenceIndexingDecorator(Configuration delegate) {
+    public ReferenceIndexingDecorator(Configuration delegate, HashMap<String, Path> uuidToSimplePathCache) {
         super(delegate);
+        uuidToReferableIndex = uuidToSimplePathCache;
     }
 
     private void removeOldReferablesFromIndex(Object oldConfigurationNode) {
@@ -35,12 +39,16 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
             });
     }
 
-    private void addReferablesToIndex(Object configNode) {
+    private void addReferablesToIndex(List<String> pathItems, Object configNode) {
         if (configNode instanceof Map)
-            ConfigNodeTraverser.traverseMapNode(configNode, new ConfigNodeTraverser.AConfigNodeFilter() {
+            ConfigNodeTraverser.traverseMapNode(configNode, new PathTrackingConfigNodeFilter(pathItems) {
                 @Override
                 public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
-                    if (Configuration.UUID_KEY.equals(key)) uuidToReferableIndex.put((String) value, containerNode);
+                    if (Configuration.UUID_KEY.equals(key)) {
+                        String last = path.pop();
+                        uuidToReferableIndex.put((String) value, new Path(path.descendingIterator()));
+                        path.push(last);
+                    }
                 }
             });
     }
@@ -49,8 +57,9 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
         PathPattern.PathParser pathParser = referencePattern.parseIfMatches(path);
         if (pathParser != null) {
-            System.out.println("hit! uuid"+path);
-            return uuidToReferableIndex.get(pathParser.getParam("uuid"));
+            System.out.println("hit! uuid "+path);
+
+            return super.getConfigurationNode(uuidToReferableIndex.get(pathParser.getParam("uuid")).toSimpleEscapedXPath(), configurableClass);
         }
 
         return super.getConfigurationNode(path, configurableClass);
@@ -63,7 +72,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
 
         // add newcomer referables to index
-        addReferablesToIndex(configNode);
+        addReferablesToIndex(Nodes.simpleOrPersistablePathToPathItemsOrNull(path), configNode);
 
         super.persistNode(path, configNode, configurableClass);
     }
@@ -72,7 +81,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     public void refreshNode(String path) throws ConfigurationException {
         removeOldReferablesFromIndex(super.getConfigurationNode(path, null));
         super.refreshNode(path);
-        addReferablesToIndex(super.getConfigurationNode(path, null));
+        addReferablesToIndex(Nodes.simpleOrPersistablePathToPathItemsOrNull(path), super.getConfigurationNode(path, null));
     }
 
     @Override

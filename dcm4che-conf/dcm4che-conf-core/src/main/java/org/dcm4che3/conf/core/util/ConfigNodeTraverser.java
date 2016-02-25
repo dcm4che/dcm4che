@@ -78,10 +78,10 @@ public class ConfigNodeTraverser {
         public void beforeList(Collection list) {
         }
 
-        public void beforeListElement(Collection list, Object element) {
+        public void beforeListElement(Collection list, int index, Object element) {
         }
 
-        public void afterListElement(Collection list, Object element) {
+        public void afterListElement(Collection list, int index, Object element) {
         }
 
         public void afterList(Collection list) {
@@ -234,22 +234,28 @@ public class ConfigNodeTraverser {
                 if (Nodes.isPrimitive(value))
                     filter.onPrimitiveNodeElement(map, key, value);
                 else if (value instanceof Map) traverseMapNode(value, filter);
-                else if (value instanceof Collection) {
-                    Collection collection = (Collection) value;
+                else if (value instanceof List) {
+                    List list = (List) value;
 
-                    filter.beforeList(collection);
-                    for (Object o : collection) {
-                        filter.beforeListElement(collection, o);
+                    filter.beforeList(list);
+
+                    for (int i = 0; i < list.size(); i++) {
+
+                        Object o = list.get(i);
+
+                        filter.beforeListElement(list, i, o);
 
                         if (Nodes.isPrimitive(o))
-                            filter.onPrimitiveListElement(collection, o);
+                            filter.onPrimitiveListElement(list, o);
                         else if (o instanceof Map) traverseMapNode(o, filter);
-                        else throw new IllegalArgumentException("List of lists is not allowed");
+                        else throw new IllegalArgumentException("List is only allowed to contain primitive elements and map nodes. " +
+                                    "Encountered " + o.getClass() + " in list " + key);
 
-                        filter.afterListElement(collection, o);
+                        filter.afterListElement(list, i, o);
                     }
-                    filter.afterList(collection);
-                }
+                    filter.afterList(list);
+                } else
+                    throw new IllegalArgumentException("Illegal node type " + value.getClass());
                 filter.afterNodeElement(map, key, value);
             }
             filter.afterNode(map);

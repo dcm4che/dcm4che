@@ -40,29 +40,31 @@
 
 package org.dcm4che3.conf.core.api;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * @author Roman K
  */
-public class Path {
+public class Path implements Serializable{
+
+    private static final long serialVersionUID = 1069976968612802603L;
 
     public static final Path ROOT = new Path();
 
     final List<String> pathItems;
-    private String simpleEscapeXPath;
+    private transient String simpleEscapedXPath;
 
     public Path() {
         pathItems = Collections.unmodifiableList(new ArrayList<String>());
     }
 
     public Path(String... pathItems) {
-        ArrayList<String> strings = new ArrayList<String>();
-        for (String pathItem : pathItems) {
-            strings.add(pathItem);
-        }
+        ArrayList<String> strings = new ArrayList<String>(pathItems.length);
+        Collections.addAll(strings, pathItems);
         this.pathItems = Collections.unmodifiableList(strings);
     }
 
@@ -70,17 +72,29 @@ public class Path {
         this.pathItems = Collections.unmodifiableList(new ArrayList<String>(pathItems));
     }
 
+    public Path(Iterator<String> stringIterator) {
+        ArrayList<String> strings = new ArrayList<String>();
+        while (stringIterator.hasNext())
+            strings.add(stringIterator.next());
+        this.pathItems = Collections.unmodifiableList(strings);
+    }
+
     public List<String> getPathItems() {
         return pathItems;
     }
 
     public String toSimpleEscapedXPath() {
-        if (simpleEscapeXPath != null)
-            return simpleEscapeXPath;
+        if (simpleEscapedXPath != null)
+            return simpleEscapedXPath;
 
         String xpath = "";
         for (String item : pathItems) xpath += "/" + item.replace("/", "\\/");
-        simpleEscapeXPath = xpath;
+        simpleEscapedXPath = xpath;
         return xpath;
+    }
+
+    @Override
+    public String toString() {
+        return toSimpleEscapedXPath();
     }
 }

@@ -168,12 +168,12 @@ public class OLockHashCalcFilter extends ConfigNodeTraverser.AConfigNodeFilter {
     }
 
     @Override
-    public void beforeListElement(Collection list, Object element) {
+    public void beforeListElement(Collection list, int index, Object element) {
         stack.push(new byte[20]);
     }
 
     @Override
-    public void afterListElement(Collection list, Object element) {
+    public void afterListElement(Collection list, int index, Object element) {
         byte[] listElementHash = stack.pop();
         byte[] listHash = stack.pop();
         stack.push(getHash(hashToString(listHash) + hashToString(listElementHash)));

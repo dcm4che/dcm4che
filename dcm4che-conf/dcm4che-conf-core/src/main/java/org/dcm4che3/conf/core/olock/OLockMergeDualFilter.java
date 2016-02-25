@@ -52,7 +52,7 @@ import java.util.*;
 /**
  * Performs hash-based optimistic locking logic that is
  * <ol>
- *     <li>to detect conflicting changes an throw an expection if there are any</li>
+ *     <li>to detect conflicting changes an throw an exception if there are any</li>
  *     <li>if there are none, make sure that all non-conflicting changes from both old and new nodes are preserved.</li>
  * </ol>
  *

@@ -175,7 +175,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     protected HashMap<String, Object> createInitialConfigRootNode() {
         HashMap<String, Object> rootNode = new HashMap<String, Object>();
         rootNode.put("dicomDevicesRoot", new HashMap<String, Object>());
-        Nodes.replaceNode(rootNode, new HashMap(), Nodes.fromSimpleEscapedPath(METADATA_ROOT_PATH));
+
+        List<String> pathItems = Nodes.fromSimpleEscapedPath(METADATA_ROOT_PATH);
+        pathItems.remove(0);
+
+        Nodes.replaceNode(rootNode, new HashMap(), pathItems);
         return rootNode;
     }
 

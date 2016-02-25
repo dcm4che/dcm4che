@@ -163,6 +163,57 @@ public class Nodes {
         return names;
     }
 
+    /**
+     * @param path path str to parse
+     * @return list of path items in case the provided path
+     * <ul>
+     *     <li>is simple (e.g. "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities" )</li>
+     *     <li>is persistable (e.g. "/dicomConfigurationRoot/dicomDevicesRoot[@name='someName']")</li>
+     * </ul>
+     *
+     * otherwise <b>null</b>
+     */
+    public static List<String> simpleOrPersistablePathToPathItemsOrNull(String path) {
+
+        // TODO: rewrite with proper XPATH
+
+        List<Map<String, Object>> refItems = XNodeUtil.parseReference(path);
+        List<String> pathItems = new ArrayList<String>();
+
+        for (Map<String, Object> refItem : refItems) {
+
+            String name = null;
+            String attrName = null;
+
+            for (Entry<String, Object> stringObjectEntry : refItem.entrySet()) {
+
+                if (stringObjectEntry.getKey().equals("$name"))
+                    name = ((String) stringObjectEntry.getValue());
+                else if (stringObjectEntry.getKey().equals("@name"))
+                    attrName = ((String) stringObjectEntry.getValue());
+                else {
+                    // this path is neither simple nor persistable
+                    return null;
+                }
+
+                if (((String) stringObjectEntry.getValue()).contains("*"))
+                    return null;
+            }
+
+            // this path is neither simple nor persistable
+            if (name==null)
+                return null;
+
+            pathItems.add(name);
+
+            if (attrName!=null)
+                pathItems.add(attrName);
+
+        }
+
+        return pathItems;
+    }
+
     public static String toSimpleEscapedPath(Iterator<String> items) {
         ArrayList<String> strings = new ArrayList<String>();
         while (items.hasNext())

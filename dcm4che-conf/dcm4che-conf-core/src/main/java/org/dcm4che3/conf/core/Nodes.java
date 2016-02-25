@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 public class Nodes {
 
 
-    private static Pattern itemPattern = Pattern.compile("/(?<item>(\\\\/|[^/])*)");
+    private static Pattern itemPattern = Pattern.compile("/(?<item>(\\\\/|[^/\\[\\]@\\*])*)");
     private static Pattern simplePathPattern = Pattern.compile("(" + itemPattern + ")*");
 
     public static String concat(String path1, String path2) {

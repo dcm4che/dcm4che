@@ -44,6 +44,8 @@ import org.dcm4che3.conf.core.api.Path;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * @author Roman K
  */
@@ -55,6 +57,18 @@ public class TypeSafeConfigurationTest {
                 new Path("dicomConfigurationRoot", "dicomDevicesRoot", "dcm4chee-arc").toSimpleEscapedXPath(),
                 "/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee-arc"
         );
+
+    }
+
+
+    @Test
+    public void simplePathValidation() {
+
+        Assert.assertNull(Nodes.fromSimpleEscapedPathOrNull("/dicomConfigurationRoot/dicomDevicesRoot[@name='someName']"));
+        Assert.assertNull(Nodes.fromSimpleEscapedPathOrNull("/dicomConfigurationRoot/dicomDevicesRoot[name='someName']"));
+        Assert.assertNull(Nodes.fromSimpleEscapedPathOrNull("/dicomConfigurationRoot/dicomDevicesRoot/*"));
+        Assert.assertNotNull(Nodes.fromSimpleEscapedPathOrNull("/dicomConfigurationRoot/dicomDevicesRoot/arc"));
+
 
     }
 

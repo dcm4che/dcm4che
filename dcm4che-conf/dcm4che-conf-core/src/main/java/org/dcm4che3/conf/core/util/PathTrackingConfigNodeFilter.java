@@ -3,7 +3,7 @@ package org.dcm4che3.conf.core.util;
 import java.util.*;
 
 /**
- * Tracks the current path from the root while tracersing
+ * Tracks the current path from the root while traversing
  */
 public class PathTrackingConfigNodeFilter extends ConfigNodeTraverser.AConfigNodeFilter {
 

@@ -92,10 +92,9 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
 
-        // calculate olock hashes
         Object configurationNode = super.getConfigurationNode(path, configurableClass);
 
-        // if called with no configurableClass, omit hashes
+        //  calculate olock hashes if called with configurableClass
         if (configurableClass != null && configurationNode != null) {
             ConfigNodeTraverser.traverseNodeTypesafe(configurationNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, new HashMarkingTypesafeNodeFilter());
             ConfigNodeTraverser.traverseMapNode(configurationNode, new OLockHashCalcFilter());

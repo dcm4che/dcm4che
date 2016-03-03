@@ -17,7 +17,7 @@ public class PathTrackingConfigNodeFilter extends ConfigNodeTraverser.AConfigNod
         }
     }
 
-    final protected Deque<String> path = new ArrayDeque<String>();
+    final protected Deque<Object> path = new ArrayDeque<Object>();
 
     @Override
     public void beforeNode(Map<String, Object> node) {
@@ -37,7 +37,7 @@ public class PathTrackingConfigNodeFilter extends ConfigNodeTraverser.AConfigNod
 
     @Override
     public void beforeListElement(Collection list, int index, Object element) {
-        path.push(Integer.toString(index));
+        path.push(index);
     }
 
     @Override

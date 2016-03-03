@@ -5,13 +5,12 @@ import org.dcm4che3.conf.core.DefaultBeanVitalizer;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.storage.InMemoryConfiguration;
-import org.dcm4che3.conf.core.storage.ReferenceIndexingDecorator;
+import org.dcm4che3.conf.core.index.ReferenceIndexingDecorator;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +48,7 @@ public class RefIndexingTest {
         sampleBigConf.childMap.put("first", new SampleReferableConfClass("UUID4"));
         sampleBigConf.childMap.put("second", new SampleReferableConfClass("UUID5"));
 
-        configuration.persistNode("/confRoot/bigConf1", vitalizer.createConfigNodeFromInstance(sampleBigConf), null);
+        configuration.persistNode("/confRoot", vitalizer.createConfigNodeFromInstance(sampleBigConf), null);
 
         // check if uuids are indexed
         Assert.assertEquals(5, uuidToSimplePathCache.size());
@@ -57,33 +56,16 @@ public class RefIndexingTest {
         PathPattern pathPattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 
         Assert.assertEquals("Romeo", ((Map) configuration.getConfigurationNode(pathPattern.set("uuid", "UUID1").path(), null)).get("myName"));
+        Assert.assertEquals("Juliet", ((Map) configuration.getConfigurationNode(pathPattern.set("uuid", "UUID2").path(), null)).get("myName"));
 
-        //TODO
-        System.out.println(configuration.getConfigurationNode(pathPattern.set("uuid", "UUID2").path(), null));
+        configuration.removeNode("/confRoot/childList");
 
+        Assert.assertEquals(null, configuration.getConfigurationNode(pathPattern.set("uuid", "UUID2").path(), null));
+        Assert.assertFalse(uuidToSimplePathCache.containsKey("UUID2"));
+        Assert.assertFalse(uuidToSimplePathCache.containsKey("UUID3"));
 
     }
 
-    public void testExistingUUID() {
-        //TODO
-    }
 
-    public static class Integers {
-        public List<Integer> getNumbers() {
-            return Arrays.asList(1, 2, 3);
-        }
-    }
-
-
-    @Test
-    public void testJX() {
-
-
-        Integers ints = new Integers();
-
-
-        JXPathContext context = JXPathContext.newContext(ints);
-        Integer thirdInt = (Integer) context.getValue("numbers[3]");
-    }
 
 }

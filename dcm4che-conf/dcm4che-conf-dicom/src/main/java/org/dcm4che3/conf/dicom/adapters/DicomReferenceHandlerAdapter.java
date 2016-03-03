@@ -55,7 +55,7 @@ import org.dcm4che3.net.Device;
 import java.util.Iterator;
 
 
-public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
+public class DicomReferenceHandlerAdapter extends DefaultReferenceAdapter {
 
     public DicomReferenceHandlerAdapter(BeanVitalizer vitalizer, Configuration config) {
         super(vitalizer, config);
@@ -83,10 +83,9 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
         Device device = vitalizer.getInstanceFromThreadLocalPoolByUUID(deviceUUID, Device.class);
 
         // create instance and put it into the pool
-        // must be done after checking whether the device is in the pool since the instance might be that device itself
+        // at this point we know it's not found in there
         Object instance = vitalizer.newInstance(property.getRawClass());
         vitalizer.registerInstanceInThreadLocalPool(uuid, instance);
-
 
         // is this device already there?
         // if yes, then this fresh instance will get populated later when the deserializer gets there (ReflectiveAdapter will find it in the pool)

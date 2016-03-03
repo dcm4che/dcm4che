@@ -36,8 +36,8 @@ public class SplittedPath {
     }
 
     public SplittedPath calc() {
-        setOuterPathItems(new ArrayList<String>());
-        setInnerPathitems(new ArrayList<String>());
+        this.outerPathItems = new ArrayList<String>();
+        this.innerPathitems = new ArrayList<String>();
         i = 1;
         for (String name : pathItems) {
             if (i++ <= level)
@@ -48,11 +48,4 @@ public class SplittedPath {
         return this;
     }
 
-    private void setOuterPathItems(List<String> outerPathItems) {
-        this.outerPathItems = outerPathItems;
-    }
-
-    private void setInnerPathitems(List<String> innerPathitems) {
-        this.innerPathitems = innerPathitems;
-    }
 }

@@ -2139,8 +2139,8 @@ public class Attributes implements Serializable {
         Attributes filtered = new Attributes();
         for (int tag : tags()) {
             if (selection.contains(tag)) {
-                if (selection.getValue(tag).equals(getValue(tag)))
-                    filtered.setValue(tag, getVR(tag), getValue(tag));
+                if (equalValues(selection, indexOf(tag), selection.indexOf(tag)))
+                        filtered.setValue(tag, getVR(tag), getValue(tag));
             }
             if (getVR(tag) == VR.SQ) {
                 Attributes seq = getNestedDataset(tag).filter(selection);

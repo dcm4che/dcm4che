@@ -75,8 +75,20 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
 
         Path path = getPathByUUIDFromIndex(uuid);
 
-        if (path == null)
+
+        if (path == null) {
+
+            // double check
+            Object nodeByUUID = getNodeByUUID(null, uuid);
+
+            if (nodeByUUID!=null) {
+                // reference index out of sync
+                //TODO:!!!
+            }
+
+
             return Collections.emptyList().iterator();
+        }
 
         if (!validateDevicePath(path, validLen)) {
             log.error("Unexpected path to device:" + path);

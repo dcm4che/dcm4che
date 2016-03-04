@@ -75,7 +75,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
                             DuplicateUUIDException duplicateUUIDException = new DuplicateUUIDException(uuid, oldPath, newPath);
 
-                            log.warn("Duplicate UUID found while adding references to index",duplicateUUIDException);
+                            log.warn("Duplicate UUID found while adding references to index", duplicateUUIDException);
                             uuidDuplicateErrors.add(duplicateUUIDException);
                         }
 
@@ -96,17 +96,43 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         PathPattern.PathParser pathParser = referencePattern.parseIfMatches(path);
         if (pathParser != null) {
 
-            Path pathFromIndex = uuidToReferableIndex.get(pathParser.getParam("uuid"));
-
-            // not found
-            if (pathFromIndex == null) {
-                return null;
-            }
-
-            return super.getConfigurationNode(pathFromIndex.toSimpleEscapedXPath(), configurableClass);
+            String uuid = pathParser.getParam("uuid");
+            return getNodeByUUID(configurableClass, uuid);
         }
 
         return super.getConfigurationNode(path, configurableClass);
+    }
+
+    protected Object getNodeByUUID(Class configurableClass, String uuid) {
+        Path pathFromIndex = uuidToReferableIndex.get(uuid);
+
+        if (pathFromIndex != null) {
+            Object configurationNode = super.getConfigurationNode(pathFromIndex.toSimpleEscapedXPath(), configurableClass);
+
+            // verify correct uuid
+            boolean uuidMatches = false;
+            try {
+                uuidMatches = uuid.equals(((Map<String, Object>) configurationNode).get(Configuration.UUID_KEY));
+            } catch (Exception e) {
+                uuidMatches = false;
+            }
+
+            if (uuidMatches)
+                return configurationNode;
+
+            log.warn("Configuration UUID index is out of sync: uuid '" + uuid + "' indexed but does not refer a corresponding object");
+            // fallback
+            return super.getConfigurationNode(referencePattern.set("uuid",uuid).path(), configurableClass);
+        } else {
+
+            // not found, try to fall back in case index got outdated for some reason
+            Object node = super.getConfigurationNode(referencePattern.set("uuid",uuid).path(), configurableClass);
+            if (node != null) {
+                log.warn("Configuration UUID index is out of sync: uuid '" + uuid + "' not indexed but was found");
+            }
+            // fallback
+            return node;
+        }
     }
 
     @Override

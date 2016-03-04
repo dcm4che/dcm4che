@@ -4,6 +4,7 @@ import org.dcm4che3.conf.core.DelegatingConfiguration;
 import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.DuplicateUUIDException;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.util.ConfigNodeTraverser;
 import org.dcm4che3.conf.core.util.PathPattern;
@@ -48,31 +49,44 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     }
 
     /**
-     * @return true if no duplicates detected, false otherwise
+     * @return list of duplicate uuid exceptions, list is empty if no duplicates detected
      */
-    protected boolean addReferablesToIndex(List<String> pathItems, Object configNode) {
-        final boolean[] noDuplicates = new boolean[]{true};
+    protected List<DuplicateUUIDException> addReferablesToIndex(List<String> pathItems, Object configNode) {
+
+        final ArrayList<DuplicateUUIDException> uuidDuplicateErrors = new ArrayList<DuplicateUUIDException>();
+
         if (configNode instanceof Map) {
             ConfigNodeTraverser.traverseMapNode(configNode, new PathTrackingConfigNodeFilter(pathItems) {
                 @Override
                 public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
                     if (Configuration.UUID_KEY.equals(key)) {
                         Object last = path.pop();
-                        Path put = uuidToReferableIndex.put((String) value, new Path(path.descendingIterator()));
-
-                        if (put != null) {
-                            log.warn("Detected duplicate UUID in configuration: " + value);
-                            noDuplicates[0] = false;
+                        String uuid;
+                        try {
+                            uuid = (String) value;
+                        } catch (ClassCastException e) {
+                            throw new IllegalArgumentException("UUID must be a string, got " + value);
                         }
 
-                        path.push(last);
+                        Path newPath = new Path(this.path.descendingIterator());
+                        Path oldPath = uuidToReferableIndex.put(uuid, newPath);
+
+                        if (oldPath != null) {
+
+                            DuplicateUUIDException duplicateUUIDException = new DuplicateUUIDException(uuid, oldPath, newPath);
+
+                            log.warn("Duplicate UUID found while adding references to index",duplicateUUIDException);
+                            uuidDuplicateErrors.add(duplicateUUIDException);
+                        }
+
+                        this.path.push(last);
                     }
                 }
             });
         } else
             throw new ConfigurationException("Unexpected node type:" + configNode);
 
-        return noDuplicates[0];
+        return uuidDuplicateErrors;
 
         // TODO add proper handling for lists
     }
@@ -120,8 +134,8 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     private List<String> getPathItemsOrFail(String path) {
         List<String> pathItems = Nodes.simpleOrPersistablePathToPathItemsOrNull(path);
-        if (pathItems==null) {
-            throw new ConfigurationException("Unexpected path '"+path+"'");
+        if (pathItems == null) {
+            throw new ConfigurationException("Unexpected path '" + path + "'");
         }
         return pathItems;
     }

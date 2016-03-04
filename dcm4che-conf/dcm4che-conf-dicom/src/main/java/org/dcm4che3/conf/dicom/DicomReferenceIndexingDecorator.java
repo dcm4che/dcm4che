@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * Extension to shortcut DicomPath lookups through reference index
+ *
  * @author rawmahn
  */
 public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator {

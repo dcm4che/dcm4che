@@ -1,19 +1,17 @@
 package org.dcm4che3.conf.dicom;
 
-import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.index.ReferenceIndexingDecorator;
 import org.dcm4che3.conf.core.util.PathPattern;
-import org.dcm4che3.net.Device;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
- *
- *
  * @author rawmahn
  */
 public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator {
@@ -21,89 +19,78 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(DicomReferenceIndexingDecorator.class);
 
 
-    public DicomReferenceIndexingDecorator(Configuration delegate, HashMap<String, Path> uuidToSimplePathCache) {
+    public DicomReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
         super(delegate, uuidToSimplePathCache);
     }
 
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
+        PathPattern.PathParser pp;
 
-        PathPattern.PathParser pp = DicomPath.DeviceUUIDByAnyUUID.parseIfMatches(liteXPathExpression);
+        pp = DicomPath.DeviceUUIDByAnyUUID.parseIfMatches(liteXPathExpression);
         if (pp != null) {
-            return handleDeviceUUIDByAnyUUID(pp);
+            return handleRefShortCut(pp, DicomPath.DeviceUUIDByAnyUUID);
         }
 
         pp = DicomPath.DeviceNameByUUID.parseIfMatches(liteXPathExpression);
-
         if (pp != null) {
-            return handleDeviceNameByUUID(pp);
+            return handleRefShortCut(pp, DicomPath.DeviceNameByUUID);
         }
 
         pp = DicomPath.DeviceNameByAEUUID.parseIfMatches(liteXPathExpression);
-
         if (pp != null) {
-            return handleDeviceNameByAEUUID(pp);
+            return handleRefShortCut(pp, DicomPath.DeviceNameByAEUUID);
         }
 
         return super.search(liteXPathExpression);
     }
 
-    private Iterator handleDeviceNameByAEUUID(PathPattern.PathParser pp) {
+    private Iterator handleRefShortCut(PathPattern.PathParser pp, DicomPath pathType) {
 
-        String uuid = pp.getParam("aeUUID");
+        String param;
+        int validLen = -1;
+        String suffix;
+        switch (pathType) {
+            case DeviceNameByUUID:
+                param = "deviceUUID";
+                validLen = 3;
+                suffix = "/dicomDeviceName";
+                break;
+            case DeviceUUIDByAnyUUID:
+                param = "UUID";
+                suffix = "/_.uuid";
+                break;
+            case DeviceNameByAEUUID:
+                param = "UUID";
+                suffix = "/dicomDeviceName";
+                break;
+            default:
+                throw new IllegalArgumentException();
 
-        Path path = uuidToReferableIndex.get(uuid);
+        }
+
+        String uuid = pp.getParam(param);
+
+        Path path = getPathByUUIDFromIndex(uuid);
 
         if (path == null)
             return Collections.emptyList().iterator();
 
-        if (!validateDevicePath(path)) {
+        if (!validateDevicePath(path, validLen)) {
             log.error("Unexpected path to device:" + path);
             return Collections.emptyList().iterator();
         }
 
-        return Collections.singletonList(getConfigurationNode(path.subPath(0, 3).toSimpleEscapedXPath() + "/dicomDeviceName", null)).iterator();
+        return Collections.singletonList(getConfigurationNode(path.toSimpleEscapedXPath() + suffix, null)).iterator();
     }
 
-    private Iterator handleDeviceNameByUUID(PathPattern.PathParser pp) {
-        String uuid = pp.getParam("deviceUUID");
+    private boolean validateDevicePath(Path path, int len) {
 
-        Path path = uuidToReferableIndex.get(uuid);
+        boolean lengthValid = len == -1 || path.getPathItems().size() == len;
 
-        if (path == null)
-            return Collections.emptyList().iterator();
-
-        if (!validateDevicePath(path) || path.getPathItems().size() != 3) {
-            log.error("Unexpected path to device:" + path);
-            return Collections.emptyList().iterator();
-        }
-
-        return Collections.singletonList(getConfigurationNode(path.toSimpleEscapedXPath() + "/dicomDeviceName", null)).iterator();
-    }
-
-    private Iterator handleDeviceUUIDByAnyUUID(PathPattern.PathParser devUUIDByAny) {
-        String uuid = devUUIDByAny.getParam("UUID");
-
-        Path path = uuidToReferableIndex.get(uuid);
-
-        if (path == null)
-            return Collections.emptyList().iterator();
-
-        if (!validateDevicePath(path)) {
-            log.error("Unexpected path to device:" + path);
-            return Collections.emptyList().iterator();
-        }
-
-        // we need to get to the parent device path
-        // so just take lvl 3
-
-        // return device uuid
-        return Collections.singletonList(getConfigurationNode(path.subPath(0, 3).toSimpleEscapedXPath() + "/_.uuid", null)).iterator();
-    }
-
-    private boolean validateDevicePath(Path path) {
         return "dicomConfigurationRoot".equals(path.getPathItems().get(0))
                 && "dicomDevicesRoot".equals(path.getPathItems().get(1))
-                && (path.getPathItems().get(2) instanceof String);
+                && (path.getPathItems().get(2) instanceof String)
+                && lengthValid;
     }
 }

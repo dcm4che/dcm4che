@@ -255,7 +255,7 @@ public class ConfigNodeTraverser {
                     }
                     filter.afterList(list);
                 } else
-                    throw new IllegalArgumentException("Illegal node type " + value.getClass());
+                    throw new IllegalArgumentException("Illegal node type " + value.getClass()+", node "+value);
                 filter.afterNodeElement(map, key, value);
             }
             filter.afterNode(map);

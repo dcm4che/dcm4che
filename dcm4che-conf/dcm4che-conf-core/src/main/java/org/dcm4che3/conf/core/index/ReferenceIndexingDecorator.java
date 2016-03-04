@@ -23,9 +23,9 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(ReferenceIndexingDecorator.class);
 
-    protected HashMap<String, Path> uuidToReferableIndex;
+    protected Map<String, Path> uuidToReferableIndex;
 
-    public ReferenceIndexingDecorator(Configuration delegate, HashMap<String, Path> uuidToSimplePathCache) {
+    public ReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
         super(delegate);
         uuidToReferableIndex = uuidToSimplePathCache;
     }
@@ -158,5 +158,9 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         }
 
         return super.search(liteXPathExpression);
+    }
+
+    protected Path getPathByUUIDFromIndex(String uuid) {
+        return uuidToReferableIndex.get(uuid);
     }
 }

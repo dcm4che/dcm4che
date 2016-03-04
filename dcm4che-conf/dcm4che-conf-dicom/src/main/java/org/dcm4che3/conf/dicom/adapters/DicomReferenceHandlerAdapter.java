@@ -72,10 +72,10 @@ public class DicomReferenceHandlerAdapter extends DefaultReferenceAdapter {
 
         // find corresponding corresponding device
         Configuration configuration = vitalizer.getContext(ConfigurationManager.class).getConfigurationStorage();
-        Iterator deviceNameIterator = configuration.search(DicomPath.DeviceUUIDByAnyUUID.set("UUID", uuid).path());
+        Iterator deviceUUIDIterator = configuration.search(DicomPath.DeviceUUIDByAnyUUID.set("UUID", uuid).path());
         String deviceUUID;
         try {
-            deviceUUID = (String) deviceNameIterator.next();
+            deviceUUID = (String) deviceUUIDIterator.next();
         } catch (Exception e) {
             throw new ConfigurationException("Cannot find a device that contains an object with UUID " + uuid, e);
         }

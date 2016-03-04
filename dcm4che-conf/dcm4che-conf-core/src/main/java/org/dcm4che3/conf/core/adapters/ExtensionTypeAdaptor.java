@@ -95,6 +95,7 @@ public class ExtensionTypeAdaptor implements ConfigTypeAdapter<Map<Class<?>, Obj
                                 "Could not 'inject' parent object into field specified by 'SetParentIntoField' annotation. Field '" + setParentIntoField.value() + "'", e);
                     }
 
+                //TODO: speedup new AnnotatedConfigurableProperty(extensionClass)
                 // proceed with deserialization
                 new ReflectiveAdapter(extension).fromConfigNode((Map<String, Object>) entry.getValue(), new AnnotatedConfigurableProperty(extensionClass), vitalizer, parent);
 

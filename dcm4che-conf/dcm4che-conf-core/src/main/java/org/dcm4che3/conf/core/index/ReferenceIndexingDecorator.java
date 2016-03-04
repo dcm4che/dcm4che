@@ -26,6 +26,9 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
     protected Map<String, Path> uuidToReferableIndex;
 
+    public ReferenceIndexingDecorator() {
+    }
+
     public ReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
         super(delegate);
         uuidToReferableIndex = uuidToSimplePathCache;
@@ -97,13 +100,21 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         if (pathParser != null) {
 
             String uuid = pathParser.getParam("uuid");
-            return getNodeByUUID(configurableClass, uuid);
+            try {
+                return  getNodeByUUID(configurableClass, uuid);
+            } catch (ConfIndexOutOfSyncException e) {
+                return super.getConfigurationNode(path, configurableClass);
+            }
         }
 
         return super.getConfigurationNode(path, configurableClass);
     }
 
-    protected Object getNodeByUUID(Class configurableClass, String uuid) {
+    /**
+     * A bit of resilience for the time being.
+     * Returns a node if it is successfully fetched from the cache by indexed path and validated against the uuid
+     */
+    protected Object getNodeByUUID(Class configurableClass, String uuid) throws ConfIndexOutOfSyncException {
         Path pathFromIndex = uuidToReferableIndex.get(uuid);
 
         if (pathFromIndex != null) {
@@ -120,18 +131,22 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
             if (uuidMatches)
                 return configurationNode;
 
-            log.warn("Configuration UUID index is out of sync: uuid '" + uuid + "' indexed but does not refer a corresponding object");
-            // fallback
-            return super.getConfigurationNode(referencePattern.set("uuid",uuid).path(), configurableClass);
+            log.error("Configuration UUID index is out of sync: uuid '" + uuid + "' indexed but does not refer to a corresponding object." +
+                    "\n Index points to object: " + configurationNode);
+
+            throw new ConfIndexOutOfSyncException();
+
         } else {
 
             // not found, try to fall back in case index got outdated for some reason
-            Object node = super.getConfigurationNode(referencePattern.set("uuid",uuid).path(), configurableClass);
+            Object node = super.getConfigurationNode(referencePattern.set("uuid", uuid).path(), configurableClass);
             if (node != null) {
-                log.warn("Configuration UUID index is out of sync: uuid '" + uuid + "' not indexed but was found");
+                log.error("Configuration UUID index is out of sync: uuid '" + uuid + "' not indexed but was found");
+                throw new ConfIndexOutOfSyncException();
+            } else {
+                log.warn("Looked up UUID of non-existing configuration object: '" + uuid);
+                return null;
             }
-            // fallback
-            return node;
         }
     }
 
@@ -187,14 +202,20 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
         PathPattern.PathParser pathParser = referencePattern.parseIfMatches(liteXPathExpression);
         if (pathParser != null) {
 
-            Path pathFromIndex = uuidToReferableIndex.get(pathParser.getParam("uuid"));
-
-            // not found
-            if (pathFromIndex == null) {
-                return Collections.emptyList().iterator();
+            String uuid = pathParser.getParam("uuid");
+            Object nodeByUUID = null;
+            try {
+                nodeByUUID = getNodeByUUID(null, uuid);
+            } catch (ConfIndexOutOfSyncException e) {
+                return super.search(liteXPathExpression);
             }
 
-            return super.search(pathFromIndex.toSimpleEscapedXPath());
+            // not found
+            if (nodeByUUID == null) {
+                return Collections.emptyList().iterator();
+            } else {
+                return Collections.singleton(nodeByUUID).iterator();
+            }
         }
 
         return super.search(liteXPathExpression);

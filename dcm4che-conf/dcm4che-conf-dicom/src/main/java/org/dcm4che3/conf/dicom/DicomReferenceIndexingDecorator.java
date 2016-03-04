@@ -3,6 +3,7 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
+import org.dcm4che3.conf.core.index.ConfIndexOutOfSyncException;
 import org.dcm4che3.conf.core.index.ReferenceIndexingDecorator;
 import org.dcm4che3.conf.core.util.PathPattern;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Extension to shortcut DicomPath lookups through reference index
+ * Extension to shortcut DicomPath lookups through the reference index
  *
  * @author rawmahn
  */
@@ -20,6 +21,8 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(DicomReferenceIndexingDecorator.class);
 
+    public DicomReferenceIndexingDecorator() {
+    }
 
     public DicomReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
         super(delegate, uuidToSimplePathCache);
@@ -31,23 +34,23 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
 
         pp = DicomPath.DeviceUUIDByAnyUUID.parseIfMatches(liteXPathExpression);
         if (pp != null) {
-            return handleRefShortCut(pp, DicomPath.DeviceUUIDByAnyUUID);
+            return handleRefShortCut(pp, DicomPath.DeviceUUIDByAnyUUID, liteXPathExpression);
         }
 
         pp = DicomPath.DeviceNameByUUID.parseIfMatches(liteXPathExpression);
         if (pp != null) {
-            return handleRefShortCut(pp, DicomPath.DeviceNameByUUID);
+            return handleRefShortCut(pp, DicomPath.DeviceNameByUUID, liteXPathExpression);
         }
 
         pp = DicomPath.DeviceNameByAEUUID.parseIfMatches(liteXPathExpression);
         if (pp != null) {
-            return handleRefShortCut(pp, DicomPath.DeviceNameByAEUUID);
+            return handleRefShortCut(pp, DicomPath.DeviceNameByAEUUID, liteXPathExpression);
         }
 
         return super.search(liteXPathExpression);
     }
 
-    private Iterator handleRefShortCut(PathPattern.PathParser pp, DicomPath pathType) {
+    private Iterator handleRefShortCut(PathPattern.PathParser pp, DicomPath pathType, String originalRequestPath) {
 
         String param;
         int validLen = -1;
@@ -73,20 +76,17 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
 
         String uuid = pp.getParam(param);
 
+        // resilience - double check
+        // TODO: speed-up/cleanup ~ 8.2
+        try {
+            getNodeByUUID(null, uuid);
+        } catch (ConfIndexOutOfSyncException e) {
+            return super.search(originalRequestPath);
+        }
+
         Path path = getPathByUUIDFromIndex(uuid);
 
-
         if (path == null) {
-
-            // double check
-            Object nodeByUUID = getNodeByUUID(null, uuid);
-
-            if (nodeByUUID!=null) {
-                // reference index out of sync
-                //TODO:!!!
-            }
-
-
             return Collections.emptyList().iterator();
         }
 

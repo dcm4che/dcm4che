@@ -38,7 +38,25 @@
 
 package org.dcm4che3.tool.findscu.test;
 
-import static org.junit.Assert.assertTrue;
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.ElementDictionary;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.UID;
+import org.dcm4che3.data.VR;
+import org.dcm4che3.net.ApplicationEntity;
+import org.dcm4che3.net.Association;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.DimseRSPHandler;
+import org.dcm4che3.net.IncompatibleConnectionException;
+import org.dcm4che3.net.QueryOption;
+import org.dcm4che3.net.Status;
+import org.dcm4che3.tool.common.test.TestResult;
+import org.dcm4che3.tool.common.test.TestTool;
+import org.dcm4che3.tool.findscu.FindSCU;
+import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -49,18 +67,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.ElementDictionary;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
-import org.dcm4che3.data.VR;
-import org.dcm4che3.net.*;
-import org.dcm4che3.tool.common.test.TestResult;
-import org.dcm4che3.tool.common.test.TestTool;
-import org.dcm4che3.tool.findscu.FindSCU;
-import org.dcm4che3.tool.findscu.FindSCU.InformationModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tool for using {@link FindSCU} within tests.
@@ -111,6 +118,22 @@ public class QueryTool implements TestTool {
 
         this.queryModel = queryModelResolved;
         this.relational = relational;
+    }
+
+    /**
+     * Query method setting parameter fuzzy = false and dataTimeCombined = false
+     *
+     * @param testDescription The purpose of the query
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws IncompatibleConnectionException
+     * @throws GeneralSecurityException
+     */
+    public void query(String testDescription) throws IOException,
+            InterruptedException, IncompatibleConnectionException,
+            GeneralSecurityException {
+        doQuery(testDescription, false, false);
     }
 
     public void query(String testDescription, boolean fuzzy, boolean dataTimeCombined) throws IOException,
@@ -164,7 +187,7 @@ public class QueryTool implements TestTool {
             main.query(getDimseRSPHandler(main.getAssociation().nextMessageID()));
 
         } finally {
-            main.close(); // is waiting for all the responsens to be complete
+            main.close(); // is waiting for all the responses to be complete
             executorService.shutdown();
             scheduledExecutorService.shutdown();
 
@@ -220,7 +243,7 @@ public class QueryTool implements TestTool {
 
     private DimseRSPHandler getDimseRSPHandler(int messageID) {
 
-        DimseRSPHandler rspHandler = new DimseRSPHandler(messageID) {
+        return new DimseRSPHandler(messageID) {
 
             @Override
             public void onDimseRSP(Association as, Attributes cmd,
@@ -229,8 +252,6 @@ public class QueryTool implements TestTool {
                 onCFindResponse(cmd, data);
             }
         };
-
-        return rspHandler;
     }
 
     protected void onCFindResponse(Attributes cmd, Attributes data) {

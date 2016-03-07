@@ -138,7 +138,7 @@ public class QC {
             case PATIENT_LINK:
             case PATIENT_MERGE:
             case PATIENT_UNLINK:
-            case PATIENT_UPDATE_ID:
+            case PATIENT_UPDATEIDS:
                 JsonArray qcPatientMessage = initPatientObject(qc);
                 qc.setUrl(adjustPatientURL(qc).replace(" ", "%20"));
                 return sendRequest(opDescription, qc, qcPatientMessage);

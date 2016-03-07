@@ -78,13 +78,13 @@ public class QCTool implements TestTool {
      * @param testDescription
      *            the test description
      * @param mergeUIDs
-     *            the uids for the studies to merge
+     *            the sop instance uids of the studies to merge
      * @param targetStudyAttrs
      *            the target study attributes to be updated
      * @param targetSeriesAttrs
      *            the target series attributes to be updated
      * @param pid
-     *            patient ID
+     *            the patient ID of the target patient
      */
     public void merge(String testDescription,
             ArrayList<String> mergeUIDs, Attributes targetStudyAttrs,

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  */
 @Deprecated
 public class XNodeUtil {
-    private final static String IDENTIFIER = "@?[a-zA-Z\\d_]+";
+    private final static String IDENTIFIER = "@?[a-zA-Z\\d_\\.]+";
     private final static String IDENTIFIER_NAMED = "(?<identifier>" + IDENTIFIER + ")";
     private static final String VALUE = "(('.+?')|(\\-?[\\d]+)|true|false)";
     private final static String XPREDICATE = "(" + IDENTIFIER + "=" + VALUE + ")";

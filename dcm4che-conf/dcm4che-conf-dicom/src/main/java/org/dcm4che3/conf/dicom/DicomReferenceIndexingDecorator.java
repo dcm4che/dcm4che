@@ -90,7 +90,14 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
             return Collections.emptyList().iterator();
         }
 
-        if (!validateDevicePath(path, validLen)) {
+        if (path.getPathItems().size() < 3) {
+            log.error("Unexpected path to device - wrong length: " + path);
+            return Collections.emptyList().iterator();
+        }
+
+        path = path.subPath(0, 3);
+
+        if (!validateDevicePath(path)) {
             log.error("Unexpected path to device:" + path);
             return Collections.emptyList().iterator();
         }
@@ -98,13 +105,10 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
         return Collections.singletonList(getConfigurationNode(path.toSimpleEscapedXPath() + suffix, null)).iterator();
     }
 
-    private boolean validateDevicePath(Path path, int len) {
-
-        boolean lengthValid = len == -1 || path.getPathItems().size() == len;
+    private boolean validateDevicePath(Path path) {
 
         return "dicomConfigurationRoot".equals(path.getPathItems().get(0))
                 && "dicomDevicesRoot".equals(path.getPathItems().get(1))
-                && (path.getPathItems().get(2) instanceof String)
-                && lengthValid;
+                && (path.getPathItems().get(2) instanceof String);
     }
 }

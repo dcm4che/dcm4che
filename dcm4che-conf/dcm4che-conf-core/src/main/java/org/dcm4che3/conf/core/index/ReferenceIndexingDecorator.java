@@ -72,7 +72,10 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
                         }
 
                         Path newPath = new Path(this.path.descendingIterator());
-                        Path oldPath = uuidToReferableIndex.put(uuid, newPath);
+
+                        // using return value of put does not seem to work as expected with infinispan (maybe some issues with isolation...)
+                        Path oldPath = uuidToReferableIndex.get(uuid);
+                        uuidToReferableIndex.put(uuid, newPath);
 
                         if (oldPath != null) {
 

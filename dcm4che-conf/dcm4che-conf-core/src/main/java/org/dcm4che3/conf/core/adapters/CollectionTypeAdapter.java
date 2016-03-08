@@ -53,42 +53,52 @@ import java.util.Map;
 /**
  * @author Roman K
  */
-public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAdapter<T, T> {
+public class CollectionTypeAdapter< V extends Collection,T extends Collection> implements ConfigTypeAdapter<V, T> {
 
-    private Class clazz;
+    private Class<V> clazz;
+    private Class<T> clazzNode;
 
-    public CollectionTypeAdapter(Class<? extends T> clazz) {
-        this.clazz = clazz;
+    public CollectionTypeAdapter(Class<? extends V> clazzVitalized, Class<? extends T> clazzNode) {
+        this.clazz = (Class<V>) clazzVitalized;
+        this.clazzNode = (Class<T>) clazzNode;
     }
 
-    private T createCollection() throws ConfigurationException {
+    private V createCollection() throws ConfigurationException {
         try {
-            return (T) clazz.newInstance();
+            return clazz.newInstance();
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
     }
 
-    private Collection createCollectionDeserialized(AnnotatedConfigurableProperty property) throws ConfigurationException {
+    private T createCollectionNode() throws ConfigurationException {
+        try {
+            return clazzNode.newInstance();
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private V createCollectionVitalized(AnnotatedConfigurableProperty property) throws ConfigurationException {
         if (EnumSet.class.isAssignableFrom(property.getRawClass())) {
             Class enumClass = (Class) property.getTypeForGenericsParameter(0);
-            return EnumSet.noneOf(enumClass);
+            return (V) EnumSet.noneOf(enumClass);
         } else
             return createCollection();
     }
 
     @Override
-    public T fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
+    public V fromConfigNode(T configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
 
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 
         ConfigTypeAdapter elementAdapter;
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             elementAdapter = vitalizer.getReferenceTypeAdapter();
         else
             elementAdapter = vitalizer.lookupTypeAdapter(elementPseudoProperty);
 
-        T collection = (T) createCollectionDeserialized(property);
+        V collection = createCollectionVitalized(property);
 
         for (Object o : configNode)
             collection.add(elementAdapter.fromConfigNode(o, elementPseudoProperty, vitalizer, collection));
@@ -97,17 +107,17 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
     }
 
     @Override
-    public T toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
+    public T toConfigNode(V object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
 
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 
         ConfigTypeAdapter elementAdapter;
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             elementAdapter = vitalizer.getReferenceTypeAdapter();
         else
             elementAdapter = vitalizer.lookupTypeAdapter(elementPseudoProperty);
 
-        T node = createCollection();
+        T node = createCollectionNode();
         for (Object element : object)
             node.add(elementAdapter.toConfigNode(element, elementPseudoProperty, vitalizer));
 
@@ -125,7 +135,7 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
         AnnotatedConfigurableProperty elementPseudoProperty = property.getPseudoPropertyForCollectionElement();
 
         ConfigTypeAdapter elementAdapter;
-        if (property.getAnnotation(ConfigurableProperty.class).collectionOfReferences())
+        if (property.isCollectionOfReferences())
             elementAdapter = vitalizer.getReferenceTypeAdapter();
         else
             elementAdapter = vitalizer.lookupTypeAdapter(elementPseudoProperty);
@@ -139,7 +149,7 @@ public class CollectionTypeAdapter<T extends Collection> implements ConfigTypeAd
     @Override
     public T normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException {
         if (configNode == null)
-            return createCollection();
+            return createCollectionNode();
         return (T) configNode;
     }
 }

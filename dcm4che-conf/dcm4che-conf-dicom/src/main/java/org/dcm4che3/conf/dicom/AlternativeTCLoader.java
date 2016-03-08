@@ -66,6 +66,7 @@ public class AlternativeTCLoader {
 
 
     DicomConfiguration config;
+
     private TCConfiguration tcConfig;
 
     public AlternativeTCLoader(DicomConfiguration config) {
@@ -74,6 +75,9 @@ public class AlternativeTCLoader {
 
 
     private TCConfiguration getTCConfig() throws ConfigurationException {
+
+        // TODO: speed-up: CDIify, cache, and hook reload upon config update - gives ~ 20% for loading
+
         if (tcConfig == null)
             tcConfig = config.getDicomConfigurationExtension(TransferCapabilityConfigExtension.class).getTransferCapabilityConfig();
         return tcConfig;

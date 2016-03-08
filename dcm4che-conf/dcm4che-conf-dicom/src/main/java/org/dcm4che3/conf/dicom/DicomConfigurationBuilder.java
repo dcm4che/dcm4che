@@ -41,6 +41,7 @@ package org.dcm4che3.conf.dicom;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.api.Path;
 import org.dcm4che3.conf.core.normalization.DefaultsAndNullFilterDecorator;
 import org.dcm4che3.conf.core.olock.HashBasedOptimisticLockingConfiguration;
 import org.dcm4che3.conf.core.storage.SimpleCachingConfigurationDecorator;
@@ -68,6 +69,7 @@ public class DicomConfigurationBuilder {
     private Configuration configurationStorage = null;
     private Map<Class, List<Class>> extensionClassesMap = new HashMap<Class, List<Class>>();
     private boolean doOptimisticLocking = false;
+    private boolean uuidIndexing = false;
 
     private void setLdapProps(Hashtable<?, ?> ldapProps) {
         this.ldapProps = ldapProps;
@@ -126,6 +128,13 @@ public class DicomConfigurationBuilder {
         return this;
     }
 
+
+    public DicomConfigurationBuilder uuidIndexing() {
+        this.uuidIndexing = true;
+        return this;
+    }
+
+
     public CommonDicomConfigurationWithHL7 build() throws ConfigurationException {
 
         List<Class> allExtensions = new ArrayList<Class>();
@@ -178,6 +187,9 @@ public class DicomConfigurationBuilder {
         if (cache)
             configurationStorage = new SimpleCachingConfigurationDecorator(configurationStorage, props);
 
+        if (uuidIndexing)
+            configurationStorage = new DicomReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
+
         if (doOptimisticLocking)
             configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions, configurationStorage);
 
@@ -204,6 +216,7 @@ public class DicomConfigurationBuilder {
         return new DicomConfigurationBuilder(props);
     }
 
+    @Deprecated
     public static DicomConfigurationBuilder newLdapConfigurationBuilder(Hashtable<?, ?> ldapProps)
             throws ConfigurationException {
         Hashtable<Object, Object> props = new Hashtable<Object, Object>();

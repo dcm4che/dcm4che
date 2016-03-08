@@ -37,6 +37,8 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
     private static final Logger log = LoggerFactory.getLogger(HashBasedOptimisticLockingConfiguration.class);
 
     public static final String NOT_CALCULATED_YET = "not-calculated-yet";
+    public static final String OLD_OLOCK_HASH_KEY = "#old_hash";
+
     private BatchRunner mergeBatchRunner;
     private List<Class> allExtensionClasses;
 
@@ -72,16 +74,16 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
                 }
 
                 // save old hashes in node being persisted
-                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockCopyFilter("#old_hash"));
+                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockCopyFilter(OLD_OLOCK_HASH_KEY));
 
                 // calculate current hashes in node being persisted
-                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockHashCalcFilter("#old_hash"));
+                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new OLockHashCalcFilter(OLD_OLOCK_HASH_KEY));
 
                 ////// merge the object /////
                 ConfigNodeTraverser.dualTraverseMapNodes(nodeInStorage, nodeBeingPersisted, new OLockMergeDualFilter());
 
                 // filter the #hash clutter out
-                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter("#old_hash", Configuration.OLOCK_HASH_KEY));
+                ConfigNodeTraverser.traverseMapNode(nodeBeingPersisted, new CleanupFilter(OLD_OLOCK_HASH_KEY, Configuration.OLOCK_HASH_KEY));
 
                 delegate.persistNode(path, nodeBeingPersisted, configurableClass);
             }
@@ -92,10 +94,9 @@ public class HashBasedOptimisticLockingConfiguration extends DelegatingConfigura
     @Override
     public Object getConfigurationNode(String path, Class configurableClass) throws ConfigurationException {
 
-        // calculate olock hashes
         Object configurationNode = super.getConfigurationNode(path, configurableClass);
 
-        // if called with no configurableClass, omit hashes
+        //  calculate olock hashes if called with configurableClass
         if (configurableClass != null && configurationNode != null) {
             ConfigNodeTraverser.traverseNodeTypesafe(configurationNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, new HashMarkingTypesafeNodeFilter());
             ConfigNodeTraverser.traverseMapNode(configurationNode, new OLockHashCalcFilter());

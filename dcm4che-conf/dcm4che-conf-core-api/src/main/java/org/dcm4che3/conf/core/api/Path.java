@@ -40,47 +40,100 @@
 
 package org.dcm4che3.conf.core.api;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
+ * <b>CAUTION:</b>
+ * List indexes in the path representation start with 0. When converted to XPath, 1 is added as in XPath indexes start with 1.
+ *
  * @author Roman K
  */
-public class Path {
+public class Path implements Serializable {
+
+    private static final long serialVersionUID = 1069976968612802603L;
 
     public static final Path ROOT = new Path();
 
-    final List<String> pathItems;
-    private String simpleEscapeXPath;
+    final List<Object> pathItems;
+    private transient String simpleEscapedXPath;
 
     public Path() {
-        pathItems = Collections.unmodifiableList(new ArrayList<String>());
+        pathItems = Collections.unmodifiableList(new ArrayList<Object>());
     }
 
     public Path(String... pathItems) {
-        ArrayList<String> strings = new ArrayList<String>();
-        for (String pathItem : pathItems) {
-            strings.add(pathItem);
-        }
+
+        ArrayList<Object> strings = new ArrayList<Object>(pathItems.length);
+        Collections.addAll(strings, pathItems);
         this.pathItems = Collections.unmodifiableList(strings);
+
+        validate();
     }
 
-    public Path(List<String> pathItems) {
-        this.pathItems = Collections.unmodifiableList(new ArrayList<String>(pathItems));
+    private void validate() {
+        for (Object pathItem : this.pathItems) {
+            if (!((pathItem instanceof String) || (pathItem instanceof Integer)))
+                throw new IllegalArgumentException("Item '" + pathItem + "' is not allowed in path");
+        }
     }
 
-    public List<String> getPathItems() {
+    public Path(List<?> pathItems) {
+        this.pathItems = Collections.unmodifiableList(new ArrayList<Object>(pathItems));
+        validate();
+    }
+
+    public Path(Iterator<Object> stringIterator) {
+        ArrayList<Object> strings = new ArrayList<Object>();
+        while (stringIterator.hasNext())
+            strings.add(stringIterator.next());
+        this.pathItems = Collections.unmodifiableList(strings);
+        validate();
+    }
+
+    public List<Object> getPathItems() {
         return pathItems;
     }
 
+    /**
+     * @param indexFrom inclusive
+     * @param indexTo   NOT inclusive
+     */
+    public Path subPath(int indexFrom, int indexTo) {
+
+        ArrayList<Object> newItems = new ArrayList<Object>();
+        while (indexFrom < indexTo) {
+            newItems.add(pathItems.get(indexFrom++));
+        }
+
+        return new Path(newItems);
+    }
+
     public String toSimpleEscapedXPath() {
-        if (simpleEscapeXPath != null)
-            return simpleEscapeXPath;
+        if (simpleEscapedXPath != null)
+            return simpleEscapedXPath;
 
         String xpath = "";
-        for (String item : pathItems) xpath += "/" + item.replace("/", "\\/");
-        simpleEscapeXPath = xpath;
+        for (Object item : pathItems) {
+
+            if (item instanceof String) {
+                xpath += "/" + ((String) item).replace("/", "\\/");
+            } else if (item instanceof Integer) {
+                // XPath indexes START WITH 1
+                xpath += "[" + ((Integer) item + 1) + "]";
+            } else
+                throw new RuntimeException("Unexpected error");
+
+        }
+        simpleEscapedXPath = xpath;
         return xpath;
+    }
+
+    @Override
+    public String toString() {
+        return toSimpleEscapedXPath();
     }
 }

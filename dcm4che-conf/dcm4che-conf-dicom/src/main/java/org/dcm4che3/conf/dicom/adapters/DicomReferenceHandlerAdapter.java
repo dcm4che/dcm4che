@@ -55,7 +55,7 @@ import org.dcm4che3.net.Device;
 import java.util.Iterator;
 
 
-public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
+public class DicomReferenceHandlerAdapter extends DefaultReferenceAdapter {
 
     public DicomReferenceHandlerAdapter(BeanVitalizer vitalizer, Configuration config) {
         super(vitalizer, config);
@@ -72,10 +72,10 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
 
         // find corresponding corresponding device
         Configuration configuration = vitalizer.getContext(ConfigurationManager.class).getConfigurationStorage();
-        Iterator deviceNameIterator = configuration.search(DicomPath.DeviceUUIDByAnyUUID.set("UUID", uuid).path());
+        Iterator deviceUUIDIterator = configuration.search(DicomPath.DeviceUUIDByAnyUUID.set("UUID", uuid).path());
         String deviceUUID;
         try {
-            deviceUUID = (String) deviceNameIterator.next();
+            deviceUUID = (String) deviceUUIDIterator.next();
         } catch (Exception e) {
             throw new ConfigurationException("Cannot find a device that contains an object with UUID " + uuid, e);
         }
@@ -83,10 +83,9 @@ public class DicomReferenceHandlerAdapter<T> extends DefaultReferenceAdapter {
         Device device = vitalizer.getInstanceFromThreadLocalPoolByUUID(deviceUUID, Device.class);
 
         // create instance and put it into the pool
-        // must be done after checking whether the device is in the pool since the instance might be that device itself
+        // at this point we know it's not found in there
         Object instance = vitalizer.newInstance(property.getRawClass());
         vitalizer.registerInstanceInThreadLocalPool(uuid, instance);
-
 
         // is this device already there?
         // if yes, then this fresh instance will get populated later when the deserializer gets there (ReflectiveAdapter will find it in the pool)

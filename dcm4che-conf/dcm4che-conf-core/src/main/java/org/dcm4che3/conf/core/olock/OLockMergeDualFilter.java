@@ -65,6 +65,8 @@ import java.util.*;
  */
 class OLockMergeDualFilter extends ADualNodeFilter {
 
+    public static final String OLD_OLOCK_HASH_KEY = HashBasedOptimisticLockingConfiguration.OLD_OLOCK_HASH_KEY;
+
     final Deque<String> path = new ArrayDeque<String>();
 
     /**
@@ -90,12 +92,12 @@ class OLockMergeDualFilter extends ADualNodeFilter {
 
             // We are NOT merging now
 
-            if (newNode.get("#old_hash").equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
+            if (newNode.get(OLD_OLOCK_HASH_KEY).equals(newNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then we swap and turn on merging (from old to new)
                 isMerging.push(true);
                 swap(oldNode, newNode);
             } else {
-                if (newNode.get("#old_hash").equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
+                if (newNode.get(OLD_OLOCK_HASH_KEY).equals(oldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed - keep going
                     isMerging.push(false);
                 } else {
@@ -111,11 +113,11 @@ class OLockMergeDualFilter extends ADualNodeFilter {
             Map<String, Object> actualOldNode = newNode;
 
 
-            if (actualNewNode.get("#old_hash").equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
+            if (actualNewNode.get(OLD_OLOCK_HASH_KEY).equals(actualNewNode.get(Configuration.OLOCK_HASH_KEY))) {
                 // If we met a olocked node where new node did not change, then keep on merging (from old to new)
                 isMerging.push(true);
             } else {
-                if (actualNewNode.get("#old_hash").equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
+                if (actualNewNode.get(OLD_OLOCK_HASH_KEY).equals(actualOldNode.get(Configuration.OLOCK_HASH_KEY))) {
                     // If we met a olocked node where new node changed, then check the hash in old node and if it's not changed, swap and switch to non-merging mode
                     isMerging.push(false);
                     swap(actualOldNode, actualNewNode);

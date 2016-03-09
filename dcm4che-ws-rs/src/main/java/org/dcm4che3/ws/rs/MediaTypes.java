@@ -298,4 +298,23 @@ public class MediaTypes {
         }
         throw new IllegalArgumentException(bulkdataMediaType.toString());
     }
+
+    public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {
+        return type1.getType().equalsIgnoreCase(type2.getType())
+                &&  type1.getSubtype().equalsIgnoreCase(type2.getSubtype());
+    }
+
+
+    public static MediaType getMultiPartRelatedType(MediaType type) {
+        return equalsIgnoreParameters(MULTIPART_RELATED_TYPE, type)
+                ? MediaType.valueOf(type.getParameters().get("type"))
+                : null;
+    }
+
+    public static String getTransferSyntax(MediaType type) {
+        return type != null && equalsIgnoreParameters(APPLICATION_DICOM_TYPE, type)
+                ? type.getParameters().get("transfer-syntax")
+                : null;
+    }
+
 }

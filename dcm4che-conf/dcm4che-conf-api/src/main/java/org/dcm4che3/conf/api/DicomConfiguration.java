@@ -41,6 +41,8 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.ApplicationEntity;
 import org.dcm4che3.net.Device;
 
+import java.util.List;
+
 /**
  * This interface should be used by vendors/integrators to access and manipulate the DICOM configuration in a type-safe way.
  * Always give the preference to this interface when possible.
@@ -113,6 +115,13 @@ public interface DicomConfiguration {
      * @throws ConfigurationException
      */
     String[] listDeviceNames() throws ConfigurationException;
+
+    /**
+     * Returns all AE names from all devices from the configuration backend
+     * @return AE names
+     * @throws org.dcm4che3.conf.core.api.ConfigurationException
+     */
+    List<String> listAllAETitles() throws ConfigurationException;
 
     /**
      * Invalidates any present cached state for the configuration storage view of the client.

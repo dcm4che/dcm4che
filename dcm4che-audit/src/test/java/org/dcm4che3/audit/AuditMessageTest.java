@@ -181,8 +181,8 @@ public class AuditMessageTest {
         desc.add("description1");
         acc.add(AuditMessages.createAccession("12341234"));
         mpps.add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
-        sopC.add(AuditMessages.createSOPClass("1.2.840.10008.5.1.4.1.1.2", 1500));
-        sopC.add(AuditMessages.createSOPClass("1.2.840.10008.5.1.4.1.1.11.1", 3));
+        sopC.add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.2", 1500));
+        sopC.add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
         ParticipantObjectContainsStudy pocs = new ParticipantObjectContainsStudy();
         pocs.getStudyIDs().add(AuditMessages.createStudyIDs("1.2.840.10008.2.3.4.5.6.7.78.8"));
         msg.getParticipantObjectIdentification().add(

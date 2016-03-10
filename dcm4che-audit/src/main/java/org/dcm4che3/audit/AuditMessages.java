@@ -698,10 +698,13 @@ public class AuditMessages {
         return mpps;
     }
 
-    public static SOPClass createSOPClass(String uid, Integer numI) {
+    public static SOPClass createSOPClass(HashSet<String> instances, String uid, Integer numI) {
         SOPClass sopClass = new SOPClass();
         sopClass.setUID(uid);
         sopClass.setNumberOfInstances(numI);
+        if (null != instances)
+            for (String i : instances)
+                sopClass.getInstance().add(createInstance(i));
         return sopClass;
     }
 

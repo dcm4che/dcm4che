@@ -111,9 +111,9 @@ public class Compressor extends Decompressor implements Closeable {
             if (pmi.isSubSambled())
                 throw new UnsupportedOperationException(
                         "Unsupported Photometric Interpretation: " + pmi);
-            if (this.pixeldata.length < length)
+            if (this.pixeldata.length() < length)
                 throw new IllegalArgumentException(
-                        "Pixel data too short: " + this.pixeldata.length
+                        "Pixel data too short: " + this.pixeldata.length()
                         + " instead " + length + " bytes");
         }
         embeddedOverlays = Overlays.getEmbeddedOverlayGroupOffsets(dataset);
@@ -347,17 +347,17 @@ public class Compressor extends Decompressor implements Closeable {
         if (decompressor != null)
             return decompressFrame(iis, frameIndex);
 
-        iis.setByteOrder(pixeldata.bigEndian
+        iis.setByteOrder(pixeldata.bigEndian()
                 ? ByteOrder.BIG_ENDIAN
                 : ByteOrder.LITTLE_ENDIAN);
-        iis.seek(pixeldata.offset + frameLength * frameIndex);
+        iis.seek(pixeldata.offset() + frameLength * frameIndex);
         DataBuffer db = bi.getRaster().getDataBuffer();
         switch (db.getDataType()) {
         case DataBuffer.TYPE_BYTE:
             byte[][] data = ((DataBufferByte) db).getBankData();
             for (byte[] bs : data)
                 iis.readFully(bs);
-            if (pixeldata.bigEndian && pixeldataVR.vr == VR.OW)
+            if (pixeldata.bigEndian() && pixeldataVR.vr == VR.OW)
                 ByteUtils.swapShorts(data);
             break;
         case DataBuffer.TYPE_USHORT:

@@ -176,7 +176,7 @@ public class DicomImageReader extends ImageReader {
             pixelDataVR = holder.vr;
             if (value instanceof BulkData) {
                 pixelData = (BulkData) value;
-                pixelDataLength = pixelData.length;
+                pixelDataLength = pixelData.length();
             } else { // value instanceof Fragments)
                 pixelDataFragments = (Fragments) value;
                 pixelDataLength = -1;
@@ -322,7 +322,7 @@ public class DicomImageReader extends ImageReader {
                 iis.setByteOrder(bigEndian()
                         ? ByteOrder.BIG_ENDIAN
                         : ByteOrder.LITTLE_ENDIAN);
-                iis.seek(pixelData.offset + frameIndex * frameLength);
+                iis.seek(pixelData.offset() + frameIndex * frameLength);
             }
             if (buf instanceof DataBufferByte) {
                 byte[][] data = ((DataBufferByte) buf).getBankData();

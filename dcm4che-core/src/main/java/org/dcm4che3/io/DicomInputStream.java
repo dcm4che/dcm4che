@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class DicomInputStream extends FilterInputStream
-    implements DicomInputHandler {
+    implements DicomInputHandler, BulkDataCreator {
 
     public enum IncludeBulkData { NO, YES, URI }
 
@@ -121,6 +121,7 @@ public class DicomInputStream extends FilterInputStream
     private VR vr;
     private int length;
     private DicomInputHandler handler = this;
+    private BulkDataCreator bulkDataCreator = this;
     private BulkDataDescriptor bulkDataDescriptor = BulkDataDescriptor.DEFAULT;
     private final byte[] buffer = new byte[12];
     private List<ItemPointer> itemPointers = new ArrayList<ItemPointer>(4);
@@ -255,18 +256,16 @@ public class DicomInputStream extends FilterInputStream
             return Collections.emptyList();
     }
 
-//    public final Attributes getBulkDataAttributes() {
-//        return bulkData;
-//    }
-//
-//    public final void setBulkDataAttributes(Attributes bulkData) {
-//        this.bulkData = bulkData;
-//    }
-
     public final void setDicomInputHandler(DicomInputHandler handler) {
         if (handler == null)
             throw new NullPointerException("handler");
         this.handler = handler;
+    }
+
+    public void setBulkDataCreator(BulkDataCreator bulkDataCreator) {
+        if (bulkDataCreator == null)
+            throw new NullPointerException("bulkDataCreator");
+        this.bulkDataCreator = bulkDataCreator;
     }
 
     public boolean isDecodeUNWithIVRLE() {
@@ -332,6 +331,16 @@ public class DicomInputStream extends FilterInputStream
 
     public boolean isIncludeBulkDataURI() {
         return includeBulkDataURI;
+    }
+
+    public String getAttributePath() {
+        StringBuilder sb = new StringBuilder();
+        for (ItemPointer itemPointer : itemPointers) {
+            sb.append('/').append(TagUtils.toHexString(itemPointer.sequenceTag))
+                    .append('/').append(itemPointer.itemIndex);
+        }
+        sb.append('/').append(TagUtils.toHexString(tag));
+        return sb.toString();
     }
 
     @Override
@@ -561,7 +570,7 @@ public class DicomInputStream extends FilterInputStream
             attrs.setValue(tag, vr, BulkData.deserializeFrom(
                     (ObjectInputStream) super.in));
         } else if (includeBulkDataURI) {
-            attrs.setValue(tag, vr, createBulkData());
+            attrs.setValue(tag, vr, bulkDataCreator.createBulkData(this));
         } else {
             byte[] b = readValue();
             if (!TagUtils.isGroupLength(tag)) {
@@ -573,7 +582,8 @@ public class DicomInputStream extends FilterInputStream
         }
     }
 
-    public BulkData createBulkData() throws IOException {
+    @Override
+    public BulkData createBulkData(DicomInputStream dis) throws IOException {
             BulkData bulkData;
         if (uri != null && !(super.in instanceof InflaterInputStream)) {
             bulkData = new BulkData(uri, pos, length, bigEndian);
@@ -634,7 +644,7 @@ public class DicomInputStream extends FilterInputStream
                 && super.in instanceof ObjectInputStream) {
             frags.add(BulkData.deserializeFrom((ObjectInputStream) super.in));
         } else if (includeBulkDataURI) {
-            frags.add(createBulkData());
+            frags.add(bulkDataCreator.createBulkData(this));
         } else {
             byte[] b = readValue();
             if (bigEndian != frags.bigEndian())
@@ -684,8 +694,6 @@ public class DicomInputStream extends FilterInputStream
     }
 
     private void addItemPointer(int sqtag, String privateCreator, int itemIndex) {
-        if (itemPointers == null)
-            itemPointers = new ArrayList<ItemPointer>(8);
         itemPointers.add(new ItemPointer(sqtag, privateCreator, itemIndex));
     }
 

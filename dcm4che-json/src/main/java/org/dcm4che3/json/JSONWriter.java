@@ -160,7 +160,7 @@ public class JSONWriter implements DicomInputHandler {
                     gen.writeEnd();
             } else if (len > 0) {
                 if (dis.isIncludeBulkDataURI()) {
-                    writeBulkData(dis.createBulkData());
+                    writeBulkData(dis.createBulkData(dis));
                 } else {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
@@ -304,7 +304,7 @@ public class JSONWriter implements DicomInputHandler {
     }
 
     private void writeBulkData(BulkData blkdata) {
-        gen.write("BulkDataURI", blkdata.uri);
+        gen.write("BulkDataURI", blkdata.getURI());
     }
 
     @Override
@@ -337,7 +337,7 @@ public class JSONWriter implements DicomInputHandler {
         gen.writeStartObject();
         if (len > 0) {
             if (dis.isIncludeBulkDataURI()) {
-                writeBulkData(dis.createBulkData());
+                writeBulkData(dis.createBulkData(dis));
             } else {
                 writeInlineBinary(frags.vr(), dis.readValue(), 
                         dis.bigEndian(), false);

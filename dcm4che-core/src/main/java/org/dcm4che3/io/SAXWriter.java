@@ -251,7 +251,7 @@ public class SAXWriter implements DicomInputHandler {
                 dis.readValue(dis, attrs);
             } else if (len > 0) {
                 if (dis.isIncludeBulkDataURI()) {
-                    writeBulkData(dis.createBulkData());
+                    writeBulkData(dis.createBulkData(dis));
                 } else {
                     byte[] b = dis.readValue();
                     if (tag == Tag.TransferSyntaxUID
@@ -309,7 +309,7 @@ public class SAXWriter implements DicomInputHandler {
             if (len > 0) {
                 startElement("DataFragment", "number", frags.size());
                 if (dis.isIncludeBulkDataURI()) {
-                    writeBulkData(dis.createBulkData());
+                    writeBulkData(dis.createBulkData(dis));
                 } else {
                     byte[] b = dis.readValue();
                     if (dis.bigEndian())
@@ -358,10 +358,10 @@ public class SAXWriter implements DicomInputHandler {
 
     private void writeBulkData(BulkData bulkData)
             throws SAXException {
-        if (bulkData.uuid != null)
-            addAttribute("uuid", bulkData.uuid);
-        if (bulkData.uri != null)
-            addAttribute("uri", bulkData.uri);
+        if (bulkData.getUUID() != null)
+            addAttribute("uuid", bulkData.getUUID());
+        if (bulkData.getURI() != null)
+            addAttribute("uri", bulkData.getURI());
         startElement("BulkData");
         endElement("BulkData");
     }

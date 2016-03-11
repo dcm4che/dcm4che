@@ -39,15 +39,11 @@
  */
 package org.dcm4che3.conf.core.storage;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
 import org.dcm4che3.conf.core.api.Configuration;
@@ -175,8 +171,20 @@ public class SingleJsonFileConfigurationStorage implements Configuration {
                         .command("git", "add", "-A")
                         .start().waitFor();
 
+                // add stacktrace to commitMsg
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos);
+                new RuntimeException().printStackTrace(ps);
+                String niceStackTrace = baos.toString();
+                niceStackTrace = niceStackTrace.replace("\"", "\\\"");
+                String[] lines = niceStackTrace.split("\n");
+                // remove the exception line itself
+                niceStackTrace = String.join("\n", Arrays.copyOfRange(lines, 1, lines.length));
+
+                String commitMsg = "\"Changed path " + path + "\n" + niceStackTrace + "\"";
+
                 processBuilder
-                        .command("git", "commit", "-m", "\"Changed path " + path + " \"")
+                        .command("git", "commit", "-m", commitMsg)
                         .start().waitFor();
 
 

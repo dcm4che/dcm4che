@@ -28,6 +28,8 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
         super(delegate, uuidToSimplePathCache);
     }
 
+
+
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         PathPattern.PathParser pp;

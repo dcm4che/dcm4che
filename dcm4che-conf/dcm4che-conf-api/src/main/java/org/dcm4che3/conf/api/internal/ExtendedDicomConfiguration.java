@@ -96,4 +96,5 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
      */
     String[] listRegisteredAETitles() throws ConfigurationException;
 
+    boolean purgeConfiguration() throws ConfigurationException;
 }

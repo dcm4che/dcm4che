@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.1" name="org.dcm4che.all">
+  <dependencies>
+    <module name="org.dcm4che.audit"/>
+
+    <module name="org.dcm4che.conf.api"/>
+    <module name="org.dcm4che.conf.api-hl7"/>
+    <module name="org.dcm4che.conf.core"/>
+    <module name="org.dcm4che.conf.core-api"/>
+    <module name="org.dcm4che.conf.dicom"/>
+
+    <module name="org.dcm4che.core"/>
+    <module name="org.dcm4che.dict-private"/>
+    <module name="org.dcm4che.emf"/>
+    <module name="org.dcm4che.filecache"/>
+    <module name="org.dcm4che.hl7"/>
+    <module name="org.dcm4che.image"/>
+    <module name="org.dcm4che.imageio"/>
+    <module name="org.dcm4che.imageio-rle"/>
+    <module name="org.dcm4che.json"/>
+    <module name="org.dcm4che.mime"/>
+
+    <module name="org.dcm4che.net"/>
+    <module name="org.dcm4che.net-audit"/>
+    <module name="org.dcm4che.net-hl7"/>
+    <module name="org.dcm4che.net-imageio"/>
+
+    <module name="org.dcm4che.soundex"/>
+    <module name="org.dcm4che.ws-rs"/>
+    <module name="org.dcm4che.conf.core-api"/>
+  </dependencies>
+</module>

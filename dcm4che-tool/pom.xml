@@ -51,6 +51,7 @@
   <name>dcm4che-tool</name>
   <description>DICOM utilities</description>
   <modules>
+    <module>dcm4che-tool-all</module>
     <module>dcm4che-tool-common</module>
     <module>dcm4che-tool-dcm2dcm</module>
     <module>dcm4che-tool-dcm2jpg</module>

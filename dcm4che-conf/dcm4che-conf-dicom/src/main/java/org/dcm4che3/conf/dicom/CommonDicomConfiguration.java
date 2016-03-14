@@ -408,7 +408,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
-    public String[] listRegisteredAETitles() throws ConfigurationException {
+    public List<String> listAllAETitles() throws ConfigurationException {
         List<String> aeNames = new ArrayList<String>();
         try {
             Iterator search = config.search(DicomPath.AllAETitles.path());
@@ -417,7 +417,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         } catch (Exception e) {
             throw new ConfigurationException("Error while getting the list of registered AE titles", e);
         }
-        return aeNames.toArray(new String[aeNames.size()]);
+        return aeNames;
     }
 
     @Override

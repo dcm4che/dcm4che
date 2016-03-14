@@ -89,12 +89,5 @@ public interface ExtendedDicomConfiguration extends DicomConfiguration, Closeabl
 
     void close();
 
-    /**
-     * Returns all AE names from all devices from the configuration backend
-     * @return AE names
-     * @throws org.dcm4che3.conf.core.api.ConfigurationException
-     */
-    String[] listRegisteredAETitles() throws ConfigurationException;
-
     boolean purgeConfiguration() throws ConfigurationException;
 }

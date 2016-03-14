@@ -2142,8 +2142,9 @@ public class Attributes implements Serializable {
                 if (equalValues(selection, indexOf(tag), selection.indexOf(tag)))
                         filtered.setValue(tag, getVR(tag), getValue(tag));
             }
-            if (getVR(tag) == VR.SQ) {
-                Attributes seq = getNestedDataset(tag).filter(selection);
+            Attributes nested;
+            if (getVR(tag) == VR.SQ && (nested = getNestedDataset(tag))!=null) {
+                Attributes seq = nested.filter(selection);
                 if (seq.size()>0) {
                     Sequence sequence = filtered.newSequence(tag,seq.size());
                     sequence.add(0,seq);

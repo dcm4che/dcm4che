@@ -119,22 +119,22 @@ public class HL7Segment implements Serializable {
     }
 
     public String getSendingApplicationWithFacility() {
-        return getField(2, "") + '^' + getField(3, "");
+        return getField(2, "") + '|' + getField(3, "");
     }
 
     public void setSendingApplicationWithFacility(String s) {
-        String[] ss = split(s, '^');
+        String[] ss = split(s, '|');
         setField(2, ss[0]);
         if (ss.length > 1)
             setField(3, ss[1]);
     }
 
     public String getReceivingApplicationWithFacility() {
-        return getField(4, "") + '^' + getField(5, "");
+        return getField(4, "") + '|' + getField(5, "");
     }
 
     public void setReceivingApplicationWithFacility(String s) {
-        String[] ss = split(s, '^');
+        String[] ss = split(s, '|');
         setField(4, ss[0]);
         if (ss.length > 1)
             setField(5, ss[1]);
@@ -144,6 +144,10 @@ public class HL7Segment implements Serializable {
         String s = getField(8, "").replace(getComponentSeparator(), '^');
         int end = s.indexOf('^', s.indexOf('^') + 1);
         return end > 0 ? s.substring(0, end) : s;
+    }
+
+    public String getMessageControlID() {
+        return getField(9, null);
     }
 
     public String toString() {

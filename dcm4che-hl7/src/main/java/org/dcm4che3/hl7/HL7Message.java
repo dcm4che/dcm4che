@@ -141,7 +141,7 @@ public class HL7Message extends ArrayList<HL7Segment> {
                 msh.getEncodingCharacters());
         msa.setField(0, "MSA");
         msa.setField(1, ackCode);
-        msa.setField(2, msh.getField(9, null));
+        msa.setField(2, msh.getMessageControlID());
         msa.setField(3, text != null && text.length() > 80 ? text.substring(0, 80) : text);
         HL7Message ack = new HL7Message(2);
         ack.add(ackmsh);

@@ -68,6 +68,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <goals>
@@ -86,6 +87,42 @@
               <fileMappers>
                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
                   <targetName>dcm4che-dict-names.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/dict-uids.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>type</name>
+                  <value>SOPClass</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>dcm4che-dict-cuids.js</targetName>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+            <transformationSet>
+              <dir>${project.build.directory}/maven-shared-archive-resources</dir>
+              <includes>
+                <include>uids.xml</include>
+              </includes>
+              <stylesheet>src/main/xsl/dict-uids.xsl</stylesheet>
+              <parameters>
+                <parameter>
+                  <name>type</name>
+                  <value>TransferSyntax</value>
+                </parameter>
+              </parameters>
+              <fileMappers>
+                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                  <targetName>dcm4che-dict-tsuids.js</targetName>
                 </fileMapper>
               </fileMappers>
             </transformationSet>

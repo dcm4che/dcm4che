@@ -29,7 +29,6 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
     }
 
 
-
     @Override
     public Iterator search(String liteXPathExpression) throws IllegalArgumentException, ConfigurationException {
         PathPattern.PathParser pp;
@@ -88,7 +87,7 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
 
         Path path = getPathByUUIDFromIndex(uuid);
 
-        if (path == null) {
+        if (path == null || path.getPathItems().size() == 0) {
             return Collections.emptyList().iterator();
         }
 

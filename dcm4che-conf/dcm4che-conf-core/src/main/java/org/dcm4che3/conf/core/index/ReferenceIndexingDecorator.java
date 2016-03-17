@@ -15,6 +15,11 @@ import java.util.*;
 
 /**
  * Keeps an index of objects referable by uuids to allow fast lookup by uuid
+ * <p>
+ * IMPORTANT:
+ * Some cache implementations have issues with isolation, so the base impl treats
+ * both absence of objects in the cache as well as empty paths the same way - i.e. like that entry does not exist
+ * </p>
  *
  * @author Roman K
  */
@@ -39,7 +44,11 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
             ConfigNodeTraverser.traverseMapNode(oldConfigurationNode, new ConfigNodeTraverser.AConfigNodeFilter() {
                 @Override
                 public void onPrimitiveNodeElement(Map<String, Object> containerNode, String key, Object value) {
-                    if (Configuration.UUID_KEY.equals(key)) uuidToReferableIndex.remove(value);
+                    if (Configuration.UUID_KEY.equals(key)) {
+                        String uuid = (String) value;
+
+                        removeFromCache(uuid);
+                    }
                 }
             });
         } else if (oldConfigurationNode instanceof List) {
@@ -77,7 +86,8 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
                         Path oldPath = uuidToReferableIndex.get(uuid);
                         uuidToReferableIndex.put(uuid, newPath);
 
-                        if (oldPath != null) {
+                        // see the comment on top
+                        if (!(oldPath == null || oldPath.getPathItems().size() == 0)) {
 
                             DuplicateUUIDException duplicateUUIDException = new DuplicateUUIDException(uuid, oldPath, newPath);
 
@@ -104,7 +114,7 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
 
             String uuid = pathParser.getParam("uuid");
             try {
-                return  getNodeByUUID(configurableClass, uuid);
+                return getNodeByUUID(configurableClass, uuid);
             } catch (ConfIndexOutOfSyncException e) {
                 return super.getConfigurationNode(path, configurableClass);
             }
@@ -120,24 +130,27 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     protected Object getNodeByUUID(Class configurableClass, String uuid) throws ConfIndexOutOfSyncException {
         Path pathFromIndex = uuidToReferableIndex.get(uuid);
 
-        if (pathFromIndex != null) {
+        // see the comment on top
+        if (!(pathFromIndex == null || pathFromIndex.getPathItems().size() == 0)) {
             Object configurationNode = super.getConfigurationNode(pathFromIndex.toSimpleEscapedXPath(), configurableClass);
 
             // verify correct uuid
-            boolean uuidMatches = false;
             try {
-                uuidMatches = uuid.equals(((Map<String, Object>) configurationNode).get(Configuration.UUID_KEY));
+                Object detectedUUID = ((Map<String, Object>) configurationNode).get(Configuration.UUID_KEY);
+                if (!uuid.equals(detectedUUID))
+                    throw new ConfIndexOutOfSyncException("Index for UUID (" + uuid + ") points to an object with UUID (" + detectedUUID + ")");
+
+                return configurationNode;
+            } catch (ConfIndexOutOfSyncException e) {
+                throw e;
             } catch (Exception e) {
-                uuidMatches = false;
+
+                log.error("Configuration UUID index is out of sync - index for uuid " + uuid
+                        + " points to a non-existing node or a node with unexpected type (node = " + configurationNode + ")", e);
+
+                throw new ConfIndexOutOfSyncException();
             }
 
-            if (uuidMatches)
-                return configurationNode;
-
-            log.error("Configuration UUID index is out of sync: uuid '" + uuid + "' indexed but does not refer to a corresponding object." +
-                    "\n Index points to object: " + configurationNode);
-
-            throw new ConfIndexOutOfSyncException();
 
         } else {
 
@@ -194,7 +207,11 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     public boolean nodeExists(String path) throws ConfigurationException {
         PathPattern.PathParser pathParser = referencePattern.parseIfMatches(path);
         if (pathParser != null) {
-            return uuidToReferableIndex.containsKey(pathParser.getParam("uuid"));
+
+            Path uuid = uuidToReferableIndex.get(pathParser.getParam("uuid"));
+
+            // see the comment on top
+            return !(uuid == null || uuid.getPathItems().size() == 0);
         }
 
         return super.nodeExists(path);
@@ -227,4 +244,9 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     protected Path getPathByUUIDFromIndex(String uuid) {
         return uuidToReferableIndex.get(uuid);
     }
+
+    protected void removeFromCache(String uuid) {
+        uuidToReferableIndex.remove(uuid);
+    }
+
 }

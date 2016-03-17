@@ -38,6 +38,9 @@
 
 package org.dcm4che3.net.audit;
 
+import com.lmax.disruptor.*;
+import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.dsl.ProducerType;
 import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
@@ -60,6 +63,8 @@ import java.net.*;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -74,6 +79,8 @@ public class AuditLogger extends DeviceExtension {
     private static final String DICOM_PRIMARY_DEVICE_TYPE = "dicomPrimaryDeviceType";
 
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
+
+    private static Disruptor<AuditMessage> disruptor;
 
     public enum SendStatus {
         SENT, QUEUED, SUPPRESSED
@@ -790,6 +797,27 @@ public class AuditLogger extends DeviceExtension {
         return sendMessage(builder().createMessage(timeStamp, msg));
     }
 
+    public void writeAsync(Calendar timeStamp, AuditMessage msg)
+            throws IncompatibleConnectionException, GeneralSecurityException, IOException, InsufficientCapacityException {
+
+        if (isAuditMessageSuppressed(msg))
+            return;
+
+        RingBuffer<AuditMessage> ringBuffer = getDisruptor().getRingBuffer();
+
+        long sequence = ringBuffer.next();  // Grab the next sequence
+        try
+        {
+            AuditMessage msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
+            // for the sequence
+            msgenrtry.setEventIdentification(msg.getEventIdentification());  // Fill with data
+        }
+        finally
+        {
+            ringBuffer.publish(sequence);
+        }
+    }
+
     public SendStatus write(Calendar timeStamp, Severity severity,
                             byte[] data, int off, int len)
             throws IncompatibleConnectionException, GeneralSecurityException, IOException {
@@ -1351,4 +1379,47 @@ public class AuditLogger extends DeviceExtension {
 
     }
 
+    public static Disruptor<AuditMessage> getDisruptor() {
+        if (disruptor == null)
+            disruptor = initializeDisruptor();
+
+        return disruptor;
+    }
+
+    private static class AuditMessageFactory implements EventFactory<AuditMessage> {
+        public AuditMessage newInstance()
+        {
+            return new AuditMessage();
+        }
+    }
+
+    private static class AuditMessageEventHandler implements EventHandler<AuditMessage>
+    {
+        public void onEvent(AuditMessage event, long sequence, boolean endOfBatch) throws Exception
+        {
+            Thread.sleep(3000);
+            System.out.println(System.currentTimeMillis() + "-Event: " + event.getEventIdentification().getEventActionCode());
+        }
+    }
+
+    private static Disruptor<AuditMessage> initializeDisruptor() {
+        // Executor that will be used to construct new threads for consumers
+        Executor executor = Executors.newCachedThreadPool();
+
+        // The factory for the event
+        AuditMessageFactory factory = new AuditMessageFactory();
+
+        // Specify the size of the ring buffer, must be power of 2.
+        int bufferSize = 8;
+
+        Disruptor<AuditMessage> disruptorInstance = new Disruptor<AuditMessage>(factory, bufferSize, executor);
+
+        // Connect the handler
+        disruptorInstance.handleEventsWith(new AuditMessageEventHandler());
+
+        // Start the Disruptor, starts all threads running
+        disruptorInstance.start();
+
+        return disruptorInstance;
+    }
 }

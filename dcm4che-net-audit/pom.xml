@@ -28,5 +28,10 @@
       <artifactId>dcm4che-audit</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.lmax</groupId>
+      <artifactId>disruptor</artifactId>
+      <version>3.3.2</version>
+    </dependency>
   </dependencies>
 </project>

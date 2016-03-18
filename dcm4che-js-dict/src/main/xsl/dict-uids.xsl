@@ -45,7 +45,7 @@
     <xsl:template match="/">
     <xsl:text>var DCM4CHE = DCM4CHE || {};
 DCM4CHE.</xsl:text><xsl:value-of select="$type"/><xsl:text> = (function (dictionary) {
-  nameOf = function (uid) {
+  var nameOf = function (uid) {
     return dictionary[uid] || uid;
   }
   return {

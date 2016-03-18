@@ -59,12 +59,14 @@ DCM4CHE.</xsl:text><xsl:value-of select="$type"/><xsl:text> = (function (diction
     </xsl:template>
 
     <xsl:template match="uid">
-            <xsl:text>,
-"</xsl:text>
-    <xsl:value-of select="@value" />
-    <xsl:text>":"</xsl:text>
-    <xsl:value-of select="text()"/>
-    <xsl:text>"</xsl:text>
+      <xsl:if test="position() != 1">,</xsl:if>
+        <xsl:text>
+</xsl:text>
+      <xsl:text>"</xsl:text>
+      <xsl:value-of select="@value" />
+      <xsl:text>":"</xsl:text>
+      <xsl:value-of select="text()"/>
+      <xsl:text>"</xsl:text>
     </xsl:template>
 
 </xsl:stylesheet>

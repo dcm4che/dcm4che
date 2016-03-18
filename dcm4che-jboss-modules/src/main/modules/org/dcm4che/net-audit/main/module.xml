@@ -9,5 +9,6 @@
         <module name="org.dcm4che.conf.core-api"/>
         <module name="org.dcm4che.net" export="true"/>
         <module name="org.slf4j"/>
+        <module name="com.lmax.disruptor"/>
     </dependencies>
 </module>

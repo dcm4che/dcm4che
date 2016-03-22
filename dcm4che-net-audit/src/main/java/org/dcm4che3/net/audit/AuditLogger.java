@@ -80,7 +80,7 @@ public class AuditLogger extends DeviceExtension {
 
     private static final String DEVICE_NAME_IN_FILENAME_SEPARATOR = "-._";
 
-    private static Disruptor<AuditMessage> disruptor;
+    private static Disruptor<AuditMessageEvent> disruptor;
 
     public enum SendStatus {
         SENT, QUEUED, SUPPRESSED
@@ -753,6 +753,7 @@ public class AuditLogger extends DeviceExtension {
         setAuditRecordRepositoryDevices(from.auditRecordRepositoryDevices);
         setAuditSuppressCriteriaList(from.suppressAuditMessageFilters);
         device.reconfigureConnections(connections, from.connections);
+
         closeActiveConnection();
     }
 
@@ -803,14 +804,15 @@ public class AuditLogger extends DeviceExtension {
         if (isAuditMessageSuppressed(msg))
             return;
 
-        RingBuffer<AuditMessage> ringBuffer = getDisruptor().getRingBuffer();
+        RingBuffer<AuditMessageEvent> ringBuffer = getDisruptor(this).getRingBuffer();
 
         long sequence = ringBuffer.next();  // Grab the next sequence
         try
         {
-            AuditMessage msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
+            AuditMessageEvent msgenrtry = ringBuffer.get(sequence); // Get the entry in the Disruptor
             // for the sequence
-            msgenrtry.setEventIdentification(msg.getEventIdentification());  // Fill with data
+            msgenrtry.setLogger(this);  // Fill with data
+            msgenrtry.setMessage(msg);
         }
         finally
         {
@@ -1379,40 +1381,39 @@ public class AuditLogger extends DeviceExtension {
 
     }
 
-    public static Disruptor<AuditMessage> getDisruptor() {
+    public static Disruptor<AuditMessageEvent> getDisruptor(AuditLogger logger) {
         if (disruptor == null)
-            disruptor = initializeDisruptor();
+            disruptor = initializeDisruptor(logger);
 
         return disruptor;
     }
 
-    private static class AuditMessageFactory implements EventFactory<AuditMessage> {
-        public AuditMessage newInstance()
+    private static class AuditMessageEventFactory implements EventFactory<AuditMessageEvent> {
+        public AuditMessageEvent newInstance()
         {
-            return new AuditMessage();
+            return new AuditMessageEvent();
         }
     }
 
-    private static class AuditMessageEventHandler implements EventHandler<AuditMessage>
+    private static class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
     {
-        public void onEvent(AuditMessage event, long sequence, boolean endOfBatch) throws Exception
+        public void onEvent(AuditMessageEvent event, long sequence, boolean endOfBatch) throws Exception
         {
-            Thread.sleep(3000);
-            System.out.println(System.currentTimeMillis() + "-Event: " + event.getEventIdentification().getEventActionCode());
+            event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
         }
     }
 
-    private static Disruptor<AuditMessage> initializeDisruptor() {
+    private static Disruptor<AuditMessageEvent> initializeDisruptor(AuditLogger logger) {
         // Executor that will be used to construct new threads for consumers
         Executor executor = Executors.newCachedThreadPool();
 
         // The factory for the event
-        AuditMessageFactory factory = new AuditMessageFactory();
+        AuditMessageEventFactory factory = new AuditMessageEventFactory();
 
         // Specify the size of the ring buffer, must be power of 2.
         int bufferSize = 8;
 
-        Disruptor<AuditMessage> disruptorInstance = new Disruptor<AuditMessage>(factory, bufferSize, executor);
+        Disruptor<AuditMessageEvent> disruptorInstance = new Disruptor<AuditMessageEvent>(factory, bufferSize, executor);
 
         // Connect the handler
         disruptorInstance.handleEventsWith(new AuditMessageEventHandler());

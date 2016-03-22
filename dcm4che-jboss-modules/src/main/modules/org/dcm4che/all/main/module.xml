@@ -27,6 +27,5 @@
 
     <module name="org.dcm4che.soundex"/>
     <module name="org.dcm4che.ws-rs"/>
-    <module name="org.dcm4che.conf.core-api"/>
   </dependencies>
 </module>

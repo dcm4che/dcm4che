@@ -503,6 +503,23 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public <T> T getDicomConfigurationExtension(Class<T> clazz) {
+
+        // trick CDI
+        if (TransferCapabilityConfigExtension.class.equals(clazz)) {
+            return (T) new TransferCapabilityConfigExtension() {
+                @Override
+                public void persistTransferCapabilityConfig(TCConfiguration tcConfig) throws ConfigurationException {
+                    CommonDicomConfiguration.this.persistTransferCapabilityConfig(tcConfig);
+                }
+
+                @Override
+                public TCConfiguration getTransferCapabilityConfig() throws ConfigurationException {
+                    return CommonDicomConfiguration.this.getTransferCapabilityConfig();
+                }
+            };
+        }
+
+
         try {
             return (T) this;
         } catch (ClassCastException e) {

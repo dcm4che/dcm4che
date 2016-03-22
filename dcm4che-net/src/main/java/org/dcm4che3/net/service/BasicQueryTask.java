@@ -48,11 +48,15 @@ import org.dcm4che3.net.Association;
 import org.dcm4che3.net.Commands;
 import org.dcm4che3.net.Status;
 import org.dcm4che3.net.pdu.PresentationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  */
 public class BasicQueryTask implements QueryTask {
+
+    private static Logger log = LoggerFactory.getLogger(BasicQueryTask.class);
 
     protected final Association as;
     protected final PresentationContext pc;
@@ -100,7 +104,7 @@ public class BasicQueryTask implements QueryTask {
                 int status = canceled ? Status.Cancel : Status.Success;
                 as.writeDimseRSP(pc, Commands.mkCFindRSP(rq, status));
             } catch (DicomServiceException e) {
-                e.printStackTrace();
+                log.error("Query Error",e);
                 Attributes rsp = e.mkRSP(0x8020, msgId);
                 as.writeDimseRSP(pc, rsp, e.getDataset());
             } finally {

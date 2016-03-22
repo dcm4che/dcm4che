@@ -85,7 +85,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
@@ -94,7 +93,7 @@ import java.util.StringTokenizer;
  */
 public class SpecificCharacterSet {
     
-    public static final SpecificCharacterSet DEFAULT =
+    public static SpecificCharacterSet DEFAULT =
             new SpecificCharacterSet(new Codec[]{Codec.ISO_646}, "ISO_IR 100");
 
     private static ThreadLocal<SoftReference<Encoder>> cachedEncoder1 = 
@@ -464,6 +463,12 @@ public class SpecificCharacterSet {
         }
     }
 
+    public static final void setDefaultCharacterSet(String characterSet) {
+        DEFAULT = valueOf(new String[]{
+                characterSet
+        });
+    }
+
     public static SpecificCharacterSet valueOf(String... codes) {
         if (codes == null || codes.length == 0)
             return DEFAULT;
@@ -471,6 +476,10 @@ public class SpecificCharacterSet {
         Codec[] infos = new Codec[codes.length];
         for (int i = 0; i < codes.length; i++)
             infos[i] = Codec.forCode(codes[i]);
+
+        if (codes.length == 1 && infos[0] == Codec.ISO_646 && DEFAULT.containsASCII())
+            return new SpecificCharacterSet(DEFAULT.codecs, codes);
+
         return codes.length > 1 ? new ISO2022(infos,codes)
                 : new SpecificCharacterSet(infos, codes);
     }

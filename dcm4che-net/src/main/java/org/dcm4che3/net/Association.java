@@ -302,7 +302,7 @@ public class Association {
         int delay = conn.getSocketCloseDelay();
         if (delay > 0)
             device.schedule(new Runnable() {
-    
+
                 @Override
                 public void run() {
                     closeSocket();
@@ -721,7 +721,7 @@ public class Association {
         return tryWriteDimseRSP(pc, cmd, null);
     }
 
-    public boolean tryWriteDimseRSP(PresentationContext pc, Attributes cmd, 
+    public boolean tryWriteDimseRSP(PresentationContext pc, Attributes cmd,
             Attributes data) {
         try {
             writeDimseRSP(pc, cmd, data);
@@ -1228,6 +1228,38 @@ public class Association {
         fmi.setString(Tag.SourceApplicationEntityTitle, VR.SH,
                 getRemoteAET());
         return fmi;
+    }
+
+    /**
+     * Releases the association in a graceful way.
+     * <ul>
+     *     <li>makes sure the current state is eligible for calling a release() before doing so</li>
+     *     <li>waits for outstanding RSP before release</li>
+     *     <li>handles exceptions and logs detected issues</li>
+     * </ul>
+     *
+     * This method will not throw exceptions normally.
+     */
+    public void releaseGracefully() {
+        if (isReadyForDataTransfer()) {
+
+            try {
+                waitForOutstandingRSP();
+            } catch (InterruptedException ignored) {
+                // if we get interrupted while trying to close the association, most likely we still want to close it
+                Thread.currentThread().interrupt();
+                LOG.warn("Interrupted while preparing to close the association, will try to release the association anyway: " + this.toString(), ignored);
+            }
+
+            try {
+                release();
+            } catch (IOException e) {
+                LOG.warn("Failed to release association to " + getRemoteAET(), e);
+            }
+
+        } else {
+            LOG.warn("Attempted to close the association, but it was not ready for data transfer", new IOException("Association not ready for data transfer"));
+        }
     }
 }
 

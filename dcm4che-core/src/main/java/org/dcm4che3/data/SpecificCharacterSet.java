@@ -464,9 +464,7 @@ public class SpecificCharacterSet {
     }
 
     public static final void setDefaultCharacterSet(String characterSet) {
-        DEFAULT = valueOf(new String[]{
-                characterSet
-        });
+        DEFAULT = valueOf(characterSet);
     }
 
     public static SpecificCharacterSet valueOf(String... codes) {

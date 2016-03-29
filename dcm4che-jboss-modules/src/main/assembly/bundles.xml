@@ -79,38 +79,6 @@
       <useProjectArtifact>false</useProjectArtifact>
     </dependencySet>
     <dependencySet>
-      <outputDirectory>/bundles/org/dcm4che/conf/prefs/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/bundles/org/dcm4che/conf/prefs-audit/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-audit</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/bundles/org/dcm4che/conf/prefs-hl7/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-hl7</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
-      <outputDirectory>/bundles/org/dcm4che/conf/prefs-imageio/main</outputDirectory>
-      <includes>
-        <include>org.dcm4che:dcm4che-conf-prefs-imageio</include>
-      </includes>
-      <useTransitiveDependencies>false</useTransitiveDependencies>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-    <dependencySet>
       <outputDirectory>/bundles/org/dcm4che/core/main</outputDirectory>
       <includes>
         <include>org.dcm4che:dcm4che-core</include>

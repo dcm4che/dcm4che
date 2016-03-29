@@ -133,6 +133,7 @@
     <module>dcm4che-dict</module>
     <module>dcm4che-js-dict</module>
       <module>dcm4che-test-data</module>
+    <module>dcm4che-audit-keycloak</module>
   </modules>
   <distributionManagement>
     <repository>

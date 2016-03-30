@@ -10,7 +10,6 @@ import org.junit.Test;
 public class XTest {
 
     @Test
-    @Ignore
     public void testXpath() {
 
         XNodeUtil.parseReference("/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee_arc");

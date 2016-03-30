@@ -51,6 +51,8 @@
         <module name="org.keycloak.keycloak-adapter-core" export="true"/>
         <module name="org.keycloak.keycloak-server-spi" export="true"/>
         <module name="javax.api"/>
+        <module name="javax.servlet.api" export="true"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs" export="true"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>

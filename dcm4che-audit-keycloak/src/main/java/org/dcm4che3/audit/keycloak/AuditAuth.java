@@ -43,9 +43,18 @@ import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.AuditMessages;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.keycloak.events.Event;
+import org.keycloak.events.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.Principal;
 
 
 /**
@@ -59,12 +68,24 @@ public class AuditAuth {
     static void emitAuditMsg(Event event) {
         AuditLoggerFactory af = new AuditLoggerFactory();
         try {
+            HttpServletRequest req = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
+//            Cookie[] c = req.getCookies();
+//            HttpSession session = req.getSession();
+//            for (Cookie c1 : c) {
+//                String s = c1.getName();
+//            }
+//            req-exchange(httpserverexchange)-requestcookies-KEYCLOAK_IDENTITY, KEYCLOAK_SESSION (CookieImpl)
             AuditLogger log = af.getAuditLogger();
-            String userId = event.getUserId();
             AuditMessage msg = new AuditMessage();
             msg.setEventIdentification(AuditMessages.createEventIdentification(
-                    AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                    log.timeStamp(), AuditMessages.EventOutcomeIndicator.Success, null));
+                AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
+                log.timeStamp(),
+                event.getError() != null ? AuditMessages.EventOutcomeIndicator.MinorFailure
+                        : AuditMessages.EventOutcomeIndicator.Success,
+                event.getError() != null ? event.getError() : null));
+            if (event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR))
+                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(event.getDetails().get("username"),
+                        null, null, true, event.getIpAddress(), AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
             msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
                     buildAET(log.getDevice()), log.processID(), null, false,
                     log.getConnections().get(0).getHostname(), AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));

@@ -43,6 +43,8 @@ package org.dcm4che3.audit.keycloak;
 import org.dcm4che3.conf.api.ConfigurationException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
 import org.dcm4che3.conf.ldap.LdapDicomConfiguration;
+import org.dcm4che3.conf.ldap.audit.LdapAuditLoggerConfiguration;
+import org.dcm4che3.conf.ldap.audit.LdapAuditRecordRepositoryConfiguration;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.slf4j.Logger;
@@ -86,6 +88,8 @@ public class AuditLoggerFactory {
         String key = appName + ".DeviceName";
         String name = System.getProperty(key, DEF_DEVICE_NAME);
         try ( LdapDicomConfiguration conf = new LdapDicomConfiguration(loadProperties(envURL(appName)))) {
+            conf.addDicomConfigurationExtension(new LdapAuditLoggerConfiguration());
+            conf.addDicomConfigurationExtension(new LdapAuditRecordRepositoryConfiguration());
             return conf.findDevice(name);
         } catch (ConfigurationNotFoundException e) {
             LOG.error("Missing Configuration for Device '{}' - you may change the Device name by System Property '{}'",

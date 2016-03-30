@@ -48,8 +48,21 @@
     <version>dcm4chee-arc-light-5.2.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
+  <properties>
+    <keycloak.version>1.9.1.Final</keycloak.version>
+  </properties>
   <artifactId>dcm4che-audit-keycloak</artifactId>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.spec</groupId>
+        <artifactId>jboss-javaee-7.0</artifactId>
+        <version>1.0.0.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.dcm4che</groupId>
@@ -60,6 +73,33 @@
       <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-net-audit</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-core</artifactId>
+      <version>${keycloak.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-adapter-core</artifactId>
+      <version>${keycloak.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-server-spi</artifactId>
+      <version>${keycloak.version}</version>
+    </dependency>
+    <!-- Import the CDI API -->
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <!-- Import the Common Annotations API (JSR-250) -->
+    <dependency>
+      <groupId>org.jboss.spec.javax.annotation</groupId>
+      <artifactId>jboss-annotations-api_1.2_spec</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

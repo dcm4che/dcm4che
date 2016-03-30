@@ -41,12 +41,15 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.dcm4che.audit-keycloak">
     <resources>
-        <resource-root path="dcm4che-audit-keycloack-${version}.jar"/>
+        <resource-root path="dcm4che-audit-keycloak-${version}.jar"/>
     </resources>
 
     <dependencies>
         <module name="org.dcm4che.net-audit" export="true"/>
         <module name="org.dcm4che.conf.ldap" export="true"/>
+		<module name="org.keycloak.keycloak-core" export="true"/>
+		<module name="org.keycloak.keycloak-adapter-core" export="true"/>
+		<module name="org.keycloak.keycloak-server-spi" export="true"/>
         <module name="javax.api"/>
         <module name="org.slf4j"/>
     </dependencies>

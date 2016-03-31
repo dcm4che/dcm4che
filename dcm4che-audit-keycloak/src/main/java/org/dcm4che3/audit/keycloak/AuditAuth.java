@@ -79,16 +79,18 @@ public class AuditAuth {
             AuditMessage msg = new AuditMessage();
             msg.setEventIdentification(AuditMessages.createEventIdentification(
                 AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                log.timeStamp(),
-                event.getError() != null ? AuditMessages.EventOutcomeIndicator.MinorFailure
-                        : AuditMessages.EventOutcomeIndicator.Success,
-                event.getError() != null ? event.getError() : null));
-            if (event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR))
-                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(event.getDetails().get("username"),
-                        null, null, true, event.getIpAddress(), AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+                log.timeStamp(), event.getError() != null
+                ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success,
+                event.getError() != null ? event.getError() : null,
+                event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
+                ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout));
             msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                    buildAET(log.getDevice()), log.processID(), null, false,
-                    log.getConnections().get(0).getHostname(), AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+                event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
+                ? event.getDetails().get("username") : event.getUserId(), null, null, true, event.getIpAddress(),
+                AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+            msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
+                buildAET(log.getDevice()), log.processID(), null, false, log.getConnections().get(0).getHostname(),
+                AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
             try {
                 log.write(log.timeStamp(), msg);
             } catch (Exception e) {

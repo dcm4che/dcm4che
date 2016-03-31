@@ -41,8 +41,10 @@ package org.dcm4che3.audit.keycloak;
 
 import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.AuditMessages;
+import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
+import org.dcm4che3.util.StringUtils;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.servlet.http.Cookie;
@@ -54,7 +56,15 @@ import org.keycloak.events.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Principal;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 
 /**
@@ -63,41 +73,69 @@ import java.security.Principal;
  */
 public class AuditAuth {
     private static final Logger LOG = LoggerFactory.getLogger(AuditAuth.class);
+    private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
-
-    static void emitAuditMsg(Event event) {
-        AuditLoggerFactory af = new AuditLoggerFactory();
+    static void spoolAuditMsg(Event event) {
+        String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
+        Path dir = Paths.get(dataDir, "audit-auth-spool");
+        Path file;
         try {
-            HttpServletRequest req = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
-//            Cookie[] c = req.getCookies();
-//            HttpSession session = req.getSession();
-//            for (Cookie c1 : c) {
-//                String s = c1.getName();
-//            }
-//            req-exchange(httpserverexchange)-requestcookies-KEYCLOAK_IDENTITY, KEYCLOAK_SESSION (CookieImpl)
-            AuditLogger log = af.getAuditLogger();
-            AuditMessage msg = new AuditMessage();
-            msg.setEventIdentification(AuditMessages.createEventIdentification(
-                AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                log.timeStamp(), event.getError() != null
-                ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success,
-                event.getError() != null ? event.getError() : null,
-                event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
-                ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout));
-            msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
-                ? event.getDetails().get("username") : event.getUserId(), null, null, true, event.getIpAddress(),
-                AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
-            msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                buildAET(log.getDevice()), log.processID(), null, false, log.getConnections().get(0).getHostname(),
-                AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+            if (!Files.exists(dir))
+                Files.createDirectories(dir);
+            if ((event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR)
+                    && Files.exists(dir.resolve(event.getSessionId()))) {
+                sendAuditMessage(dir.resolve(event.getSessionId()), event);
+                return;
+            }
+            if (event.getType() == EventType.LOGIN_ERROR && event.getError() != null)
+                file = Files.createTempFile(dir, event.getIpAddress(), null);
+            else {
+                if (event.getType() == EventType.LOGIN && Files.exists(dir.resolve(event.getSessionId())))
+                    return;
+                file = Files.createFile(dir.resolve(event.getSessionId()));
+            }
+            try (LineWriter writer = new LineWriter(Files.newBufferedWriter(file, StandardCharsets.UTF_8,
+                StandardOpenOption.APPEND))) {
+                writer.writeLine(new AuthInfo(event));
+            }
+            sendAuditMessage(file, event);
+        } catch (Exception e) {
+            LOG.warn("Failed to write to Audit Spool File - {} ", e);
+        }
+    }
+
+    private static void sendAuditMessage(Path file, Event event) {
+        AuditLoggerFactory af = new AuditLoggerFactory();
+        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
+            AuthInfo info = new AuthInfo(reader.readLine());
             try {
-                log.write(log.timeStamp(), msg);
+                AuditLogger log = af.getAuditLogger();
+                AuditMessage msg = new AuditMessage();
+                msg.setEventIdentification(AuditMessages.createEventIdentification(
+                    AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
+                    log.timeStamp(), event.getError() != null
+                        ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success,
+                    event.getError() != null ? event.getError() : null,
+                    event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
+                        ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout));
+                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
+                    info.getField(AuthInfo.USER_NAME), null, null, true, info.getField(AuthInfo.IP_ADDR),
+                    AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
+                        buildAET(log.getDevice()), log.processID(), null, false, log.getConnections().get(0).getHostname(),
+                        AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
+                try {
+                    log.write(log.timeStamp(), msg);
+                } catch (Exception e) {
+                    LOG.warn("Failed to emit audit message", e);
+                }
+                if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
+                    Files.delete(file);
             } catch (Exception e) {
-                LOG.warn("Failed to emit audit message", e);
+                LOG.warn("Failed to get audit logger", e);
             }
         } catch (Exception e) {
-            LOG.warn("Failed to get audit logger", e);
+            LOG.warn("Failed to read audit spool file", e);
         }
     }
 
@@ -110,4 +148,45 @@ public class AuditAuth {
         return b.toString();
     }
 
+    static class LineWriter implements Closeable {
+        private final BufferedWriter writer;
+
+        public LineWriter(BufferedWriter writer) {
+            this.writer = writer;
+        }
+
+        public void writeLine(Object o) throws IOException {
+            writer.write(o.toString().replace('\r', '.').replace('\n', '.'));
+            writer.newLine();
+        }
+        @Override
+        public void close() throws IOException {
+            writer.close();
+        }
+    }
+
+    static class AuthInfo {
+        private static final int USER_NAME = 0;
+        private static final int IP_ADDR = 1;
+        private  final String[] fields;
+
+        AuthInfo (Event event) {
+            fields = new String[] {
+                    event.getDetails().get("username"),
+                    event.getIpAddress()
+            };
+        }
+        AuthInfo(String s) {
+            fields = StringUtils.split(s, '\\');
+        }
+
+        String getField(int field) {
+            return StringUtils.maskEmpty(fields[field], null);
+        }
+
+        @Override
+        public String toString() {
+            return StringUtils.concat(fields, '\\');
+        }
+    }
 }

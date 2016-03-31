@@ -65,7 +65,7 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     public void onEvent(Event event) {
         if (includedEvents != null && includedEvents.contains(event.getType())) {
             try {
-                AuditAuth.emitAuditMsg(event);
+                AuditAuth.spoolAuditMsg(event);
             } catch (Exception e) {
                 LOG.warn("Failed to emit audit message", e);
             }

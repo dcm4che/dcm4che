@@ -47,7 +47,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -783,7 +782,7 @@ public class DicomInputStream extends FilterInputStream
         byte[] b128 = new byte[128];
         byte[] buf = buffer;
         mark(132);
-        int rlen = read(b128);
+        int rlen = StreamUtils.readAvailable(this, b128, 0, 128);
         if (rlen == 128) {
             read(buf, 0, 4);
             if (buf[0] == 'D' && buf[1] == 'I'

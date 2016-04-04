@@ -88,6 +88,8 @@ public class Transcoder implements Closeable {
 
     private boolean includeFileMetaInformation;
 
+    private boolean closeInputStream = true;
+
     private boolean closeOutputStream = true;
 
     private String destTransferSyntax;
@@ -167,6 +169,14 @@ public class Transcoder implements Closeable {
 
     public void setBulkDataDirectory(File blkDirectory) {
         dis.setBulkDataDirectory(blkDirectory);
+    }
+
+    public boolean isCloseInputStream() {
+        return closeInputStream;
+    }
+
+    public void setCloseInputStream(boolean closeInputStream) {
+        this.closeInputStream = closeInputStream;
     }
 
     public boolean isCloseOutputStream() {
@@ -272,7 +282,8 @@ public class Transcoder implements Closeable {
             compressor.dispose();
         if (verifier != null)
             verifier.dispose();
-        SafeClose.close(dis);
+        if (closeInputStream)
+            SafeClose.close(dis);
         for (File tmpFile : dis.getBulkDataFiles())
             tmpFile.delete();
         if (closeOutputStream && dos != null)

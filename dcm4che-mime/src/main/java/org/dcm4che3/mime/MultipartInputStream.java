@@ -55,15 +55,17 @@ public class MultipartInputStream extends FilterInputStream {
 
     private final byte[] boundary;
     private final byte[] buffer;
+    private byte[] markBuffer;
     private int rpos;
+    private int markpos;
     private boolean boundarySeen;
+    private boolean markBoundarySeen;
 
     protected MultipartInputStream(InputStream in, String boundary) {
         super(in);
         this.boundary = boundary.getBytes();
         this.buffer = new byte[this.boundary.length];
         this.rpos = buffer.length;
-        
     }
 
     @Override
@@ -90,6 +92,27 @@ public class MultipartInputStream extends FilterInputStream {
         long l = Math.min(remaining(), n);
         rpos += l;
         return l;
+    }
+
+    @Override
+    public synchronized void mark(int readlimit) {
+        super.mark(readlimit);
+        markBuffer = buffer.clone();
+        markpos = rpos;
+        markBoundarySeen = boundarySeen;
+    }
+
+    @Override
+    public synchronized void reset() throws IOException {
+        super.reset();
+        System.arraycopy(markBuffer, 0, buffer, 0, buffer.length);
+        rpos = markpos;
+        boundarySeen = markBoundarySeen;
+    }
+
+    @Override
+    public void close() throws IOException {
+        //NOOP
     }
 
     public void skipAll() throws IOException {

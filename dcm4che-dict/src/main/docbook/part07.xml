@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" label="PS3.7" version="5.0" xml:id="PS3.7">
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xl="http://www.w3.org/1999/xlink" label="PS3.7" version="5.0" xml:id="PS3.7">
   <title>PS3.7</title>
-  <subtitle>DICOM PS3.7 2016a - Message Exchange</subtitle>
+  <subtitle>DICOM PS3.7 2016b - Message Exchange</subtitle>
   <info>
     <author>
       <orgname>DICOM Standards Committee</orgname>
@@ -49,7 +49,7 @@
   <chapter label="" status="1" xml:id="chapter_Foreword">
     <title>Foreword</title>
     <para xml:id="para_8a77ef2c-fa98-4acb-aebb-abf2cdc38f94">This DICOM Standard was developed according to the procedures of the DICOM Standards Committee.</para>
-    <para xml:id="para_7eee8c6b-a8c7-48e3-846a-f7eff9f48b79">The DICOM Standard is structured as a multi-part document using the guidelines established in <xref linkend="biblio_ISODirectives3"/>.</para>
+    <para xml:id="para_7eee8c6b-a8c7-48e3-846a-f7eff9f48b79">The DICOM Standard is structured as a multi-part document using the guidelines established in <xref linkend="biblio_ISODirectives2"/>.</para>
     <para xml:id="para_e5d14809-cf0b-4a0f-a292-746843498678">DICOM® is the registered trademark of the National Electrical Manufacturers Association for its standards publications relating to digital communications of medical information, all rights reserved.</para>
     <para xml:id="para_836a4e2b-f5ac-47c9-b589-9a1888a4e719">HL7® and CDA® are the registered trademarks of Health Level Seven International, all rights reserved.</para>
     <para xml:id="para_7de7b970-2fbc-43f0-836f-8e77dc1ea3e1">SNOMED®, SNOMED Clinical Terms®, SNOMED CT® are the registered trademarks of the International Health Terminology Standards Development <foreignphrase xml:lang="en-GB">Organisation</foreignphrase> (IHTSDO), all rights reserved.</para>
@@ -113,13 +113,17 @@
   
   <para xml:id="para_de530570-903f-4e31-9c12-e214cc763c37">The following Standards contain provisions that, through reference in this text, constitute provisions of this Standard. At the time of publication, the editions indicated were valid. All Standards are subject to revision, and parties to agreements based on this Standard are encouraged to investigate the possibilities of applying the most recent editions of the Standards indicated below.</para>
   <bibliography>
-    <biblioentry xml:id="biblio_ISODirectives3">
-      <abbrev>ISO/IEC Directives, Part 3</abbrev>
+    <biblioentry xml:id="biblio_ISODirectives2">
+      <abbrev>ISO/IEC Directives, Part 2</abbrev>
       <author>
         <orgname>ISO/IEC</orgname>
       </author>
-      <date>1989</date>
-      <title>Drafting and presentation of International Standards</title>
+      <date>2011/04</date>
+      <edition>6.0</edition>
+      <title>Rules for the structure and drafting of International Standards</title>
+      <bibliosource>
+        <link xl:href="http://www.iec.ch/members_experts/refdocs/iec/isoiec-dir2%7Bed6.0%7Den.pdf"/>
+      </bibliosource>
     </biblioentry>
   </bibliography>
   <para xml:id="para_2e08feaf-b206-4d81-a228-254818af84e9">ISO 7498-1, Information Processing Systems - Open Systems Interconnection - Basic Reference Model</para>

@@ -111,7 +111,10 @@ public class StreamUtils {
 
     public static  void copy(InputStream in, OutputStream out, int len)
             throws IOException {
-        copy(in, out, len, new byte[Math.min(len, COPY_BUFFER_SIZE)]);
+        if (len < 0)
+            copy(in, out);
+        else
+            copy(in, out, len, new byte[Math.min(len, COPY_BUFFER_SIZE)]);
     }
 
     public static void copy(InputStream in, OutputStream out, int len,

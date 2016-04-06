@@ -105,7 +105,7 @@ public class BulkData implements Value {
 
         try {
             this.offset = Integer.parseInt(uri.substring(pathEnd + 8, offsetEnd));
-            this.length = Integer.parseInt(uri.substring(offsetEnd + 1));
+            this.length = Integer.parseInt(uri.substring(offsetEnd + 8));
         } catch (NumberFormatException ignore) {}
     }
 

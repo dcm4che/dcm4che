@@ -263,10 +263,7 @@ public class MediaTypes {
 
         String type = bulkdataMediaType.getType().toLowerCase();
         String subtype = bulkdataMediaType.getSubtype().toLowerCase();
-        if (type.equals("application")) {
-            if (subtype.equals("octet-stream"))
-                return UID.ExplicitVRLittleEndian;
-        } else if (type.equals("image")) {
+        if (type.equals("image")) {
             if (subtype.equals("jpeg"))
                 return UID.JPEGLossless;
             else if (subtype.equals("x-jls"))
@@ -283,7 +280,7 @@ public class MediaTypes {
             else if (subtype.equals("mp4"))
                 return UID.MPEG4AVCH264HighProfileLevel41;
         }
-        throw new IllegalArgumentException(bulkdataMediaType.toString());
+        return UID.ExplicitVRLittleEndian;
     }
 
     public static boolean equalsIgnoreParameters(MediaType type1, MediaType type2) {

@@ -67,7 +67,7 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
                 suffix = "/_.uuid";
                 break;
             case DeviceNameByAEUUID:
-                param = "UUID";
+                param = "aeUUID";
                 suffix = "/dicomDeviceName";
                 break;
             default:

@@ -1260,6 +1260,7 @@ public class AuditLogger extends DeviceExtension {
 
         @Override
         void sendMessage(DatagramPacket msg) throws IOException {
+
             if (ds == null)
                 ds = conn.createDatagramSocket();
 
@@ -1386,21 +1387,6 @@ public class AuditLogger extends DeviceExtension {
             disruptor = initializeDisruptor(logger);
 
         return disruptor;
-    }
-
-    private static class AuditMessageEventFactory implements EventFactory<AuditMessageEvent> {
-        public AuditMessageEvent newInstance()
-        {
-            return new AuditMessageEvent();
-        }
-    }
-
-    private static class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
-    {
-        public void onEvent(AuditMessageEvent event, long sequence, boolean endOfBatch) throws Exception
-        {
-            event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
-        }
     }
 
     private static Disruptor<AuditMessageEvent> initializeDisruptor(AuditLogger logger) {

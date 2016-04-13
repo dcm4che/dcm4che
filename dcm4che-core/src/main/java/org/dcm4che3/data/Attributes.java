@@ -2085,17 +2085,17 @@ public class Attributes implements Serializable {
                 } else {
 
                     Sequence original = (Sequence) values[indexOfOriginalSequence];
-                    Attributes updated = ((Sequence) value).get(0);
+                    Sequence updated = ((Sequence) value);
 
-                    if (updated==null)
+                    if (updated==null || updated.size() == 0)
                         continue;
 
                     if (original.size() > 1 || updated.size()>1)
                         //Trying to recursively update a sequence with more than 1 item: fallback to whole copy
-                        set(privateCreator, tag, (Sequence) value, null);
+                        set(privateCreator, tag, updated, null);
                     else
                         //both original and updated sequences have 1 item
-                            original.get(0).updateRecursive(updated);
+                            original.get(0).updateRecursive(updated.get(0));
                 }
             } else if (value instanceof Fragments) {
                 set(privateCreator, tag, (Fragments) value);

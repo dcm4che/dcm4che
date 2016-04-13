@@ -391,11 +391,9 @@ public class StoreSCU {
                     e.printStackTrace();
                 }
             }
-            try {
-                as.waitForOutstandingRSP();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+            as.releaseGracefully();
+
         } finally {
             SafeClose.close(fileInfos);
         }

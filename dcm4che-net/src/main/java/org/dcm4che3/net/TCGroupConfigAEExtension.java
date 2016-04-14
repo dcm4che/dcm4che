@@ -29,11 +29,15 @@ public class TCGroupConfigAEExtension extends AEExtension {
         STORAGE_COMMITMENT
     }
 
-    @ConfigurableProperty
+    @ConfigurableProperty(
+            label = "Enabled transfer capability groups - SCU"
+    )
     Map<String, TCGroupDetails> scuTCs = new TreeMap<String, TCGroupDetails>();
 
 
-    @ConfigurableProperty
+    @ConfigurableProperty(
+            label = "Enabled transfer capability groups - SCP"
+    )
     Map<String, TCGroupDetails> scpTCs = new TreeMap<String, TCGroupDetails>();
 
     public TCGroupConfigAEExtension() {
@@ -117,10 +121,14 @@ public class TCGroupConfigAEExtension extends AEExtension {
 
         @ConfigurableProperty(
                 description = "If not empty, all the syntaxes but those specified by this parameter" +
-                "will be effectively removed from AE's transfer capabilities")
+                "will be effectively removed from this AE's transfer capabilities")
         private List<String> whitelistedTransferSyntaxes = new ArrayList<String>();
 
-        @ConfigurableProperty
+        @ConfigurableProperty(
+                label = "Excluded SOP classes",
+                description = "This AE will include all transfer capabilities from the corresponding group, " +
+                        "except those with SOP classes specified here"
+        )
         private List<String> excludedTransferCapabilities = new ArrayList<String>();
 
         public List<String> getExcludedTransferSyntaxes() {

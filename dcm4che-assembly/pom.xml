@@ -156,26 +156,6 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-prefs</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-prefs-audit</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-prefs-hl7</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
-      <artifactId>dcm4che-conf-prefs-imageio</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -352,11 +332,6 @@
     </dependency>
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-prefs2xml</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-storescp</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -391,11 +366,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-xml2prefs</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.dcm4che.tool.ihe</groupId>
       <artifactId>dcm4che-tool-ihe-modality</artifactId>
       <version>${project.version}</version>
@@ -408,11 +378,6 @@
     <dependency>
       <groupId>org.dcm4che.tool</groupId>
       <artifactId>dcm4che-tool-jpg2dcm</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dcm4che.tool</groupId>
-      <artifactId>dcm4che-tool-probetc</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

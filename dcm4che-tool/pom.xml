@@ -77,16 +77,13 @@
     <module>dcm4che-tool-storescu</module>
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-xml2hl7</module>
-    <module>dcm4che-tool-xml2prefs</module>
     <module>dcm4che-tool-ihe</module>
     <module>dcm4che-tool-syslog</module>
     <module>dcm4che-tool-syslogd</module>
     <module>dcm4che-tool-json2dcm</module>
-	<module>dcm4che-tool-jpg2dcm</module>
+    <module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-dcm2json</module>
     <module>dcm4che-tool-stowrs</module>
-    <module>dcm4che-tool-probetc</module>
-    <module>dcm4che-tool-prefs2xml</module>
   </modules>
   <build>
     <plugins>

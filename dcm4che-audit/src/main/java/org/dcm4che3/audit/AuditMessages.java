@@ -308,40 +308,40 @@ public class AuditMessages {
     }
 
     public static final class AuditSourceTypeCode
-            extends org.dcm4che3.audit.AuditSourceIdentification {
+            extends org.dcm4che3.audit.AuditSourceTypeCode {
 
-        public static final AuditSourceTypeCode EndUserDisplayDevice = 
+        public static final AuditSourceTypeCode EndUserDisplayDevice =
                 new AuditSourceTypeCode("1");
-        public static final AuditSourceTypeCode DataAcquisitionDevice = 
+        public static final AuditSourceTypeCode DataAcquisitionDevice =
                 new AuditSourceTypeCode("2");
-        public static final AuditSourceTypeCode WebServerProcess = 
+        public static final AuditSourceTypeCode WebServerProcess =
                 new AuditSourceTypeCode("3");
-        public static final AuditSourceTypeCode ApplicationServerProcess = 
+        public static final AuditSourceTypeCode ApplicationServerProcess =
                 new AuditSourceTypeCode("4");
-        public static final AuditSourceTypeCode DatabaseServerProcess = 
+        public static final AuditSourceTypeCode DatabaseServerProcess =
                 new AuditSourceTypeCode("5");
-        public static final AuditSourceTypeCode SecurityServer = 
+        public static final AuditSourceTypeCode SecurityServer =
                 new AuditSourceTypeCode("6");
-        public static final AuditSourceTypeCode NetworkComponent = 
+        public static final AuditSourceTypeCode NetworkComponent =
                 new AuditSourceTypeCode("7");
-        public static final AuditSourceTypeCode OperatingSoftware = 
+        public static final AuditSourceTypeCode OperatingSoftware =
                 new AuditSourceTypeCode("8");
-        public static final AuditSourceTypeCode Other = 
+        public static final AuditSourceTypeCode Other =
                 new AuditSourceTypeCode("9");
 
-        public AuditSourceTypeCode(String code) {
-            super.code = code;
+        public AuditSourceTypeCode(String csdCode) {
+            super.csdCode = csdCode;
         }
 
-        public AuditSourceTypeCode(String code, String codeSystemName,
-                String originalText) {
-            super.code = code;
-            super.codeSystemName = codeSystemName;
-            super.originalText = originalText;
-        }
+//        public AuditSourceTypeCode(String code, String codeSystemName,
+//                String originalText) {
+//            super.code = code;
+//            super.codeSystemName = codeSystemName;
+//            super.originalText = originalText;
+//        }
 
         @Override
-        public void setCode(String value) {
+        public void setCsdCode(String value) {
             throw new UnsupportedOperationException();
         }
 
@@ -645,7 +645,7 @@ public class AuditMessages {
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
         for (AuditSourceTypeCode type : types)
-            asi.getAuditSourceTypeCode().add(type.toString());
+            asi.getAuditSourceTypeCode().add(type);
         return asi;
    }
 

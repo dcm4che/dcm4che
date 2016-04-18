@@ -42,27 +42,27 @@ EventIdentificationType =
 #    or a token with other csd attributes so that any controlled terminology can also be used.
 AuditSourceIdentificationType =
 #  element AuditSourceTypeCode {
-    attribute code {
-      ##  End-user display device, diagnostic display
-      "1" |
-      ## Data acquisition device or instrument
-      "2" |
-      ## Web server process
-      "3" |
-      ## Application server process
-      "4" |
-      ## Database server process
-      "5" |
-      ## Security server, e.g., a domain controller
-      "6" |
-      ## ISO level 1-3 network component
-      "7" |
-      ## ISO level 4-6 operating software
-      "8" |
-      ## External source, other or unknown type
-      "9"| ## other
-     token }, ## other values are allowed if a codeSystemName is present
-     other-csd-attributes?, ## If these are present, they define the meaning of code
+#    attribute code {
+#      ##  End-user display device, diagnostic display
+#      "1" |
+#      ## Data acquisition device or instrument
+#      "2" |
+#      ## Web server process
+#      "3" |
+#      ## Application server process
+#      "4" |
+#      ## Database server process
+#      "5" |
+#      ## Security server, e.g., a domain controller
+#      "6" |
+#      ## ISO level 1-3 network component
+#      "7" |
+#      ## ISO level 4-6 operating software
+#      "8" |
+#      ## External source, other or unknown type
+#      "9"| ## other
+#     token }, ## other values are allowed if a codeSystemName is present
+#     other-csd-attributes?, ## If these are present, they define the meaning of code
 #    } | #  other code values are allowed if a CodeSystem is specified by its name or OID
 #    CodedValueType
 #    attribute csd-code { xsd:string } |
@@ -73,23 +73,23 @@ AuditSourceIdentificationType =
 #  }*,
   attribute AuditEnterpriseSiteID { xsd:string }?,
   attribute AuditSourceID { xsd:string },
-  element AuditSourceTypeCode { xsd:string }*
+  element AuditSourceTypeCode { AuditSourceTypeCodeContent }*
 
-# Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
+# CP1362 : Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
 # so that any controlled terminology can also be used.
-#AuditSourceTypeCodeContent =
-#    attribute csd-code {
-#     "1" | ## End-user display device, diagnostic device
-#     "2" | ## Data acquisition device or instrument
-#     "3" | ## Web Server process or thread
-#     "4" | ## Application Server process or thread
-#     "5" | ## Database Server process or thread
-#     "6" | ## Security server, e.g., a domain controller
-#     "7" | ## ISO level 1-3 network component
-#     "8" | ## ISO level 4-6 operating software
-#     "9" | ## other
-#     token }, ## other values are allowed if a codeSystemName is present
-#     other-csd-attributes? ## If these are present, they define the meaning of code
+AuditSourceTypeCodeContent =
+    attribute csd-code {
+     "1" | ## End-user display device, diagnostic device
+     "2" | ## Data acquisition device or instrument
+     "3" | ## Web Server process or thread
+     "4" | ## Application Server process or thread
+     "5" | ## Database Server process or thread
+     "6" | ## Security server, e.g., a domain controller
+     "7" | ## ISO level 1-3 network component
+     "8" | ## ISO level 4-6 operating software
+     "9" | ## other
+     token }, ## other values are allowed if a codeSystemName is present
+     other-csd-attributes? ## If these are present, they define the meaning of code
 
 
 ActiveParticipantType =

@@ -1033,7 +1033,7 @@ public class AuditLogger extends DeviceExtension {
 
     private synchronized ActiveConnection activeConnection(Device arrDev)
             throws IncompatibleConnectionException {
-        ActiveConnection activeConnection = this.activeConnection.get(device.getDeviceName());
+        ActiveConnection activeConnection = this.activeConnection.get(arrDev.getDeviceName());
         if (activeConnection != null)
             return activeConnection;
 

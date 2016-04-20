@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------------
 
 MAIN_CLASS=org.dcm4che3.tool.dcmgen.DcmGen
-MAIN_JAR=dcm4che-tool-dcmdict-${project.version}.jar
+MAIN_JAR=dcm4che-tool-dcmgen-${project.version}.jar
 
 DIRNAME="`dirname "$0"`"
 

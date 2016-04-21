@@ -18,7 +18,9 @@ public class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
     public void onEvent(AuditMessageEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         try {
-            event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
+            event.getLogger().write(event.getLogger().timeStamp(), event.getMessage());
+        } catch (IllegalStateException e){
+            LOG.warn("could not send audit",e);
         } catch (IncompatibleConnectionException e) {
             LOG.error("could not send audit",e);
         } catch (GeneralSecurityException e) {

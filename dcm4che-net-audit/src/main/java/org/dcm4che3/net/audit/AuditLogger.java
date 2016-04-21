@@ -316,7 +316,11 @@ public class AuditLogger extends DeviceExtension {
     	for (ActiveConnection c : activeConnection.values())
     		SafeClose.close(c);
         activeConnection.clear();
-        this.auditRecordRepositoryDevices = arrDevices;
+        if(arrDevices==null){
+            this.auditRecordRepositoryDevices.clear();
+        }else{
+            this.auditRecordRepositoryDevices = arrDevices;
+        }
     }
     
     public void addAuditRecordRepositoryDevice(Device device) {

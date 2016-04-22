@@ -90,7 +90,7 @@ public interface UpgradeScript {
         /**
          * The version of this upgrade script when it was last time executed, taken from @ScriptVersion
          */
-        @ConfigurableProperty
+        @ConfigurableProperty(description = "The version of this upgrade script when it was last time executed")
         String lastVersionExecuted;
 
         public String getLastVersionExecuted() {

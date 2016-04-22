@@ -18,19 +18,8 @@ public class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
     public void onEvent(AuditMessageEvent event, long sequence, boolean endOfBatch) throws Exception
     {
         try {
-<<<<<<< Updated upstream
-            event.getLogger().write(event.getLogger().timeStamp(), event.getMessage());
-        } catch (IllegalStateException e){
-            LOG.warn("could not send audit",e);
-        } catch (IncompatibleConnectionException e) {
-            LOG.error("could not send audit",e);
-        } catch (GeneralSecurityException e) {
-            LOG.error("could not send audit",e);
-        } catch (IOException e) {
-=======
             event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
         } catch (Throwable e) {
->>>>>>> Stashed changes
             LOG.error("could not send audit",e);
         }
     }

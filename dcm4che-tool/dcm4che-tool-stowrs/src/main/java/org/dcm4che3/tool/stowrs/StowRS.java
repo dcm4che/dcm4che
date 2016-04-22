@@ -200,7 +200,7 @@ public class StowRS {
             try {
                 metadata = parseJSON(file.getPath());
             } catch (Exception e) {
-                LOG.error("error parsing metadata JSON file {}", file);
+                LOG.error("error parsing metadata JSON file {}", file, e);
                 return;
             }
         } else if (mediaType == StowMetaDataType.XML) {
@@ -213,7 +213,7 @@ public class StowRS {
                 if (fmi != null)
                 	metadata.addAll(fmi);
             } catch (Exception e) {
-                LOG.error("error parsing metadata XML file {}", file);
+                LOG.error("error parsing metadata XML file {}", file, e);
                 return;
             }
         } else {

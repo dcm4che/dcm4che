@@ -39,12 +39,7 @@
  */
 package org.dcm4che3.conf.core.normalization;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.dcm4che3.conf.core.DelegatingConfiguration;
@@ -131,9 +126,25 @@ public class DefaultsAndNullFilterDecorator extends DelegatingConfiguration {
             }
         };
 
-        // filter out defaults
-        if (configurableClass != null)
+        if (configurableClass != null) {
+            // filter out defaults
             ConfigNodeTraverser.traverseNodeTypesafe(configNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, filterDefaults);
+
+            // generate missing UUIDs
+            ConfigNodeTraverser.traverseNodeTypesafe(configNode, new AnnotatedConfigurableProperty(configurableClass), allExtensionClasses, new ConfigNodeTypesafeFilter() {
+                @Override
+                public boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException {
+                    if (property.isUuid() && (containerNode.get(Configuration.UUID_KEY) == null || "".equals(containerNode.get(Configuration.UUID_KEY)))) {
+                        String newUUID = UUID.randomUUID().toString();
+                        log.warn("Adding a missing UUID [" + newUUID + "] to a " + containerNodeClass.getSimpleName());
+                        containerNode.put(Configuration.UUID_KEY, newUUID);
+                    }
+                    return false;
+                }
+            });
+
+
+        }
 
         super.persistNode(path, configNode, configurableClass);
     }

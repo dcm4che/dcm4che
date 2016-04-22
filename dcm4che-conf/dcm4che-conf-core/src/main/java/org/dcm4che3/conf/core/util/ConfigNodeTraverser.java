@@ -59,6 +59,9 @@ public class ConfigNodeTraverser {
     private static Logger log = LoggerFactory.getLogger(ConfigNodeTraverser.class);
 
     public interface ConfigNodeTypesafeFilter {
+        /**
+         * @return if returns true, traversal will skip going inside this node
+         */
         boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException;
     }
 

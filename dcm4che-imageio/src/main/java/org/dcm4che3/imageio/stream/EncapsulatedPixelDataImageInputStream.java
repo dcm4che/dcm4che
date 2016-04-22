@@ -96,10 +96,15 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (endOfStream)
             return false;
 
-        while (!endOfFrame()) {
-            seek(fragmEndPos-1);
-            super.read(); // ensure to read whole Data Fragment from DicomInputStream
+        if (frameEndPos >= 0) {
+            seek(frameEndPos);
             flush();
+        } else {
+            while (!endOfFrame()) {
+                seek(fragmEndPos-1);
+                super.read(); // ensure to read wh ole Data Fragment from DicomInputStream
+                flush();
+            }
         }
         frameStartPos = streamPos;
         frameEndPos = -1L;
@@ -125,12 +130,11 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         if (streamPos < fragmEndPos)
             return false;
 
-        frameEndPos = fragmEndPos;
-        if (!readItemHeader() || fragmStartWord == frameStartWord)
-            return true;
+        if (readItemHeader() && fragmStartWord != frameStartWord)
+            return false;
 
-        frameEndPos = -1L;
-        return false;
+        frameEndPos = streamPos;
+        return true;
     }
 
 }

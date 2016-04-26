@@ -111,7 +111,7 @@ public class XSLTAttributesCoercion implements AttributesCoercion {
             throw new RuntimeException(e);
         }
         if (modified != null) {
-            attrs.update(newAttrs, modified);
+            attrs.update(Attributes.UpdatePolicy.OVERWRITE, newAttrs, modified);
         } else {
             attrs.addAll(newAttrs);
         }

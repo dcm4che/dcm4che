@@ -49,8 +49,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.data.UID;
 import org.dcm4che3.data.IOD.DataElement;
 import org.dcm4che3.data.IOD.DataElementType;
 import org.dcm4che3.io.DicomEncodingOptions;
@@ -72,6 +70,8 @@ public class Attributes implements Serializable {
         boolean visit(Attributes attrs, int tag, VR vr, Object value)
                 throws Exception;
     }
+
+    public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE }
 
     private static final Logger LOG = 
             LoggerFactory.getLogger(Attributes.class);
@@ -1903,19 +1903,11 @@ public class Attributes implements Serializable {
 
 
     public boolean addAll(Attributes other) {
-        return add(other, null, null, 0, 0, null, false, false, false, null);
-    }
-
-    public boolean merge(Attributes other) {
-        return add(other, null, null, 0, 0, null, true, false, false, null);
-    }
-
-    public boolean testMerge(Attributes other) {
-        return add(other, null, null, 0, 0, null, true, false, true, null);
+        return add(other, null, null, 0, 0, null, null, false, null);
     }
 
     public boolean addSelected(Attributes other, Attributes selection) {
-        return add(other, selection.tags, null, 0, selection.size, selection, false, false, false, null);
+        return add(other, selection.tags, null, 0, selection.size, selection, null, false, null);
     }
 
     public boolean addSelected(Attributes other, String privateCreator, int tag) {
@@ -1961,33 +1953,7 @@ public class Attributes implements Serializable {
      */
     public boolean addSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, selection, null, fromIndex, toIndex, null, false, false, false, null);
-    }
-
-    /**
-     * Merge selected attributes from another Attributes object into this.
-     * Does not overwrite existing non-empty attributes.
-     * The specified array of tag values must be sorted (as by the
-     * {@link java.util.Arrays#sort(int[])} method) prior to making this call.
-     * 
-     * @param other the other Attributes object
-     * @param selection sorted tag values
-     * @return <tt>true</tt> if one ore more attributes were added
-     */
-    public boolean mergeSelected(Attributes other, int... selection) {
-        return add(other, selection, null, 0, selection.length, null, true, false, false, null);
-    }
-
-    /**
-     * Tests if {@link #mergeSelected} would modify attributes, without actually
-     * modifying this attributes
-     * 
-     * @param other the other Attributes object
-     * @param selection sorted tag values
-     * @return <tt>true</tt> if one ore more attributes would have been added
-     */
-    public boolean testMergeSelected(Attributes other, int... selection) {
-        return add(other, selection, null, 0, selection.length, null, true, false, true, null);
+        return add(other, selection, null, fromIndex, toIndex, null, null, false, null);
     }
 
     /**
@@ -2016,12 +1982,11 @@ public class Attributes implements Serializable {
      */
     public boolean addNotSelected(Attributes other, int[] selection,
             int fromIndex, int toIndex) {
-        return add(other, null, selection, fromIndex, toIndex, null, false, false, false, null);
+        return add(other, null, selection, fromIndex, toIndex, null, null, false, null);
     }
 
-    private boolean add(Attributes other, int[] include, int[] exclude,
-            int fromIndex, int toIndex, Attributes selection, boolean merge,
-            boolean update, boolean simulate, Attributes modified) {
+    private boolean add(Attributes other, int[] include, int[] exclude, int fromIndex, int toIndex,
+                        Attributes selection, UpdatePolicy updatePolicy, boolean simulate, Attributes modified) {
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;
@@ -2061,28 +2026,24 @@ public class Attributes implements Serializable {
                 creatorTag = 0;
                 privateCreator = null;
             }
-            if (merge || update) {
+            if (updatePolicy != null) {
+                if (updatePolicy != UpdatePolicy.OVERWRITE && isEmpty(value))
+                    continue;
                 int j = indexOf(tag);
                 if (j >= 0) {
-                    if (update && equalValues(other, j, i)) {
+                    if (updatePolicy != UpdatePolicy.SUPPLEMENT && equalValues(other, j, i))
                         continue;
-                    }
-                    Object origValue = vrs[j].isStringType()
-                            ? decodeStringValue(j)
-                            : values[j];
-                    if (!isEmpty(origValue)) {
-                        if (merge) {
-                            continue;
-                        }
-                        if (modified != null && !modified.contains(privateCreator, tag)) {
-                            if (origValue instanceof Sequence) {
-                                modified.set(privateCreator, tag, (Sequence) origValue, null);
-                            } else if (origValue instanceof Fragments) {
-                                modified.set(privateCreator, tag, (Fragments) origValue);
-                            } else {
-                                modified.set(privateCreator, tag, vr,
-                                        toggleEndian(vr, origValue, modifiedToggleEndian));
-                            }
+                    Object origValue = vrs[j].isStringType() ? decodeStringValue(j) : values[j];
+                    if (updatePolicy == UpdatePolicy.SUPPLEMENT && !isEmpty(origValue))
+                        continue;
+                    if (modified != null && !modified.contains(privateCreator, tag)) {
+                        if (origValue instanceof Sequence) {
+                            modified.set(privateCreator, tag, (Sequence) origValue, null);
+                        } else if (origValue instanceof Fragments) {
+                            modified.set(privateCreator, tag, (Fragments) origValue);
+                        } else {
+                            modified.set(privateCreator, tag, vr,
+                                    toggleEndian(vr, origValue, modifiedToggleEndian));
                         }
                     }
                 }
@@ -2105,12 +2066,12 @@ public class Attributes implements Serializable {
         return numAdd != 0;
     }
 
-    public boolean update(Attributes newAttrs, Attributes modified) {
-        return add(newAttrs, null, null, 0, 0, null, false, true, false, modified);
+    public boolean update(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified) {
+        return add(newAttrs, null, null, 0, 0, null, updatePolicy, false, modified);
     }
 
-    public boolean testUpdate(Attributes newAttrs, Attributes modified) {
-        return add(newAttrs, null, null, 0, 0, null, false, true, true, modified);
+    public boolean testUpdate(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified) {
+        return add(newAttrs, null, null, 0, 0, null, updatePolicy, true, modified);
     }
 
     /**
@@ -2123,13 +2084,13 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute were added or
      *          overwritten with a different value
      */
-    public boolean updateSelected(Attributes newAttrs,
-            Attributes modified, int... selection) {
-        return add(newAttrs, selection, null, 0, selection.length, null, false, true,
+    public boolean updateSelected(UpdatePolicy updatePolicy, Attributes newAttrs,
+                                  Attributes modified, int... selection) {
+        return add(newAttrs, selection, null, 0, selection.length, null, updatePolicy,
                 false, modified);
     }
 
@@ -2140,14 +2101,14 @@ public class Attributes implements Serializable {
      * @param newAttrs the other Attributes object
      * @param modified Attributes object to collect overwritten non-empty
      *          attributes with original values or <tt>null</tt>
-     * @param includes sorted tag values
+     * @param selection sorted tag values
      * @return <tt>true</tt> if one ore more attribute would be added or
      *          overwritten with a different value
      */
-    public boolean testUpdateSelected(Attributes newAttrs, Attributes modified,
-            int... selection) {
+    public boolean testUpdateSelected(UpdatePolicy updatePolicy, Attributes newAttrs, Attributes modified,
+                                      int... selection) {
         return add(newAttrs, selection, null, 0, selection.length, null,
-                false, true, true, modified);
+                updatePolicy, true, modified);
     }
 
     private static Object toggleEndian(VR vr, Object value, boolean toggleEndian) {

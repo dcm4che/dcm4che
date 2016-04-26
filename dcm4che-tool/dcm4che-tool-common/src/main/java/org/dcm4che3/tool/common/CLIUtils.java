@@ -732,7 +732,7 @@ public class CLIUtils {
             data.setString(Tag.SOPInstanceUID, VR.UI, 
                     data.getString(Tag.SOPInstanceUID) + uidSuffix);
         }
-        data.update(attrs, null);
+        data.update(Attributes.UpdatePolicy.OVERWRITE, attrs, null);
         return true;
     }
 

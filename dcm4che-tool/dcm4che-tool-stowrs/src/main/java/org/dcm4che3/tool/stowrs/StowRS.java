@@ -231,7 +231,7 @@ public class StowRS {
     private static void coerceattributes(Attributes metadata, StowRS instance) {
         if (instance.keys.tags().length > 0)
             LOG.info("Coercing the following keys from specified attributes to metadata:");
-        metadata.update(instance.keys, new Attributes());
+        metadata.update(Attributes.UpdatePolicy.OVERWRITE, instance.keys, new Attributes());
         LOG.info(instance.keys.toString());
     }
 

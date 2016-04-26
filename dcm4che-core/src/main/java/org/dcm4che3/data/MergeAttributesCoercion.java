@@ -57,7 +57,7 @@ public class MergeAttributesCoercion implements AttributesCoercion {
     public void coerce(Attributes attrs, Attributes modified) {
         Attributes.unifyCharacterSets(attrs, newAttrs);
         if (modified != null) {
-            attrs.update(newAttrs, modified);
+            attrs.update(Attributes.UpdatePolicy.OVERWRITE, newAttrs, modified);
         } else {
             attrs.addAll(newAttrs);
         }

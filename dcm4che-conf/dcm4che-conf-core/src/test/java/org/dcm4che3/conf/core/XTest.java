@@ -14,5 +14,6 @@ public class XTest {
 
         XNodeUtil.parseReference("/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee_arc");
         XNodeUtil.parseReference("/dicomConfigurationRoot/dicomDevicesRoot/dcm4chee-arc");
+        XNodeUtil.parseReference("//*[_.uuid='fd2c0253-ed6b-42a3-8d6a-3cef5c76cf34']");
     }
 }

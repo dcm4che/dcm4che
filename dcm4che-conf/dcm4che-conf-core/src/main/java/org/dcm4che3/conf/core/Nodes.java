@@ -43,6 +43,8 @@ import org.apache.commons.jxpath.AbstractFactory;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.JXPathNotFoundException;
 import org.apache.commons.jxpath.Pointer;
+import org.dcm4che3.conf.core.api.Configuration;
+import org.dcm4che3.conf.core.util.PathPattern;
 import org.dcm4che3.conf.core.util.XNodeUtil;
 
 import java.util.*;
@@ -105,6 +107,7 @@ public class Nodes {
 
     /**
      * Clones structure but re-uses primitives
+     *
      * @param node
      * @return
      */
@@ -167,17 +170,21 @@ public class Nodes {
      * @param path path str to parse
      * @return list of path items in case the provided path
      * <ul>
-     *     <li>is simple (e.g. "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities" )</li>
-     *     <li>is persistable (e.g. "/dicomConfigurationRoot/dicomDevicesRoot[@name='someName']")</li>
+     * <li>is simple (e.g. "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities" )</li>
+     * <li>is persistable (e.g. "/dicomConfigurationRoot/dicomDevicesRoot[@name='someName']")</li>
      * </ul>
-     *
+     * <p/>
      * otherwise <b>null</b>
      */
     public static List<String> simpleOrPersistablePathToPathItemsOrNull(String path) {
 
-        // TODO: rewrite with proper XPATH
+        List<Map<String, Object>> refItems;
+        try {
+            refItems = XNodeUtil.parseReference(path);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
 
-        List<Map<String, Object>> refItems = XNodeUtil.parseReference(path);
         List<String> pathItems = new ArrayList<String>();
 
         for (Map<String, Object> refItem : refItems) {
@@ -201,12 +208,12 @@ public class Nodes {
             }
 
             // this path is neither simple nor persistable
-            if (name==null)
+            if (name == null)
                 return null;
 
             pathItems.add(name);
 
-            if (attrName!=null)
+            if (attrName != null)
                 pathItems.add(attrName);
 
         }

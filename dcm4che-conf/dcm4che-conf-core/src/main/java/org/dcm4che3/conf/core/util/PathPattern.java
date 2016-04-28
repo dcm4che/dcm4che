@@ -122,6 +122,9 @@ public class PathPattern {
         return new PathParser(path);
     }
 
+    /**
+     * @return PathParser to retrieve params or null if the pattern does not match
+     */
     public PathParser parseIfMatches(String path) {
         Matcher matcher = compiledPattern.matcher(path);
 

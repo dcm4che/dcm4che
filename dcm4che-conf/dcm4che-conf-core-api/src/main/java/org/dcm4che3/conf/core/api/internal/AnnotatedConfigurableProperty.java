@@ -39,11 +39,8 @@
  */
 package org.dcm4che3.conf.core.api.internal;
 
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
+import org.dcm4che3.conf.core.api.*;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
-import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.LDAP;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
@@ -265,59 +262,59 @@ public class AnnotatedConfigurableProperty {
             ldapAnnotation = dummyLdapAnno;
 
 
-        // annotated name
-        annotatedName = configurablePropertyAnnotation.name();
-        if (annotatedName.isEmpty()) {
-            annotatedName = this.name;
-            if (annotatedName == null)
-                throw new ConfigurationException("Property name not specified");
-        }
-
         // type
         if (this.type instanceof ParameterizedType)
-            this.rawType  = (Class) ((ParameterizedType) this.type).getRawType();
+            this.rawType = (Class) ((ParameterizedType) this.type).getRawType();
         else {
-            this.rawType  = (Class) this.type;
+            this.rawType = (Class) this.type;
         }
 
 
-        if (configurablePropertyAnnotation != null) {
+        isReference = configurablePropertyAnnotation.isReference() ||
+                configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.Reference);
 
-            isReference = configurablePropertyAnnotation.isReference() ||
-                    configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.Reference);
+        isExtensionsProperty = configurablePropertyAnnotation.isExtensionsProperty() ||
+                configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.ExtensionsProperty);
 
-            isExtensionsProperty = configurablePropertyAnnotation.isExtensionsProperty() ||
-                    configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.ExtensionsProperty);
+        isOlockHash = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.OptimisticLockingHash);
 
-            isOlockHash = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.OptimisticLockingHash);
+        isConfObject = ConfigIterators.isConfigurableClass(getRawClass());
 
-            isConfObject = ConfigIterators.isConfigurableClass(getRawClass());
-
-            isCollection = Collection.class.isAssignableFrom(getRawClass());
+        isCollection = Collection.class.isAssignableFrom(getRawClass());
 
 
-            isCollectionOfReferences = configurablePropertyAnnotation.collectionOfReferences()
-                    || configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.CollectionOfReferences);
+        isCollectionOfReferences = configurablePropertyAnnotation.collectionOfReferences()
+                || configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.CollectionOfReferences);
 
 
-            isMapOfConfObjects = Map.class.isAssignableFrom(getRawClass())
-                    && getPseudoPropertyForGenericsParamater(1).isConfObject()
-                    && !isCollectionOfReferences()
-                    && !isExtensionsProperty();
+        isMapOfConfObjects = Map.class.isAssignableFrom(getRawClass())
+                && getPseudoPropertyForGenericsParamater(1).isConfObject()
+                && !isCollectionOfReferences()
+                && !isExtensionsProperty();
 
-            isCollectionOfConfObjects = Collection.class.isAssignableFrom(getRawClass())
-                    && ConfigIterators.isConfigurableClass(getPseudoPropertyForGenericsParamater(0).getRawClass())
-                    && !isCollectionOfReferences();
+        isCollectionOfConfObjects = Collection.class.isAssignableFrom(getRawClass())
+                && ConfigIterators.isConfigurableClass(getPseudoPropertyForGenericsParamater(0).getRawClass())
+                && !isCollectionOfReferences();
 
-            isUuid = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.UUID);
+        isUuid = configurablePropertyAnnotation.type().equals(ConfigurablePropertyType.UUID);
 
 
-            isArrayOfConfObjects = getRawClass().isArray()
-                    && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
-                    && !isCollectionOfReferences();
+        isArrayOfConfObjects = getRawClass().isArray()
+                && getRawClass().getComponentType().getAnnotation(ConfigurableClass.class) != null
+                && !isCollectionOfReferences();
 
-            isArray = isArray();
+        isArray = isArray();
 
+
+        // annotated name
+        if (isUuid()) annotatedName = Configuration.UUID_KEY;
+        else {
+            annotatedName = configurablePropertyAnnotation.name();
+            if (annotatedName.isEmpty()) {
+                annotatedName = this.name;
+                if (annotatedName == null)
+                    throw new ConfigurationException("Property name not specified");
+            }
         }
 
     }

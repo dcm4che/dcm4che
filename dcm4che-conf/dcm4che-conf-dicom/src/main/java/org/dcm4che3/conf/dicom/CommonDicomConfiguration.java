@@ -253,19 +253,8 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         @ConfigurableProperty(name = "dicomDevicesRoot")
         Map<String, Device> devices;
 
-        @LDAP(
-                overriddenName = "Unique AE Titles Registry",
-                objectClasses = "dicomUniqueAETitlesRegistryRoot"
-        )
-        @ConfigurableProperty(name = "dicomUniqueAETitlesRegistryRoot")
-        Map<String, AETitleItem> uniqueAETitleRegistry;
 
-        @LDAP(
-                overriddenName = "Unique HL7 Application Names Registry",
-                objectClasses = "hl7UniqueApplicationNamesRegistryRoot"
-        )
-        @ConfigurableProperty(name = "hl7UniqueApplicationNamesRegistryRoot")
-        Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry;
+
 
         public Map<String, Device> getDevices() {
             return devices;
@@ -275,21 +264,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             this.devices = devices;
         }
 
-        public Map<String, AETitleItem> getUniqueAETitleRegistry() {
-            return uniqueAETitleRegistry;
-        }
-
-        public void setUniqueAETitleRegistry(Map<String, AETitleItem> uniqueAETitleRegistry) {
-            this.uniqueAETitleRegistry = uniqueAETitleRegistry;
-        }
-
-        public Map<String, HL7UniqueAppRegistryItem> getHl7UniqueApplicationNamesRegistry() {
-            return hl7UniqueApplicationNamesRegistry;
-        }
-
-        public void setHl7UniqueApplicationNamesRegistry(Map<String, HL7UniqueAppRegistryItem> hl7UniqueApplicationNamesRegistry) {
-            this.hl7UniqueApplicationNamesRegistry = hl7UniqueApplicationNamesRegistry;
-        }
     }
 
     @Override

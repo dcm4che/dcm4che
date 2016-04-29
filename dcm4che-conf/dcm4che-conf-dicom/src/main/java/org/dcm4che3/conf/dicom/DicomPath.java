@@ -87,9 +87,9 @@ public enum DicomPath {
 
         // single-result getNode (also can be used to store nodes)
         PATHS.put(/***************/ConfigRoot, "/dicomConfigurationRoot");
-        PATHS.put(/*************/DeviceByNameForWrite, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
+        PATHS.put(/*****/DeviceByNameForWrite, "/dicomConfigurationRoot/dicomDevicesRoot[@name='{deviceName}']");
 
-        PATHS.put(/*************/DeviceByNameForRead, "/dicomConfigurationRoot/dicomDevicesRoot/{deviceName}");
+        PATHS.put(/******/DeviceByNameForRead, "/dicomConfigurationRoot/dicomDevicesRoot/{deviceName}");
 
         // Transfer capabilities
         PATHS.put(/*****************/TCGroups, "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities");

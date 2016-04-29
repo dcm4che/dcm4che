@@ -54,12 +54,10 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
     private Iterator handleRefShortCut(PathPattern.PathParser pp, DicomPath pathType, String originalRequestPath) {
 
         String param;
-        int validLen = -1;
         String suffix;
         switch (pathType) {
             case DeviceNameByUUID:
                 param = "deviceUUID";
-                validLen = 3;
                 suffix = "/dicomDeviceName";
                 break;
             case DeviceUUIDByAnyUUID:

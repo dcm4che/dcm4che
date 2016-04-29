@@ -66,7 +66,7 @@ public class DefaultReferenceAdapter implements ConfigTypeAdapter {
     @Override
     public Object fromConfigNode(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException {
 
-        // TODO: remove this around beginning 2016
+        // TODO: remove this around beginning 2017 ;)
         // old deprecated style ref, for backwards-compatibility
         if (configNode instanceof String) {
 

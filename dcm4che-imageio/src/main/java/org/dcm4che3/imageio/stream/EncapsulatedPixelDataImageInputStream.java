@@ -137,4 +137,8 @@ public class EncapsulatedPixelDataImageInputStream extends MemoryCacheImageInput
         return true;
     }
 
+    public boolean isEndOfStream() {
+        return endOfStream;
+    }
+
 }

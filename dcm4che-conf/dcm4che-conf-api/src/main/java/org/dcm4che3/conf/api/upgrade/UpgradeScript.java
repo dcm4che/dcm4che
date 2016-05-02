@@ -19,9 +19,7 @@ import java.util.Properties;
  *
  * Mark the implemented class with
  * <code>@ org.dcm4che3.conf.api.upgrade.ScriptVersion</code>
- * annotation to allow upgrade runner to detect whether the script needs to be re-executed.
- *
- * upgradeScriptMetadata is also available to the script itself during the execution, however it is not recommended to base the logic of the script on it.
+ * annotation to allow the upgrade runner to detect whether the script needs to be re-executed.
  *
  */
 public interface UpgradeScript {

@@ -24,9 +24,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>jaxrs-api</artifactId>
-      <version>3.0.4.Final</version>
+      <groupId>org.jboss.spec.javax.ws.rs</groupId>
+      <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
+      <version>1.0.0.Final</version>
     </dependency>
   </dependencies>
 </project>

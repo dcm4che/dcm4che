@@ -123,7 +123,6 @@
     <module>dcm4che-tool</module>
     <module>dcm4che-assembly</module>
     <module>dcm4che-jboss-modules</module>
-    <module>dcm4che-servlet</module>
     <module>dcm4che-camel</module>
     <module>dcm4che-ws-rs</module>
     <module>dcm4che-json</module>

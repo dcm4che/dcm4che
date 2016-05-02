@@ -42,7 +42,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>dcm4chee-arc-light-5.2.0</version>
+    <version>dcm4chee-arc-light-5.2.1</version>
   </parent>
   <artifactId>dcm4che-json</artifactId>
   <packaging>bundle</packaging>

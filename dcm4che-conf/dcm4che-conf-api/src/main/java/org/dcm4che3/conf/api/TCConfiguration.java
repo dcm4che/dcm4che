@@ -6,10 +6,7 @@ import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.net.TCGroupConfigAEExtension;
 import org.dcm4che3.net.TransferCapability;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author Roman K
@@ -22,9 +19,11 @@ public class TCConfiguration {
 
     /**
      * Persists default group config
+     * Deprecated. Do not us it in upgrade scripts.
      * @param config
      * @throws ConfigurationException
      */
+    @Deprecated
     public static void persistDefaultTCGroups(DicomConfiguration config) throws ConfigurationException {
 
         TransferCapabilityConfigExtension tcExt = config.getDicomConfigurationExtension(TransferCapabilityConfigExtension.class);
@@ -50,14 +49,21 @@ public class TCConfiguration {
     @ConfigurableClass
     public static class TCGroup {
 
-        @ConfigurableProperty
-        Collection<TransferCapability> transferCapabilities = new ArrayList<TransferCapability>();
+        public TCGroup() {
+        }
 
-        public Collection<TransferCapability> getTransferCapabilities() {
+        public TCGroup(List<TransferCapability> transferCapabilities) {
+            this.transferCapabilities = transferCapabilities;
+        }
+
+        @ConfigurableProperty
+        List<TransferCapability> transferCapabilities = new ArrayList<TransferCapability>();
+
+        public List<TransferCapability> getTransferCapabilities() {
             return transferCapabilities;
         }
 
-        public void setTransferCapabilities(Collection<TransferCapability> transferCapabilities) {
+        public void setTransferCapabilities(List<TransferCapability> transferCapabilities) {
             this.transferCapabilities = transferCapabilities;
         }
     }

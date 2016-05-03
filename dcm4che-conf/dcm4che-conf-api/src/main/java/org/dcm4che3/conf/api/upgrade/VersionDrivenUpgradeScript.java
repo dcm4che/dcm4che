@@ -34,7 +34,7 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
     private void runUpgradeGoalFromScratch() {
         for (Method method : this.getClass().getDeclaredMethods()) {
             if (method.getAnnotation(UpgradeGoalFromScratch.class) != null) {
-                log.info("Running upgrade script for the first time - invoking method " + method.getName());
+                log.info("Running upgrade script "+this.getClass().getName()+" for the first time - invoking method " + method.getName());
                 invokeMethod(method);
                 return;
             }
@@ -70,7 +70,7 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
         }
 
         for (Map.Entry<String, Method> methodEntry : methods.entrySet()) {
-            log.info("Invoking "+methodEntry.getValue().getName()+"(fixUpTo "+methodEntry.getKey()+")");
+            log.info("["+this.getClass().getName()+"] Invoking fix-up method "+methodEntry.getValue().getName()+" (fixUpTo "+methodEntry.getKey()+")");
             invokeMethod(methodEntry.getValue());
         }
     }

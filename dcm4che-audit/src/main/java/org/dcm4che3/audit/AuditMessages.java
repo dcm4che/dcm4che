@@ -497,29 +497,29 @@ public class AuditMessages {
             extends org.dcm4che3.audit.ParticipantObjectIDTypeCode {
 
         public static final ParticipantObjectIDTypeCode MedicalRecordNumber = 
-                new ParticipantObjectIDTypeCode("1");
+                new ParticipantObjectIDTypeCode("1", "RFC-3881", "Medical Record Number");
         public static final ParticipantObjectIDTypeCode PatientNumber =
-                new ParticipantObjectIDTypeCode("2");
+                new ParticipantObjectIDTypeCode("2", "RFC-3881", "Patient Number");
         public static final ParticipantObjectIDTypeCode EncounterNumber =
-                new ParticipantObjectIDTypeCode("3");
+                new ParticipantObjectIDTypeCode("3", "RFC-3881", "Encounter Number");
         public static final ParticipantObjectIDTypeCode EnrolleeNumber =
-                new ParticipantObjectIDTypeCode("4");
+                new ParticipantObjectIDTypeCode("4", "RFC-3881", "Enrollee Number");
         public static final ParticipantObjectIDTypeCode SocialSecurityNumber = 
-                new ParticipantObjectIDTypeCode("5");
+                new ParticipantObjectIDTypeCode("5", "RFC-3881", "Social Security Number");
         public static final ParticipantObjectIDTypeCode AccountNumber =
-                new ParticipantObjectIDTypeCode("6");
+                new ParticipantObjectIDTypeCode("6", "RFC-3881", "Account Number");
         public static final ParticipantObjectIDTypeCode GuarantorNumber =
-                new ParticipantObjectIDTypeCode("7");
+                new ParticipantObjectIDTypeCode("7", "RFC-3881", "Guarantor Number");
         public static final ParticipantObjectIDTypeCode ReportName =
-                new ParticipantObjectIDTypeCode("8");    
+                new ParticipantObjectIDTypeCode("8", "RFC-3881", "Report Name");    
         public static final ParticipantObjectIDTypeCode ReportNumber =
-                new ParticipantObjectIDTypeCode("9");
+                new ParticipantObjectIDTypeCode("9", "RFC-3881", "Report Number");
         public static final ParticipantObjectIDTypeCode SearchCriteria =
-                new ParticipantObjectIDTypeCode("10");
+                new ParticipantObjectIDTypeCode("10", "RFC-3881", "Search Criteria");
         public static final ParticipantObjectIDTypeCode UserIdentifier =
-                new ParticipantObjectIDTypeCode("11");
+                new ParticipantObjectIDTypeCode("11", "RFC-3881", "User Identifier");
         public static final ParticipantObjectIDTypeCode URI =
-                new ParticipantObjectIDTypeCode("12");
+                new ParticipantObjectIDTypeCode("12", "RFC-3881", "URI");
         public static final ParticipantObjectIDTypeCode StudyInstanceUID = 
                 new ParticipantObjectIDTypeCode("110180","DCM","Study Instance UID");
         public static final ParticipantObjectIDTypeCode SOPClassUID = 

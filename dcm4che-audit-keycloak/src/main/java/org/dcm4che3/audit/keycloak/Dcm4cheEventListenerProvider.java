@@ -39,6 +39,7 @@
  */
 package org.dcm4che3.audit.keycloak;
 
+import org.dcm4che3.net.audit.AuditLogger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
@@ -65,7 +66,9 @@ public class Dcm4cheEventListenerProvider implements EventListenerProvider {
     public void onEvent(Event event) {
         if (includedEvents != null && includedEvents.contains(event.getType())) {
             try {
-                AuditAuth.spoolAuditMsg(event);
+                AuditLogger log = new AuditLoggerFactory().getAuditLogger();
+                if (log != null)
+                    AuditAuth.spoolAuditMsg(event, log);
             } catch (Exception e) {
                 LOG.warn("Failed to emit audit message", e);
             }

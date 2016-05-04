@@ -75,7 +75,7 @@ public class AuditAuth {
     private static final Logger LOG = LoggerFactory.getLogger(AuditAuth.class);
     private static final String JBOSS_SERVER_DATA_DIR = "jboss.server.data.dir";
 
-    static void spoolAuditMsg(Event event) {
+    static void spoolAuditMsg(Event event, AuditLogger log) {
         String dataDir = System.getProperty(JBOSS_SERVER_DATA_DIR);
         Path dir = Paths.get(dataDir, "audit-auth-spool");
         Path file;
@@ -84,7 +84,7 @@ public class AuditAuth {
                 Files.createDirectories(dir);
             if ((event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGOUT_ERROR)
                     && Files.exists(dir.resolve(event.getSessionId()))) {
-                sendAuditMessage(dir.resolve(event.getSessionId()), event);
+                sendAuditMessage(dir.resolve(event.getSessionId()), event, log);
                 return;
             }
             if (event.getType() == EventType.LOGIN_ERROR && event.getError() != null)
@@ -98,18 +98,16 @@ public class AuditAuth {
                 StandardOpenOption.APPEND))) {
                 writer.writeLine(new AuthInfo(event));
             }
-            sendAuditMessage(file, event);
+            sendAuditMessage(file, event, log);
         } catch (Exception e) {
             LOG.warn("Failed to write to Audit Spool File - {} ", e);
         }
     }
 
-    private static void sendAuditMessage(Path file, Event event) {
-        AuditLoggerFactory af = new AuditLoggerFactory();
+    private static void sendAuditMessage(Path file, Event event, AuditLogger log) {
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             AuthInfo info = new AuthInfo(reader.readLine());
             try {
-                AuditLogger log = af.getAuditLogger();
                 AuditMessage msg = new AuditMessage();
                 msg.setEventIdentification(AuditMessages.createEventIdentification(
                     AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,

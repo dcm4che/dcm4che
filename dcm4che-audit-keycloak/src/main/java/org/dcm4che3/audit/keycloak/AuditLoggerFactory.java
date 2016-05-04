@@ -80,7 +80,8 @@ public class AuditLoggerFactory {
             device = findDevice();
             this.device = device;
         }
-        return findDevice().getDeviceExtension(AuditLogger.class);
+        AuditLogger auditLogger = findDevice().getDeviceExtension(AuditLogger.class);
+        return auditLogger != null && auditLogger.isInstalled() ? auditLogger : null;
     }
 
     private Device findDevice() throws ConfigurationException {

@@ -80,6 +80,14 @@ public class JsonConfiguration {
         return true;
     }
 
+    public <T extends JsonConfigurationExtension> T getJsonConfigurationExtension(Class<T> clazz) {
+        for (JsonConfigurationExtension extension : extensions) {
+            if (clazz.isAssignableFrom(extension.getClass()))
+                return (T) extension;
+        }
+        return null;
+    }
+
     public void writeTo(DeviceInfo deviceInfo, JsonGenerator gen) {
         JsonWriter writer = new JsonWriter(gen);
         gen.writeStartObject();

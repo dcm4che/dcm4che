@@ -162,12 +162,12 @@ public class MppsSCU {
         Tag.StudyInstanceUID,
         Tag.RequestedProcedureDescription,
         Tag.RequestedProcedureCodeSequence,
-        Tag.RequestedProcedureID,
         Tag.ScheduledProcedureStepDescription,
         Tag.ScheduledProtocolCodeSequence,
         Tag.ScheduledProcedureStepID,
         Tag.OrderPlacerIdentifierSequence,
         Tag.OrderFillerIdentifierSequence,
+        Tag.RequestedProcedureID,
         Tag.PlacerOrderNumberImagingServiceRequest,
         Tag.FillerOrderNumberImagingServiceRequest,
     };

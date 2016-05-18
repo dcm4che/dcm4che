@@ -144,8 +144,9 @@ public class StoreSCP {
 
     private static void renameTo(Association as, File from, File dest)
             throws IOException {
-        LOG.info("{}: M-RENAME {}", new Object[]{ as, from, dest });
-        dest.getParentFile().mkdirs();
+        LOG.info("{}: M-RENAME {} to {}", as, from, dest);
+        if (!dest.getParentFile().mkdirs())
+            dest.delete();
         if (!from.renameTo(dest))
             throw new IOException("Failed to rename " + from + " to " + dest);
     }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-parent</artifactId>
-    <version>dcm4chee-arc-light-5.2.1</version>
+    <version>5.3.0</version>
   </parent>
   <artifactId>dcm4che-imageio-rle</artifactId>
   <packaging>bundle</packaging>

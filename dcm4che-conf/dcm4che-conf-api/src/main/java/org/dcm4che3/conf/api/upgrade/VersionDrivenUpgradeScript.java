@@ -53,6 +53,7 @@ public class VersionDrivenUpgradeScript implements UpgradeScript {
 
     private void runFixUps() {
 
+        // Fix-ups are ran in ascending lexicographic order of the @FixUpTo's values (i.e. in the same order they were added), thus TreeMap
         TreeMap<String, Method> methods = new TreeMap<String, Method>();
 
         for (Method method : this.getClass().getDeclaredMethods()) {

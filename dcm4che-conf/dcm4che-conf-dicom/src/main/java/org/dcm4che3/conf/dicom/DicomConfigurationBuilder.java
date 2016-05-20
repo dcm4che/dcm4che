@@ -191,7 +191,7 @@ public class DicomConfigurationBuilder {
             configurationStorage = new DicomReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());
 
         if (doOptimisticLocking)
-            configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions, configurationStorage);
+            configurationStorage = new HashBasedOptimisticLockingConfiguration(configurationStorage, allExtensions);
 
         configurationStorage = new DefaultsAndNullFilterDecorator(
                 configurationStorage,

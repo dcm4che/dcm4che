@@ -71,7 +71,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
 
     public OptimisticLockingTest() {
-        super(null, null, null);
+        super(null, null);
     }
 
     @ConfigurableClass
@@ -287,7 +287,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
 
 
-        Configuration lockedConfig = new HashBasedOptimisticLockingConfiguration(mockDicomConfStorage, new ArrayList<Class>(), mockDicomConfStorage);
+        Configuration lockedConfig = new HashBasedOptimisticLockingConfiguration(mockDicomConfStorage, new ArrayList<Class>());
 
         // imitate 3 users simultaneously getting the same node
 

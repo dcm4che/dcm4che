@@ -194,7 +194,7 @@ public class AuditMessageTest {
                         AuditMessages.ParticipantObjectTypeCode.SystemObject,
                         AuditMessages.ParticipantObjectTypeCodeRole.Resource,
                         AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation,
-                        null, desc, acc, mpps, sopC, null, null, pocs));
+                        null, desc, acc, mpps, sopC, null, null, pocs, null));
         desc.clear();
         desc.add("description2");
         msg.getParticipantObjectIdentification().add(
@@ -202,7 +202,7 @@ public class AuditMessageTest {
                         "ptid12345", AuditMessages.ParticipantObjectIDTypeCode.PatientNumber,
                         "John Doe", null, AuditMessages.ParticipantObjectTypeCode.Person,
                         AuditMessages.ParticipantObjectTypeCodeRole.Patient,
-                        null, null, desc, null, null, null, null, null, null));
+                        null, null, desc, null, null, null, null, null, null, null));
         AuditMessages.toXML(msg, System.out, true);
     }
 

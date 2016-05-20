@@ -654,7 +654,7 @@ public class AuditMessages {
             byte[] query, String type, String role, String lifeCycle,
             String sensitivity, List<String> desc, HashSet<Accession> accessionList, HashSet<MPPS> mppsList,
             HashSet<SOPClass> sopClasses, Boolean encrypted, Boolean anonymized,
-            ParticipantObjectContainsStudy pocs, ParticipantObjectDetail... details) {
+            ParticipantObjectContainsStudy pocs, HashSet<ParticipantObjectDetail> details) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
         poi.setParticipantObjectID(id);
         poi.setParticipantObjectIDTypeCode(idType);
@@ -679,8 +679,9 @@ public class AuditMessages {
         poi.setEncrypted(encrypted);
         poi.setAnonymized(anonymized);
         poi.setParticipantObjectContainsStudy(pocs);
-        for (ParticipantObjectDetail detail : details)
-            poi.getParticipantObjectDetail().add(detail);
+        if (null != details)
+            for (ParticipantObjectDetail detail : details)
+                poi.getParticipantObjectDetail().add(detail);
         return poi;
     }
 

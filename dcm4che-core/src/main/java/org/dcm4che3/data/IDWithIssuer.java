@@ -137,6 +137,9 @@ public class IDWithIssuer {
     }
 
     public boolean matches(IDWithIssuer other) {
+        if (other==null)
+            return false;
+
         return id.equals(other.id) &&
                 (issuer == null 
                     ? other.issuer == null

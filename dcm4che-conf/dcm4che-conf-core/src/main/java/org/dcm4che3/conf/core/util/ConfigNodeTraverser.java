@@ -47,10 +47,7 @@ import org.dcm4che3.conf.core.api.internal.ConfigIterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
@@ -63,6 +60,13 @@ public class ConfigNodeTraverser {
          * @return if returns true, traversal will skip going inside this node
          */
         boolean beforeNode(Map<String, Object> containerNode, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException;
+    }
+
+    public interface ConfigNodesTypesafeFilter {
+        /**
+         * @return if returns true, traversal will skip going inside this node
+         */
+        void beforeNodes(Map<String, Object> containerNode1, Map<String, Object> containerNode2, Class containerNodeClass, AnnotatedConfigurableProperty property) throws ConfigurationException;
     }
 
     public static class AConfigNodeFilter {
@@ -220,6 +224,108 @@ public class ConfigNodeTraverser {
         }
     }
 
+    public static void dualTraverseNodeTypesafe(Object node1, Object node2, AnnotatedConfigurableProperty containerProperty, List<Class> allExtensionClasses, ConfigNodesTypesafeFilter filter) throws ConfigurationException {
+
+        // if because of any reason these are not maps (e.g. a reference or a custom adapter for a configurableclass),
+        // we don't go deeper
+        if (!(node1 instanceof Map) || !(node2 instanceof Map)) return;
+
+        // if that's a reference, don't traverse deeper
+        if (containerProperty.isReference()) return;
+
+        Map<String, Object> containerNode1 = (Map<String, Object>) node1;
+        Map<String, Object> containerNode2 = (Map<String, Object>) node2;
+
+        List<AnnotatedConfigurableProperty> properties = ConfigIterators.getAllConfigurableFieldsAndSetterParameters(containerProperty.getRawClass());
+        for (AnnotatedConfigurableProperty property : properties) {
+
+            filter.beforeNodes(containerNode1, containerNode2, containerProperty.getRawClass(), property);
+
+            Object childNode1 = containerNode1.get(property.getAnnotatedName());
+            Object childNode2 = containerNode2.get(property.getAnnotatedName());
+
+            if (childNode1 == null || childNode2 == null) continue;
+
+            // if the property is a configclass
+            if (property.isConfObject()) {
+                dualTraverseNodeTypesafe(childNode1, childNode2, property, allExtensionClasses, filter);
+                continue;
+            }
+
+            // collection, where a generics parameter is a configurable class or it is an array with comp type of configurableClass
+            if (property.isCollectionOfConfObjects() || property.isArrayOfConfObjects()) {
+
+                List<Map<String, Object>> nodeList1  = (List) childNode1;
+                List<Map<String, Object>> nodeList2  = (List) childNode2;
+
+                boolean allUuids = allElementsAreNodesAndHaveUuids(nodeList1)
+                        && allElementsAreNodesAndHaveUuids(nodeList2);
+
+                if (allUuids) {
+                    // match on #uuid
+                    // extract Map uuid -> index
+                    Map<String, Integer> index1 = new HashMap<String, Integer>();
+
+                    int i = 0;
+                    for (Map<String, Object> node : nodeList1) {
+                        index1.put((String) node.get(Configuration.UUID_KEY), i);
+                        i++;
+                    }
+
+                    for (Map<String, Object> node : nodeList2) {
+
+                        Object uuid = node.get(Configuration.UUID_KEY);
+                        Integer elem1Ind = index1.get(uuid);
+
+                        if (elem1Ind != null) {
+                            // found match
+                            dualTraverseNodeTypesafe(nodeList1.get(elem1Ind), node, property.getPseudoPropertyForConfigClassCollectionElement(), allExtensionClasses, filter);
+                        }
+                    }
+                }
+                continue;
+            }
+
+            // map, where a value generics parameter is a configurable class
+            if (property.isMapOfConfObjects()) {
+
+                try {
+                    Map<String, Object> collection1 = (Map<String, Object>) childNode1;
+                    Map<String, Object> collection2 = (Map<String, Object>) childNode2;
+
+                    for (String key : collection1.keySet()) {
+                        dualTraverseNodeTypesafe(collection1.get(key), collection2.get(key), property.getPseudoPropertyForConfigClassCollectionElement(), allExtensionClasses, filter);
+                    }
+
+                } catch (ClassCastException e) {
+                    log.warn("Map is malformed", e);
+                }
+
+                continue;
+            }
+
+            // extensions map
+            if (property.isExtensionsProperty()) {
+
+                try {
+                    Map<String, Object> extensionsMap1 = (Map<String, Object>) childNode1;
+                    Map<String, Object> extensionsMap2 = (Map<String, Object>) childNode2;
+
+                    for (String key : extensionsMap1.keySet()) {
+                        try {
+                            dualTraverseNodeTypesafe(extensionsMap1.get(key), extensionsMap2.get(key), new AnnotatedConfigurableProperty(Extensions.getExtensionClassBySimpleName(key, allExtensionClasses)), allExtensionClasses, filter);
+                        } catch (ClassNotFoundException e) {
+                            // noop
+                            log.debug("Extension class {} not found, parent node class {} ", key, containerProperty.getRawClass().getName());
+                        }
+                    }
+
+                } catch (ClassCastException e) {
+                    log.warn("Extensions are malformed", e);
+                }
+            }
+        }
+    }
 
     public static void traverseMapNode(Object node, AConfigNodeFilter filter) {
 
@@ -266,7 +372,6 @@ public class ConfigNodeTraverser {
         } else
             throw new IllegalArgumentException("A composite config node must be a Map<String,Object>");
     }
-
 
     /**
      * Traverses with in-depth search and applies dual filter.

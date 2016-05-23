@@ -39,6 +39,7 @@
 package org.dcm4che3.conf.dicom;
 
 import org.dcm4che3.conf.ConfigurationSettingsLoader;
+import org.dcm4che3.conf.core.ExtensionMergingConfiguration;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.api.Path;
@@ -64,6 +65,7 @@ public class DicomConfigurationBuilder {
     private static Logger LOG = LoggerFactory
             .getLogger(DicomConfigurationBuilder.class);
 
+    private boolean extensionMerge = false;
     private boolean cache = false;
     private Hashtable<?, ?> ldapProps = null;
     private Configuration configurationStorage = null;
@@ -120,6 +122,11 @@ public class DicomConfigurationBuilder {
     public <T extends HL7ApplicationExtension> DicomConfigurationBuilder registerHL7ApplicationExtension(
             Class<T> clazz) {
         registerExtensionForBaseExtension(clazz, HL7ApplicationExtension.class);
+        return this;
+    }
+
+    public DicomConfigurationBuilder extensionMerge(boolean extensionMerge) {
+        this.extensionMerge = extensionMerge;
         return this;
     }
 
@@ -186,6 +193,9 @@ public class DicomConfigurationBuilder {
 
         if (cache)
             configurationStorage = new SimpleCachingConfigurationDecorator(configurationStorage, props);
+
+        if(extensionMerge)
+            configurationStorage = new ExtensionMergingConfiguration(configurationStorage, allExtensions);
 
         if (uuidIndexing)
             configurationStorage = new DicomReferenceIndexingDecorator(configurationStorage, new HashMap<String, Path>());

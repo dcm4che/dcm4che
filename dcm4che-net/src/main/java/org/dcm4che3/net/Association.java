@@ -42,10 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -102,6 +99,7 @@ public class Association {
             new IntHashMap<CancelRQHandler>();
     private final HashMap<String,HashMap<String,PresentationContext>> pcMap =
             new HashMap<String,HashMap<String,PresentationContext>>();
+    private final LinkedList<AssociationListener> listeners = new LinkedList<>();
 
     Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
@@ -192,6 +190,14 @@ public class Association {
 
     public Object clearProperty(String key) {
         return properties != null ? properties.remove(key) : null;
+    }
+
+    public void addAssociationListener(AssociationListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeAssociationListener(AssociationListener listener) {
+        listeners.remove(listener);
     }
 
     public final boolean isRequestor() {
@@ -507,6 +513,8 @@ public class Association {
         }
         if (ae != null)
             ae.getDevice().getAssociationHandler().onClose(this);
+        for (AssociationListener listener : listeners)
+            listener.onClose(this);
     }
 
     void onAAssociateRQ(AAssociateRQ rq) throws IOException {

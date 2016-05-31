@@ -174,17 +174,14 @@ public class AuditMessageTest {
                     "Hospital",
                     "ReadingRoom",
                     AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
-        List<String> desc = new ArrayList<>();
-        HashSet<Accession> acc = new HashSet<>();
-        HashSet<MPPS> mpps = new HashSet<>();
-        HashSet<SOPClass> sopC = new HashSet<>();
-        desc.add("description1");
-        acc.add(AuditMessages.createAccession("12341234"));
-        mpps.add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
-        sopC.add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.2", 1500));
-        sopC.add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
         ParticipantObjectContainsStudy pocs = new ParticipantObjectContainsStudy();
         pocs.getStudyIDs().add(AuditMessages.createStudyIDs("1.2.840.10008.2.3.4.5.6.7.78.8"));
+        ParticipantObjectDescription pod = new ParticipantObjectDescription();
+        pod.getAccession().add(AuditMessages.createAccession("12341234"));
+        pod.getMPPS().add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
+        pod.getSOPClass().add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.2", 1500));
+        pod.getSOPClass().add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
+        pod.setParticipantObjectContainsStudy(pocs);
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
                         "1.2.840.10008.2.3.4.5.6.7.78.8",
@@ -194,15 +191,13 @@ public class AuditMessageTest {
                         AuditMessages.ParticipantObjectTypeCode.SystemObject,
                         AuditMessages.ParticipantObjectTypeCodeRole.Resource,
                         AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation,
-                        null, desc, acc, mpps, sopC, null, null, pocs, null));
-        desc.clear();
-        desc.add("description2");
+                        null, pod, null));
         msg.getParticipantObjectIdentification().add(
                 AuditMessages.createParticipantObjectIdentification(
                         "ptid12345", AuditMessages.ParticipantObjectIDTypeCode.PatientNumber,
                         "John Doe", null, AuditMessages.ParticipantObjectTypeCode.Person,
                         AuditMessages.ParticipantObjectTypeCodeRole.Patient,
-                        null, null, desc, null, null, null, null, null, null, null));
+                        null, null, pod, null));
         AuditMessages.toXML(msg, System.out, true);
     }
 

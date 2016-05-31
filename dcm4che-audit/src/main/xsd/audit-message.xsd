@@ -261,10 +261,8 @@
         <xs:element ref="ParticipantObjectQuery"/>
       </xs:choice>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
-      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDescription"/>
-      <xs:group ref="ParticipantObjectDescriptionType"/>
+      <xs:element ref="ParticipantObjectDescription"/>
     </xs:sequence>
-    <xs:attributeGroup ref="ParticipantObjectDescriptionType"/>
     <xs:attribute name="ParticipantObjectID" use="required" type="xs:string"/>
     <xs:attribute name="ParticipantObjectTypeCode">
       <xs:simpleType>
@@ -517,15 +515,17 @@
       <xs:attributeGroup ref="TypeValuePairType"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="ParticipantObjectDescription" type="xs:string"/>
-  <xs:group name="ParticipantObjectDescriptionType">
+  <xs:element name="ParticipantObjectDescription" type="ParticipantObjectDescriptionType"/>
+  <xs:complexType name="ParticipantObjectDescriptionType">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
       <xs:element ref="ParticipantObjectContainsStudy"/>
     </xs:sequence>
-  </xs:group>
+    <xs:attribute name="Encrypted" type="xs:boolean"/>
+    <xs:attribute name="Anonymized" type="xs:boolean"/>
+  </xs:complexType>
   <xs:element name="MPPS">
     <xs:complexType>
       <xs:attribute name="UID" use="required" type="OID"/>
@@ -562,10 +562,6 @@
       <xs:attribute name="UID" use="required" type="OID"/>
     </xs:complexType>
   </xs:element>
-  <xs:attributeGroup name="ParticipantObjectDescriptionType">
-    <xs:attribute name="Encrypted" type="xs:boolean"/>
-    <xs:attribute name="Anonymized" type="xs:boolean"/>
-  </xs:attributeGroup>
   <xs:attributeGroup name="CodedValueType">
     <xs:attribute name="csd-code" use="required" type="xs:string"/>
     <xs:attributeGroup ref="other-csd-attributes"/>

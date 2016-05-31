@@ -151,8 +151,7 @@ ParticipantObjectIdentificationType =
   (element ParticipantObjectName { xsd:string }
    | element ParticipantObjectQuery { xsd:base64Binary })?,
   element ParticipantObjectDetail { TypeValuePairType }*,
-  element ParticipantObjectDescription { xsd:string }*,
-  ParticipantObjectDescriptionType,
+  element ParticipantObjectDescription { ParticipantObjectDescriptionType },
   attribute ParticipantObjectID { xsd:string },
   attribute ParticipantObjectTypeCode {
     ## Person

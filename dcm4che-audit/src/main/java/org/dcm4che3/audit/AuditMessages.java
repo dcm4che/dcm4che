@@ -649,12 +649,31 @@ public class AuditMessages {
         return asi;
    }
 
+    public static ParticipantObjectDescription createParticipantObjectDescription(
+            HashSet<Accession> accessionList, HashSet<MPPS> mppsList,
+            HashSet<SOPClass> sopClasses, Boolean encrypted, Boolean anonymized,
+            ParticipantObjectContainsStudy pocs) {
+        ParticipantObjectDescription pod = new ParticipantObjectDescription();
+        if (null != accessionList)
+            for (Accession acc : accessionList)
+                pod.getAccession().add(acc);
+        if (null != mppsList)
+            for (MPPS mpps : mppsList)
+                pod.getMPPS().add(mpps);
+        if (null != sopClasses)
+            for (SOPClass sopC : sopClasses)
+                pod.getSOPClass().add(sopC);
+        pod.setEncrypted(encrypted);
+        pod.setAnonymized(anonymized);
+        pod.setParticipantObjectContainsStudy(pocs);
+        return pod;
+    }
+
     public static ParticipantObjectIdentification createParticipantObjectIdentification(
             String id, ParticipantObjectIDTypeCode idType, String name,
             byte[] query, String type, String role, String lifeCycle,
-            String sensitivity, List<String> desc, HashSet<Accession> accessionList, HashSet<MPPS> mppsList,
-            HashSet<SOPClass> sopClasses, Boolean encrypted, Boolean anonymized,
-            ParticipantObjectContainsStudy pocs, HashSet<ParticipantObjectDetail> details) {
+            String sensitivity, ParticipantObjectDescription desc,
+            HashSet<ParticipantObjectDetail> details) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
         poi.setParticipantObjectID(id);
         poi.setParticipantObjectIDTypeCode(idType);
@@ -664,21 +683,7 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCodeRole(role);
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
         poi.setParticipantObjectSensitivity(sensitivity);
-        if (null != desc)
-            for (String pod : desc)
-                poi.getParticipantObjectDescription().add(pod);
-        if (null != accessionList)
-            for (Accession acc : accessionList)
-                poi.getAccession().add(acc);
-        if (null != mppsList)
-            for (MPPS mpps : mppsList)
-                poi.getMPPS().add(mpps);
-        if (null != sopClasses)
-            for (SOPClass sopC : sopClasses)
-                poi.getSOPClass().add(sopC);
-        poi.setEncrypted(encrypted);
-        poi.setAnonymized(anonymized);
-        poi.setParticipantObjectContainsStudy(pocs);
+        poi.setParticipantObjectDescription(desc);
         if (null != details)
             for (ParticipantObjectDetail detail : details)
                 poi.getParticipantObjectDetail().add(detail);

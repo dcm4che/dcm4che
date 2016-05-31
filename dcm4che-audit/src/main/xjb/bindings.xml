@@ -21,8 +21,8 @@
     <bindings node="//xs:complexType[@name='ParticipantObjectIdentificationType']">
       <class name="ParticipantObjectIdentification" />
     </bindings>
-    <!--<bindings node="//xs:complexType[@name='ParticipantObjectDescriptionType']">-->
-      <!--<class name="ParticipantObjectDescriptionType" />-->
-    <!--</bindings>-->
+    <bindings node="//xs:complexType[@name='ParticipantObjectDescriptionType']">
+      <class name="ParticipantObjectDescription" />
+    </bindings>
   </bindings>
 </bindings>

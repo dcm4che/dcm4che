@@ -375,12 +375,12 @@ public class StgCmtSCU {
             if (as.isReadyForDataTransfer()) {
                 as.waitForOutstandingRSP();
                 if (keepAlive)
-                    waitForOutstandingResults();
+                    waitForOutstandingResults(as);
                 as.release();
             }
             as.waitForSocketClose();
         }
-        waitForOutstandingResults();
+        waitForOutstandingResults(as);
     }
 
     public void addOutstandingResult(String tuid) {
@@ -396,13 +396,24 @@ public class StgCmtSCU {
         }
     }
 
-    private void waitForOutstandingResults() throws InterruptedException {
+    private void waitForOutstandingResults(Association as) throws InterruptedException {
         synchronized (outstandingResults) {
+
+            int requestTimeout = as.getConnection().getRequestTimeout();
+            long started = System.currentTimeMillis();
+
+            int lastSize = -1;
             while (!outstandingResults.isEmpty()) {
-                System.out.println(MessageFormat.format(
-                        rb.getString("wait-for-results"),
-                        outstandingResults.size()));
-                outstandingResults.wait();
+                if (outstandingResults.size() != lastSize) {
+                    lastSize = outstandingResults.size();
+                    System.out.println(MessageFormat.format(rb.getString("wait-for-results"),outstandingResults.size()));
+                }
+
+                outstandingResults.wait(100);
+
+                // timeout 10 sec
+                if (requestTimeout > 0 && System.currentTimeMillis() - started > requestTimeout)
+                    throw new RuntimeException("Timeout (10 sec) while waiting for storage commitment");
             }
         }
     }

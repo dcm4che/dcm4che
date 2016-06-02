@@ -11,15 +11,14 @@ import java.util.Properties;
 /**
  * Implement this interface to cover
  * <ul>
- *     <li>transformation of configuration classes structure between releases</li>
- *     <li>conditional default config initialization</li>
- *     <li>migration of legacy configuration</li>
+ * <li>transformation of configuration classes structure between releases</li>
+ * <li>conditional default config initialization</li>
+ * <li>migration of legacy configuration</li>
  * </ul>
- *
+ * <p/>
  * Mark the implemented class with
  * <code>@ org.dcm4che3.conf.api.upgrade.ScriptVersion</code>
  * annotation to allow the upgrade runner to detect whether the script needs to be re-executed.
- *
  */
 public interface UpgradeScript {
     String NO_VERSION = "-NO_VERSION-";
@@ -33,7 +32,7 @@ public interface UpgradeScript {
         private String fromVersion;
         private String toVersion;
         private Properties properties;
-        private Map<String,Object> scriptConfig;
+        private Map<String, Object> scriptConfig;
         private Configuration configuration;
         private DicomConfiguration dicomConfiguration;
         private UpgradeScriptMetadata upgradeScriptMetadata;
@@ -62,7 +61,6 @@ public interface UpgradeScript {
         }
 
 
-
         public Object getFromVersion() {
             return fromVersion;
         }
@@ -83,7 +81,7 @@ public interface UpgradeScript {
             return properties;
         }
 
-        public Map<String,Object> getScriptConfig() {
+        public Map<String, Object> getScriptConfig() {
             return scriptConfig;
         }
 
@@ -93,17 +91,14 @@ public interface UpgradeScript {
 
         /**
          * Allows to "fork" another script from the currently executed script.<br><br>
-         *
          * This feature allows to refactor an existing script (script <b>A</b>) by extracting a part of it into a new script (script <b>B</b>). <br><br>
-         *
          * To facilitate a simpler design, this method will pre-set some version for that new script (<b>B</b>), so the new script will "think"
          * that it's not the first time it's executed.
          * This covers the case when upgrading from an older version of <b>A</b> (when A+B was still a single script), so <b>B</b> will not think that it's a "clean installation" <br><br>
-         *
          * <b>CAUTION:</b> It is important that <b>B</b> appears <i>after</i> <b>A</b> in upgrade-settings.json
          * </b>
          *
-         * @param forkedScript The <b>B</b> script.
+         * @param forkedScript  The <b>B</b> script.
          * @param scriptVersion The version to set for the <b>B</b> script.
          */
         public void forkScript(Class<? extends UpgradeScript> forkedScript, String scriptVersion) {
@@ -121,7 +116,7 @@ public interface UpgradeScript {
             scriptMetadata.setLastVersionExecuted(scriptVersion);
 
             configMetaData.getMetadataOfUpgradeScripts().put(scriptClass, scriptMetadata);
-            log.info("Forked upgrade script ["+scriptClass+"], initialized with version "+scriptVersion);
+            log.info("Forked upgrade script [" + scriptClass + "], initialized with version " + scriptVersion);
 
         }
     }

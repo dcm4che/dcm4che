@@ -121,6 +121,7 @@ public interface UpgradeScript {
             scriptMetadata.setLastVersionExecuted(scriptVersion);
 
             configMetaData.getMetadataOfUpgradeScripts().put(scriptClass, scriptMetadata);
+            log.info("Forked upgrade script ["+scriptClass+"], initialized with version "+scriptVersion);
 
         }
     }

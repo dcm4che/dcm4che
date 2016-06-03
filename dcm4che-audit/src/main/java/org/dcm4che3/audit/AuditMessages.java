@@ -673,7 +673,7 @@ public class AuditMessages {
             String id, ParticipantObjectIDTypeCode idType, String name,
             byte[] query, String type, String role, String lifeCycle,
             String sensitivity, ParticipantObjectDescription desc,
-            HashSet<ParticipantObjectDetail> details) {
+            ParticipantObjectDetail... details) {
         ParticipantObjectIdentification poi = new ParticipantObjectIdentification();
         poi.setParticipantObjectID(id);
         poi.setParticipantObjectIDTypeCode(idType);

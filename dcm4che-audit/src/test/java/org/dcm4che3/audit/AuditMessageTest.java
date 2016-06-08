@@ -132,72 +132,32 @@ public class AuditMessageTest {
 
     @Test
     public void testDICOMInstancesTransferred() throws Exception {
-        AuditMessage msg = new AuditMessage();
-        msg.setEventIdentification(AuditMessages.createEventIdentification(
-                AuditMessages.EventID.DICOMInstancesTransferred,
-                AuditMessages.EventActionCode.Create,
-                null,
-                AuditMessages.EventOutcomeIndicator.Success,
-                null));
-        msg.getActiveParticipant().add(
-                AuditMessages.createActiveParticipant(
-                    "123",
-                    AuditMessages.alternativeUserIDForAETitle("AEFOO"),
-                    null,
-                    false, 
-                    "192.168.1.2",
-                    AuditMessages.NetworkAccessPointTypeCode.IPAddress,
-                    null,
-                    AuditMessages.RoleIDCode.Source));
-        msg.getActiveParticipant().add(
-                AuditMessages.createActiveParticipant(
-                    "67562",
-                    AuditMessages.alternativeUserIDForAETitle("AEPACS"),
-                    null,
-                    false, 
-                    "192.168.1.5",
-                    AuditMessages.NetworkAccessPointTypeCode.IPAddress,
-                    null,
-                    AuditMessages.RoleIDCode.Destination));
-        msg.getActiveParticipant().add(
-                AuditMessages.createActiveParticipant(
-                    "smitty@readingroom.hospital.org",
-                    "smith@nema",
-                    "Dr. Smith",
-                    true, 
-                    "192.168.1.2",
-                    AuditMessages.NetworkAccessPointTypeCode.IPAddress,
-                    null,
-                    AuditMessages.RoleIDCode.Source));
-        msg.getAuditSourceIdentification().add(
-                AuditMessages.createAuditSourceIdentification(
-                    "Hospital",
-                    "ReadingRoom",
-                    AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
-        ParticipantObjectContainsStudy pocs = new ParticipantObjectContainsStudy();
-        pocs.getStudyIDs().add(AuditMessages.createStudyIDs("1.2.840.10008.2.3.4.5.6.7.78.8"));
-        ParticipantObjectDescription pod = new ParticipantObjectDescription();
-        pod.getAccession().add(AuditMessages.createAccession("12341234"));
-        pod.getMPPS().add(AuditMessages.createMPPS("1.2.840.10008.1.2.3.4.5"));
-        pod.getSOPClass().add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.2", 1500));
-        pod.getSOPClass().add(AuditMessages.createSOPClass(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
-        pod.setParticipantObjectContainsStudy(pocs);
-        msg.getParticipantObjectIdentification().add(
-                AuditMessages.createParticipantObjectIdentification(
-                        "1.2.840.10008.2.3.4.5.6.7.78.8",
-                        AuditMessages.ParticipantObjectIDTypeCode.StudyInstanceUID,
-                        null,
-                        null,
-                        AuditMessages.ParticipantObjectTypeCode.SystemObject,
-                        AuditMessages.ParticipantObjectTypeCodeRole.Resource,
-                        AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation,
-                        null, pod, null));
-        msg.getParticipantObjectIdentification().add(
-                AuditMessages.createParticipantObjectIdentification(
-                        "ptid12345", AuditMessages.ParticipantObjectIDTypeCode.PatientNumber,
-                        "John Doe", null, AuditMessages.ParticipantObjectTypeCode.Person,
-                        AuditMessages.ParticipantObjectTypeCodeRole.Patient,
-                        null, null, pod, null));
+        EventIdentification ei = AuditMessages.getEI(new BuildEventIdentification.Builder(AuditMessages.EventID.DICOMInstancesTransferred,
+                AuditMessages.EventActionCode.Create, null, AuditMessages.EventOutcomeIndicator.Success).build());
+        BuildActiveParticipant ap1 = new BuildActiveParticipant.Builder("123", "192.168.1.2").requester(false)
+                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEFOO")).roleIDCode(AuditMessages.RoleIDCode.Source).build();
+        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder("67562", "192.168.1.5").requester(false)
+                .altUserID(AuditMessages.alternativeUserIDForAETitle("AEPACS")).roleIDCode(AuditMessages.RoleIDCode.Destination).build();
+        BuildActiveParticipant ap3 = new BuildActiveParticipant.Builder("smitty@readingroom.hospital.org", "192.168.1.2")
+                .requester(true).altUserID("smith@nema").userName("Dr. Smith").roleIDCode(AuditMessages.RoleIDCode.Source).build();
+        List<ActiveParticipant> apList = AuditMessages.getApList(ap1, ap2, ap3);
+        ParticipantObjectContainsStudy pocs = AuditMessages.getPocs("1.2.840.10008.2.3.4.5.6.7.78.8");
+        HashSet<SOPClass> sopClasses = new HashSet<>();
+        sopClasses.add(AuditMessages.getSOPC(null,  "1.2.840.10008.5.1.4.1.1.2", 1500));
+        sopClasses.add(AuditMessages.getSOPC(null, "1.2.840.10008.5.1.4.1.1.11.1", 3));
+        BuildParticipantObjectDescription pod = new BuildParticipantObjectDescription.Builder(sopClasses, pocs)
+                .acc(AuditMessages.getAccessions("12341234")).mpps(AuditMessages.getMPPS("1.2.840.10008.1.2.3.4.5")).build();
+        BuildParticipantObjectIdentification poi1 = new BuildParticipantObjectIdentification.Builder("1.2.840.10008.2.3.4.5.6.7.78.8",
+                AuditMessages.ParticipantObjectIDTypeCode.StudyInstanceUID, AuditMessages.ParticipantObjectTypeCode.SystemObject,
+                AuditMessages.ParticipantObjectTypeCodeRole.Resource).desc(AuditMessages.getPODesc(pod))
+                .lifeCycle(AuditMessages.ParticipantObjectDataLifeCycle.OriginationCreation).build();
+        BuildParticipantObjectIdentification poi2 = new BuildParticipantObjectIdentification.Builder("ptid12345",
+                AuditMessages.ParticipantObjectIDTypeCode.PatientNumber, AuditMessages.ParticipantObjectTypeCode.Person,
+                AuditMessages.ParticipantObjectTypeCodeRole.Patient).name("John Doe").desc(AuditMessages.getPODesc(pod)).build();
+        List<ParticipantObjectIdentification> poiList = AuditMessages.getPoiList(poi1, poi2);
+        AuditMessage msg = AuditMessages.createMessage(ei, apList, poiList);
+        msg.getAuditSourceIdentification().add(AuditMessages.createAuditSourceIdentification("Hospital", "ReadingRoom",
+                        AuditMessages.AuditSourceTypeCode.EndUserDisplayDevice));
         AuditMessages.toXML(msg, System.out, true);
     }
 

@@ -37,49 +37,59 @@
  *
  * *** END LICENSE BLOCK *****
  */
-package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.net.audit.AuditLogger;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventListenerProvider;
-import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.dcm4che3.audit;
 
-import java.util.Set;
+import java.util.Calendar;
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
- * @since Mar 2016
+ * @since June 2016
  */
-public class Dcm4cheEventListenerProvider implements EventListenerProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(Dcm4cheEventListenerProvider.class);
-    private final Set<EventType> includedEvents;
+public class BuildEventIdentification {
+    public final AuditMessages.EventID eventID;
+    public final String eventActionCode;
+    public final Calendar eventDateTime;
+    public final String outcome;
+    public final String outcomeDesc;
+    public final EventTypeCode eventTypeCode;
 
-    public Dcm4cheEventListenerProvider(Set<EventType> includedEvents) {
-        this.includedEvents = includedEvents;
-    }
+    public static class Builder {
+        private final AuditMessages.EventID eventID;
+        private final String eventActionCode;
+        private final Calendar eventDateTime;
+        private final String outcome;
+        private String outcomeDesc;
+        private EventTypeCode eventTypeCode;
 
+        public Builder(AuditMessages.EventID eventID, String eventActionCode, Calendar eventDateTime, String outcome) {
+            this.eventID = eventID;
+            this.eventActionCode = eventActionCode;
+            this.eventDateTime = eventDateTime;
+            this.outcome = outcome;
+        }
 
-    @Override
-    public void onEvent(Event event) {
-        if (includedEvents != null && includedEvents.contains(event.getType())) {
-            try {
-                AuditLogger log = new AuditLoggerFactory().getAuditLogger();
-                if (log != null)
-                    AuditAuth.spoolAuditMsg(event, log);
-            } catch (Exception e) {
-                LOG.warn("Failed to get audit logger", e);
-            }
+        public Builder outcomeDesc(String val) {
+            outcomeDesc = val;
+            return this;
+        }
+
+        public Builder eventTypeCode(EventTypeCode val) {
+            eventTypeCode = val;
+            return this;
+        }
+
+        public BuildEventIdentification build() {
+            return new BuildEventIdentification(this);
         }
     }
 
-    public void onEvent(AdminEvent adminEvent, boolean b) {
-
-    }
-
-    public void close() {
-
+    private BuildEventIdentification(Builder builder) {
+        eventID = builder.eventID;
+        eventActionCode = builder.eventActionCode;
+        eventDateTime = builder.eventDateTime;
+        outcome = builder.outcome;
+        outcomeDesc = builder.outcomeDesc;
+        eventTypeCode = builder.eventTypeCode;
     }
 }

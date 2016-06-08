@@ -37,49 +37,69 @@
  *
  * *** END LICENSE BLOCK *****
  */
-package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.net.audit.AuditLogger;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventListenerProvider;
-import org.keycloak.events.EventType;
-import org.keycloak.events.admin.AdminEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.dcm4che3.audit;
 
-import java.util.Set;
+import java.util.HashSet;
+
 
 /**
  * @author Vrinda Nayak <vrinda.nayak@j4care.com>
- * @since Mar 2016
+ * @since June 2016
  */
-public class Dcm4cheEventListenerProvider implements EventListenerProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(Dcm4cheEventListenerProvider.class);
-    private final Set<EventType> includedEvents;
 
-    public Dcm4cheEventListenerProvider(Set<EventType> includedEvents) {
-        this.includedEvents = includedEvents;
-    }
+public class BuildParticipantObjectDescription {
+    public final HashSet<Accession> acc;
+    public final HashSet<MPPS> mpps;
+    public final HashSet<SOPClass> sopC;
+    public final Boolean encrypted;
+    public final Boolean anonymized;
+    public final ParticipantObjectContainsStudy pocs;
 
+    public static class Builder {
+        private HashSet<Accession> acc;
+        private HashSet<MPPS> mpps;
+        private final HashSet<SOPClass> sopC;
+        private Boolean encrypted;
+        private Boolean anonymized;
+        private final ParticipantObjectContainsStudy pocs;
 
-    @Override
-    public void onEvent(Event event) {
-        if (includedEvents != null && includedEvents.contains(event.getType())) {
-            try {
-                AuditLogger log = new AuditLoggerFactory().getAuditLogger();
-                if (log != null)
-                    AuditAuth.spoolAuditMsg(event, log);
-            } catch (Exception e) {
-                LOG.warn("Failed to get audit logger", e);
-            }
+        public Builder(HashSet<SOPClass> sopC, ParticipantObjectContainsStudy pocs) {
+            this.sopC = sopC;
+            this.pocs = pocs;
+        }
+
+        public Builder acc(HashSet<Accession> val) {
+            acc = val;
+            return this;
+        }
+
+        public Builder mpps(HashSet<MPPS> val) {
+            mpps = val;
+            return this;
+        }
+
+        public Builder encrypted(Boolean val) {
+            encrypted = val;
+            return this;
+        }
+
+        Builder anonymized(Boolean val) {
+            anonymized = val;
+            return this;
+        }
+
+        public BuildParticipantObjectDescription build() {
+            return new BuildParticipantObjectDescription(this);
         }
     }
 
-    public void onEvent(AdminEvent adminEvent, boolean b) {
-
-    }
-
-    public void close() {
-
+    private BuildParticipantObjectDescription(Builder builder) {
+        acc = builder.acc;
+        mpps = builder.mpps;
+        sopC = builder.sopC;
+        encrypted = builder.encrypted;
+        anonymized = builder.anonymized;
+        pocs = builder.pocs;
     }
 }

@@ -39,9 +39,7 @@
  */
 package org.dcm4che3.audit.keycloak;
 
-import org.dcm4che3.audit.AuditMessage;
-import org.dcm4che3.audit.AuditMessages;
-import org.dcm4che3.net.Device;
+import org.dcm4che3.audit.*;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.util.StringUtils;
 
@@ -59,6 +57,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
 
 
 /**
@@ -98,55 +97,67 @@ public class AuditAuth {
         }
     }
 
-    private static void sendAuditMessage(Path file, Event event, AuditLogger log) {
-        try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            AuthInfo info = new AuthInfo(reader.readLine());
-            try {
-                AuditMessage msg = new AuditMessage();
-                msg.setEventIdentification(AuditMessages.createEventIdentification(
-                    AuditMessages.EventID.UserAuthentication, AuditMessages.EventActionCode.Execute,
-                    log.timeStamp(), event.getError() != null
-                        ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success,
-                    event.getError() != null ? event.getError() : null,
-                    event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
-                        ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout));
-                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                    info.getField(AuthInfo.USER_NAME), null, null, true, info.getField(AuthInfo.IP_ADDR),
-                    AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
-                msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                        AuditMessages.getAET(log.getDevice().getApplicationAETitles().toArray(
-                                new String[log.getDevice().getApplicationAETitles().size()])),
-                        log.processID(), null, false, log.getConnections().get(0).getHostname(),
-                        AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
-                try {
-                    log.write(log.timeStamp(), msg);
-                } catch (Exception e) {
-                    LOG.warn("Failed to emit audit message", e);
-                }
-                if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
-                    Files.delete(file);
-            } catch (Exception e) {
-                LOG.warn("Failed to get audit logger", e);
-            }
+    private static EventIdentification getEI(AuditLogger log, Event event) {
+        String outcome = event.getError() != null
+                ? AuditMessages.EventOutcomeIndicator.MinorFailure : AuditMessages.EventOutcomeIndicator.Success;
+        EventTypeCode etc = event.getType().equals(EventType.LOGIN) || event.getType().equals(EventType.LOGIN_ERROR)
+                ? AuditMessages.EventTypeCode.Login : AuditMessages.EventTypeCode.Logout;
+        BuildEventIdentification ei = new BuildEventIdentification.Builder(AuditMessages.EventID.UserAuthentication,
+                AuditMessages.EventActionCode.Execute, log.timeStamp(), outcome).outcomeDesc(event.getError())
+                .eventTypeCode(etc).build();
+        return AuditMessages.getEI(ei);
+    }
+
+    private static void sendAuditMessage(Path file, Event event, AuditLogger log) throws IOException{
+        AuthInfo info = new AuthInfo(new LineReader(file).getMainInfo());
+        BuildActiveParticipant ap1 = new BuildActiveParticipant.Builder(
+                info.getField(AuthInfo.USER_NAME), info.getField(AuthInfo.IP_ADDR)).requester(true).build();
+        BuildActiveParticipant ap2 = new BuildActiveParticipant.Builder(
+                AuditMessages.getAET(log.getDevice().getApplicationAETitles().toArray(
+                    new String[log.getDevice().getApplicationAETitles().size()])),
+                log.getConnections().get(0).getHostname()).altUserID(log.processID()).requester(false).build();
+        AuditMessage msg = AuditMessages.createMessage(getEI(log, event), AuditMessages.getApList(ap1, ap2), null);
+        msg.getAuditSourceIdentification().add(log.createAuditSourceIdentification());
+        try {
+            log.write(log.timeStamp(), msg);
         } catch (Exception e) {
-            LOG.warn("Failed to read audit spool file", e);
+            LOG.warn("Failed to emit audit message", e);
         }
+        if (event.getType() == EventType.LOGOUT || event.getType() == EventType.LOGIN_ERROR)
+            Files.delete(file);
     }
 
     static class LineWriter implements Closeable {
         private final BufferedWriter writer;
 
-        public LineWriter(BufferedWriter writer) {
+        LineWriter(BufferedWriter writer) {
             this.writer = writer;
         }
 
-        public void writeLine(Object o) throws IOException {
+        void writeLine(Object o) throws IOException {
             writer.write(o.toString().replace('\r', '.').replace('\n', '.'));
             writer.newLine();
         }
         @Override
         public void close() throws IOException {
             writer.close();
+        }
+    }
+
+    static class LineReader {
+        private static final Logger LOG = LoggerFactory.getLogger(LineReader.class);
+        private String mainInfo;
+
+        LineReader(Path p) throws IOException {
+            try (BufferedReader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+                this.mainInfo = reader.readLine();
+                reader.close();
+            } catch (Exception e) {
+                LOG.warn("Failed to read audit spool file", e);
+            }
+        }
+        String getMainInfo() {
+            return mainInfo;
         }
     }
 

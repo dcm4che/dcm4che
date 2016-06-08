@@ -43,8 +43,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -69,7 +71,6 @@ public class AuditMessages {
 
     private static final ObjectFactory of = new ObjectFactory();
     private static JAXBContext jc;
-
     private static JAXBContext jc() throws JAXBException {
         JAXBContext jc = AuditMessages.jc;
         if (jc == null)
@@ -834,5 +835,70 @@ public class AuditMessages {
         for (int i = 1; i < aets.length; i++)
             b.append(';').append(aets[i]);
         return b.toString();
+    }
+
+    public static List<ActiveParticipant> getApList(BuildActiveParticipant... aps) {
+        List<ActiveParticipant> apList = new ArrayList<>();
+        for (BuildActiveParticipant ap: aps)
+            apList.add(AuditMessages.createActiveParticipant(ap.userID, ap.altUserID, ap.userName, ap.requester,
+                    ap.napID, ap.napTypeCode, ap.mediaType, ap.roleIDCode));
+        return apList;
+    }
+
+    public static List<ParticipantObjectIdentification> getPoiList(BuildParticipantObjectIdentification... pois) {
+        List<ParticipantObjectIdentification> poiList = new ArrayList<>();
+        if (pois != null)
+            for (BuildParticipantObjectIdentification poi: pois)
+                poiList.add(getPOI(poi));
+        return poiList;
+    }
+
+    static ParticipantObjectIdentification getPOI(BuildParticipantObjectIdentification poi) {
+        return AuditMessages.createParticipantObjectIdentification(poi.id, poi.idType, poi.name, poi.query, poi.type,
+                poi.role, poi.lifeCycle, poi.sensitivity, poi.desc, poi.detail);
+    }
+
+    public static EventIdentification getEI(BuildEventIdentification ei) {
+        return AuditMessages.createEventIdentification(ei.eventID, ei.eventActionCode, ei.eventDateTime,
+                ei.outcome, ei.outcomeDesc, ei.eventTypeCode);
+    }
+
+    public static AuditMessage createMessage(EventIdentification ei, List<ActiveParticipant> apList,
+                                        List<ParticipantObjectIdentification> poiList) {
+        AuditMessage msg = new AuditMessage();
+        msg.setEventIdentification(ei);
+        for (ActiveParticipant ap : apList)
+            msg.getActiveParticipant().add(ap);
+        if (poiList != null)
+            for (ParticipantObjectIdentification poi : poiList)
+                msg.getParticipantObjectIdentification().add(poi);
+        return msg;
+    }
+
+    public static ParticipantObjectContainsStudy getPocs(String studyId) {
+        return AuditMessages.createParticipantObjectContainsStudy(AuditMessages.createStudyIDs(studyId));
+    }
+
+    public static ParticipantObjectDescription getPODesc(BuildParticipantObjectDescription desc) {
+        return AuditMessages.createParticipantObjectDescription(desc.acc, desc.mpps, desc.sopC, desc.encrypted,
+                desc.anonymized, desc.pocs);
+    }
+
+    public static HashSet<MPPS> getMPPS(String... mppsUIDs) {
+        HashSet<MPPS> mpps = new HashSet<>();
+        for (String mppsUID : mppsUIDs)
+            mpps.add(AuditMessages.createMPPS(mppsUID));
+        return mpps;
+    }
+
+    public static HashSet<Accession> getAccessions(String accNum) {
+        HashSet<Accession> accList = new HashSet<>();
+        if (accNum != null)
+            accList.add(AuditMessages.createAccession(accNum));
+        return accList;
+    }
+
+    public static SOPClass getSOPC(HashSet<String> instances, String uid, Integer numI) {
+        return AuditMessages.createSOPClass(instances, uid, numI);
     }
 }

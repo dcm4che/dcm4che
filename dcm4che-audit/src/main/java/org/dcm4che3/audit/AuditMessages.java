@@ -45,7 +45,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -827,5 +826,13 @@ public class AuditMessages {
         JAXBElement<AuditMessage> je =
                 (JAXBElement<AuditMessage>) u.unmarshal(is);
         return je.getValue();
+    }
+
+    public static String getAET(String[] aets) {
+        StringBuilder b = new StringBuilder();
+        b.append(aets[0]);
+        for (int i = 1; i < aets.length; i++)
+            b.append(';').append(aets[i]);
+        return b.toString();
     }
 }

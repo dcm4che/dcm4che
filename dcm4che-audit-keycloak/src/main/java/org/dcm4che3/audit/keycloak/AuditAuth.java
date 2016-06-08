@@ -41,15 +41,9 @@ package org.dcm4che3.audit.keycloak;
 
 import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.audit.AuditMessages;
-import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.Device;
 import org.dcm4che3.net.audit.AuditLogger;
 import org.dcm4che3.util.StringUtils;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.keycloak.events.Event;
 import org.keycloak.events.EventType;
@@ -120,7 +114,9 @@ public class AuditAuth {
                     info.getField(AuthInfo.USER_NAME), null, null, true, info.getField(AuthInfo.IP_ADDR),
                     AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
                 msg.getActiveParticipant().add(AuditMessages.createActiveParticipant(
-                        buildAET(log.getDevice()), log.processID(), null, false, log.getConnections().get(0).getHostname(),
+                        AuditMessages.getAET(log.getDevice().getApplicationAETitles().toArray(
+                                new String[log.getDevice().getApplicationAETitles().size()])),
+                        log.processID(), null, false, log.getConnections().get(0).getHostname(),
                         AuditMessages.NetworkAccessPointTypeCode.IPAddress, null));
                 try {
                     log.write(log.timeStamp(), msg);
@@ -135,15 +131,6 @@ public class AuditAuth {
         } catch (Exception e) {
             LOG.warn("Failed to read audit spool file", e);
         }
-    }
-
-    static String buildAET(Device device) {
-        String[] aets = device.getApplicationAETitles().toArray(new String[device.getApplicationAETitles().size()]);
-        StringBuilder b = new StringBuilder();
-        b.append(aets[0]);
-        for (int i = 1; i < aets.length; i++)
-            b.append(';').append(aets[i]);
-        return b.toString();
     }
 
     static class LineWriter implements Closeable {

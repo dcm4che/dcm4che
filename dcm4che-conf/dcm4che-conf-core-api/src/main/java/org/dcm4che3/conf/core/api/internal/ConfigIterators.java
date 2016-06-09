@@ -52,6 +52,7 @@ import java.util.*;
 
 /**
  * This class shall NOT be referenced externally, it will be removed/renamed/refactored without notice.
+ *
  * @author Roman K
  */
 public class ConfigIterators {
@@ -106,7 +107,7 @@ public class ConfigIterators {
         if (configurableFieldsAndSettersCache.containsKey(clazz))
             return configurableFieldsAndSettersCache.get(clazz);
 
-        List<AnnotatedConfigurableProperty> fields = new ArrayList<AnnotatedConfigurableProperty>( getAllConfigurableFields(clazz));
+        List<AnnotatedConfigurableProperty> fields = new ArrayList<AnnotatedConfigurableProperty>(getAllConfigurableFields(clazz));
         for (AnnotatedSetter s : getAllConfigurableSetters(clazz)) fields.addAll(s.getParameters());
 
         configurableFieldsAndSettersCache.put(clazz, fields);
@@ -160,7 +161,7 @@ public class ConfigIterators {
 
         ConfigurableClass configClassAnno = (ConfigurableClass) clazz.getAnnotation(ConfigurableClass.class);
         if (configClassAnno == null)
-            throw new IllegalArgumentException("Class '"+clazz.getName()+"' is not a configurable class. Make sure the a dependency to org.dcm4che.conf.core-api exists.");
+            throw new IllegalArgumentException("Class '" + clazz.getName() + "' is not a configurable class. Make sure the a dependency to org.dcm4che.conf.core-api exists.");
 
         //// safeguards
 
@@ -175,9 +176,9 @@ public class ConfigIterators {
             if (annotatedConfigurableProperty.isUuid()) uuidProps++;
             if (annotatedConfigurableProperty.isOlockHash()) olockProps++;
         }
-        if (uuidProps>1)
+        if (uuidProps > 1)
             throw new IllegalArgumentException("A configurable class MUST NOT have more than one UUID field - violated by class " + clazz.getName());
-        if (olockProps>1)
+        if (olockProps > 1)
             throw new IllegalArgumentException("A configurable class MUST NOT have more than one optimistic locking hash field - violated by class " + clazz.getName());
 
 
@@ -242,7 +243,7 @@ public class ConfigIterators {
         l = new ArrayList<AnnotatedConfigurableProperty>();
 
         // scan all fields from this class and superclasses
-        for (Field field : getFieldsUpTo(clazz, null)) {
+        for (Field field : getAllFields(clazz)) {
             if (field.getAnnotation(ConfigurableProperty.class) != null) {
 
                 AnnotatedConfigurableProperty ap = new AnnotatedConfigurableProperty(
@@ -266,25 +267,21 @@ public class ConfigIterators {
     }
 
     /**
-     * Iterates over the whole hierarchy of classes starting from the startClass.
-     * Taken from http://stackoverflow.com/questions/16966629/what-is-the-difference-between-getfields-getdeclaredfields-in-java-reflection
+     * Gets all the fields for the class and it's superclass(es)
      */
-    public static Iterable<Field> getFieldsUpTo(Class<?> startClass,
-                                                Class<?> exclusiveParent) {
+    public static List<Field> getAllFields(Class<?> clazz) {
 
-        List<Field> currentClassFields = new ArrayList<Field>();
-        currentClassFields.addAll(Arrays.asList(startClass.getDeclaredFields()));
+        List<Field> fields = new ArrayList<Field>();
 
-        Class<?> parentClass = startClass.getSuperclass();
+        // get all fields of the current class (includes public, protected, default, and private fields)
+        fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 
-        if (parentClass != null &&
-                (exclusiveParent == null || !(parentClass.equals(exclusiveParent)))) {
-            List<Field> parentClassFields =
-                    (List<Field>) getFieldsUpTo(parentClass, exclusiveParent);
-            currentClassFields.addAll(parentClassFields);
-        }
+        // go to the parent recursively
+        Class<?> parent = clazz.getSuperclass();
+        if (parent != null)
+            fields.addAll(getAllFields(parent));
 
-        return currentClassFields;
+        return fields;
     }
 
 }

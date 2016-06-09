@@ -54,10 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -131,8 +128,7 @@ public class Device implements Serializable {
     private transient DimseRQHandler dimseRQHandler;
     private transient ConnectionMonitor connectionMonitor;
 
-    private transient int assocCount = 0;
-    private transient final Object assocCountLock = new Object();
+    private transient final List<Association> associations = new ArrayList<>();
 
     private transient Executor executor;
     private transient ScheduledExecutorService scheduledExecutor;
@@ -848,32 +844,38 @@ public class Device implements Serializable {
         this.limitOpenAssociations = limit;
     }
 
+    void addAssociation(Association as) {
+        synchronized (associations) {
+            associations.add(as);
+        }
+    }
+
+    void removeAssociation(Association as) {
+        synchronized (associations) {
+            associations.remove(as);
+            associations.notifyAll();
+        }
+    }
+
+    public Association [] listOpenAssociations() {
+        synchronized (associations) {
+            return associations.toArray(new Association[associations.size()]);
+        }
+    }
+
     public int getNumberOfOpenAssociations() {
-        return assocCount;
-    }
-
-    void incrementNumberOfOpenAssociations() {
-        synchronized (assocCountLock) {
-            assocCount++;
-        }
-    }
-
-    void decrementNumberOfOpenAssociations() {
-        synchronized (assocCountLock) {
-            if (--assocCount <= 0)
-                assocCountLock.notifyAll();
-        }
+        return associations.size();
     }
 
     public void waitForNoOpenConnections() throws InterruptedException {
-        synchronized (assocCountLock) {
-            while (assocCount > 0)
-                assocCountLock.wait();
+        synchronized (associations) {
+            while (!associations.isEmpty())
+                associations.wait();
         }
     }
 
     public boolean isLimitOfOpenAssociationsExceeded() {
-        return limitOpenAssociations > 0 && getNumberOfOpenAssociations() > limitOpenAssociations;
+        return limitOpenAssociations > 0 && associations.size() > limitOpenAssociations;
     }
 
     public ApplicationEntity getApplicationEntity(String aet) {

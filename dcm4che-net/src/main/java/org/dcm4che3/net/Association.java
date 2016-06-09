@@ -72,6 +72,7 @@ public class Association {
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
     private final AtomicInteger messageID = new AtomicInteger();
+    private final long connectTime;
     private final int serialNo;
     private final boolean requestor;
     private String name;
@@ -103,6 +104,7 @@ public class Association {
 
     Association(ApplicationEntity ae, Connection local, Socket sock)
             throws IOException {
+        this.connectTime = System.currentTimeMillis();
         this.serialNo = prevSerialNo.incrementAndGet();
         this.ae = ae;
         this.requestor = ae != null;
@@ -122,6 +124,14 @@ public class Association {
             startRequestTimeout();
         }
         activate();
+    }
+
+    public long getConnectTimeInMillis() {
+        return connectTime;
+    }
+
+    public int getSerialNo() {
+        return serialNo;
     }
 
     public Device getDevice() {
@@ -479,7 +489,7 @@ public class Association {
             @Override
             public void run() {
                 decoder = new PDUDecoder(Association.this, in);
-                device.incrementNumberOfOpenAssociations();
+                device.addAssociation(Association.this);
                 try {
                     while (!(state == State.Sta1 || state == State.Sta13))
                         decoder.nextPDU();
@@ -488,7 +498,7 @@ public class Association {
                 } catch (IOException e) {
                     onIOException(e);
                 } finally {
-                    device.decrementNumberOfOpenAssociations();
+                    device.removeAssociation(Association.this);
                     onClose();
                 }
             }

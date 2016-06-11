@@ -80,6 +80,7 @@ public class DicomReferenceIndexingDecorator extends ReferenceIndexingDecorator 
         try {
             getNodeByUUID(null, uuid);
         } catch (ConfIndexOutOfSyncException e) {
+            log.error("Config index out of sync!", e);
             return super.search(originalRequestPath);
         }
 

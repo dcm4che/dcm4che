@@ -399,8 +399,10 @@ class PDUEncoder extends PDVOutputStream {
         synchronized (dimseLock) {
             int pcid = pc.getPCID();
             String tsuid = pc.getTransferSyntax();
+            Dimse dimse = Dimse.valueOf(cmd.getInt(Tag.CommandField, -1));
+            if (!dimse.isRSP() || !Status.isPending(cmd.getInt(Tag.Status, -1)))
+                as.incSentCount(dimse);
             if (Dimse.LOG.isInfoEnabled()) {
-                Dimse dimse = Dimse.valueOf(cmd.getInt(Tag.CommandField, -1));
                 Dimse.LOG.info("{} << {}", as, dimse.toString(cmd, pcid, tsuid));
                 Dimse.LOG.debug("Command:\n{}", cmd);
                 if (dataWriter instanceof DataWriterAdapter)

@@ -45,6 +45,7 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -72,6 +73,7 @@ public class Association {
 
     private static final AtomicInteger prevSerialNo = new AtomicInteger();
     private final AtomicInteger messageID = new AtomicInteger();
+    private final AtomicIntegerArray dimseCounters = new AtomicIntegerArray(46);
     private final long connectTime;
     private final int serialNo;
     private final boolean requestor;
@@ -144,6 +146,22 @@ public class Association {
 
     private String delim() {
         return requestor ? "->" : "<-";
+    }
+
+    public int getNumberOfSent(Dimse dimse) {
+        return dimseCounters.get(dimse.ordinal());
+    }
+
+    public int getNumberOfReceived(Dimse dimse) {
+        return dimseCounters.get(23 + dimse.ordinal());
+    }
+
+    void incSentCount(Dimse dimse) {
+        dimseCounters.getAndIncrement(dimse.ordinal());
+    }
+
+    void incReceivedCount(Dimse dimse) {
+        dimseCounters.getAndIncrement(23 + dimse.ordinal());
     }
 
     @Override
@@ -664,6 +682,7 @@ public class Association {
             PDVInputStream data) throws IOException {
         stopTimeout();
         incPerforming();
+        incReceivedCount(dimse);
         ae.onDimseRQ(this, pc, dimse, cmd, data);
     }
 
@@ -692,6 +711,7 @@ public class Association {
                     ? conn.getRetrieveTimeout()
                     : conn.getResponseTimeout());
         else {
+            incReceivedCount(dimse);
             removeDimseRSPHandler(msgId);
             if (rspHandlerForMsgId.isEmpty() && performing == 0)
                 startIdleOrReleaseTimeout();
@@ -774,6 +794,7 @@ public class Association {
     }
 
     void onCancelRQ(Attributes cmd) throws IOException {
+        incReceivedCount(Dimse.C_CANCEL_RQ);
         int msgId = cmd.getInt(Tag.MessageIDBeingRespondedTo, -1);
         CancelRQHandler handler = removeCancelRQHandler(msgId);
         if (handler != null)

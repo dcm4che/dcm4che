@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.conf.ldap;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
 import java.util.TimeZone;
@@ -277,6 +278,14 @@ public class LdapUtils {
 
     public static <T extends Enum<T>> T enumValue(Class<T> enumType, Attribute attr, T defVal) throws NamingException {
         return attr != null ? Enum.valueOf(enumType, (String) attr.get()) : defVal;
+    }
+
+    public static <T extends Enum<T>> T[] enumArray(Class<T> enumType, Attribute attr) throws NamingException {
+        T[] a = (T[]) Array.newInstance(enumType, attr != null ? attr.size() : 0);
+        for (int i = 0; i < a.length; i++)
+            a[i] = Enum.valueOf(enumType, (String) attr.get(i));
+
+        return a;
     }
 
     public static String[] stringArray(Attribute attr) throws NamingException {

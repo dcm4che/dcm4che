@@ -38,12 +38,11 @@
 
 package org.dcm4che3.net.hl7;
 
-import java.net.Socket;
-
 import org.dcm4che3.hl7.HL7Exception;
 import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.net.Connection;
+
+import java.net.Socket;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -52,9 +51,8 @@ import org.dcm4che3.net.Connection;
 public class DefaultHL7MessageListener implements HL7MessageListener {
 
     @Override
-    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s,
-            HL7Segment msh, byte[] msg, int off, int len, int mshlen)
+    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
                     throws HL7Exception {
-        return HL7Message.makeACK(msh, HL7Exception.AA, null).getBytes(null);
+        return HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null);
     }
 }

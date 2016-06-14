@@ -38,14 +38,13 @@
 
 package org.dcm4che3.net.hl7;
 
+import org.dcm4che3.hl7.HL7Exception;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.DeviceExtension;
+
 import java.net.Socket;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Segment;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.DeviceExtension;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -118,12 +117,11 @@ public class HL7DeviceExtension extends DeviceExtension {
         this.hl7MessageListener = listener;
     }
 
-    byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len, int mshlen,
-            Connection conn, Socket s) throws HL7Exception {
-        HL7Application hl7App = getHL7Application(msh.getReceivingApplicationWithFacility());
+    byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
+        HL7Application hl7App = getHL7Application(msg.msh().getReceivingApplicationWithFacility());
         if (hl7App == null)
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
-        return hl7App.onMessage(conn, s, msh, msg, off, len, mshlen);
+        return hl7App.onMessage(conn, s, msg);
     }
 
     @Override

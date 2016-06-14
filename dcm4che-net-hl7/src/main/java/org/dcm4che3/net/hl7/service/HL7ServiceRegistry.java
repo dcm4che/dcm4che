@@ -38,16 +38,16 @@
 
 package org.dcm4che3.net.hl7.service;
 
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Segment;
 import org.dcm4che3.net.Connection;
 import org.dcm4che3.net.hl7.DefaultHL7MessageListener;
 import org.dcm4che3.net.hl7.HL7Application;
 import org.dcm4che3.net.hl7.HL7MessageListener;
+import org.dcm4che3.net.hl7.UnparsedHL7Message;
+
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -76,15 +76,15 @@ public class HL7ServiceRegistry extends DefaultHL7MessageListener {
     }
 
     @Override
-    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s,
-            HL7Segment msh, byte[] msg, int off, int len, int mshlen) throws HL7Exception {
-        HL7MessageListener listener = listeners.get(msh.getMessageType());
+    public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+            throws HL7Exception {
+        HL7MessageListener listener = listeners.get(msg.msh().getMessageType());
         if (listener == null) {
             listener = listeners.get("*");
             if (listener == null)
-                return super.onMessage(hl7App, conn, s, msh, msg, off, len, mshlen);
+                return super.onMessage(hl7App, conn, s, msg);
         }
-        return  listener.onMessage(hl7App, conn, s, msh, msg, off, len, mshlen);
+        return  listener.onMessage(hl7App, conn, s, msg);
     }
  
 }

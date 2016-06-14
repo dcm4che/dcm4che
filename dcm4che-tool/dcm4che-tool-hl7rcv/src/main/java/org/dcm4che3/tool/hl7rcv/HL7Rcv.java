@@ -38,22 +38,18 @@
 
 package org.dcm4che3.tool.hl7rcv;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URL;
-import java.util.Date;
-import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import org.apache.commons.cli.*;
+import org.dcm4che3.hl7.*;
+import org.dcm4che3.io.SAXTransformer;
+import org.dcm4che3.net.Connection;
+import org.dcm4che3.net.Connection.Protocol;
+import org.dcm4che3.net.Device;
+import org.dcm4che3.net.hl7.HL7Application;
+import org.dcm4che3.net.hl7.HL7DeviceExtension;
+import org.dcm4che3.net.hl7.HL7MessageListener;
+import org.dcm4che3.net.hl7.UnparsedHL7Message;
+import org.dcm4che3.tool.common.CLIUtils;
+import org.dcm4che3.util.StringUtils;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -62,27 +58,15 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.MissingOptionException;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.dcm4che3.hl7.HL7Charset;
-import org.dcm4che3.hl7.HL7ContentHandler;
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.hl7.HL7Parser;
-import org.dcm4che3.hl7.HL7Segment;
-import org.dcm4che3.io.SAXTransformer;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.Device;
-import org.dcm4che3.net.Connection.Protocol;
-import org.dcm4che3.net.hl7.HL7Application;
-import org.dcm4che3.net.hl7.HL7DeviceExtension;
-import org.dcm4che3.net.hl7.HL7MessageListener;
-import org.dcm4che3.tool.common.CLIUtils;
-import org.dcm4che3.util.StringUtils;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.URL;
+import java.util.Date;
+import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -106,11 +90,10 @@ public class HL7Rcv {
     private final HL7MessageListener handler = new HL7MessageListener() {
 
         @Override
-        public byte[] onMessage(HL7Application hl7App, Connection conn,
-                Socket s, HL7Segment msh, byte[] msg, int off, int len,
-                int mshlen) throws HL7Exception {
+        public byte[] onMessage(HL7Application hl7App, Connection conn, Socket s, UnparsedHL7Message msg)
+                throws HL7Exception {
             try {
-                return HL7Rcv.this.onMessage(msh, msg, off, len);
+                return HL7Rcv.this.onMessage(msg);
             } catch (Exception e) {
                 throw new HL7Exception(HL7Exception.AE, e);
             }
@@ -247,33 +230,31 @@ public class HL7Rcv {
             conn.setHostname(hostAndPort[0]);
     }
 
-    private byte[] onMessage(HL7Segment msh, byte[] msg, int off, int len)
+    private byte[] onMessage(UnparsedHL7Message msg)
                 throws Exception {
             if (storageDir != null)
-                storeToFile(msg, off, len, 
-                        new File(
-                            new File(storageDir, msh.getMessageType()),
-                            msh.getField(9, "_NULL_")));
+                storeToFile(msg.data(), new File(
+                            new File(storageDir, msg.msh().getMessageType()),
+                                msg.msh().getField(9, "_NULL_")));
             return (tpls == null)
-                ? HL7Message.makeACK(msh, HL7Exception.AA, null).getBytes(null)
-                : xslt(msh, msg, off, len);
+                ? HL7Message.makeACK(msg.msh(), HL7Exception.AA, null).getBytes(null)
+                : xslt(msg);
     }
 
-    private void storeToFile(byte[] msg, int off, int len, File f)
-            throws FileNotFoundException, IOException {
+    private void storeToFile(byte[] data, File f) throws IOException {
         Connection.LOG.info("M-WRITE {}", f);
         f.getParentFile().mkdirs();
         FileOutputStream out = new FileOutputStream(f);
         try {
-            out.write(msg, off, len);
+            out.write(data);
         } finally {
             out.close();
         }
     }
 
-    private byte[] xslt(HL7Segment msh, byte[] msg, int off, int len)
+    private byte[] xslt(UnparsedHL7Message msg)
             throws Exception {
-        String charsetName = HL7Charset.toCharsetName(msh.getField(17, charset));
+        String charsetName = HL7Charset.toCharsetName(msg.msh().getField(17, charset));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         TransformerHandler th = factory.newTransformerHandler(tpls);
         Transformer t = th.getTransformer();
@@ -285,7 +266,7 @@ public class HL7Rcv {
         th.setResult(new SAXResult(new HL7ContentHandler(
                 new OutputStreamWriter(out, charsetName))));
         new HL7Parser(th).parse(new InputStreamReader(
-                new ByteArrayInputStream(msg, off, len),
+                new ByteArrayInputStream(msg.data()),
                 charsetName));
         return out.toByteArray();
     }

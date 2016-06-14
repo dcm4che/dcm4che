@@ -1,4 +1,5 @@
-/* ***** BEGIN LICENSE BLOCK *****
+/*
+ * *** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -15,8 +16,8 @@
  * Java(TM), hosted at https://github.com/gunterze/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Agfa Healthcare.
- * Portions created by the Initial Developer are Copyright (C) 2012
+ * J4Care.
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,40 +35,43 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * *** END LICENSE BLOCK *****
+ */
 
 package org.dcm4che3.net.hl7;
 
-import java.io.IOException;
-import java.net.Socket;
+import org.dcm4che3.hl7.HL7Segment;
 
-import org.dcm4che3.hl7.HL7Exception;
-import org.dcm4che3.hl7.HL7Message;
-import org.dcm4che3.hl7.MLLPConnection;
-import org.dcm4che3.net.Connection;
-import org.dcm4che3.net.TCPProtocolHandler;
+import java.io.Serializable;
+import java.text.ParsePosition;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- *
+ * @since Jun 2016
  */
-enum HL7ProtocolHandler implements TCPProtocolHandler {
-    INSTANCE;
+public class UnparsedHL7Message implements Serializable {
+    private final byte[] data;
+    private transient HL7Segment msh;
+    private transient int mshLength;
 
-    @Override
-    public void onAccept(Connection conn, Socket s) throws IOException {
-        s.setSoTimeout(conn.getIdleTimeout());
-        MLLPConnection mllp = new MLLPConnection(s);
-        byte[] data;
-        while ((data = mllp.readMessage()) != null) {
-            UnparsedHL7Message msg = new UnparsedHL7Message(data);
-            try {
-               data = conn.getDevice().getDeviceExtension(HL7DeviceExtension.class).onMessage(conn, s, msg);
-            } catch (HL7Exception e) {
-                data = HL7Message.makeACK(msg.msh(), e.getAcknowledgmentCode(), e.getErrorMessage()).getBytes(null);
-            }
-            mllp.writeMessage(data);
+    public UnparsedHL7Message(byte[] data) {
+        this.data = data;
+    }
+
+    public HL7Segment msh() {
+        init();
+        return msh;
+    }
+
+    private void init() {
+        if (msh == null) {
+            ParsePosition pos = new ParsePosition(0);
+            msh = HL7Segment.parseMSH(data, data.length, pos);
+            mshLength = pos.getIndex();
         }
-        conn.close(s);
+    }
+
+    public byte[] data() {
+        return data;
     }
 }

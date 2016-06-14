@@ -201,8 +201,8 @@ public class HL7Application implements Serializable {
         return conns;
     }
 
-    byte[] onMessage(Connection conn, Socket s, HL7Segment msh, byte[] msg, int off,
-            int len, int mshlen) throws HL7Exception {
+    byte[] onMessage(Connection conn, Socket s, UnparsedHL7Message msg) throws HL7Exception {
+        HL7Segment msh = msg.msh();
         if (!(isInstalled() && conns.contains(conn)))
             throw new HL7Exception(HL7Exception.AR, "Receiving Application not recognized");
         if (!(acceptedSendingApplications.isEmpty()
@@ -215,7 +215,7 @@ public class HL7Application implements Serializable {
         HL7MessageListener listener = getHL7MessageListener();
         if (listener == null)
             throw new HL7Exception(HL7Exception.AE, "No HL7 Message Listener configured");
-        return listener.onMessage(this, conn, s, msh, msg, off, len, mshlen);
+        return listener.onMessage(this, conn, s, msg);
     }
 
     public MLLPConnection connect(Connection remote)

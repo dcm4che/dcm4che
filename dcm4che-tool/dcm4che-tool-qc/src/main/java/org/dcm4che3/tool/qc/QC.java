@@ -177,21 +177,27 @@ public class QC {
         }
         return true;
     }
+    
+    private static String encodeRejectionCode(Code rejCode) {
+        return rejCode.getCodeValue() + ":" + rejCode.getCodeMeaning() + ":" + rejCode.getCodingSchemeDesignator();
+    }
 
     private static QCResult sendDeleteRequest(String desc, QC qc) {
         HttpURLConnection connection = null;
         String bfr = "";
         QCResult result = null;
         try {
-            URL url = new URL(adjustDeleteURL(qc).replace(" ", "%20"));
+            String qcDeleteUrlString = adjustDeleteURL(qc);
+            qcDeleteUrlString += "?rejCode=" + encodeRejectionCode(qc.getQcRejectionCode());
+            qcDeleteUrlString = qcDeleteUrlString.replace(" ", "%20");
+            
+            URL url = new URL(qcDeleteUrlString);
+            
             connection = (HttpURLConnection) url.openConnection();
 
             connection.setDoOutput(true);
-
             connection.setDoInput(true);
-
             connection.setInstanceFollowRedirects(false);
-
             connection.setRequestMethod("DELETE");
 
             int responseCode = connection.getResponseCode();

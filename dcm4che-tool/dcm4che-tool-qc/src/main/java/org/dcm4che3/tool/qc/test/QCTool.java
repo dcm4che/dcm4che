@@ -56,10 +56,29 @@ public class QCTool implements TestTool {
     private QC qc;
     private TestResult result;
 
-    public QCTool(String url, QCOperation operation
-            , Code code, String targetStudyUID) {
+    public QCTool(String url, QCOperation operation, Code code, String targetStudyUID) {
         qc = new QC(url, code, operation);
         qc.setTargetStudyUID(targetStudyUID);
+    }
+    
+    public QCTool(String url, QCOperation operation, String codeString, String targetStudyUID) {
+        this(url, operation, decodeCode(codeString), targetStudyUID);
+    }
+    
+    private static Code decodeCode(String codeString) {
+        Code code = null;
+        String[] codeComponents = codeString.split(":");
+        if(codeComponents.length < 3) {
+            throw new IllegalArgumentException("Code string specified must contain at least value, scheme designator and meaning");
+        } else {
+            if(codeComponents.length == 3) {
+                code = new Code(codeComponents[0], codeComponents[2], null,codeComponents[1]);
+            } else if(codeComponents.length == 4) {
+                code = new Code(codeComponents[0], codeComponents[2], codeComponents[3], codeComponents[1]);
+            }
+        }
+        
+        return code;
     }
 
     @Override

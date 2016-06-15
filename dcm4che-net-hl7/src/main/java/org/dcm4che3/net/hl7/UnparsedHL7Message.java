@@ -44,23 +44,31 @@ import org.dcm4che3.hl7.HL7Segment;
 
 import java.io.Serializable;
 import java.text.ParsePosition;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @since Jun 2016
  */
 public class UnparsedHL7Message implements Serializable {
+    private static final AtomicInteger prevSerialNo = new AtomicInteger();
+    private final int serialNo;
     private final byte[] data;
     private transient HL7Segment msh;
     private transient int mshLength;
 
     public UnparsedHL7Message(byte[] data) {
+        this.serialNo = prevSerialNo.incrementAndGet();
         this.data = data;
     }
 
     public HL7Segment msh() {
         init();
         return msh;
+    }
+
+    public int getSerialNo() {
+        return serialNo;
     }
 
     private void init() {

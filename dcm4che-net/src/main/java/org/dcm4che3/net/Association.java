@@ -193,6 +193,11 @@ public class Association {
         return ae;
     }
 
+
+    public Set<String> getPropertyNames() {
+        return properties != null ? properties.keySet() : Collections.<String>emptySet();
+    }
+
     public Object getProperty(String key) {
         return properties != null ? properties.get(key) : null;
     }

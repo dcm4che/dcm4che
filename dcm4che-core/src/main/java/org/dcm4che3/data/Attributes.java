@@ -71,7 +71,7 @@ public class Attributes implements Serializable {
                 throws Exception;
     }
 
-    public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE }
+    public enum UpdatePolicy { SUPPLEMENT, MERGE, OVERWRITE, REPLACE }
 
     private static final Logger LOG = 
             LoggerFactory.getLogger(Attributes.class);
@@ -1987,6 +1987,9 @@ public class Attributes implements Serializable {
 
     private boolean add(Attributes other, int[] include, int[] exclude, int fromIndex, int toIndex,
                         Attributes selection, UpdatePolicy updatePolicy, boolean simulate, Attributes modified) {
+        if (updatePolicy == UpdatePolicy.REPLACE)
+            throw new IllegalArgumentException("updatePolicy:" + updatePolicy);
+
         boolean toggleEndian = bigEndian != other.bigEndian;
         boolean modifiedToggleEndian = modified != null
                 && bigEndian != modified.bigEndian;

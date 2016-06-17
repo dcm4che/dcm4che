@@ -265,11 +265,18 @@ public class StoreSCU {
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
                 if (main.inputFile != null) {
-                    BufferedReader br = new BufferedReader(new FileReader(main.inputFile));
-                    String line;
+                    BufferedReader br = null;
                     List<String> inputFiles = new ArrayList<String>();
-                    while ((line = br.readLine()) != null) {
-                        inputFiles.add(line);
+                    try {
+                        br = new BufferedReader(new FileReader(main.inputFile));
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            inputFiles.add(line);
+                        }
+                    } finally {
+                        try {
+                            br.close();
+                        } catch (IOException ignore) { }
                     }
                     main.scanFiles(inputFiles);
                 } else {

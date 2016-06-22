@@ -265,20 +265,7 @@ public class StoreSCU {
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
                 if (main.inputFile != null) {
-                    BufferedReader br = null;
-                    List<String> inputFiles = new ArrayList<String>();
-                    try {
-                        br = new BufferedReader(new FileReader(main.inputFile));
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            inputFiles.add(line);
-                        }
-                    } finally {
-                        try {
-                            br.close();
-                        } catch (IOException ignore) { }
-                    }
-                    main.scanFiles(inputFiles);
+                    main.scanFiles(getFilePathsFromInputFile(main.inputFile));
                 } else {
                     main.scanFiles(argList);
                 }
@@ -362,6 +349,23 @@ public class StoreSCU {
                     p);
             storescu.relSOPClasses.init(p);
         }
+    }
+
+    private static List<String> getFilePathsFromInputFile(String inputFile) throws IOException {
+        BufferedReader br = null;
+        List<String> inputFiles = new ArrayList<String>();
+
+        try {
+            br = new BufferedReader(new FileReader(inputFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                inputFiles.add(line);
+            }
+        } finally {
+            SafeClose.close(br);
+        }
+
+        return inputFiles;
     }
 
     public final void enableSOPClassRelationshipExtNeg(boolean enable) {

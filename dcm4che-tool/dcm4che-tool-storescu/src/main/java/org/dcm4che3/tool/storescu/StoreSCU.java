@@ -38,30 +38,17 @@
 
 package org.dcm4che3.tool.storescu;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.data.UID;
@@ -114,6 +101,7 @@ public class StoreSCU {
     private String tmpSuffix;
     private File tmpDir;
     private File tmpFile;
+    private String inputFile;
     private Association as;
 
     private long totalSize;
@@ -201,6 +189,7 @@ public class StoreSCU {
         addRelatedSOPClassOptions(opts);
         addAttributesOption(opts);
         addUIDSuffixOption(opts);
+        addInputFileOption(opts);
         return CLIUtils.parseComandLine(args, opts, rb, StoreSCU.class);
     }
 
@@ -239,6 +228,13 @@ public class StoreSCU {
                 .withLongOpt("rel-sop-classes").create(null));
     }
 
+    @SuppressWarnings("static-access")
+    private static void addInputFileOption(Options opts) {
+        opts.addOption(OptionBuilder.hasArg().withArgName("file").withDescription(rb.getString("input-file"))
+                .withLongOpt("input-file").create(null));
+
+    }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         long t1, t2;
@@ -252,6 +248,7 @@ public class StoreSCU {
             ae.addConnection(conn);
             StoreSCU main = new StoreSCU(ae);
             configureTmpFile(main, cl);
+            configureInputFile(main, cl);
             CLIUtils.configureConnect(main.remote, main.rq, cl);
             CLIUtils.configureBind(conn, ae, cl);
             CLIUtils.configure(conn, cl);
@@ -263,11 +260,15 @@ public class StoreSCU {
             main.setUIDSuffix(cl.getOptionValue("uid-suffix"));
             main.setPriority(CLIUtils.priorityOf(cl));
             List<String> argList = cl.getArgList();
-            boolean echo = argList.isEmpty();
+            boolean echo = argList.isEmpty() && main.inputFile == null;
             if (!echo) {
                 System.out.println(rb.getString("scanning"));
                 t1 = System.currentTimeMillis();
-                main.scanFiles(argList);
+                if (main.inputFile != null) {
+                    main.scanFiles(getFilePathsFromInputFile(main.inputFile));
+                } else {
+                    main.scanFiles(argList);
+                }
                 t2 = System.currentTimeMillis();
                 int n = main.filesScanned;
                 System.out.println();
@@ -332,6 +333,12 @@ public class StoreSCU {
         storescu.setTmpFileSuffix(cl.getOptionValue("tmp-file-suffix"));
     }
 
+    private static void configureInputFile(StoreSCU storescu, CommandLine cl) {
+        if (cl.hasOption("input-file")) {
+            storescu.inputFile = cl.getOptionValue("input-file");
+        }
+    }
+
     public static void configureRelatedSOPClass(StoreSCU storescu,
             CommandLine cl) throws IOException {
         if (cl.hasOption("rel-ext-neg")) {
@@ -342,6 +349,23 @@ public class StoreSCU {
                     p);
             storescu.relSOPClasses.init(p);
         }
+    }
+
+    private static List<String> getFilePathsFromInputFile(String inputFile) throws IOException {
+        BufferedReader br = null;
+        List<String> inputFiles = new ArrayList<String>();
+
+        try {
+            br = new BufferedReader(new FileReader(inputFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                inputFiles.add(line);
+            }
+        } finally {
+            SafeClose.close(br);
+        }
+
+        return inputFiles;
     }
 
     public final void enableSOPClassRelationshipExtNeg(boolean enable) {

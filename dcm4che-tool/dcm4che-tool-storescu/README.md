@@ -30,6 +30,10 @@
      -h,--help                                display this help and exit
         --idle-timeout <ms>                   timeout in ms for receiving
                                               DIMSE-RQ, no timeout by default
+        --input-file <file>                   file containing paths of files
+                                              to be sent instead of reading
+                                              them as arguments from the
+                                              command line
         --key-pass <password>                 password for accessing the key
                                               in the key store, key store
                                               password by default

@@ -97,6 +97,7 @@ public class JsonConfiguration {
         writer.writeNotNull("dicomManufacturerModelName", deviceInfo.getManufacturerModelName());
         writer.writeNotEmpty("dicomSoftwareVersion", deviceInfo.getSoftwareVersions());
         writer.writeNotNull("dicomStationName", deviceInfo.getStationName());
+        writer.writeNotEmpty("dicomInstitutionName", deviceInfo.getInstitutionNames());
         writer.writeNotEmpty("dicomInstitutionDepartmentName", deviceInfo.getInstitutionalDepartmentNames());
         writer.writeNotEmpty("dicomPrimaryDeviceType", deviceInfo.getPrimaryDeviceTypes());
         gen.write("dicomInstalled", deviceInfo.getInstalled());

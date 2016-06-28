@@ -7,11 +7,11 @@ public interface BatchRunner {
     /**
      * Provides support for batching configuration changes.
      * </p>
-     * The method implementation must ensure that the batch-changes are executed within a transaction.
-     * The implementation may decide to run the changes either in
+     * It is guaranteed that
      * <ul>
-     * <li>the context of an already existing transaction</li>
-     * <li>the context of a new transaction</li>
+     * <li>All configuration reads and writes in a batch are performed within a single transaction, i.e. the changes are atomic and performed in READ COMMITTED isolation</li>
+     * <li>When this method is called, an ongoing transaction (in case there is one) will be SUSPENDED. The batch will ALWAYS be executed in a SEPARATE transaction.</li>
+     * <li>At most ONE batch is executed at the same time in the whole cluster (synchronized with a database lock)</li>
      * </ul>
      *
      * @param batch Configuration batch change to execute

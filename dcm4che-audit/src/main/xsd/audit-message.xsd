@@ -1,622 +1,599 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <!--
-        This defines the coded value type. The comment shows a pattern that can be used to further
-        constrain the token to limit it to the format of an OID.  Not all schema software 
-        implementations support the pattern option for tokens.
-    -->
-    <xs:attributeGroup name="other-csd-attributes">
-        <xs:attribute name="codeSystemName" use="required" type="xs:token"/>
-        <xs:attribute name="displayName" type="xs:token"/>
-        <xs:attribute name="originalText" use="required" type="xs:token"/>
-    </xs:attributeGroup>
-    <!-- Note: this also corresponds to DICOM "Code Meaning" -->
-    <xs:attributeGroup name="CodedValueType">
-        <xs:attribute name="csd-code" use="required" type="xs:token"/>
-        <xs:attributeGroup ref="other-csd-attributes"/>
-    </xs:attributeGroup>
-    <!-- Define the event identification, used later -->
-    <xs:complexType name="EventIdentificationContents">
-        <xs:sequence>
-            <xs:element ref="EventID"/>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="EventTypeCode"/>
-            <xs:element minOccurs="0" ref="EventOutcomeDescription"/>
-        </xs:sequence>
-        <xs:attribute name="EventActionCode">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="C">
-                        <xs:annotation>
-                            <xs:documentation>Create</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="R">
-                        <xs:annotation>
-                            <xs:documentation>Read</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="U">
-                        <xs:annotation>
-                            <xs:documentation>Update</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="D">
-                        <xs:annotation>
-                            <xs:documentation>Delete</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="E">
-                        <xs:annotation>
-                            <xs:documentation>Execute</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="EventDateTime" use="required" type="xs:dateTime"/>
-        <xs:attribute name="EventOutcomeIndicator" use="required">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="0">
-                        <xs:annotation>
-                            <xs:documentation>Nominal Success (use if status otherwise unknown or
-                                ambiguous)</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="4">
-                        <xs:annotation>
-                            <xs:documentation>Minor failure (per reporting application
-                            definition)</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="8">
-                        <xs:annotation>
-                            <xs:documentation>Serious failure (per reporting application
-                            definition)</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="12">
-                        <xs:annotation>
-                            <xs:documentation>Major failure, (reporting application now
-                            unavailable)</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:complexType>
-    <xs:element name="EventID">
-        <xs:complexType>
-            <xs:attributeGroup ref="CodedValueType"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="EventTypeCode">
-        <xs:complexType>
-            <xs:attributeGroup ref="CodedValueType"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="EventOutcomeDescription" type="xs:string"/>
-    <!--
-        Define AuditSourceIdentification, used later
-         Note: This includes one constraint that cannot be represented yet in RNC.  The use
-               of a token other than the specified codes is permitted only if the codeSystemName
-               is present.
-         Note: This has no elements, only attributes.
-    -->
-    <xs:complexType name="AuditSourceIdentificationContents">
-        <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="AuditSourceTypeCode"/>
-        </xs:sequence>
-        <xs:attribute name="code" use="required">
-            <xs:simpleType>
-                <xs:union>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="1">
-                                <xs:annotation>
-                                    <xs:documentation>End-user display device, diagnostic
-                                    device</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="2">
-                                <xs:annotation>
-                                    <xs:documentation>Data acquisition device or
-                                    instrument</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="3">
-                                <xs:annotation>
-                                    <xs:documentation>Web Server process or
-                                    thread</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="4">
-                                <xs:annotation>
-                                    <xs:documentation>Application Server process or
-                                    thread</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="5">
-                                <xs:annotation>
-                                    <xs:documentation>Database Server process or
-                                    thread</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="6">
-                                <xs:annotation>
-                                    <xs:documentation>Security server, e.g., a domain
-                                    controller</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="7">
-                                <xs:annotation>
-                                    <xs:documentation>ISO level 1-3 network
-                                    component</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="8">
-                                <xs:annotation>
-                                    <xs:documentation>ISO level 4-6 operating
-                                    software</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token">
-                            <xs:enumeration value="9">
-                                <xs:annotation>
-                                    <xs:documentation>other</xs:documentation>
-                                </xs:annotation>
-                            </xs:enumeration>
-                        </xs:restriction>
-                    </xs:simpleType>
-                    <xs:simpleType>
-                        <xs:restriction base="xs:token"/>
-                    </xs:simpleType>
-                </xs:union>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="codeSystemName" type="xs:token"/>
-        <xs:attribute name="displayName" type="xs:token"/>
-        <xs:attribute name="originalText" type="xs:token"/>
-        <xs:attribute name="AuditEnterpriseSiteID" type="xs:token">
+  <xs:element name="AuditMessage" type="AuditMessageType"/>
+  <xs:complexType name="AuditMessageType">
+    <xs:sequence>
+      <xs:element ref="EventIdentification"/>
+      <xs:element maxOccurs="unbounded" ref="ActiveParticipant"/>
+      <xs:element maxOccurs="unbounded" ref="AuditSourceIdentification"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectIdentification"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="EventIdentification" type="EventIdentificationType"/>
+  <xs:element name="ActiveParticipant" type="ActiveParticipantType"/>
+  <xs:element name="AuditSourceIdentification" type="AuditSourceIdentificationType"/>
+  <xs:element name="ParticipantObjectIdentification" type="ParticipantObjectIdentificationType"/>
+  <xs:complexType name="EventIdentificationType">
+    <xs:sequence>
+      <xs:element ref="EventID"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="EventTypeCode"/>
+      <xs:element minOccurs="0" ref="EventOutcomeDescription"/>
+    </xs:sequence>
+    <xs:attribute name="EventActionCode">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="C">
             <xs:annotation>
-                <xs:documentation>If these are present, they define the meaning of
-                code</xs:documentation>
+              <xs:documentation>Create</xs:documentation>
             </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="AuditSourceID" use="required" type="xs:token"/>
+          </xs:enumeration>
+          <xs:enumeration value="R">
+            <xs:annotation>
+              <xs:documentation> Read</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="U">
+            <xs:annotation>
+              <xs:documentation>Update</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="D">
+            <xs:annotation>
+              <xs:documentation>Delete</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="E">
+            <xs:annotation>
+              <xs:documentation>Execute</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="EventDateTime" use="required" type="xs:dateTime"/>
+    <xs:attribute name="EventOutcomeIndicator" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="0">
+            <xs:annotation>
+              <xs:documentation>Nominal Success (use if status otherwise unknown or ambiguous)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Minor failure (per reporting application definition)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="8">
+            <xs:annotation>
+              <xs:documentation>Serious failure (per reporting application definition)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="12">
+            <xs:annotation>
+              <xs:documentation>Major failure, (reporting application now unavailable)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:element name="EventID">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
     </xs:complexType>
-    <xs:element name="AuditSourceTypeCode" type="xs:token"/>
-    <!-- Define ActiveParticipantType, used later -->
-    <xs:complexType name="ActiveParticipantContents">
-        <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="RoleIDCode"/>
-            <xs:element minOccurs="0" ref="MediaIdentifier"/>
-        </xs:sequence>
-        <xs:attribute name="UserID" use="required"/>
-        <xs:attribute name="AlternativeUserID"/>
-        <xs:attribute name="UserName"/>
-        <xs:attribute name="UserIsRequestor" use="required" type="xs:boolean"/>
-        <xs:attribute name="NetworkAccessPointID" type="xs:token"/>
-        <xs:attribute name="NetworkAccessPointTypeCode">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="1">
-                        <xs:annotation>
-                            <xs:documentation>Machine Name, including DNS name</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="2">
-                        <xs:annotation>
-                            <xs:documentation>IP Address</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="3">
-                        <xs:annotation>
-                            <xs:documentation>Telephone Number</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="4">
-                        <xs:annotation>
-                            <xs:documentation>Email address</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="5">
-                        <xs:annotation>
-                            <xs:documentation>URI (user directory, HTTP-PUT, ftp,
-                            etc.)</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
+  </xs:element>
+  <xs:element name="EventTypeCode">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
     </xs:complexType>
-    <xs:element name="RoleIDCode">
-        <xs:complexType>
-            <xs:attributeGroup ref="CodedValueType"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="MediaIdentifier">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="MediaType"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="MediaType">
-        <xs:complexType>
-            <xs:attributeGroup ref="CodedValueType"/>
-        </xs:complexType>
-    </xs:element>
-    <!--
-        The BinaryValuePair is used in ParticipantObject descriptions to capture parameters.  
-        All values (even those that are normally plain text) are encoded as xsd:base64Binary.
-        This is to preserve details of encoding (e.g., nulls) and to protect against text
-        contents that contain XML fragments.  These are known attack points against applications,
-        so security logs can be expected to need to capture them without modification by the
-        audit encoding process.
-    -->
-    <xs:attributeGroup name="ValuePair">
-        <xs:attribute name="type" use="required" type="xs:token"/>
-        <xs:attribute name="value" use="required" type="xs:base64Binary"/>
-    </xs:attributeGroup>
-    <!-- used to encode potentially binary, malformed XML text, etc. -->
-    <!-- Define ParticipantObjectIdentification, used later -->
-    <!-- Participant Object Description, used later -->
-    <xs:group name="DICOMObjectDescriptionContents">
-        <xs:sequence>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
-            <xs:element ref="ParticipantObjectContainsStudy"/>
-            <xs:element minOccurs="0" ref="Encrypted"/>
-            <xs:element minOccurs="0" ref="Anonymized"/>
-        </xs:sequence>
-    </xs:group>
-    <xs:element name="MPPS">
-        <xs:complexType>
-            <xs:attribute name="UID" use="required" type="xs:token"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="Accession">
-        <xs:complexType>
-            <xs:attribute name="Number" use="required" type="xs:token"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="SOPClass">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="Instance"/>
-            </xs:sequence>
-            <xs:attribute name="UID" type="xs:token"/>
-            <xs:attribute name="NumberOfInstances" use="required" type="xs:int"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="Instance">
-        <xs:complexType>
-            <xs:attribute name="UID" use="required" type="xs:token"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="ParticipantObjectContainsStudy">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StudyIDs"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="StudyIDs">
-        <xs:complexType>
-            <xs:attribute name="UID" use="required" type="xs:token"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="Encrypted" type="xs:boolean"/>
-    <xs:element name="Anonymized" type="xs:boolean"/>
-    <xs:complexType name="ParticipantObjectIdentificationContents">
-        <xs:sequence>
-            <xs:element ref="ParticipantObjectIDTypeCode"/>
-            <xs:choice>
-                <xs:element ref="ParticipantObjectName"/>
-                <xs:element ref="ParticipantObjectQuery"/>
-            </xs:choice>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDescription"/>
-            <xs:group ref="DICOMObjectDescriptionContents"/>
-        </xs:sequence>
-        <xs:attribute name="ParticipantObjectID" use="required" type="xs:token"/>
-        <xs:attribute name="ParticipantObjectTypeCode">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="1">
-                        <xs:annotation>
-                            <xs:documentation>Person</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="2">
-                        <xs:annotation>
-                            <xs:documentation>System object</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="3">
-                        <xs:annotation>
-                            <xs:documentation>Organization</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="4">
-                        <xs:annotation>
-                            <xs:documentation>Other</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="ParticipantObjectTypeCodeRole">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="1">
-                        <xs:annotation>
-                            <xs:documentation>Patient</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="2">
-                        <xs:annotation>
-                            <xs:documentation>Location</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="3">
-                        <xs:annotation>
-                            <xs:documentation>Report</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="4">
-                        <xs:annotation>
-                            <xs:documentation>Resource</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="5">
-                        <xs:annotation>
-                            <xs:documentation>Master File</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="6">
-                        <xs:annotation>
-                            <xs:documentation>User</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="7">
-                        <xs:annotation>
-                            <xs:documentation>List</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="8">
-                        <xs:annotation>
-                            <xs:documentation>Doctor</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="9">
-                        <xs:annotation>
-                            <xs:documentation>Subscriber</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="10">
-                        <xs:annotation>
-                            <xs:documentation>guarantor</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="11">
-                        <xs:annotation>
-                            <xs:documentation>Security User Entity</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="12">
-                        <xs:annotation>
-                            <xs:documentation>Security User Group</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="13">
-                        <xs:annotation>
-                            <xs:documentation>Security Resource</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="14">
-                        <xs:annotation>
-                            <xs:documentation>Security Granulatiry Definition</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="15">
-                        <xs:annotation>
-                            <xs:documentation>Provider</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="16">
-                        <xs:annotation>
-                            <xs:documentation>Report Destination</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="17">
-                        <xs:annotation>
-                            <xs:documentation>Report Library</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="18">
-                        <xs:annotation>
-                            <xs:documentation>Schedule</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="19">
-                        <xs:annotation>
-                            <xs:documentation>Customer</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="20">
-                        <xs:annotation>
-                            <xs:documentation>Job</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="21">
-                        <xs:annotation>
-                            <xs:documentation>Job Stream</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="22">
-                        <xs:annotation>
-                            <xs:documentation>Table</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="23">
-                        <xs:annotation>
-                            <xs:documentation>Routing Criteria</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="24">
-                        <xs:annotation>
-                            <xs:documentation>Query</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="ParticipantObjectDataLifeCycle">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="1">
-                        <xs:annotation>
-                            <xs:documentation>Origination, Creation</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="2">
-                        <xs:annotation>
-                            <xs:documentation>Import/ Copy</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="3">
-                        <xs:annotation>
-                            <xs:documentation>Amendment</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="4">
-                        <xs:annotation>
-                            <xs:documentation>Verification</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="5">
-                        <xs:annotation>
-                            <xs:documentation>Translation</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="6">
-                        <xs:annotation>
-                            <xs:documentation>Access/Use</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="7">
-                        <xs:annotation>
-                            <xs:documentation>De-identification</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="8">
-                        <xs:annotation>
-                            <xs:documentation>Aggregation, summarization,
-                            derivation</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="9">
-                        <xs:annotation>
-                            <xs:documentation>Report</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="10">
-                        <xs:annotation>
-                            <xs:documentation>Export</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="11">
-                        <xs:annotation>
-                            <xs:documentation>Disclosure</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="12">
-                        <xs:annotation>
-                            <xs:documentation>Receipt of Disclosure</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="13">
-                        <xs:annotation>
-                            <xs:documentation>Archiving</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="14">
-                        <xs:annotation>
-                            <xs:documentation>Logical deletion</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="15">
-                        <xs:annotation>
-                            <xs:documentation>Permanent erasure, physical
-                            destruction</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-        <xs:attribute name="ParticipantObjectSensistity" type="xs:token"/>
+  </xs:element>
+  <xs:element name="EventOutcomeDescription" type="xs:string"/>
+  <!--
+     Define AuditSourceTypeCode so that an isolated single digit value is acceptable, 
+       or a token with other csd attributes so that any controlled terminology can also be used.
+  -->
+  <xs:complexType name="AuditSourceIdentificationType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="AuditSourceTypeCode"/>
+    </xs:sequence>
+    <xs:attribute name="AuditEnterpriseSiteID" type="xs:string"/>
+    <xs:attribute name="AuditSourceID" use="required" type="xs:string"/>
+  </xs:complexType>
+  <xs:element name="AuditSourceTypeCode">
+    <xs:complexType>
+      <xs:attributeGroup ref="AuditSourceTypeCodeContent"/>
     </xs:complexType>
-    <xs:element name="ParticipantObjectIDTypeCode">
-        <xs:complexType>
-            <xs:attributeGroup ref="CodedValueType"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="ParticipantObjectName" type="xs:token"/>
-    <xs:element name="ParticipantObjectQuery" type="xs:base64Binary"/>
-    <xs:element name="ParticipantObjectDetail">
-        <xs:complexType>
-            <xs:attributeGroup ref="ValuePair"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="ParticipantObjectDescription" type="xs:token"/>
-    <!-- The basic message -->
-    <xs:element name="AuditMessage" type="AuditMessageType"/>
-    <xs:complexType name="AuditMessageType">
-        <xs:sequence>
-            <xs:element ref="EventIdentification"/>
-            <xs:element maxOccurs="unbounded" ref="ActiveParticipant"/>
-            <xs:element ref="AuditSourceIdentification"/>
-            <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectIdentification"/>
-        </xs:sequence>
+  </xs:element>
+  <!--
+    CP1362 : Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
+    so that any controlled terminology can also be used.
+  -->
+  <xs:attributeGroup name="AuditSourceTypeCodeContent">
+    <xs:attribute name="code" use="required">
+      <xs:simpleType>
+        <xs:union memberTypes="xs:token">
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="1">
+                <xs:annotation>
+                  <xs:documentation>End-user display device, diagnostic device</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="2">
+                <xs:annotation>
+                  <xs:documentation>Data acquisition device or instrument</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="3">
+                <xs:annotation>
+                  <xs:documentation>Web Server process or thread</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="4">
+                <xs:annotation>
+                  <xs:documentation>Application Server process or thread</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="5">
+                <xs:annotation>
+                  <xs:documentation>Database Server process or thread</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="6">
+                <xs:annotation>
+                  <xs:documentation>Security server, e.g., a domain controller</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="7">
+                <xs:annotation>
+                  <xs:documentation>ISO level 1-3 network component</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="8">
+                <xs:annotation>
+                  <xs:documentation>ISO level 4-6 operating software</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+          <xs:simpleType>
+            <xs:restriction base="xs:token">
+              <xs:enumeration value="9">
+                <xs:annotation>
+                  <xs:documentation>other</xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:union>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attributeGroup ref="other-csd-attributes"/>
+  </xs:attributeGroup>
+  <xs:complexType name="ActiveParticipantType">
+    <xs:annotation>
+      <xs:documentation>If these are present, they define the meaning of code</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="RoleIDCode"/>
+      <xs:element minOccurs="0" ref="MediaIdentifier"/>
+    </xs:sequence>
+    <xs:attribute name="UserID" use="required" type="xs:string"/>
+    <xs:attribute name="AlternativeUserID" type="xs:string"/>
+    <xs:attribute name="UserName" type="xs:string"/>
+    <xs:attribute name="UserIsRequestor" use="required" type="xs:boolean"/>
+    <xs:attribute name="NetworkAccessPointID" type="xs:string"/>
+    <xs:attribute name="NetworkAccessPointTypeCode">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1">
+            <xs:annotation>
+              <xs:documentation>Machine Name, including DNS name</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="2">
+            <xs:annotation>
+              <xs:documentation>IP Address</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3">
+            <xs:annotation>
+              <xs:documentation>Telephone Number</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Email address (DICOM extension to RFC-3881 schema)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="5">
+            <xs:annotation>
+              <xs:documentation>URI (user directory, HTTP-PUT, ftp, etc.) (DICOM extension to RFC-3881 schema)</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+  <xs:element name="RoleIDCode">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
     </xs:complexType>
-    <xs:element name="EventIdentification" type="EventIdentificationContents"/>
-    <xs:element name="ActiveParticipant" type="ActiveParticipantContents"/>
-    <xs:element name="AuditSourceIdentification" type="AuditSourceIdentificationContents"/>
-    <xs:element name="ParticipantObjectIdentification"
-        type="ParticipantObjectIdentificationContents"/>
-    <!-- And finally the magic statement that message is the root of everything. -->
+  </xs:element>
+  <xs:element name="MediaIdentifier">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="MediaType"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MediaType">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="ParticipantObjectIdentificationType">
+    <xs:sequence>
+      <xs:element ref="ParticipantObjectIDTypeCode"/>
+      <xs:choice minOccurs="0">
+        <xs:element ref="ParticipantObjectName"/>
+        <xs:element ref="ParticipantObjectQuery"/>
+      </xs:choice>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParticipantObjectDetail"/>
+      <xs:element ref="ParticipantObjectDescription"/>
+    </xs:sequence>
+    <xs:attribute name="ParticipantObjectID" use="required" type="xs:string"/>
+    <xs:attribute name="ParticipantObjectTypeCode">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1">
+            <xs:annotation>
+              <xs:documentation>Person</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="2">
+            <xs:annotation>
+              <xs:documentation>System object</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3">
+            <xs:annotation>
+              <xs:documentation>Organization</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Other</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="ParticipantObjectTypeCodeRole">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1">
+            <xs:annotation>
+              <xs:documentation>Patient</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="2">
+            <xs:annotation>
+              <xs:documentation>Location</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3">
+            <xs:annotation>
+              <xs:documentation>Report</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Resource</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="5">
+            <xs:annotation>
+              <xs:documentation>Master file</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="6">
+            <xs:annotation>
+              <xs:documentation>User</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="7">
+            <xs:annotation>
+              <xs:documentation>List</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="8">
+            <xs:annotation>
+              <xs:documentation>Doctor</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="9">
+            <xs:annotation>
+              <xs:documentation>Subscriber</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="10">
+            <xs:annotation>
+              <xs:documentation>Guarantor</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="11">
+            <xs:annotation>
+              <xs:documentation>Security User Entity</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="12">
+            <xs:annotation>
+              <xs:documentation>Security User Group</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="13">
+            <xs:annotation>
+              <xs:documentation>Security Resource</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="14">
+            <xs:annotation>
+              <xs:documentation>Security Granualarity Definition</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="15">
+            <xs:annotation>
+              <xs:documentation>Provider</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="16">
+            <xs:annotation>
+              <xs:documentation>Report Destination</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="17">
+            <xs:annotation>
+              <xs:documentation>Report Library</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="18">
+            <xs:annotation>
+              <xs:documentation>Schedule</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="19">
+            <xs:annotation>
+              <xs:documentation>Customer</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="20">
+            <xs:annotation>
+              <xs:documentation>Job</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="21">
+            <xs:annotation>
+              <xs:documentation>Job Stream</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="22">
+            <xs:annotation>
+              <xs:documentation>Table</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="23">
+            <xs:annotation>
+              <xs:documentation>Routing Criteria</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="24">
+            <xs:annotation>
+              <xs:documentation>Query</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="ParticipantObjectDataLifeCycle">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="1">
+            <xs:annotation>
+              <xs:documentation>Origination / Creation</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="2">
+            <xs:annotation>
+              <xs:documentation>Import / Copy from original </xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="3">
+            <xs:annotation>
+              <xs:documentation>Amendment</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="4">
+            <xs:annotation>
+              <xs:documentation>Verification</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="5">
+            <xs:annotation>
+              <xs:documentation>Translation</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="6">
+            <xs:annotation>
+              <xs:documentation>Access / Use</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="7">
+            <xs:annotation>
+              <xs:documentation>De-identification</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="8">
+            <xs:annotation>
+              <xs:documentation>Aggregation, summarization, derivation</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="9">
+            <xs:annotation>
+              <xs:documentation>Report</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="10">
+            <xs:annotation>
+              <xs:documentation>Export / Copy to target</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="11">
+            <xs:annotation>
+              <xs:documentation>Disclosure</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="12">
+            <xs:annotation>
+              <xs:documentation>Receipt of disclosure</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="13">
+            <xs:annotation>
+              <xs:documentation>Archiving</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="14">
+            <xs:annotation>
+              <xs:documentation>Logical deletion</xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+          <xs:enumeration value="15">
+            <xs:annotation>
+              <xs:documentation>Permanent erasure / Physical destruction </xs:documentation>
+            </xs:annotation>
+          </xs:enumeration>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="ParticipantObjectSensitivity" type="xs:string"/>
+  </xs:complexType>
+  <xs:element name="ParticipantObjectIDTypeCode">
+    <xs:complexType>
+      <xs:attributeGroup ref="CodedValueType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ParticipantObjectName" type="xs:string"/>
+  <xs:element name="ParticipantObjectQuery" type="xs:base64Binary"/>
+  <xs:element name="ParticipantObjectDetail">
+    <xs:complexType>
+      <xs:attributeGroup ref="TypeValuePairType"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ParticipantObjectDescription" type="ParticipantObjectDescriptionType"/>
+  <xs:complexType name="ParticipantObjectDescriptionType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="MPPS"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="Accession"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" ref="SOPClass"/>
+      <xs:element ref="ParticipantObjectContainsStudy"/>
+    </xs:sequence>
+    <xs:attribute name="Encrypted" type="xs:boolean"/>
+    <xs:attribute name="Anonymized" type="xs:boolean"/>
+  </xs:complexType>
+  <xs:element name="MPPS">
+    <xs:complexType>
+      <xs:attribute name="UID" use="required" type="OID"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Accession">
+    <xs:complexType>
+      <xs:attribute name="Number" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SOPClass">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Instance"/>
+      </xs:sequence>
+      <xs:attribute name="UID" use="required" type="OID"/>
+      <xs:attribute name="NumberOfInstances" type="xs:int"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Instance">
+    <xs:complexType>
+      <xs:attribute name="UID" use="required" type="OID"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ParticipantObjectContainsStudy">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="StudyIDs"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="StudyIDs">
+    <xs:complexType>
+      <xs:attribute name="UID" use="required" type="OID"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="CodedValueType">
+    <xs:attribute name="csd-code" use="required" type="xs:string"/>
+    <xs:attributeGroup ref="other-csd-attributes"/>
+  </xs:attributeGroup>
+  <!--
+     CodeSystem,
+     attribute displayName { xsd:string }?,
+     attribute originalText { xsd:string }? # Note: this corresponds to DICOM "Code Meaning"
+  -->
+  <xs:attributeGroup name="TypeValuePairType">
+    <xs:attribute name="type" use="required" type="xs:string"/>
+    <xs:attribute name="value" use="required" type="xs:base64Binary"/>
+  </xs:attributeGroup>
+  <!--
+    CodeSystem =
+     attribute codeSystem { OID }?,
+     attribute codeSystemName { xsd:string }?
+  -->
+  <xs:attributeGroup name="other-csd-attributes">
+    <xs:attribute name="codeSystem" type="OID"/>
+    <xs:attribute name="codeSystemName" type="xs:string"/>
+    <xs:attribute name="displayName" type="xs:string"/>
+    <xs:attribute name="originalText" type="xs:string"/>
+  </xs:attributeGroup>
+  <!-- Note: this corresponds to DICOM "Code Meaning" -->
+  <xs:simpleType name="OID">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-2]((\.0)|(\.[1-9][0-9]*))*"/>
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

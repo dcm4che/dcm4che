@@ -43,6 +43,7 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.dcm4che3.audit.*;
 import org.dcm4che3.audit.AuditMessages.RoleIDCode;
+import org.dcm4che3.audit.AuditMessage;
 import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.LDAP;
@@ -471,22 +472,18 @@ public class AuditLogger extends DeviceExtension {
             } else
                 asi.setAuditEnterpriseSiteID(auditEnterpriseSiteID);
         }
-        if (auditSourceTypeCodes.length > 0) {
-            if (!auditSourceTypeCodes[0].equals(DICOM_PRIMARY_DEVICE_TYPE))
-                asi.setCode(auditSourceTypeCodes[0]);
-            for (int i = 1 ; i < auditSourceTypeCodes.length ; i++) {
-                if (auditSourceTypeCodes[i].equals(DICOM_PRIMARY_DEVICE_TYPE)) {
-                    for (String type : device.getPrimaryDeviceTypes()) {
-                        asi.getAuditSourceTypeCode().add(type+"^DCM");
-                        if (asi.getCode() == null) {
-                            asi.setCode(type);
-                            asi.setCodeSystemName("DCM");
-                            asi.setOriginalText("Dicom device type "+type);
-                        }
-                    }
-                } else {
-                    asi.getAuditSourceTypeCode().add(auditSourceTypeCodes[i]);
+        for (String code : auditSourceTypeCodes) {
+            if (code.equals(DICOM_PRIMARY_DEVICE_TYPE)) {
+                for (String type : device.getPrimaryDeviceTypes()) {
+                    AuditSourceTypeCode astc = new AuditSourceTypeCode();
+                    astc.setCode(type);
+                    astc.setCodeSystemName("DCM");
+                    asi.getAuditSourceTypeCode().add(astc);
                 }
+            } else {
+                AuditSourceTypeCode astc = new AuditSourceTypeCode();
+                astc.setCode(code);
+                asi.getAuditSourceTypeCode().add(astc);
             }
         }
         return asi;

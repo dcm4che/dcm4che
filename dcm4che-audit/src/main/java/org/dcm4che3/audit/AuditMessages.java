@@ -292,14 +292,8 @@ public class AuditMessages {
 
     }
 
-    public static final class AuditSourceTypeCode {
+    public static final class AuditSourceTypeCode extends org.dcm4che3.audit.AuditSourceTypeCode {
 
-        private String code;
-
-        private String codeSystemName;
-
-        private String displayName;
-        
         public static final AuditSourceTypeCode EndUserDisplayDevice = 
                 new AuditSourceTypeCode("1");
         public static final AuditSourceTypeCode DataAcquisitionDevice = 
@@ -320,19 +314,38 @@ public class AuditMessages {
                 new AuditSourceTypeCode("9");
 
         public AuditSourceTypeCode(String code) {
-            this.code = code;
+            super.code = code;
         }
 
         public AuditSourceTypeCode(String code, String codeSystemName,
                 String displayName) {
-            this.code = code;
-            this.codeSystemName = codeSystemName;
-            this.displayName = displayName;
+            super.code = code;
+            super.codeSystemName = codeSystemName;
+            super.displayName = displayName;
         }
         
+        public void setCode(String value) {
+            throw new UnsupportedOperationException();
+        }
+
         @Override
-        public String toString() {
-            return codeSystemName == null ? code : code+"^"+codeSystemName;
+        public void setDisplayName(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setOriginalText(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setCodeSystem(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setCodeSystemName(String value) {
+            throw new UnsupportedOperationException();
         }
 
     }
@@ -565,69 +578,6 @@ public class AuditMessages {
         }
 
     }
-
-    public static final class ParticipantObjectDescription {
-
-        protected List<String> description;
-        protected List<MPPS> mpps;
-        protected List<Accession> accession;
-        protected List<SOPClass> sopClass;
-        protected List<ParticipantObjectContainsStudy> participantObjectContainsStudy;
-        protected Boolean encrypted;
-        protected Boolean anonymized;
-
-        public List<String> getDescriptions() {
-            if (description == null) {
-                description = new ArrayList<String>();
-            }
-            return this.description;
-        }
-        
-        public List<MPPS> getMPPS() {
-            if (mpps == null) {
-                mpps = new ArrayList<MPPS>();
-            }
-            return this.mpps;
-        }
-
-        public List<Accession> getAccession() {
-            if (accession == null) {
-                accession = new ArrayList<Accession>();
-            }
-            return this.accession;
-        }
-
-        public List<SOPClass> getSOPClass() {
-            if (sopClass == null) {
-                sopClass = new ArrayList<SOPClass>();
-            }
-            return this.sopClass;
-        }
-
-        public List<ParticipantObjectContainsStudy> getParticipantObjectContainsStudy() {
-            if (participantObjectContainsStudy == null) {
-                participantObjectContainsStudy = new ArrayList<ParticipantObjectContainsStudy>();
-            }
-            return this.participantObjectContainsStudy;
-        }
-
-        public Boolean isEncrypted() {
-            return encrypted;
-        }
-
-        public void setEncrypted(Boolean value) {
-            this.encrypted = value;
-        }
-
-        public Boolean isAnonymized() {
-            return anonymized;
-        }
-
-        public void setAnonymized(Boolean value) {
-            this.anonymized = value;
-        }
-        
-    }
     
     public static EventIdentification createEventIdentification(
             EventID eventID, String action, Calendar eventDateTime,
@@ -670,14 +620,8 @@ public class AuditMessages {
         AuditSourceIdentification asi = new AuditSourceIdentification();
         asi.setAuditEnterpriseSiteID(siteID);
         asi.setAuditSourceID(sourceID);
-        if (types.length > 0) {
-            asi.setCode(types[0].code);
-            asi.setCodeSystemName(types[0].codeSystemName);
-            asi.setOriginalText(types[0].displayName);
-            for (int i = 1 ; i < types.length ; i++) {
-                asi.getAuditSourceTypeCode().add(types[i].toString());
-            }
-        }
+        for (AuditSourceTypeCode type : types)
+            asi.getAuditSourceTypeCode().add(type);
         return asi;
    }
 
@@ -694,17 +638,8 @@ public class AuditMessages {
         poi.setParticipantObjectTypeCode(type);
         poi.setParticipantObjectTypeCodeRole(role);
         poi.setParticipantObjectDataLifeCycle(lifeCycle);
-        poi.setParticipantObjectSensistity(sensitivity);
-        if (description != null) {
-            poi.getParticipantObjectDescription().addAll(description.getDescriptions());
-            poi.setAnonymized(description.isAnonymized());
-            poi.setEncrypted(description.isEncrypted());
-            poi.getAccession().addAll(description.getAccession());
-            poi.getMPPS().addAll(description.getMPPS());
-            poi.getSOPClass().addAll(description.getSOPClass());
-            if (description.getParticipantObjectContainsStudy().size() > 0)
-                poi.setParticipantObjectContainsStudy(description.getParticipantObjectContainsStudy().get(0));
-        }
+        poi.setParticipantObjectSensitivity(sensitivity);
+        poi.setParticipantObjectDescription(description);
         for (ParticipantObjectDetail detail : details)
             poi.getParticipantObjectDetail().add(detail);
         return poi;

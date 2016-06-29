@@ -1,264 +1,302 @@
 datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
 
-# This defines the coded value type. The comment shows a pattern that can be used to further
-# constrain the token to limit it to the format of an OID.  Not all schema software 
-# implementations support the pattern option for tokens.
-other-csd-attributes =
-  (attribute codeSystemName { token } |     # OID pattern="[0-2]((\.0)|(\.[1-9][0-9]*))*"
-     attribute codeSystemName { token }),   # This makes clear that codeSystemName is
-                                            # either an OID or String 
-  attribute displayName { token }?,
-  attribute originalText { token }          # Note: this also corresponds to DICOM "Code Meaning"
-CodedValueType =
-  attribute csd-code { token },
-  other-csd-attributes
+start = AuditMessage
 
-# Define the event identification, used later
+AuditMessage = element AuditMessage { AuditMessageType }
 
-EventIdentificationContents =
-  element EventID { CodedValueType },
-  element EventTypeCode { CodedValueType }*, # Note: DICOM/IHE defines and uses this
-                                             # differently than RFC-3881
-  attribute EventActionCode {                # Optional action code
-    ## Create
-    "C" |              
-    ## Read
-    "R" |              
-    ## Update
-    "U" |              
-    ## Delete
-    "D" |             
-    ## Execute
-    "E"                 
-  }?,
+AuditMessageType =
+  element EventIdentification { EventIdentificationType },
+  element ActiveParticipant { ActiveParticipantType }+,
+  element AuditSourceIdentification { AuditSourceIdentificationType }+,
+  element ParticipantObjectIdentification { ParticipantObjectIdentificationType }*
   
+  EventIdentificationType =
+  element EventID { CodedValueType },
+  element EventTypeCode { CodedValueType }*, # Note: DICOM/IHE defines and uses this differently than RFC-3881
+  element EventOutcomeDescription { xsd:string }?,
+  attribute EventActionCode {
+  ## Create
+  "C" |
+  ##  Read
+  "R" |
+  ## Update
+  "U" |
+  ## Delete
+  "D" |
+  ## Execute
+  "E"
+  }?,
   attribute EventDateTime { xsd:dateTime },
   attribute EventOutcomeIndicator {
-    ## Nominal Success (use if status otherwise unknown or ambiguous)
-    "0" |            
-    ## Minor failure (per reporting application definition)
-    "4" |            
-    ## Serious failure (per reporting application definition)
-    "8" |            
-    ## Major failure, (reporting application now unavailable)
-    "12"            
-  },
+  ## Nominal Success (use if status otherwise unknown or ambiguous)
+  "0" |
+  ## Minor failure (per reporting application definition)
+  "4" |
+  ## Serious failure (per reporting application definition)
+  "8" |
+  ## Major failure, (reporting application now unavailable)
+  "12"
+  }
   
-  element EventOutcomeDescription { text }?
+  #  Define AuditSourceTypeCode so that an isolated single digit value is acceptable, 
+  #    or a token with other csd attributes so that any controlled terminology can also be used.
+  AuditSourceIdentificationType =
+  #  element AuditSourceTypeCode {
+  #    attribute code {
+  #      ##  End-user display device, diagnostic display
+  #      "1" |
+  #      ## Data acquisition device or instrument
+  #      "2" |
+  #      ## Web server process
+  #      "3" |
+  #      ## Application server process
+  #      "4" |
+  #      ## Database server process
+  #      "5" |
+  #      ## Security server, e.g., a domain controller
+  #      "6" |
+  #      ## ISO level 1-3 network component
+  #      "7" |
+  #      ## ISO level 4-6 operating software
+  #      "8" |
+  #      ## External source, other or unknown type
+  #      "9"| ## other
+  #     token }, ## other values are allowed if a codeSystemName is present
+  #     other-csd-attributes?, ## If these are present, they define the meaning of code
+  #    } | #  other code values are allowed if a CodeSystem is specified by its name or OID
+  #    CodedValueType
+  #    attribute csd-code { xsd:string } |
+  #    attribute displayName { xsd:string }? |
+  #    attribute originalText { xsd:string } | # declared as required by CP-ITI-731-01 # Note: this corresponds to DICOM "Code Meaning"
+  #    attribute codeSystem { OID }? |
+  #    attribute codeSystemName { xsd:string } # declared as required by CP-ITI-731-01
+  #  }*,
+  attribute AuditEnterpriseSiteID { xsd:string }?,
+  attribute AuditSourceID { xsd:string },
+  element AuditSourceTypeCode { AuditSourceTypeCodeContent }*
   
-# Define AuditSourceIdentification, used later
-#  Note: This includes one constraint that cannot be represented yet in RNC.  The use
-#        of a token other than the specified codes is permitted only if the codeSystemName
-#        is present.
-#  Note: This has no elements, only attributes.
-
-AuditSourceIdentificationContents =
+  # CP1362 : Define AuditSourceTypeCode so that an isolated single digit value is acceptable, or a token with other csd attributes
+  # so that any controlled terminology can also be used.
+  AuditSourceTypeCodeContent =
   attribute code {
-    ## End-user display device, diagnostic device
-    "1" |                 
-    ## Data acquisition device or instrument
-    "2" |                 
-    ## Web Server process or thread
-    "3" |                 
-    ## Application Server process or thread
-    "4" |                
-    ## Database Server process or thread
-    "5" |                 
-    ## Security server, e.g., a domain controller
-    "6" |                
-    ## ISO level 1-3 network component
-    "7" |                 
-    ## ISO level 4-6 operating software
-    "8" |                
-    ## other
-    "9" |                 
-    ## other values are allowed if a codeSystemName is present
-    token },              
-  other-csd-attributes?,  ## If these are present, they define the meaning of code
+  ## End-user display device, diagnostic device
+  "1" |
+  ## Data acquisition device or instrument
+  "2" | 
+  ## Web Server process or thread
+  "3" | 
+  ## Application Server process or thread
+  "4" | 
+  ## Database Server process or thread
+  "5" | 
+  ## Security server, e.g., a domain controller
+  "6" | 
+  ## ISO level 1-3 network component
+  "7" | 
+  ## ISO level 4-6 operating software
+  "8" | 
+  ## other
+  "9" | 
+  token }, ## other values are allowed if a codeSystemName is present
+  other-csd-attributes? ## If these are present, they define the meaning of code
   
-  attribute AuditEnterpriseSiteID { token }?,
-  attribute AuditSourceID { token },
-  element AuditSourceTypeCode { token }*
-
-# Define ActiveParticipantType, used later
-
-ActiveParticipantContents =
+  
+  ActiveParticipantType =
   element RoleIDCode { CodedValueType }*,
-  element MediaIdentifier {
-    element MediaType { CodedValueType }
-  }?,
-  attribute UserID { text },
-  attribute AlternativeUserID { text }?,
-  attribute UserName { text }?,
-  attribute UserIsRequestor { xsd:boolean },
-  attribute NetworkAccessPointID { token }?,
+  element MediaIdentifier { 
+      element MediaType { CodedValueType }
+  }?, 
+  attribute UserID { xsd:string },
+  attribute AlternativeUserID { xsd:string }?,
+  attribute UserName { xsd:string }?,
+  attribute UserIsRequestor { xsd:boolean }, # declared as required by DICOM extension to RFC-3881 schema
+  attribute NetworkAccessPointID { xsd:string }?,
   attribute NetworkAccessPointTypeCode {
-    ## Machine Name, including DNS name
-    "1" |              
-    ## IP Address
-    "2" |              
-    ## Telephone Number
-    "3" |              
-    ## Email address
-    "4" |             
-    ## URI (user directory, HTTP-PUT, ftp, etc.)
-    "5" }?             
-# The BinaryValuePair is used in ParticipantObject descriptions to capture parameters.  
-# All values (even those that are normally plain text) are encoded as xsd:base64Binary.
-# This is to preserve details of encoding (e.g., nulls) and to protect against text
-# contents that contain XML fragments.  These are known attack points against applications,
-# so security logs can be expected to need to capture them without modification by the
-# audit encoding process.
-
-ValuePair =
-  # clarify the name
-  attribute type { token },
-  attribute value { xsd:base64Binary } # used to encode potentially binary, malformed XML text, etc.
-
-# Define ParticipantObjectIdentification, used later
-
-# Participant Object Description, used later
-
-DICOMObjectDescriptionContents =
+  ## Machine Name, including DNS name
+  "1" |
+  ## IP Address
+  "2" |
+  ## Telephone Number
+  "3" |
+  ## Email address (DICOM extension to RFC-3881 schema)
+  "4" |
+  ## URI (user directory, HTTP-PUT, ftp, etc.) (DICOM extension to RFC-3881 schema)
+  "5"
+  }?
+  
+  ParticipantObjectIdentificationType =
+  element ParticipantObjectIDTypeCode {
+  #    attribute code {
+  #      ##  Medical Record Number
+  #      "1" |
+  #      ## Patient Number
+  #      "2" |
+  #      ## Encounter Number
+  #      "3" |
+  #      ## Enrollee Number
+  #      "4" |
+  #      ## Social Security Number
+  #      "5" |
+  #      ## Account Number
+  #      "6" |
+  #      ## Guarantor Number
+  #      "7" |
+  #      ## Report Name
+  #      "8" |
+  #      ## Report Number
+  #      "9" |
+  #      ## Search Criteria
+  #      "10" |
+  #      ##  User Identifier
+  #      "11" |
+  #      ## URI
+  #      "12"
+  #    } | # other code values are allowed if a CodeSystem is specified by its name or OID
+  #    CodedValueType,
+  CodedValueType
+  },
+  (element ParticipantObjectName { xsd:string }
+  | element ParticipantObjectQuery { xsd:base64Binary })?,
+  element ParticipantObjectDetail { TypeValuePairType }*,
+  element ParticipantObjectDescription { ParticipantObjectDescriptionType },
+  attribute ParticipantObjectID { xsd:string },
+  attribute ParticipantObjectTypeCode {
+  ## Person
+  "1" |
+  ## System object
+  "2" |
+  ## Organization
+  "3" |
+  ## Other
+  "4"
+  }?,
+  attribute ParticipantObjectTypeCodeRole {
+  ## Patient
+  "1" |
+  ## Location
+  "2" |
+  ## Report
+  "3" |
+  ## Resource
+  "4" |
+  ## Master file
+  "5" |
+  ## User
+  "6" |
+  ## List
+  "7" |
+  ## Doctor
+  "8" |
+  ## Subscriber
+  "9" |
+  ## Guarantor
+  "10" |
+  ## Security User Entity
+  "11" |
+  ## Security User Group
+  "12" |
+  ## Security Resource
+  "13" |
+  ## Security Granualarity Definition
+  "14" |
+  ## Provider
+  "15" |
+  ## Report Destination
+  "16" |
+  ## Report Library
+  "17" |
+  ## Schedule
+  "18" |
+  ## Customer
+  "19" |
+  ## Job
+  "20" |
+  ## Job Stream
+  "21" |
+  ## Table
+  "22" |
+  ## Routing Criteria
+  "23" |
+  ## Query
+  "24"
+  }?,
+  attribute ParticipantObjectDataLifeCycle {
+  ## Origination / Creation
+  "1" |
+  ## Import / Copy from original 
+  "2" |
+  ## Amendment
+  "3" |
+  ## Verification
+  "4" |
+  ## Translation
+  "5" |
+  ## Access / Use
+  "6" |
+  ## De-identification
+  "7" |
+  ## Aggregation, summarization, derivation
+  "8" |
+  ## Report
+  "9" |
+  ## Export / Copy to target
+  "10" |
+  ## Disclosure
+  "11" |
+  ## Receipt of disclosure
+  "12" |
+  ## Archiving
+  "13" |
+  ## Logical deletion
+  "14" |
+  ## Permanent erasure / Physical destruction 
+  "15"
+  }?,
+  attribute ParticipantObjectSensitivity { xsd:string }?
+  
+  
+  ParticipantObjectDescriptionType =
   element MPPS {
-    attribute UID { token }       # OID pattern="[0-2]((\.0)|(\.[1-9][0-9]*))*"
+  attribute UID { OID }
   }*,
   element Accession {
-    attribute Number { token }
+  attribute Number { xsd:string }
   }*,
-  element SOPClass {              # SOP class for one study
-    element Instance {
-      attribute UID { token }     # OID pattern="[0-2]((\.0)|(\.[1-9][0-9]*))*"
-    }*,
-    attribute UID { token }?,     # OID pattern="[0-2]((\.0)|(\.[1-9][0-9]*))*"
-    attribute NumberOfInstances { xsd:integer }
-  },
+  element SOPClass {
+  element Instance {
+  attribute UID { OID }
+  }*,
+  attribute UID { OID },
+  attribute NumberOfInstances { xsd:int }?
+  }*,
   element ParticipantObjectContainsStudy {
-    element StudyIDs {
-      attribute UID { token }
-    }*
+  element StudyIDs {
+  attribute UID { OID }
+  }*
   },
-  element Encrypted { xsd:boolean }?,
-  element Anonymized { xsd:boolean }?
-
-ParticipantObjectIdentificationContents =
-  element ParticipantObjectIDTypeCode { CodedValueType },
-  (element ParticipantObjectName { token } |             # either a name or
-  element ParticipantObjectQuery { xsd:base64Binary }),  # a query ID field,
-  element ParticipantObjectDetail { ValuePair }*,   # optional details, these can be extensive
-                                                    # and large
-  element ParticipantObjectDescription { token }*,  # optional descriptive text
-  DICOMObjectDescriptionContents,                   # These are extensions made by DICOM to RFC-
-                                                    # 3881 schema for use describing DICOM objects
-  attribute ParticipantObjectID { token },          # mandatory ID
-  attribute ParticipantObjectTypeCode {             # optional type
-    ## Person
-    "1" | 
-    ## System object
-    "2" | 
-    ## Organization
-    "3" |
-    ## Other
-    "4"  
-  }?,
+  attribute Encrypted { xsd:boolean }?,
+  attribute Anonymized { xsd:boolean }?
   
-  attribute ParticipantObjectTypeCodeRole {          ## optional role
-    ## Patient
-    "1" |        
-    ## Location
-    "2" |         
-    ## Report
-    "3" |         
-    ## Resource
-    "4" |         
-    ## Master File
-    "5" |         
-    ## User
-    "6" |        
-    ## List
-    "7" |         
-    ## Doctor
-    "8" |         
-    ## Subscriber
-    "9" |         
-    ## guarantor
-    "10" |       
-    ## Security User Entity
-    "11" |        
-    ## Security User Group
-    "12" |        
-    ## Security Resource
-    "13" |        
-    ## Security Granulatiry Definition
-    "14" |       
-    ## Provider
-    "15" |        
-    ## Report Destination
-    "16" |        
-    ## Report Library
-    "17" |        
-    ## Schedule
-    "18" |        
-    ## Customer
-    "19" |       
-    ## Job
-    "20" |        
-    ## Job Stream
-    "21" |       
-    ## Table
-    "22" |        
-    ## Routing Criteria
-    "23" |        
-    ## Query
-    "24" }?,      
+  CodedValueType =
+  attribute csd-code { xsd:string },
+  other-csd-attributes
+  #  CodeSystem,
+  #  attribute displayName { xsd:string }?,
+  #  attribute originalText { xsd:string }? # Note: this corresponds to DICOM "Code Meaning"
   
-  attribute ParticipantObjectDataLifeCycle {          # optional life cycle stage
-    ## Origination, Creation
-    "1" |         
-    ## Import/ Copy
-    "2" |        
-    ## Amendment
-    "3" |         
-    ## Verification
-    "4" |        
-    ## Translation
-    "5" |         
-    ## Access/Use
-    "6" |         
-    ## De-identification
-    "7" |         
-    ## Aggregation, summarization, derivation
-    "8" |         
-    ## Report
-    "9" |        
-    ## Export
-    "10" |        
-    ## Disclosure
-    "11" |        
-    ## Receipt of Disclosure
-    "12" |        
-    ## Archiving
-    "13" |       
-    ## Logical deletion
-    "14" |        
-    ## Permanent erasure, physical destruction
-    "15" }?,      
+  TypeValuePairType =
+  attribute type { xsd:string },
+  attribute value { xsd:base64Binary }
   
-  attribute ParticipantObjectSensistity { token }?
+  #CodeSystem =
+  #  attribute codeSystem { OID }?,
+  #  attribute codeSystemName { xsd:string }?
   
-# The basic message
-message =
-  element AuditMessage {
-    (element EventIdentification { EventIdentificationContents }, # The event must be identified
-     element ActiveParticipant { ActiveParticipantContents }+, # It has one or more active
-                                                               # participants
-     element AuditSourceIdentification {                       # It is reported by one source
-       AuditSourceIdentificationContents
-     },
-     element ParticipantObjectIdentification {                 # It may have other objects involved
-       ParticipantObjectIdentificationContents
-     }*)
-  }
-
-# And finally the magic statement that message is the root of everything.
-start = message
+  other-csd-attributes =
+  attribute codeSystem { OID }?,       # OID pattern="[0-2]((\.0)|(\.[1-9][0-9]*))*"
+  attribute codeSystemName { xsd:string }?,        # This makes clear that codeSystemName is either an OID or String
+  attribute displayName { xsd:string }?,
+  attribute originalText { xsd:string }? # Note: this corresponds to DICOM "Code Meaning"
+  
+  OID = xsd:string { pattern = "[0-2]((\.0)|(\.[1-9][0-9]*))*" }
+  

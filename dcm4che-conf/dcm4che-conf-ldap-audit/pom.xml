@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.dcm4che</groupId>
     <artifactId>dcm4che-conf</artifactId>
-    <version>dcm4chee-arc-light-5.5.0</version>
+    <version>dcm4chee-arc-light-5.5.1</version>
   </parent>
   <artifactId>dcm4che-conf-ldap-audit</artifactId>
   <packaging>bundle</packaging>

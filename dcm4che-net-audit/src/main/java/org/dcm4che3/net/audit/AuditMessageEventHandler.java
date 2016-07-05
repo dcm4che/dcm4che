@@ -20,7 +20,7 @@ public class AuditMessageEventHandler implements EventHandler<AuditMessageEvent>
         try {
             event.getLogger().write(event.getLogger().timeStamp(),event.getMessage());
         } catch (Throwable e) {
-            LOG.error("could not send audit",e);
+            LOG.warn("could not send audit",e);
         }
     }
 }

@@ -39,6 +39,8 @@
 package org.dcm4che3.data;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.dcm4che3.data.Tag;
 
@@ -50,24 +52,30 @@ public class Code implements Serializable {
     private static final String NO_CODE_MEANING = "<none>";
 
     private static final long serialVersionUID = 8807594793107889446L;
+    
+    public enum CodeValueType { SHORT, LONG, URN }; 
 
     private String codeValue;
     private String codingSchemeDesignator;
     private String codingSchemeVersion;
     private String codeMeaning;
+    private CodeValueType codeValueType;
 
     public Code(String codeValue, String codingSchemeDesignator,
             String codingSchemeVersion, String codeMeaning) {
+        this(codeValue, codingSchemeDesignator, codingSchemeVersion, codeMeaning,
+        		guessCodeValueType(codeValue));
+    }
+
+    public Code(String codeValue, String codingSchemeDesignator,
+            String codingSchemeVersion, String codeMeaning, CodeValueType codeValueType) {
         if (codeValue == null)
             throw new NullPointerException("Missing Code Value");
-        if (codingSchemeDesignator == null)
-            throw new NullPointerException("Missing Coding Scheme Designator");
-        if (codeMeaning == null)
-            throw new NullPointerException("Missing Code Meaning");
+        if (codeValueType == null)
+            throw new NullPointerException("Missing Code Value Type");
         this.codeValue = codeValue;
-        this.codingSchemeDesignator = codingSchemeDesignator;
-        this.codingSchemeVersion = codingSchemeVersion;
-        this.codeMeaning = codeMeaning;
+        init(codingSchemeDesignator, codingSchemeVersion, codeMeaning);
+        this.codeValueType = codeValueType;
     }
 
     public Code(String s) {
@@ -90,6 +98,7 @@ public class Code implements Serializable {
             this.codingSchemeDesignator = trimsubstring(s, endVal+1, endScheme);
             this.codingSchemeVersion = trimsubstring(s, endScheme+1, endVersion);
         }
+        codeValueType = guessCodeValueType(codeValue);
     }
 
     private String trimsubstring(String s, int start, int end) {
@@ -102,10 +111,23 @@ public class Code implements Serializable {
     }
 
     public Code(Attributes item) {
-        this(item.getString(Tag.CodeValue, null),
-             item.getString(Tag.CodingSchemeDesignator, null),
-             item.getString(Tag.CodingSchemeVersion, null),
+        init(item.getString(Tag.CodingSchemeDesignator, null), item.getString(Tag.CodingSchemeVersion, null),
              item.getString(Tag.CodeMeaning, NO_CODE_MEANING));
+        codeValue = item.getString(Tag.CodeValue, null);
+        if (codeValue == null) {
+        	codeValue = item.getString(Tag.LongCodeValue, null);
+        	if (codeValue == null) {
+        		codeValue = item.getString(Tag.URNCodeValue, null);
+        		if (codeValue == null) {
+        			throw new NullPointerException("Missing Code Value");
+        		}
+        		codeValueType = CodeValueType.URN;
+        	} else {
+        		codeValueType = CodeValueType.LONG;
+        	}
+        } else {
+        	codeValueType = Code.CodeValueType.SHORT;
+        }
     }
 
     protected Code() {} // needed for JPA
@@ -114,7 +136,11 @@ public class Code implements Serializable {
         return codeValue;
     }
 
-    public String getCodingSchemeDesignator() {
+    public CodeValueType getCodeValueType() {
+		return codeValueType;
+	}
+
+	public String getCodingSchemeDesignator() {
         return codingSchemeDesignator;
     }
 
@@ -176,7 +202,17 @@ public class Code implements Serializable {
 
     public Attributes toItem() {
         Attributes codeItem = new Attributes(codingSchemeVersion != null ? 4 : 3);
-        codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
+        switch (codeValueType) {
+        case SHORT:
+        	codeItem.setString(Tag.CodeValue, VR.SH, codeValue);
+        	break;
+        case LONG:
+        	codeItem.setString(Tag.LongCodeValue, VR.UC, codeValue);
+        	break;
+        case URN:
+        	codeItem.setString(Tag.URNCodeValue, VR.UR, codeValue);
+        }
+        
         codeItem.setString(Tag.CodingSchemeDesignator, VR.SH, codingSchemeDesignator);
         if (codingSchemeVersion != null)
             codeItem.setString(Tag.CodingSchemeVersion, VR.SH, codingSchemeVersion);
@@ -184,4 +220,33 @@ public class Code implements Serializable {
         return codeItem ;
     }
 
+    private void init(String codingSchemeDesignator, String codingSchemeVersion, String codeMeaning) {
+        if (codingSchemeDesignator == null)
+            throw new NullPointerException("Missing Coding Scheme Designator");
+        if (codeMeaning == null)
+            throw new NullPointerException("Missing Code Meaning");
+        this.codingSchemeDesignator = codingSchemeDesignator;
+        this.codingSchemeVersion = codingSchemeVersion;
+        this.codeMeaning = codeMeaning;
+    }
+
+	private static CodeValueType guessCodeValueType(String codeValue) {
+		return codeValue.length() <= 16 ? CodeValueType.SHORT : 
+			isURN(codeValue) ? CodeValueType.URN : CodeValueType.LONG;
+	}
+
+	private static boolean isURN(String codeValue) {
+    	if (codeValue.indexOf(':') == -1) {
+    		return false;
+    	}
+    	if (codeValue.startsWith("urn:")) {
+    		return true;
+    	}
+    	try {
+			new URL(codeValue);
+			return true;
+		} catch (MalformedURLException e) {
+			return false;
+		}
+    }
 }

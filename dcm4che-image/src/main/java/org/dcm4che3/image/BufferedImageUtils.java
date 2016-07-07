@@ -65,27 +65,11 @@ public class BufferedImageUtils {
             return ((PaletteColorModel) cm).convertToIntDiscrete(raster);
 
         BufferedImage intRGB = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-        if (intRGB.getColorModel().getColorSpace().equals(cm.getColorSpace())) {
-            int[] intData = ((DataBufferInt) intRGB.getRaster().getDataBuffer()).getData();
-            DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-            if (dataBuffer.getNumBanks() == 3) {
-                byte[] r = dataBuffer.getData(0);
-                byte[] g = dataBuffer.getData(1);
-                byte[] b = dataBuffer.getData(2);
-                for (int i = 0; i < intData.length; i++)
-                    intData[i] = ((r[i] & 0xff) << 16) | ((g[i] & 0xff) << 8) | (b[i] & 0xff);
-            } else {
-                byte[] b = dataBuffer.getData();
-                for (int i = 0, j = 0; i < intData.length; i++)
-                    intData[i] = ((b[j++] & 0xff) << 16) | ((b[j++] & 0xff) << 8) | (b[j++] & 0xff);
-            }
-        } else {
-            Graphics graphics = intRGB.getGraphics();
-            try {
-                graphics.drawImage(bi, 0, 0, null);
-            } finally {
-                graphics.dispose();
-            }
+        Graphics graphics = intRGB.getGraphics();
+        try {
+            graphics.drawImage(bi, 0, 0, null);
+        } finally {
+            graphics.dispose();
         }
         return intRGB;
     }

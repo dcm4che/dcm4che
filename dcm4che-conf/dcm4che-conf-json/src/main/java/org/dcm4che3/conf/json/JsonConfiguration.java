@@ -523,6 +523,7 @@ public class JsonConfiguration {
             writer.writeStartObject("dcmNetworkAE");
             writer.writeNotEmpty("dcmAcceptedCallingAETitle", ae.getAcceptedCallingAETitles());
             writer.writeNotEmpty("dcmOtherAETitle", ae.getOtherAETitles());
+            writer.writeNotEmpty("dcmMasqueradeCallingAETitle", ae.getMasqueradeCallingAETitles());
             writer.writeEnd();
             for (JsonConfigurationExtension ext : extensions)
                 ext.storeTo(ae, writer);
@@ -586,6 +587,9 @@ public class JsonConfiguration {
                                 break;
                             case "dcmOtherAETitle":
                                 ae.setOtherAETitles(reader.stringArray());
+                                break;
+                            case "dcmMasqueradeCallingAETitle":
+                                ae.setMasqueradeCallingAETitles(reader.stringArray());
                                 break;
                             default:
                                 reader.skipUnknownProperty();

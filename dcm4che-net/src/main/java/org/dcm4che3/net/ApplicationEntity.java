@@ -89,6 +89,7 @@ public class ApplicationEntity implements Serializable {
     private Boolean installed;
     private final LinkedHashSet<String> acceptedCallingAETs = new LinkedHashSet<>();
     private final LinkedHashSet<String> otherAETs = new LinkedHashSet<>();
+    private final LinkedHashMap<String, String> masqueradeCallingAETs = new LinkedHashMap<>();
     private final List<Connection> conns = new ArrayList<>(1);
     private final LinkedHashMap<String, TransferCapability> scuTCs = new LinkedHashMap<>();
     private final LinkedHashMap<String, TransferCapability> scpTCs = new LinkedHashMap<>();
@@ -265,6 +266,40 @@ public class ApplicationEntity implements Serializable {
 
     public boolean isOtherAETitle(String aet) {
         return otherAETs.contains(aet);
+    }
+
+    public String[] getMasqueradeCallingAETitles() {
+        String[] aets = new String[masqueradeCallingAETs.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : masqueradeCallingAETs.entrySet()) {
+            aets[i] = entry.getKey().equals("*")
+                    ? entry.getValue()
+                    : '[' + entry.getKey() + ']' + entry.getValue();
+        }
+        return aets;
+    }
+
+    public void setMasqueradeCallingAETitles(String... aets) {
+        masqueradeCallingAETs.clear();
+        for (String name : aets) {
+            if (aet.charAt(0) == '[') {
+                int end = aet.indexOf(']');
+                if (end > 0)
+                    masqueradeCallingAETs.put(aet.substring(1,end), aet.substring(end+1));
+            } else {
+                masqueradeCallingAETs.put("*", aet);
+            }
+        }
+    }
+
+    public String getCallingAETitle(String calledAET) {
+        String callingAET = masqueradeCallingAETs.get(calledAET);
+        if (callingAET == null) {
+            callingAET = masqueradeCallingAETs.get("*");
+            if (callingAET == null)
+                callingAET = aet;
+        }
+        return callingAET;
     }
 
     /**
@@ -543,7 +578,7 @@ public class ApplicationEntity implements Serializable {
         checkDevice();
         checkInstalled();
         if (rq.getCallingAET() == null)
-            rq.setCallingAET(aet);
+            rq.setCallingAET(getCallingAETitle(rq.getCalledAET()));
         rq.setMaxOpsInvoked(local.getMaxOpsInvoked());
         rq.setMaxOpsPerformed(local.getMaxOpsPerformed());
         rq.setMaxPDULength(local.getReceivePDULength());
@@ -641,17 +676,21 @@ public class ApplicationEntity implements Serializable {
     }
 
     protected void setApplicationEntityAttributes(ApplicationEntity from) {
-        setDescription(from.description);
-        setVendorData(from.vendorData);
-        setApplicationClusters(from.applicationClusters);
-        setPreferredCalledAETitles(from.prefCalledAETs);
-        setPreferredCallingAETitles(from.prefCallingAETs);
-        setAcceptedCallingAETitles(from.getAcceptedCallingAETitles());
-        setOtherAETitles(from.getOtherAETitles());
-        setSupportedCharacterSets(from.supportedCharacterSets);
-        setAssociationAcceptor(from.acceptor);
-        setAssociationInitiator(from.initiator);
-        setInstalled(from.installed);
+        description = from.description;
+        vendorData = from.vendorData;
+        applicationClusters = from.applicationClusters;
+        prefCalledAETs = from.prefCalledAETs;
+        prefCallingAETs = from.prefCallingAETs;
+        acceptedCallingAETs.clear();
+        acceptedCallingAETs.addAll(from.acceptedCallingAETs);
+        otherAETs.clear();
+        otherAETs.addAll(from.otherAETs);
+        masqueradeCallingAETs.clear();
+        masqueradeCallingAETs.putAll(from.masqueradeCallingAETs);
+        supportedCharacterSets = from.supportedCharacterSets;
+        acceptor = from.acceptor;
+        initiator = from.initiator;
+        installed = from.installed;
     }
 
     public void addAEExtension(AEExtension ext) {

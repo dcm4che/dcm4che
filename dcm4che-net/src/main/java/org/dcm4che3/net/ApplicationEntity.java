@@ -281,7 +281,7 @@ public class ApplicationEntity implements Serializable {
 
     public void setMasqueradeCallingAETitles(String... aets) {
         masqueradeCallingAETs.clear();
-        for (String name : aets) {
+        for (String aet : aets) {
             if (aet.charAt(0) == '[') {
                 int end = aet.indexOf(']');
                 if (end > 0)

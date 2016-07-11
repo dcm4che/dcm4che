@@ -37,31 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che3.tool.qidors;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import javax.json.Json;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
@@ -80,6 +55,23 @@ import org.dcm4che3.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import javax.json.Json;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 /**
  * QIDO-RS client
@@ -280,14 +272,15 @@ public class QidoRS {
         }
     }
 
-public static String qido(QidoRS main, boolean cli) throws IOException {
-    URL newUrl;
-    if(cli)
-        newUrl = new URL(addRequestParametersCLI(main, main.getUrl()));
-    else
-        newUrl = new URL(addRequestParameters(main, main.getUrl()));
-    return sendRequest(newUrl, main);
-}
+    public static String qido(QidoRS main, boolean cli) throws IOException {
+        URL newUrl;
+        if (cli)
+            newUrl = new URL(addRequestParametersCLI(main, main.getUrl()));
+        else
+            newUrl = new URL(addRequestParameters(main, main.getUrl()));
+        return sendRequest(newUrl, main);
+    }
+
     private static String sendRequest(URL url, final QidoRS main) throws IOException {
         
         LOG.info("URL: {}", url);
@@ -332,7 +325,7 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
 
     }
 
-    private static String addRequestParametersCLI(final QidoRS main, String url) {
+    private static String addRequestParametersCLI(final QidoRS main, String url) throws UnsupportedEncodingException {
         
         if(main.includeField!=null) {
             for(String field : main.getIncludeField())
@@ -364,7 +357,7 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
         return url;
     }
 
-    private static String addRequestParameters(final QidoRS main, String url) {
+    private static String addRequestParameters(final QidoRS main, String url) throws UnsupportedEncodingException {
         
         ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
 
@@ -450,14 +443,13 @@ public static String qido(QidoRS main, boolean cli) throws IOException {
         }
     }
 
-    private static String addParam(String url, String key, String field) {
-
-        if(url.contains("?"))
-                return url+="&"+key+"="+field;
+    private static String addParam(String url, String key, String field) throws UnsupportedEncodingException {
+        if (url.contains("?"))
+            return url += "&" + key + "=" + URLEncoder.encode(field, "UTF-8");
         else
-            return url+="?"+key+"="+field;
-        
+            return url += "?" + key + "=" + URLEncoder.encode(field, "UTF-8");
     }
+
     private enum ParserType {
         XML {
             @Override

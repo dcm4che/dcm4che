@@ -23,7 +23,7 @@ import java.util.*;
  *
  * @author Roman K
  */
-public class ReferenceIndexingDecorator extends DelegatingConfiguration {
+public class ReferenceIndexingDecorator extends DelegatingConfiguration implements ReferablesIndex {
 
     static PathPattern referencePattern = new PathPattern(Configuration.REFERENCE_BY_UUID_PATTERN);
 
@@ -37,6 +37,11 @@ public class ReferenceIndexingDecorator extends DelegatingConfiguration {
     public ReferenceIndexingDecorator(Configuration delegate, Map<String, Path> uuidToSimplePathCache) {
         super(delegate);
         uuidToReferableIndex = uuidToSimplePathCache;
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        return uuidToReferableIndex.get(uuid);
     }
 
     protected void removeOldReferablesFromIndex(Object oldConfigurationNode) {

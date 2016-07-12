@@ -64,7 +64,8 @@ public enum DicomPath {
     DeviceNameByUUID,
     DeviceUUIDByAnyUUID,
     DeviceByNameForWrite,
-    DeviceByNameForRead;
+    DeviceByNameForRead,
+    AETransferCapabilities;
 
     public static final Map<DicomPath, String> PATHS = new HashMap<DicomPath, String>();
     public static final Map<DicomPath, PathPattern> PATH_PATTERNS = new HashMap<DicomPath, PathPattern>();
@@ -94,6 +95,7 @@ public enum DicomPath {
         // Transfer capabilities
         PATHS.put(/*****************/TCGroups, "/dicomConfigurationRoot/globalConfiguration/dcmTransferCapabilities");
         PATHS.put(AllTCsOfAllAEsWithTCGroupExt, "dicomNetworkAE/*[aeExtensions/TCGroupConfigAEExtension]/dcmTransferCapability");
+        PATHS.put(/****/AETransferCapabilities, "/dcmTransferCapability");
 
 
         for (Map.Entry<DicomPath, String> entry : PATHS.entrySet()) {

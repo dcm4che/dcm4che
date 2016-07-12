@@ -15,11 +15,11 @@ import java.util.*;
 public class TCConfiguration {
 
     @ConfigurableProperty
-    public Map<String, TCGroup> transferCapabilityGroups = new TreeMap<String, TCGroup>();
+    private Map<String, TCGroup> transferCapabilityGroups = new TreeMap<String, TCGroup>();
 
     /**
      * Persists default group config
-     * Deprecated. Do not us it in upgrade scripts.
+     * Deprecated. Do not use it in upgrade scripts.
      * @param config
      * @throws ConfigurationException
      */

@@ -43,6 +43,7 @@ package org.dcm4che3.conf.core.storage;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
 import org.dcm4che3.conf.core.Nodes;
+import org.dcm4che3.conf.core.api.Path;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,6 +96,11 @@ public class InMemoryConfiguration implements Configuration {
     @Override
     public void removeNode(String path) throws ConfigurationException {
         Nodes.removeNodes(getConfigurationRoot(), path);
+    }
+
+    @Override
+    public Path getPathByUUID(String uuid) {
+        throw new ConfigurationException("Unexpected error - uuid index is missing");
     }
 
     @Override

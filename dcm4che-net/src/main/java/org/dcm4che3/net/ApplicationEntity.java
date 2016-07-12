@@ -43,6 +43,7 @@ import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.Tag;
 import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.net.pdu.*;
 import org.dcm4che3.util.StringUtils;
@@ -145,7 +146,9 @@ public class ApplicationEntity implements Serializable {
             label = "Aliases (alternative AE titles)")
     private List<String> AETitleAliases = new ArrayList<String>();
 
+    @Parent
     private Device device;
+
     private transient DimseRQHandler dimseRQHandler;
 
     public ApplicationEntity() {

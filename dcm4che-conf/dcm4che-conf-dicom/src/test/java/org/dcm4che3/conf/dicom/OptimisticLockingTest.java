@@ -48,7 +48,7 @@ import org.dcm4che3.conf.core.api.ConfigurableClass;
 import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.ConfigurableProperty.ConfigurablePropertyType;
 import org.dcm4che3.conf.core.api.Configuration;
-import org.dcm4che3.conf.core.api.internal.AnnotatedConfigurableProperty;
+import org.dcm4che3.conf.core.api.internal.ConfigProperty;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
 import org.dcm4che3.conf.core.olock.OLockCopyFilter;
 import org.dcm4che3.conf.core.olock.OLockHashCalcFilter;
@@ -197,7 +197,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
         Map<String, Object> oldNode = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
 
-        ConfigNodeTraverser.traverseNodeTypesafe(oldNode, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(oldNode, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(oldNode, new OLockHashCalcFilter());
 
         // consistent?
@@ -209,7 +209,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         Map<String, Object> newNode = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
-        ConfigNodeTraverser.traverseNodeTypesafe(newNode, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(newNode, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(newNode, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("node changed",
@@ -230,7 +230,7 @@ public class OptimisticLockingTest extends HashBasedOptimisticLockingConfigurati
 
         Map<String, Object> nodeWithMapChanged = beanVitalizer.createConfigNodeFromInstance(partyPlan);
 
-        ConfigNodeTraverser.traverseNodeTypesafe(nodeWithMapChanged, new AnnotatedConfigurableProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
+        ConfigNodeTraverser.traverseNodeTypesafe(nodeWithMapChanged, new ConfigProperty(PartyPlan.class), new ArrayList<Class>(), new HashMarkingTypesafeNodeFilter());
         ConfigNodeTraverser.traverseMapNode(nodeWithMapChanged, new OLockHashCalcFilter());
 
         Assert.assertNotEquals("parent should change",

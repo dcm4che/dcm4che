@@ -40,6 +40,7 @@
 
 package org.dcm4che3.conf.core.genericextensions;
 
+import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 /**
@@ -47,9 +48,9 @@ import org.dcm4che3.conf.core.api.SetParentIntoField;
  */
 
 
-@SetParentIntoField("parent")
 public class MyClassExtension {
 
+    @Parent
     private ConfigClassWithExtensions parent;
 
     public void setParent(ConfigClassWithExtensions parent) {

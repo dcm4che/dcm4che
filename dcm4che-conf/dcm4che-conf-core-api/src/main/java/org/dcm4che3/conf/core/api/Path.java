@@ -58,14 +58,14 @@ public class Path implements Serializable {
 
     public static final Path ROOT = new Path();
 
-    final List<Object> pathItems;
+    private final List<Object> pathItems;
     private transient String simpleEscapedXPath;
 
     public Path() {
         pathItems = Collections.unmodifiableList(new ArrayList<Object>());
     }
 
-    public Path(String... pathItems) {
+    public Path(Object... pathItems) {
 
         ArrayList<Object> strings = new ArrayList<Object>(pathItems.length);
         Collections.addAll(strings, pathItems);
@@ -110,6 +110,10 @@ public class Path implements Serializable {
         }
 
         return new Path(newItems);
+    }
+
+    public int size() {
+        return getPathItems().size();
     }
 
     public String toSimpleEscapedXPath() {

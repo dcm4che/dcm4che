@@ -39,43 +39,25 @@
  */
 package org.dcm4che3.conf.dicom;
 
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.WeakHashMap;
-
 import org.dcm4che3.audit.EventID;
 import org.dcm4che3.audit.EventTypeCode;
 import org.dcm4che3.audit.RoleIDCode;
 import org.dcm4che3.conf.api.ConfigurationAlreadyExistsException;
 import org.dcm4che3.conf.api.ConfigurationNotFoundException;
-import org.dcm4che3.conf.api.DicomConfiguration;
 import org.dcm4che3.conf.api.TCConfiguration;
 import org.dcm4che3.conf.api.TransferCapabilityConfigExtension;
 import org.dcm4che3.conf.api.internal.DicomConfigurationManager;
 import org.dcm4che3.conf.core.DefaultBeanVitalizer;
+import org.dcm4che3.conf.core.DefaultTypeSafeConfiguration;
 import org.dcm4che3.conf.core.Nodes;
 import org.dcm4che3.conf.core.adapters.NullToNullDecorator;
 import org.dcm4che3.conf.core.api.BatchRunner.Batch;
-import org.dcm4che3.conf.core.api.ConfigurableClass;
-import org.dcm4che3.conf.core.api.ConfigurableProperty;
 import org.dcm4che3.conf.core.api.Configuration;
 import org.dcm4che3.conf.core.api.ConfigurationException;
-import org.dcm4che3.conf.core.api.LDAP;
+import org.dcm4che3.conf.core.api.TypeSafeConfiguration;
 import org.dcm4che3.conf.core.api.internal.BeanVitalizer;
-import org.dcm4che3.conf.core.api.internal.ConfigurationManager;
-import org.dcm4che3.conf.dicom.adapters.AttributeFormatTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.AuditSimpleTypeAdapters;
-import org.dcm4che3.conf.dicom.adapters.CodeTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.DicomReferenceHandlerAdapter;
-import org.dcm4che3.conf.dicom.adapters.IssuerTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.PropertyTypeAdapter;
-import org.dcm4che3.conf.dicom.adapters.ValueSelectorTypeAdapter;
+import org.dcm4che3.conf.core.api.internal.ConfigTypeAdapter;
+import org.dcm4che3.conf.dicom.adapters.*;
 import org.dcm4che3.data.Code;
 import org.dcm4che3.data.Issuer;
 import org.dcm4che3.data.ValueSelector;
@@ -86,6 +68,8 @@ import org.dcm4che3.util.AttributesFormat;
 import org.dcm4che3.util.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * @author Roman K
@@ -99,12 +83,22 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     /**
      * see preventDeviceModifications(org.dcm4che3.net.Device)
      */
-    private Map<Device, Object> readOnlyDevices = Collections.synchronizedMap(new WeakHashMap<Device, Object>());
+    private final Map<Device, Object> readOnlyDevices = Collections.synchronizedMap(new WeakHashMap<Device, Object>());
 
-    Configuration config;
-    private BeanVitalizer vitalizer;
+    protected final Configuration lowLevelConfig;
+    private final BeanVitalizer vitalizer;
 
     private final Map<Class, List<Class>> extensionsByClass;
+    private final TypeSafeConfiguration<DicomConfigurationRoot> config;
+
+    public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass, Map<Class, ConfigTypeAdapter> customAdapters) {
+        this(configurationStorage, extensionsByClass);
+
+        for (Map.Entry<Class, ConfigTypeAdapter> classListEntry : customAdapters.entrySet()) {
+            vitalizer.registerCustomConfigTypeAdapter(classListEntry.getKey(), classListEntry.getValue());
+        }
+
+    }
 
     /**
      * Returns a list of registered extensions for a specified base extension class
@@ -125,27 +119,25 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         return list;
     }
 
-    public CommonDicomConfiguration(Configuration configurationStorage, Map<Class, List<Class>> extensionsByClass) {
-        this.config = configurationStorage;
+    public CommonDicomConfiguration(Configuration configStorage, Map<Class, List<Class>> extensionsByClass) {
+
+        config = new DefaultTypeSafeConfiguration<DicomConfigurationRoot>(
+                configStorage,
+                DicomConfigurationRoot.class,
+                extensionsByClass
+        );
+
+        this.lowLevelConfig = configStorage;
         this.extensionsByClass = extensionsByClass;
 
+        vitalizer = config.getVitalizer();
 
-        DefaultBeanVitalizer defaultBeanVitalizer = createDefaultDicomVitalizer();
-
-        // register reference handler
-        defaultBeanVitalizer.setReferenceTypeAdapter(new NullToNullDecorator(new DicomReferenceHandlerAdapter(defaultBeanVitalizer, configurationStorage)));
-
-        // register DicomConfiguration context
-        defaultBeanVitalizer.registerContext(DicomConfiguration.class, this);
-        defaultBeanVitalizer.registerContext(ConfigurationManager.class, this);
-
-
-        this.vitalizer = defaultBeanVitalizer;
+        addCustomAdapters(vitalizer);
 
         // quick init
         try {
             if (!configurationExists()) {
-                config.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), null);
+                lowLevelConfig.persistNode(DicomPath.ConfigRoot.path(), createInitialConfigRootNode(), null);
 
             }
         } catch (ConfigurationException e) {
@@ -153,9 +145,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         }
     }
 
-    public static DefaultBeanVitalizer createDefaultDicomVitalizer() {
-        DefaultBeanVitalizer defaultBeanVitalizer = new DefaultBeanVitalizer();
-
+    public static void addCustomAdapters(BeanVitalizer defaultBeanVitalizer) {
 
         // register DICOM type adapters
         defaultBeanVitalizer.registerCustomConfigTypeAdapter(AttributesFormat.class, new NullToNullDecorator(new AttributeFormatTypeAdapter()));
@@ -168,8 +158,6 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         defaultBeanVitalizer.registerCustomConfigTypeAdapter(EventTypeCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventTypeCodeAdapter()));
         defaultBeanVitalizer.registerCustomConfigTypeAdapter(EventID.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.EventIDTypeAdapter()));
         defaultBeanVitalizer.registerCustomConfigTypeAdapter(RoleIDCode.class, new NullToNullDecorator(new AuditSimpleTypeAdapters.RoleIDCodeTypeAdapter()));
-
-        return defaultBeanVitalizer;
     }
 
     protected HashMap<String, Object> createInitialConfigRootNode() {
@@ -184,86 +172,25 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
+    public TypeSafeConfiguration<DicomConfigurationRoot> getTypeSafeConfiguration() {
+        return config;
+    }
+
+    @Override
     public boolean configurationExists() throws ConfigurationException {
-        return config.nodeExists(DicomPath.ConfigRoot.path());
+        return lowLevelConfig.nodeExists(DicomPath.ConfigRoot.path());
     }
 
     @Override
     public boolean purgeConfiguration() throws ConfigurationException {
         if (!configurationExists()) return false;
-        config.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), DicomConfigurationRootNode.class);
+        lowLevelConfig.persistNode(DicomPath.ConfigRoot.path(), new HashMap<String, Object>(), null);
         return true;
     }
 
     @Override
     public void preventDeviceModifications(Device d) {
         readOnlyDevices.put(d, true);
-    }
-
-    @LDAP(objectClasses = "hl7UniqueApplicationName", distinguishingField = "hl7ApplicationName")
-    @ConfigurableClass
-    static class HL7UniqueAppRegistryItem {
-
-        @ConfigurableProperty(name = "hl7ApplicationName")
-        String name;
-
-
-        public HL7UniqueAppRegistryItem() {
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-    }
-
-    @LDAP(objectClasses = "dicomUniqueAETitle", distinguishingField = "dicomAETitle")
-    @ConfigurableClass
-    public static class AETitleItem {
-        public AETitleItem(String aeTitle) {
-            this.aeTitle = aeTitle;
-        }
-
-        @ConfigurableProperty(name = "dicomAETitle")
-        String aeTitle;
-
-        public String getAeTitle() {
-            return aeTitle;
-        }
-
-
-        public void setAeTitle(String aeTitle) {
-            this.aeTitle = aeTitle;
-        }
-
-    }
-
-    @LDAP(objectClasses = "dicomConfigurationRoot")
-    @ConfigurableClass
-    public static class DicomConfigurationRootNode {
-
-        @LDAP(
-                overriddenName = "Devices",
-                objectClasses = "dicomDevicesRoot"
-        )
-        @ConfigurableProperty(name = "dicomDevicesRoot")
-        Map<String, Device> devices;
-
-
-
-
-        public Map<String, Device> getDevices() {
-            return devices;
-        }
-
-        public void setDevices(Map<String, Device> devices) {
-            this.devices = devices;
-        }
-
     }
 
     @Override
@@ -281,10 +208,10 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         if (aet == null) throw new IllegalArgumentException("Requested AE's title cannot be null");
 
-        Iterator<?> search = config.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
+        Iterator<?> search = lowLevelConfig.search(DicomPath.DeviceNameByAEName.set("aeName", aet).path());
 
         if (!search.hasNext()) {
-            search = config.search(DicomPath.DeviceNameByAENameAlias.set("aeNameAlias", aet).path());
+            search = lowLevelConfig.search(DicomPath.DeviceNameByAENameAlias.set("aeNameAlias", aet).path());
 
             if (!search.hasNext())
                 throw new ConfigurationNotFoundException("AE '" + aet + "' not found");
@@ -307,7 +234,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         if (uuid == null) throw new IllegalArgumentException("Requested AE's uuid cannot be null");
 
-        Iterator search = config.search(DicomPath.DeviceNameByAEUUID.set("aeUUID", uuid).path());
+        Iterator search = lowLevelConfig.search(DicomPath.DeviceNameByAEUUID.set("aeUUID", uuid).path());
 
         try {
             String deviceNameNode = (String) search.next();
@@ -330,7 +257,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     public Device findDeviceByUUID(String uuid) throws ConfigurationException {
         if (uuid == null) throw new IllegalArgumentException("Requested Device's uuid cannot be null");
 
-        Iterator search = config.search(DicomPath.DeviceNameByUUID.set("deviceUUID", uuid).path());
+        Iterator search = lowLevelConfig.search(DicomPath.DeviceNameByUUID.set("deviceUUID", uuid).path());
 
         try {
             String deviceNameNode = (String) search.next();
@@ -345,7 +272,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         if (name == null) throw new IllegalArgumentException("Requested device name cannot be null");
 
         try {
-            Object deviceConfigurationNode = config.getConfigurationNode(deviceRef(name), Device.class);
+            Object deviceConfigurationNode = lowLevelConfig.getConfigurationNode(deviceRef(name), Device.class);
             if (deviceConfigurationNode == null)
                 throw new ConfigurationNotFoundException("Device " + name + " not found");
 
@@ -369,7 +296,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public String[] listDeviceNames() throws ConfigurationException {
-        Iterator search = config.search(DicomPath.AllDeviceNames.path());
+        Iterator search = lowLevelConfig.search(DicomPath.AllDeviceNames.path());
         List<String> deviceNames = null;
         try {
             deviceNames = new ArrayList<String>();
@@ -385,7 +312,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     public List<String> listAllAETitles() throws ConfigurationException {
         List<String> aeNames = new ArrayList<String>();
         try {
-            Iterator search = config.search(DicomPath.AllAETitles.path());
+            Iterator search = lowLevelConfig.search(DicomPath.AllAETitles.path());
             while (search.hasNext())
                 aeNames.add((String) search.next());
         } catch (Exception e) {
@@ -400,7 +327,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         if (readOnlyDevices.containsKey(device)) handleReadOnlyDeviceModification();
 
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
-        if (config.nodeExists(deviceRef(device.getDeviceName())))
+        if (lowLevelConfig.nodeExists(deviceRef(device.getDeviceName())))
             throw new ConfigurationAlreadyExistsException("Device " + device.getDeviceName() + " already exists");
         // otherwise it is the same as merge
         merge(device);
@@ -415,7 +342,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         // create exception to log the stacktrace
         ConfigurationException exception = new ConfigurationException();
 
-        log.warn(message,exception);
+        log.warn(message, exception);
     }
 
     @Override
@@ -425,7 +352,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
         if (device.getDeviceName() == null) throw new ConfigurationException("The name of the device must not be null");
         Map<String, Object> configNode = createDeviceConfigNode(device);
-        config.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);
+        lowLevelConfig.persistNode(deviceRef(device.getDeviceName()), configNode, Device.class);
     }
 
     protected Map<String, Object> createDeviceConfigNode(Device device) throws ConfigurationException {
@@ -441,7 +368,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public void removeDevice(String name) throws ConfigurationException {
-        config.removeNode(deviceRef(name));
+        lowLevelConfig.removeNode(deviceRef(name));
     }
 
 
@@ -451,28 +378,13 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
     }
 
     @Override
-    public void persistCertificates(String ref, X509Certificate... certs) throws ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
-    public void removeCertificates(String ref) throws ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
-    public X509Certificate[] findCertificates(String dn) throws ConfigurationException {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
     public void close() {
 
     }
 
     @Override
     public void sync() throws ConfigurationException {
-        config.refreshNode(DicomPath.ConfigRoot.path());
+        lowLevelConfig.refreshNode(DicomPath.ConfigRoot.path());
     }
 
     @Override
@@ -493,12 +405,11 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
             };
         }
 
-
-        try {
-            return (T) this;
-        } catch (ClassCastException e) {
+        if (!clazz.isAssignableFrom(this.getClass())) {
             throw new IllegalArgumentException("Cannot find a configuration extension for class " + clazz.getName());
         }
+
+        return (T) this;
     }
 
     @Override
@@ -509,18 +420,18 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
 
     @Override
     public Configuration getConfigurationStorage() {
-        return config;
+        return lowLevelConfig;
     }
 
     @Override
     public void persistTransferCapabilityConfig(TCConfiguration tcConfig) throws ConfigurationException {
         Map<String, Object> configNode = vitalizer.createConfigNodeFromInstance(tcConfig);
-        config.persistNode(DicomPath.TCGroups.path(), configNode, TCConfiguration.class);
+        lowLevelConfig.persistNode(DicomPath.TCGroups.path(), configNode, TCConfiguration.class);
     }
 
     @Override
     public TCConfiguration getTransferCapabilityConfig() throws ConfigurationException {
-        Map<String, Object> configurationNode = (Map<String, Object>) config.getConfigurationNode(DicomPath.TCGroups.path(), TCConfiguration.class);
+        Map<String, Object> configurationNode = (Map<String, Object>) lowLevelConfig.getConfigurationNode(DicomPath.TCGroups.path(), TCConfiguration.class);
 
         if (configurationNode == null)
             return new TCConfiguration();
@@ -535,7 +446,7 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         /*
          * Use the batch support of underlying configuration storage to execute batch
          */
-        config.runBatch(new Batch() {
+        lowLevelConfig.runBatch(new Batch() {
 
             @Override
             public void run() {
@@ -545,5 +456,10 @@ public class CommonDicomConfiguration implements DicomConfigurationManager, Tran
         });
     }
 
+    public static BeanVitalizer createDefaultDicomVitalizer() {
+        DefaultBeanVitalizer defaultBeanVitalizer = new DefaultBeanVitalizer();
+        addCustomAdapters(defaultBeanVitalizer);
+        return defaultBeanVitalizer;
+    }
 }
 

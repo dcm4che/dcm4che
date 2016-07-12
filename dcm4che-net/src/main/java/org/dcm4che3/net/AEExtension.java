@@ -38,6 +38,7 @@
 package org.dcm4che3.net;
 
 import org.dcm4che3.conf.core.api.ConfigurableClassExtension;
+import org.dcm4che3.conf.core.api.Parent;
 import org.dcm4che3.conf.core.api.SetParentIntoField;
 
 import java.io.Serializable;
@@ -46,11 +47,12 @@ import java.io.Serializable;
  * @author Gunter Zeilinger <gunterze@gmail.com>
  *
  */
-@SetParentIntoField("applicationEntity")
+
 public class AEExtension extends ConfigurableClassExtension<AEExtension> implements Serializable {
 
     private static final long serialVersionUID = -8287458555186708798L;
 
+    @Parent
     protected ApplicationEntity applicationEntity;
 
     public final ApplicationEntity getApplicationEntity() {

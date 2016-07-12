@@ -40,6 +40,9 @@
 package org.dcm4che3.conf.core.api.internal;
 
 import org.dcm4che3.conf.core.api.ConfigurationException;
+import org.dcm4che3.conf.core.context.LoadingContext;
+import org.dcm4che3.conf.core.context.ProcessingContext;
+import org.dcm4che3.conf.core.context.SavingContext;
 
 import java.util.Map;
 
@@ -56,12 +59,12 @@ public interface ConfigTypeAdapter<T, ST> {
      *
      * @param configNode
      * @param property   the property which is going to be assigned the returned value (Can be null)
-     * @param vitalizer
+     * @param ctx
      * @param parent
      * @return
      * @throws ConfigurationException
      */
-    T fromConfigNode(ST configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer, Object parent) throws ConfigurationException;
+    T fromConfigNode(ST configNode, ConfigProperty property, LoadingContext ctx, Object parent) throws ConfigurationException;
 
     /**
      * <p>Creates a serialized configuration representation for a provided object.
@@ -71,10 +74,10 @@ public interface ConfigTypeAdapter<T, ST> {
      *
      * @param object
      * @param property
-     * @param vitalizer @return
+     * @param ctx @return
      * @throws ConfigurationException
      */
-    ST toConfigNode(T object, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException;
+    ST toConfigNode(T object, ConfigProperty property, SavingContext ctx) throws ConfigurationException;
 
     /**
      * Returns a metadata node in json-schema format (http://json-schema.org/)
@@ -86,20 +89,20 @@ public interface ConfigTypeAdapter<T, ST> {
      * </ul>
      *
      * @param property
-     * @param vitalizer
+     * @param ctx
      * @return
      * @throws ConfigurationException
      */
-    Map<String, Object> getSchema(AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException;
+    Map<String, Object> getSchema(ConfigProperty property, ProcessingContext ctx) throws ConfigurationException;
 
     /**
      * Converts allowed representations (e.g., "123" for Integer) to proper serialized representation
      *
      * @param configNode
      * @param property
-     * @param vitalizer
+     * @param ctx
      * @return
      */
-    ST normalize(Object configNode, AnnotatedConfigurableProperty property, BeanVitalizer vitalizer) throws ConfigurationException;
+    ST normalize(Object configNode, ConfigProperty property, ProcessingContext ctx) throws ConfigurationException;
 
 }

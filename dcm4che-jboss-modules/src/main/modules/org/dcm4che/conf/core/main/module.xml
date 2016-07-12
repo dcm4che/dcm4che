@@ -16,6 +16,7 @@
         <module name="org.apache.commons.beanutils"/>
         <module name="org.apache.commons.lang"/>
         <module name="org.apache.commons.jxpath"/>
+        <module name="com.google.guava"/>
 
     </dependencies>
 </module>

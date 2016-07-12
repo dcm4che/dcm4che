@@ -29,14 +29,9 @@
 - Correctly named getters and setters MUST be provided for all configurable properties.
 
 #### Config extensions (extensibility by composition)
-Some properties might be related only to a certain, possibly optional feature of a configurable object, and then it makes sense not to include them into the main class but rather make the class extendable and put those properties into an optional extension. This is also very usefult to separate concerns and to keep dependencies between components in a manageable state
+Some properties might be related only to a certain, possibly optional feature of a configurable object, and then it makes sense not to include them into the main class but rather make the class extensible and put those properties into an (optional) extension. This also helps to avoid dependencies on the irrelevant parts (i.e. irrelevant extensions) of the configuration, while still allowing to manipulate the primary (extensible) objects. 
 
-Dcm4che config framework allows extensibility by composition (i.e. not using polymorphism like A extends B, but rather adding 'features' to A, like A can have feature B and feature C). One can make a class 'extendable' by including a special property in a form of a Map where an extension class corresponds to an extension instance itself. This property must be marked with `isExtensionsProperty=true` to enable the extension logic. For example to make `Connection` class extandable, the following property was added:
-
-    @ConfigurableProperty(name = "connectionExtensions", isExtensionsProperty = true)
-    private Map<Class<? extends ConnectionExtension>, ConnectionExtension> extensions 
-    = new HashMap<Class<? extends ConnectionExtension>, ConnectionExtension>();
-    
+The framework allows extensibility by composition (i.e. not using polymorphism like A extends B, but rather adding 'features' to A, like A can have feature B and feature C). One can make a class 'extendable' by including a special property in a form of a Map where an extension class corresponds to an extension instance itself. A property must be marked with `type = ConfigurableProperty.ConfigurablePropertyType.ExtensionsProperty` to enable the extension logic.     
     
 To make the framework aware of extensions while loading/persisting configuration, one has to register them (see `DicomConfigurationBuilder`). For EE case, there is a helper in `dcm4chee-conf-cdi` project that performs it automatically by using CDI. 
     

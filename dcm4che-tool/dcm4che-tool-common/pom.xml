@@ -42,7 +42,7 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>org.dcm4che.tool</groupId>
-    <version>dcm4chee-arc-light-5.6.0</version>
+    <version>dcm4chee-arc-light-5.5.2</version>
   </parent>
   <artifactId>dcm4che-tool-common</artifactId>
   <name>dcm4che-tool-common</name>

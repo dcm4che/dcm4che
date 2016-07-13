@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <b>CAUTION:</b>
@@ -55,10 +57,14 @@ import java.util.List;
 public class Path implements Serializable {
 
     private static final long serialVersionUID = 1069976968612802603L;
+    private static Pattern itemPattern = Pattern.compile("/(?<item>(\\\\/|[^/\\[\\]@\\*])*)");
+    private static Pattern simplePathPattern = Pattern.compile("(" + itemPattern + ")*");
 
     public static final Path ROOT = new Path();
 
     private final List<Object> pathItems;
+
+
     private transient String simpleEscapedXPath;
 
     public Path() {
@@ -139,5 +145,28 @@ public class Path implements Serializable {
     @Override
     public String toString() {
         return toSimpleEscapedXPath();
+    }
+
+    public static Path fromSimpleEscapedPath(String pathStr) {
+        Path path = fromSimpleEscapedPathOrNull(pathStr);
+
+        if (path == null)
+            throw new IllegalArgumentException("Simple path " + pathStr + " is invalid");
+        return path;
+    }
+
+    public static Path fromSimpleEscapedPathOrNull(String path) {
+
+        if (!simplePathPattern.matcher(path).matches())
+            return null;
+
+        Matcher matcher = itemPattern.matcher(path);
+
+        List<String> list = new ArrayList<String>();
+        while (matcher.find()) {
+            list.add(matcher.group("item").replace("\\/", "/"));
+        }
+
+        return new Path(list);
     }
 }

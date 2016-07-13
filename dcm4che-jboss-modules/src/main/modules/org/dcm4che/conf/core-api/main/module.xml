@@ -3,5 +3,7 @@
     <resources>
         <resource-root path="dcm4che-conf-core-api-${version}.jar"/>
     </resources>
-
+    <dependencies>
+        <module name="org.apache.commons.beanutils" export="true"/>
+    </dependencies>
 </module>

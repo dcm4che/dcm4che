@@ -145,10 +145,23 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
     private void populate(Map<String, Object> configNode, LoadingContext ctx, Class<T> clazz, T confObj, Object parent, String uuid) {
 
-        // set parent if available
-        injectParent(ctx, clazz, confObj, parent, uuid);
+        // this differentiation is needed for historical reasons .. two examples is Device and the addApplicationEntity method, another example is HL7DeviceExtension....
 
-        // iterate and populate annotated fields
+        if (ConfigReflection.getUUIDPropertyForClass(clazz) != null) {
+            // if class has uuid => it's 'standalone' conf class => initialize fields before parent
+
+            populateFields(configNode, ctx, clazz, confObj);
+            injectParent(ctx, clazz, confObj, parent, uuid);
+        } else {
+            // if class has no uuid => it's either an extension or a simple conf class => initialize parent before fields
+
+            injectParent(ctx, clazz, confObj, parent, uuid);
+            populateFields(configNode, ctx, clazz, confObj);
+        }
+
+    }
+
+    private void populateFields(Map<String, Object> configNode, LoadingContext ctx, Class<T> clazz, T confObj) {
         for (ConfigProperty fieldProperty : ConfigReflection.getAllConfigurableFields(clazz))
             try {
                 Object fieldValue = DefaultConfigTypeAdapters.delegateGetChildFromConfigNode(configNode, fieldProperty, ctx, confObj);
@@ -262,7 +275,6 @@ public class ReflectiveAdapter<T> implements ConfigTypeAdapter<T, Map<String, Ob
 
 
         // populate properties
-
 
         for (ConfigProperty configurableChildProperty : ConfigReflection.getAllConfigurableFields(clazz)) {
 

@@ -311,7 +311,7 @@ public class Connection implements Serializable {
      *
      * @return Device
      */
-    public final Device getDevice() {
+    public Device getDevice() {
         return device;
     }
 
@@ -321,7 +321,7 @@ public class Connection implements Serializable {
      *
      * @param device The owning <code>Device</code> object.
      */
-    final void setDevice(Device device) {
+    public void setDevice(Device device) {
         if (device != null && this.device != null)
             throw new IllegalStateException("already owned by " + device);
         this.device = device;
